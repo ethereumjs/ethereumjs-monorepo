@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -23,7 +22,6 @@ describe('EIP-2537 BLS tests', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
       const evm = await EVM.create({
         common,
-        stateManager: new DefaultStateManager(),
       })
 
       for (const address of precompiles) {
@@ -58,7 +56,6 @@ describe('EIP-2537 BLS tests', () => {
       })
       const evm = await EVM.create({
         common,
-        stateManager: new DefaultStateManager(),
       })
 
       for (const address of precompiles) {
@@ -96,7 +93,6 @@ describe('EIP-2537 BLS tests', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
       const evm = await EVM.create({
         common,
-        stateManager: new DefaultStateManager(),
       })
       const BLS12G2MultiExp = getActivePrecompiles(common).get(
         '0000000000000000000000000000000000000011'

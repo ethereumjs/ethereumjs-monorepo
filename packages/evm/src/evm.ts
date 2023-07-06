@@ -140,7 +140,7 @@ export interface EVMOpts {
   /*
    * The StateManager which is used to update the trie
    */
-  stateManager: EVMStateManagerInterface
+  stateManager?: EVMStateManagerInterface
 
   /**
    *
@@ -240,7 +240,7 @@ export class EVM implements EVMInterface {
    *
    * @param opts EVM engine constructor options
    */
-  static async create(opts: EVMOpts): Promise<EVM> {
+  static async create(opts: EVMOpts = {}): Promise<EVM> {
     const evm = new this(opts)
     await evm.init()
     return evm

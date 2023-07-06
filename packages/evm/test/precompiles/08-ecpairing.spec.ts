@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -10,7 +9,6 @@ describe('Precompiles: ECPAIRING', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const addressStr = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(addressStr)!
