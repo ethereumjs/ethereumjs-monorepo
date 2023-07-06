@@ -132,7 +132,7 @@ describe('ProofStateManager', () => {
     }
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToUnprefixedHex(address.bytes)
-    stateManager._storageTries[addressHex] = storageTrie
+    stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
     const proof = await stateManager.getProof(address, storageKeys)
@@ -172,7 +172,7 @@ describe('ProofStateManager', () => {
     }
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
-    stateManager._storageTries[addressHex] = storageTrie
+    stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
     // tamper with account data
@@ -231,7 +231,7 @@ describe('ProofStateManager', () => {
     const storageTrie = new Trie({ useKeyHashing: true })
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
-    stateManager._storageTries[addressHex] = storageTrie
+    stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
     // tamper with account data

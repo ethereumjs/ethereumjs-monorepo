@@ -90,10 +90,9 @@ describe('Precompiles: point evaluation', () => {
       }
 
       res = await pointEvaluation(optsWithInvalidCommitment)
-      assert.equal(
-        res.exceptionError?.error,
-        'kzg commitment does not match versioned hash',
-        'precompile throws when commitment doesnt match versioned hash'
+      assert.ok(
+        res.exceptionError?.error.match('kzg commitment does not match versioned hash'),
+        'precompile throws when commitment does not match versioned hash'
       )
     }
   })

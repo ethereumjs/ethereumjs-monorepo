@@ -230,7 +230,7 @@ describe('Wallet tests', () => {
         .split('')
         .map((v) => parseInt(v, 10))
       const obj: any = {}
-      zip(selectors, keys).forEach(([sel, k]: [number, string]) => {
+      ;(zip(selectors, keys) as [number, string][]).forEach(([sel, k]: [number, string]) => {
         if ((objs as any)[sel].hasOwnProperty(k) === true) {
           obj[k] = (objs as any)[sel][k]
         }
