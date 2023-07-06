@@ -1,9 +1,10 @@
 import type { DPT } from './dpt'
+import type { Protocol } from './protocol/protocol'
 import type { Common } from '@ethereumjs/common'
 import type { Socket } from 'net'
 
 interface ProtocolConstructor {
-  new (...args: any[]): any
+  new (...args: any[]): Protocol
 }
 
 export interface Capabilities {
@@ -126,7 +127,7 @@ export interface DPTServerOptions {
   createSocket?: Function
 }
 
-export enum EthProtocol { // What does this represent?
+export enum ProtocolLabel {
   ETH = 'eth',
   LES = 'les',
   SNAP = 'snap',
@@ -158,7 +159,7 @@ export interface KBucketOptions {
    * returns the desired object to be used for updating the k-bucket.
    * Defaults to vectorClock arbiter function.
    */
-  arbiter?: (obj1: object, obj2: object) => object
+  arbiter?: (incumbent: CustomContact, candidate: CustomContact) => CustomContact
   /**
    * Optional satellite data to include
    * with the k-bucket. `metadata` property is guaranteed not be altered by,
@@ -173,6 +174,12 @@ export interface PeerInfo {
   address?: string
   udpPort?: number | null
   tcpPort?: number | null
+  vectorClock?: number
+}
+
+export interface CustomContact extends PeerInfo {
+  id: Uint8Array
+  vectorClock: number
 }
 
 export interface PeerOptions {
@@ -181,7 +188,7 @@ export interface PeerOptions {
   common: Common
   port: number
   id: Uint8Array
-  remoteClientIdFilter: any
+  remoteClientIdFilter?: string[]
   remoteId: Uint8Array
   EIP8?: Uint8Array | boolean
   privateKey: Uint8Array

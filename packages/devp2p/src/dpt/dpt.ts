@@ -128,7 +128,7 @@ export class DPT extends EventEmitter {
     }
   }
 
-  async addPeer(obj: PeerInfo): Promise<any> {
+  async addPeer(obj: PeerInfo): Promise<PeerInfo> {
     if (this.banlist.has(obj)) throw new Error('Peer is banned')
     this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
@@ -160,11 +160,11 @@ export class DPT extends EventEmitter {
     return this._kbucket.closest(id)
   }
 
-  removePeer(obj: any) {
+  removePeer(obj: string | PeerInfo | Uint8Array) {
     this._kbucket.remove(obj)
   }
 
-  banPeer(obj: string | Uint8Array | PeerInfo, maxAge?: number) {
+  banPeer(obj: string | PeerInfo | Uint8Array, maxAge?: number) {
     this.banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }

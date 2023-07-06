@@ -2,7 +2,7 @@ import { RLP, utils } from '@ethereumjs/rlp'
 import { bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { EthProtocol } from '../types.js'
+import { ProtocolLabel } from '../types.js'
 import { formatLogData } from '../util.js'
 
 import { Protocol } from './protocol.js'
@@ -12,19 +12,21 @@ import type { SendMethod } from '../types.js'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, EthProtocol.SNAP, version, SNAP.MESSAGE_CODES)
+    super(peer, send, ProtocolLabel.SNAP, version, SNAP.MESSAGE_CODES)
   }
 
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
 
-  _handleMessage(code: SNAP.MESSAGE_CODES, data: any) {
-    const payload = RLP.decode(data) as unknown
-    const messageName = this.getMsgPrefix(code)
+  _handleMessage(code: SNAP.MESSAGE_CODES, data: Uint8Array) {
+    const payload = RLP.decode(data)
 
     // Note, this needs optimization, see issue #1882
-    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-    const logData = formatLogData(bytesToHex(data), this._verbose)
-    this.debug(messageName, `${debugMsg}: ${logData}`)
+    this.debug(
+      this.getMsgPrefix(code),
+      `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+        this._peer._socket.remotePort
+      }: ${formatLogData(bytesToHex(data), this._verbose)}`
+    )
 
     switch (code) {
       case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:

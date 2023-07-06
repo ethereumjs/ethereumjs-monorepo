@@ -18,7 +18,7 @@ import { devp2pDebug, formatLogData } from '../util.js'
 
 import { ECIES } from './ecies.js'
 
-import type { ETH, LES } from '../protocol/index.js'
+import type { Protocol } from '../protocol/protocol.js'
 import type { Capabilities, PeerOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
@@ -50,7 +50,7 @@ type HelloMsg = {
 }
 
 interface ProtocolDescriptor {
-  protocol: any
+  protocol: Protocol
   offset: number
   length?: number
 }
@@ -69,7 +69,7 @@ export class Peer extends EventEmitter {
   _common: Common
   _port: number
   _id: Uint8Array
-  _remoteClientIdFilter: any
+  _remoteClientIdFilter?: string[]
   _remoteId: Uint8Array
   _EIP8: Uint8Array | boolean
   _eciesSession: ECIES
@@ -378,7 +378,7 @@ export class Peer extends EventEmitter {
       }
     }
 
-    const shared: any = {}
+    const shared: { [name: string]: Capabilities } = {}
     for (const item of this._hello.capabilities) {
       for (const c of this._capabilities!) {
         if (c.name !== item.name || c.version !== item.version) continue
@@ -576,7 +576,7 @@ export class Peer extends EventEmitter {
           }
         }
       }
-      protocolObj.protocol._handleMessage(msgCode, payload)
+      protocolObj.protocol._handleMessage?.(msgCode, payload)
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer subprotocol message handling: ${err}`)
@@ -633,7 +633,7 @@ export class Peer extends EventEmitter {
    * (depending on the `code` provided)
    */
   _getProtocol(code: number): ProtocolDescriptor | undefined {
-    if (code < BASE_PROTOCOL_LENGTH) return { protocol: this, offset: 0 }
+    if (code < BASE_PROTOCOL_LENGTH) return { protocol: this as unknown as Protocol, offset: 0 }
     for (const obj of this._protocols) {
       if (code >= obj.offset && code < obj.offset + obj.length!) return obj
     }
@@ -648,7 +648,7 @@ export class Peer extends EventEmitter {
     return this._hello
   }
 
-  getProtocols<T extends ETH | LES>(): T[] {
+  getProtocols(): Protocol[] {
     return this._protocols.map((obj) => obj.protocol)
   }
 
