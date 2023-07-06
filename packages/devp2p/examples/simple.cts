@@ -4,6 +4,7 @@ import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 import { DPT } from '../dist/cjs/index.js'
 
+const TIMEOUT = 5000  // 5 second timeout
 const PRIVATE_KEY = '0xd772e3d6a001a38064dd23964dd2836239fa0e6cec8b28972a87460a17210fe9'
 
 const config = new Common({ chain: Chain.Mainnet })
@@ -38,7 +39,10 @@ dpt.on('peer:removed', (peer) => {
 
 // for accept incoming connections uncomment next line
 // dpt.bind(30303, '0.0.0.0')
-
 for (const bootnode of BOOTNODES) {
   dpt.bootstrap(bootnode).catch((err) => console.error(chalk.bold.red(err.stack ?? err)))
 }
+
+setTimeout(() => {
+  process.exit()
+}, TIMEOUT)
