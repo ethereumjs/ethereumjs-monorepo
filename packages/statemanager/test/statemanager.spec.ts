@@ -7,7 +7,7 @@ describe('StateManager -> General', () => {
   it(`should instantiate`, async () => {
     const sm = new DefaultStateManager()
 
-    assert.deepEqual(sm._trie.root(), KECCAK256_RLP, 'it has default root')
+    assert.deepEqual(sm['_trie'].root(), KECCAK256_RLP, 'it has default root')
     const res = await sm.getStateRoot()
     assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
   })

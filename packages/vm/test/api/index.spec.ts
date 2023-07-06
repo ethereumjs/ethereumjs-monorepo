@@ -36,7 +36,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
     const vm = await VM.create()
     assert.ok(vm.stateManager)
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root(),
+      (vm.stateManager as DefaultStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie'
     )
@@ -46,7 +46,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
   it('should be able to activate precompiles', async () => {
     const vm = await VM.create({ activatePrecompiles: true })
     assert.notDeepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root(),
+      (vm.stateManager as DefaultStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has different root'
     )
@@ -165,7 +165,7 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
   it('should instantiate', async () => {
     const vm = await setupVM()
     assert.deepEqual(
-      (vm.stateManager as DefaultStateManager)._trie.root(),
+      (vm.stateManager as DefaultStateManager)['_trie'].root(),
       KECCAK256_RLP,
       'it has default trie'
     )
