@@ -32,30 +32,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 // (side note: this was once done by tomonari-t dedicatedly for this library
 // (please nevertheless include the original license reference))
 
-import { randomBytes } from '@ethereumjs/util'
+import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
 import type { CustomContact, KBucketOptions, PeerInfo } from '../types'
-
-/**
- * @param  {Uint8Array} array1
- * @param  {Uint8Array} array2
- * @return {Boolean}
- */
-function arrayEquals(array1: Uint8Array, array2: Uint8Array): boolean {
-  if (array1 === array2) {
-    return true
-  }
-  if (array1.length !== array2.length) {
-    return false
-  }
-  for (let i = 0, length = array1.length; i < length; ++i) {
-    if (array1[i] !== array2[i]) {
-      return false
-    }
-  }
-  return true
-}
 
 function createNode() {
   return { contacts: [], dontSplit: false, left: null, right: null }
@@ -308,7 +288,7 @@ export class KBucket extends EventEmitter {
    */
   _indexOf(node: KBucketRoot, id: Uint8Array): number {
     for (let i = 0; i < node.contacts!.length; ++i) {
-      if (arrayEquals(node.contacts![i].id, id)) return i
+      if (equalsBytes(node.contacts![i].id, id)) return i
     }
 
     return -1
@@ -418,7 +398,7 @@ export class KBucket extends EventEmitter {
    */
   _update(node: KBucketRoot, index: number, contact: CustomContact) {
     // sanity check
-    if (!arrayEquals(node.contacts![index].id, contact.id)) {
+    if (!equalsBytes(node.contacts![index].id, contact.id)) {
       throw new Error('wrong index for _update')
     }
 
