@@ -26,6 +26,28 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### EEI Removal / Standalone EVM
+
+During the last round of breaking releases we separated the `EVM` and `VM` packages and largely decoupled the outer execution part (`VM`) and the "pure" EVM, being just a package containing the "Ethereum Virtual Machine" code with no notion of the outer txs or blocks which include the executable byte code.
+
+While this was a large step in the "right direction" [TM] we realized over the last months that the structure we introduced with a separate `EEI` as an additional abstraction layer for talking of the EVM with the "outside world" (another [TM]) for e.g. retrieving block hashes or the like still unnecessarily tied the VM/EVM structures together and didn't fully allow for a truly separate EVM initialization.
+
+We have now further refactored this - see PR [#2649](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2649/) - and simplified the interface and completely removed the `EEI` package, with most of the EEI related logic now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package.
+
+So the mandatory `eei` option now goes away and is replaced by two optional `stateManager` and `blockchain` options, and if not provided, default values are taken here.
+
+So the EVM initialization in its most simple form now goes to:
+
+```typescript
+import { hexToBytes } from '@ethereumjs/util'
+import { EVM } from '@ethereumjs/evm'
+
+const evm = await EVM.create()
+evm.runCode(hexToBytes('0x01'))
+```
+
+🎉
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
