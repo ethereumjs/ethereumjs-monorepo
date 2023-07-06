@@ -67,6 +67,10 @@ Withdrawal.toValue()
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module (so: within this library), see the respective README section for guidance.
 
+### Other Changes
+
+- Remove `@chainsafe/ssz` dependency, PR [#2717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2717)
+
 ## 8.0.6 - 2023-04-20
 
 - Bump `@chainsafe/ssz` dependency to 0.11.1 (no WASM, native SHA-256 implementation, ES2019 compatible, explicit imports), PRs [#2622](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2622), [#2564](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2564) and [#2656](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2656)

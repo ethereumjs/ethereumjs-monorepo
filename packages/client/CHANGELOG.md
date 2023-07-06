@@ -25,6 +25,8 @@ The following changes are included:
 - Add proofs to engine API BlobsBundleV1, PR [#2642](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2642)
 - Limit blobs as per the maxDataGasPerBlock for block building, PR [#2661](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2661)
 - Add 4844 devnet5 blob post utility, PR [#2674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2674)
+- De-sszify 4844 blob transaction, PR [#2708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2708)
+- Extend newPayloadV3 for blob versioned hashes checks, PR [#2716](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2716)
 
 ### Other Changes
 

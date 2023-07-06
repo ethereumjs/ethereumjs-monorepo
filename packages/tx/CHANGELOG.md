@@ -108,6 +108,9 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 ### Other Changes
 
 - Migrate `fromEthersProvider()` to more general `fromJsonRpcProvider()` constructor, remove `Ethers` dependency, PR [#2663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2663)
+- EIP-4844: De-sszify 4844 blob transaction, PR [#2708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2708)
+- Normalize `toJSON()` for different tx types, PR [#2707](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2707)
+- Remove `@chainsafe/ssz` dependency, PR [#2717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2717)
 
 ## 4.1.2 - 2023-04-20
 
