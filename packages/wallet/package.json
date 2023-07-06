@@ -35,6 +35,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
     "docs:build": "npx typedoc --options typedoc.js",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
