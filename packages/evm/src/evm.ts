@@ -907,7 +907,7 @@ export class EVM implements EVMInterface {
       versionedHashes: opts.versionedHashes,
     })
 
-    return this.runInterpreter(message)
+    return this.runInterpreter(message, { pc: opts.pc })
   }
 
   /**

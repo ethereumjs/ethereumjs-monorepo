@@ -5,11 +5,10 @@ import { assert, describe, it } from 'vitest'
 import { EVM } from '../src/index.js'
 
 const PUSH1 = '60'
-
-/*
 const STOP = '00'
 const JUMP = '56'
 const JUMPDEST = '5b'
+
 const testCases = [
   { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 6 },
   {
@@ -19,10 +18,8 @@ const testCases = [
   },
   { code: [STOP], pc: 3, error: 'Internal error: program counter not in range' },
   { code: [STOP], resultPC: 1 },
-]*/
+]
 
-/*
-TODO: discussion if we want to temporarily remove this
 describe('VM.runCode: initial program counter', () => {
   it('should work', async () => {
     const evm = await EVM.create({
@@ -60,7 +57,6 @@ describe('VM.runCode: initial program counter', () => {
     }
   })
 })
-*/
 
 describe('VM.runCode: interpreter', () => {
   it('should return a EvmError as an exceptionError on the result', async () => {

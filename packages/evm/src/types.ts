@@ -36,9 +36,9 @@ export type AddOpcode = {
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
 /**
- * Options for the `EVM.runCode()` method.
+ * Base optiosn for the `EVM.runCode()` / `EVM.runCall()` method.
  */
-export interface EVMRunCodeOpts {
+interface EVMOpts {
   /**
    * The `block` the `tx` belongs to. If omitted a default blank block will be used.
    */
@@ -93,10 +93,17 @@ export interface EVMRunCodeOpts {
   versionedHashes?: Uint8Array[]
 }
 
+export interface EVMRunCodeOpts extends EVMOpts {
+  /*
+   * The initial program counter. Defaults to `0`
+   */
+  pc?: number
+}
+
 /**
  * Options for running a call (or create) operation with `EVM.runCall()`
  */
-export interface EVMRunCallOpts extends EVMRunCodeOpts {
+export interface EVMRunCallOpts extends EVMOpts {
   /**
    * If the code location is a precompile.
    */
