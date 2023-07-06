@@ -39,7 +39,7 @@ export class DNS {
    * search exceeds `maxQuantity` plus the `errorTolerance` factor.
    *
    * @param {number}        maxQuantity  max number to get
-   * @param {string}        treeEntry enrtree string (See EIP-1459 for format)
+   * @param {string[]}        dnsNetworks enrTree strings (See EIP-1459 for format)
    * @return {PeerInfo}
    */
   async getPeers(maxQuantity: number, dnsNetworks: string[]): Promise<PeerInfo[]> {
@@ -59,8 +59,8 @@ export class DNS {
       const peer = await this._search(domain, context)
 
       if (this._isNewPeer(peer, peers)) {
-        peers.push(peer as PeerInfo)
-        debug(`got new peer candidate from DNS address=${peer!.address}`)
+        peers.push(peer)
+        debug(`got new peer candidate from DNS address=${peer.address}`)
       }
 
       totalSearches++
@@ -182,12 +182,13 @@ export class DNS {
    * Returns false if candidate peer already exists in the
    * current collection of peers.
    * Returns true otherwise.
+   * Also acts as a typeguard for peer
    *
    * @param  {PeerInfo}   peer
    * @param  {PeerInfo[]} peers
    * @return {boolean}
    */
-  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): boolean {
+  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): peer is PeerInfo {
     if (peer === null || peer.address === undefined) return false
 
     for (const existingPeer of peers) {

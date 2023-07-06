@@ -159,7 +159,7 @@ export interface KBucketOptions {
    * returns the desired object to be used for updating the k-bucket.
    * Defaults to vectorClock arbiter function.
    */
-  arbiter?: (incumbent: CustomContact, candidate: CustomContact) => CustomContact
+  arbiter?: (incumbent: Contact, candidate: Contact) => Contact
   /**
    * Optional satellite data to include
    * with the k-bucket. `metadata` property is guaranteed not be altered by,
@@ -177,7 +177,7 @@ export interface PeerInfo {
   vectorClock?: number
 }
 
-export interface CustomContact extends PeerInfo {
+export interface Contact extends PeerInfo {
   id: Uint8Array
   vectorClock: number
 }

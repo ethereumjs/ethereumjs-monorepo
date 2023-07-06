@@ -35,17 +35,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
-import type { CustomContact, KBucketOptions, PeerInfo } from '../types'
+import type { Contact, KBucketOptions, PeerInfo } from '../types'
 
 function createNode() {
   return { contacts: [], dontSplit: false, left: null, right: null }
 }
 
-type KBucketRoot = {
-  contacts: CustomContact[] | null
+type KBucketNode = {
+  contacts: Contact[] | null
   dontSplit: boolean
-  left: KBucketRoot | null
-  right: KBucketRoot | null
+  left: KBucketNode | null
+  right: KBucketNode | null
 }
 
 /**
@@ -59,9 +59,9 @@ export class KBucket extends EventEmitter {
   numberOfNodesPerKBucket: number
   numberOfNodesToPing: number
   distance: (firstId: Uint8Array, secondId: Uint8Array) => number
-  arbiter: (incumbent: CustomContact, candidate: CustomContact) => CustomContact
+  arbiter: (incumbent: Contact, candidate: Contact) => Contact
   metadata: object
-  root: KBucketRoot
+  root: KBucketNode
   /**
    *
    * @param {KBucketOptions} options
@@ -86,11 +86,11 @@ export class KBucket extends EventEmitter {
    * Contact with larger vectorClock field will be selected. If vectorClock is
    * the same, candidate will be selected.
    *
-   * @param  {CustomContact} incumbent Contact currently stored in the k-bucket.
-   * @param  {CustomContact} candidate Contact being added to the k-bucket.
-   * @return {CustomContact}           Contact to updated the k-bucket with.
+   * @param  {Contact} incumbent Contact currently stored in the k-bucket.
+   * @param  {Contact} candidate Contact being added to the k-bucket.
+   * @return {Contact}           Contact to updated the k-bucket with.
    */
-  static arbiter(incumbent: CustomContact, candidate: CustomContact): CustomContact {
+  static arbiter(incumbent: Contact, candidate: Contact): Contact {
     return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
   }
 
@@ -138,12 +138,12 @@ export class KBucket extends EventEmitter {
     // check if the contact already exists
     const index = this._indexOf(node, contact.id)
     if (index >= 0) {
-      this._update(node, index, contact as CustomContact)
+      this._update(node, index, contact as Contact)
       return this
     }
 
     if (node.contacts.length < this.numberOfNodesPerKBucket) {
-      node.contacts.push(contact as CustomContact)
+      node.contacts.push(contact as Contact)
       this.emit('added', contact)
       return this
     }
@@ -169,9 +169,9 @@ export class KBucket extends EventEmitter {
    *
    * @param  {Uint8Array} id  Contact node id
    * @param  {number} n      Integer (Default: Infinity) The maximum number of closest contacts to return
-   * @return {CustomContact[]}          Array Maximum of n closest contacts to the node id
+   * @return {Contact[]}          Array Maximum of n closest contacts to the node id
    */
-  closest(id: Uint8Array, n: number | undefined = Infinity): CustomContact[] {
+  closest(id: Uint8Array, n: number | undefined = Infinity): Contact[] {
     if (!(id instanceof Uint8Array)) {
       throw new TypeError('id must be a Uint8Array')
     }
@@ -180,7 +180,7 @@ export class KBucket extends EventEmitter {
       throw new TypeError('n is not positive number')
     }
 
-    let contacts: CustomContact[] = []
+    let contacts: Contact[] = []
 
     for (let nodes = [this.root], bitIndex = 0; nodes.length > 0 && contacts.length < n; ) {
       const node = nodes.pop()!
@@ -216,13 +216,13 @@ export class KBucket extends EventEmitter {
    * Determines whether the id at the bitIndex is 0 or 1.
    * Return left leaf if `id` at `bitIndex` is 0, right leaf otherwise
    *
-   * @param  {KBucketRoot} node     internal object that has 2 leafs: left and right
+   * @param  {KBucketNode} node     internal object that has 2 leafs: left and right
    * @param  {Uint8Array} id   Id to compare localNodeId with.
    * @param  {Number} bitIndex Integer (Default: 0) The bit index to which bit
    *                           to check in the id Uint8Array.
-   * @return {KBucketRoot}          left leaf if id at bitIndex is 0, right leaf otherwise.
+   * @return {KBucketNode}          left leaf if id at bitIndex is 0, right leaf otherwise.
    */
-  _determineNode(node: KBucketRoot, id: Uint8Array, bitIndex: number): KBucketRoot {
+  _determineNode(node: KBucketNode, id: Uint8Array, bitIndex: number): KBucketNode {
     // **NOTE** remember that id is a Uint8Array and has granularity of
     // bytes (8 bits), whereas the bitIndex is the _bit_ index (not byte)
 
@@ -262,9 +262,9 @@ export class KBucket extends EventEmitter {
    * which branch of the tree to traverse and repeat.
    *
    * @param  {Uint8Array} id The ID of the contact to fetch.
-   * @return {CustomContact|null}   The contact if available, otherwise null
+   * @return {Contact|null}   The contact if available, otherwise null
    */
-  get(id: Uint8Array): CustomContact | null {
+  get(id: Uint8Array): Contact | null {
     let bitIndex = 0
 
     let node = this.root
@@ -281,12 +281,12 @@ export class KBucket extends EventEmitter {
    * Returns the index of the contact with provided
    * id if it exists, returns -1 otherwise.
    *
-   * @param  {KBucketRoot} node    internal object that has 2 leafs: left and right
+   * @param  {KBucketNode} node    internal object that has 2 leafs: left and right
    * @param  {Uint8Array} id  Contact node id.
    * @return {number}         Integer Index of contact with provided id if it
    *                          exists, -1 otherwise.
    */
-  _indexOf(node: KBucketRoot, id: Uint8Array): number {
+  _indexOf(node: KBucketNode, id: Uint8Array): number {
     for (let i = 0; i < node.contacts!.length; ++i) {
       if (equalsBytes(node.contacts![i].id, id)) return i
     }
@@ -326,7 +326,7 @@ export class KBucket extends EventEmitter {
    * @param  {number} bitIndex the bitIndex to which byte to check in the
    *                           Uint8Array for navigating the binary tree
    */
-  _split(node: KBucketRoot, bitIndex: number) {
+  _split(node: KBucketNode, bitIndex: number) {
     node.left = createNode()
     node.right = createNode()
 
@@ -350,10 +350,10 @@ export class KBucket extends EventEmitter {
    * If this is a leaf, return a copy of the bucket. If this is not a leaf,
    * return the union of the low and high branches (themselves also as arrays).
    *
-   * @return {CustomContact[]} All of the contacts in the tree, as an array
+   * @return {Contact[]} All of the contacts in the tree, as an array
    */
-  toArray(): CustomContact[] {
-    let result: CustomContact[] = []
+  toArray(): Contact[] {
+    let result: Contact[] = []
     for (const nodes = [this.root]; nodes.length > 0; ) {
       const node = nodes.pop()!
       if (node.contacts === null) nodes.push(node.right!, node.left!)
@@ -367,9 +367,9 @@ export class KBucket extends EventEmitter {
    * array before returning it, yields contacts as they are encountered while
    * walking the tree.
    *
-   * @return {CustomContact} All of the contacts in the tree, as an iterable
+   * @return {Contact} All of the contacts in the tree, as an iterable
    */
-  *toIterable(): Iterable<CustomContact> {
+  *toIterable(): Iterable<Contact> {
     for (const nodes = [this.root]; nodes.length > 0; ) {
       const node = nodes.pop()!
       if (node.contacts === null) {
@@ -390,26 +390,28 @@ export class KBucket extends EventEmitter {
    * If the selection is our new contact, the old contact is removed and the new
    * contact is marked as most recently contacted.
    *
-   * @param  {KBucketRoot} node    internal object that has 2 leafs: left and right
+   * @param  {KBucketNode} node    internal object that has 2 leafs: left and right
    * @param  {number} index   the index in the bucket where contact exists
    *                          (index has already been computed in a previous
    *                          calculation)
-   * @param  {CustomContact} contact The contact object to update.
+   * @param  {Contact} contact The contact object to update.
    */
-  _update(node: KBucketRoot, index: number, contact: CustomContact) {
+  _update(node: KBucketNode, index: number, contact: Contact) {
     // sanity check
     if (!equalsBytes(node.contacts![index].id, contact.id)) {
       throw new Error('wrong index for _update')
     }
 
-    const incumbent = node.contacts![index]
+    if (node.contacts === null) throw new Error('Missing node.contacts')
+
+    const incumbent = node.contacts[index]
     const selection = this.arbiter(incumbent, contact)
     // if the selection is our old contact and the candidate is some new
     // contact, then there is nothing to do
     if (selection === incumbent && incumbent !== contact) return
 
-    node.contacts!.splice(index, 1) // remove old contact
-    node.contacts!.push(selection) // add more recent contact version
+    node.contacts.splice(index, 1) // remove old contact
+    node.contacts.push(selection) // add more recent contact version
     this.emit('updated', incumbent, selection)
   }
 }
