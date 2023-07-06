@@ -126,7 +126,7 @@ export function initTwoPeerRLPXSetup(
 export function twoPeerMsgExchange(
   t: typeof it,
   opts: any,
-  capabilities?: any,
+  capabilities?: Capabilities[],
   common?: Object | Common,
   basePort = 30306
 ) {

@@ -13,7 +13,7 @@ import {
   unstrictDecode,
 } from '../util.js'
 
-import type { PeerInfo } from './dpt.js'
+import type { PeerInfo } from '../types.js'
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('devp2p:dpt:server')
@@ -136,7 +136,7 @@ type OutNeighborMsg = { [0]: Uint8Array[][]; [1]: Uint8Array }
 const neighbours = {
   encode(obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Uint8Array)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id as Uint8Array)),
       timestamp.encode(obj.timestamp),
     ]
   },
