@@ -1,25 +1,11 @@
 import { zeros } from '@ethereumjs/util'
 
-import type { EVMResult, ExecResult } from './evm.js'
+import type { EVMResult } from './evm.js'
 import type { InterpreterStep } from './interpreter.js'
 import type { Message } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler, OpcodeList } from './opcodes/index.js'
-import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { Address, AsyncEventEmitter } from '@ethereumjs/util'
-
-/**
- * API of the EVM
- */
-export interface EVMInterface {
-  runCall(opts: EVMRunCallOpts): Promise<EVMResult>
-  runCode?(opts: EVMRunCodeOpts): Promise<ExecResult>
-  getActiveOpcodes?(): OpcodeList
-  precompiles: Map<string, any> // Note: the `any` type is used because EVM only needs to have the addresses of the precompiles (not their functions)
-  shallowCopy(): EVMInterface
-  stateManager: EVMStateManagerInterface
-  events?: AsyncEventEmitter<EVMEvents>
-}
+import type { OpHandler } from './opcodes/index.js'
+import type { Address } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
   opcode: number

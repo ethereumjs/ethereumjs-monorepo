@@ -37,7 +37,6 @@ import type {
   Blockchain,
   CustomOpcode,
   EVMEvents,
-  EVMInterface,
   EVMRunCallOpts,
   EVMRunCodeOpts,
   Log,
@@ -154,7 +153,7 @@ export interface EVMOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export class EVM implements EVMInterface {
+export class EVM {
   protected static supportedHardforks = [
     Hardfork.Chainstart,
     Hardfork.Homestead,
@@ -1014,9 +1013,9 @@ export class EVM implements EVMInterface {
    * Note: this is only a shallow copy and both EVM instances
    * will point to the same underlying state DB.
    *
-   * @returns EVMInterface
+   * @returns EVM
    */
-  public shallowCopy(): EVMInterface {
+  public shallowCopy(): EVM {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
 
