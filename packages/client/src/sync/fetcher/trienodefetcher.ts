@@ -173,6 +173,11 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
+    if (pathStrings.length === 1 && pathStrings.includes('0305/')) {
+      console.log(rangeResult)
+      console.log(paths)
+    }
+
     // console.log('dbg30')
     // console.log(paths)
     // console.log(rangeResult.nodes)
@@ -257,6 +262,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         const node = decodeNode(nodeData as unknown as Uint8Array)
         const nodeHash = bytesToHex(keccak256(nodeData as unknown as Uint8Array))
         const pathString = this.requestedNodeToPath.get(nodeHash)
+        console.log(nodeHash)
+        console.log(pathString)
         const [accountPath, storagePath] = pathString!.split('/')
         const nodePath = storagePath ?? accountPath
         const childNodes = []
@@ -298,7 +305,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               nodeHash: bytesToHex(storageRoot),
               nodeParentHash: nodeHash,
             })
-            console.log('storageHash found for fetching')
+            console.log(`storageHash found for fetching ${bytesToHex(storageRoot)}`)
+            console.log(`parent hash is ${nodeHash}`)
           }
           const codeHash: Uint8Array = account.codeHash
           if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
@@ -390,41 +398,43 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
 
+    console.log('dbg50')
+    console.log(pathStrings)
     const ret: string[][] = []
-    let currAccountPath = undefined
     let paths: string[] = []
-    for (let i = 0; i < pathStrings.length; i++) {
-      const pathString = pathStrings[i]!.split('/')
-      const accountPath = pathString[0]
-      const storagePath = pathString[1]
+    let i = 0
+    while (i < pathStrings.length) {
+      const outterPathString = pathStrings[i]!.split('/')
+      const outterAccountPath = outterPathString[0]
+      const outterStoragePath = outterPathString[1]
+      console.log(`${outterAccountPath} - ${outterStoragePath}`)
 
-      console.log(pathString)
-      console.log(accountPath)
-      console.log(storagePath)
-      if (currAccountPath === undefined) {
-        // console.log('dbg0')
-        currAccountPath = accountPath
-        // console.log(currAccountPath)
-        paths.push(accountPath)
-        continue
-      }
-      if (currAccountPath === accountPath) {
-        // console.log('dbg1')
+      paths.push(outterAccountPath)
 
-        paths.push(storagePath as string)
-        continue
+      if (outterStoragePath !== undefined) {
+        paths.push(outterStoragePath)
       }
-      // console.log('dbg2')
 
-      // if currAccountPath !== accountPath
-      if (storagePath !== undefined) {
-        console.log('dbg30')
-        paths.push(storagePath)
+      let j = ++i
+      while (j < pathStrings.length) {
+        const innerPathString = pathStrings[j]!.split('/')
+        const innerAccountPath = innerPathString[0]
+        const innerStoragePath = innerPathString[1]
+
+        if (innerAccountPath === outterAccountPath) {
+          paths.push(innerStoragePath)
+        } else {
+          ret.push(paths)
+          paths = []
+          i = j
+          break
+        }
+        j++
       }
-      ret.push(paths)
-      paths = []
-      paths.push(accountPath)
-      currAccountPath = accountPath
+      if (paths.length > 0) {
+        ret.push(paths)
+        paths = []
+      }
     }
 
     if (paths.length > 0) ret.push(paths)
@@ -435,12 +445,16 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // have to put into compact and keybytes format depending on if path is partial or full
 
+    console.log(ret)
     // TODO resolve should happen here, with keys being either keybyte or compact encoded
     return ret.map((pathStrings) =>
       pathStrings.map((s) => {
         if (s.length < 64) {
           // partial path is compact encoded
-          // console.log('dbg20')
+          console.log('dbg20')
+          console.log(hexToBytes(s))
+          console.log(nibblesToCompactBytes(hexToBytes(s)))
+          console.log(bytesToHex(nibblesToCompactBytes(hexToBytes(s))))
           return nibblesToCompactBytes(hexToBytes(s))
         } else {
           // full path is keybyte encoded
@@ -471,7 +485,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           }
           const paths = this.mergeAndFormatPaths(requestedPathStrings) as unknown as Uint8Array[][]
           console.log('dbg10')
-          console.log(JSON.stringify(paths))
+          console.log()
           tasks.push({
             pathStrings: requestedPathStrings,
             paths,
