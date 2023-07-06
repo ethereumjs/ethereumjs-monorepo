@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASON, ProtocolLabel } from '../types.js'
+import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { assertEq, formatLogData } from '../util.js'
 
 import { Protocol } from './protocol.js'
@@ -25,7 +25,7 @@ export class LES extends Protocol {
   _peerStatus: LES.Status | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, ProtocolLabel.LES, version, LES.MESSAGE_CODES)
+    super(peer, send, ProtocolType.LES, version, LES.MESSAGE_CODES)
 
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)

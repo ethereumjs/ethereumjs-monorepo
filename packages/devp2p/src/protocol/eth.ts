@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { ProtocolLabel } from '../types.js'
+import { ProtocolType } from '../types.js'
 import { assertEq, formatLogData, formatLogId } from '../util.js'
 
 import { Protocol } from './protocol.js'
@@ -31,7 +31,7 @@ export class ETH extends Protocol {
   _nextForkBlock = BigInt(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, ProtocolLabel.ETH, version, ETH.MESSAGE_CODES)
+    super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {

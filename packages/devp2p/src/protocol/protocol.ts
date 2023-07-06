@@ -1,7 +1,7 @@
 import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 
-import { DISCONNECT_REASON, ProtocolLabel } from '../types.js'
+import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
@@ -32,7 +32,7 @@ export abstract class Protocol extends EventEmitter {
   constructor(
     peer: Peer,
     send: SendMethod,
-    protocol: ProtocolLabel,
+    protocol: ProtocolType,
     version: number,
     messageCodes: MessageCodes
   ) {
@@ -43,7 +43,7 @@ export abstract class Protocol extends EventEmitter {
     this._version = version
     this._messageCodes = messageCodes
     this._statusTimeoutId =
-      protocol !== ProtocolLabel.SNAP
+      protocol !== ProtocolType.SNAP
         ? setTimeout(() => {
             this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
           }, 5000) // 5 sec * 1000
@@ -54,7 +54,7 @@ export abstract class Protocol extends EventEmitter {
     this.initMsgDebuggers(protocol)
   }
 
-  private initMsgDebuggers(protocol: ProtocolLabel) {
+  private initMsgDebuggers(protocol: ProtocolType) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
       (value) => typeof value === 'string'
     ) as string[]

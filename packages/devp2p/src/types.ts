@@ -127,7 +127,7 @@ export interface DPTServerOptions {
   createSocket?: Function
 }
 
-export enum ProtocolLabel {
+export enum ProtocolType {
   ETH = 'eth',
   LES = 'les',
   SNAP = 'snap',

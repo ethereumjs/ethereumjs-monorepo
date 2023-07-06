@@ -2,7 +2,7 @@ import { RLP, utils } from '@ethereumjs/rlp'
 import { bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { ProtocolLabel } from '../types.js'
+import { ProtocolType } from '../types.js'
 import { formatLogData } from '../util.js'
 
 import { Protocol } from './protocol.js'
@@ -12,7 +12,7 @@ import type { SendMethod } from '../types.js'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, ProtocolLabel.SNAP, version, SNAP.MESSAGE_CODES)
+    super(peer, send, ProtocolType.SNAP, version, SNAP.MESSAGE_CODES)
   }
 
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
