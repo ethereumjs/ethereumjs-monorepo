@@ -1,8 +1,8 @@
-import { Ethash } from '../src/index.js'
+import { Ethash } from '../dist/cjs/index.js'
 import { MemoryLevel } from 'memory-level'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { DBObject, MapDB, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-const ethash = new Ethash(new MemoryLevel())
+const ethash = new Ethash(new MapDB<number, DBObject>())
 
 const verifySubmit = async (
   ethash: Ethash,
