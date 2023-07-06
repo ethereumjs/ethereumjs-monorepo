@@ -136,7 +136,7 @@ type OutNeighborMsg = { [0]: Uint8Array[][]; [1]: Uint8Array }
 const neighbours = {
   encode(obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Uint8Array)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id as Uint8Array)),
       timestamp.encode(obj.timestamp),
     ]
   },
