@@ -1,5 +1,4 @@
 import { Ethash } from '../dist/cjs/index.js'
-import { MemoryLevel } from 'memory-level'
 import { DBObject, MapDB, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const ethash = new Ethash(new MapDB<number, DBObject>())
