@@ -32,6 +32,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 
 ### Other Changes
 
+- Breaking: Changes in the database layer usage, PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669)
 - Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
 
 ## 2.0.5 - 2023-04-30

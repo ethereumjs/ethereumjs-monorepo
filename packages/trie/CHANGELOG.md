@@ -44,6 +44,10 @@ So basically the whole API. Lol. 😋
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
+### Other Changes
+
+- Breaking: `DB` interface and `MapDB` implementation have been moved to [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) (for re-usage), PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669)
+
 ## 5.0.5 - 2023-04-20
 
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)

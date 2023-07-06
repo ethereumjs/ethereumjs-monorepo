@@ -28,6 +28,14 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 
 ### Database Abstraction / Removed LevelDB Dependency
 
+Up to this release the backend store for the blockchain library was tied to be a `LevelDB` database, which was unfortunate since `level` is a depedency which doesn't play so well in the browser and beyond there are many use cases for this library where a persistent data store is just not needed.
+
+With this release the database therefore gets an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface which we provide in the `@ethereumjs/util` package (since this is used in other places as well).
+
+By default the blockchain package is now using a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
+
+If you need a persistent data store for your use case you can have a look (and take over) the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
