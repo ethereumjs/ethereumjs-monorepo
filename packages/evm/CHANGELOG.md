@@ -43,7 +43,7 @@ import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
 const evm = await EVM.create()
-evm.runCode(hexToBytes('0x01'))
+evm.runCode({ code: hexToBytes('0x01') })
 ```
 
 🎉
@@ -71,6 +71,11 @@ EVM.on('step', ...) // InterpreterStep
 ```
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+### Other Changes
+
+- EIP-4844: Fix the availability of versioned hashes in contract calls, PR [#2694](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2694)
+- EIP-4844: Rename `DATAHASH` to `BLOBHASH`, PR [#2711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2711)
 
 ## 1.3.2 - 2023-04-20
 

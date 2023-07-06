@@ -26,6 +26,18 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### Block: fromExecutionPayload() / fromBeaconPayloadJson()
+
+Two new handy constructors have been added to the `Block` class to bring the consensus and execution parts of Ethereum closer together:
+
+`Block.fromBeaconPayloadJson()` allows to initialize an Ethereum L1 block with a payload received from the beacon chain via an RPC call. 🤩 The new constructor can be used as follows:
+
+```typescript
+const block = await Block.fromBeaconPayloadJson(payload, { common })
+```
+
+If you already have the execution payload embedded within a beacon block you can alternatively directly use the `Block.fromExecutionPayload()` constructor.
+
 ### Buffer -> Uint8Array
 
 With this releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
