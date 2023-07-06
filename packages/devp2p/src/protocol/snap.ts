@@ -55,11 +55,12 @@ export class SNAP extends Protocol {
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
   sendMessage(code: SNAP.MESSAGE_CODES, payload: any) {
-    const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)
-    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
-
-    this.debug(messageName, debugMsg)
+    this.debug(
+      this.getMsgPrefix(code),
+      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+        this._peer._socket.remotePort
+      }: ${formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)}`
+    )
 
     switch (code) {
       case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:

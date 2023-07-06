@@ -38,11 +38,14 @@ export class LES extends Protocol {
 
   _handleMessage(code: LES.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
-    const messageName = this.getMsgPrefix(code)
-    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
     if (code !== LES.MESSAGE_CODES.STATUS) {
       const logData = formatLogData(bytesToHex(data as Uint8Array), this._verbose)
-      this.debug(messageName, `${debugMsg}: ${logData}`)
+      this.debug(
+        this.getMsgPrefix(code),
+        `${`Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          this._peer._socket.remotePort
+        }`}: ${logData}`
+      )
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS: {
@@ -58,7 +61,12 @@ export class LES extends Protocol {
           status[bytesToUtf8(value[0] as Uint8Array)] = value[1]
         }
         this._peerStatus = status
-        this.debug(messageName, `${debugMsg}: ${this._getStatusString(this._peerStatus)}`)
+        this.debug(
+          this.getMsgPrefix(code),
+          `${`Received ${this.getMsgPrefix(code)} message from ${
+            this._peer._socket.remoteAddress
+          }:${this._peer._socket.remotePort}`}: ${this._getStatusString(this._peerStatus)}`
+        )
         this._handleStatus()
         break
       }

@@ -57,14 +57,15 @@ export class ETH extends Protocol {
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
-    const messageName = this.getMsgPrefix(code)
     const debugMsg = this.DEBUG
-      ? `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+      ? `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          this._peer._socket.remotePort
+        }`
       : undefined
 
     if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
       const logData = formatLogData(bytesToHex(data), this._verbose)
-      this.debug(messageName, `${debugMsg}: ${logData}`)
+      this.debug(this.getMsgPrefix(code), `${debugMsg}: ${logData}`)
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS: {
@@ -80,7 +81,7 @@ export class ETH extends Protocol {
           this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
         }`
         if (this.DEBUG) {
-          this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+          this.debug(this.getMsgPrefix(code), `${debugMsg}: ${peerStatusMsg}`)
         }
         this._handleStatus()
         break

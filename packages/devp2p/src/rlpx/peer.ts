@@ -212,15 +212,17 @@ export class Peer extends EventEmitter {
    * Send HELLO message
    */
   _sendHello() {
-    const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${
-      this._socket.remotePort
-    }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
-      // Filter out snap because we can't yet provide snap endpoints to the peers
-      // TODO: Remove when we can also serve snap requests from other peers
-      .filter((c) => c.name !== 'snap')
-      .map((c) => `${c.name}${c.version}`)
-      .join(',')} clientId=${bytesToUtf8(this._clientId)}`
-    this.debug('HELLO', debugMsg)
+    this.debug(
+      'HELLO',
+      `Send HELLO to ${this._socket.remoteAddress}:${
+        this._socket.remotePort
+      }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
+        // Filter out snap because we can't yet provide snap endpoints to the peers
+        // TODO: Remove when we can also serve snap requests from other peers
+        .filter((c) => c.name !== 'snap')
+        .map((c) => `${c.name}${c.version}`)
+        .join(',')} clientId=${bytesToUtf8(this._clientId)}`
+    )
     const payload: HelloMsg = [
       intToBytes(BASE_PROTOCOL_VERSION),
       this._clientId,
@@ -247,8 +249,11 @@ export class Peer extends EventEmitter {
    */
   _sendDisconnect(reason: DISCONNECT_REASON) {
     const reasonName = this.getDisconnectPrefix(reason)
-    const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
-    this.debug('DISCONNECT', debugMsg, reasonName)
+    this.debug(
+      'DISCONNECT',
+      `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`,
+      reasonName
+    )
     const data = RLP.encode(reason)
     if (this._sendMessage(PREFIXES.DISCONNECT, data) !== true) return
 
@@ -262,8 +267,7 @@ export class Peer extends EventEmitter {
    * Send PING message
    */
   _sendPing() {
-    const debugMsg = `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    this.debug('PING', debugMsg)
+    this.debug('PING', `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     let data = RLP.encode([])
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
@@ -281,8 +285,7 @@ export class Peer extends EventEmitter {
    * Send PONG message
    */
   _sendPong() {
-    const debugMsg = `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    this.debug('PONG', debugMsg)
+    this.debug('PONG', `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     let data = RLP.encode([])
 
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
@@ -357,12 +360,14 @@ export class Peer extends EventEmitter {
       id: payload[4],
     }
 
-    const debugMsg = `Received HELLO ${this._socket.remoteAddress}:${
-      this._socket.remotePort
-    } protocolVersion=${this._hello.protocolVersion} capabilities=${(this._hello.capabilities ?? [])
-      .map((c) => `${c.name}${c.version}`)
-      .join(',')} clientId=${this._hello.clientId}`
-    this.debug('HELLO', debugMsg)
+    this.debug(
+      'HELLO',
+      `Received HELLO ${this._socket.remoteAddress}:${this._socket.remotePort} protocolVersion=${
+        this._hello.protocolVersion
+      } capabilities=${(this._hello.capabilities ?? [])
+        .map((c) => `${c.name}${c.version}`)
+        .join(',')} clientId=${this._hello.clientId}`
+    )
 
     if (this._remoteId === null) {
       this._remoteId = this._hello.id
@@ -432,9 +437,13 @@ export class Peer extends EventEmitter {
       payload instanceof Uint8Array
         ? bytesToInt(payload)
         : bytesToInt(payload[0] ?? Uint8Array.from([0]))
-    const reason = DISCONNECT_REASON[this._disconnectReason as number]
-    const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    this.debug('DISCONNECT', debugMsg, reason)
+    this.debug(
+      'DISCONNECT',
+      `DISCONNECT reason: ${DISCONNECT_REASON[this._disconnectReason as number]} ${
+        this._socket.remoteAddress
+      }:${this._socket.remotePort}`,
+      DISCONNECT_REASON[this._disconnectReason as number]
+    )
     this._disconnectWe = false
     this._socket.end()
   }
