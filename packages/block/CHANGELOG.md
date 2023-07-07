@@ -42,6 +42,30 @@ There is a third option `td` which is Merge specific and should normally not be 
 
 For the `Block` library we also updated the old concurrent `hardforkByBlockNumber` and `hardforkByTTD` options to a unified and simplified `setHardfork` option for the constructor, see PR [#2800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2800).
 
+### API Validation Methods Clean-Up
+
+We have cleaned up and unified the validation methods in the `Block` library, see PR [#2792](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2792).
+
+The `Block.validateTransactions()` method, previously overloaded with different return types depending on the input, has been split up into:
+
+```typescript
+Block.transactionsAreValid(): boolean
+Block.getTransactionsValidationErrors(): string[] // If you are interested in the errors, can also be used for validation by checking return array length
+```
+
+Other renamings:
+
+```typescript
+Block.validateTransactionsTrie(): Promise<boolean> // old
+Block.transactionsTrieIsValid(): Promise<boolean> // new
+
+Block.validateUnclesHash(): boolean // old
+Block.uncleHashIsValid(): boolean // new
+
+Block.validateWithdrawalsTrie(): Promise<boolean> // old
+Block.withdrawalsTrieIsValid(): Promise<boolean> // new
+```
+
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
 While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.

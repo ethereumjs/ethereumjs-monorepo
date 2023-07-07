@@ -26,6 +26,24 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### API Validation Methods Clean-Up
+
+We have cleaned up and unified the validation methods in the `Tx` library, see PR [#2792](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2792).
+
+The `Tx.validate()` method (so: for all tx types), previously overloaded with different return types depending on the input, has been split up into:
+
+```typescript
+Tx.isValid(): boolean
+Tx.getValidationErrors(): string[] // If you are interested in the errors, can also be used for validation by checking return array length
+```
+
+The overloaded method `Tx.getMessageToSign()` has been split up into two methods:
+
+```typescript
+getMessageToSign(): Uint8Array | Uint8Array[] // For the unhashed message
+getHashedMessageToSign(): Uint8Array // For the hashed message
+```
+
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
 While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.

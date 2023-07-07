@@ -63,6 +63,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 
 ### Other Changes
 
+- Remove deprecated `getHead()` method, PR [#2706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2706)
 - Fixed clique signer reorg scenario, PR [#2610](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2610)
 - Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
 - Save iterator head to last successfuly executed even on errors, PR [#2680](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2680)
