@@ -1,5 +1,4 @@
-import { short } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, equalsBytes, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
@@ -28,7 +27,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
 
   const numPairs = Math.floor(inputData.length / 288)
 
-  const gasUsedPerPair = opts._common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
+  const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G2MulGas', 2537) ?? BigInt(0)
   const gasDiscountArray = gasDiscountPairs
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier

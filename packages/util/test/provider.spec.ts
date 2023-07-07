@@ -37,14 +37,7 @@ describe('fetchFromProvider', () => {
       })
       assert.fail('should throw')
     } catch (err: any) {
-      if (global.fetch !== undefined) {
-        assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
-      } else {
-        assert.ok(
-          err.toString().includes(providerUrl.split('//')[1]),
-          'tries to fetch from specified provider url'
-        )
-      }
+      assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
     }
   })
 })

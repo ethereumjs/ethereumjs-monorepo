@@ -9,13 +9,14 @@ import {
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   equalsBytes,
+  hexToBytes,
   intToBytes,
   short,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -30,6 +31,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { EVM } from '@ethereumjs/evm'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 
@@ -60,12 +62,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (setHardfork !== false || this._setHardfork !== false) {
     const setHardforkUsed = setHardfork ?? this._setHardfork
     if (setHardforkUsed === true) {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         timestamp: block.header.timestamp,
       })
     } else if (typeof setHardforkUsed !== 'boolean') {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         td: setHardforkUsed,
         timestamp: block.header.timestamp,
@@ -78,7 +80,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -92,8 +94,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
-    block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
+    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
+    block.header.number === this.common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
@@ -150,7 +152,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       ...block,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this._common })
+    block = Block.fromBlockData(blockData, { common: this.common })
   } else {
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
@@ -217,7 +219,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -258,12 +260,12 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
-  if (this._common.isActivatedEIP(4895)) {
+  if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
-  if (block._common.consensusType() === ConsensusType.ProofOfWork) {
+  if (block.common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
 
@@ -292,8 +294,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this._common.isActivatedEIP(1559) === true) {
-      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
+    if (this.common.isActivatedEIP(1559) === true) {
+      maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -363,7 +365,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const minerReward = this._common.param('pow', 'minerReward')
+  const minerReward = this.common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
@@ -418,7 +420,7 @@ export async function rewardAccount(evm: EVM, address: Address, reward: bigint):
 export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
-      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
+      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),
     bigIntToBytes(receipt.cumulativeBlockGasUsed),
     receipt.bitvector,
     receipt.logs,
@@ -430,7 +432,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
 
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
-  return concatBytesNoTypeCheck(intToBytes(txType), encoded)
+  return concatBytes(intToBytes(txType), encoded)
 }
 
 /**
@@ -438,7 +440,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
  */
 async function _applyDAOHardfork(evm: EVM) {
   const state = evm.stateManager
-  const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
+  const DAORefundContractAddress = new Address(unprefixedHexToBytes(DAORefundContract))
   if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
     await evm.journal.putAccount(DAORefundContractAddress, new Account())
   }
@@ -449,7 +451,7 @@ async function _applyDAOHardfork(evm: EVM) {
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const address = new Address(hexToBytes(addr))
+    const address = new Address(unprefixedHexToBytes(addr))
     let account = await state.getAccount(address)
     if (account === undefined) {
       account = new Account()

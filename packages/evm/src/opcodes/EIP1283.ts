@@ -1,4 +1,4 @@
-import { equalsBytes } from 'ethereum-cryptography/utils.js'
+import { equalsBytes } from '@ethereumjs/util'
 
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'

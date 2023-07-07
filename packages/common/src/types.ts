@@ -43,6 +43,7 @@ export interface GenesisBlockConfig {
   nonce: string
   extraData: string
   baseFeePerGas?: string
+  excessDataGas?: string
 }
 
 export interface HardforkConfig {

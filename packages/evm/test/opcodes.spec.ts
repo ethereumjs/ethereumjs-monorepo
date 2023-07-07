@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'
@@ -13,7 +12,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID),
@@ -26,7 +24,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     let evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
@@ -37,7 +34,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
     evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(CHAINID)!.name,
@@ -50,7 +46,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     let evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(DIFFICULTY_PREVRANDAO)!.name,
@@ -61,7 +56,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(DIFFICULTY_PREVRANDAO)!.name,
@@ -74,7 +68,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, eips: [2315] })
     let evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(BEGINSUB)!.name,
@@ -85,7 +78,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
     assert.equal(
       evm.getActiveOpcodes().get(BEGINSUB),
@@ -98,7 +90,6 @@ describe('EVM -> getActiveOpcodes()', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const evm = await EVM.create({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     common.setHardfork(Hardfork.Byzantium)

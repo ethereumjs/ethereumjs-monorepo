@@ -9,7 +9,7 @@ const BLOCK_FIXTURE = 'benchmarks/fixture/blocks-prestate.json'
 
 const runBlock = async (vm: VM, block: Block, receipts: any) => {
   await (
-    await vm.copy()
+    await vm.shallowCopy()
   ).runBlock({
     block,
     generate: true,

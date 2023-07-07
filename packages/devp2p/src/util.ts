@@ -1,12 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
-import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak.js'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { bytesToHex, concatBytes, equalsBytes } from 'ethereum-cryptography/utils.js'
 
 import type { ETH } from './protocol/eth.js'
 import type { LES } from './protocol/les.js'
+const { debug: createDebugLogger } = debugDefault
 
 export const devp2pDebug = createDebugLogger('devp2p')
 
@@ -126,25 +127,25 @@ export function toNewUint8Array(buf: Uint8Array): Uint8Array {
 
 /*************************** ************************************************************/
 // Methods borrowed from `node-ip` by Fedor Indutny (https://github.com/indutny/node-ip)
-// and modified to use Uint8Arrays instead of Uint8Arrays
-export const ipToString = (bytes: Uint8Array, offset?: number, length?: number) => {
+// and modified to use Uint8Arrays instead of Buffers
+export const ipToString = (bytes: Uint8Array, offset?: number, length?: number): string => {
   offset = offset !== undefined ? ~~offset : 0
   length = length ?? bytes.length - offset
 
-  let result: any = []
-  let i
+  const tempArray: Array<number | string> = []
+  let result: string = ''
   if (length === 4) {
     // IPv4
-    for (i = 0; i < length; i++) {
-      result.push(bytes[offset + i])
+    for (let i = 0; i < length; i++) {
+      tempArray.push(bytes[offset + i])
     }
-    result = result.join('.')
+    result = tempArray.join('.')
   } else if (length === 16) {
     // IPv6
-    for (i = 0; i < length; i += 2) {
-      result.push(new DataView(bytes.buffer).getUint16(offset + i).toString(16))
+    for (let i = 0; i < length; i += 2) {
+      tempArray.push(new DataView(bytes.buffer).getUint16(offset + i).toString(16))
     }
-    result = result.join(':')
+    result = tempArray.join(':')
     result = result.replace(/(^|:)0(:0)*:0(:|$)/, '$1::$3')
     result = result.replace(/:{3,4}/, '::')
   }
@@ -155,18 +156,18 @@ export const ipToString = (bytes: Uint8Array, offset?: number, length?: number) 
 const ipv4Regex = /^(\d{1,3}\.){3,3}\d{1,3}$/
 const ipv6Regex = /^(::)?(((\d{1,3}\.){3}(\d{1,3}){1})?([0-9a-f]){0,4}:{0,2}){1,8}(::)?$/i
 
-export const isV4Format = function (ip: string) {
+export const isV4Format = function (ip: string): boolean {
   return ipv4Regex.test(ip)
 }
 
-export const isV6Format = function (ip: string) {
+export const isV6Format = function (ip: string): boolean {
   return ipv6Regex.test(ip)
 }
 
-export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0) => {
+export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0): Uint8Array => {
   offset = ~~offset
 
-  let result
+  let result: Uint8Array
 
   if (isV4Format(ip)) {
     result = bytes ?? new Uint8Array(offset + 4)
@@ -183,11 +184,11 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0) =>
 
       if (isv4) {
         v4Bytes = ipToBytes(sections[i])
-        sections[i] = bytesToHex(v4Bytes.subarray(0, 2))
+        sections[i] = bytesToUnprefixedHex(v4Bytes.subarray(0, 2))
       }
 
       if (v4Bytes.length > 0 && ++i < 8) {
-        sections.splice(i, 0, bytesToHex(v4Bytes.subarray(2, 4)))
+        sections.splice(i, 0, bytesToUnprefixedHex(v4Bytes.subarray(2, 4)))
       }
     }
 
@@ -210,9 +211,11 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0) =>
       result[offset++] = (word >> 8) & 0xff
       result[offset++] = word & 0xff
     }
+  } else {
+    throw Error(`Invalid ip format: ${ip}`)
   }
 
-  if (!result) {
+  if (result === undefined) {
     throw Error(`Invalid ip address: ${ip}`)
   }
 

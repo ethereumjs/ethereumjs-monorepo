@@ -265,9 +265,9 @@ ___
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`EEIInterface`](EEIInterface.md)
+▸ **shallowCopy**(): [`EEIInterface`](EEIInterface.md)
 
 #### Returns
 

@@ -4,8 +4,8 @@
  */
 
 import { NOISE } from '@chainsafe/libp2p-noise'
-import * as Libp2p from 'libp2p'
-import * as Bootstrap from 'libp2p-bootstrap'
+import Libp2p from 'libp2p'
+import Bootstrap from 'libp2p-bootstrap'
 
 import type { Multiaddr } from 'multiaddr'
 import type PeerId from 'peer-id'

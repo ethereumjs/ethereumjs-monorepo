@@ -150,9 +150,9 @@ ___
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`StateManager`](StateManager.md)
+▸ **shallowCopy**(): [`StateManager`](StateManager.md)
 
 #### Returns
 

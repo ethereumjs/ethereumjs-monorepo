@@ -1,7 +1,6 @@
 import { Common } from '@ethereumjs/common'
 import { genesisStateRoot } from '@ethereumjs/trie'
-import { parseGethGenesisState } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/blockchain.js'
@@ -25,7 +24,7 @@ describe('[Utils/Parse]', () => {
     const stateRoot = await genesisStateRoot(genesisState)
     assert.equal(
       bytesToHex(stateRoot),
-      '52e628c7f35996ba5a0402d02b34535993c89ff7fc4c430b2763ada8554bee62',
+      '0x52e628c7f35996ba5a0402d02b34535993c89ff7fc4c430b2763ada8554bee62',
       'kiln stateRoot matches'
     )
   })
@@ -36,7 +35,7 @@ describe('[Utils/Parse]', () => {
 
     assert.equal(
       bytesToHex(genesisHash),
-      '51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
+      '0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
       'kiln genesis hash matches'
     )
   })

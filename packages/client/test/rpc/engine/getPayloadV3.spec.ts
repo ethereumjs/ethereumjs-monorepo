@@ -6,17 +6,17 @@ import {
   Address,
   blobsToCommitments,
   blobsToProofs,
-  bytesToPrefixedHexString,
+  bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  hexStringToBytes,
+  hexToBytes,
   initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/eip4844.json')
+import * as genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -64,9 +64,9 @@ tape(`${method}: call with unknown payloadId`, async (t) => {
 tape(`${method}: call with known payload`, async (t) => {
   // Disable stateroot validation in TxPool since valid state root isn't available
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
+  const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
   DefaultStateManager.prototype.setStateRoot = function (): any {}
-  DefaultStateManager.prototype.copy = function () {
+  DefaultStateManager.prototype.shallowCopy = function () {
     return this
   }
   const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -74,7 +74,7 @@ tape(`${method}: call with known payload`, async (t) => {
     hardfork: Hardfork.Cancun,
   })
   common.setHardfork(Hardfork.Cancun)
-  const pkey = hexStringToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+  const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
   const address = Address.fromPrivateKey(pkey)
   await service.execution.vm.stateManager.putAccount(address, new Account())
   const account = await service.execution.vm.stateManager.getAccount(address)
@@ -109,7 +109,7 @@ tape(`${method}: call with known payload`, async (t) => {
     { common }
   ).sign(pkey)
 
-  ;(service.txPool as any).vm._common.setHardfork(Hardfork.Cancun)
+  ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
   await service.txPool.add(tx, true)
   req = params('engine_getPayloadV3', [payloadId])
   expectRes = (res: any) => {
@@ -127,12 +127,12 @@ tape(`${method}: call with known payload`, async (t) => {
       'equal commitments, proofs and blobs'
     )
     t.equal(blobs.length, 1, '1 blob should be returned')
-    t.equal(proofs[0], bytesToPrefixedHexString(txProofs[0]), 'proof should match')
-    t.equal(commitments[0], bytesToPrefixedHexString(txCommitments[0]), 'commitment should match')
-    t.equal(blobs[0], bytesToPrefixedHexString(txBlobs[0]), 'blob should match')
+    t.equal(proofs[0], bytesToHex(txProofs[0]), 'proof should match')
+    t.equal(commitments[0], bytesToHex(txCommitments[0]), 'commitment should match')
+    t.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
   }
 
   await baseRequest(t, server, req, 200, expectRes, false)
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-  DefaultStateManager.prototype.copy = originalStateManagerCopy
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
 })

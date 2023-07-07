@@ -8,7 +8,7 @@ import {
   concatBytes,
   ecrecover,
   equalsBytes,
-  hexStringToBytes,
+  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -31,8 +31,8 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
 
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
+const TRANSACTION_TYPE_BYTES = hexToBytes(
+  '0x' + TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
 )
 
 /**
@@ -359,7 +359,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return FeeMarketEIP1559Transaction.fromTxData(

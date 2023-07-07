@@ -1,7 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CLIQUE_NONCE_AUTH } from '../src/consensus/clique.js'
@@ -79,7 +78,7 @@ describe('reorg tests', () => {
     })
 
     const extraData = hexToBytes(
-      '506172697479205465636820417574686f7269747900000000000000000000002bbf886181970654ed46e3fae0ded41ee53fec702c47431988a7ae80e6576f3552684f069af80ba11d36327aaf846d470526e4a1c461601b2fd4ebdcdc2b734a01'
+      '0x506172697479205465636820417574686f7269747900000000000000000000002bbf886181970654ed46e3fae0ded41ee53fec702c47431988a7ae80e6576f3552684f069af80ba11d36327aaf846d470526e4a1c461601b2fd4ebdcdc2b734a01'
     ) // from goerli block 1
     const { gasLimit } = genesisBlock.header
     const base = { extraData, gasLimit, difficulty: 1 }

@@ -1,9 +1,9 @@
 import {
   MapDB,
-  bytesToPrefixedHexString,
+  bytesToHex,
   bytesToUtf8,
   equalsBytes,
-  hexStringToBytes,
+  hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { createHash } from 'crypto'
@@ -24,7 +24,7 @@ describe('SecureTrie', () => {
   })
 
   it('copy trie', async () => {
-    const t = trie.copy()
+    const t = trie.shallowCopy()
     const res = await t.get(k)
     assert.ok(equalsBytes(v, res!))
   })
@@ -52,7 +52,7 @@ describe('secure tests', () => {
           : (null as unknown as Uint8Array)
       await trie.put(utf8ToBytes(row[0]!), val)
     }
-    assert.equal(bytesToPrefixedHexString(trie.root()), secureTrieTests.tests.emptyValues.root)
+    assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.emptyValues.root)
   })
 
   it('branchingTests', async () => {
@@ -64,7 +64,7 @@ describe('secure tests', () => {
           : (null as unknown as Uint8Array)
       await trie.put(utf8ToBytes(row[0]!), val)
     }
-    assert.equal(bytesToPrefixedHexString(trie.root()), secureTrieTests.tests.branchingTests.root)
+    assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.branchingTests.root)
   })
 
   /**
@@ -73,11 +73,11 @@ describe('secure tests', () => {
     for (const row of secureTrieTests.tests.jeff.in) {
       let val = row[1]
       if (val !== undefined && val !== null) {
-        val = hexStringToBytes(row[1].slice(2))
+        val = hexToBytes(row[1].slice(2))
       }
-      await trie.put(hexStringToBytes(row[0].slice(2)), val)
+      await trie.put(hexToBytes(row[0].slice(2)), val)
     }
-    assert.equal(bytesToPrefixedHexString(trie.root()), secureTrieTests.tests.jeff.root)
+    assert.equal(bytesToHex(trie.root()), secureTrieTests.tests.jeff.root)
   })*/
 
   it('put fails if the key is the ROOT_DB_KEY', async () => {
@@ -94,38 +94,38 @@ describe('secure tests', () => {
 })
 
 const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
-const a = hexStringToBytes(
-  'f8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
+const a = hexToBytes(
+  '0xf8448080a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
 )
-const ak = hexStringToBytes('095e7baea6a6c7c4c2dfeb977efac326af552d87')
-const b = hexStringToBytes(
-  'f844802ea056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab'
+const ak = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
+const b = hexToBytes(
+  '0xf844802ea056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab'
 )
-const bk = hexStringToBytes('945304eb96065b2a98b57a48a06ae28d285a71b5')
-const c = hexStringToBytes(
-  'f84c80880de0b6b3a7640000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+const bk = hexToBytes('0x945304eb96065b2a98b57a48a06ae28d285a71b5')
+const c = hexToBytes(
+  '0xf84c80880de0b6b3a7640000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 )
-const ck = hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+const ck = hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 // checkpoint
 // checkpoint
 // commit
-const d = hexStringToBytes(
-  'f8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
+const d = hexToBytes(
+  '0xf8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
 )
-const dk = hexStringToBytes('095e7baea6a6c7c4c2dfeb977efac326af552d87')
-const e = hexStringToBytes(
-  'f8478083010851a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab'
+const dk = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
+const e = hexToBytes(
+  '0xf8478083010851a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0db94dc4aab9b6a1a11956906ea34f3252f394576aece12199b23b269bb2738ab'
 )
-const ek = hexStringToBytes('945304eb96065b2a98b57a48a06ae28d285a71b5')
-const f = hexStringToBytes(
-  'f84c01880de0b6b3540df72ca056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+const ek = hexToBytes('0x945304eb96065b2a98b57a48a06ae28d285a71b5')
+const f = hexToBytes(
+  '0xf84c01880de0b6b3540df72ca056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 )
-const fk = hexStringToBytes('a94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+const fk = hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
 // commit
-const g = hexStringToBytes(
-  'f8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
+const g = hexToBytes(
+  '0xf8488084535500b1a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0a155280bc3c09fd31b0adebbdd4ef3d5128172c0d2008be964dc9e10e0f0fedf'
 )
-const gk = hexStringToBytes('095e7baea6a6c7c4c2dfeb977efac326af552d87')
+const gk = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
 
 describe('secure tests should not crash', () => {
   it('should work', async () => {
@@ -150,7 +150,7 @@ describe('SecureTrie.copy', () => {
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    const trieCopy = trie.copy()
+    const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key2'))
     assert.equal(bytesToUtf8(value!), 'value2')
   })
@@ -161,7 +161,7 @@ describe('SecureTrie.copy', () => {
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    const trieCopy = trie.copy()
+    const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
     assert.equal(bytesToUtf8(value!), 'value1')
   })
@@ -176,7 +176,7 @@ describe('SecureTrie.copy', () => {
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     trie.checkpoint()
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
-    const trieCopy = trie.copy()
+    const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
     assert.equal(bytesToUtf8(value!), 'value1')
   })

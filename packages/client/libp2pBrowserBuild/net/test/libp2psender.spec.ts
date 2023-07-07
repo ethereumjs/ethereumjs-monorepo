@@ -1,4 +1,4 @@
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Libp2pSender } from '../../../src/net/protocol'
@@ -15,7 +15,7 @@ tape('[Libp2pSender]', (t) => {
       t.equal(bytesToHex(receiver.status.id), '05', 'status getter')
       t.end()
     })
-    sender.sendStatus({ id: hexStringToBytes('05') })
+    sender.sendStatus({ id: hexToBytes('0x05') })
   })
 
   t.test('should send/receive message', (t) => {
@@ -27,7 +27,7 @@ tape('[Libp2pSender]', (t) => {
       t.equal(bytesToHex(message.payload), '05', 'message received (payload)')
       t.end()
     })
-    sender.sendMessage(1, hexStringToBytes('05'))
+    sender.sendMessage(1, hexToBytes('0x05'))
   })
 
   t.test('should catch errors', (t) => {

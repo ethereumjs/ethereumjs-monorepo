@@ -1,12 +1,13 @@
-import { LegacyTransaction, Transaction } from '../dist/cjs'
+import { LegacyTransaction } from '../dist/cjs'
 import { toBytes } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 
 const txData = toBytes(
   '0xf9010b82930284d09dc30083419ce0942d18de92e0f9aee1a29770c3b15c6cf8ac5498e580b8a42f43f4fb0000000000000000000000000000000000000000000000000000016b78998da900000000000000000000000000000000000000000000000000000000000cb1b70000000000000000000000000000000000000000000000000000000000000fa00000000000000000000000000000000000000000000000000000000001363e4f00000000000000000000000000000000000000000000000000000000000186a029a0fac36e66d329af0e831b2e61179b3ec8d7c7a8a2179e303cfed3364aff2bc3e4a07cb73d56e561ccbd838818dd3dea5fa0b5158577ffc61c0e6ec1f0ed55716891'
 )
 
-const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
+const common = Common.custom({ chainId: 3 })
+common.setHardfork(Hardfork.Petersburg)
 const tx = LegacyTransaction.fromSerializedTx(txData, { common })
 
 if (

@@ -1,7 +1,7 @@
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { DISCONNECT_REASONS } from '../../src/rlpx/peer.js'
+import { DISCONNECT_REASON } from '../../src/types.js'
 
 import * as util from './util.js'
 
@@ -28,7 +28,7 @@ describe('RLPx simulator tests', () => {
 
     rlpxs[0].on('peer:added', async () => {
       const peer = {
-        id: hexToBytes('abcd'),
+        id: hexToBytes('0xabcd'),
         address: '127.0.0.1',
         udpPort: 30308,
         tcpPort: null,
@@ -54,7 +54,7 @@ describe('RLPx simulator tests', () => {
       rlpxs[0].once('peer:removed', async (peer: any, reason: any) => {
         assert.equal(
           reason,
-          DISCONNECT_REASONS.CLIENT_QUITTING,
+          DISCONNECT_REASON.CLIENT_QUITTING,
           'should close with CLIENT_QUITTING disconnect reason'
         )
         assert.equal(rlpxs[0]._getOpenSlots(), 10, 'should have maxPeers open slots left')

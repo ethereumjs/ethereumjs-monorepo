@@ -1,7 +1,6 @@
 import {
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   ecrecover,
   publicToAddress,
   setLengthLeft,
@@ -15,7 +14,7 @@ import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
-  const gasUsed = opts._common.param('gasPrices', 'ecRecover')
+  const gasUsed = opts.common.param('gasPrices', 'ecRecover')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run ECRECOVER (0x01) precompile data=${short(opts.data)} length=${
@@ -74,7 +73,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
   }
   const address = setLengthLeft(publicToAddress(publicKey), 32)
   if (opts._debug !== undefined) {
-    opts._debug(`ECRECOVER (0x01) return address=${bytesToPrefixedHexString(address)}`)
+    opts._debug(`ECRECOVER (0x01) return address=${bytesToHex(address)}`)
   }
   return {
     executionGasUsed: gasUsed,

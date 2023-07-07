@@ -1,4 +1,4 @@
-import { intToPrefixedHexString, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
+import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums.js'
 
@@ -37,6 +37,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     gasLimit,
     coinbase,
     baseFeePerGas,
+    excessDataGas,
   }: {
     name: string
     config: any
@@ -45,6 +46,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     gasLimit: string
     coinbase: string
     baseFeePerGas: string
+    excessDataGas: string
   } = json
   let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
     json
@@ -57,7 +59,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
   }
   // geth may use number for timestamp
   if (!isHexPrefixed(timestamp)) {
-    timestamp = intToPrefixedHexString(parseInt(timestamp))
+    timestamp = intToHex(parseInt(timestamp))
   }
   // geth may not give us a nonce strictly formatted to an 8 byte hex string
   if (nonce.length !== 18) {
@@ -85,6 +87,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       mixHash,
       coinbase,
       baseFeePerGas,
+      excessDataGas,
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],

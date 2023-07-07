@@ -45,7 +45,7 @@ const { Level } = require('level')
 
 const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
 
-const common = new Common({ chain: Chain.Ropsten })
+const common = new Common({ chain: Chain.Mainnet })
 const db = new Level(gethDbPath)
 // Use the safe static constructor which awaits the init method
 const blockchain = Blockchain.create({ common, db })

@@ -229,7 +229,7 @@ async function test() {
   console.log(`storageRoot: ${bufferToHex(acc.stateRoot)}`)
   console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
 
-  const storageTrie = trie.copy()
+  const storageTrie = trie.shallowCopy()
   storageTrie.root(acc.stateRoot)
 
   console.log('------Storage------')

@@ -1,4 +1,4 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { EthereumClient } from '../../src/client'
@@ -34,7 +34,7 @@ tape('[Util/RPC]', (t) => {
         const req = { id: 1, method: 'eth_getCanonicalHeadBlock', params: [] }
         const resp = {
           id: 1,
-          result: { test: bytesToPrefixedHexString(new Uint8Array(64).fill(1)) },
+          result: { test: bytesToHex(new Uint8Array(64).fill(1)) },
         }
         const reqBulk = [req, req]
         const respBulk = [resp, { id: 2, error: { err0: '456' } }]

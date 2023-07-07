@@ -1,5 +1,3 @@
-import { equalsBytes } from 'ethereum-cryptography/utils.js'
-
 import {
   generateAddress,
   generateAddress2,
@@ -7,7 +5,7 @@ import {
   privateToAddress,
   pubToAddress,
 } from './account.js'
-import { bigIntToBytes, bytesToBigInt, bytesToPrefixedHexString, toBytes, zeros } from './bytes.js'
+import { bigIntToBytes, bytesToBigInt, bytesToHex, equalsBytes, toBytes, zeros } from './bytes.js'
 
 /**
  * Handling and generating Ethereum addresses
@@ -121,7 +119,7 @@ export class Address {
    * Returns hex encoding of address.
    */
   toString(): string {
-    return bytesToPrefixedHexString(this.bytes)
+    return bytesToHex(this.bytes)
   }
 
   /**

@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { hexStringToBytes } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -15,7 +15,7 @@ const common = new Common({
   hardfork: Hardfork.London,
 })
 
-const pKey = hexStringToBytes('4646464646464646464646464646464646464646464646464646464646464646')
+const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 
 const unsignedLegacyTx = LegacyTransaction.fromTxData({})
 const signedLegacyTx = unsignedLegacyTx.sign(pKey)
@@ -118,7 +118,11 @@ describe('[TransactionFactory]: Basic functions', () => {
           `round-trip serialization should match (${txType.name})`
         )
       } else {
-        assert.deepEqual(tx.raw(), rawTx, `round-trip raw() creation should match (${txType.name})`)
+        assert.deepEqual(
+          tx.raw(),
+          rawTx as Uint8Array[],
+          `round-trip raw() creation should match (${txType.name})`
+        )
       }
     }
   })

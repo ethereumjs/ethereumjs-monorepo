@@ -7,8 +7,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   bytesToHex,
-  bytesToPrefixedHexString,
-  hexStringToBytes,
+  hexToBytes,
   initKZG,
   parseGethGenesisState,
   randomBytes,
@@ -21,7 +20,7 @@ import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
-import * as readline from 'readline'
+import readline from 'readline'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
@@ -44,7 +43,7 @@ import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
-const networks = Object.entries(Common._getInitializedChains().names)
+const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
@@ -453,6 +452,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   const client = await EthereumClient.create({
     config,
     blockchain,
+    genesisState: customGenesisState,
     ...dbs,
   })
   await client.open()
@@ -625,7 +625,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
-      const privKey = hexStringToBytes(acc)
+      const privKey = hexToBytes('0x' + acc) // See docs: acc has to be non-zero prefixed in the file
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
@@ -646,7 +646,7 @@ function generateAccount(): Account {
   console.log('='.repeat(50))
   console.log('Account generated for mining blocks:')
   console.log(`Address: ${address}`)
-  console.log(`Private key: ${bytesToPrefixedHexString(privKey)}`)
+  console.log(`Private key: ${bytesToHex(privKey)}`)
   console.log('WARNING: Do not use this account for mainnet funds')
   console.log('='.repeat(50))
   return [address, privKey]

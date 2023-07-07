@@ -1,7 +1,7 @@
 /**
  * @module util
  */
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { platform } from 'os'
 
 import { version as packageVersion } from '../../package.json'
@@ -10,7 +10,7 @@ export * from '../../src/util/parse'
 
 export function short(bytes: Uint8Array | string): string {
   if (bytes === null || bytes === undefined || bytes === '') return ''
-  const bytesString = bytes instanceof Uint8Array ? bytesToPrefixedHexString(bytes) : bytes
+  const bytesString = bytes instanceof Uint8Array ? bytesToHex(bytes) : bytes
   let str = bytesString.substring(0, 6) + '…'
   if (bytesString.length === 66) {
     str += bytesString.substring(62)

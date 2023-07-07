@@ -9,81 +9,10 @@ import { BanList } from './ban-list.js'
 import { KBucket } from './kbucket.js'
 import { Server as DPTServer } from './server.js'
 
+import type { DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
-
-export interface PeerInfo {
-  id?: Uint8Array
-  address?: string
-  udpPort?: number | null
-  tcpPort?: number | null
-}
-
-export interface DPTOptions {
-  /**
-   * Timeout for peer requests
-   *
-   * Default: 10s
-   */
-  timeout?: number
-
-  /**
-   * Network info to send a long a request
-   *
-   * Default: 0.0.0.0, no UDP or TCP port provided
-   */
-  endpoint?: PeerInfo
-
-  /**
-   * Function for socket creation
-   *
-   * Default: dgram-created socket
-   */
-  createSocket?: Function
-
-  /**
-   * Interval for peer table refresh
-   *
-   * Default: 60s
-   */
-  refreshInterval?: number
-
-  /**
-   * Toggles whether or not peers should be queried with 'findNeighbours'
-   * to discover more peers
-   *
-   * Default: true
-   */
-  shouldFindNeighbours?: boolean
-
-  /**
-   * Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists
-   *
-   * Default: false
-   */
-  shouldGetDnsPeers?: boolean
-
-  /**
-   * Max number of candidate peers to retrieve from DNS records when
-   * attempting to discover new nodes
-   *
-   * Default: 25
-   */
-  dnsRefreshQuantity?: number
-
-  /**
-   * EIP-1459 ENR tree urls to query for peer discovery
-   *
-   * Default: (network dependent)
-   */
-  dnsNetworks?: string[]
-
-  /**
-   * DNS server to query DNS TXT records from for peer discovery
-   */
-  dnsAddr?: string
-}
 
 export class DPT extends EventEmitter {
   privateKey: Uint8Array
@@ -199,7 +128,7 @@ export class DPT extends EventEmitter {
     }
   }
 
-  async addPeer(obj: PeerInfo): Promise<any> {
+  async addPeer(obj: PeerInfo): Promise<PeerInfo> {
     if (this.banlist.has(obj)) throw new Error('Peer is banned')
     this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
@@ -231,11 +160,11 @@ export class DPT extends EventEmitter {
     return this._kbucket.closest(id)
   }
 
-  removePeer(obj: any) {
+  removePeer(obj: string | PeerInfo | Uint8Array) {
     this._kbucket.remove(obj)
   }
 
-  banPeer(obj: string | Uint8Array | PeerInfo, maxAge?: number) {
+  banPeer(obj: string | PeerInfo | Uint8Array, maxAge?: number) {
     this.banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }

@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { type Address, bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { precompile01 } from './01-ecrecover.js'
 import { precompile02 } from './02-sha256.js'
@@ -23,7 +23,6 @@ import { precompile14 } from './14-bls12-map-fp2-to-g2.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 interface PrecompileEntry {
   address: string
@@ -254,7 +253,7 @@ function getActivePrecompiles(
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
-        bytesToHex(precompile.address.bytes),
+        bytesToUnprefixedHex(precompile.address.bytes),
         'function' in precompile ? precompile.function : undefined
       )
     }

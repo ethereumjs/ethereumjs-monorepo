@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { multiaddr } from 'multiaddr'
-import * as PeerId from 'peer-id'
+import PeerId from 'peer-id'
 
 import { Peer } from '../../../src/net/peer/peer'
 import { Libp2pSender } from '../libp2psender'
