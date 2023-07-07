@@ -76,6 +76,8 @@ The following changes are included:
 - Update blob tx type to 0x03, PR [#2363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
 - Fix the deserialization of blob txs and add no empty blobs validation, PR [#2640](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2640)
 - Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
+- Update c-kzg to big endian implementation (versioned hashes), PR [#2746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2746)
+- Update the kzg validation and replace trusted setup with latest (devnet6), PR [#2756](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2756)
 
 ### Buffer -> Uint8Array
 

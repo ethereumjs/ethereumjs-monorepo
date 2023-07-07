@@ -26,13 +26,27 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### New API to set Hardforks
+
+Our APIs to (re-)set a a hardfork within a library had grown old over all changes on how this is done over the years. 😂
+
+We therefore removed the outdated `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` methods in `@ethereumjs/common` (artificially expanded with the option to also pass a `TD` or `timestamp`) with a more adequate `hardforkBy()` method flexibly taking in the adequate value type for a HF change, see PR [#2798](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2798):
+
+```typescript
+common.setHardforkBy({ blockNumber: 5000000n }) // Setting a mainnet common to a Block from `Byzantium` (and so: to `Byzantium` HF)
+common.setHardforkBy({ timestamp: 1681340000n }) // Setting a mainnet common to a post-Shanghai timestamp
+common.setHardforkBy({ blockNumber, timestamp }) // Setting a common with to a not pre-known HF using both block number and timestamp
+```
+
+There is a third option `td` which is Merge specific and should normally not be used except for a very rare set of dynamic Merge-HF scenarios.
+
 ### Browser Compatibility / Examples
 
 TODO: extra section on browser!!!
 
 ### Hybrid CJS/ESM Build
 
-We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
+We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786) and [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
 
 There are now two different build directories in our `dist` folder, being `dist/cjs` for the CommonJS and `dist/esm` for the `ESM` build. That means that direct imports (which you generally should try to avoid, rather open an issue on your import needs), needs an update within your code (do a `dist` or the like code search).
 
@@ -53,6 +67,8 @@ const common = new Common({ chain: Chain.Mainnet })
 ```
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+Side note: along this transition we also rewrote our whole test suite (yes!!!) to now work with [Vitest](https://vitest.dev/) instead of `Tape`.
 
 ### Buffer -> Uint8Array
 

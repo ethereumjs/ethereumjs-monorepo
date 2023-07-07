@@ -36,6 +36,22 @@ We have now further refactored this - see PR [#2649](https://github.com/ethereum
 
 So the optional `eei` option in the VM constructor now has been removed, a passed in `stateManager` now needs to adhere to a slightly expanded [EVMStateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts), which can be found in `@ethereumjs/common` (since used across the libraries).
 
+### New API to set Hardforks
+
+Our APIs to (re-)set a a hardfork within a library had grown old over all changes on how this is done over the years. 😂
+
+We therefore removed the outdated `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` methods in `@ethereumjs/common` (artificially expanded with the option to also pass a `TD` or `timestamp`) with a more adequate `hardforkBy()` method flexibly taking in the adequate value type for a HF change, see PR [#2798](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2798):
+
+```typescript
+common.setHardforkBy({ blockNumber: 5000000n }) // Setting a mainnet common to a Block from `Byzantium` (and so: to `Byzantium` HF)
+common.setHardforkBy({ timestamp: 1681340000n }) // Setting a mainnet common to a post-Shanghai timestamp
+common.setHardforkBy({ blockNumber, timestamp }) // Setting a common with to a not pre-known HF using both block number and timestamp
+```
+
+There is a third option `td` which is Merge specific and should normally not be used except for a very rare set of dynamic Merge-HF scenarios.
+
+For the `VM` library we also updated the old concurrent `hardforkByBlockNumber` and `hardforkByTTD` options to a unified and simplified `setHardfork` option for both the constructor and within the `VM.runBlock()` method, see PR [#2800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2800).
+
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
 While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
@@ -66,6 +82,8 @@ The following changes are included:
 - Integrate `dataGasUsed` block information for `VM.buildBlock()` and `VM.runTx()`, PR [#2363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
 - Add `dataGasUsed` to `txReceipt` and EVM execution result, PR [#2620](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2620)
 - Discard blob txs with missing blobs for block building, PR [#2765](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2765)
+- Fix `dataGasPrice` calculation in `VM.runTx()`, PR [#2779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2779)
+- Update c-kzg to big endian implementation (`0x0a` KZG point evaluation precompile in EVM), PR [#2746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2746)
 
 ### Buffer -> Uint8Array
 

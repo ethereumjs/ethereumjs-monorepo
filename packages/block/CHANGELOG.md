@@ -26,6 +26,22 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### New API to set Hardforks
+
+Our APIs to (re-)set a a hardfork within a library had grown old over all changes on how this is done over the years. 😂
+
+We therefore removed the outdated `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` methods in `@ethereumjs/common` (artificially expanded with the option to also pass a `TD` or `timestamp`) with a more adequate `hardforkBy()` method flexibly taking in the adequate value type for a HF change, see PR [#2798](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2798):
+
+```typescript
+common.setHardforkBy({ blockNumber: 5000000n }) // Setting a mainnet common to a Block from `Byzantium` (and so: to `Byzantium` HF)
+common.setHardforkBy({ timestamp: 1681340000n }) // Setting a mainnet common to a post-Shanghai timestamp
+common.setHardforkBy({ blockNumber, timestamp }) // Setting a common with to a not pre-known HF using both block number and timestamp
+```
+
+There is a third option `td` which is Merge specific and should normally not be used except for a very rare set of dynamic Merge-HF scenarios.
+
+For the `Block` library we also updated the old concurrent `hardforkByBlockNumber` and `hardforkByTTD` options to a unified and simplified `setHardfork` option for the constructor, see PR [#2800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2800).
+
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
 While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.

@@ -78,6 +78,7 @@ The following changes are included:
 - Fix the availability of versioned hashes in contract calls, PR [#2694](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2694)
 - Rename `DATAHASH` to `BLOBHASH`, PR [#2711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2711)
 - Add `dataGasUsed` to `txReceipt` and EVM execution result, PR [#2620](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2620)
+- Update c-kzg to big endian implementation (`0x0a` KZG point evaluation precompile), PR [#2746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2746)
 
 ### Buffer -> Uint8Array
 

@@ -30,6 +30,7 @@ The following changes are included:
 - Fix double runs of the block execution, PR [#2730](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2730)
 - Merge get blobs engine api into `getPayloadV3`, PR [#2650](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2650)
 - Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
+- Update the kzg validation and replace trusted setup with latest (devnet6), PR [#2756](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2756)
 
 ### Other Changes
 
@@ -42,6 +43,8 @@ The following changes are included:
 - Fix `newPayloadV3` engine API validations, PR [#2762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2762)
 - Fixes for block and blob building uncovered in devnet6, PR [#2763](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2763)
 - Discard blob txs with missing blobs for block building, PR [#2765](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2765)
+- Fix new payload excessDataGas/4844 validation, PR [#2784](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2784)
+- Remove unused `libp2p` transport layer (preserved for future re-introduction if there is demand 🙂), PR [#2756](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2758)
 
 ## 0.7.1 - 2023-04-20
 
