@@ -189,7 +189,9 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Migrate `fromEthersProvider()` to more general `fromJsonRpcProvider()` constructor, remove `Ethers` dependency, PR [#2663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2663)
+- Breaking: `Block._common` property has been renamed to `Block.common`, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 - While the main `new Block()` constructor should generally not be used (use the static constructor methods instead) just to mention: `withdrawals` and `opts` constructor arguments have been swapped, PR [#2715](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2715)
 
 ## 4.2.2 - 2023-04-20

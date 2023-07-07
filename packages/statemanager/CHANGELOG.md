@@ -133,8 +133,11 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - `EthersStateManager` now uses `Ethers` `v6`, PR [#2720](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2720)
 - Integrate an `OriginalStorage` cache, other VM/EVM EEI refactoring related changes, PR [#2702](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2702)
+- Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
+- Breaking: `StateManager._common` property has been renamed to `StateManager.common` and made public, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 
 ## 1.0.5 - 2023-04-20
 

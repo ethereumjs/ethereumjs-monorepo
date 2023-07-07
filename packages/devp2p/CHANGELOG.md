@@ -26,6 +26,16 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+### Improved Typing / API Changes
+
+Typing for the `devp2p` library has been significantly improved with PR [#2863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2863).
+
+This goes along with the following API changes:
+
+- Types and interfaces generally have been consolidated in a `types.ts` file (as in the other EthereumJS libraries)
+- Rename: `devp2p.DISCONNECT_REASONS` -> `devp2p.DISCONNECT_REASON`
+- Rename: `EthProtocol` -> `ProtocolType` (e.g. `ProtocolType.ETH`)
+
 ### Hybrid CJS/ESM Build
 
 We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
@@ -92,6 +102,10 @@ We have therefore decided to go "prefixed" by default, see PR [#2830](https://gi
 The methods `hexToBytes` and `bytesToHex`, also similar methods like `intToHex` now both take in prefixed hex strings and give prefixed strings as an output. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
 
 Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
+### Other Changes
+
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 
 ## 5.1.2 - 2023-04-20
 

@@ -82,7 +82,9 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Breaking: `DB` interface and `MapDB` implementation have been moved to [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) (for re-usage), PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669)
+- Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
 
 ## 5.0.5 - 2023-04-20
 

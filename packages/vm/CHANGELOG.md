@@ -94,6 +94,18 @@ The `0x20` opcode - previously wrongly named `SHA3` - has been renamed to `KECCA
 
 The `0x44` (old `DIFFICULTY`) opcode - is now named `PREVRANDAO` - starting with the `Paris` (Merge) HF.
 
+### Blockchain/VM: Removed genesis Dependency
+
+Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
+
+With this release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not neceesary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
+
+This goes along with some changes in Blockchain and VM API:
+
+- Blockchain: There is a new constructor option `genesisStateRoot` beside `genesisBlock` and `genesisState` for an alternative condensed way to provide the genesis state root directly
+- Blockchain: `genesisState(): GenesisState` method has been replaced by the async `getGenesisStateRoot(chainId: Chain): Promise<Uint8Array>` method
+- VM: `activateGenesisState?: boolean` constructor option has been replaced with a `genesisState?: GenesisState` option
+
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
 While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
@@ -186,8 +198,11 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Replace `rustbn.js` with wasm-compiled `rustbn-wasm` module (in EVM), PR [#2834](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2834)
 - Move KZG precompile address (in EVM) from `0x14` to `0x0a`, PR [#2811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2811)
+- Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
+- Breaking: `VM._common` property has been renamed to `VM.common`, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 
 ## 6.4.2 - 2023-04-20
 

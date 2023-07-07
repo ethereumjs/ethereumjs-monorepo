@@ -204,6 +204,7 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Migrate `fromEthersProvider()` to more general `fromJsonRpcProvider()` constructor, remove `Ethers` dependency, PR [#2663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2663)
 - EIP-4844: De-sszify 4844 blob transaction, PR [#2708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2708)
 - Normalize `toJSON()` for different tx types, PR [#2707](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2707)

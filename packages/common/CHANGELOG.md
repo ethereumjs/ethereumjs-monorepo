@@ -99,9 +99,12 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Remove deprecated `Ropsten` and `Rinkeby` networks, PR [#2813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2813)
 - Remove deprecated `nextHardforkBlock()`, `isNextHardforkBlock()` and `isHardforkBlock()` methods, PR [#2706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2706)
+- Breaking: `Common` does not inherit from `EventEmitter` directly any more but events have been moved to a dedicated property `events` (so do `common.events.on('hardforkChanged'), ...)` for listening), PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 - EIP-4844: Rename `DATAHASH` to `BLOBHASH`, PR [#2711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2711)
+- EIP-4844: Add `excessDataGas` field for 4844 genesis file parsing, PR [#2847](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2847)
 
 ## 3.1.2 - 2023-04-20
 

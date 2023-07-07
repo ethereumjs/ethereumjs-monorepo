@@ -95,6 +95,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Remove `@chainsafe/ssz` dependency, PR [#2717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2717)
 - Dedicated `db` and `mapDB` modules for DB abstraction support for upstream libraries (e.g. Blockchain), PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669)
 - Dedicated `kzg` module for KZG setup initialization across libraries, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)

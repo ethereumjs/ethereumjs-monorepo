@@ -36,6 +36,18 @@ By default the blockchain package is now using a [MapDB](https://github.com/ethe
 
 If you need a persistent data store for your use case you can have a look (and take over) the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
 
+### Blockchain/VM: Removed genesis Dependency
+
+Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
+
+With this release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not neceesary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
+
+This goes along with some changes in Blockchain and VM API:
+
+- Blockchain: There is a new constructor option `genesisStateRoot` beside `genesisBlock` and `genesisState` for an alternative condensed way to provide the genesis state root directly
+- Blockchain: `genesisState(): GenesisState` method has been replaced by the async `getGenesisStateRoot(chainId: Chain): Promise<Uint8Array>` method
+- VM: `activateGenesisState?: boolean` constructor option has been replaced with a `genesisState?: GenesisState` option
+
 ### Hybrid CJS/ESM Build
 
 We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
@@ -99,7 +111,10 @@ Please therefore check you code base on updating and ensure that values you are 
 
 ### Other Changes
 
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Remove deprecated `getHead()` method, PR [#2706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2706)
+- Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
+- Breaking: `Blockchain._common` property has been renamed to `Blockchain.common`, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 - Fixed clique signer reorg scenario, PR [#2610](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2610)
 - Fix handling of nested uint8Arrays in JSON in DB, PR [#2666](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2666)
 - Save iterator head to last successfuly executed even on errors, PR [#2680](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2680)
