@@ -174,6 +174,8 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 
 ### Other Changes
 
+- Replace `rustbn.js` with wasm-compiled `rustbn-wasm` module, PR [#2834](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2834)
+- Move KZG precompile address from `0x14` to `0x0a`, PR [#2811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2811)
 - Fix the gasCost logs in op code trace (`step` event) to better match Geth output and reflect dynamic gas changes, PR [#2686](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2686)
 - Better error handling for contract creation errors, PR [#2723](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2723)
 

@@ -174,6 +174,11 @@ VM.buildBlock()
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
+### Other Changes
+
+- Replace `rustbn.js` with wasm-compiled `rustbn-wasm` module (in EVM), PR [#2834](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2834)
+- Move KZG precompile address (in EVM) from `0x14` to `0x0a`, PR [#2811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2811)
+
 ## 6.4.2 - 2023-04-20
 
 ### Features

@@ -89,6 +89,7 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 
 ### Other Changes
 
+- Remove deprecated `Ropsten` and `Rinkeby` networks, PR [#2813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2813)
 - Remove deprecated `nextHardforkBlock()`, `isNextHardforkBlock()` and `isHardforkBlock()` methods, PR [#2706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2706)
 - EIP-4844: Rename `DATAHASH` to `BLOBHASH`, PR [#2711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2711)
 
