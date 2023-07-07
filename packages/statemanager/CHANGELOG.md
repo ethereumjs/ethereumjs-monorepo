@@ -36,7 +36,7 @@ To integrate an already existing StateManager implementation it is likely best t
 
 ### New Permanent Account and Storage LRU Caches
 
-This release comes with a significantly more elaborate caching mechanism for account and storage caches, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634).
+This release comes with a significantly more elaborate caching mechanism for account and storage caches, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2618](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2618).
 
 There are now two cache options available: an unbounded cache (`CacheType.ORDERED_MAP`) for short-lived usage scenarios (this one is the default cache) and a fixed-size cache (`CacheType.LRU`) for a long-lived large cache scenario.
 

@@ -70,6 +70,8 @@ We have added helper methods for "Buffer -> Uint8Array" conversions in the [@eth
 ### Other Changes
 
 - Remove `@chainsafe/ssz` dependency, PR [#2717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2717)
+- Dedicated `db` and `mapDB` modules for DB abstraction support for upstream libraries (e.g. Blockchain), PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669)
+- Dedicated `kzg` module for KZG setup initialization across libraries, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
 
 ## 8.0.6 - 2023-04-20
 

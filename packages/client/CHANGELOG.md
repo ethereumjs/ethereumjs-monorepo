@@ -29,6 +29,7 @@ The following changes are included:
 - Extend newPayloadV3 for blob versioned hashes checks, PR [#2716](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2716)
 - Fix double runs of the block execution, PR [#2730](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2730)
 - Merge get blobs engine api into `getPayloadV3`, PR [#2650](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2650)
+- Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
 
 ### Other Changes
 
@@ -37,6 +38,10 @@ The following changes are included:
 - Fix unclean shutdown scenario where SIGINT may come before client fully started, PR [#2677](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2677)
 - Fix PeerPool Memory Leak, PR [#2752](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2752)
 - Allow to disable transports and/or sync, PR [#2668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2668)
+- Fix `eth_getStorage` RPC method, PR [#2646](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2646)
+- Fix `newPayloadV3` engine API validations, PR [#2762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2762)
+- Fixes for block and blob building uncovered in devnet6, PR [#2763](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2763)
+- Discard blob txs with missing blobs for block building, PR [#2765](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2765)
 
 ## 0.7.1 - 2023-04-20
 

@@ -54,6 +54,25 @@ While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.or
 
 This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7)from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
 
+#### KZG Initialization -> @ethereumjs/util
+
+The global initialization method for the KZG setup has been moved to a dedicated [kzg.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/kzg.ts) module in `@ethereumjs/util` for easy reuse across the libraries, see PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567).
+
+The `initKZG()` method can be used as follows:
+
+```typescript
+// Make the kzg library available globally
+import * as kzg from 'c-kzg'
+import { initKZG } from '@ethereumjs/util'
+
+// Initialize the trusted setup
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
+```
+
+For further information on this see the respective section in `@ethereumjs-util` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util).
+
+#### Library Changes
+
 The following changes are included:
 
 - Fix the availability of versioned hashes in contract calls, PR [#2694](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2694)

@@ -32,10 +32,50 @@ While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.or
 
 This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7)from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
 
+#### KZG Initialization -> @ethereumjs/util
+
+The global initialization method for the KZG setup has been moved to a dedicated [kzg.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/kzg.ts) module in `@ethereumjs/util` for easy reuse across the libraries, see PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567).
+
+The `initKZG()` method can be used as follows:
+
+```typescript
+// Make the kzg library available globally
+import * as kzg from 'c-kzg'
+import { initKZG } from '@ethereumjs/util'
+
+// Initialize the trusted setup
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
+```
+
+For further information on this see the respective section in `@ethereumjs-util` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util).
+
+### Simple Blob Constructor Parameter
+
+We have added a new `blobsData` parameter to `BlobEIP4844TxData` which allows for an easier Tx initialization with arbitrary blob data, see PR [#2755](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2755).
+
+You can simply pass any arbitrary data to this new data parameter, and separate blobs are automatically extracted and `kzgCommitments` and `versionedHashes` computed for you 🤯:
+
+```typescript
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+
+const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
+  {
+    blobsData: ['hello world'],
+    maxFeePerDataGas: 100000000n,
+    gasLimit: 0xffffffn,
+    to: 0x1122334455667788991011121314151617181920,
+  },
+  { common }
+)
+```
+
+#### Library Changes
+
 The following changes are included:
 
 - Update blob tx type to 0x03, PR [#2363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
 - Fix the deserialization of blob txs and add no empty blobs validation, PR [#2640](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2640)
+- Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
 
 ### Buffer -> Uint8Array
 
