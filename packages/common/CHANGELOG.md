@@ -87,6 +87,16 @@ setForkHashes(genesisHash: Uint8Array)
 
 We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
+#### Prefixed Hex Strings as Default
+
+It is a constant source of errors and mismatches in byte-handling code bases if hex strings are used in a mixed prefixed/unprefixed way.
+
+We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
+
+The methods `hexToBytes` and `bytesToHex`, also similar methods like `intToHex` now both take in prefixed hex strings and give prefixed strings as an output. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
+
+Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
 ### Other Changes
 
 - Remove deprecated `Ropsten` and `Rinkeby` networks, PR [#2813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2813)
