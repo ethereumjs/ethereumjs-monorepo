@@ -7,7 +7,7 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
-import type { Account, Address } from '@ethereumjs/util'
+import type { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
   opcode: number
@@ -154,6 +154,7 @@ export interface EVMInterface {
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
+  events?: AsyncEventEmitter<EVMEvents>
 }
 
 /**
