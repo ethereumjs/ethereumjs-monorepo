@@ -87,11 +87,13 @@ type FetchedNodeData = {
   deps: number
   nodeData: Uint8Array
   path: string
+  storageNodes?: Uint8Array[] // if fetched node is account node with a storage component, storage node data is stored here until it is ready to be put
 }
 
 type NodeRequestData = {
   nodeHash: string
   nodeParentHash: string
+  parentAccountHash?: string // for leaf account nodes that contain a storage component
 }
 
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
@@ -173,14 +175,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
-    if (pathStrings.length === 1 && pathStrings.includes('0305/')) {
-      console.log(rangeResult)
-      console.log(paths)
-    }
+    // if (pathStrings.includes('/')) {
+    //   console.log('dbg50')
+    //   console.log(rangeResult)
+    //   console.log(paths)
+    // }
 
-    // console.log('dbg30')
-    // console.log(paths)
-    // console.log(rangeResult.nodes)
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For bytecode range queries that means the peer is not
     // yet synced.
@@ -261,13 +261,14 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       for (const nodeData of result[0]) {
         const node = decodeNode(nodeData as unknown as Uint8Array)
         const nodeHash = bytesToHex(keccak256(nodeData as unknown as Uint8Array))
-        const pathString = this.requestedNodeToPath.get(nodeHash)
-        console.log(nodeHash)
-        console.log(pathString)
+        const pathString = this.requestedNodeToPath.get(nodeHash) as string
+        // console.log(nodeHash)
+        // console.log(pathString)
         const [accountPath, storagePath] = pathString!.split('/')
         const nodePath = storagePath ?? accountPath
         const childNodes = []
         let unknownChildNodeCount = 0
+        let hasStorageComponent = false
 
         // get all children of received node
         if (node instanceof BranchNode) {
@@ -299,14 +300,16 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const account = Account.fromRlpSerializedAccount(node.value())
           const storageRoot: Uint8Array = account.storageRoot
           if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
-            // TODO
-            const syncPath = pathString!.concat('/')
+            const b = hexToBytes(accountPath)
+            const n = bytesToNibbles2(b)
+            const fullAccountPath = nibbleToBytes2(n.concat(node.key()))
+            const syncPath = [bytesToHex(fullAccountPath), storagePath].join('/')
             this.pathToNodeRequestData.setElement(syncPath, {
               nodeHash: bytesToHex(storageRoot),
               nodeParentHash: nodeHash,
+              parentAccountHash: nodeHash,
             })
-            console.log(`storageHash found for fetching ${bytesToHex(storageRoot)}`)
-            console.log(`parent hash is ${nodeHash}`)
+            hasStorageComponent = true
           }
           const codeHash: Uint8Array = account.codeHash
           if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
@@ -337,19 +340,34 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         }
 
         // record new node for batched storing after all subtrie nodes have been received
-        const { nodeParentHash } = this.pathToNodeRequestData.getElementByKey(
-          nodePath
+        // console.log(pathString)
+        // console.log(this.pathToNodeRequestData.getElementByKey(pathString))
+        // console.log(node)
+
+        const { nodeParentHash, parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
+          pathString
         ) as NodeRequestData
-        this.fetchedAccountNodes.set(nodeHash, {
-          parentHash: nodeParentHash,
-          deps: unknownChildNodeCount,
-          nodeData,
-          path: nodePath,
-        } as unknown as FetchedNodeData)
+
+        if (storagePath !== undefined) {
+          // if fetched node has a storagePath, it's storage node data and should be stored with
+          // account leaf node data from where it originates
+          const { storageNodes } = this.fetchedAccountNodes.get(
+            parentAccountHash as string
+          ) as unknown as FetchedNodeData
+          storageNodes!.push(nodeData as unknown as Uint8Array)
+        } else {
+          this.fetchedAccountNodes.set(nodeHash, {
+            parentHash: nodeParentHash,
+            deps: unknownChildNodeCount,
+            nodeData,
+            path: pathString,
+            storageNodes: hasStorageComponent ? [] : undefined,
+          } as unknown as FetchedNodeData)
+        }
 
         // remove filled requests
         this.requestedNodeToPath.delete(nodeHash)
-        this.pathToNodeRequestData.eraseElementByKey(nodePath)
+        this.pathToNodeRequestData.eraseElementByKey(pathString)
       }
 
       // for an initial implementation, just put nodes into trie and see if root maches stateRoot
@@ -398,8 +416,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
 
-    console.log('dbg50')
-    console.log(pathStrings)
+    // console.log('dbg50')
+    // console.log(pathStrings)
     const ret: string[][] = []
     let paths: string[] = []
     let i = 0
@@ -407,7 +425,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       const outterPathString = pathStrings[i]!.split('/')
       const outterAccountPath = outterPathString[0]
       const outterStoragePath = outterPathString[1]
-      console.log(`${outterAccountPath} - ${outterStoragePath}`)
+      // console.log(`${outterAccountPath} - ${outterStoragePath}`)
 
       paths.push(outterAccountPath)
 
@@ -445,20 +463,15 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // have to put into compact and keybytes format depending on if path is partial or full
 
-    console.log(ret)
+    // console.log(ret)
     // TODO resolve should happen here, with keys being either keybyte or compact encoded
     return ret.map((pathStrings) =>
       pathStrings.map((s) => {
         if (s.length < 64) {
           // partial path is compact encoded
-          console.log('dbg20')
-          console.log(hexToBytes(s))
-          console.log(nibblesToCompactBytes(hexToBytes(s)))
-          console.log(bytesToHex(nibblesToCompactBytes(hexToBytes(s))))
           return nibblesToCompactBytes(hexToBytes(s))
         } else {
           // full path is keybyte encoded
-          // console.log('dbg21')
           return hexToKeybytes(hexToBytes(s))
         }
       })
@@ -484,8 +497,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
           }
           const paths = this.mergeAndFormatPaths(requestedPathStrings) as unknown as Uint8Array[][]
-          console.log('dbg10')
-          console.log()
+          // console.log('dbg10')
+          // console.log()
           tasks.push({
             pathStrings: requestedPathStrings,
             paths,
