@@ -167,13 +167,16 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     const { pathStrings, paths } = task
 
     this.debug(`requested paths:`)
-    // this.debug(paths)
+    this.debug(paths)
+    this.debug(pathStrings)
 
     const rangeResult = await peer!.snap!.getTrieNodes({
       root: this.root,
       paths,
       bytes: BigInt(this.config.maxRangeBytes),
     })
+
+    console.log(rangeResult.nodes.length)
 
     // if (pathStrings.includes('/')) {
     //   console.log('dbg50')
@@ -275,9 +278,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const children = (node as BranchNode).getChildren()
           for (const [i, embeddedNode] of children) {
             if (embeddedNode !== null) {
+              const newStoragePath = nodePath.concat(bytesToHex(Uint8Array.from([i])))
+              const syncPath =
+                storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
               childNodes.unshift({
                 nodeHash: embeddedNode, // TODO not sure if I'm calculating the node hash of an embedded node correctly since <32 bytes is embedded and not hashed
-                path: nodePath.concat(bytesToHex(Uint8Array.from([i]))),
+                path: syncPath,
               })
             }
           }
@@ -289,9 +295,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const newPath = nibbleToBytes2(n.concat(node.key()))
           const stringPath = bytesToHex(newPath)
 
+          const syncPath =
+            storagePath === undefined ? stringPath : [accountPath, stringPath].join('/')
+
           const val = {
             nodeHash: node.value(),
-            path: stringPath,
+            path: syncPath,
           }
           childNodes.unshift(val)
         } else {
