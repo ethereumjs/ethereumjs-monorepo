@@ -37,6 +37,7 @@ import type {
   Blockchain,
   CustomOpcode,
   EVMEvents,
+  EVMInterface,
   EVMRunCallOpts,
   EVMRunCodeOpts,
   Log,
@@ -153,7 +154,7 @@ export interface EVMCreateOpts {
  * and storing them to state (or discarding changes in case of exceptions).
  * @ignore
  */
-export class EVM {
+export class EVM implements EVMInterface {
   protected static supportedHardforks = [
     Hardfork.Chainstart,
     Hardfork.Homestead,

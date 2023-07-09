@@ -30,7 +30,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVM } from '@ethereumjs/evm'
+import type { EVMInterface } from '@ethereumjs/evm/dist/cjs/types.js' //TODO fix this import
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
@@ -404,7 +404,11 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
   return reward
 }
 
-export async function rewardAccount(evm: EVM, address: Address, reward: bigint): Promise<Account> {
+export async function rewardAccount(
+  evm: EVMInterface,
+  address: Address,
+  reward: bigint
+): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     account = new Account()
@@ -438,7 +442,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(evm: EVM) {
+async function _applyDAOHardfork(evm: EVMInterface) {
   const state = evm.stateManager
   const DAORefundContractAddress = new Address(unprefixedHexToBytes(DAORefundContract))
   if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
