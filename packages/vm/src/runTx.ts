@@ -95,7 +95,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this.evm.journal.cleanup()
 
   if (opts.reportAccessList === true) {
-    this.evm.journal.reportAccessList() // TODO this name is wrong (this clears the internal access list). (Can this be done in evm.journal.cleanJournal()?)
+    this.evm.journal.startReportingAccessList()
   }
 
   await this.evm.journal.checkpoint()

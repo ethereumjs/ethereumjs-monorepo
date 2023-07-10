@@ -148,8 +148,7 @@ export interface EVMInterface {
     accessList?: Map<string, Set<string>>
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
-    reportAccessList(): void // TODO check this name, because it clears the internal access list and does not "report" it
-    // (access list will be reported if the access list map exists internally, defaults to undefined?)
+    startReportingAccessList(): void
   }
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
