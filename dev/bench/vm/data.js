@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688997383648,
+  "lastUpdate": 1689026810504,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a37f51faf5d3d9cec4728576723ad7ea61736dab",
-          "message": "Monorepo: Update lru-cache dependencies (ESM) / Switch Browser Test Provider (#2804)\n\n* StateManager: update lru-cache from v9 to v10 (seamless)\r\n\r\n* Trie: update lru-cache from v7 to v9, added undefined/null @ts-ignore and comment\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Trie: replace @ts-ignore by any\r\n\r\n* Util: fix browser tests (JSON import update)\r\n\r\n* Monorepo: add browser CI workflow run (temporary or permanent, TBD)\r\n\r\n* Add possibility to skip browser test files, excluding transactionRunner.spec.ts and eip4844.spec.ts for tx\r\n\r\n* Monorepo: update vitest from 0.32.0 -> 0.32.2, switched to playwright browser test provider, removed webdriverio\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Update packages to playwright test provider, updated browser workflow file\r\n\r\n* Add install step for playwright dependencies in ci\r\n\r\n* set isolate flag\r\n\r\n* Exclude account/address as these are failing\r\n\r\n* Add browser comment\r\n\r\n* Remove lint command\r\n\r\n* Remove util from browser tests for now\r\n\r\n* disable util, enable common\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-06-21T14:02:58-04:00",
-          "tree_id": "3d978a108e114f34e0accba084343e4854df421b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a37f51faf5d3d9cec4728576723ad7ea61736dab"
-        },
-        "date": 1687370891985,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18380,
-            "range": "±6.41%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18681,
-            "range": "±3.10%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18278,
-            "range": "±3.11%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18734,
-            "range": "±3.15%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18316,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.17%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "786a244c8e709844fcc5c3a4185daa6f9740950a",
+          "message": "Update `EthersStateManager`  (#2873)\n\n* Update ethersStateManager caching logic\r\n\r\n* empty\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-07-10T17:58:39-04:00",
+          "tree_id": "382f9ed9611504adf12369b92e35e2f4c913f95f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/786a244c8e709844fcc5c3a4185daa6f9740950a"
+        },
+        "date": 1689026809084,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 24907,
+            "range": "±5.71%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25001,
+            "range": "±3.43%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 24642,
+            "range": "±3.57%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 24476,
+            "range": "±3.51%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19810,
+            "range": "±11.27%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
           }
         ]
       }
