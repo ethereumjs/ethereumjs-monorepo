@@ -11,6 +11,7 @@ import { precompile07 } from './07-ecmul.js'
 import { precompile08 } from './08-ecpairing.js'
 import { precompile09 } from './09-blake2f.js'
 import { precompile0a } from './0a-kzg-point-evaluation.js'
+import { precompile0b } from './0b-beaconroot.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
@@ -127,7 +128,14 @@ const precompileEntries: PrecompileEntry[] = [
     },
     precompile: precompile0a,
   },
-  // 0x00..0b: beacon block root, see PR 2810
+  {
+    address: '000000000000000000000000000000000000000b',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 4788,
+    },
+    precompile: precompile0b,
+  },
 ]
 
 const precompiles: Precompiles = {
@@ -141,7 +149,7 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000008': precompile08,
   '0000000000000000000000000000000000000009': precompile09,
   '000000000000000000000000000000000000000a': precompile0a,
-  // 0b: beacon block root see PR 2810
+  '000000000000000000000000000000000000000b': precompile0b,
 }
 
 type DeletePrecompile = {

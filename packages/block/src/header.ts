@@ -56,6 +56,7 @@ export class BlockHeader {
   public readonly withdrawalsRoot?: Uint8Array
   public readonly dataGasUsed?: bigint
   public readonly excessDataGas?: bigint
+  public readonly parentBeaconBlockRoot?: Uint8Array
 
   public readonly common: Common
 
@@ -108,7 +109,7 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
+    const { number, baseFeePerGas, excessDataGas, dataGasUsed, parentBeaconBlockRoot } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
@@ -125,6 +126,9 @@ export class BlockHeader {
       } else if (dataGasUsed === undefined) {
         throw new Error('invalid header. dataGasUsed should be provided')
       }
+    }
+    if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
+      throw new Error('invalid header. parentBeaconBlockRoot should be provided')
     }
     return header
   }
@@ -208,6 +212,7 @@ export class BlockHeader {
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       dataGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       excessDataGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? KECCAK256_RLP : undefined,
     }
 
     const baseFeePerGas =
@@ -218,6 +223,9 @@ export class BlockHeader {
       toType(headerData.dataGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.dataGasUsed
     const excessDataGas =
       toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
+    const parentBeaconBlockRoot =
+      toType(headerData.parentBeaconBlockRoot, TypeOutput.Uint8Array) ??
+      hardforkDefaults.parentBeaconBlockRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -239,6 +247,12 @@ export class BlockHeader {
       }
     }
 
+    if (!this.common.isActivatedEIP(4788) && parentBeaconBlockRoot !== undefined) {
+      throw new Error(
+        'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated'
+      )
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -258,6 +272,7 @@ export class BlockHeader {
     this.withdrawalsRoot = withdrawalsRoot
     this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
+    this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -362,6 +377,21 @@ export class BlockHeader {
       if (this.withdrawalsRoot?.length !== 32) {
         const msg = this._errorMsg(
           `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(4788) === true) {
+      if (this.parentBeaconBlockRoot === undefined) {
+        const msg = this._errorMsg('EIP4788 block has no parentBeaconBlockRoot field')
+        throw new Error(msg)
+      }
+      if (this.parentBeaconBlockRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `parentBeaconBlockRoot must be 32 bytes, received ${
+            this.parentBeaconBlockRoot!.length
+          } bytes`
         )
         throw new Error(msg)
       }
@@ -891,6 +921,9 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(4844) === true) {
       jsonDict.dataGasUsed = bigIntToHex(this.dataGasUsed!)
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
+    }
+    if (this.common.isActivatedEIP(4788) === true) {
+      jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
     }
     return jsonDict
   }
