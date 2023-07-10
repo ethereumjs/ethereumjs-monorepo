@@ -133,7 +133,7 @@ For further information on this see the respective section in `@ethereumjs-util`
 
 The following changes are included:
 
-- Integrate `dataGasUsed` block information for `VM.buildBlock()` and `VM.runTx()`, PR [#2363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
+- Integrate `dataGasUsed` block information for `VM.buildBlock()` and `VM.runTx()`, PR [#2636](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
 - Add `dataGasUsed` to `txReceipt` and EVM execution result, PR [#2620](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2620)
 - Discard blob txs with missing blobs for block building, PR [#2765](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2765)
 - Fix `dataGasPrice` calculation in `VM.runTx()`, PR [#2779](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2779)

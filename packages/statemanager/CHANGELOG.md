@@ -28,7 +28,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 
 ### StateManager / Cache Refactoring
 
-With this release the StateManager has been completely refactored, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634). While the overall API has been preserved for the most part, the API DOES come with some changes where things needed a clean-up, which will need some adoption. The cache backend has been completely rewritten and there is now a cleaner separation between the StateManager and the account and storage caches. The `BaseStateManager` class - being rather restrictive than useful - has been removed.
+With this release the StateManager has been completely refactored, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634). While the overall API has been preserved for the most part, the API DOES come with some changes where things needed a clean-up, which will need some adoption. The cache backend has been completely rewritten and there is now a cleaner separation between the StateManager and the account and storage caches. The `BaseStateManager` class - being rather restrictive than useful - has been removed.
 
 All this makes it significantly easier to write an own StateManager implementation or customize the existing implementation.
 
@@ -46,7 +46,7 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 
 ### API Changes
 
-Also along PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634): the StateManager API has been significantly cleaned up with one of the major changes being `getAccount()` not returning an empty account any more if no result was found. While this needs some adoption this one single change makes state handling a lot cleaner.
+Also along PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634): the StateManager API has been significantly cleaned up with one of the major changes being `getAccount()` not returning an empty account any more if no result was found. While this needs some adoption this one single change makes state handling a lot cleaner.
 
 API Change Summary:
 

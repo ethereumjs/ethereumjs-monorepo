@@ -185,7 +185,7 @@ We have therefore decided to go "prefixed" by default, see PR [#2830](https://gi
 
 The methods `hexToBytes` and `bytesToHex`, also similar methods like `intToHex` now both take in prefixed hex strings and give prefixed strings as an output. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
 
-Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+Please therefore check your code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
 
 ### Other Changes
 
