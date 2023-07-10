@@ -206,8 +206,13 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
-      encode: (hashes: Uint8Array[]) => hashes,
-      decode: (hashes: Uint8Array[]) => hashes,
+      // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
+      // `hashes: Uint8Array[]` to an array of arrays of `types, sizes, hashes`, where types corresponds to the
+      // transaction type, size is the size of each encoded transaction in bytes, and the hash
+      encode: (params: Uint8Array[] | [types: bigint[], sizes: bigint[], hashes: Uint8Array[]]) =>
+        params,
+      decode: (params: Uint8Array[] | [types: bigint[], sizes: bigint[], hashes: Uint8Array[]]) =>
+        params,
     },
     {
       name: 'GetPooledTransactions',
@@ -343,7 +348,7 @@ export class EthProtocol extends Protocol {
    * Protocol versions supported
    */
   get versions() {
-    return [66]
+    return [66, 67, 68]
   }
 
   /**

@@ -544,51 +544,55 @@ export class TxPool {
    */
   async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txHashes.length === 0) return
-    this.addToKnownByPeer(txHashes, peer)
+    if (peer.eth !== undefined && peer.eth['versions'].includes(68)) {
+      // Handle eth68 message format
+    } else {
+      this.addToKnownByPeer(txHashes, peer)
 
-    const reqHashes = []
-    for (const txHash of txHashes) {
-      const txHashStr: UnprefixedHash = bytesToUnprefixedHex(txHash)
-      if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
-        continue
+      const reqHashes = []
+      for (const txHash of txHashes) {
+        const txHashStr: UnprefixedHash = bytesToUnprefixedHex(txHash)
+        if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
+          continue
+        }
+        reqHashes.push(txHash)
       }
-      reqHashes.push(txHash)
-    }
 
-    if (reqHashes.length === 0) return
+      if (reqHashes.length === 0) return
 
-    this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
+      this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
-    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
-    this.pending = this.pending.concat(reqHashesStr)
-    this.config.logger.debug(
-      `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
-    )
-    const getPooledTxs = await peer.eth?.getPooledTransactions({
-      hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
-    })
+      const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
+      this.pending = this.pending.concat(reqHashesStr)
+      this.config.logger.debug(
+        `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
+      )
+      const getPooledTxs = await peer.eth?.getPooledTransactions({
+        hashes: reqHashes.slice(0, this.TX_RETRIEVAL_LIMIT),
+      })
 
-    // Remove from pending list regardless if tx is in result
-    this.pending = this.pending.filter((hash) => !reqHashesStr.includes(hash))
+      // Remove from pending list regardless if tx is in result
+      this.pending = this.pending.filter((hash) => !reqHashesStr.includes(hash))
 
-    if (getPooledTxs === undefined) {
-      return
-    }
-    const [_, txs] = getPooledTxs
-    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
-
-    const newTxHashes = []
-    for (const tx of txs) {
-      try {
-        await this.add(tx)
-      } catch (error: any) {
-        this.config.logger.debug(
-          `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
-        )
+      if (getPooledTxs === undefined) {
+        return
       }
-      newTxHashes.push(tx.hash())
+      const [_, txs] = getPooledTxs
+      this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
+
+      const newTxHashes = []
+      for (const tx of txs) {
+        try {
+          await this.add(tx)
+        } catch (error: any) {
+          this.config.logger.debug(
+            `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
+          )
+        }
+        newTxHashes.push(tx.hash())
+      }
+      await this.sendNewTxHashes(newTxHashes, peerPool.peers)
     }
-    await this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }
 
   /**
