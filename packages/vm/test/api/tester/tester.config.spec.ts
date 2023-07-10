@@ -23,10 +23,10 @@ describe('bloom', () => {
     assert.ok(common.isActivatedEIP(3607))
   })
   it('should be able to activate hardforks with EIPs enabled', () => {
-    let common = getCommon('byzantium+2537')
-    assert.ok(common.isActivatedEIP(2537))
-    common = getCommon('byzantium+2537+2929')
-    assert.ok(common.isActivatedEIP(2537))
+    let common = getCommon('byzantium+1153')
+    assert.ok(common.isActivatedEIP(1153))
+    common = getCommon('byzantium+1153+2929')
+    assert.ok(common.isActivatedEIP(1153))
     assert.ok(common.isActivatedEIP(2929))
   })
   it('should be able to activate transition forks', () => {

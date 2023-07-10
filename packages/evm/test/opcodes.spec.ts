@@ -10,7 +10,7 @@ describe('EVM -> getActiveOpcodes()', () => {
 
   it('should not expose opcodes from a follow-up HF (istanbul -> petersburg)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     assert.equal(
@@ -22,7 +22,7 @@ describe('EVM -> getActiveOpcodes()', () => {
 
   it('should expose opcodes when HF is active (>= istanbul)', async () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    let evm = await EVM.create({
+    let evm = new EVM({
       common,
     })
     assert.equal(
@@ -32,7 +32,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.MuirGlacier })
-    evm = await EVM.create({
+    evm = new EVM({
       common,
     })
     assert.equal(
@@ -44,7 +44,7 @@ describe('EVM -> getActiveOpcodes()', () => {
 
   it('should switch DIFFICULTY opcode name to PREVRANDAO when >= Merge HF', async () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    let evm = await EVM.create({
+    let evm = new EVM({
       common,
     })
     assert.equal(
@@ -54,7 +54,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
-    evm = await EVM.create({
+    evm = new EVM({
       common,
     })
     assert.equal(
@@ -66,7 +66,7 @@ describe('EVM -> getActiveOpcodes()', () => {
 
   it('should expose opcodes when EIP is active', async () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, eips: [2315] })
-    let evm = await EVM.create({
+    let evm = new EVM({
       common,
     })
     assert.equal(
@@ -76,7 +76,7 @@ describe('EVM -> getActiveOpcodes()', () => {
     )
 
     common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    evm = await EVM.create({
+    evm = new EVM({
       common,
     })
     assert.equal(
@@ -88,7 +88,7 @@ describe('EVM -> getActiveOpcodes()', () => {
 
   it('should update opcodes on a hardfork change', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
