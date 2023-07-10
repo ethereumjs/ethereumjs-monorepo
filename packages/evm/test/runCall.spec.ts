@@ -28,7 +28,7 @@ function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint
 describe('RunCall tests', () => {
   it('Create where FROM account nonce is 0', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     const res = await evm.runCall({ to: undefined })
@@ -53,7 +53,7 @@ describe('RunCall tests', () => {
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     const code = '0x3460008080F560005260206000F3'
@@ -109,10 +109,10 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     // setup the evm
-    const evmByzantium = await EVM.create({
+    const evmByzantium = new EVM({
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
     })
-    const evmConstantinople = await EVM.create({
+    const evmConstantinople = new EVM({
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
     })
     const code = '0x600160011B00'
@@ -153,7 +153,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     const code = '0x61000260005561000160005500'
@@ -204,7 +204,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     // push 1 push 0 sstore stop
@@ -231,7 +231,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     // code to call 0x00..00dd, which does not exist
@@ -260,7 +260,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     // code to call back into the calling account (0x00..00EE),
@@ -289,7 +289,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     // code to call 0x00..00fe, with the GAS opcode used as gas
@@ -319,7 +319,7 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     // code to call 0x00..00fe, with the GAS opcode used as gas
@@ -388,7 +388,7 @@ describe('RunCall tests', () => {
     const emptyBytes = hexToBytes('0x')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     const code = '0x60008080F060005500'
@@ -442,7 +442,7 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead')) // caller address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
     const code = '0x3034526020600760203460045afa602034343e604034f3'
@@ -473,7 +473,7 @@ describe('RunCall tests', () => {
   it('Throws on negative call value', async () => {
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
@@ -496,7 +496,7 @@ describe('RunCall tests', () => {
 
   it('runCall() -> skipBalance behavior', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
@@ -542,7 +542,7 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     // setup the evm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
@@ -569,7 +569,7 @@ describe('RunCall tests', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
@@ -604,7 +604,7 @@ describe('RunCall tests', () => {
 
   it('step event: ensure EVM memory and not internal memory gets reported', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
@@ -631,7 +631,7 @@ describe('RunCall tests', () => {
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 
@@ -656,7 +656,7 @@ describe('RunCall tests', () => {
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
     })
 

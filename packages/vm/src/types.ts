@@ -83,7 +83,7 @@ export interface VMOpts {
    *
    * - `chain`: all chains supported by `Common` or a custom chain
    * - `hardfork`: `mainnet` hardforks up to the `Paris` hardfork
-   * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
+   * - `eips`: `1559` (usage e.g. `eips: [ 1559, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
    * documentation for supported EIPs.

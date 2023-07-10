@@ -631,7 +631,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const txn = AccessListEIP2930Transaction.fromTxData({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
+    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {
@@ -639,6 +639,9 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       },
     })
     const signedTxn = txn.sign(pKey)
-    assert.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
+    assert.ok(
+      signedTxn.common.hardfork() === Hardfork.Paris,
+      'signed tx common is taken from tx.common'
+    )
   })
 })

@@ -276,7 +276,7 @@ export function getTestDirs(network: string, testType: string) {
 }
 /**
  * Setups the common with networks
- * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
+ * @param network Network target (this can include EIPs, such as Byzantium+1559+2929)
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
