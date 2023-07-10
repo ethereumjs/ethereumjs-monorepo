@@ -176,19 +176,38 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
-    console.log(rangeResult.nodes.length)
+    const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
 
-    // if (pathStrings.includes('/')) {
-    //   console.log('dbg50')
-    //   console.log(rangeResult)
-    //   console.log(paths)
-    // }
+    if (
+      pathStrings.includes(
+        '0305020a04070f0c060806030b08090a060b05010809000e0f030c010505000d0506000808060c0002070104010d020005080b0a010e020d040c06060d09090a/01'
+      )
+    ) {
+      console.log('dbg50')
+      console.log(rangeResult)
+      console.log(paths)
+
+      const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
+
+      this.debug(requestedNodeCount)
+      this.debug(rangeResult.nodes.length)
+      this.debug(paths.length < rangeResult.nodes.length)
+      this.debug(paths.length < rangeResult.nodes.length)
+      this.debug(requestedNodeCount < rangeResult.nodes.length)
+    }
 
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For bytecode range queries that means the peer is not
     // yet synced.
-    if (rangeResult === undefined || paths.length < rangeResult.nodes.length) {
+    if (rangeResult === undefined || requestedNodeCount < rangeResult.nodes.length) {
       this.debug(`Peer rejected trienode request`)
+      // const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
+
+      // this.debug(requestedNodeCount)
+      // this.debug(rangeResult.nodes.length)
+      // this.debug(paths.length < rangeResult.nodes.length)
+      // this.debug(paths.length < rangeResult.nodes.length)
+      // this.debug(requestedNodeCount < rangeResult.nodes.length)
       return undefined
     }
 
@@ -281,6 +300,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               const newStoragePath = nodePath.concat(bytesToHex(Uint8Array.from([i])))
               const syncPath =
                 storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
+              this.debug('branch node found')
+              this.debug(storagePath)
               childNodes.unshift({
                 nodeHash: embeddedNode, // TODO not sure if I'm calculating the node hash of an embedded node correctly since <32 bytes is embedded and not hashed
                 path: syncPath,
@@ -306,22 +327,29 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         } else {
           this.debug('leaf node found')
 
-          const account = Account.fromRlpSerializedAccount(node.value())
-          const storageRoot: Uint8Array = account.storageRoot
-          if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
-            const b = hexToBytes(accountPath)
-            const n = bytesToNibbles2(b)
-            const fullAccountPath = nibbleToBytes2(n.concat(node.key()))
-            const syncPath = [bytesToHex(fullAccountPath), storagePath].join('/')
-            this.pathToNodeRequestData.setElement(syncPath, {
-              nodeHash: bytesToHex(storageRoot),
-              nodeParentHash: nodeHash,
-              parentAccountHash: nodeHash,
-            })
-            hasStorageComponent = true
-          }
-          const codeHash: Uint8Array = account.codeHash
-          if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
+          if (storagePath === undefined) {
+            this.debug('account leaf node found')
+            const account = Account.fromRlpSerializedAccount(node.value())
+            const storageRoot: Uint8Array = account.storageRoot
+            if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
+              this.debug('storage component found')
+              const b = hexToBytes(accountPath)
+              const n = bytesToNibbles2(b)
+              const fullAccountPath = nibbleToBytes2(n.concat(node.key()))
+              const syncPath = [bytesToHex(fullAccountPath), storagePath].join('/')
+              this.pathToNodeRequestData.setElement(syncPath, {
+                nodeHash: bytesToHex(storageRoot),
+                nodeParentHash: nodeHash,
+                parentAccountHash: nodeHash,
+              })
+              hasStorageComponent = true
+            }
+            const codeHash: Uint8Array = account.codeHash
+            if (!(equalsBytes(codeHash, KECCAK256_NULL) === true)) {
+              // TODO
+            }
+          } else {
+            this.debug('Storage leaf node found')
             // TODO
           }
         }
@@ -341,9 +369,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           } catch (e) {
             // if error is thrown, than the node is unknown and should be queued for fetching
             unknownChildNodeCount++
+            const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
+              pathString
+            ) as NodeRequestData
             this.pathToNodeRequestData.setElement(childNode.path, {
               nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
               nodeParentHash: nodeHash, // TODO root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
+              parentAccountHash,
             } as NodeRequestData)
           }
         }
@@ -381,10 +413,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
       // for an initial implementation, just put nodes into trie and see if root maches stateRoot
       if (this.pathToNodeRequestData.length === 0) {
+        this.debug('All requests for current heal phase have been filled')
         const ops: BatchDBOp[] = []
         for (const [nodeHash, data] of this.fetchedAccountNodes) {
-          const { parentHash, deps, nodeData, path } = data
+          const { parentHash, deps, nodeData, path, storageNodes } = data
 
+          // add account node data to account trie
           const node = decodeNode(nodeData)
           if (node instanceof LeafNode) {
             const b = hexToBytes(path)
@@ -397,6 +431,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               value: node.value(),
             })
           }
+
+          // add storage data for account if it has fetched nodes
+          // if (storageNodes !== undefined && storageNodes.length > 0) {
+          //   for (const node of storageNodes) {
+
+          //   }
+          // }
         }
         await this.accountTrie.batch(ops)
         await this.accountTrie.persistRoot()
