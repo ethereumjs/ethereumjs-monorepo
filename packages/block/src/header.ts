@@ -109,7 +109,7 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas, excessDataGas, dataGasUsed } = headerData
+    const { number, baseFeePerGas, excessDataGas, dataGasUsed, parentBeaconBlockRoot } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
@@ -126,6 +126,9 @@ export class BlockHeader {
       } else if (dataGasUsed === undefined) {
         throw new Error('invalid header. dataGasUsed should be provided')
       }
+    }
+    if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
+      throw new Error('invalid header. parentBeaconBlockRoot should be provided')
     }
     return header
   }
