@@ -56,7 +56,7 @@ export class BlockHeader {
   public readonly withdrawalsRoot?: Uint8Array
   public readonly dataGasUsed?: bigint
   public readonly excessDataGas?: bigint
-  public readonly beaconRoot?: Uint8Array
+  public readonly parentBeaconBlockRoot?: Uint8Array
 
   public readonly common: Common
 
