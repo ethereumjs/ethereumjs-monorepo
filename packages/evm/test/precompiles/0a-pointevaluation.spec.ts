@@ -32,7 +32,7 @@ describe('Precompiles: point evaluation', () => {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
       })
-      const evm = await new EVM({
+      const evm = new EVM({
         common,
       })
       const addressStr = '000000000000000000000000000000000000000a'

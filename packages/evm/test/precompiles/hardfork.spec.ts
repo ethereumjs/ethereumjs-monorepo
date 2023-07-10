@@ -20,7 +20,7 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    let evm = await new EVM({
+    let evm = new EVM({
       common: commonByzantium,
     })
     let result = await evm.runCall({
@@ -41,7 +41,7 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    evm = await new EVM({
+    evm = new EVM({
       common: commonPetersburg,
     })
     result = await evm.runCall({
@@ -63,7 +63,7 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING not available in homestead')
     }
 
-    evm = await new EVM({
+    evm = new EVM({
       common: commonHomestead,
     })
 

@@ -14,7 +14,7 @@ describe('BLOBHASH / access versionedHashes in calldata', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await new EVM({
+    const evm = new EVM({
       common,
     })
 
@@ -44,7 +44,7 @@ describe(`BLOBHASH: access versionedHashes within contract calls`, () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await new EVM({
+    const evm = new EVM({
       common,
     })
 
@@ -95,7 +95,7 @@ describe(`BLOBHASH: access versionedHashes in a CREATE/CREATE2 frame`, () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await new EVM({
+    const evm = new EVM({
       common,
     })
 

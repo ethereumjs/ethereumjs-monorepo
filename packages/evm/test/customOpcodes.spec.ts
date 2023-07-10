@@ -45,7 +45,7 @@ describe('VM: custom opcodes', () => {
   })
 
   it('should delete opcodes from the EVM', async () => {
-    const evm = await new EVM({
+    const evm = new EVM({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
     const gas = BigInt(123456)
@@ -59,7 +59,7 @@ describe('VM: custom opcodes', () => {
   it('should not override default opcodes', async () => {
     // This test ensures that always the original opcode map is used
     // Thus, each time you recreate a EVM, it is in a clean state
-    const evm = await new EVM({
+    const evm = new EVM({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
     })
     const gas = BigInt(123456)
@@ -69,7 +69,7 @@ describe('VM: custom opcodes', () => {
     })
     assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
-    const evmDefault = await new EVM({})
+    const evmDefault = new EVM({})
 
     // PUSH 04
     // PUSH 01
@@ -88,7 +88,7 @@ describe('VM: custom opcodes', () => {
 
   it('should override opcodes in the EVM', async () => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
-    const evm = await new EVM({
+    const evm = new EVM({
       customOpcodes: [testOpcode],
     })
     const gas = 123456
@@ -113,7 +113,7 @@ describe('VM: custom opcodes', () => {
       },
     }
 
-    const evm = await new EVM({
+    const evm = new EVM({
       customOpcodes: [testOpcode],
     })
     evm.events.on('beforeMessage', () => {})
