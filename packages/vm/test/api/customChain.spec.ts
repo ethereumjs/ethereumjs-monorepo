@@ -63,7 +63,7 @@ const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3
 describe('VM initialized with custom state', () => {
   it('should transfer eth from already existent account', async () => {
     const blockchain = await Blockchain.create({ common, genesisState })
-    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
+    const vm = await VM.create({ blockchain, common, genesisState })
 
     const to = '0x00000000000000000000000000000000000000ff'
     const tx = TransactionFactory.fromTxData(
@@ -91,7 +91,7 @@ describe('VM initialized with custom state', () => {
   it('should retrieve value from storage', async () => {
     const blockchain = await Blockchain.create({ common, genesisState })
     common.setHardfork(Hardfork.London)
-    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
+    const vm = await VM.create({ blockchain, common, genesisState })
     const sigHash = new Interface(['function retrieve()']).getSighash('retrieve')
 
     const callResult = await vm.evm.runCall({
@@ -110,10 +110,10 @@ describe('VM initialized with custom state', () => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
-    let vm = await VM.create({ common, setHardfork: true })
+    let vm = await VM.create({ common, setHardfork: true, genesisState: {} })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, setHardfork: 5001 })
+    vm = await VM.create({ common, setHardfork: 5001, genesisState: {} })
     assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 })

@@ -40,6 +40,11 @@ export class MapDB<
     }
   }
 
+  /**
+   * Note that the returned shallow copy will share the underlying database with the original
+   *
+   * @returns DB
+   */
   shallowCopy(): DB<TKey, TValue> {
     return new MapDB<TKey, TValue>(this._database)
   }

@@ -88,7 +88,7 @@ describe('[Block]: block functions', () => {
       },
       { common, setHardfork: true }
     )
-    assert.equal(block._common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
+    assert.equal(block.common.hardfork(), Hardfork.Berlin, 'should use setHardfork option')
 
     block = Block.fromBlockData(
       {
@@ -99,7 +99,7 @@ describe('[Block]: block functions', () => {
       { common, setHardfork: 5001 }
     )
     assert.equal(
-      block._common.hardfork(),
+      block.common.hardfork(),
       Hardfork.Paris,
       'should use setHardfork option (td > threshold)'
     )
@@ -114,7 +114,7 @@ describe('[Block]: block functions', () => {
       { common, setHardfork: 3000 }
     )
     assert.equal(
-      block._common.hardfork(),
+      block.common.hardfork(),
       Hardfork.Berlin,
       'should work with setHardfork option (td < threshold)'
     )
@@ -362,7 +362,7 @@ describe('[Block]: block functions', () => {
   it('should be able to initialize shanghai blocks with correct hardfork defaults', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     const block = Block.fromBlockData({}, { common })
-    assert.equal(block._common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
+    assert.equal(block.common.hardfork(), Hardfork.Shanghai, 'hardfork should be set to shanghai')
     assert.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')
   })
 })

@@ -45,7 +45,7 @@ interface TransactionCache {
 export abstract class BaseTransaction<T extends TransactionType>
   implements TransactionInterface<T>
 {
-  private readonly _type: TransactionType
+  protected readonly _type: TransactionType
 
   public readonly nonce: bigint
   public readonly gasLimit: bigint

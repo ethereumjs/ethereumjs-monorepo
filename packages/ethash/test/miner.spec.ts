@@ -133,13 +133,13 @@ describe('Miner', () => {
     const miner = e.getMiner(block.header)
     const solution = <BlockHeader>await miner.mine(-1)
 
-    assert.ok(solution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
-    assert.ok(solution._common.chainName() === 'mainnet', 'chain name did not change')
+    assert.ok(solution.common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
+    assert.ok(solution.common.chainName() === 'mainnet', 'chain name did not change')
 
     const blockMiner = e.getMiner(block)
     const blockSolution = <Block>await blockMiner.mine(-1)
 
-    assert.ok(blockSolution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
-    assert.ok(blockSolution._common.chainName() === 'mainnet', 'chain name did not change')
+    assert.ok(blockSolution.common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
+    assert.ok(blockSolution.common.chainName() === 'mainnet', 'chain name did not change')
   }, 60000)
 })

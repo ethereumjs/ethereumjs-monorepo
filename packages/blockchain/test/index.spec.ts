@@ -514,7 +514,7 @@ describe('blockchain test', () => {
 
     block2HeaderValuesArray[1] = new Uint8Array(32)
     const block2Header = BlockHeader.fromValuesArray(block2HeaderValuesArray, {
-      common: blocks[2]._common,
+      common: blocks[2].common,
     })
     await blockchain.putHeader(block2Header)
     try {

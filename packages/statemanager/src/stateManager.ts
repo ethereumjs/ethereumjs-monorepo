@@ -138,21 +138,21 @@ export interface DefaultStateManagerOpts {
  * `@ethereumjs/trie` trie as a data backend.
  */
 export class DefaultStateManager implements EVMStateManagerInterface {
-  _debug: Debugger
-  _accountCache?: AccountCache
-  _storageCache?: StorageCache
+  protected _debug: Debugger
+  protected _accountCache?: AccountCache
+  protected _storageCache?: StorageCache
 
   originalStorageCache: OriginalStorageCache
 
-  _trie: Trie
-  _storageTries: { [key: string]: Trie }
-  _codeCache: { [key: string]: Uint8Array }
+  protected _trie: Trie
+  protected _storageTries: { [key: string]: Trie }
+  protected _codeCache: { [key: string]: Uint8Array }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
 
-  protected readonly _common: Common
+  public readonly common: Common
 
   protected _checkpointCount: number
 
@@ -177,7 +177,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this._common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 
     this._checkpointCount = 0
 
@@ -367,7 +367,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  private async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
+  protected async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
     // from storage cache
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
@@ -421,7 +421,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param address -  Address of the account whose storage is to be modified
    * @param modifyTrie - Function to modify the storage trie of the account
    */
-  private async _modifyContractStorage(
+  protected async _modifyContractStorage(
     address: Address,
     account: Account,
     modifyTrie: (storageTrie: Trie, done: Function) => void
@@ -443,7 +443,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     })
   }
 
-  private async _writeContractStorage(
+  protected async _writeContractStorage(
     address: Address,
     account: Account,
     key: Uint8Array,

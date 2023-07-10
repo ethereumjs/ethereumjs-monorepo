@@ -7,7 +7,7 @@ import { sscanf } from 'scanf'
 
 import { keccak256, toNewUint8Array } from '../util.js'
 
-import type { PeerInfo } from '../dpt/index.js'
+import type { PeerInfo } from '../types.js'
 
 const Convert = require('multiaddr/src/convert')
 

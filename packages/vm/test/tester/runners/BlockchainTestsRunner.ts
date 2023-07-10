@@ -190,7 +190,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       //
-      //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
+      //vm.common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)

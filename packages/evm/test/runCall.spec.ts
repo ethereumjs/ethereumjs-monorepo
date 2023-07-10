@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -29,9 +28,8 @@ function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint
 describe('RunCall tests', () => {
   it('Create where FROM account nonce is 0', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const res = await evm.runCall({ to: undefined })
     assert.equal(
@@ -55,9 +53,8 @@ describe('RunCall tests', () => {
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const code = '0x3460008080F560005260206000F3'
     /*
@@ -112,13 +109,11 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff')) // contract address
     // setup the evm
-    const evmByzantium = await EVM.create({
+    const evmByzantium = new EVM({
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium }),
-      stateManager: new DefaultStateManager(),
     })
-    const evmConstantinople = await EVM.create({
+    const evmConstantinople = new EVM({
       common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople }),
-      stateManager: new DefaultStateManager(),
     })
     const code = '0x600160011B00'
     /*
@@ -158,9 +153,8 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const code = '0x61000260005561000160005500'
     /*
@@ -210,9 +204,8 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     // push 1 push 0 sstore stop
     const code = '0x600160015500'
@@ -238,9 +231,8 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     // code to call 0x00..00dd, which does not exist
     const code = '0x6000600060006000600060DD61FFFF5A03F100'
@@ -268,9 +260,8 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Homestead })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     // code to call back into the calling account (0x00..00EE),
     // but using too much memory
@@ -298,9 +289,8 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.TangerineWhistle })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     // code to call 0x00..00fe, with the GAS opcode used as gas
     // this cannot be paid, since we also have to pay for CALL (40 gas)
@@ -329,9 +319,8 @@ describe('RunCall tests', () => {
     const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     // code to call 0x00..00fe, with the GAS opcode used as gas
     // this cannot be paid, since we also have to pay for CALL (40 gas)
@@ -399,9 +388,8 @@ describe('RunCall tests', () => {
     const emptyBytes = hexToBytes('0x')
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const code = '0x60008080F060005500'
     /*
@@ -454,9 +442,8 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x1a02a619e51cc5f8a2a61d2a60f6c80476ee8ead')) // caller address
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const code = '0x3034526020600760203460045afa602034343e604034f3'
 
@@ -486,9 +473,8 @@ describe('RunCall tests', () => {
   it('Throws on negative call value', async () => {
     // setup the vm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     // setup the call arguments
@@ -510,9 +496,8 @@ describe('RunCall tests', () => {
 
   it('runCall() -> skipBalance behavior', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     // runCall against a contract to reach `_reduceSenderBalance`
@@ -546,9 +531,8 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall({ ...runCallArgs, skipBalance: false })
-    assert.equal(
-      res2.execResult.exceptionError?.error,
-      'insufficient balance',
+    assert.ok(
+      res2.execResult.exceptionError?.error.match('insufficient balance'),
       'runCall reverts when insufficient sender balance and skipBalance is false'
     )
   })
@@ -558,9 +542,8 @@ describe('RunCall tests', () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
     // setup the evm
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     // setup the call arguments
@@ -586,9 +569,8 @@ describe('RunCall tests', () => {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     // setup the call arguments
@@ -622,9 +604,8 @@ describe('RunCall tests', () => {
 
   it('step event: ensure EVM memory and not internal memory gets reported', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     const contractCode = hexToBytes('0x600060405200') // PUSH 0 PUSH 40 MSTORE STOP
@@ -650,9 +631,8 @@ describe('RunCall tests', () => {
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     // Create a contract which is too large
@@ -676,9 +656,8 @@ describe('RunCall tests', () => {
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
 
     // Create a contract which cannot pay the code deposit fee

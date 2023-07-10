@@ -359,7 +359,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return FeeMarketEIP1559Transaction.fromTxData(

@@ -142,7 +142,7 @@ describe('EIP-3529 tests', () => {
 
       await vm.evm.runCode!({
         code,
-        address,
+        to: address,
         gasLimit,
       })
 

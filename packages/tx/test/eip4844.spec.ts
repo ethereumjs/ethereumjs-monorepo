@@ -502,7 +502,7 @@ describe('Network wrapper deserialization test', () => {
       })
 
       const jsonData = deserializedTx.toJSON()
-      assert.deepEqual(txData, jsonData, 'toJSON should give correct json')
+      assert.deepEqual(txData, jsonData as any, 'toJSON should give correct json')
 
       assert.equal(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
       assert.ok(equalsBytes(deserializedTx.blobs![0], blobs[0]), 'blobs should match')

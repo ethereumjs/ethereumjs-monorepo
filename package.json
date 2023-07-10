@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
-    "@types/node": "16.11.49",
+    "@types/node": "18.11.9",
     "@types/tape": "4.13.2",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
@@ -60,7 +60,7 @@
     "webdriverio": "^8.10.7"
   },
   "engines": {
-    "node": ">=14",
+    "node": ">=18",
     "npm": ">=7"
   }
 }

@@ -35,12 +35,12 @@ export type CacheMap = { [key: string]: Cache<Uint8Array> }
  */
 export class DBManager {
   private _cache: CacheMap
-  private _common: Common
+  public readonly common: Common
   private _db: DB<Uint8Array | string, Uint8Array | string | DBObject>
 
   constructor(db: DB<Uint8Array | string, Uint8Array | string | DBObject>, common: Common) {
     this._db = db
-    this._common = common
+    this.common = common
     this._cache = {
       td: new Cache({ max: 1024 }),
       header: new Cache({ max: 512 }),
@@ -127,7 +127,7 @@ export class DBManager {
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
-    const opts: BlockOptions = { common: this._common }
+    const opts: BlockOptions = { common: this.common }
     if (number === BigInt(0)) {
       opts.setHardfork = await this.getTotalDifficulty(hash, BigInt(0))
     } else {
@@ -154,7 +154,7 @@ export class DBManager {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const headerValues = RLP.decode(encodedHeader)
 
-    const opts: BlockOptions = { common: this._common }
+    const opts: BlockOptions = { common: this.common }
     if (blockNumber === BigInt(0)) {
       opts.setHardfork = await this.getTotalDifficulty(blockHash, BigInt(0))
     } else {

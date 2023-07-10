@@ -13,6 +13,7 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
+  setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -39,6 +40,10 @@ const debug = createDebugLogger('vm:block')
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
 
+const parentBeaconBlockRootAddress = Address.fromString(
+  '0x000000000000000000000000000000000000000b'
+)
+
 /**
  * @ignore
  */
@@ -62,12 +67,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (setHardfork !== false || this._setHardfork !== false) {
     const setHardforkUsed = setHardfork ?? this._setHardfork
     if (setHardforkUsed === true) {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         timestamp: block.header.timestamp,
       })
     } else if (typeof setHardforkUsed !== 'boolean') {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         td: setHardforkUsed,
         timestamp: block.header.timestamp,
@@ -80,7 +85,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -94,8 +99,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
-    block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
+    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
+    block.header.number === this.common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
@@ -152,7 +157,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       ...block,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this._common })
+    block = Block.fromBlockData(blockData, { common: this.common })
   } else {
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
@@ -219,7 +224,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -255,17 +260,47 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       await block.validateData()
     }
   }
+  if (this.common.isActivatedEIP(4788)) {
+    // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
+    const root = block.header.parentBeaconBlockRoot!
+    const timestamp = block.header.timestamp
+    const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+    const timestampIndex = timestamp % historicalRootsLength
+    const timestampExtended = timestampIndex + historicalRootsLength
+
+    /**
+     * Note: (by Jochem)
+     * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+     * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+     * All ethereum accounts have empty storage by default
+     */
+
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+
+    await this.stateManager.putContractStorage(
+      parentBeaconBlockRootAddress,
+      setLengthLeft(bigIntToBytes(timestampIndex), 32),
+      bigIntToBytes(block.header.timestamp)
+    )
+    await this.stateManager.putContractStorage(
+      parentBeaconBlockRootAddress,
+      setLengthLeft(bigIntToBytes(timestampExtended), 32),
+      root
+    )
+  }
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
-  if (this._common.isActivatedEIP(4895)) {
+  if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
-  if (block._common.consensusType() === ConsensusType.ProofOfWork) {
+  if (block.common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
 
@@ -294,8 +329,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this._common.isActivatedEIP(1559) === true) {
-      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
+    if (this.common.isActivatedEIP(1559) === true) {
+      maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -365,7 +400,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const minerReward = this._common.param('pow', 'minerReward')
+  const minerReward = this.common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {

@@ -1,0 +1,23 @@
+{
+  "name": "EIP-4788",
+  "number": 4788,
+  "comment": "Beacon block root in the EVM",
+  "url": "https://eips.ethereum.org/EIPS/eip-4788",
+  "status": "Draft",
+  "minimumHardfork": "cancun",
+  "requiredEIPs": [],
+  "gasConfig": {},
+  "gasPrices": {
+    "beaconrootCost": {
+      "v": 4200,
+      "d": "Gas cost when calling the beaconroot stateful precompile"
+    }
+  },
+  "vm": {
+    "historicalRootsLength": {
+      "v": 98304,
+      "d": "The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile"
+    }
+  },
+  "pow": {}
+}

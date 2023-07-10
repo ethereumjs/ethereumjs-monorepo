@@ -7,7 +7,8 @@ import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
 import { decode, encode } from './message.js'
 
-import type { DPT, PeerInfo } from './dpt.js'
+import type { DPTServerOptions, PeerInfo } from '../types.js'
+import type { DPT } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 import type LRUCache from 'lru-cache'
@@ -19,29 +20,6 @@ const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
-
-export interface DPTServerOptions {
-  /**
-   * Timeout for peer requests
-   *
-   * Default: 10s
-   */
-  timeout?: number
-
-  /**
-   * Network info to send a long a request
-   *
-   * Default: 0.0.0.0, no UDP or TCP port provided
-   */
-  endpoint?: PeerInfo
-
-  /**
-   * Function for socket creation
-   *
-   * Default: dgram-created socket
-   */
-  createSocket?: Function
-}
 
 export class Server extends EventEmitter {
   _dpt: DPT
@@ -144,10 +122,12 @@ export class Server extends EventEmitter {
   }
 
   _send(peer: PeerInfo, typename: string, data: any) {
-    const debugMsg = `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-      peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-    })`
-    this.debug(typename, debugMsg)
+    this.debug(
+      typename,
+      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
+        peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+      })`
+    )
 
     const msg = encode(typename, data, this._privateKey)
 
@@ -159,10 +139,13 @@ export class Server extends EventEmitter {
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
     const info = decode(msg) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
-    const debugMsg = `received ${info.typename} from ${rinfo.address}:${
-      rinfo.port
-    } (peerId: ${formatLogId(bytesToHex(peerId), verbose)})`
-    this.debug(info.typename.toString(), debugMsg)
+    this.debug(
+      info.typename.toString(),
+      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
+        bytesToHex(peerId),
+        verbose
+      )})`
+    )
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)

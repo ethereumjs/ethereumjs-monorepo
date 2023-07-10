@@ -1,35 +1,7 @@
-import * as https from 'https'
-
 type rpcParams = {
   method: string
   params: (string | boolean | number)[]
 }
-
-const nodeFetch = async (url: string, data: string) =>
-  new Promise((resolve, reject) => {
-    const options = {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-    }
-
-    const req = https
-      .request(url, options, (resp) => {
-        let data = ''
-        resp.on('data', (chunk) => {
-          data += chunk
-        })
-        resp.on('end', () => {
-          const res = JSON.parse(data)
-          resolve(res)
-        })
-      })
-      .on('error', (err) => {
-        reject(err.message)
-      })
-    req.end(data)
-  })
 
 /**
  * Makes a simple RPC call to a remote Ethereum JSON-RPC provider and passes through the response.
@@ -48,20 +20,15 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     id: 1,
   })
 
-  if (global.fetch !== undefined) {
-    const res = await fetch(url, {
-      headers: {
-        'content-type': 'application/json',
-      },
-      method: 'POST',
-      body: data,
-    })
-    const json = await res.json()
-    return json.result
-  } else {
-    const res: any = await nodeFetch(url, data)
-    return res.result
-  }
+  const res = await fetch(url, {
+    headers: {
+      'content-type': 'application/json',
+    },
+    method: 'POST',
+    body: data,
+  })
+  const json = await res.json()
+  return json.result
 }
 
 /**
@@ -81,7 +48,7 @@ export const getProvider = (provider: string | EthersProvider) => {
 
 /**
  * A partial interface for an `ethers` `JsonRpcProvider`
- * We only use the url string since we do raw `fetch` or `http` calls to
+ * We only use the url string since we do raw `fetch` calls to
  * retrieve the necessary data
  */
 export interface EthersProvider {

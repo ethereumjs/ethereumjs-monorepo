@@ -204,7 +204,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
   // 2. Starting from the fork point, delete all nodes between `left` and `right`
 
   const saveStack = (key: Nibbles, stack: TrieNode[]) => {
-    return trie._saveStack(key, stack, [])
+    return trie.saveStack(key, stack, [])
   }
 
   if (node instanceof ExtensionNode || node instanceof LeafNode) {

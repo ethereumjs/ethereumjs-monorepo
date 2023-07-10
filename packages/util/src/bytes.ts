@@ -5,11 +5,6 @@ import {
   hexToBytes as _unprefixedHexToBytes,
 } from 'ethereum-cryptography/utils.js'
 
-// Note: ethereum-cryptography/hexToBytes is imported as "unprefixedHexToBytes"
-// This name is not correct, since it supports prefixed strings. However, internally here we
-// explicitly use it when the strings are known to be unprefixed (for readability and avoid
-// confusion why we would not use our own `hexToBytes`)
-
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
@@ -23,7 +18,13 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
 /**
  * @deprecated
  */
-export const unprefixedHexToBytes = _unprefixedHexToBytes
+export const unprefixedHexToBytes = (inp: string) => {
+  if (inp.slice(0, 2) === '0x') {
+    throw new Error('hex string is prefixed with 0x, should be unprefixed')
+  } else {
+    return _unprefixedHexToBytes(padToEven(inp))
+  }
+}
 
 /****************  Borrowed from @chainsafe/ssz */
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6

@@ -7,7 +7,7 @@ import { baseRequest, baseSetup, createClient, createManager, params, startRPC }
 
 const method = 'net_version'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 function compareResult(t: any, result: any, chainId: any) {
   let msg = 'result should be a string'
@@ -58,7 +58,7 @@ tape(`${method}: call on goerli`, async (t) => {
 })
 
 tape('reset TD', (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
   td.reset()
   t.end()
 })

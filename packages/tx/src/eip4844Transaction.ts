@@ -551,7 +551,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): BlobEIP4844Transaction {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): BlobEIP4844Transaction {
     const opts = { ...this.txOptions, common: this.common }
 
     return BlobEIP4844Transaction.fromTxData(

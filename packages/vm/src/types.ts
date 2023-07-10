@@ -4,7 +4,7 @@ import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVM, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
+import type { BigIntLike, GenesisState, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -83,7 +83,7 @@ export interface VMOpts {
    *
    * - `chain`: all chains supported by `Common` or a custom chain
    * - `hardfork`: `mainnet` hardforks up to the `Paris` hardfork
-   * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
+   * - `eips`: `1559` (usage e.g. `eips: [ 1559, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
    * documentation for supported EIPs.
@@ -120,13 +120,10 @@ export interface VMOpts {
    */
   activatePrecompiles?: boolean
   /**
-   * If true, the state of the VM will add the genesis state given by {@link Blockchain.genesisState} to a newly
-   * created state manager instance. Note that if stateManager option is also passed as argument
-   * this flag won't have any effect.
-   *
-   * Default: `false`
+   * A genesisState to generate canonical genesis for the "in-house" created stateManager if external
+   * stateManager not provided for the VM, defaults to an empty state
    */
-  activateGenesisState?: boolean
+  genesisState?: GenesisState
 
   /**
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number

@@ -47,7 +47,7 @@ interface Path {
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
  */
 export class Trie {
-  private readonly _opts: TrieOptsWithDefaults = {
+  protected readonly _opts: TrieOptsWithDefaults = {
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
     useRootPersistence: false,
@@ -354,7 +354,7 @@ export class Trie {
    * Creates the initial node from an empty tree.
    * @private
    */
-  async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
+  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
     const newNode = new LeafNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
@@ -390,7 +390,7 @@ export class Trie {
    * @param keyRemainder
    * @param stack
    */
-  async _updateNode(
+  protected async _updateNode(
     k: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
@@ -486,14 +486,14 @@ export class Trie {
       }
     }
 
-    await this._saveStack(key, stack, toSave)
+    await this.saveStack(key, stack, toSave)
   }
 
   /**
    * Deletes a node from the trie.
    * @private
    */
-  async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
+  protected async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
     const processBranchNode = (
       key: Nibbles,
       branchKey: number,
@@ -614,7 +614,7 @@ export class Trie {
           parentNode as TrieNode,
           stack
         )
-        await this._saveStack(key, stack, opStack)
+        await this.saveStack(key, stack, opStack)
       }
     } else {
       // simple removing a leaf and recalculation the stack
@@ -623,18 +623,18 @@ export class Trie {
       }
 
       stack.push(lastNode)
-      await this._saveStack(key, stack, opStack)
+      await this.saveStack(key, stack, opStack)
     }
   }
 
   /**
    * Saves a stack of nodes to the database.
-   * @private
+   *
    * @param key - the key. Should follow the stack
    * @param stack - a stack of nodes to the value given by the key
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
-  async _saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
+  async saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
 
     // update nodes
@@ -925,7 +925,7 @@ export class Trie {
    * called by {@link ScratchReadStream}
    * @private
    */
-  async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
+  protected async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
         if (node !== null) {

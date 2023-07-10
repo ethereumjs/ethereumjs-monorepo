@@ -134,8 +134,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
 
     const newCommon = Common.custom({ chainId: 4 })
-    newCommon.setHardfork(Hardfork.London)
-    newCommon.setEIPs([2537])
+    newCommon.setHardfork(Hardfork.Paris)
 
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
@@ -144,7 +143,10 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       },
     })
     const signedTxn = txn.sign(pkey)
-    assert.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
+    assert.ok(
+      signedTxn.common.hardfork() === Hardfork.Paris,
+      'signed tx common is taken from tx.common'
+    )
   })
 
   it('unsigned tx -> getMessageToSign()/getHashedMessageToSign()', () => {

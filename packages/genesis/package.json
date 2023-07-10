@@ -60,6 +60,6 @@
     "@ethereumjs/util": "^8.0.6"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

@@ -10,12 +10,14 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
+import { ProtocolType } from '../types.js'
 import { assertEq, formatLogData, formatLogId } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol.js'
+import { Protocol } from './protocol.js'
 
 import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from './protocol.js'
+import type { SendMethod } from '../types.js'
+import type { Input } from '@ethereumjs/rlp'
 
 export class ETH extends Protocol {
   _status: ETH.StatusMsg | null = null
@@ -29,7 +31,7 @@ export class ETH extends Protocol {
   _nextForkBlock = BigInt(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, EthProtocol.ETH, version, ETH.MESSAGE_CODES)
+    super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
@@ -53,16 +55,17 @@ export class ETH extends Protocol {
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
 
-  _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
+  _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
-    const messageName = this.getMsgPrefix(code)
     const debugMsg = this.DEBUG
-      ? `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
+      ? `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          this._peer._socket.remotePort
+        }`
       : undefined
 
     if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
       const logData = formatLogData(bytesToHex(data), this._verbose)
-      this.debug(messageName, `${debugMsg}: ${logData}`)
+      this.debug(this.getMsgPrefix(code), `${debugMsg}: ${logData}`)
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS: {
@@ -78,7 +81,7 @@ export class ETH extends Protocol {
           this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
         }`
         if (this.DEBUG) {
-          this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+          this.debug(this.getMsgPrefix(code), `${debugMsg}: ${peerStatusMsg}`)
         }
         this._handleStatus()
         break
@@ -136,7 +139,7 @@ export class ETH extends Protocol {
         }
       }
     }
-    const peerFork: any = c.hardforkForForkHash(peerForkHash)
+    const peerFork = c.hardforkForForkHash(peerForkHash)
     if (peerFork === null) {
       const msg = 'Unknown fork hash'
       if (this.DEBUG) {
@@ -187,11 +190,18 @@ export class ETH extends Protocol {
       'STATUS'
     )
 
-    const status: any = {
+    const status: {
+      networkId: Uint8Array | Uint8Array[]
+      td: Uint8Array
+      bestHash: Uint8Array
+      genesisHash: Uint8Array
+      forkId?: Uint8Array | Uint8Array[]
+    } = {
       networkId: this._peerStatus[1],
       td: this._peerStatus[2] as Uint8Array,
       bestHash: this._peerStatus[3] as Uint8Array,
       genesisHash: this._peerStatus[4] as Uint8Array,
+      forkId: undefined,
     }
 
     if (this._version >= 64) {
@@ -203,7 +213,7 @@ export class ETH extends Protocol {
         'STATUS'
       )
       this._validateForkId(this._peerStatus[5] as Uint8Array[])
-      status['forkId'] = this._peerStatus[5]
+      status.forkId = this._peerStatus[5]
     }
 
     this.emit('status', status)
@@ -291,9 +301,9 @@ export class ETH extends Protocol {
     this._handleStatus()
   }
 
-  sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
-    const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
+  sendMessage(code: ETH.MESSAGE_CODES, payload: Input) {
     if (this.DEBUG) {
+      const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
       const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 

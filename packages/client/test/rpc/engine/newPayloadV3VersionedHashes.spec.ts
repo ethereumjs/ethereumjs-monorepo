@@ -17,7 +17,7 @@ const method = 'engine_newPayloadV3'
 // however its not required to set to correct value to test for versioned hashes test cases
 const [blockData] = blocks
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 export const batchBlocks = async (t: Test, server: HttpServer) => {
   for (let i = 0; i < 3; i++) {
@@ -141,7 +141,7 @@ tape(`${method}: Cancun validations`, (v1) => {
   })
 
   v1.test(`reset TD`, (t) => {
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     td.reset()
     t.end()
   })

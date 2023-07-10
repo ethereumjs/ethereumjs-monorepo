@@ -1,5 +1,4 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   bytesToBigInt,
   computeVersionedHash,
@@ -33,9 +32,8 @@ describe('Precompiles: point evaluation', () => {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
       })
-      const evm = await EVM.create({
+      const evm = new EVM({
         common,
-        stateManager: new DefaultStateManager(),
       })
       const addressStr = '000000000000000000000000000000000000000a'
       const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
@@ -66,7 +64,7 @@ describe('Precompiles: point evaluation', () => {
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
-        _common: common,
+        common,
       }
 
       let res = await pointEvaluation(opts)
@@ -86,14 +84,13 @@ describe('Precompiles: point evaluation', () => {
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
-        _common: common,
+        common,
       }
 
       res = await pointEvaluation(optsWithInvalidCommitment)
-      assert.equal(
-        res.exceptionError?.error,
-        'kzg commitment does not match versioned hash',
-        'precompile throws when commitment doesnt match versioned hash'
+      assert.ok(
+        res.exceptionError?.error.match('kzg commitment does not match versioned hash'),
+        'precompile throws when commitment does not match versioned hash'
       )
     }
   })
