@@ -26,7 +26,6 @@ import type {
 } from '../testLoader'
 import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { InterpreterStep } from '@ethereumjs/evm'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TaskResult, Test } from 'vitest'
 
 type TestData = Record<string, any>
@@ -148,7 +147,7 @@ export class GeneralStateTests {
     await (<VM>vm).evm.journal.cleanup()
     await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
 
-    const stateManagerStateRoot = (<DefaultStateManager>vm.stateManager)._trie.root()
+    const stateManagerStateRoot = (<any>vm.stateManager)._trie.root()
     const testDataPostStateRoot = toBytes(testData.postStateRoot)
     const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 
@@ -180,9 +179,7 @@ export class GeneralStateTests {
       for await (const [idx, testCase] of testCases.entries()) {
         this.testCount++
         const testRun = `${id} ${idx + 1}/${testCases.length}`
-        console.log(`Running testCase: ${testRun}`)
         if (options.reps !== undefined && options.reps > 0) {
-          console.log(`REPS: ${options.reps}}`)
           let totalTimeSpent = 0
           for (const rep of Array.from({ length: options.reps }, (_, i) => i)) {
             it(`${testRun}: rep ${rep + 1} / ${options.reps}`, async () => {
@@ -245,13 +242,17 @@ export class GeneralStateTests {
           getTestPath('GeneralStateTests', this.testGetterArgs, this.customTestsPath)
         )) as StateDirectory
       }
-      if (dirs.includes('LegacyTests')) {
+      if (dirs.includes('LegacyTests/Constantinople/GeneralStateTests')) {
         _tests.LegacyTests = {
           Constantinople: {
             GeneralStateTests: (await getTestsFromArgs(
               'GeneralStateTests',
               this.testGetterArgs,
-              getTestPath('LegacyTests', this.testGetterArgs, this.customTestsPath)
+              getTestPath(
+                'LegacyTests/Constantinople/GeneralStateTests',
+                this.testGetterArgs,
+                this.customTestsPath
+              )
             )) as StateDirectory,
           },
         }
@@ -267,12 +268,16 @@ export class GeneralStateTests {
                 await this.runFileDirectory(dir, tests as FileDirectory)
               }
             })
-            suite('Shanghai', async () => {
-              await this.runTestSuite(_tests.GeneralStateTests!.Shanghai!)
-            })
-            suite('VMTests', async () => {
-              await this.runTestSuite(_tests.GeneralStateTests!.VMTests!)
-            })
+            if (_tests.GeneralStateTests!.Shanghai) {
+              suite('Shanghai', async () => {
+                await this.runTestSuite(_tests.GeneralStateTests!.Shanghai!)
+              })
+            }
+            if (_tests.GeneralStateTests!.VMTests) {
+              suite('VMTests', async () => {
+                await this.runTestSuite(_tests.GeneralStateTests!.VMTests!)
+              })
+            }
           })
         }
         if (_tests.LegacyTests) {

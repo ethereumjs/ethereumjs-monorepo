@@ -1,91 +1,117 @@
 import { suite } from 'vitest'
 
 import { GeneralStateTests } from '../runners/GeneralStateTestsRunner'
-import { defaultStateTestArgs } from '../runners/runnerUtils'
+import { testInput } from '../runners/runnerUtils'
 
-const parseInput = (input: string | undefined, bool: boolean = false) => {
-  if (input === undefined) {
-    return undefined
-  }
-  if (input === '') {
-    return undefined
-  }
-  if (input === 'true' && bool === false) {
-    return undefined
-  }
-  return input
-}
-
-const input = {
-  ['verify-test-amount-alltests']: parseInput(process.env.VERIFY_ALLTESTS) === undefined ? 0 : 1,
-  count: parseInput(process.env.COUNT) !== undefined ? parseInt(process.env.COUNT!) : undefined,
-  fork: parseInput(process.env.FORK) ?? 'Paris',
-  test: parseInput(process.env.STATETEST),
-  skip: parseInput(process.env.SKIP) ?? defaultStateTestArgs.skip,
-  runSkipped: parseInput(process.env.RUNSKIPPED) ?? defaultStateTestArgs.runSkipped,
-  file: parseInput(process.env.FILE),
-  dir: parseInput(process.env.DIR),
-  excludeDir: parseInput(process.env.EXCLUDEDIR),
-  testsPath: parseInput(process.env.TESTSPATH),
-  customTestsPath: parseInput(process.env.CUSTOMTESTSPATH),
-  customStateTest: parseInput(process.env.CUSTOMSTATETEST) ?? defaultStateTestArgs.customStateTest,
-  jsontrace: parseInput(process.env.JSONTRACE, true) !== undefined,
-  data: parseInput(process.env.DATA),
-  gas: parseInput(process.env.GAS),
-  value: parseInput(process.env.VALUE),
-  debug: parseInput(process.env.DEBUG, true) !== undefined,
-  'expected-test-amount':
-    parseInput(process.env.EXPECTEDTESTAMOUNT) !== undefined
-      ? parseInt(process.env.EXPECTEDTESTAMOUNT!)
-      : undefined,
-  reps: parseInput(process.env.REPS) !== undefined ? parseInt(process.env.REPS!) : undefined,
-}
-
-const testArgs = { ...defaultStateTestArgs, ...input }
-if (testArgs.test !== undefined || testArgs.customStateTest !== undefined) {
-  testArgs['verify-test-amount-alltests'] = 0
-}
+const testArgs = testInput('state')
+const printArgs = Object.fromEntries(Object.entries(testArgs).filter(([_, v]) => v !== undefined))
+printArgs['verify-test-amount-alltests'] =
+  printArgs['verify-test-amount-alltests'] === 1 ? true : false
 const test = new GeneralStateTests(testArgs)
+console.log('-------STATE_TEST-------')
+console.log(`${new Date().toLocaleTimeString()}`)
 console.log('----------TEST_ARGS------------')
-console.log(Object.fromEntries(Object.entries(testArgs).filter(([_, v]) => v !== undefined)))
+console.log(printArgs)
+console.log('fork_config', test.FORK_CONFIG)
+console.log('verify all: ', process.env.VERIFY_ALLTESTS)
 console.log('-------------------------------')
-
 const forkSuite = suite(`${testArgs.fork} (${test.expectedTests})`, async () => {
   await test.runTests()
 })
 
-forkSuite.on('beforeAll', async () => {
+forkSuite.on('beforeAll', async (context) => {
   console.log('----------TEST_FORK------------')
-  console.log(`${testArgs.fork} > test: ${testArgs.test}`)
-  testArgs.test !== undefined &&
-    console.log(`${' '.repeat(testArgs.fork.length)} > expected_tests: (${test.expectedTests})`)
+  let totalFiles = 0
+  let totalDirectories = 0
+  let totalSubDirectories = 0
+  let totalTestCases = 0
+  for await (const dir of context.tasks) {
+    if (!('tasks' in dir)) {
+      continue
+    }
+    totalDirectories += 1
+    for await (const subDir of dir.tasks.filter((d) => 'tasks' in d)) {
+      for await (const subSub of (subDir as any).tasks) {
+        totalSubDirectories += 1
+        for await (const file of subSub.tasks) {
+          totalFiles += 1
+          for await (const test of file.tasks) {
+            let subs = 0
+            let files = 0
+            if ('tasks' in test) {
+              for await (const task of test.tasks) {
+                if ('tasks' in task) {
+                  subs = (subDir as any).tasks.length - 1
+                  files = file.tasks.length - 1
+                  totalTestCases += task.tasks.length
+                } else {
+                  totalTestCases += 1
+                }
+              }
+            } else {
+              subs = file.tasks.length - 1
+              totalTestCases += 1
+            }
+            totalSubDirectories += subs
+            totalFiles += files
+          }
+        }
+      }
+    }
+  }
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalDirectories: (${totalDirectories})`)
+  console.log(
+    `${' '.repeat(testArgs.fork!.length)} > totalSubDirectories: (${totalSubDirectories})`
+  )
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalFiles: (${totalFiles})`)
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalTests: (${totalTestCases})`)
   console.log('-------------------------------')
 })
 
 forkSuite.on('afterAll', async (context) => {
-  let totalTestRun = 0
+  let skipped = 0
+  let totalFiles = 0
+  let totalDirectories = 0
+  let totalSubDirectories = 0
+  let totalTestCases = 0
   let totalPassing = 0
   for await (const dir of context.tasks) {
     if (!('tasks' in dir)) {
       continue
     }
-    totalTestRun += dir.tasks.length
-    totalPassing += dir.tasks.filter((t: any) => t.result.state === 'pass').length
-    // for await (const subDir of (dir as any).tasks) {
-    //   const passing = subDir.tasks.filter((t: any) => t.result.state === 'pass').length
-    //   totalTestRun += subDir.tasks.length
-    //   totalPassing += passing
-    // for await (const file of subDir.tasks) {
-    // const passing = file.tasks.filter((t: any) => t.result.state === 'pass').length
-    // totalTestRun += file.tasks.length
-    // totalPassing += passing
-    // for await (const test of file.tasks) {
-    // const passing = test.tasks.filter((t: any) => t.result.state === 'pass').length
-    // totalTestRun += test.tasks.length
-    // totalPassing += passing
-    // }
-    // }
-    // }
+    totalDirectories += 1
+    for await (const subDir of dir.tasks.filter((d) => 'tasks' in d)) {
+      for await (const subSub of (subDir as any).tasks) {
+        totalSubDirectories += 1
+        for await (const file of subSub.tasks) {
+          totalFiles += 1
+          for await (const test of file.tasks) {
+            let subs = 0
+            let files = 0
+            if ('tasks' in test) {
+              for await (const task of test.tasks) {
+                if ('tasks' in task) {
+                  subs = (subDir as any).tasks.length - 1
+                  files = file.tasks.length - 1
+                  totalTestCases += task.tasks.length
+                  totalPassing += task.tasks.filter((t: any) => t.result.state === 'pass').length
+                  skipped += task.tasks.filter((t: any) => t.result.state === 'skip').length
+                } else {
+                  totalPassing += task.result.state === 'pass' ? 1 : 0
+                  skipped += task.result.state === 'skip' ? 1 : 0
+                  totalTestCases += 1
+                }
+              }
+            } else {
+              totalTestCases += 1
+              totalPassing += test.result.state === 'pass' ? 1 : 0
+            }
+            totalSubDirectories += subs
+            totalFiles += files
+          }
+        }
+      }
+    }
   }
   console.log('---------RESULT----------------')
   if (test.expectedTests > 0) {
@@ -97,7 +123,15 @@ forkSuite.on('afterAll', async (context) => {
   } else {
     console.log(`${testArgs.fork} > totalChecks: (${test.testCount})`)
   }
-  console.log(`${' '.repeat(testArgs.fork.length)} > totalTests: (${totalTestRun})`)
-  console.log(`${' '.repeat(testArgs.fork.length)} > totalPassing: (${totalPassing})`)
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalDirectories: (${totalDirectories})`)
+  console.log(
+    `${' '.repeat(testArgs.fork!.length)} > totalSubDirectories: (${totalSubDirectories})`
+  )
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalFiles: (${totalFiles})`)
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalTests: (${totalTestCases})`)
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalSkipped: (${skipped})`)
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalTestRun: (${totalTestCases - skipped})`)
+  console.log(`${' '.repeat(testArgs.fork!.length)} > totalPassing: (${totalPassing})`)
   console.log('-------------------------------')
+  clearInterval(undefined)
 })
