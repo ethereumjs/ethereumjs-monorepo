@@ -1,14 +1,63 @@
 import * as fs from 'fs'
-import * as dir from 'node-dir'
 import * as path from 'path'
 
 import { DEFAULT_TESTS_PATH } from './config'
 
-const falsePredicate = () => false
-type FileWithTests = Record<string, any>
-type DirWithFiles = Record<string, FileWithTests>
-type DirWithSubDirs = Record<string, DirWithFiles>
-export type FileData = Record<string, DirWithFiles | DirWithSubDirs>
+import type { TestGetterArgs } from './runners/runnerUtils'
+
+/**
+ * Tests may differ in their input, but all have an _info field
+ */
+export type TestInput = Record<string, any>
+export type TestCase = { _info: Record<string, any>; network: string } & Record<string, TestInput>
+
+/**
+ * A file is a map of testcase names to tests
+ */
+export type TestID = string
+export type TestFile = Record<TestID, TestCase>
+
+/**
+ * File Directory is the .json fileNames mapped to the tests in that file
+ */
+export type FileName = string
+export type FileDirectory = Record<FileName, TestFile>
+
+export type TestTitle = string
+export type TestSuite = Record<TestTitle, FileDirectory>
+
+export type StateDirectory = {
+  Shanghai?: TestSuite
+  VMTests?: TestSuite
+} & TestSuite
+
+export interface BlockChainDirectory {
+  GeneralStateTests: StateDirectory
+  InvalidBlocks: TestSuite
+  ValidBlocks: TestSuite
+  TransitionTests?: TestSuite
+}
+
+export type TestDirectory<TestType extends 'BlockchainTests' | 'GeneralStateTests'> =
+  TestType extends 'BlockchainTests'
+    ? {
+        BlockChainTests?: BlockChainDirectory
+        LegacyTests?: {
+          Constantinople: {
+            BlockChainTests: BlockChainDirectory
+          }
+        }
+      }
+    : TestType extends 'GeneralStateTests'
+    ? {
+        GeneralStateTests: StateDirectory
+        LegacyTests?: {
+          Constantinople: {
+            GeneralStateTests: StateDirectory
+          }
+        }
+      }
+    : never
 
 /**
  * Returns the list of test files matching the given parameters
@@ -19,77 +68,271 @@ export type FileData = Record<string, DirWithFiles | DirWithSubDirs>
  * @param excludeDir a {@code RegExp} or array to specify directories to ignore
  * @returns the list of test files
  */
-export async function getTests(
-  onFile: Function,
-  fileFilter: RegExp | string[] = /.json$/,
-  skipPredicate: (...args: any[]) => boolean = falsePredicate,
+
+async function getGeneralStateTests(
   directory: string,
-  excludeDir: RegExp | string[] = []
-): Promise<FileData> {
-  const options = {
-    match: fileFilter,
-    excludeDir,
+  _excludeDir: RegExp | string[] = [],
+  forkConfig: string,
+  argsTest?: string
+): Promise<StateDirectory> {
+  const GeneralStateTests: StateDirectory = Object.fromEntries(
+    fs
+      .readdirSync(directory + '/GeneralStateTests', {
+        encoding: 'utf8',
+      })
+      .filter((d: string) => d !== 'VMTests' && d !== 'Shanghai')
+      .map((testName) => {
+        return [
+          testName,
+          Object.fromEntries(
+            fs
+              .readdirSync(directory + '/GeneralStateTests/' + testName, {
+                encoding: 'utf8',
+              })
+              .map((file: FileName) => {
+                const testFile = fs.readFileSync(
+                  directory + '/GeneralStateTests/' + testName + '/' + file,
+                  {
+                    encoding: 'utf8',
+                  }
+                )
+                const testCases: TestFile = JSON.parse(testFile)
+                for (const testName of Object.keys(testCases)) {
+                  if (testCases[testName].network !== forkConfig) {
+                    delete testCases[testName]
+                  }
+                }
+                return [file, testCases] as [FileName, TestFile]
+              })
+              .filter(([, v]) => Object.keys(v).length > 0)
+          ),
+        ]
+      })
+      .filter(([, v]) => Object.keys(v).length > 0)
+  )
+  if (!directory.includes('Constantinople')) {
+    GeneralStateTests.VMTests = Object.fromEntries(
+      fs
+        .readdirSync(directory + '/GeneralStateTests/VMTests', {
+          encoding: 'utf8',
+        })
+        .filter((d: string) => argsTest === undefined || d === argsTest)
+        .map((sub: string) => {
+          return [
+            sub,
+            Object.fromEntries(
+              fs
+                .readdirSync(directory + '/GeneralStateTests/VMTests/' + sub, {
+                  encoding: 'utf8',
+                })
+                .map((file: FileName) => {
+                  const testFile = fs.readFileSync(
+                    directory + '/GeneralStateTests/VMTests/' + sub + '/' + file,
+                    {
+                      encoding: 'utf8',
+                    }
+                  )
+                  const testCases: TestFile = JSON.parse(testFile)
+                  for (const testName of Object.keys(testCases)) {
+                    if (testCases[testName].network !== forkConfig) {
+                      delete testCases[testName]
+                    }
+                  }
+                  return [file, testCases] as [FileName, TestFile]
+                })
+                .filter(([, v]) => Object.keys(v).length > 0)
+            ),
+          ]
+        })
+        .filter(([, v]) => Object.keys(v).length > 0)
+    )
+    GeneralStateTests.Shanghai = Object.fromEntries(
+      fs
+        .readdirSync(directory + '/GeneralStateTests/Shanghai', {
+          encoding: 'utf8',
+        })
+        .filter((d: string) => argsTest === undefined || d === argsTest)
+
+        .map((testName) => {
+          return [
+            testName,
+            Object.fromEntries(
+              fs
+                .readdirSync(directory + '/GeneralStateTests/Shanghai/' + testName, {
+                  encoding: 'utf8',
+                })
+                .filter((d: string) => argsTest === undefined || d === argsTest)
+
+                .map((file: FileName) => {
+                  const testFile = fs.readFileSync(
+                    directory + '/GeneralStateTests/Shanghai/' + testName + '/' + file,
+                    {
+                      encoding: 'utf8',
+                    }
+                  )
+                  const testCases: TestFile = JSON.parse(testFile)
+
+                  for (const testName of Object.keys(testCases)) {
+                    if (testCases[testName].network !== forkConfig) {
+                      delete testCases[testName]
+                    }
+                  }
+                  return [file, testCases] as [FileName, TestFile]
+                })
+                .filter(([, v]) => Object.keys(v).length > 0)
+            ),
+          ]
+        })
+        .filter(([, v]) => Object.keys(v).length > 0)
+    )
+    if (Object.keys(GeneralStateTests.Shanghai!).length === 0) {
+      delete GeneralStateTests.Shanghai
+    }
+    if (Object.keys(GeneralStateTests.VMTests!).length === 0) {
+      delete GeneralStateTests.VMTests
+    }
   }
-
-  const fileData: FileData = {}
-  const skipped: string[] = []
-  return new Promise((resolve, reject) => {
-    const finishedCallback = (err: Error | undefined, _files: string[]) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve(fileData)
-    }
-    const fileCallback = async (
-      err: Error | undefined,
-      content: string | Uint8Array,
-      fileName: string,
-      next: Function
-    ) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      const parsedFileName = path.parse(fileName).name
-      const parsed = path.parse(fileName)
-      const subDir = parsed.dir.slice(directory.length + 1)
-      const dirList = subDir.split(`/`).slice(1)
-      content = content instanceof Uint8Array ? content.toString() : content
-      const testsByName = JSON.parse(content)
-      const filteredTestsByName = []
-      const testNames = Object.keys(testsByName)
-      for (const testName of testNames) {
-        if (!skipPredicate(testName, testsByName[testName])) {
-          filteredTestsByName.push([testName, testsByName[testName]])
-        }
-      }
-      if (filteredTestsByName.length > 0) {
-        if (dirList.length === 0) {
-          const sub = { [`${parsed.dir.split('/').slice(-1)[0]}`]: filteredTestsByName }
-          fileData[`${parsedFileName}`] = sub
-        } else if (dirList.length === 1) {
-          const sub = fileData[dirList[0]] ?? {}
-          sub[`${parsedFileName}`] = filteredTestsByName
-          fileData[dirList[0]] = sub
-        } else if (dirList.length === 2) {
-          const sub = fileData[dirList[0]] ?? {}
-          const subSub = sub[dirList[1]] ?? {}
-          subSub[`${parsedFileName}`] = filteredTestsByName
-          sub[dirList[1]] = subSub
-          fileData[dirList[0]] = sub
-        }
-      } else {
-        skipped.push(parsedFileName)
-      }
-      next()
-    }
-
-    dir.readFiles(directory, options, fileCallback, finishedCallback)
-  })
+  return GeneralStateTests
 }
 
-function skipTest(testName: string, skipList = []) {
+async function getBlockchainTests(
+  directory: string,
+  _excludeDir: RegExp | string[] = [],
+  forkConfig: string,
+  argsTest?: string
+): Promise<BlockChainDirectory> {
+  const GeneralStateTests: StateDirectory = await getGeneralStateTests(
+    directory,
+    _excludeDir,
+    forkConfig
+  )
+  const InvalidBlocks: TestSuite = Object.fromEntries(
+    fs
+      .readdirSync(directory + '/InvalidBlocks', {
+        encoding: 'utf8',
+      })
+      .filter((d: string) => argsTest === undefined || d === argsTest)
+      .map((d) => {
+        return [
+          d,
+          Object.fromEntries(
+            fs
+              .readdirSync(directory + '/InvalidBlocks/' + d, { encoding: 'utf8' })
+              .map((file: FileName) => {
+                const testFile = fs.readFileSync(directory + '/InvalidBlocks/' + d + '/' + file, {
+                  encoding: 'utf8',
+                })
+                const testCases: TestFile = JSON.parse(testFile)
+                for (const testName of Object.keys(testCases)) {
+                  if (testCases[testName].network !== forkConfig) {
+                    delete testCases[testName]
+                  }
+                }
+                return [file, testCases] as [FileName, TestFile]
+              })
+              .filter(([, v]) => Object.keys(v).length > 0)
+          ),
+        ]
+      })
+      .filter(([, v]) => Object.keys(v).length > 0)
+  )
+  const ValidBlocks: TestSuite = Object.fromEntries(
+    fs
+      .readdirSync(directory + '/ValidBlocks', {
+        encoding: 'utf8',
+      })
+      .filter((d: string) => argsTest === undefined || d === argsTest)
+
+      .map((d) => {
+        return [
+          d,
+          Object.fromEntries(
+            fs
+              .readdirSync(directory + '/ValidBlocks/' + d, { encoding: 'utf8' })
+              .map((file: FileName) => {
+                const testFile = fs.readFileSync(directory + '/ValidBlocks/' + d + '/' + file, {
+                  encoding: 'utf8',
+                })
+                const testCases: TestFile = JSON.parse(testFile)
+                for (const testName of Object.keys(testCases)) {
+                  if (testCases[testName].network !== forkConfig) {
+                    delete testCases[testName]
+                  }
+                }
+                return [file, testCases] as [FileName, TestFile]
+              })
+              .filter(([, v]) => Object.keys(v).length > 0)
+          ),
+        ]
+      })
+      .filter(([, v]) => Object.keys(v).length > 0)
+  )
+  const BlockChainTests: BlockChainDirectory = {
+    GeneralStateTests: {
+      ...GeneralStateTests,
+    },
+    InvalidBlocks,
+    ValidBlocks,
+  }
+  if (!directory.includes('Constantinople')) {
+    BlockChainTests.TransitionTests = Object.fromEntries(
+      fs
+        .readdirSync(directory + '/TransitionTests', {
+          encoding: 'utf8',
+        })
+        .map((d) => {
+          return [
+            d,
+            Object.fromEntries(
+              fs
+                .readdirSync(directory + '/TransitionTests/' + d, {
+                  encoding: 'utf8',
+                })
+                .map((file: FileName) => {
+                  const testFile = fs.readFileSync(
+                    directory + '/TransitionTests/' + d + '/' + file,
+                    {
+                      encoding: 'utf8',
+                    }
+                  )
+
+                  const testCases: TestFile = JSON.parse(testFile)
+                  for (const testName of Object.keys(testCases)) {
+                    if (testCases[testName].network !== forkConfig) {
+                      delete testCases[testName]
+                    }
+                  }
+                  return [file, testCases] as [FileName, TestFile]
+                })
+                .filter(([, v]) => Object.keys(v).length > 0)
+            ),
+          ]
+        })
+        .filter(([, v]) => Object.keys(v).length > 0)
+    )
+    if (Object.keys(BlockChainTests.TransitionTests!).length === 0) {
+      delete BlockChainTests.TransitionTests
+    }
+  }
+  return BlockChainTests
+}
+
+export async function getDirectoryTests(
+  directory: string,
+  _excludeDir: RegExp | string[] = [],
+  forkConfig: string,
+  argsTest?: string
+): Promise<BlockChainDirectory | StateDirectory> {
+  if (directory.includes('BlockchainTests')) {
+    return getBlockchainTests(directory, _excludeDir, forkConfig, argsTest)
+  } else if (directory.includes('GeneralStateTests')) {
+    return getGeneralStateTests(directory, _excludeDir, forkConfig, argsTest)
+  } else {
+    throw new Error(`Unknown test directory ${directory}`)
+  }
+}
+
+export function skipTest(testName: string, skipList: string[] = []) {
   return skipList
     .map((skipName) => new RegExp(`^${skipName}`).test(testName))
     .some((isMatch) => isMatch)
@@ -103,7 +346,7 @@ function skipTest(testName: string, skipList = []) {
 export function getTestFromSource(file: string, onFile: Function) {
   const stream = fs.createReadStream(file)
   let contents = ''
-  let test: any = null
+  let test: Record<string, any> = {}
 
   stream
     .on('data', function (data: string) {
@@ -132,30 +375,27 @@ export function getTestFromSource(file: string, onFile: Function) {
 /**
  * Get list of test files from supported CLI args
  * @param testType the test type (path segment)
- * @param onFile a callback for each file
  * @param args the CLI args
  * @returns the list of test files
  */
-export async function getTestsFromArgs(
-  testType: string,
-  onFile: Function,
-  args: any = {},
-  directory: string
-) {
-  let fileFilter, excludeDir, skipFn
 
-  skipFn = (name: string) => {
+export async function getTestsFromArgs(
+  testType: 'GeneralStateTests' | 'BlockchainTests',
+  args: TestGetterArgs,
+  directory: string
+): Promise<BlockChainDirectory | StateDirectory> {
+  const excludeDir = args.excludeDir === undefined ? undefined : new RegExp(args.excludeDir)
+  let _skipFn: (...args: any) => boolean = (name: string) => {
     return skipTest(name, args.skipTests)
   }
-  if (new RegExp(`BlockchainTests`).test(testType)) {
-    const forkFilter = new RegExp(`${args.forkConfig}$`)
-    skipFn = (name: string, test: any) => {
-      return forkFilter.test(test.network) === false || skipTest(name, args.skipTests)
+  if (testType === 'BlockchainTests') {
+    _skipFn = (name: string, _test: Record<string, any>) => {
+      return _test.network !== args.forkConfig || skipTest(name, args.skipTests)
     }
   }
   if (new RegExp(`GeneralStateTests`).test(testType)) {
     const forkFilter = new RegExp(`${args.forkConfig}$`)
-    skipFn = (name: string, test: any) => {
+    _skipFn = (name: string, test: Record<string, any>) => {
       return (
         Object.keys(test['post'])
           .map((key) => forkFilter.test(key))
@@ -163,26 +403,8 @@ export async function getTestsFromArgs(
       )
     }
   }
-  if (testType === 'VMTests') {
-    skipFn = (name: string) => {
-      return skipTest(name, args.skipVM)
-    }
-  }
-  if (args.singleSource !== undefined) {
-    return getTestFromSource(args.singleSource, onFile)
-  }
-  if (args.file !== undefined) {
-    fileFilter = new RegExp(args.file)
-  }
-  if (args.excludeDir !== undefined) {
-    excludeDir = new RegExp(args.excludeDir)
-  }
-  if (args.test !== undefined) {
-    skipFn = (testName: string) => {
-      return testName !== args.test
-    }
-  }
-  return getTests(onFile, fileFilter, skipFn, directory, excludeDir)
+  const tests = await getDirectoryTests(directory, excludeDir, args.forkConfig, args.test)
+  return tests
 }
 
 /**
