@@ -13,6 +13,7 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
+  setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -38,6 +39,10 @@ const debug = createDebugLogger('vm:block')
 /* DAO account list */
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
+
+const parentBeaconBlockRootAddress = Address.fromString(
+  '0x000000000000000000000000000000000000000b'
+)
 
 /**
  * @ignore
@@ -254,6 +259,36 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       }
       await block.validateData()
     }
+  }
+  if (this.common.isActivatedEIP(4788)) {
+    // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
+    const root = block.header.parentBeaconBlockRoot!
+    const timestamp = block.header.timestamp
+    const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+    const timestampIndex = timestamp % historicalRootsLength
+    const timestampExtended = timestampIndex + historicalRootsLength
+
+    /**
+     * Note: (by Jochem)
+     * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+     * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+     * All ethereum accounts have empty storage by default
+     */
+
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+
+    await this.stateManager.putContractStorage(
+      parentBeaconBlockRootAddress,
+      setLengthLeft(bigIntToBytes(timestampIndex), 32),
+      bigIntToBytes(block.header.timestamp)
+    )
+    await this.stateManager.putContractStorage(
+      parentBeaconBlockRootAddress,
+      setLengthLeft(bigIntToBytes(timestampExtended), 32),
+      root
+    )
   }
   // Apply transactions
   if (this.DEBUG) {

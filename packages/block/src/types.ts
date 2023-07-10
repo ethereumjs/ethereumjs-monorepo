@@ -94,6 +94,7 @@ export interface HeaderData {
   withdrawalsRoot?: BytesLike
   dataGasUsed?: BigIntLike
   excessDataGas?: BigIntLike
+  parentBeaconBlockRoot?: BytesLike
 }
 
 /**
@@ -158,6 +159,7 @@ export interface JsonHeader {
   withdrawalsRoot?: string
   dataGasUsed?: string
   excessDataGas?: string
+  parentBeaconBlockRoot?: string
 }
 
 /*
