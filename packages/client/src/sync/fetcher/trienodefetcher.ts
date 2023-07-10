@@ -3,7 +3,6 @@ import {
   Account,
   KECCAK256_NULL,
   KECCAK256_RLP,
-  bytesToNibbles,
   hexToKeybytes,
   nibblesToCompactBytes,
   toBytes,
@@ -12,19 +11,15 @@ import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
-import path from 'path'
 
 import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
-import type { AccountData } from '../../net/protocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Nibbles } from '@ethereumjs/trie'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-
-const util = require('node:util')
 
 function nibblesToBytes(arr: Nibbles): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
@@ -70,9 +65,6 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
   codeTrie?: Trie
   accountToStorageTrie?: Map<String, Trie>
 
-  accountFetcherAccounts: Map<String, Uint8Array>
-  trieFetcherAccounts: Map<String, Uint8Array>
-
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 }
@@ -87,7 +79,8 @@ type FetchedNodeData = {
   deps: number
   nodeData: Uint8Array
   path: string
-  storageNodes?: Uint8Array[] // if fetched node is account node with a storage component, storage node data is stored here until it is ready to be put
+  // storageNodes?: Uint8Array[] // if fetched node is account node with a storage component, storage node data is stored here until it is ready to be put
+  pathToStorageNode?: Map<string, Uint8Array>
 }
 
 type NodeRequestData = {
@@ -99,22 +92,14 @@ type NodeRequestData = {
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
   root: Uint8Array
-
   // Holds all paths and nodes that need to be requested
   pathToNodeRequestData: OrderedMap<string, NodeRequestData>
-
   // Holds active requests to remove after storing
   requestedNodeToPath: Map<string, string>
-
   fetchedAccountNodes: Map<string, FetchedNodeData> // key is node hash
-
   accountTrie: Trie
   codeTrie: Trie
   accountToStorageTrie: Map<String, Trie>
-
-  accountFetcherAccounts: Map<String, Uint8Array>
-  trieFetcherAccounts: Map<String, Uint8Array>
-
   nodeCount: number
 
   /**
@@ -129,11 +114,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.accountTrie = options.accountTrie ?? new Trie({ useKeyHashing: false })
     this.codeTrie = options.codeTrie ?? new Trie({ useKeyHashing: false })
     this.accountToStorageTrie = options.accountToStorageTrie ?? new Map<String, Trie>()
-
-    this.accountFetcherAccounts = options.accountFetcherAccounts
-    this.trieFetcherAccounts = options.trieFetcherAccounts
     this.nodeCount = 0
-
     this.debug = createDebugLogger('client:TrieNodeFetcher')
 
     // will always start with root node as first set of node requests
@@ -176,38 +157,13 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       bytes: BigInt(this.config.maxRangeBytes),
     })
 
-    const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
-
-    if (
-      pathStrings.includes(
-        '0305020a04070f0c060806030b08090a060b05010809000e0f030c010505000d0506000808060c0002070104010d020005080b0a010e020d040c06060d09090a/01'
-      )
-    ) {
-      console.log('dbg50')
-      console.log(rangeResult)
-      console.log(paths)
-
-      const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
-
-      this.debug(requestedNodeCount)
-      this.debug(rangeResult.nodes.length)
-      this.debug(paths.length < rangeResult.nodes.length)
-      this.debug(paths.length < rangeResult.nodes.length)
-      this.debug(requestedNodeCount < rangeResult.nodes.length)
-    }
-
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For bytecode range queries that means the peer is not
     // yet synced.
+    const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
     if (rangeResult === undefined || requestedNodeCount < rangeResult.nodes.length) {
       this.debug(`Peer rejected trienode request`)
-      // const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
 
-      // this.debug(requestedNodeCount)
-      // this.debug(rangeResult.nodes.length)
-      // this.debug(paths.length < rangeResult.nodes.length)
-      // this.debug(paths.length < rangeResult.nodes.length)
-      // this.debug(requestedNodeCount < rangeResult.nodes.length)
       return undefined
     }
 
@@ -251,26 +207,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     }
   }
 
-  // ResolvePath resolves the provided composite node path by separating the
-  // path in account trie if it's existent.
-  // func ResolvePath(path []byte) (common.Hash, []byte) {
-  //   var owner common.Hash
-  //   if len(path) >= 2*common.HashLength {
-  //     owner = common.BytesToHash(hexToKeybytes(path[:2*common.HashLength]))
-  //     path = path[2*common.HashLength:]
-  //   }
-  //   return owner, path
-  // }
-
-  // resolvePath(path: string) {
-  //   const [accountPath, storagePath] = path!.split('/')
-  //   if (accountPath.length === 2 * 32) {
-  //     accountPath = hexToKeybytes(accountPath)
-  //   }
-
-  //   return [accountPath, storagePath]
-  // }
-
   /**
    * Store fetch result. Resolves once store operation is complete.
    * @param result fetch result
@@ -284,8 +220,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         const node = decodeNode(nodeData as unknown as Uint8Array)
         const nodeHash = bytesToHex(keccak256(nodeData as unknown as Uint8Array))
         const pathString = this.requestedNodeToPath.get(nodeHash) as string
-        // console.log(nodeHash)
-        // console.log(pathString)
         const [accountPath, storagePath] = pathString!.split('/')
         const nodePath = storagePath ?? accountPath
         const childNodes = []
@@ -303,7 +237,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               this.debug('branch node found')
               this.debug(storagePath)
               childNodes.unshift({
-                nodeHash: embeddedNode, // TODO not sure if I'm calculating the node hash of an embedded node correctly since <32 bytes is embedded and not hashed
+                nodeHash: embeddedNode,
                 path: syncPath,
               })
             }
@@ -326,7 +260,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           childNodes.unshift(val)
         } else {
           this.debug('leaf node found')
-
           if (storagePath === undefined) {
             this.debug('account leaf node found')
             const account = Account.fromRlpSerializedAccount(node.value())
@@ -350,7 +283,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             }
           } else {
             this.debug('Storage leaf node found')
-            // TODO
           }
         }
 
@@ -381,28 +313,23 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         }
 
         // record new node for batched storing after all subtrie nodes have been received
-        // console.log(pathString)
-        // console.log(this.pathToNodeRequestData.getElementByKey(pathString))
-        // console.log(node)
-
         const { nodeParentHash, parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
           pathString
         ) as NodeRequestData
-
         if (storagePath !== undefined) {
           // if fetched node has a storagePath, it's storage node data and should be stored with
           // account leaf node data from where it originates
-          const { storageNodes } = this.fetchedAccountNodes.get(
+          const { pathToStorageNode } = this.fetchedAccountNodes.get(
             parentAccountHash as string
           ) as unknown as FetchedNodeData
-          storageNodes!.push(nodeData as unknown as Uint8Array)
+          pathToStorageNode!.set(storagePath, nodeData as unknown as Uint8Array)
         } else {
           this.fetchedAccountNodes.set(nodeHash, {
             parentHash: nodeParentHash,
             deps: unknownChildNodeCount,
             nodeData,
             path: pathString,
-            storageNodes: hasStorageComponent ? [] : undefined,
+            pathToStorageNode: hasStorageComponent ? new Map<string, Uint8Array>() : undefined,
           } as unknown as FetchedNodeData)
         }
 
@@ -415,8 +342,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       if (this.pathToNodeRequestData.length === 0) {
         this.debug('All requests for current heal phase have been filled')
         const ops: BatchDBOp[] = []
-        for (const [nodeHash, data] of this.fetchedAccountNodes) {
-          const { parentHash, deps, nodeData, path, storageNodes } = data
+        for (const [_, data] of this.fetchedAccountNodes) {
+          const { nodeData, path, pathToStorageNode } = data
 
           // add account node data to account trie
           const node = decodeNode(nodeData)
@@ -424,41 +351,61 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             const b = hexToBytes(path)
             const n = bytesToNibbles2(b)
             const key = bytesToHex(nibblesToBytes(n.concat(node.key())))
-            this.trieFetcherAccounts.set(key, node.value())
             ops.unshift({
               type: 'put',
               key: hexToBytes(key),
               value: node.value(),
             })
+
+            // add storage data for account if it has fetched nodes
+            // TODO figure out what the key should be for mapping accounts to storage tries
+            const storageTrie = new Trie({ useKeyHashing: false })
+            const storageTrieOps: BatchDBOp[] = []
+            if (pathToStorageNode !== undefined && pathToStorageNode.size > 0) {
+              for (const [path, data] of pathToStorageNode) {
+                const storageNode = decodeNode(data)
+                if (storageNode instanceof LeafNode) {
+                  const b = hexToBytes(path)
+                  const n = bytesToNibbles2(b)
+                  const storageKey = bytesToHex(nibblesToBytes(n.concat(storageNode.key())))
+                  storageTrieOps.unshift({
+                    type: 'put',
+                    key: hexToBytes(storageKey),
+                    value: storageNode.value(),
+                  })
+                }
+              }
+              await storageTrie.batch(storageTrieOps)
+              await storageTrie.persistRoot()
+              const a = Account.fromRlpSerializedAccount(node.value())
+              this.debug(
+                `calculated and actual storage roots bellow\nactual ${bytesToHex(
+                  storageTrie.root()
+                )} - expected ${bytesToHex(a.storageRoot)}`
+              )
+            }
           }
-
-          // add storage data for account if it has fetched nodes
-          // if (storageNodes !== undefined && storageNodes.length > 0) {
-          //   for (const node of storageNodes) {
-
-          //   }
-          // }
         }
         await this.accountTrie.batch(ops)
         await this.accountTrie.persistRoot()
-
-        // check if calculated root matches with known root
-        console.log(bytesToHex(this.accountTrie.root()))
-        console.log(bytesToHex(this.root))
+        this.debug(
+          `calculated and actual storage roots bellow\nactual ${this.accountTrie.root()} - expected ${bytesToHex(
+            this.root
+          )}`
+        )
       }
     } catch (e) {
       this.debug(e)
     }
   }
 
-  // TODO do merging here too and rename as getSortedAndMergedPaths
   // TODO take a parameter to indicate how many paths to return and refactor tasks function to use it
   getSortedPathStrings() {
     const pathStrings = []
     // TODO have to keep track of which requests are in progress, efficiently, or remove them from pathToNodeRequestData
     // so that getSortedPathStrings doesn't return duplicates
     for (const [pathString, _] of this.pathToNodeRequestData) {
-      pathStrings.push(pathString) // keep this as a string in task
+      pathStrings.push(pathString)
     }
     return { pathStrings }
   }
@@ -466,8 +413,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
 
-    // console.log('dbg50')
-    // console.log(pathStrings)
     const ret: string[][] = []
     let paths: string[] = []
     let i = 0
@@ -475,10 +420,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       const outterPathString = pathStrings[i]!.split('/')
       const outterAccountPath = outterPathString[0]
       const outterStoragePath = outterPathString[1]
-      // console.log(`${outterAccountPath} - ${outterStoragePath}`)
 
       paths.push(outterAccountPath)
-
       if (outterStoragePath !== undefined) {
         paths.push(outterStoragePath)
       }
@@ -504,17 +447,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         paths = []
       }
     }
-
     if (paths.length > 0) ret.push(paths)
 
-    // console.log('dbg12')
-    // console.log(ret)
-    // console.log(JSON.stringify(paths))
-
-    // have to put into compact and keybytes format depending on if path is partial or full
-
-    // console.log(ret)
-    // TODO resolve should happen here, with keys being either keybyte or compact encoded
     return ret.map((pathStrings) =>
       pathStrings.map((s) => {
         if (s.length < 64) {
@@ -547,8 +481,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
           }
           const paths = this.mergeAndFormatPaths(requestedPathStrings) as unknown as Uint8Array[][]
-          // console.log('dbg10')
-          // console.log()
           tasks.push({
             pathStrings: requestedPathStrings,
             paths,
@@ -560,8 +492,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     } catch (e) {
       this.debug(e)
     }
-    // console.log('dbg11')
-    // console.log(tasks)
+
     return tasks
   }
 
