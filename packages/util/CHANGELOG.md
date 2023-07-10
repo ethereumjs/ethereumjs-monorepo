@@ -91,7 +91,7 @@ Withdrawal.raw()
 Withdrawal.toValue()
 ```
 
-We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module (so: within this library), see the respective README section for guidance.
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module (so: within this library), see the respective README section for guidance.
 
 ### Other Changes
 

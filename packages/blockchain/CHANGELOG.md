@@ -97,7 +97,7 @@ Blockchain.safeNumberToHash(number: bigint): Promise<Uint8Array | false>
 Blockchain.createGenesisBlock(stateRoot: Uint8Array): Block
 ```
 
-We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
 #### Prefixed Hex Strings as Default
 

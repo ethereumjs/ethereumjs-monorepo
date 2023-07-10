@@ -91,7 +91,7 @@ ETH.on('message', () => { ... })
 
 Eventually it is a good idea to generally have a closer look at code parts where events are received, so e.g. do an ".on" search in your IDE.
 
-We have added helper methods for "Buffer -> Uint8Array" conversions in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
 #### Prefixed Hex Strings as Default
 
