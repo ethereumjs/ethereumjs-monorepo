@@ -3,6 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, bytesToHex, hexToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
+import fs from 'fs'
 import { assert, expect, it, suite } from 'vitest'
 
 import { verifyPostConditions } from '../../util'
@@ -21,6 +22,7 @@ import type { VM } from '../../../src'
 import type {
   BlockChainDirectory,
   FileDirectory,
+  FileName,
   TestDirectory,
   TestFile,
   TestSuite,
@@ -289,6 +291,46 @@ export class BlockchainTests {
   async runTests(): Promise<void> {
     if (this.customStateTest !== undefined) {
       return
+    } else if (this.testGetterArgs.dir !== undefined) {
+      const testsPath = getTestPath('BlockchainTests', this.testGetterArgs, this.customTestsPath)
+
+      const files = fs
+        .readdirSync(testsPath, {
+          encoding: 'utf8',
+        })
+        .filter((file: FileName) => !file.endsWith('.stub'))
+
+        .map((file: FileName) => {
+          const testFile = fs.readFileSync(testsPath + '/' + file, {
+            encoding: 'utf8',
+          })
+          const testCases: TestFile = JSON.parse(testFile)
+          for (const testName of Object.keys(testCases)) {
+            if (
+              skipTest(testName, this.testGetterArgs.skipTests) ||
+              (testCases[testName].network !== undefined &&
+                testCases[testName].network !== this.testGetterArgs.forkConfig) ||
+              (testCases[testName].post !== undefined &&
+                !Object.keys(testCases[testName].post!).includes(this.testGetterArgs.forkConfig))
+            ) {
+              delete testCases[testName]
+            }
+          }
+          return [file, testCases] as [FileName, TestFile]
+        })
+        .filter(([, v]) => Object.keys(v).length > 0)
+      const subDirs = this.testGetterArgs.dir!.split('/')
+      suite('BlockChainTests', async () => {
+        if (subDirs.length === 2) {
+          await this.runFileDirectory(subDirs[1], Object.fromEntries(files) as FileDirectory)
+        } else if (subDirs.length === 3) {
+          suite(subDirs[0], async () => {
+            suite(subDirs[1], async () => {
+              await this.runFileDirectory(subDirs[2], Object.fromEntries(files) as FileDirectory)
+            })
+          })
+        }
+      })
     } else {
       const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
       const _tests: TestDirectory<'BlockchainTests'> = {}

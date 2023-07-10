@@ -76,9 +76,9 @@ export type TestDirectory<TestType extends 'BlockchainTests' | 'GeneralStateTest
 async function getGeneralStateTests(
   directory: string,
   _excludeDir: RegExp | string[] = [],
-  forkConfig: string,
-  argsTest?: string
+  args: TestGetterArgs
 ): Promise<StateDirectory> {
+  const { forkConfig, skipTests, test } = args
   const GeneralStateTests: StateDirectory = Object.fromEntries(
     fs
       .readdirSync(directory + '', {
@@ -102,6 +102,7 @@ async function getGeneralStateTests(
                 const testCases: TestFile = JSON.parse(testFile)
                 for (const testName of Object.keys(testCases)) {
                   if (
+                    skipTest(testName, skipTests) ||
                     (testCases[testName].network !== undefined &&
                       testCases[testName].network !== forkConfig) ||
                     (testCases[testName].post !== undefined &&
@@ -124,7 +125,7 @@ async function getGeneralStateTests(
         .readdirSync(directory + '/VMTests', {
           encoding: 'utf8',
         })
-        .filter((d: string) => argsTest === undefined || d === argsTest)
+        .filter((d: string) => test === undefined || d === test)
         .map((sub: string) => {
           return [
             sub,
@@ -163,7 +164,7 @@ async function getGeneralStateTests(
         .readdirSync(directory + '/Shanghai', {
           encoding: 'utf8',
         })
-        .filter((d: string) => argsTest === undefined || d === argsTest)
+        .filter((d: string) => test === undefined || d === test)
 
         .map((testName) => {
           return [
@@ -173,7 +174,7 @@ async function getGeneralStateTests(
                 .readdirSync(directory + '/Shanghai/' + testName, {
                   encoding: 'utf8',
                 })
-                .filter((d: string) => argsTest === undefined || d === argsTest)
+                .filter((d: string) => test === undefined || d === test)
                 .filter((file: FileName) => !file.endsWith('.stub'))
 
                 .map((file: FileName) => {
@@ -216,20 +217,20 @@ async function getGeneralStateTests(
 async function getBlockchainTests(
   directory: string,
   _excludeDir: RegExp | string[] = [],
-  forkConfig: string,
-  argsTest?: string
+  args: TestGetterArgs
 ): Promise<BlockChainDirectory> {
+  const { forkConfig, skipTests, test } = args
   const GeneralStateTests: StateDirectory = await getGeneralStateTests(
     directory + '/GeneralStateTests',
     _excludeDir,
-    forkConfig
+    args
   )
   const InvalidBlocks: TestSuite = Object.fromEntries(
     fs
       .readdirSync(directory + '/InvalidBlocks', {
         encoding: 'utf8',
       })
-      .filter((d: string) => argsTest === undefined || d === argsTest)
+      .filter((d: string) => test === undefined || d === test)
       .map((d) => {
         return [
           d,
@@ -259,7 +260,7 @@ async function getBlockchainTests(
       .readdirSync(directory + '/ValidBlocks', {
         encoding: 'utf8',
       })
-      .filter((d: string) => argsTest === undefined || d === argsTest)
+      .filter((d: string) => test === undefined || d === test)
 
       .map((d) => {
         return [
@@ -316,7 +317,10 @@ async function getBlockchainTests(
 
                   const testCases: TestFile = JSON.parse(testFile)
                   for (const testName of Object.keys(testCases)) {
-                    if (testCases[testName].network !== forkConfig) {
+                    if (
+                      testCases[testName].network !== forkConfig ||
+                      skipTest(testName, skipTests)
+                    ) {
                       delete testCases[testName]
                     }
                   }
@@ -336,15 +340,15 @@ async function getBlockchainTests(
 }
 
 export async function getDirectoryTests(
+  testType: 'BlockchainTests' | 'GeneralStateTests',
   directory: string,
   _excludeDir: RegExp | string[] = [],
-  forkConfig: string,
-  argsTest?: string
+  args: TestGetterArgs
 ): Promise<BlockChainDirectory | StateDirectory> {
-  if (directory.includes('BlockchainTests')) {
-    return getBlockchainTests(directory, _excludeDir, forkConfig, argsTest)
-  } else if (directory.includes('GeneralStateTests')) {
-    return getGeneralStateTests(directory, _excludeDir, forkConfig, argsTest)
+  if (testType === 'BlockchainTests') {
+    return getBlockchainTests(directory, _excludeDir, args)
+  } else if (testType === 'GeneralStateTests') {
+    return getGeneralStateTests(directory, _excludeDir, args)
   } else {
     throw new Error(`Unknown test directory ${directory}`)
   }
@@ -421,7 +425,7 @@ export async function getTestsFromArgs(
       )
     }
   }
-  const tests = await getDirectoryTests(directory, excludeDir, args.forkConfig, args.test)
+  const tests = await getDirectoryTests(testType, directory, excludeDir, args)
   return tests
 }
 
