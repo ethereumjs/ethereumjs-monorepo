@@ -50,7 +50,7 @@
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "test:API": "npx vitest run ./test/api/",
     "test:browser": "npx vitest run ./test/api/**/*.spec.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
-    "blockchain": "FORK=$npm_config_fork FILE=$npm_config_file DIR=$npm_config_dir EXCLUDEDIR=$npm_config_excludedir TEST=$npm_config_test COUNT=$npm_config_count  VERIFY_ALLTESTS=@npm_config_verify-test-count-alltests  npx vitest run test/tester/blockchain/index.spec.ts",
+    "blockchain": "FORK=$npm_config_fork FILE=$npm_config_file DIR=$npm_config_dir EXCLUDEDIR=$npm_config_excludedir TEST=$npm_config_test COUNT=$npm_config_count  VERIFY_ALLTESTS=$npm_config_verify_test_amount_alltests  npx --max-old-space-size=7000 vitest run test/tester/blockchain/index.spec.ts ",
     "test:blockchain": "npm run blockchain",
     "test:blockchain:allForks": "vitest run ./test/tester/blockchain/allForks.spec.ts",
     "test:blockchain:transitionForks": "npx vitest run ./test/tester/blockchain/transitionForks.spec.ts",
