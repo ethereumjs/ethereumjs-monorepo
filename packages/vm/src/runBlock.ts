@@ -40,7 +40,9 @@ const debug = createDebugLogger('vm:block')
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
 
-const beaconRootAddress = Address.fromString('0x000000000000000000000000000000000000000b')
+const parentBeaconBlockRootAddress = Address.fromString(
+  '0x000000000000000000000000000000000000000b'
+)
 
 /**
  * @ignore
@@ -259,8 +261,8 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     }
   }
   if (this.common.isActivatedEIP(4788)) {
-    // Save the beaconRoot to the beaconroot stateful precompile ring buffers
-    const root = block.header.beaconRoot!
+    // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
+    const root = block.header.parentBeaconBlockRoot!
     const timestamp = block.header.timestamp
     const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
     const timestampIndex = timestamp % historicalRootsLength
@@ -273,17 +275,17 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
      * All ethereum accounts have empty storage by default
      */
 
-    if ((await this.stateManager.getAccount(beaconRootAddress)) === undefined) {
-      await this.stateManager.putAccount(beaconRootAddress, new Account())
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
     }
 
     await this.stateManager.putContractStorage(
-      beaconRootAddress,
+      parentBeaconBlockRootAddress,
       setLengthLeft(bigIntToBytes(timestampIndex), 32),
       bigIntToBytes(block.header.timestamp)
     )
     await this.stateManager.putContractStorage(
-      beaconRootAddress,
+      parentBeaconBlockRootAddress,
       setLengthLeft(bigIntToBytes(timestampExtended), 32),
       root
     )

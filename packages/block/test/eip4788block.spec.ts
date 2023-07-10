@@ -14,16 +14,16 @@ describe('EIP4788 header tests', () => {
       () => {
         BlockHeader.fromHeaderData(
           {
-            beaconRoot: zeros(32),
+            parentBeaconBlockRoot: zeros(32),
           },
           {
             common: earlyCommon,
           }
         )
       },
-      'A beaconRoot for a header can only be provided with EIP4788 being activated',
+      'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated',
       undefined,
-      'should throw when setting beaconRoot with EIP4788 not being activated'
+      'should throw when setting parentBeaconBlockRoot with EIP4788 not being activated'
     )
 
     assert.throws(
@@ -46,7 +46,7 @@ describe('EIP4788 header tests', () => {
         {
           excessDataGas: 0n,
           dataGasUsed: 0n,
-          beaconRoot: zeros(32),
+          parentBeaconBlockRoot: zeros(32),
         },
         {
           common,
@@ -62,7 +62,7 @@ describe('EIP4788 header tests', () => {
       { common, skipConsensusFormatValidation: true }
     )
     assert.equal(
-      block.toJSON().header?.beaconRoot,
+      block.toJSON().header?.parentBeaconBlockRoot,
       bytesToHex(KECCAK256_RLP),
       'JSON output includes excessDataGas'
     )

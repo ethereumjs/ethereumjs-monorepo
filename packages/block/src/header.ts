@@ -209,7 +209,7 @@ export class BlockHeader {
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       dataGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       excessDataGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
-      beaconRoot: this.common.isActivatedEIP(4788) ? KECCAK256_RLP : undefined,
+      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? KECCAK256_RLP : undefined,
     }
 
     const baseFeePerGas =
@@ -220,8 +220,9 @@ export class BlockHeader {
       toType(headerData.dataGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.dataGasUsed
     const excessDataGas =
       toType(headerData.excessDataGas, TypeOutput.BigInt) ?? hardforkDefaults.excessDataGas
-    const beaconRoot =
-      toType(headerData.beaconRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.beaconRoot
+    const parentBeaconBlockRoot =
+      toType(headerData.parentBeaconBlockRoot, TypeOutput.Uint8Array) ??
+      hardforkDefaults.parentBeaconBlockRoot
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw new Error('A base fee for a block can only be set with EIP1559 being activated')
@@ -243,8 +244,10 @@ export class BlockHeader {
       }
     }
 
-    if (!this.common.isActivatedEIP(4788) && beaconRoot !== undefined) {
-      throw new Error('A beaconRoot for a header can only be provided with EIP4788 being activated')
+    if (!this.common.isActivatedEIP(4788) && parentBeaconBlockRoot !== undefined) {
+      throw new Error(
+        'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated'
+      )
     }
 
     this.parentHash = parentHash
@@ -266,7 +269,7 @@ export class BlockHeader {
     this.withdrawalsRoot = withdrawalsRoot
     this.dataGasUsed = dataGasUsed
     this.excessDataGas = excessDataGas
-    this.beaconRoot = beaconRoot
+    this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -377,13 +380,15 @@ export class BlockHeader {
     }
 
     if (this.common.isActivatedEIP(4788) === true) {
-      if (this.beaconRoot === undefined) {
-        const msg = this._errorMsg('EIP4788 block has no beaconRoot field')
+      if (this.parentBeaconBlockRoot === undefined) {
+        const msg = this._errorMsg('EIP4788 block has no parentBeaconBlockRoot field')
         throw new Error(msg)
       }
-      if (this.beaconRoot?.length !== 32) {
+      if (this.parentBeaconBlockRoot?.length !== 32) {
         const msg = this._errorMsg(
-          `beaconRoot must be 32 bytes, received ${this.beaconRoot!.length} bytes`
+          `parentBeaconBlockRoot must be 32 bytes, received ${
+            this.parentBeaconBlockRoot!.length
+          } bytes`
         )
         throw new Error(msg)
       }
@@ -915,7 +920,7 @@ export class BlockHeader {
       jsonDict.excessDataGas = bigIntToHex(this.excessDataGas!)
     }
     if (this.common.isActivatedEIP(4788) === true) {
-      jsonDict.beaconRoot = bytesToHex(this.beaconRoot!)
+      jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)
     }
     return jsonDict
   }

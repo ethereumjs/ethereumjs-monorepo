@@ -58,7 +58,7 @@ function beaconrootBlock(
   const root = setLengthLeft(bigIntToBytes(blockroot), 32)
   const header = BlockHeader.fromHeaderData(
     {
-      beaconRoot: root,
+      parentBeaconBlockRoot: root,
       timestamp,
     },
     { common, freeze: false }
