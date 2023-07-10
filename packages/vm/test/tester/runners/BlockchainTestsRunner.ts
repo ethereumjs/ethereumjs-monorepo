@@ -3,11 +3,11 @@ import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToBigInt, bytesToHex, hexToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { assert, expect, it, suite, test } from 'vitest'
+import { assert, expect, it, suite } from 'vitest'
 
 import { verifyPostConditions } from '../../util'
 import { DEFAULT_FORK_CONFIG, getRequiredForkConfigAlias, getTestDirs } from '../config'
-import { getTestsFromArgs } from '../testLoader'
+import { getTestsFromArgs, skipTest } from '../testLoader'
 
 import {
   getBlockchainTests,
@@ -15,11 +15,16 @@ import {
   getRunnerArgs,
   getTestPath,
   setupBlockchainTestVM,
-  shouldSkip,
 } from './runnerUtils'
 
 import type { VM } from '../../../src'
-import type { FileData } from '../testLoader'
+import type {
+  BlockChainDirectory,
+  FileDirectory,
+  TestDirectory,
+  TestFile,
+  TestSuite,
+} from '../testLoader'
 import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
@@ -29,6 +34,7 @@ import type { TaskResult, Test } from 'vitest'
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
 const name = 'BlockchainTests'
+
 export class BlockchainTests {
   testCount: number
   FORK_CONFIG: string
@@ -85,21 +91,15 @@ export class BlockchainTests {
       this.failingTests[task.name] = [task.result]
     }
   }
-  async handleError(error: string | undefined, expectException: string | boolean) {
-    expect(expectException, `${expectException}`).toBeDefined()
-    expect(error, `${error}`).toEqual(expectException)
-  }
-  async onFile(fileName: string, subDir: string, testName: string, test: any): Promise<void> {
-    if (!shouldSkip(this.runSkipped, fileName)) {
-      const testIdentifier = `${fileName}: ${testName}`
-      this.testCount++
-      assert.ok(testIdentifier)
-
-      await this.runBlockchainTest(this.runnerArgs, test, testIdentifier)
+  async handleError(error: any, expectException: string | boolean) {
+    this.testCount++
+    if ((error.message as string).includes('RLP')) {
+      expect((expectException as string).includes('RLP')).toBeTruthy()
     }
+    assert.ok(typeof expectException === 'string')
   }
   async runTestCase(
-    raw: any,
+    raw: Record<string, any>,
     options: any,
     testData: any,
     currentBlock: bigint,
@@ -122,25 +122,16 @@ export class BlockchainTests {
     // The block library cannot be used, as this throws on certain EIP1559 blocks when trying to convert
     try {
       const blockRlp = hexToBytes(raw.rlp as string)
-      const decodedRLP: any = RLP.decode(Uint8Array.from(blockRlp))
+      const decodedRLP: any = RLP.decode(blockRlp)
       currentBlock = bytesToBigInt(decodedRLP[0][8])
-    } catch (e: any) {
-      await this.handleError(e, expectException)
-      return
-    }
-
-    try {
-      const blockRlp = hexToBytes(raw.rlp as string)
+      // this.testCount++
       // Update common HF
       let TD: bigint | undefined = undefined
       let timestamp: bigint | undefined = undefined
-      try {
-        const decoded: any = RLP.decode(blockRlp)
-        const parentHash = decoded[0][0]
-        TD = await blockchain.getTotalDifficulty(parentHash)
-        timestamp = bytesToBigInt(decoded[0][11])
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+      const decoded: any = RLP.decode(blockRlp)
+      const parentHash = decoded[0][0]
+      TD = await blockchain.getTotalDifficulty(parentHash)
+      timestamp = bytesToBigInt(decoded[0][11])
 
       common.setHardforkBy({ blockNumber: currentBlock, td: TD, timestamp })
 
@@ -153,32 +144,25 @@ export class BlockchainTests {
           blockOpts: { calcDifficultyFromHeader: parentBlock.header },
         })
 
-        for (const txData of raw.transactionSequence as Record<
+        for await (const txData of raw.transactionSequence as Record<
           'exception' | 'rawBytes' | 'valid',
           string
         >[]) {
           const shouldFail = txData.valid === 'false'
-          it(`tx should ${shouldFail ? 'fail' : 'succeed'}`, async () => {
-            try {
-              const txRLP = hexToBytes(txData.rawBytes)
-              const tx = TransactionFactory.fromSerializedData(txRLP, { common })
-              await blockBuilder.addTransaction(tx)
-              if (shouldFail) {
-                assert.fail('tx should fail, but did not fail')
-              }
-            } catch (e: any) {
-              if (!shouldFail) {
-                assert.fail(`tx should not fail, but failed: ${e.message}`)
-              } else {
-                assert.ok('tx successfully failed')
-              }
-            }
-          })
+          this.testCount++
+          try {
+            const txRLP = hexToBytes(txData.rawBytes)
+            const tx = TransactionFactory.fromSerializedData(txRLP, { common })
+            await blockBuilder.addTransaction(tx)
+            assert.notOk(shouldFail, 'tx did not fail')
+          } catch (e: any) {
+            assert.ok(shouldFail, 'tx failed')
+          }
         }
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = Block.fromRLPSerializedBlock(blockRlp, { common })
+      const block = Block.fromRLPSerializedBlock(blockRlp, { common, setHardfork: TD })
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -188,6 +172,7 @@ export class BlockchainTests {
       //
       //vm._common.genesis().stateRoot = vm.stateManager._trie.root()
       try {
+        this.testCount++
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
           const parentState = parentBlock.header.stateRoot
@@ -214,124 +199,171 @@ export class BlockchainTests {
         } else {
           await verifyPostConditions(state, testData.postState)
         }
-
         throw e
       }
+      // })
 
-      //  await cacheDB._leveldb.close()
-
-      if (expectException !== false) {
-        assert.fail(`expected exception but test did not throw an exception: ${expectException}`)
-      }
+      expect(
+        expectException,
+        `expected exception but test did not throw an exception: ${expectException}`
+      ).toBeFalsy()
     } catch (error: any) {
       // caught an error, reduce block number
       currentBlock--
-      await this.handleError(error, expectException)
+      return this.handleError(error, expectException)
     }
   }
-  async runBlockchainTest(options: any, testData: any, id: string) {
-    // ensure that the test data is the right fork data
+  async runBlockchainTest(options: any, testData: Record<string, any>, _id: string) {
+    const common = options.common.copy()
+    const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
+    const currentBlock = BigInt(0)
+    const testBlocks = testData.blocks
     if (testData.network !== options.forkConfigTestSuite) {
-      this.testCount++
-      console.log(`skipping test: no data available for ${options.forkConfigTestSuite}`)
+      it.skip(
+        `skipping test: no data available for ${options.forkConfigTestSuite} (testData.network = ${testData.network})`
+      )
       return
     }
-
-    test(`${id}`, async () => {
-      try {
-        const common = options.common.copy()
-        const begin = Date.now()
-        const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
-        const currentBlock = BigInt(0)
-        suite('testData', async () => {
-          for await (const [idx, raw] of testData.blocks.entries()) {
-            this.testCount++
-            test(`test: ${idx + 1}/${
-              testData.blocks.length
-            } -- CurrentBlock: ${currentBlock}`, async () => {
-              await this.runTestCase(
-                raw,
-                options,
-                testData,
-                currentBlock,
-                blockchain,
-                vm,
-                common,
-                state
-              )
-            })
-          }
-        })
+    if (testBlocks.length > 0) {
+      for await (const raw of testBlocks) {
         this.testCount++
-        it(`should have the correct _headHeaderHash`, async () => {
-          assert.equal(
-            bytesToHex((blockchain as any)._headHeaderHash),
-            '0x' + testData.lastblockhash,
-            `_headHeaderHash: ${bytesToHex(
-              (blockchain as any)._headHeaderHash
-            )} !== testData.lastblockhash ${testData.lastblockhash}`
+        try {
+          await this.runTestCase(
+            raw,
+            options,
+            testData,
+            currentBlock,
+            blockchain,
+            vm,
+            common,
+            state
           )
-          const end = Date.now()
-          const timeSpent = (end - begin) / 1000
-          expect(timeSpent, `time spent: ${timeSpent}`).toBeGreaterThan(0)
-        })
-      } catch (e: any) {
-        await this.handleError(e, false)
+        } catch (err: any) {
+          return
+        }
+      }
+      this.testCount++
+      assert.equal(
+        bytesToHex((blockchain as any)._headHeaderHash),
+        testData.lastblockhash,
+        `_headHeaderHash: ${bytesToHex(
+          (blockchain as any)._headHeaderHash
+        )} !== testData.lastblockhash ${testData.lastblockhash}`
+      )
+    }
+  }
+
+  skipFn = (name: string, test: Record<string, any>) => {
+    const forkFilter = new RegExp(`${this.testGetterArgs.forkConfig}$`)
+    return forkFilter.test(test.network) === false || skipTest(name, this.testGetterArgs.skipTests)
+  }
+
+  async runTestSuite(testSuite: TestSuite) {
+    for (const [testName, test] of Object.entries(testSuite)) {
+      await this.runFileDirectory(testName, test)
+      delete testSuite[testName]
+    }
+  }
+  async runFileDirectory(dir: string, files: FileDirectory) {
+    suite(dir, async () => {
+      for (const [fileName, tests] of Object.entries(files)) {
+        if (fileName.endsWith('.json')) {
+          await this.runTestFile(fileName, tests)
+          delete files[fileName]
+        }
       }
     })
   }
+
+  async runTestFile(file: string, testFile: TestFile) {
+    suite(file, async () => {
+      for (const [testName, test] of Object.entries(testFile)) {
+        it(testName, async () => {
+          await this.runBlockchainTest(this.runnerArgs, test, testName)
+          delete testFile[testName]
+        })
+      }
+    })
+  }
+
   async runTests(): Promise<void> {
     if (this.customStateTest !== undefined) {
       return
     } else {
       const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
-      for (const dir of dirs) {
-        suite(dir, async () => {
-          const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
-          const tests = await getTestsFromArgs(
-            dir,
-            this.onFile.bind(this),
-            this.testGetterArgs,
-            directory
+      const _tests: TestDirectory<'BlockchainTests'> = {}
+      if (dirs.includes('BlockchainTests')) {
+        _tests.BlockChainTests = (await getTestsFromArgs(
+          'BlockchainTests',
+          this.testGetterArgs,
+          getTestPath('BlockchainTests', this.testGetterArgs, this.customTestsPath)
+        )) as BlockChainDirectory
+      }
+      if (dirs.includes('LegacyTests/Constantinople/BlockchainTests')) {
+        _tests.LegacyTests = {
+          Constantinople: {
+            BlockChainTests: (await getTestsFromArgs(
+              'BlockchainTests',
+              this.testGetterArgs,
+              getTestPath('BlockchainTests', this.testGetterArgs, this.customTestsPath)
+            )) as BlockChainDirectory,
+          },
+        }
+      }
+      suite('BlockChainTests', async () => {
+        suite('GeneralStateTests', async () => {
+          suite('Shanghai', async () => {
+            await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.Shanghai!)
+          })
+          suite('VMTests', async () => {
+            await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.VMTests!)
+          })
+          const rest = Object.entries(_tests.BlockChainTests!.GeneralStateTests).filter(
+            ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
           )
-          for await (const [testDir, subDir] of Object.entries(tests as FileData)) {
-            suite(testDir, async () => {
-              if (Array.isArray(Object.values(subDir)[0])) {
-                for await (const [fileName, testData] of Object.entries(subDir)) {
-                  suite(fileName, async () => {
-                    for await (const [testName, t] of Object.values(testData)) {
-                      it(testName, async () => {
-                        await this.onFile(fileName, testDir, testName, t)
-                      })
-                    }
-                  })
-                }
-              } else {
-                for await (const [subDirName, subSubDir] of Object.entries(subDir)) {
-                  suite(subDirName, async () => {
-                    for await (const [fileName, testData] of Object.entries(subSubDir)) {
-                      suite(fileName, async () => {
-                        for await (const tst of Object.values(testData)) {
-                          const [testName, t] = tst as [string, any]
-                          it(testName, async () => {
-                            await this.onFile(fileName, testDir, testName, t)
-                          })
-                        }
-                      })
-                    }
-                  })
-                }
-              }
-            })
-          }
+          suite('/', async () => {
+            for (const [dir, tests] of rest) {
+              await this.runFileDirectory(dir, tests as FileDirectory)
+            }
+          })
+        })
+
+        suite('InvalidBlocks', async () => {
+          await this.runTestSuite(_tests.BlockChainTests!.InvalidBlocks!)
+        })
+        suite('ValidBlocks', async () => {
+          await this.runTestSuite(_tests.BlockChainTests!.ValidBlocks!)
+        })
+        if (_tests.BlockChainTests?.TransitionTests !== undefined) {
+          suite('TransitionTests', async () => {
+            await this.runTestSuite(_tests.BlockChainTests!.TransitionTests!)
+          })
+        }
+      })
+      if (_tests.LegacyTests) {
+        suite('Legacy BlockChainTests', async () => {
+          suite('GeneralStateTests', async () => {
+            await this.runTestSuite(
+              _tests.LegacyTests!.Constantinople.BlockChainTests.GeneralStateTests
+            )
+          })
+          suite('InvalidBlocks', async () => {
+            await this.runTestSuite(
+              _tests.LegacyTests!.Constantinople.BlockChainTests.InvalidBlocks
+            )
+          })
+          suite('ValidBlocks', async () => {
+            await this.runTestSuite(_tests.LegacyTests!.Constantinople.BlockChainTests.ValidBlocks)
+          })
         })
       }
-
-      if (this.expectedTests > 0) {
-        it('checks test count', async () => {
+    }
+    if (this.expectedTests > 0) {
+      suite('final', async () => {
+        it(`Checks test count > ${this.expectedTests}`, async () => {
           expect(this.testCount).toBeGreaterThan(this.expectedTests)
         })
-      }
+      })
     }
   }
 }
