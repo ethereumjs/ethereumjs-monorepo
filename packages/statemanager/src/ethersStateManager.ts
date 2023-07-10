@@ -217,7 +217,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
 
   /**
    * Gets the code corresponding to the provided `address`.
-   * @param address - Address to get the `code` for
+   * @param address - Address to get the `account` for
    * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
@@ -261,11 +261,21 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address under which to store `account`
    * @param account - The account to store
    */
-  async putAccount(address: Address, account: Account): Promise<void> {
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
-      this._debug(`putting account data for ${address.toString()}`)
+      this._debug(
+        `Save account address=${address} nonce=${account?.nonce} balance=${
+          account?.balance
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
+          account && account.isEmpty() ? 'yes' : 'no'
+        }`
+      )
     }
-    this._accountCache.put(address, account)
+    if (account !== undefined) {
+      this._accountCache!.put(address, account)
+    } else {
+      this._accountCache!.del(address)
+    }
   }
 
   /**
@@ -337,6 +347,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    */
   async checkpoint(): Promise<void> {
     this._accountCache.checkpoint()
+    this._storageCache.checkpoint()
   }
 
   /**
@@ -358,6 +369,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
    */
   async revert(): Promise<void> {
     this._accountCache.revert()
+    this._storageCache.revert()
+    this._contractCache.clear()
   }
 
   async flush(): Promise<void> {
