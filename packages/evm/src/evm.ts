@@ -59,7 +59,7 @@ if (isBrowser() === false) {
 /**
  * Options for instantiating a {@link EVM}.
  */
-export interface EVMCreateOpts {
+export interface EVMOpts {
   /**
    * Use a {@link Common} instance for EVM instantiation.
    *
@@ -203,7 +203,7 @@ export class EVM {
 
   protected _precompiles!: Map<string, PrecompileFunc>
 
-  protected readonly _optsCached: EVMCreateOpts
+  protected readonly _optsCached: EVMOpts
 
   public get precompiles() {
     return this._precompiles
@@ -239,13 +239,13 @@ export class EVM {
    *
    * @param opts EVM engine constructor options
    */
-  static async create(opts: EVMCreateOpts = {}): Promise<EVM> {
+  static async create(opts: EVMOpts = {}): Promise<EVM> {
     const evm = new this(opts)
     await evm.init()
     return evm
   }
 
-  constructor(opts: EVMCreateOpts) {
+  constructor(opts: EVMOpts) {
     this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
