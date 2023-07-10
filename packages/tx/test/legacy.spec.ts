@@ -444,7 +444,7 @@ describe('[Transaction]', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const pkey = hexToBytes('0x' + txFixtures[0].privateKey)
     const txn = LegacyTransaction.fromTxData({}, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [2537] })
+    const newCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {
@@ -452,7 +452,10 @@ describe('[Transaction]', () => {
       },
     })
     const signedTxn = txn.sign(pkey)
-    assert.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
+    assert.ok(
+      signedTxn.common.hardfork() === Hardfork.Paris,
+      'signed tx common is taken from tx.common'
+    )
   })
 
   it('isSigned() -> returns correct values', () => {
