@@ -297,7 +297,14 @@ export class FullEthereumService extends EthereumService {
         break
       }
       case 'NewPooledTransactionHashes': {
-        await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
+        let hashes
+        if (peer.eth!['versions'].includes(68)) {
+          // eth/68 - transaction hashes are third element in message
+          hashes = message.data[2]
+        } else {
+          hashes = message.data
+        }
+        await this.txPool.handleAnnouncedTxHashes(hashes, peer, this.pool)
         break
       }
       case 'GetPooledTransactions': {
