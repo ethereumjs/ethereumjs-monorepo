@@ -14,84 +14,92 @@ export class MockProvider extends JsonRpcProvider {
     return fakeConnection as FetchRequest
   }
 
-  private getAccountValue = async (method: string, params: Array<any>) => {
-    switch (method) {
-      case 'eth_getProof':
-        return this.getProofValues(params as any)
-      case 'eth_getBlockByNumber':
-        return this.getBlockValues(params as any)
-      case 'eth_chainId': // Always pretends to be mainnet
-        return 1
-      case 'eth_getTransactionByHash':
-        return this.getTransactionData(params as any)
-      case 'eth_getCode':
-        return 0
-      case 'eth_getStorageAt':
-        return '0xabcd'
-      default:
-        throw new Error(`method ${method} not implemented`)
+  _send = async (payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> => {
+    let method
+    let params
+    let id
+
+    if (Array.isArray(payload)) {
+      const results = []
+      for (const el of payload) {
+        ;({ method, params, id } = el)
+        results.push(await this.getValues(method, id, params))
+      }
+      return results
+    } else {
+      ;({ method, params, id } = payload)
+      return [await this.getValues(method, id, params)]
     }
   }
 
-  _send = async (payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> => {
-    const { method, params, id } = payload as JsonRpcPayload
-
+  private getValues = async (method: string, id: number, params: any): Promise<JsonRpcResult> => {
     switch (method) {
       case 'eth_getProof':
-        return [
-          {
-            id,
-            result: this.getProofValues(params as any),
-          },
-        ]
+        return {
+          id,
+          result: this.getProofValues(params as any),
+        }
+
       case 'eth_getBlockByNumber':
-        return [
-          {
-            id,
-            result: this.getBlockValues(params as any),
-          },
-        ]
+        return {
+          id,
+          result: this.getBlockValues(params as any),
+        }
+
       case 'eth_chainId': // Always pretends to be mainnet
-        return [
-          {
-            id,
-            result: 1,
-          },
-        ]
+        return {
+          id,
+          result: 1,
+        }
       case 'eth_getTransactionByHash':
-        return [
-          {
-            id,
-            result: this.getTransactionData(params as any),
-          },
-        ]
+        return {
+          id,
+          result: this.getTransactionData(params as any),
+        }
+
       case 'eth_getCode': {
         let code = '0x'
         if ((params as any[])[0] !== '0xd8da6bf26964af9d7eed9e03e53415d37aa96045') {
           code = '0xab'
         }
-        return [
-          {
-            id,
-            result: code,
-          },
-        ]
+        return {
+          id,
+          result: code,
+        }
       }
       case 'eth_getStorageAt':
-        return [
-          {
-            id,
-            result: '0xabcd',
-          },
-        ]
+        return {
+          id,
+          result: '0xabcd',
+        }
+
       default:
-        throw new Error(`method ${method} not implemented`)
+        return {
+          id,
+          result: {
+            error: 'method not implemented',
+          },
+        }
     }
   }
+
   private getProofValues = async (params: [address: string, _: [], blockTag: bigint | string]) => {
     const [address, _slot, blockTag] = params
-    const account = (await import(`./accounts/${address}.json`)).default
-    return account[blockTag.toString() ?? 'latest']
+    try {
+      const account = (await import(`./accounts/${address}.json`)).default
+      return account[blockTag.toString() ?? 'latest']
+    } catch {
+      return {
+        '0x1': {
+          address,
+          balance: '0x0',
+          codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+          nonce: '0x0',
+          storageHash: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+          storageProof: [],
+        },
+      }
+    }
   }
 
   private getBlockValues = async (params: [blockTag: string, _: boolean]) => {
