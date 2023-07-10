@@ -28,7 +28,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 
 ### New API to set Hardforks
 
-We have notably simplified our APIs to (re-)set a hardfork within a library, which had grown old over the years. 😂
+Our APIs to (re-)set a a hardfork within a library had grown old over all changes on how this is done over the years. 😂
 
 We therefore removed the outdated `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` methods in `@ethereumjs/common` (artificially expanded with the option to also pass a `TD` or `timestamp`) with a more adequate `hardforkBy()` method flexibly taking in the adequate value type for a HF change, see PR [#2798](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2798):
 
