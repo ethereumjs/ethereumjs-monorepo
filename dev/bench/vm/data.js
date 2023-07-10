@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688988084797,
+  "lastUpdate": 1688997383648,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "005595cca658369730fa1015795fe6b626464028",
-          "message": "Add json type assertions to ESM post build fixes (#2805)",
-          "timestamp": "2023-06-21T16:43:36+02:00",
-          "tree_id": "aa1d9e3809ec240a60f4b351fdfe70bc28ecdee3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/005595cca658369730fa1015795fe6b626464028"
-        },
-        "date": 1687358931009,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18794,
-            "range": "±7.37%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19286,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19156,
-            "range": "±2.90%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19476,
-            "range": "±3.80%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 16789,
-            "range": "±11.29%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.65%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0747b4cac564200c4b5ee711ff01738ab558f8b1",
+          "message": "Fix incomplete imports (#2871)",
+          "timestamp": "2023-07-10T09:45:45-04:00",
+          "tree_id": "02f65410c7180c403a13c926d133884d3095e41a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0747b4cac564200c4b5ee711ff01738ab558f8b1"
+        },
+        "date": 1688997382889,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31034,
+            "range": "±4.81%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31004,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30973,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25733,
+            "range": "±9.86%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29706,
+            "range": "±3.17%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
