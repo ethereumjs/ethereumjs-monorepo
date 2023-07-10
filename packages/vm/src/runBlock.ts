@@ -30,7 +30,8 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVMInterface } from '@ethereumjs/evm/dist/cjs/types.js' //TODO fix this import
+import type { EVMInterface } from '@ethereumjs/evm'
+
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
