@@ -203,15 +203,6 @@ export class EVM {
     return this._opcodes
   }
 
-  protected _isInitialized: boolean = false
-
-  /**
-   * Pointer to the mcl package, not for public usage
-   * set to public due to implementation internals
-   * @hidden
-   */
-  public readonly _mcl: any //
-
   /**
    * EVM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -224,18 +215,7 @@ export class EVM {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  /**
-   * EVM async constructor. Creates engine instance and initializes it.
-   *
-   * @param opts EVM engine constructor options
-   */
-  static async create(opts: EVMOpts = {}): Promise<EVM> {
-    const evm = new this(opts)
-    await evm.init()
-    return evm
-  }
-
-  constructor(opts: EVMOpts) {
+  constructor(opts: EVMOpts = {}) {
     this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
@@ -302,14 +282,6 @@ export class EVM {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-  }
-
-  protected async init(): Promise<void> {
-    if (this._isInitialized) {
-      return
-    }
-
-    this._isInitialized = true
   }
 
   /**

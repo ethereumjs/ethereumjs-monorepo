@@ -7,7 +7,7 @@ import { EVM, getActivePrecompiles } from '../../src/index.js'
 describe('Precompiles: ECPAIRING', () => {
   it('ECPAIRING', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({
+    const evm = await new EVM({
       common,
     })
     const addressStr = '0000000000000000000000000000000000000008'

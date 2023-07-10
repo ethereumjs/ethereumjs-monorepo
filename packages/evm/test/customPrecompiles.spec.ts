@@ -21,7 +21,7 @@ function customPrecompile(_input: PrecompileInput): ExecResult {
 
 describe('EVM -> custom precompiles', () => {
   it('should override existing precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -41,7 +41,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should delete existing precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -59,7 +59,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should add precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await new EVM({
       customPrecompiles: [
         {
           address: newPrecompile,
@@ -78,14 +78,14 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should not persist changes to precompiles', async () => {
-    let EVMSha = await EVM.create()
+    let EVMSha = await new EVM()
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
       data: hexToBytes('0x'),
       caller: sender,
     })
-    const EVMOverride = await EVM.create({
+    const EVMOverride = await new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
@@ -102,7 +102,7 @@ describe('EVM -> custom precompiles', () => {
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create()
+    EVMSha = await new EVM()
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -121,7 +121,7 @@ describe('EVM -> custom precompiles', () => {
     )
   })
   it('shold copy custom precompiles', async () => {
-    const evm = await EVM.create({
+    const evm = await new EVM({
       customPrecompiles: [
         {
           address: shaAddress,

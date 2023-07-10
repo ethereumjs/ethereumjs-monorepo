@@ -15,7 +15,7 @@ describe('EIP 3860 tests', () => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const evm = await EVM.create({
+    const evm = await new EVM({
       common,
       stateManager: new DefaultStateManager(),
     })
@@ -56,11 +56,11 @@ describe('EIP 3860 tests', () => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const evm = await EVM.create({
+    const evm = await new EVM({
       common: commonWith3860,
       stateManager: new DefaultStateManager(),
     })
-    const evmWithout3860 = await EVM.create({
+    const evmWithout3860 = await new EVM({
       common: commonWithout3860,
       stateManager: new DefaultStateManager(),
     })
@@ -102,11 +102,11 @@ describe('EIP 3860 tests', () => {
       eips: [],
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-    const evm = await EVM.create({
+    const evm = await new EVM({
       common: commonWith3860,
       stateManager: new DefaultStateManager(),
     })
-    const evmWithout3860 = await EVM.create({
+    const evmWithout3860 = await new EVM({
       common: commonWithout3860,
       stateManager: new DefaultStateManager(),
     })
@@ -141,7 +141,7 @@ describe('EIP 3860 tests', () => {
       hardfork: Hardfork.London,
       eips: [3860],
     })
-    const evm = await EVM.create({
+    const evm = await new EVM({
       common,
       stateManager: new DefaultStateManager(),
 
@@ -177,13 +177,13 @@ describe('EIP 3860 tests', () => {
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     for (const code of ['F0', 'F5']) {
-      const evm = await EVM.create({
+      const evm = await new EVM({
         common: commonWith3860,
         stateManager: new DefaultStateManager(),
 
         allowUnlimitedInitCodeSize: true,
       })
-      const evmDisabled = await EVM.create({
+      const evmDisabled = await new EVM({
         common: commonWith3860,
         stateManager: new DefaultStateManager(),
 
