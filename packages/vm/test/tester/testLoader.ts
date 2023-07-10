@@ -142,9 +142,11 @@ async function getGeneralStateTests(
                   })
                   const testCases: TestFile = JSON.parse(testFile)
                   for (const testName of Object.keys(testCases)) {
+                    const forkFilter = new RegExp(`${args.forkConfig}$`)
+
                     if (
                       (testCases[testName].network !== undefined &&
-                        testCases[testName].network !== forkConfig) ||
+                        forkFilter.test(testCases[testName].network!) === false) ||
                       (testCases[testName].post !== undefined &&
                         !Object.keys(testCases[testName].post!).includes(forkConfig))
                     ) {
@@ -187,9 +189,10 @@ async function getGeneralStateTests(
                   const testCases: TestFile = JSON.parse(testFile)
 
                   for (const testName of Object.keys(testCases)) {
+                    const forkFilter = new RegExp(`${args.forkConfig}$`)
                     if (
                       (testCases[testName].network !== undefined &&
-                        testCases[testName].network !== forkConfig) ||
+                        forkFilter.test(testCases[testName].network!) === false) ||
                       (testCases[testName].post !== undefined &&
                         !Object.keys(testCases[testName].post!).includes(forkConfig))
                     ) {
@@ -242,8 +245,13 @@ async function getBlockchainTests(
                   encoding: 'utf8',
                 })
                 const testCases: TestFile = JSON.parse(testFile)
-                for (const testName of Object.keys(testCases)) {
-                  if (testCases[testName].network !== forkConfig) {
+                for (const [testName, test] of Object.entries(testCases)) {
+                  const forkFilter = new RegExp(`${args.forkConfig}$`)
+
+                  if (
+                    (test.network !== undefined && forkFilter.test(test.network)) ||
+                    skipTests.includes(testName)
+                  ) {
                     delete testCases[testName]
                   }
                 }
@@ -274,7 +282,8 @@ async function getBlockchainTests(
                 })
                 const testCases: TestFile = JSON.parse(testFile)
                 for (const testName of Object.keys(testCases)) {
-                  if (testCases[testName].network !== forkConfig) {
+                  const forkFilter = new RegExp(`${args.forkConfig}$`)
+                  if (forkFilter.test(forkConfig) === false) {
                     delete testCases[testName]
                   }
                 }
@@ -411,8 +420,9 @@ export async function getTestsFromArgs(
     return skipTest(name, args.skipTests)
   }
   if (testType === 'BlockchainTests') {
+    const forkFilter = new RegExp(`${args.forkConfig}$`)
     _skipFn = (name: string, _test: Record<string, any>) => {
-      return _test.network !== args.forkConfig || skipTest(name, args.skipTests)
+      return forkFilter.test(_test.network) === false || skipTest(name, args.skipTests)
     }
   }
   if (new RegExp(`GeneralStateTests`).test(testType)) {
