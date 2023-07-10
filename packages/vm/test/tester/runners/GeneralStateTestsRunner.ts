@@ -285,14 +285,6 @@ export class GeneralStateTests {
                 await this.runFileDirectory(dir, tests as FileDirectory)
               }
             })
-            suite('Shanghai', async () => {
-              await this.runTestSuite(
-                _tests.LegacyTests!.Constantinople.GeneralStateTests.Shanghai!
-              )
-            })
-            suite('VMTests', async () => {
-              await this.runTestSuite(_tests.LegacyTests!.Constantinople.GeneralStateTests.VMTests!)
-            })
           })
         }
       })

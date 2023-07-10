@@ -9,7 +9,11 @@ import type { TestGetterArgs } from './runners/runnerUtils'
  * Tests may differ in their input, but all have an _info field
  */
 export type TestInput = Record<string, any>
-export type TestCase = { _info: Record<string, any>; network: string } & Record<string, TestInput>
+export type TestCase = {
+  _info: Record<string, any>
+  network?: string
+  post?: Record<string, any>
+} & Record<string, TestInput>
 
 /**
  * A file is a map of testcase names to tests
@@ -77,7 +81,7 @@ async function getGeneralStateTests(
 ): Promise<StateDirectory> {
   const GeneralStateTests: StateDirectory = Object.fromEntries(
     fs
-      .readdirSync(directory + '/GeneralStateTests', {
+      .readdirSync(directory + '', {
         encoding: 'utf8',
       })
       .filter((d: string) => d !== 'VMTests' && d !== 'Shanghai')
@@ -86,19 +90,23 @@ async function getGeneralStateTests(
           testName,
           Object.fromEntries(
             fs
-              .readdirSync(directory + '/GeneralStateTests/' + testName, {
+              .readdirSync(directory + '/' + testName, {
                 encoding: 'utf8',
               })
+              .filter((file: FileName) => !file.endsWith('.stub'))
+
               .map((file: FileName) => {
-                const testFile = fs.readFileSync(
-                  directory + '/GeneralStateTests/' + testName + '/' + file,
-                  {
-                    encoding: 'utf8',
-                  }
-                )
+                const testFile = fs.readFileSync(directory + '/' + testName + '/' + file, {
+                  encoding: 'utf8',
+                })
                 const testCases: TestFile = JSON.parse(testFile)
                 for (const testName of Object.keys(testCases)) {
-                  if (testCases[testName].network !== forkConfig) {
+                  if (
+                    (testCases[testName].network !== undefined &&
+                      testCases[testName].network !== forkConfig) ||
+                    (testCases[testName].post !== undefined &&
+                      !Object.keys(testCases[testName].post!).includes(forkConfig))
+                  ) {
                     delete testCases[testName]
                   }
                 }
@@ -113,7 +121,7 @@ async function getGeneralStateTests(
   if (!directory.includes('Constantinople')) {
     GeneralStateTests.VMTests = Object.fromEntries(
       fs
-        .readdirSync(directory + '/GeneralStateTests/VMTests', {
+        .readdirSync(directory + '/VMTests', {
           encoding: 'utf8',
         })
         .filter((d: string) => argsTest === undefined || d === argsTest)
@@ -122,19 +130,23 @@ async function getGeneralStateTests(
             sub,
             Object.fromEntries(
               fs
-                .readdirSync(directory + '/GeneralStateTests/VMTests/' + sub, {
+                .readdirSync(directory + '/VMTests/' + sub, {
                   encoding: 'utf8',
                 })
+                .filter((file: FileName) => !file.endsWith('.stub'))
+
                 .map((file: FileName) => {
-                  const testFile = fs.readFileSync(
-                    directory + '/GeneralStateTests/VMTests/' + sub + '/' + file,
-                    {
-                      encoding: 'utf8',
-                    }
-                  )
+                  const testFile = fs.readFileSync(directory + '/VMTests/' + sub + '/' + file, {
+                    encoding: 'utf8',
+                  })
                   const testCases: TestFile = JSON.parse(testFile)
                   for (const testName of Object.keys(testCases)) {
-                    if (testCases[testName].network !== forkConfig) {
+                    if (
+                      (testCases[testName].network !== undefined &&
+                        testCases[testName].network !== forkConfig) ||
+                      (testCases[testName].post !== undefined &&
+                        !Object.keys(testCases[testName].post!).includes(forkConfig))
+                    ) {
                       delete testCases[testName]
                     }
                   }
@@ -148,7 +160,7 @@ async function getGeneralStateTests(
     )
     GeneralStateTests.Shanghai = Object.fromEntries(
       fs
-        .readdirSync(directory + '/GeneralStateTests/Shanghai', {
+        .readdirSync(directory + '/Shanghai', {
           encoding: 'utf8',
         })
         .filter((d: string) => argsTest === undefined || d === argsTest)
@@ -158,14 +170,15 @@ async function getGeneralStateTests(
             testName,
             Object.fromEntries(
               fs
-                .readdirSync(directory + '/GeneralStateTests/Shanghai/' + testName, {
+                .readdirSync(directory + '/Shanghai/' + testName, {
                   encoding: 'utf8',
                 })
                 .filter((d: string) => argsTest === undefined || d === argsTest)
+                .filter((file: FileName) => !file.endsWith('.stub'))
 
                 .map((file: FileName) => {
                   const testFile = fs.readFileSync(
-                    directory + '/GeneralStateTests/Shanghai/' + testName + '/' + file,
+                    directory + '/Shanghai/' + testName + '/' + file,
                     {
                       encoding: 'utf8',
                     }
@@ -173,7 +186,12 @@ async function getGeneralStateTests(
                   const testCases: TestFile = JSON.parse(testFile)
 
                   for (const testName of Object.keys(testCases)) {
-                    if (testCases[testName].network !== forkConfig) {
+                    if (
+                      (testCases[testName].network !== undefined &&
+                        testCases[testName].network !== forkConfig) ||
+                      (testCases[testName].post !== undefined &&
+                        !Object.keys(testCases[testName].post!).includes(forkConfig))
+                    ) {
                       delete testCases[testName]
                     }
                   }
@@ -202,7 +220,7 @@ async function getBlockchainTests(
   argsTest?: string
 ): Promise<BlockChainDirectory> {
   const GeneralStateTests: StateDirectory = await getGeneralStateTests(
-    directory,
+    directory + '/GeneralStateTests',
     _excludeDir,
     forkConfig
   )
