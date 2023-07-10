@@ -17,11 +17,20 @@ import {
 } from './runnerUtils'
 
 import type { VM } from '../../../src'
-import type { FileData } from '../testLoader'
+import type {
+  FileDirectory,
+  StateDirectory,
+  TestDirectory,
+  TestFile,
+  TestSuite,
+} from '../testLoader'
 import type { RunnerArgs, TestArgs, TestGetterArgs } from './runnerUtils'
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { TaskResult, Test } from 'vitest'
+
+type TestData = Record<string, any>
+type TestInput = Record<string, any>
 
 const name = 'GeneralStateTests'
 export class GeneralStateTests {
@@ -92,16 +101,15 @@ export class GeneralStateTests {
     fileName: string,
     subDir: string,
     testName: string,
-    test: any
+    test: TestInput
   ): Promise<void> {
     if (!shouldSkip(this.runSkipped, fileName)) {
       const testIdentifier = `${subDir}/${fileName}: ${testName}`
-      this.testCount++
       assert.ok(testIdentifier)
       await this.runStateTest(this.runnerArgs, test, testIdentifier)
     }
   }
-  async runTestCase(options: any, testData: any) {
+  async runTestCase(options: RunnerArgs, testData: TestData) {
     const begin = Date.now()
     // Copy the common object to not create long-lasting
     // references in memory which might prevent GC
@@ -156,7 +164,7 @@ export class GeneralStateTests {
     assert.ok(stateRootsAreEqual, `the state roots should match (${execInfo})`)
     return parseFloat(timeSpent)
   }
-  async runStateTest(options: any, testData: any, id: string) {
+  async runStateTest(options: RunnerArgs, testData: TestData, id: string) {
     try {
       const testCases = parseTestCases(
         options.forkConfigTestSuite,
@@ -170,28 +178,57 @@ export class GeneralStateTests {
         return
       }
       for await (const [idx, testCase] of testCases.entries()) {
-        const testRun = `${id} ${idx + 1}/${testCases.length}`
         this.testCount++
+        const testRun = `${id} ${idx + 1}/${testCases.length}`
+        console.log(`Running testCase: ${testRun}`)
         if (options.reps !== undefined && options.reps > 0) {
+          console.log(`REPS: ${options.reps}}`)
           let totalTimeSpent = 0
-          for (let x = 0; x < options.reps; x++) {
-            const rep = `${x + 1}/${options.reps}`
-            it(`Rep [${rep}]`, async () => {
+          for (const rep of Array.from({ length: options.reps }, (_, i) => i)) {
+            it(`${testRun}: rep ${rep + 1} / ${options.reps}`, async () => {
               totalTimeSpent += await this.runTestCase(options, testCase)
             })
           }
-          assert.ok(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()}`)
+          console.log(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()}`)
         } else {
-          it(`runs ${testRun}`, async () => {
+          it(`${testRun}`, async () => {
             await this.runTestCase(options, testCase)
           })
         }
       }
     } catch (e: any) {
-      console.log(e)
-      assert.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
+      it.fails(`error running test case for fork: ${options.forkConfigTestSuite}: ${e.message}`)
     }
   }
+
+  async runTestSuite(testSuite: TestSuite) {
+    for (const [testName, test] of Object.entries(testSuite)) {
+      await this.runFileDirectory(testName, test)
+      delete testSuite[testName]
+    }
+  }
+  async runFileDirectory(dir: string, files: FileDirectory) {
+    suite(dir, async () => {
+      for (const [fileName, tests] of Object.entries(files)) {
+        if (fileName.endsWith('.json')) {
+          await this.runTestFile(fileName, tests)
+          delete files[fileName]
+        }
+      }
+    })
+  }
+
+  async runTestFile(file: string, testFile: TestFile) {
+    suite(file, async () => {
+      for (const [testName, test] of Object.entries(testFile)) {
+        it(testName, async () => {
+          await this.runStateTest(this.runnerArgs, test, testName)
+          delete testFile[testName]
+        })
+      }
+    })
+  }
+
   async runTests(): Promise<void> {
     if (this.customStateTest !== undefined) {
       const fileName = this.customStateTest
@@ -200,70 +237,70 @@ export class GeneralStateTests {
       })
     } else {
       const dirs = getTestDirs(this.FORK_CONFIG_VM, name)
-      for await (const dir of dirs) {
-        suite(dir, async () => {
-          const directory = getTestPath(dir, this.testGetterArgs, this.customTestsPath)
-          const tests = await getTestsFromArgs(
-            dir,
-            this.onFile.bind(this),
-            this.testGetterArgs,
-            directory
-          )
-          for await (const [testDir, subDir] of Object.entries(tests as FileData)) {
-            suite(testDir, async () => {
-              if (Array.isArray(Object.values(subDir)[0])) {
-                for await (const [fileName, testData] of Object.entries(subDir)) {
-                  suite(fileName, async () => {
-                    for await (const [testName, t] of Object.values(testData)) {
-                      it(testName, async () => {
-                        await this.onFile(fileName, testDir, testName, t)
-                      })
-                    }
-                  })
-                }
-              } else {
-                for await (const [subDirName, subSubDir] of Object.entries(subDir)) {
-                  suite(subDirName, async () => {
-                    for await (const [fileName, testData] of Object.entries(subSubDir)) {
-                      suite(fileName, async () => {
-                        for await (const tst of Object.values(testData)) {
-                          const [testName, t] = tst as [string, any]
-                          it(testName, async () => {
-                            await this.onFile(fileName, testDir, testName, t)
-                          })
-                        }
-                      })
-                    }
-                  })
-                }
-              }
-            }).on('afterAll', async (context) => {
-              if (this.logResults) {
-                let totalTasks = 0
-                const logs = []
-                for await (const t of context.tasks) {
-                  const _t = t as any
-                  logs.push(`---- { subDir: ${t.name}, tests: ${_t.tasks.length} }`)
-                  for await (const tt of _t.tasks) {
-                    totalTasks += tt.tasks.length
-                    logs.push(`---- ---- { test:  ${tt.name}, checks: ${tt.tasks.length} }`)
-                  }
-                }
-                console.log({
-                  test: context.name,
-                  subDirs: context.tasks.length,
-                  totalResults: totalTasks,
-                })
-                console.log(logs.join('\n'))
+      const _tests: TestDirectory<'GeneralStateTests'> = {}
+      if (dirs.includes('GeneralStateTests')) {
+        _tests.GeneralStateTests = (await getTestsFromArgs(
+          'GeneralStateTests',
+          this.testGetterArgs,
+          getTestPath('GeneralStateTests', this.testGetterArgs, this.customTestsPath)
+        )) as StateDirectory
+      }
+      if (dirs.includes('LegacyTests')) {
+        _tests.LegacyTests = {
+          Constantinople: {
+            GeneralStateTests: (await getTestsFromArgs(
+              'GeneralStateTests',
+              this.testGetterArgs,
+              getTestPath('LegacyTests', this.testGetterArgs, this.customTestsPath)
+            )) as StateDirectory,
+          },
+        }
+      }
+      suite('GeneralStateTests', async () => {
+        if (_tests.GeneralStateTests) {
+          suite('GeneralStateTests', async () => {
+            const rest = Object.entries(_tests.GeneralStateTests!).filter(
+              ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
+            )
+            suite('/', async () => {
+              for (const [dir, tests] of rest) {
+                await this.runFileDirectory(dir, tests as FileDirectory)
               }
             })
-          }
-        })
-      }
-
+            suite('Shanghai', async () => {
+              await this.runTestSuite(_tests.GeneralStateTests!.Shanghai!)
+            })
+            suite('VMTests', async () => {
+              await this.runTestSuite(_tests.GeneralStateTests!.VMTests!)
+            })
+          })
+        }
+        if (_tests.LegacyTests) {
+          suite('Legacy State Tests', async () => {
+            const rest = Object.entries(
+              _tests.LegacyTests!.Constantinople.GeneralStateTests
+            ).filter(([dir]) => dir !== 'Shanghai' && dir !== 'VMTests')
+            suite('/', async () => {
+              for (const [dir, tests] of rest) {
+                await this.runFileDirectory(dir, tests as FileDirectory)
+              }
+            })
+            suite('Shanghai', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.GeneralStateTests.Shanghai!
+              )
+            })
+            suite('VMTests', async () => {
+              await this.runTestSuite(_tests.LegacyTests!.Constantinople.GeneralStateTests.VMTests!)
+            })
+          })
+        }
+      })
       if (this.expectedTests > 0) {
-        it('checks test count', async () => {
-          expect(this.testCount).toBeGreaterThan(this.expectedTests)
+        suite('final', async () => {
+          it('checks test count', async () => {
+            expect(this.testCount).toBeGreaterThan(this.expectedTests)
+          })
         })
       }
     }

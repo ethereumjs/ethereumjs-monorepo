@@ -50,7 +50,7 @@ export type TestDirectory<TestType extends 'BlockchainTests' | 'GeneralStateTest
       }
     : TestType extends 'GeneralStateTests'
     ? {
-        GeneralStateTests: StateDirectory
+        GeneralStateTests?: StateDirectory
         LegacyTests?: {
           Constantinople: {
             GeneralStateTests: StateDirectory
