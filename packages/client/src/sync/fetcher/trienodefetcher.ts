@@ -145,11 +145,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     job: Job<JobTask, Uint8Array[], Uint8Array>
   ): Promise<TrieNodesResponse | undefined> {
     const { task, peer } = job
-    const { pathStrings, paths } = task
-
-    this.debug(`requested paths:`)
-    this.debug(paths)
-    this.debug(pathStrings)
+    const { paths } = task
 
     const rangeResult = await peer!.snap!.getTrieNodes({
       root: this.root,
@@ -235,7 +231,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               const syncPath =
                 storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
               this.debug('branch node found')
-              this.debug(storagePath)
               childNodes.unshift({
                 nodeHash: embeddedNode,
                 path: syncPath,
@@ -389,9 +384,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         await this.accountTrie.batch(ops)
         await this.accountTrie.persistRoot()
         this.debug(
-          `calculated and actual storage roots bellow\nactual ${this.accountTrie.root()} - expected ${bytesToHex(
-            this.root
-          )}`
+          `calculated and actual storage roots bellow\nactual ${bytesToHex(
+            this.accountTrie.root()
+          )} - expected ${bytesToHex(this.root)}`
         )
       }
     } catch (e) {
