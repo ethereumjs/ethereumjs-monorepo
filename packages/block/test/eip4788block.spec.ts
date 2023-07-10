@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { KECCAK256_RLP, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
+import { KECCAK256_RLP, bytesToHex, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
@@ -63,7 +63,7 @@ describe('EIP4788 header tests', () => {
     )
     assert.equal(
       block.toJSON().header?.beaconRoot,
-      bytesToPrefixedHexString(KECCAK256_RLP),
+      bytesToHex(KECCAK256_RLP),
       'JSON output includes excessDataGas'
     )
   })

@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { normalizeTxParams } from '../src/fromRpc.js'
@@ -46,17 +46,9 @@ describe('[fromJsonRpcProvider]', () => {
 
     const txHash = '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0'
     const tx = await TransactionFactory.fromJsonRpcProvider(provider, txHash, { common })
-    assert.equal(
-      bytesToPrefixedHexString(tx.hash()),
-      txHash,
-      'generated correct tx from transaction RPC data'
-    )
+    assert.equal(bytesToHex(tx.hash()), txHash, 'generated correct tx from transaction RPC data')
     try {
-      await TransactionFactory.fromJsonRpcProvider(
-        provider,
-        bytesToPrefixedHexString(randomBytes(32)),
-        {}
-      )
+      await TransactionFactory.fromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(
@@ -73,11 +65,7 @@ describe('[normalizeTxParams]', () => {
     const normedTx = normalizeTxParams(rpcTx)
     const tx = TransactionFactory.fromTxData(normedTx)
     assert.equal(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
-    assert.equal(
-      bytesToHex(tx.hash()),
-      rpcTx.hash.slice(2),
-      'converted normed tx data to transaction objec'
-    )
+    assert.equal(bytesToHex(tx.hash()), rpcTx.hash, 'converted normed tx data to transaction objec')
   })
 })
 

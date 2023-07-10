@@ -2,7 +2,7 @@ import {
   TypeOutput,
   bytesToHex,
   concatBytes,
-  hexStringToBytes,
+  hexToBytes,
   intToBytes,
   toType,
 } from '@ethereumjs/util'
@@ -11,8 +11,6 @@ import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'
 import * as mainnet from './chains/mainnet.json'
-import * as rinkeby from './chains/rinkeby.json'
-import * as ropsten from './chains/ropsten.json'
 import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips/index.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
@@ -35,7 +33,7 @@ import type {
   HardforkByOpts,
   HardforkConfig,
 } from './types.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
@@ -47,7 +45,7 @@ type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
  * custom chain {@link Common} objects (more complete custom chain setups
  * can be created via the main constructor and the {@link CommonOpts.customChains} parameter).
  */
-export class Common extends EventEmitter {
+export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
 
   private _chainParams: ChainConfig
@@ -56,6 +54,8 @@ export class Common extends EventEmitter {
   private _customChains: ChainConfig[]
 
   private HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
+
+  public events: EventEmitter
 
   /**
    * Creates a {@link Common} object for a custom chain, based on a standard one.
@@ -114,16 +114,6 @@ export class Common extends EventEmitter {
             name: CustomChain.PolygonMumbai,
             chainId: 80001,
             networkId: 80001,
-          },
-          opts
-        )
-      }
-      if (chainParamsOrName === CustomChain.ArbitrumRinkebyTestnet) {
-        return Common.custom(
-          {
-            name: CustomChain.ArbitrumRinkebyTestnet,
-            chainId: 421611,
-            networkId: 421611,
           },
           opts
         )
@@ -205,7 +195,7 @@ export class Common extends EventEmitter {
    * @returns boolean
    */
   static isSupportedChainId(chainId: bigint): boolean {
-    const initializedChains = this._getInitializedChains()
+    const initializedChains = this.getInitializedChains()
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
@@ -213,7 +203,7 @@ export class Common extends EventEmitter {
     chain: string | number | Chain | bigint,
     customChains?: ChainConfig[]
   ): ChainConfig {
-    const initializedChains = this._getInitializedChains(customChains)
+    const initializedChains = this.getInitializedChains(customChains)
     if (typeof chain === 'number' || typeof chain === 'bigint') {
       chain = chain.toString()
 
@@ -233,7 +223,8 @@ export class Common extends EventEmitter {
   }
 
   constructor(opts: CommonOpts) {
-    super()
+    this.events = new EventEmitter()
+
     this._customChains = opts.customChains ?? []
     this._chainParams = this.setChain(opts.chain)
     this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Shanghai
@@ -294,7 +285,7 @@ export class Common extends EventEmitter {
       if (hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
-          this.emit('hardforkChanged', hardfork)
+          this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
       }
@@ -442,7 +433,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
+  private _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -762,7 +753,7 @@ export class Common extends EventEmitter {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array) {
+  private _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
     let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
@@ -781,7 +772,7 @@ export class Common extends EventEmitter {
         blockOrTime !== prevBlockOrTime &&
         name !== Hardfork.Paris
       ) {
-        const hfBlockBytes = hexStringToBytes(blockOrTime.toString(16).padStart(16, '0'))
+        const hfBlockBytes = hexToBytes('0x' + blockOrTime.toString(16).padStart(16, '0'))
         hfBytes = concatBytes(hfBytes, hfBlockBytes)
         prevBlockOrTime = blockOrTime
       }
@@ -793,7 +784,7 @@ export class Common extends EventEmitter {
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
     const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
-    return `0x${forkhash}`
+    return forkhash
   }
 
   /**
@@ -801,7 +792,7 @@ export class Common extends EventEmitter {
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the chain, optional if already defined and not needed to be calculated
    */
-  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): string {
+  forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
     if (
@@ -994,16 +985,16 @@ export class Common extends EventEmitter {
    */
   copy(): Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
-    copy.removeAllListeners()
+    copy.events = new EventEmitter()
     return copy
   }
 
-  static _getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
+  static getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {
     const names: ChainName = {}
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains = { mainnet, ropsten, rinkeby, goerli, sepolia } as ChainsConfig
+    const chains = { mainnet, goerli, sepolia } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain

@@ -1,18 +1,26 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import {
+  Address,
+  TypeOutput,
+  bigIntToBytes,
+  bytesToBigInt,
+  equalsBytes,
+  hexToBytes,
+  toType,
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import type { Blockchain } from '../index.js'
 import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = hexToBytes('ffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
@@ -282,7 +290,7 @@ export class CliqueConsensus implements Consensus {
         const lastEpochBlockNumber =
           header.number -
           (header.number %
-            BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
+            BigInt((this.blockchain!.common.consensusConfig() as CliqueConfig).epoch))
         const limit = this.cliqueSignerLimit(header.number)
         let activeSigners = [...this.cliqueActiveSigners(header.number)]
         let consensus = false
@@ -399,7 +407,7 @@ export class CliqueConsensus implements Consensus {
       const lastEpochBlockNumber =
         lastBlockNumber -
         (lastBlockNumber %
-          BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
+          BigInt((this.blockchain!.common.consensusConfig() as CliqueConfig).epoch))
       const blockLimit = lastEpochBlockNumber - BigInt(limit)
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0] >= blockLimit)
     }

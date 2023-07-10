@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { intToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import * as devp2p from '../../src/index.js'
@@ -8,7 +7,9 @@ import * as devp2p from '../../src/index.js'
 import * as util from './util.js'
 
 const GENESIS_TD = 17179869184
-const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')
+const GENESIS_HASH = hexToBytes(
+  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+)
 
 const capabilities = [devp2p.LES.les4]
 
@@ -56,14 +57,14 @@ describe('LES simulator tests', () => {
       opts.status0 = Object.assign({}, status)
       opts.status1 = Object.assign({}, status)
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
-        const msg = 'NetworkId mismatch: 01 / 03'
+        const msg = 'NetworkId mismatch: 0x01 / 0xaa36a7'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)
       }
 
       const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 41591)
     })
   })
@@ -77,7 +78,7 @@ describe('LES simulator tests', () => {
       opts.status1 = status1
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
         const msg =
-          'Genesis block mismatch: d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0000000000000000000000000000000000000000000000000000000000000000'
+          'Genesis block mismatch: 0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0x0000000000000000000000000000000000000000000000000000000000000000'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)

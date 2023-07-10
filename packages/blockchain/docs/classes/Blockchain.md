@@ -135,9 +135,9 @@ The genesis Block for the blockchain.
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`Blockchain`](Blockchain.md)
+▸ **shallowCopy**(): [`Blockchain`](Blockchain.md)
 
 Returns a deep copy of this [Blockchain](Blockchain.md) instance.
 

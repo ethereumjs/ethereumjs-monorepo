@@ -1,4 +1,4 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../src/index.js'

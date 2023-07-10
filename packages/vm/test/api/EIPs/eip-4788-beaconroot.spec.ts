@@ -16,7 +16,7 @@ import {
   Address,
   bigIntToBytes,
   bytesToBigInt,
-  hexStringToBytes,
+  hexToBytes,
   setLengthLeft,
   setLengthRight,
   zeros,
@@ -34,7 +34,7 @@ const common = new Common({
   eips: [4788],
 })
 
-const pkey = hexStringToBytes('20'.repeat(32))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 const contractAddress = Address.fromString('0x' + 'c0de'.repeat(10))
 
 function beaconrootBlock(
@@ -96,7 +96,7 @@ async function runBlock(block: Block) {
     common,
   })
 
-  await vm.stateManager.putContractCode(contractAddress, hexStringToBytes(CODE))
+  await vm.stateManager.putContractCode(contractAddress, hexToBytes(CODE))
   return {
     vmResult: await vm.runBlock({
       block,

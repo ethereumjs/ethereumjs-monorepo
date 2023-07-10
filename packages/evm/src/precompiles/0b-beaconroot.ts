@@ -17,7 +17,7 @@ const address = Address.fromString('0x000000000000000000000000000000000000000b')
 export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   const data = opts.data
 
-  const gasUsed = opts._common.param('gasPrices', 'beaconrootCost')
+  const gasUsed = opts.common.param('gasPrices', 'beaconrootCost')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run BEACONROOT (0x0B) precompile data=${short(opts.data)} length=${
@@ -42,7 +42,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const timestampInput = bytesToBigInt(data.slice(0, 32))
-  const historicalRootsLength = BigInt(opts._common.param('vm', 'historicalRootsLength'))
+  const historicalRootsLength = BigInt(opts.common.param('vm', 'historicalRootsLength'))
 
   const timestampIndex = timestampInput % historicalRootsLength
   const recordedTimestamp = await opts.stateManager.getContractStorage(

@@ -1,9 +1,8 @@
+import { fork } from 'child_process'
+import { createServer } from 'http'
 import { resolve } from 'path'
 
-const fork = require('child_process').fork
-const http = require('http')
-
-const program = resolve('test/retesteth/transition-child.ts')
+const program = resolve('test/retesteth/transition-child.cts')
 const parameters: any = []
 const options = {
   //stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
@@ -50,7 +49,7 @@ function runTest(message: any) {
   })
 }
 
-const server = http.createServer((request: any, result: any) => {
+const server = createServer((request: any, result: any) => {
   if (request.method === 'POST') {
     let message = ''
     request.on('data', (data: any) => {

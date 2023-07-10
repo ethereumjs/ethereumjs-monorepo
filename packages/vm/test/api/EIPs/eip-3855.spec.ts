@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVMErrorMessage } from '@ethereumjs/evm'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -26,7 +26,7 @@ describe('EIP 3541 tests', () => {
     })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F'),
+      code: hexToBytes('0x5F'),
       gasLimit: BigInt(10),
     })
 
@@ -45,7 +45,7 @@ describe('EIP 3541 tests', () => {
     const depth = Number(common.param('vm', 'stackLimit'))
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F'.repeat(depth)),
+      code: hexToBytes('0x' + '5F'.repeat(depth)),
       gasLimit: BigInt(10000),
     })
 
@@ -64,7 +64,7 @@ describe('EIP 3541 tests', () => {
     const depth = Number(common.param('vm', 'stackLimit')!) + 1
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F'.repeat(depth)),
+      code: hexToBytes('0x' + '5F'.repeat(depth)),
       gasLimit: BigInt(10000),
     })
 
@@ -75,7 +75,7 @@ describe('EIP 3541 tests', () => {
     const vm = await VM.create({ common: commonNoEIP3855 })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('5F'),
+      code: hexToBytes('0x' + '5F'),
       gasLimit: BigInt(10000),
     })
 

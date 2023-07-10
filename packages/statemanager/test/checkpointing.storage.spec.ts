@@ -1,4 +1,4 @@
-import { Account, Address, hexStringToBytes } from '@ethereumjs/util'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'
@@ -20,30 +20,28 @@ const storageEval = async (
 }
 
 describe('StateManager -> Storage Checkpointing', () => {
-  const address = new Address(hexStringToBytes('11'.repeat(20)))
+  const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
   const account = new Account()
 
-  const key = hexStringToBytes('01'.repeat(32))
+  const key = hexToBytes('0x' + '01'.repeat(32))
 
-  const value = hexStringToBytes('01')
-  const root = hexStringToBytes('561a011235f3fe8a4d292eba6d462e09015bbef9f8c3373dd70760bbc86f9a6c')
+  const value = hexToBytes('0x01')
+  const root = hexToBytes('0x561a011235f3fe8a4d292eba6d462e09015bbef9f8c3373dd70760bbc86f9a6c')
 
-  const value2 = hexStringToBytes('02')
-  const root2 = hexStringToBytes('38f95e481a23df7b41934aee346cc960becc5388ad4c67e51f60ac03e8687626')
+  const value2 = hexToBytes('0x02')
+  const root2 = hexToBytes('0x38f95e481a23df7b41934aee346cc960becc5388ad4c67e51f60ac03e8687626')
 
-  const value3 = hexStringToBytes('03')
-  const root3 = hexStringToBytes('dedbee161cad6e3afcc99901dfca9122c16ad48af559d78c4a8b5bec2f5f304b')
+  const value3 = hexToBytes('0x03')
+  const root3 = hexToBytes('0xdedbee161cad6e3afcc99901dfca9122c16ad48af559d78c4a8b5bec2f5f304b')
 
-  const value4 = hexStringToBytes('04')
-  const root4 = hexStringToBytes('e5ccf4afccb012ac0900d0f64f6567a1bceb89f16ff5050da2a64427da94b618')
+  const value4 = hexToBytes('0x04')
+  const root4 = hexToBytes('0xe5ccf4afccb012ac0900d0f64f6567a1bceb89f16ff5050da2a64427da94b618')
 
-  const value5 = hexStringToBytes('05')
-  const root5 = hexStringToBytes('b5b5deaf640a41912217f37f6ee338d49c6a476e0912c81188c2954fd1e959f8')
+  const value5 = hexToBytes('0x05')
+  const root5 = hexToBytes('0xb5b5deaf640a41912217f37f6ee338d49c6a476e0912c81188c2954fd1e959f8')
 
   const valueEmpty = new Uint8Array(0)
-  const rootEmpty = hexStringToBytes(
-    '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
-  )
+  const rootEmpty = hexToBytes('0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421')
 
   const storageSets = [
     {

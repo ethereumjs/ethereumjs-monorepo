@@ -2,7 +2,6 @@ import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json'
-import * as difficultyRopsten from '../../ethereum-tests/BasicTests/difficultyRopsten.json'
 import * as difficultyArrowGlacier from '../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json'
 import * as difficultyByzantium from '../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json'
 import * as difficultyConstantinople from '../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json'
@@ -37,7 +36,6 @@ const hardforkTestData: TestData = {
 
 const chainTestData: TestData = {
   mainnet: difficultyMainNetwork,
-  ropsten: difficultyRopsten,
 }
 
 describe('[Header]: difficulty tests', () => {

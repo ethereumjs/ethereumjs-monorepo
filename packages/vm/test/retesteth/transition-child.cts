@@ -2,18 +2,17 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { RLP } from '@ethereumjs/rlp'
 import { LegacyTransaction, TransactionFactory } from '@ethereumjs/tx'
-import { Account, bytesToPrefixedHexString } from '@ethereumjs/util'
+import { Account, bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
-import { VM } from '../../src'
-import { BlockBuilder } from '../../src/buildBlock'
+import { VM } from '../../dist/cjs'
+import { BlockBuilder } from '../../dist/cjs/buildBlock'
 import { getCommon } from '../tester/config'
 import { makeBlockFromEnv, setupPreConditions } from '../util'
 
-import type { PostByzantiumTxReceipt } from '../../src'
+import type { PostByzantiumTxReceipt } from '../../dist/cjs'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
 
@@ -67,7 +66,7 @@ async function runTransition(argsIn: any) {
   const acc = (await vm.stateManager.getAccount(block.header.coinbase)) ?? new Account()
   await vm.stateManager.putAccount(block.header.coinbase, acc)
 
-  const txsData = RLP.decode(hexToBytes(rlpTxs.slice(2)))
+  const txsData = RLP.decode(unprefixedHexToBytes(rlpTxs.slice(2)))
 
   const headerData = block.header.toJSON()
   headerData.difficulty = inputEnv.parentDifficulty
@@ -83,14 +82,14 @@ async function runTransition(argsIn: any) {
   let txCounter = 0
 
   vm.events.on('afterTx', async (afterTx, continueFn) => {
-    const receipt = <PostByzantiumTxReceipt>afterTx.receipt
+    const receipt = afterTx.receipt as PostByzantiumTxReceipt
     const pushReceipt = {
       root: '0x',
       status: receipt.status === 0 ? '0x' : '0x1',
       cumulativeGasUsed: '0x' + receipt.cumulativeBlockGasUsed.toString(16),
-      logsBloom: bytesToPrefixedHexString(receipt.bitvector),
+      logsBloom: bytesToHex(receipt.bitvector),
       logs: null,
-      transactionHash: bytesToPrefixedHexString(afterTx.transaction.hash()),
+      transactionHash: bytesToHex(afterTx.transaction.hash()),
       contractAddress: '0x0000000000000000000000000000000000000000',
       gasUsed: '0x' + afterTx.totalGasSpent.toString(16),
       blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -101,10 +100,10 @@ async function runTransition(argsIn: any) {
     continueFn!(undefined)
   })
 
-  const rejected = []
+  const rejected: any = []
 
   let index = 0
-  for (const txData of <NestedUint8Array>txsData) {
+  for (const txData of txsData as NestedUint8Array) {
     try {
       let tx: TypedTransaction
       if (txData instanceof Uint8Array) {
@@ -128,17 +127,17 @@ async function runTransition(argsIn: any) {
   await vm.evm.journal.cleanup()
 
   const output = {
-    stateRoot: bytesToPrefixedHexString(await vm.stateManager.getStateRoot()),
-    txRoot: bytesToPrefixedHexString(await builder.transactionsTrie()),
-    receiptsRoot: bytesToPrefixedHexString(await builder.receiptTrie()),
-    logsHash: bytesToPrefixedHexString(logsHash),
-    logsBloom: bytesToPrefixedHexString(logsBloom),
+    stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
+    txRoot: bytesToHex(await builder.transactionsTrie()),
+    receiptsRoot: bytesToHex(await builder.receiptTrie()),
+    logsHash: bytesToHex(logsHash),
+    logsBloom: bytesToHex(logsBloom),
     currentDifficulty: '0x20000',
     receipts, // TODO fixme
   }
 
   if (rejected.length > 0) {
-    ;(<any>output).rejected = rejected
+    ;(output as any).rejected = rejected
   }
 
   const outputAlloc = alloc //{}

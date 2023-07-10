@@ -74,7 +74,7 @@ describe('TransactionTests', async () => {
             const hash = bytesToHex(tx.hash())
             const txIsValid = tx.isValid()
             const senderIsCorrect = forkTestData.sender === sender
-            const hashIsCorrect = forkTestData.hash?.slice(2) === hash
+            const hashIsCorrect = forkTestData.hash === hash
 
             const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
             if (shouldBeInvalid) {

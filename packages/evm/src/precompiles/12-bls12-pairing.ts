@@ -1,5 +1,4 @@
-import { concatBytesNoTypeCheck, short } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, concatBytes, equalsBytes, hexToBytes, short } from '@ethereumjs/util'
 
 import { EvmErrorResult, OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
@@ -10,14 +9,14 @@ import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
 
 const zeroBuffer = new Uint8Array(32)
-const oneBuffer = concatBytesNoTypeCheck(new Uint8Array(31), hexToBytes('01'))
+const oneBuffer = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
 export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
 
-  const baseGas = opts._common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
+  const baseGas = opts.common.paramByEIP('gasPrices', 'Bls12381PairingBaseGas', 2537) ?? BigInt(0)
 
   if (inputData.length === 0) {
     if (opts._debug !== undefined) {
@@ -27,7 +26,7 @@ export async function precompile12(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const gasUsedPerPair =
-    opts._common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
+    opts.common.paramByEIP('gasPrices', 'Bls12381PairingPerPairGas', 2537) ?? BigInt(0)
 
   const gasUsed = baseGas + gasUsedPerPair * BigInt(Math.floor(inputData.length / 384))
   if (opts._debug !== undefined) {

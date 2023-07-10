@@ -1,9 +1,17 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils.js'
+import {
+  Account,
+  Address,
+  KECCAK256_NULL,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+  short,
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
 
@@ -25,6 +33,7 @@ import type {
   LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
@@ -51,11 +60,11 @@ function execHardfork(
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // create a reasonable default if no block is given
-  opts.block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+  opts.block = opts.block ?? Block.fromBlockData({}, { common: this.common })
 
   if (opts.skipHardForkValidation !== true) {
     // Find and set preMerge hf for easy access later
-    const hfs = this._common.hardforks()
+    const hfs = this.common.hardforks()
     const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
     // If no pre merge hf found, set it to first hf even if its merge
     const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
@@ -63,13 +72,13 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // If block and tx don't have a same hardfork, set tx hardfork to block
     if (
       execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
-      execHardfork(opts.block._common.hardfork(), preMergeHf)
+      execHardfork(opts.block.common.hardfork(), preMergeHf)
     ) {
-      opts.tx.common.setHardfork(opts.block._common.hardfork())
+      opts.tx.common.setHardfork(opts.block.common.hardfork())
     }
     if (
-      execHardfork(opts.block._common.hardfork(), preMergeHf) !==
-      execHardfork(this._common.hardfork(), preMergeHf)
+      execHardfork(opts.block.common.hardfork(), preMergeHf) !==
+      execHardfork(this.common.hardfork(), preMergeHf)
     ) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', this, opts.block, opts.tx)
@@ -98,10 +107,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Typed transaction specific setup tasks
   if (
     opts.tx.supports(Capability.EIP2718TypedTransaction) &&
-    this._common.isActivatedEIP(2718) === true
+    this.common.isActivatedEIP(2718) === true
   ) {
     // Is it an Access List transaction?
-    if (this._common.isActivatedEIP(2930) === false) {
+    if (this.common.isActivatedEIP(2930) === false) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
@@ -113,7 +122,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     if (
       opts.tx.supports(Capability.EIP1559FeeMarket) &&
-      this._common.isActivatedEIP(1559) === false
+      this.common.isActivatedEIP(1559) === false
     ) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
@@ -149,7 +158,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     throw e
   } finally {
-    if (this._common.isActivatedEIP(2929) === true) {
+    if (this.common.isActivatedEIP(2929) === true) {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
@@ -183,7 +192,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  if (this._common.isActivatedEIP(2929) === true) {
+  if (this.common.isActivatedEIP(2929) === true) {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
@@ -192,10 +201,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.journal.addAlwaysWarmAddress(caller.toString())
     if (tx.to !== undefined) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      this.evm.journal.addAlwaysWarmAddress(bytesToHex(tx.to.bytes))
+      this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(tx.to.bytes))
     }
-    if (this._common.isActivatedEIP(3651) === true) {
-      this.evm.journal.addAlwaysWarmAddress(bytesToHex(block.header.coinbase.bytes))
+    if (this.common.isActivatedEIP(3651) === true) {
+      this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(block.header.coinbase.bytes))
     }
   }
 
@@ -211,7 +220,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
-  if (this._common.isActivatedEIP(1559) === true) {
+  if (this.common.isActivatedEIP(1559) === true) {
     // EIP-1559 spec:
     // Ensure that the user was willing to at least pay the base fee
     // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
@@ -239,7 +248,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // EIP-3607: Reject transactions from senders with deployed code
   if (
-    this._common.isActivatedEIP(3607) === true &&
+    this.common.isActivatedEIP(3607) === true &&
     !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)
   ) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
@@ -278,7 +287,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   if (tx instanceof BlobEIP4844Transaction) {
-    if (!this._common.isActivatedEIP(4844)) {
+    if (!this.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', this, block, tx)
       throw new Error(msg)
     }
@@ -354,7 +363,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<LegacyTransaction>tx).gasPrice
-    if (this._common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559) === true) {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
     }
@@ -386,7 +395,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this.DEBUG) {
     debug(
-      `Running tx=0x${
+      `Running tx=${
         tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
@@ -442,7 +451,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Process any gas refund
   let gasRefund = results.execResult.gasRefund ?? BigInt(0)
   results.gasRefund = gasRefund
-  const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
+  const maxRefundQuotient = this.common.param('gasConfig', 'maxRefundQuotient')
   if (gasRefund !== BigInt(0)) {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
     gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
@@ -474,7 +483,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update miner's balance
   let miner
-  if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
+  if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
     miner = block.header.cliqueSigner()
   } else {
     miner = block.header.coinbase
@@ -486,7 +495,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // add the amount spent on gas to the miner's account
   results.minerValue =
-    this._common.isActivatedEIP(1559) === true
+    this.common.isActivatedEIP(1559) === true
       ? results.totalGasSpent * inclusionFeePerGas!
       : results.amountSpent
   minerAccount.balance += results.minerValue
@@ -505,7 +514,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (results.execResult.selfdestruct !== undefined) {
     for (const addressToSelfdestructHex of results.execResult.selfdestruct) {
       const address = new Address(hexToBytes(addressToSelfdestructHex))
-      if (this._common.isActivatedEIP(6780)) {
+      if (this.common.isActivatedEIP(6780)) {
         // skip cleanup of addresses not in createdAddresses
         if (!results.execResult.createdAddresses!.has(address.toString())) {
           continue
@@ -518,7 +527,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  if (opts.reportAccessList === true && this._common.isActivatedEIP(2930)) {
+  if (opts.reportAccessList === true && this.common.isActivatedEIP(2930)) {
     // Convert the Map to the desired type
     const accessList: AccessList = []
     for (const [address, set] of this.evm.journal.accessList!) {
@@ -563,7 +572,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `tx run finished hash=${
-        opts.tx.isSigned() ? bytesToPrefixedHexString(opts.tx.hash()) : 'unsigned'
+        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`
     )
   }
@@ -628,7 +637,7 @@ export async function generateTxReceipt(
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     // Legacy transaction
-    if (this._common.gteHardfork(Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
       // Post-Byzantium
       receipt = {
         status: txResult.execResult.exceptionError !== undefined ? 0 : 1, // Receipts have a 0 as status on error

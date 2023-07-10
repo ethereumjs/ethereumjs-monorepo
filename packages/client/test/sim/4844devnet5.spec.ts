@@ -1,5 +1,5 @@
 import { Common } from '@ethereumjs/common'
-import { bytesToPrefixedHexString, hexStringToBytes, privateToAddress } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
 import * as tape from 'tape'
@@ -13,10 +13,10 @@ import {
   waitForELStart,
 } from './simutils'
 
-const pkey = hexStringToBytes(
-  process.env.PRIVATE_KEY ?? 'ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e'
+const pkey = hexToBytes(
+  process.env.PRIVATE_KEY ?? '0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e'
 )
-const sender = bytesToPrefixedHexString(privateToAddress(pkey))
+const sender = bytesToHex(privateToAddress(pkey))
 const rpcUrl =
   process.env.RPC_URL ?? 'https://rpc.lodestar-ethereumjs-1.srv.4844-devnet-5.ethpandaops.io'
 if (rpcUrl === undefined) {
@@ -74,7 +74,7 @@ tape(`running txes on ${rpcUrl}`, async (t) => {
       pkey,
       nonce,
       {
-        to: bytesToPrefixedHexString(randomBytes(20)),
+        to: bytesToHex(randomBytes(20)),
         chainId,
         maxFeePerDataGas: BigInt(process.env.MAX_DATAFEE ?? 100000000n),
         maxPriorityFeePerGas: BigInt(process.env.MAX_PRIORITY ?? 100000000n),

@@ -7,7 +7,7 @@ import { baseRequest, baseSetup, createClient, createManager, params, startRPC }
 
 const method = 'net_version'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 function compareResult(t: any, result: any, chainId: any) {
   let msg = 'result should be a string'
@@ -18,16 +18,16 @@ function compareResult(t: any, result: any, chainId: any) {
   t.equal(result, chainId, msg)
 }
 
-tape(`${method}: call on ropsten`, async (t) => {
+tape(`${method}: call on mainnnet`, async (t) => {
   const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
+    createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
   )
   const server = startRPC(manager.getMethods())
 
   const req = params(method, [])
   const expectRes = (res: any) => {
     const { result } = res.body
-    compareResult(t, result, '3')
+    compareResult(t, result, '5')
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -41,23 +41,6 @@ tape(`${method}: call on mainnet`, async (t) => {
     compareResult(t, result, '1')
   }
   await baseRequest(t, server, req, 200, expectRes)
-})
-
-tape(`${method}: call on rinkeby`, async (t) => {
-  // Stub out block consensusFormatValidation checks
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Rinkeby }) })
-  )
-  const server = startRPC(manager.getMethods())
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '4')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-  td.reset()
 })
 
 tape(`${method}: call on goerli`, async (t) => {
@@ -75,7 +58,7 @@ tape(`${method}: call on goerli`, async (t) => {
 })
 
 tape('reset TD', (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
   td.reset()
   t.end()
 })

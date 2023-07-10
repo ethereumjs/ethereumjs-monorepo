@@ -5,7 +5,6 @@ import {
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
-  bytesToPrefixedHexString,
   bytesToUtf8,
   commitmentsToVersionedHashes,
   getBlobs,
@@ -272,11 +271,7 @@ export async function runTxHelper(
     { common }
   ).sign(pkey)
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(tx.serialize())],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(tx.serialize())], 2.0)
   let mined = false
   let receipt
   console.log(`tx: ${res.result}`)
@@ -334,11 +329,7 @@ export const runBlobTx = async (
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(serializedWrapper)],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   console.log(`tx: ${res.result}`)
   let tries = 0
@@ -397,9 +388,9 @@ export const createBlobTxs = async (
     const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
-    await fs.appendFile('./blobs.txt', bytesToPrefixedHexString(serializedWrapper) + '\n')
-    txns.push(bytesToPrefixedHexString(serializedWrapper))
-    txHashes.push(bytesToPrefixedHexString(blobTx.hash()))
+    await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')
+    txns.push(bytesToHex(serializedWrapper))
+    txHashes.push(bytesToHex(blobTx.hash()))
   }
   return txns
 }
@@ -437,7 +428,14 @@ export async function createInlineClient(config: any, common: any, customGenesis
     validateConsensus: false,
   })
   config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
-  const inlineClient = await EthereumClient.create({ config, blockchain, chainDB, stateDB, metaDB })
+  const inlineClient = await EthereumClient.create({
+    config,
+    blockchain,
+    chainDB,
+    stateDB,
+    metaDB,
+    genesisState: customGenesisState,
+  })
   await inlineClient.open()
   await inlineClient.start()
   return inlineClient

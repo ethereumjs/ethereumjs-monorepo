@@ -7,7 +7,7 @@ describe('StateManager -> General', () => {
   it(`should instantiate`, async () => {
     const sm = new DefaultStateManager()
 
-    assert.deepEqual(sm._trie.root(), KECCAK256_RLP, 'it has default root')
+    assert.deepEqual(sm['_trie'].root(), KECCAK256_RLP, 'it has default root')
     const res = await sm.getStateRoot()
     assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
   })
@@ -17,7 +17,7 @@ describe('StateManager -> General', () => {
       prefixCodeHashes: false,
     })
 
-    let smCopy = sm.copy()
+    let smCopy = sm.shallowCopy()
     assert.equal(
       (smCopy as any)._prefixCodeHashes,
       (sm as any)._prefixCodeHashes,
@@ -33,7 +33,7 @@ describe('StateManager -> General', () => {
       },
     })
 
-    smCopy = sm.copy()
+    smCopy = sm.shallowCopy()
     assert.equal(
       (smCopy as any)._accountCacheSettings.type,
       CacheType.ORDERED_MAP,

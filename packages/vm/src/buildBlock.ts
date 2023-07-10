@@ -57,7 +57,7 @@ export class BlockBuilder {
 
   constructor(vm: VM, opts: BuildBlockOpts) {
     this.vm = vm
-    this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm._common }
+    this.blockOpts = { putBlockIntoBlockchain: true, ...opts.blockOpts, common: this.vm.common }
 
     this.headerData = {
       ...opts.headerData,
@@ -68,14 +68,14 @@ export class BlockBuilder {
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
     if (
-      this.vm._common.isActivatedEIP(1559) === true &&
+      this.vm.common.isActivatedEIP(1559) === true &&
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
       this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
     }
 
     if (
-      this.vm._common.isActivatedEIP(4844) === true &&
+      this.vm.common.isActivatedEIP(4844) === true &&
       typeof this.headerData.excessDataGas === 'undefined'
     ) {
       this.headerData.excessDataGas = opts.parentBlock.header.calcNextExcessDataGas()
@@ -134,7 +134,7 @@ export class BlockBuilder {
    * Adds the block miner reward to the coinbase account.
    */
   private async rewardMiner() {
-    const minerReward = this.vm._common.param('pow', 'minerReward')
+    const minerReward = this.vm.common.param('pow', 'minerReward')
     const reward = calculateMinerReward(minerReward, 0)
     const coinbase =
       this.headerData.coinbase !== undefined
@@ -181,8 +181,8 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const dataGasLimit = this.vm._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this.vm._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasLimit = this.vm.common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this.vm.common.param('gasConfig', 'dataGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
@@ -259,7 +259,7 @@ export class BlockBuilder {
   async build(sealOpts?: SealBlockOpts) {
     this.checkStatus()
     const blockOpts = this.blockOpts
-    const consensusType = this.vm._common.consensusType()
+    const consensusType = this.vm.common.consensusType()
 
     if (consensusType === ConsensusType.ProofOfWork) {
       await this.rewardMiner()
@@ -277,7 +277,7 @@ export class BlockBuilder {
     const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
 
     let dataGasUsed = undefined
-    if (this.vm._common.isActivatedEIP(4844) === true) {
+    if (this.vm.common.isActivatedEIP(4844) === true) {
       dataGasUsed = this.dataGasUsed
     }
 

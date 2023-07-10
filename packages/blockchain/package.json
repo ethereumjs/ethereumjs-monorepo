@@ -34,6 +34,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.js",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- blockchain",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -47,7 +48,6 @@
     "@ethereumjs/block": "^4.2.2",
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/ethash": "^2.0.5",
-    "@ethereumjs/genesis": "^0.0.1",
     "@ethereumjs/rlp": "^4.0.1",
     "@ethereumjs/trie": "^5.0.5",
     "@ethereumjs/tx": "^4.1.2",
@@ -62,6 +62,6 @@
     "@types/level-errors": "^3.0.0"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

@@ -1,4 +1,3 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -10,6 +9,7 @@ import {
   KECCAK256_RLP_S,
   MAX_INTEGER,
   TWO_POW256,
+  bytesToHex,
 } from '../src/index.js'
 
 describe('constants', () => {
@@ -31,32 +31,32 @@ describe('constants', () => {
 
     assert.equal(
       KECCAK256_NULL_S,
-      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     )
 
     assert.equal(
       bytesToHex(KECCAK256_NULL),
-      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
     )
 
     assert.equal(
       KECCAK256_RLP_ARRAY_S,
-      '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+      '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
     )
 
     assert.equal(
       bytesToHex(KECCAK256_RLP_ARRAY),
-      '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
+      '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347'
     )
 
     assert.equal(
       KECCAK256_RLP_S,
-      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
     )
 
     assert.equal(
       bytesToHex(KECCAK256_RLP),
-      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
+      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421'
     )
   })
 })
