@@ -34,9 +34,9 @@ export interface TestArgs {
   customStateTest?: string
   jsontrace?: boolean
   dist?: boolean
-  data?: number
-  gas?: number
-  value?: number
+  data?: string
+  gas?: string
+  value?: string
   debug?: boolean
   'expected-test-amount'?: number
   'verify-test-amount-alltests': number
@@ -62,9 +62,9 @@ export interface RunnerArgs {
   common: Common
   jsontrace?: boolean
   dist?: boolean
-  data?: number
-  gasLimit?: number
-  value?: number
+  data?: string
+  gasLimit?: string
+  value?: string
   debug?: boolean
   reps?: number
 }
@@ -151,8 +151,8 @@ export function parseTestCases(
   data: string | undefined,
   gasLimit: string | undefined,
   value: string | undefined
-) {
-  let testCases = []
+): Record<string, any>[] {
+  let testCases: Record<string, any>[] = []
 
   if (testData['post'][forkConfigTestSuite] !== undefined) {
     testCases = testData['post'][forkConfigTestSuite].map((testCase: any) => {
@@ -265,11 +265,6 @@ export async function setupBlockchainTestVM(
   const blockData = { header, withdrawals }
   const genesisBlock = Block.fromBlockData(blockData, { common })
 
-  if (typeof testData.genesisRLP === 'string') {
-    const rlp = toBytes(testData.genesisRLP)
-    assert.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
-  }
-
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: true,
@@ -290,13 +285,15 @@ export async function setupBlockchainTestVM(
 
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
-  it('should get correct pre stateRoot', async () => {
-    assert.deepEqual(
-      (vm.stateManager as any)._trie.root(),
-      genesisBlock.header.stateRoot,
-      'correct pre stateRoot'
-    )
-  })
+  if (typeof testData.genesisRLP === 'string') {
+    const rlp = toBytes(testData.genesisRLP)
+    assert.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+  }
+  assert.deepEqual(
+    (vm.stateManager as any)._trie.root(),
+    genesisBlock.header.stateRoot,
+    'correct state root'
+  )
   return { vm, blockchain, state }
 }
 
@@ -311,4 +308,83 @@ export const defaultBlockchainTestArgs: TestArgs = {
   skip: 'ALL',
   runSkipped: 'NONE',
   'verify-test-amount-alltests': 1,
+}
+
+const parseInput = (input: string | undefined, bool: boolean = false) => {
+  if (input === undefined) {
+    return undefined
+  }
+  if (input === '') {
+    return undefined
+  }
+  if (input === 'true' && bool === false) {
+    return undefined
+  }
+  return input
+}
+
+export const testInput = (testType: 'state' | 'blockchain') => {
+  const input =
+    testType === 'blockchain'
+      ? {
+          'verify-test-amount-alltests':
+            parseInput(process.env.VERIFY_ALLTESTS, true) === undefined ? 0 : 1,
+          count:
+            parseInput(process.env.COUNT) !== undefined ? parseInt(process.env.COUNT!) : undefined,
+          fork: parseInput(process.env.FORK) ?? 'Paris',
+          test: parseInput(process.env.BLOCKCHAINTEST),
+          skip: parseInput(process.env.SKIP) ?? defaultBlockchainTestArgs.skip,
+          runSkipped: parseInput(process.env.RUNSKIPPED) ?? defaultBlockchainTestArgs.runSkipped,
+          file: parseInput(process.env.FILE),
+          dir: parseInput(process.env.DIR),
+          excludeDir: parseInput(process.env.EXCLUDEDIR),
+          testsPath: parseInput(process.env.TESTSPATH),
+          customTestsPath: parseInput(process.env.CUSTOMTESTSPATH),
+          customStateTest:
+            parseInput(process.env.CUSTOMSTATETEST) ?? defaultBlockchainTestArgs.customStateTest,
+          jsontrace: parseInput(process.env.JSONTRACE, true) !== undefined,
+          data: parseInput(process.env.DATA),
+          gas: parseInput(process.env.GAS),
+          value: parseInput(process.env.VALUE),
+          debug: parseInput(process.env.DEBUG, true) !== undefined,
+          'expected-test-amount':
+            parseInput(process.env.EXPECTEDTESTAMOUNT) !== undefined
+              ? parseInt(process.env.EXPECTEDTESTAMOUNT!)
+              : undefined,
+          reps:
+            parseInput(process.env.REPS) !== undefined ? parseInt(process.env.REPS!) : undefined,
+        }
+      : {
+          ['verify-test-amount-alltests']:
+            parseInput(process.env.VERIFY_ALLTESTS) === undefined ? 0 : 1,
+          count:
+            parseInput(process.env.COUNT) !== undefined ? parseInt(process.env.COUNT!) : undefined,
+          fork: parseInput(process.env.FORK) ?? 'Paris',
+          test: parseInput(process.env.STATETEST),
+          skip: parseInput(process.env.SKIP) ?? defaultStateTestArgs.skip,
+          runSkipped: parseInput(process.env.RUNSKIPPED) ?? defaultStateTestArgs.runSkipped,
+          file: parseInput(process.env.FILE),
+          dir: parseInput(process.env.DIR),
+          excludeDir: parseInput(process.env.EXCLUDEDIR),
+          testsPath: parseInput(process.env.TESTSPATH),
+          customTestsPath: parseInput(process.env.CUSTOMTESTSPATH),
+          customStateTest:
+            parseInput(process.env.CUSTOMSTATETEST) ?? defaultStateTestArgs.customStateTest,
+          jsontrace: parseInput(process.env.JSONTRACE, true) !== undefined,
+          data: parseInput(process.env.DATA),
+          gas: parseInput(process.env.GAS),
+          value: parseInput(process.env.VALUE),
+          debug: parseInput(process.env.DEBUG, true) !== undefined,
+          'expected-test-amount':
+            parseInput(process.env.EXPECTEDTESTAMOUNT) !== undefined
+              ? parseInt(process.env.EXPECTEDTESTAMOUNT!)
+              : undefined,
+          reps:
+            parseInput(process.env.REPS) !== undefined ? parseInt(process.env.REPS!) : undefined,
+        }
+  const testArgs =
+    testType === 'blockchain'
+      ? { ...defaultBlockchainTestArgs, ...input }
+      : { ...defaultStateTestArgs, ...input }
+  return testArgs
 }
