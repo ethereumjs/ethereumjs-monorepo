@@ -26,6 +26,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
 ### Improved Typing / API Changes
 
 Typing for the `devp2p` library has been significantly improved with PR [#2863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2863).

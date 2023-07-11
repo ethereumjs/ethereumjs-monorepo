@@ -26,6 +26,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
 ### New API to set Hardforks
 
 Our APIs to (re-)set a a hardfork within a library had grown old over all changes on how this is done over the years. 😂

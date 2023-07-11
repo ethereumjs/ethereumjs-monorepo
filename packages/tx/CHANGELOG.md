@@ -26,6 +26,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
 ### API Validation Methods Clean-Up
 
 We have cleaned up and unified the validation methods in the `Tx` library, see PR [#2792](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2792).

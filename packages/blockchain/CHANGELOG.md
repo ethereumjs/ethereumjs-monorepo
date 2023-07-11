@@ -26,6 +26,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
 ### Database Abstraction / Removed LevelDB Dependency
 
 Up to this release the backend store for the blockchain library was tied to be a `LevelDB` database, which was unfortunate since `level` is a depedency which doesn't play so well in the browser and beyond there are many use cases for this library where a persistent data store is just not needed.

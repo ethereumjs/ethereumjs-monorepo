@@ -26,6 +26,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
 ### StateManager / Cache Refactoring
 
 With this release the StateManager has been completely refactored, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630) and [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634). While the overall API has been preserved for the most part, the API DOES come with some changes where things needed a clean-up, which will need some adoption. The cache backend has been completely rewritten and there is now a cleaner separation between the StateManager and the account and storage caches. The `BaseStateManager` class - being rather restrictive than useful - has been removed.
