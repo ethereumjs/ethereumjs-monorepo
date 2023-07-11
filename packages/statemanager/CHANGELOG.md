@@ -125,7 +125,7 @@ We have converted existing Buffer conversion methods to Uint8Array conversion me
 
 #### Prefixed Hex Strings as Default
 
-It is a constant source of errors and mismatches in byte-handling code bases if hex strings are used in a mixed prefixed/unprefixed way.
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
 
 We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
 

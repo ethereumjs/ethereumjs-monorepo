@@ -52,7 +52,7 @@ The `Block.validateTransactions()` method, previously overloaded with different 
 
 ```typescript
 Block.transactionsAreValid(): boolean
-Block.getTransactionsValidationErrors(): string[] // If you are interested in the errors, can also be used for validation by checking return array length
+Block.getTransactionsValidationErrors(): string[]
 ```
 
 Other renamings:
@@ -70,7 +70,7 @@ Block.withdrawalsTrieIsValid(): Promise<boolean> // new
 
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
-While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
+While there might be last-round final tweaks, [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format. A lot of spec changes happened during the last 2-3 months and these are included in this release round. So the released version should be relatively close to a future production ready version.
 
 This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7)from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
 
@@ -91,11 +91,11 @@ initKZG(kzg, 'path/to/my/trusted_setup.txt')
 
 For further information on this see the respective section in `@ethereumjs-util` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util).
 
-#### New Block Header field: dataGasUsed
+#### New Block Header field: dataGasUsed / new excessDataGas Helpers
 
 For the Block library the most significant change is that there is now a new header field `dataGasUsed` if `EIP-4844` is activated (via `Common`), see PR [#2750](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2750).
 
-Additionally there are the following three `dataGasUsed` related new helper methods:
+Additionally there are the following three `dataGasUsed`/`excessDataGas` related new helper methods:
 
 ```typescript
 BlockHeader.getDataGasPrice(): bigint
@@ -111,7 +111,7 @@ BlockHeader.calcNextExcessDataGas(): bigint
 
 Two new handy constructors have been added to the `Block` class to bring the consensus and execution parts of Ethereum closer together:
 
-`Block.fromBeaconPayloadJson()` allows to initialize an Ethereum L1 block with a payload received from the beacon chain via an RPC call. 🤩 The new constructor can be used as follows:
+`Block.fromBeaconPayloadJson()` allows to initialize an Ethereum execution layer (EL) block with a payload received from the beacon chain (consensus layer (CL)) via an RPC call. 🤩 The new constructor can be used as follows:
 
 ```typescript
 const block = await Block.fromBeaconPayloadJson(payload, { common })
@@ -181,7 +181,7 @@ We have converted existing Buffer conversion methods to Uint8Array conversion me
 
 #### Prefixed Hex Strings as Default
 
-It is a constant source of errors and mismatches in byte-handling code bases if hex strings are used in a mixed prefixed/unprefixed way.
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
 
 We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
 

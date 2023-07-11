@@ -48,7 +48,7 @@ getHashedMessageToSign(): Uint8Array // For the hashed message
 
 ### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
 
-While there might be last-round final tweaks [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
+While there might be last-round final tweaks, [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format. A lot of spec changes happened during the last 2-3 months and these are included in this release round. So the released version should be relatively close to a future production ready version.
 
 This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7)from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
 
@@ -196,7 +196,7 @@ We have converted existing Buffer conversion methods to Uint8Array conversion me
 
 #### Prefixed Hex Strings as Default
 
-It is a constant source of errors and mismatches in byte-handling code bases if hex strings are used in a mixed prefixed/unprefixed way.
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
 
 We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
 
