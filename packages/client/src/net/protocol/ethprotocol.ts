@@ -207,12 +207,34 @@ export class EthProtocol extends Protocol {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
       // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
-      // `hashes: Uint8Array[]` to an array of arrays of `types, sizes, hashes`, where types corresponds to the
+      // `hashes: Uint8Array[]` to an array of tuples of `type, size, hash`, where types corresponds to the
       // transaction type, size is the size of each encoded transaction in bytes, and the hash
-      encode: (params: Uint8Array[] | [types: bigint[], sizes: bigint[], hashes: Uint8Array[]]) =>
-        params,
-      decode: (params: Uint8Array[] | [types: bigint[], sizes: bigint[], hashes: Uint8Array[]]) =>
-        params,
+      encode: (params: Uint8Array[] | [[type: bigint, size: bigint, hash: Uint8Array]]) => {
+        if (params[0] instanceof Uint8Array) {
+          return params
+        } else {
+          const encodedData = []
+          const tupleParams = params as [[bigint, bigint, Uint8Array]]
+          for (const tx of tupleParams) {
+            const encodedTx = [bigIntToUnpaddedBytes(tx[0]), bigIntToUnpaddedBytes(tx[1]), tx[2]]
+            encodedData.push(encodedTx)
+          }
+          return encodedData
+        }
+      },
+      decode: (params: Uint8Array[] | [[type: Uint8Array, size: Uint8Array, hash: Uint8Array]]) => {
+        if (params[0] instanceof Uint8Array) {
+          return params
+        } else {
+          const decodedData = []
+          const tupleParams = params as [[Uint8Array, Uint8Array, Uint8Array]]
+          for (const tx of tupleParams) {
+            const decodedTx = [bytesToBigInt(tx[0]), bytesToBigInt(tx[1]), tx[2]]
+            decodedData.push(decodedTx)
+          }
+          return decodedData
+        }
+      },
     },
     {
       name: 'GetPooledTransactions',
