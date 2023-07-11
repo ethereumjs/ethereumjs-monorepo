@@ -458,7 +458,11 @@ export class TxPool {
 
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
-        if (peer.eth!['versions'].includes(68)) {
+        if (
+          peer.eth !== undefined &&
+          peer.eth['versions'] !== undefined &&
+          peer.eth['versions'].includes(68)
+        ) {
           const txsToSend: [[number, number, Uint8Array]] = [] as any
           for (const hash of hashesToSend) {
             txsToSend.push(txs.filter((tx) => equalsBytes(tx[2], hash))[0])
