@@ -463,7 +463,7 @@ export class TxPool {
           peer.eth['versions'] !== undefined &&
           peer.eth['versions'].includes(68)
         ) {
-          const txsToSend: [number[], number[], Uint8Array[]] = [] as any
+          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []] as any
           for (const hash of hashesToSend) {
             const index = txs[2].findIndex((el) => equalsBytes(el, hash))
             txsToSend[0].push(txs[0][index])

@@ -353,7 +353,7 @@ tape('[FullEthereumService]', async (t) => {
       }
 
       await service.handle(
-        { name: 'NewPooledTransactionHashes', data: [[1n, 100n, txHash]] },
+        { name: 'NewPooledTransactionHashes', data: [[1], [100], [txHash]] },
         'eth',
         {
           eth: {
@@ -375,7 +375,7 @@ tape('[FullEthereumService]', async (t) => {
       ;(service.txPool as any).validate = () => {}
 
       await service.txPool.sendNewTxHashes(
-        [[1, 100, txHash]],
+        [[1], [100], [txHash]],
         [
           {
             eth: {
