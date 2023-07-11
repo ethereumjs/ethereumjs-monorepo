@@ -181,6 +181,13 @@ export const normalHardforks = [
 ]
 
 export const transitionNetworks = {
+  ArrowGlacierToMergeAtDiffC0000: {
+    arrowGlacier: 0,
+    paris: 8,
+    dao: null,
+    finalSupportedFork: 'paris',
+    startFork: 'arrowGlacier',
+  },
   ByzantiumToConstantinopleFixAt5: {
     byzantium: 0,
     constantinople: 5,
