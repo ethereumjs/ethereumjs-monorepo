@@ -299,15 +299,13 @@ export class FullEthereumService extends EthereumService {
       case 'NewPooledTransactionHashes': {
         let hashes = []
         if (peer.eth!['versions'].includes(68)) {
-          // eth/68 message data format - [[tx_type: bigint, tx_size: bigint, tx_hash: uint8array]]
-          for (const tx of message.data) {
-            // With eth/68, we can check transaction type (tx[0]) and transaction size (tx[1]) to
-            // decide whether or not to download the transactions announced by this message.  This
-            // can be used to prevent mempool spamming or decide whether or not to filter out certain
-            // transactions - though this is not prescribed in eth/68 (EIP 5793)
-            // https://eips.ethereum.org/EIPS/eip-5793
-            hashes.push(tx[2])
-          }
+          // eth/68 message data format - [tx_types: number[], tx_sizes: number[], tx_hashes: uint8array[]]
+          // With eth/68, we can check transaction types and transaction sizes to
+          // decide whether or not to download the transactions announced by this message.  This
+          // can be used to prevent mempool spamming or decide whether or not to filter out certain
+          // transactions - though this is not prescribed in eth/68 (EIP 5793)
+          // https://eips.ethereum.org/EIPS/eip-5793
+          hashes = message.data[2] as Uint8Array[]
         } else {
           hashes = message.data
         }

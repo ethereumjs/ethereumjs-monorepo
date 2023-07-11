@@ -974,7 +974,10 @@ export class Eth {
 
     try {
       await txPool.add(tx, true)
-      await txPool.sendNewTxHashes([[tx.type, tx.serialize().byteLength, tx.hash()]], pool.peers)
+      await txPool.sendNewTxHashes(
+        [[tx.type], [tx.serialize().byteLength], [tx.hash()]],
+        pool.peers
+      )
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,

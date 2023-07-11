@@ -207,31 +207,34 @@ export class EthProtocol extends Protocol {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
       // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
-      // `hashes: Uint8Array[]` to an array of tuples of `type, size, hash`, where types corresponds to the
-      // transaction type, size is the size of each encoded transaction in bytes, and the hash
-      encode: (params: Uint8Array[] | [[type: number, size: number, hash: Uint8Array]]) => {
+      // `hashes: Uint8Array[]` to an tuple of arrays of `types, sizez, hashes`, where types corresponds to the
+      // transaction type, sizes is the size of each encoded transaction in bytes, and the transaction hashez
+      encode: (params: Uint8Array[] | [types: number[], sizes: number[], hashes: Uint8Array[]]) => {
         if (params[0] instanceof Uint8Array) {
           return params
         } else {
-          const encodedData = []
-          const tupleParams = params as [[number, number, Uint8Array]]
-          for (const tx of tupleParams) {
-            const encodedTx = [intToUnpaddedBytes(tx[0]), intToUnpaddedBytes(tx[1]), tx[2]]
-            encodedData.push(encodedTx)
-          }
+          const tupleParams = params as [number[], number[], Uint8Array[]]
+          const encodedData = [
+            tupleParams[0].map((type) => intToUnpaddedBytes(type)),
+            tupleParams[1].map((size) => intToUnpaddedBytes(size)),
+            tupleParams[2],
+          ]
           return encodedData
         }
       },
-      decode: (params: Uint8Array[] | [[type: Uint8Array, size: Uint8Array, hash: Uint8Array]]) => {
+      decode: (
+        params: Uint8Array[] | [types: Uint8Array[], sizes: Uint8Array[], hashes: Uint8Array[]]
+      ) => {
         if (params[0] instanceof Uint8Array) {
           return params
         } else {
-          const decodedData = []
-          const tupleParams = params as [[Uint8Array, Uint8Array, Uint8Array]]
-          for (const tx of tupleParams) {
-            const decodedTx = [bytesToBigInt(tx[0]), bytesToBigInt(tx[1]), tx[2]]
-            decodedData.push(decodedTx)
-          }
+          const tupleParams = params as [Uint8Array[], Uint8Array[], Uint8Array[]]
+          const decodedData = [
+            tupleParams[0].map((type) => bytesToInt(type)),
+            tupleParams[1].map((size) => bytesToInt(size)),
+            tupleParams[2],
+          ]
+
           return decodedData
         }
       },
