@@ -303,7 +303,11 @@ tape('[FullEthereumService]', async (t) => {
         data: [hexToBytes('0xabcd')],
       },
       'eth',
-      undefined as any
+      {
+        eth: {
+          versions: [66],
+        },
+      } as any
     )
   })
 
