@@ -330,6 +330,63 @@ tape('[FullEthereumService]', async (t) => {
     )
   })
 
+  t.test(
+    'should handle decoding NewPooledTransactionHashes with eth/68 message format',
+    async (st) => {
+      const txHash = randomBytes(32)
+
+      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+      const chain = await Chain.create({ config })
+      const service = new FullEthereumService({ config, chain })
+      ;(service.txPool as any).validate = () => {}
+      ;(service.txPool as any).handleAnnouncedTxHashes = (
+        hashes: Uint8Array[],
+        _peer: any,
+        _pool: any
+      ) => {
+        st.deepEqual(hashes[0], txHash, 'should get correct tx hash from eth68 message')
+        st.end()
+      }
+
+      await service.handle(
+        { name: 'NewPooledTransactionHashes', data: [[1n, 100n, txHash]] },
+        'eth',
+        {
+          eth: {
+            versions: [67, 68],
+          },
+        } as any
+      )
+    }
+  )
+
+  t.test(
+    'should handle structuring NewPooledTransactionHashes with eth/68 message format',
+    async (st) => {
+      const txHash = randomBytes(32)
+
+      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+      const chain = await Chain.create({ config })
+      const service = new FullEthereumService({ config, chain })
+      ;(service.txPool as any).validate = () => {}
+
+      await service.txPool.sendNewTxHashes(
+        [[1, 100, txHash]],
+        [
+          {
+            eth: {
+              versions: [67, 68],
+              request: (_: string, data: any): any => {
+                st.ok(equalsBytes(data[0][2], txHash), 'handled getPooledTransactions')
+                st.end()
+              },
+            },
+          } as any,
+        ]
+      )
+    }
+  )
+
   t.test('should start on beacon sync when past merge', async (t) => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })

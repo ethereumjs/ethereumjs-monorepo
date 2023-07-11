@@ -209,14 +209,14 @@ export class EthProtocol extends Protocol {
       // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
       // `hashes: Uint8Array[]` to an array of tuples of `type, size, hash`, where types corresponds to the
       // transaction type, size is the size of each encoded transaction in bytes, and the hash
-      encode: (params: Uint8Array[] | [[type: bigint, size: bigint, hash: Uint8Array]]) => {
+      encode: (params: Uint8Array[] | [[type: number, size: number, hash: Uint8Array]]) => {
         if (params[0] instanceof Uint8Array) {
           return params
         } else {
           const encodedData = []
-          const tupleParams = params as [[bigint, bigint, Uint8Array]]
+          const tupleParams = params as [[number, number, Uint8Array]]
           for (const tx of tupleParams) {
-            const encodedTx = [bigIntToUnpaddedBytes(tx[0]), bigIntToUnpaddedBytes(tx[1]), tx[2]]
+            const encodedTx = [intToUnpaddedBytes(tx[0]), intToUnpaddedBytes(tx[1]), tx[2]]
             encodedData.push(encodedTx)
           }
           return encodedData
