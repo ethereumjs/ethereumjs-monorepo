@@ -2,7 +2,7 @@ import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { EVM, EVMResult, Log } from '@ethereumjs/evm'
+import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type { BigIntLike, GenesisState, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
@@ -139,7 +139,7 @@ export interface VMOpts {
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
-  evm?: EVM
+  evm?: EVMInterface
 }
 
 /**
