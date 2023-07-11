@@ -58,6 +58,24 @@ Read the [API docs](docs/).
 - [withdrawal](src/withdrawal.ts)
   - Withdrawal class (EIP-4895)
 
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require` the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
 ### Buffer -> Uint8Array
 
 Starting with the Summer 2023 EthereumJS breaking release round (Util v9) all methods, constructors, constants and types of the EthereumJS libraries which took a `Buffer` instance as an input or resulted in a `Buffer` (containing) output have been updated to take in an `Uint8Array` instead and/or produce `Uint8Array` as an output.
@@ -115,6 +133,24 @@ Helper methods can be imported like this:
 ```typescript
 import { hexToBytes } from '@ethereumjs/util'
 ```
+
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require` the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
 ### Buffer -> Uint8Array
 
