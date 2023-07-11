@@ -276,11 +276,9 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           }
         } else if (node instanceof ExtensionNode) {
           this.debug('extension node found')
-
           const stringPath = bytesToHex(pathToHexKey(nodePath, node.key(), 'hex'))
           const syncPath =
             storagePath === undefined ? stringPath : [accountPath, stringPath].join('/')
-
           const val = {
             nodeHash: node.value(),
             path: syncPath,
@@ -294,7 +292,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             const storageRoot: Uint8Array = account.storageRoot
             if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
               this.debug('storage component found')
-
               const syncPath = [
                 bytesToHex(pathToHexKey(accountPath, node.key(), 'hex')),
                 storagePath,
@@ -437,7 +434,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   mergeAndFormatPaths(pathStrings: string[]) {
     this.debug('At start of mergeAndFormatPaths')
-
     const ret: string[][] = []
     let paths: string[] = []
     let i = 0
