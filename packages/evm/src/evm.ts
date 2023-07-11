@@ -73,6 +73,7 @@ export interface EVMOpts {
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 instruction
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+   * - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (`experimental`)
    * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`experimental`)
    * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022
@@ -244,7 +245,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4399, 4895, 4844, 5133, 5656, 6780,
+      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780,
     ]
 
     for (const eip of this.common.eips()) {
@@ -878,6 +879,7 @@ export class EVM implements EVMInterface {
       common: this.common,
       _EVM: this,
       _debug: this.DEBUG ? debugPrecompiles : undefined,
+      stateManager: this.stateManager,
     }
 
     return code(opts)

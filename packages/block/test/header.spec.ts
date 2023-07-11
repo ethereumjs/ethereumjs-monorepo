@@ -162,7 +162,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromValuesArray() -> error cases', () => {
-    const headerArray = Array(20).fill(new Uint8Array(0))
+    const headerArray = Array(21).fill(new Uint8Array(0))
 
     // mock header data (if set to zeros(0) header throws)
     headerArray[0] = zeros(32) //parentHash
