@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Permanent Account, Storage and Trie Node Caches
 
-The client now has integrated permanent caches for accounts and storage as well as trie nodes and a lot less trie reads and writes are needed over time, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630), [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667) and [#2681](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2681). This is a quantum leap for client sync and execution performance leading to the ability sync substantially more extensive networks (no: `mainnet` not yet 😋).
+The client now has integrated persistent caches for accounts and storage as well as trie nodes and a lot less trie reads and writes are needed over time, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630), [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667) and [#2681](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2681). This is a quantum leap for client sync and execution performance leading to the ability sync substantially more extensive networks (no: `mainnet` not yet 😋).
 
 The new caches are activated by default and stats are provided in regular intervals. Caches can be adopted and resized with the new `--accountCache`, `--storageCache` and `--trieCache` options as well as completely deactivated by setting size to `0`, e.g. with `--accountCache=0`.
 
