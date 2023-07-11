@@ -18,8 +18,6 @@
 // in the case of an odd number. All remaining nibbles (now an even number) fit properly
 // into the remaining bytes. Compact encoding is used for nodes stored on disk.
 
-import { bytesToHex } from 'ethereum-cryptography/utils'
-
 /**
  *
  * @param s byte sequence
@@ -99,23 +97,4 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
   // i.e.  chop 2 left nibbles when even else 1 when odd
   const chop = 2 - (base[0] & 1)
   return base.subarray(chop)
-}
-
-/**
- * A test helper to generates compact path for a subset of key bytes
- *
- * TODO: Commenting the code for now as this seems to be helper function
- * (from geth codebase )
- *
- * TODO: This function should return an array of buffers encoding a path in either the account or storage trie
- *  or use this to implement a function that will
- *  for now assuming the mentioned return type
- */
-export const getPathTo = (tillBytes: number, key: Uint8Array) => {
-  const hexNibbles = bytesToNibbles(key).subarray(0, tillBytes)
-  // Remove the terminator if its there, although it would be there only if tillBytes >= key.length
-  // This seems to be a test helper to generate paths so correctness of this isn't necessary
-  hexNibbles[hexNibbles.length - 1] = 0
-  const compactBytes = nibblesToCompactBytes(hexNibbles)
-  return [bytesToHex(compactBytes)]
 }
