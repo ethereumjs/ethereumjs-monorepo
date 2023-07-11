@@ -71,22 +71,6 @@ Please note that number-related API signatures have changed along with this vers
 - `rlp encode '["cat", "dog"]'` -> `0xc88363617483646f67`
 - `rlp decode 0xc88363617483646f67` -> `["cat","dog"]`
 
-## Tests
-
-Tests use mocha.
-
-To run tests and linting: `npm test`
-
-To auto-fix linting problems run: `npm run lint:fix`
-
-## Code Coverage
-
-Install dev dependencies: `npm install`
-
-Run coverage: `npm run coverage`
-
-The results will be at: `coverage/lcov-report/index.html`
-
 ## EthereumJS
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
