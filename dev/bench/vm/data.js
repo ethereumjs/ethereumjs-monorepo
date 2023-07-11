@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689062252487,
+  "lastUpdate": 1689076425916,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3c1c835d993fdf4d1d538ff6777daa1ad7610d7d",
-          "message": "EVM: move KZG precompile (#2811)\n\n* evm: move kzg-precompile, add multiple precompiles at same address support\r\n\r\n* evm: move bls precompiles\r\nevm: cleanup precompile getter\r\n\r\n* Export precompileAvailability from evm/precompiles/index.ts\r\n\r\n* evm: precompiles update export name\r\n\r\n---------\r\n\r\nCo-authored-by: CedarMist <134699267+CedarMist@users.noreply.github.com>",
-          "timestamp": "2023-06-22T20:43:21+02:00",
-          "tree_id": "086f145185d6672158c3d805ac58c0b1d8554195",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3c1c835d993fdf4d1d538ff6777daa1ad7610d7d"
-        },
-        "date": 1687460945922,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32378,
-            "range": "±6.37%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32691,
-            "range": "±2.70%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29204,
-            "range": "±8.26%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31935,
-            "range": "±2.92%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 31184,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.57%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0ea9df31d2de028bec02bf1f9613bd67701f37e0",
+          "message": "Pre-Releases for Breaking Releases (RC1) (#2832)\n\n* Common: add first version of Buffer -> Uint8Array upgrade guide to CHANGELOG\r\n\r\n* Consolidate extensive Buffer -> Uint8Array guidance in Util README docs\r\n\r\n* Further simplify Buffer -> Uint8Array CHANGELOG library update section, add Util CHANGELOG entry\r\n\r\n* RLP, Tx: added Buffer -> Uint8Array CHANGELOG entries\r\n\r\n* Trie: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* Devp2p: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* Ethash: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* Wallet: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* Block: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* Blockchain: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* StateManager: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* EVM: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* Util: update README upgrade helper section with updated hex <-> bytes method names\r\n\r\n* VM: added Buffer -> Uint8Array CHANGELOG entry\r\n\r\n* First round 4844 section for tx\r\n\r\n* StateManager: added refactoring / Caches / API Changes sections\r\n\r\n* Client: add new section for caches and 4844\r\n\r\n* Added HF section to various libraries (Shanghai default, Merge -> Paris, Cancun)\r\n\r\n* Various single change additions\r\n\r\n* Blockchain/Ethash/Trie: add Blockchain section and Ethash/Trie entries on DB abstraction\r\n\r\n* Add EEI/StateManager refactoring sections to EVM/VM CHANGELOG entries\r\n\r\n* Add Block L2 constructor section, several 4844 entries\r\n\r\n* First CJS/ESM section draft, additional change entries\r\n\r\n* Add dedicated Wallet introduction section\r\n\r\n* New 4844 sections for block, evm and VM, separate additions\r\n\r\n* Add KZG setup, tx blobsData sections, other separate additions (mainly 4844)\r\n\r\n* Add genesis package CHANGELOG entry, hardforkBy sections, separate additions\r\n\r\n* Add sections for block, tx validation method clean-up, EIP-6780 (SELFDESTRUCT in same tx), EIP-5656 (MCOPY), EVM opcode renamings\r\n\r\n* Expand hybrid CJS/ESM build section to all libraries\r\n\r\n* Various additions\r\n\r\n* Add prefixed hex string as default sections\r\n\r\n* Add Blockchain/VM sections for removed genesis dependency, devp2p section for typing and clean-up, other separate additions (removed Nodejs. 16 support)\r\n\r\n* Update packages/block/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/block/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/blockchain/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/evm/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/evm/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/rlp/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/vm/CHANGELOG.md\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Correct Buffer -> Uint8Array instructions\r\n\r\n* Small semantics change in Buffer -> Uint8Array section\r\n\r\n* Small changes\r\n\r\n* Add Cancun limited-EIPs note\r\n\r\n* Review updates\r\n\r\n* More review additions\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2023-07-11T13:50:07+02:00",
+          "tree_id": "c4e3826198682a2870aea9bba4a59ea84d9ce25b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0ea9df31d2de028bec02bf1f9613bd67701f37e0"
+        },
+        "date": 1689076425148,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30277,
+            "range": "±5.08%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30152,
+            "range": "±3.16%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30297,
+            "range": "±3.13%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25475,
+            "range": "±9.57%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 28926,
+            "range": "±3.48%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
