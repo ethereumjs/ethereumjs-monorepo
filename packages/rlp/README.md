@@ -6,6 +6,8 @@
 [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
 [Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser.
 
 ## Installation

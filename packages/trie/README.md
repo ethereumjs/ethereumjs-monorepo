@@ -6,6 +6,8 @@
 [![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
 This is an implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
 
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification, is to provide a single 32-byte value that identifies a given set of key-value pairs.

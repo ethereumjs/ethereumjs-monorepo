@@ -6,6 +6,8 @@
 [![Code Coverage][util-coverage-badge]][util-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
 A collection of utility functions for Ethereum. It can be used in Node.js and in the browser with [browserify](http://browserify.org/).
 
 ## Installation
