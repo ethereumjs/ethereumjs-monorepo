@@ -6,6 +6,109 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0 - 2023-07-11
+
+### Default Shanghai HF / Merge -> Paris Renaming / Cancun Hardfork
+
+The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefore for all libraries who use a Common-based HF setting internally (e.g. Tx, Block or EVM), see PR [#2655](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2655).
+
+Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+```
+
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+```
+
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
+### Improved Typing / API Changes
+
+Typing for the `devp2p` library has been significantly improved with PR [#2863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2863).
+
+This goes along with the following API changes:
+
+- Types and interfaces generally have been consolidated in a `types.ts` file (as in the other EthereumJS libraries)
+- Rename: `devp2p.DISCONNECT_REASONS` -> `devp2p.DISCONNECT_REASON`
+- Rename: `EthProtocol` -> `ProtocolType` (e.g. `ProtocolType.ETH`)
+
+### Hybrid CJS/ESM Build
+
+We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
+
+There are now two different build directories in our `dist` folder, being `dist/cjs` for the CommonJS and `dist/esm` for the `ESM` build. That means that direct imports (which you generally should try to avoid, rather open an issue on your import needs), need an update within your code (do a `dist` or the like code search).
+
+Both builds have respective separate entrypoints in the distributed `package.json` file.
+
+A CommonJS import of our libraries can then be done like this:
+
+```typescript
+const { Chain, Common } = require('@ethereumjs/common')
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+And this is how an ESM import looks like:
+
+```typescript
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+Side note: along this transition we also rewrote our whole test suite (yes!!!) to now work with [Vitest](https://vitest.dev/) instead of `Tape`.
+
+### Buffer -> Uint8Array
+
+With these releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
+
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
+
+#### How to upgrade?
+
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+
+```typescript
+// DPT
+new DPT(privateKey: Uint8Array, options: DPTOptions)
+DPT.getPeer(obj: string | Uint8Array | PeerInfo)
+DPT.getClosestPeers(id: Uint8Array)
+DPT.banPeer(obj: string | Uint8Array | PeerInfo, maxAge?: number)
+
+// RLPx
+new RLPx(privateKey: Uint8Array, options: RLPxOptions)
+RLPx.disconnect(id: Uint8Array)
+
+// ETH
+ETH.senStatus()
+ETH.sendMessage()
+ETH.on('message', () => { ... })
+```
+
+Eventually it is a good idea to generally have a closer look at code parts where events are received, so e.g. do an ".on" search in your IDE.
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+#### Prefixed Hex Strings as Default
+
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
+
+We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
+
+The `hexToBytes` and `bytesToHex` methods, also similar methods like `intToHex`, now take `0x`-prefixed hex strings as input and output prefixed strings. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
+
+Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
+### Other Changes
+
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
+
 ## 5.1.2 - 2023-04-20
 
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)

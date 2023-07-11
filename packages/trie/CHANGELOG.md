@@ -6,6 +6,86 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0-rc.1 - 2023-07-11
+
+### New Trie Node Cache
+
+There is a new permanent trie node cache which can be leveraged to make Trie operations significantly faster, see PR [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667). Since this also increases base-memory usage of a trie instantiation, this new cache is mainly intended to be used in rather long-lived trie scenarios.
+
+The new cache can be activated by setting a fitting cache size with the new `cacheSize` option (default: `0` (deactivated)).
+
+### Hybrid CJS/ESM Build
+
+We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
+
+There are now two different build directories in our `dist` folder, being `dist/cjs` for the CommonJS and `dist/esm` for the `ESM` build. That means that direct imports (which you generally should try to avoid, rather open an issue on your import needs), need an update within your code (do a `dist` or the like code search).
+
+Both builds have respective separate entrypoints in the distributed `package.json` file.
+
+A CommonJS import of our libraries can then be done like this:
+
+```typescript
+const { Chain, Common } = require('@ethereumjs/common')
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+And this is how an ESM import looks like:
+
+```typescript
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+Side note: along this transition we also rewrote our whole test suite (yes!!!) to now work with [Vitest](https://vitest.dev/) instead of `Tape`.
+
+### Buffer -> Uint8Array
+
+With these releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
+
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
+
+#### How to upgrade?
+
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+
+```typescript
+Trie.create() / new Trie() // root constructor option
+Trie.root(value?: Uint8Array | null): Uint8Array
+Trie.checkRoot(root: Uint8Array): Promise<boolean>
+Trie.get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null>
+Trie.put(key: Uint8Array, value: Uint8Array): Promise<void>
+Trie.del(key: Uint8Array): Promise<void>
+Trie.findPath(key: Uint8Array, throwIfMissing = false): Promise<Path>
+Trie.walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void>
+Trie.lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode | null>
+Trie.createProof(key: Uint8Array): Promise<Proof>
+Trie.verifyProof()
+Trie.createReadStream()
+Trie.hash(msg: Uint8Array): Uint8Array
+```
+
+So basically the whole API. Lol. 😋
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+#### Prefixed Hex Strings as Default
+
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
+
+We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
+
+The `hexToBytes` and `bytesToHex` methods, also similar methods like `intToHex`, now take `0x`-prefixed hex strings as input and output prefixed strings. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
+
+Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
+### Other Changes
+
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
+- Breaking: `DB` interface and `MapDB` implementation have been moved to [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) (for re-usage), PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669)
+- Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
+
 ## 5.0.5 - 2023-04-20
 
 - Update ethereum-cryptography from 1.2 to 2.0 (switch from noble-secp256k1 to noble-curves), PR [#2641](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2641)

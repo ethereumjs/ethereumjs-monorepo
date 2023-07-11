@@ -61,7 +61,11 @@ export class Journal {
     this.common = common
   }
 
-  reportAccessList() {
+  /**
+   * Clears the internal `accessList` map, and mark this journal to start reporting
+   * which addresses and storages have been accessed
+   */
+  startReportingAccessList() {
     this.accessList = new Map()
   }
 
