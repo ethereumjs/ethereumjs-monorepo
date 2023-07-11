@@ -21,7 +21,13 @@ import type { Nibbles } from '@ethereumjs/trie'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-function nibblesToBytes(arr: Nibbles): Uint8Array {
+/**
+ * Packs every two nibbles into a single byte
+ *
+ * @param arr Nibble typed nibble array
+ * @returns Uint8Array typed byte array
+ */
+function nibblesToPackedBytes(arr: Nibbles): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
@@ -31,7 +37,13 @@ function nibblesToBytes(arr: Nibbles): Uint8Array {
   return buf
 }
 
-function nibbleToBytes2(arr: Nibbles): Uint8Array {
+/**
+ * Converts each nibble into a single byte
+ *
+ * @param arr Nibble typed nibble array
+ * @returns Uint8Array typed byte array
+ */
+function nibbleTypeToByteType(arr: Nibbles): Uint8Array {
   const l = arr.length
   const buf = new Uint8Array(l)
   for (let i = 0; i < buf.length; i++) {
@@ -41,7 +53,13 @@ function nibbleToBytes2(arr: Nibbles): Uint8Array {
   return buf
 }
 
-const bytesToNibbles2 = (key: Uint8Array): Nibbles => {
+/**
+ * Turns each byte into a single nibble, only extracting the lower nibble of each byte
+ *
+ * @param key Uint8Array typed byte array
+ * @returns Nibble typed nibble array
+ */
+const bytesToNibbles = (key: Uint8Array): Nibbles => {
   const bkey = toBytes(key)
   const nibbles = [] as Nibbles
 
@@ -51,6 +69,25 @@ const bytesToNibbles2 = (key: Uint8Array): Nibbles => {
   }
 
   return nibbles
+}
+
+/**
+ * Takes a string path and extends it by the given extension nibbles
+ *
+ * @param path String node path
+ * @param extension nibbles to extend by
+ * @param retType string indicating whether to return the key in "keybyte" or "hex" encoding
+ * @returns hex-encoded key
+ */
+const pathToHexKey = (path: string, extension: Nibbles, retType: string): Uint8Array => {
+  const b = hexToBytes(path)
+  const n = bytesToNibbles(b)
+  if (retType === 'hex') {
+    return nibbleTypeToByteType(n.concat(extension))
+  } else if (retType === 'keybyte') {
+    return nibblesToPackedBytes(n.concat(extension))
+  }
+  throw Error('retType must be either "keybyte" or "hex"')
 }
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
@@ -240,11 +277,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         } else if (node instanceof ExtensionNode) {
           this.debug('extension node found')
 
-          const b = hexToBytes(nodePath)
-          const n = bytesToNibbles2(b)
-          const newPath = nibbleToBytes2(n.concat(node.key()))
-          const stringPath = bytesToHex(newPath)
-
+          const stringPath = bytesToHex(pathToHexKey(nodePath, node.key(), 'hex'))
           const syncPath =
             storagePath === undefined ? stringPath : [accountPath, stringPath].join('/')
 
@@ -261,10 +294,11 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             const storageRoot: Uint8Array = account.storageRoot
             if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
               this.debug('storage component found')
-              const b = hexToBytes(accountPath)
-              const n = bytesToNibbles2(b)
-              const fullAccountPath = nibbleToBytes2(n.concat(node.key()))
-              const syncPath = [bytesToHex(fullAccountPath), storagePath].join('/')
+
+              const syncPath = [
+                bytesToHex(pathToHexKey(accountPath, node.key(), 'hex')),
+                storagePath,
+              ].join('/')
               this.pathToNodeRequestData.setElement(syncPath, {
                 nodeHash: bytesToHex(storageRoot),
                 nodeParentHash: nodeHash,
@@ -343,9 +377,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           // add account node data to account trie
           const node = decodeNode(nodeData)
           if (node instanceof LeafNode) {
-            const b = hexToBytes(path)
-            const n = bytesToNibbles2(b)
-            const key = bytesToHex(nibblesToBytes(n.concat(node.key())))
+            const key = bytesToHex(pathToHexKey(path, node.key(), 'keybyte'))
             ops.unshift({
               type: 'put',
               key: hexToBytes(key),
@@ -360,9 +392,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               for (const [path, data] of pathToStorageNode) {
                 const storageNode = decodeNode(data)
                 if (storageNode instanceof LeafNode) {
-                  const b = hexToBytes(path)
-                  const n = bytesToNibbles2(b)
-                  const storageKey = bytesToHex(nibblesToBytes(n.concat(storageNode.key())))
+                  const storageKey = bytesToHex(pathToHexKey(path, storageNode.key(), 'keybyte'))
                   storageTrieOps.unshift({
                     type: 'put',
                     key: hexToBytes(storageKey),
