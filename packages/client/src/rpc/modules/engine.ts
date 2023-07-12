@@ -553,11 +553,9 @@ export class Engine {
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
 
-    // we should check block exits because an invalid crafted block with valid block hash with same stateroot
-    // as parent can be send
-    //
-    // TODO: if not in remoteBlocks, check where the vmHead is and see if parent's state root and blocks
-    // stateroot differ to see if this block was actually executed
+    // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
+    // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
+    // some pre-executed stateroot can be send
     const executedBlockExists =
       this.remoteBlocks.get(blockHash.slice(2)) ??
       (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
