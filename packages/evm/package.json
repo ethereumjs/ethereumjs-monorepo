@@ -59,7 +59,7 @@
     "rustbn-wasm": "^0.2.0"
   },
   "devDependencies": {
-    "@ethereumjs/statemanager": "^1.0.5",
+    "@ethereumjs/statemanager": "2.0.0-rc.1",
     "@ethersproject/abi": "^5.0.12",
     "@types/benchmark": "^1.0.33",
     "@types/core-js": "^2.5.0",

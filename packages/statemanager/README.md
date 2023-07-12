@@ -8,8 +8,8 @@
 
 Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
 
-| TypeScript implementation of the Ethereum StateManager. |
-| ------------------------------------------------------- |
+| Library to provide high level access to Ethereum State |
+| ------------------------------------------------------ |
 
 ## Installation
 
@@ -29,20 +29,33 @@ The `StateManager` provides high-level access and manipulation methods to and fo
 
 The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager` as well as an `EthersStateManager` implementation that sources state and history data from an external `ethers` provider.
 
+It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need for direct state accesses.
+
 ### `DefaultStateManager` Example
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { hexToBytes } from '@ethereumjs/util'
 
 const stateManager = new DefaultStateManager()
-const address = new Address(Buffer.from('a94f5374fce5edbc8e2a8697c15331677e6ebf0b', 'hex'))
+const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 const account = new Account(BigInt(0), BigInt(1000))
 await stateManager.checkpoint()
 await stateManager.putAccount(address, account)
 await stateManager.commit()
 await stateManager.flush()
 ```
+
+### Account and Storage Caches
+
+Starting with the v2 release the StateManager comes with a significantly more elaborate caching mechanism for account and storage caches.
+
+There are now two cache options available: an unbounded cache (`CacheType.ORDERED_MAP`) for short-lived usage scenarios (this one is the default cache) and a fixed-size cache (`CacheType.LRU`) for a long-lived large cache scenario.
+
+Caches now "survive" a flush operation and especially long-lived usage scenarios will benefit from increased performance by a growing and more "knowing" cache leading to less and less trie reads.
+
+Have a loot at the extended `CacheOptions` on how to use and leverage the new cache system.
 
 ### `EthersStateManager`
 
@@ -87,6 +100,12 @@ The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or on
 #### Further reference
 
 Refer to [this test script](./test/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
