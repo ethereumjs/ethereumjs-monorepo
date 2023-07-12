@@ -74,9 +74,7 @@ const main = async () => {
 void main()
 ```
 
-### Examples
-
-#### Node.js
+## Examples
 
 This projects contain the following examples:
 
@@ -85,11 +83,11 @@ This projects contain the following examples:
 
 All of the examples have their own `README.md` explaining how to run them.
 
-#### Browser
+## Browser
 
 With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build, see the [./examples/browser.html](./examples/browser.html) file for a complete example for this library including a small setup instruction section.
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
