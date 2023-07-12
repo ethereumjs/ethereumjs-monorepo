@@ -267,10 +267,10 @@ tape('[EthProtocol]', (t) => {
 
     const encodedEth68 = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
-      [[fakeTx.type, fakeTx.serialize().byteLength, fakeHash]]
+      [[fakeTx.type], [fakeTx.serialize().byteLength], [fakeHash]]
     )
     st.deepEqual(encoded[0], fakeHash, 'encoded hash correctly with pre-eth/68 format')
-    st.deepEqual(encodedEth68[0][2], fakeHash, 'encoded hash correctly with eth/68 format')
+    st.deepEqual(encodedEth68[2][0], fakeHash, 'encoded hash correctly with eth/68 format')
 
     const decoded = p.decode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
@@ -281,7 +281,7 @@ tape('[EthProtocol]', (t) => {
       encodedEth68
     )
     st.deepEqual(decoded[0], fakeHash, 'decoded hash correctly with pre-eth/68 format')
-    st.deepEqual(decodedEth68[0][2], fakeHash, 'decoded hash correctly with eth/68 format')
+    st.deepEqual(decodedEth68[2][0], fakeHash, 'decoded hash correctly with eth/68 format')
     st.end()
   })
 })
