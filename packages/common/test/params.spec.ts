@@ -4,7 +4,7 @@ import { Chain, Common, Hardfork } from '../src/index.js'
 
 describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Basic usage', () => {
-    const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
+    const c = new Common({ chain: Chain.Mainnet })
     let msg = 'Should return correct value when HF directly provided'
     assert.equal(c.paramByHardfork('gasPrices', 'ecAdd', 'byzantium'), BigInt(500), msg)
 
@@ -19,15 +19,6 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     msg = 'Should return 0n for non-existing value'
     assert.equal(c.param('gasPrices', 'notexistingvalue'), BigInt(0), msg)
     assert.equal(c.paramByHardfork('gasPrices', 'notexistingvalue', 'byzantium'), BigInt(0), msg)
-
-    /*
-    // Manual test since no test triggering EIP config available
-    // TODO: recheck on addition of new EIP configs
-    // To run please manually add an "ecAdd" entry with value 12345 to EIP2537 config
-    // and uncomment the test
-    msg = 'EIP config should take precedence over HF config'
-    assert.equal(c.param('gasPrices', 'ecAdd'), 12345, msg)
-    */
   })
 
   it('Error cases for param(), paramByHardfork()', () => {
@@ -96,7 +87,7 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
-    assert.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 2537), undefined, msg)
+    assert.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 1559), undefined, msg)
 
     const UNSUPPORTED_EIP = 1000000
     let f = function () {
@@ -106,13 +97,10 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     assert.throws(f, /not supported$/, undefined, msg)
 
     f = function () {
-      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 2537)
+      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 1559)
     }
     msg = 'Should throw for using paramByEIP() with a not existing topic'
     assert.throws(f, /not defined$/, undefined, msg)
-
-    msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
-    assert.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(600), msg)
   })
 
   it('returns the right block delay for EIP3554', () => {

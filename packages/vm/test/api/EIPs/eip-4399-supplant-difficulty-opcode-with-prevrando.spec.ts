@@ -1,7 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToBigInt } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -34,7 +33,7 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
     })
 
     const runCodeArgs = {
-      code: hexToBytes('4400'),
+      code: hexToBytes('0x4400'),
       gasLimit: BigInt(0xffff),
     }
     await vm.evm.runCode!({ ...runCodeArgs, block })

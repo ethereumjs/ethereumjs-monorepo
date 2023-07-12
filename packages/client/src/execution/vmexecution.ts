@@ -5,9 +5,10 @@ import {
   DBSetTD,
 } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bytesToHex, bytesToPrefixedHexString, equalsBytes } from '@ethereumjs/util'
+import { Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -132,10 +133,12 @@ export class VMExecution extends Execution {
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
       if (number === BigInt(0)) {
-        if (typeof this.vm.blockchain.genesisState !== 'function') {
-          throw new Error('cannot get iterator head: blockchain has no genesisState function')
+        const genesisState =
+          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
+        if (!genesisState) {
+          throw new Error('genesisState not available')
         }
-        await this.vm.stateManager.generateCanonicalGenesis(this.vm.blockchain.genesisState())
+        await this.vm.stateManager.generateCanonicalGenesis(genesisState)
       }
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
@@ -391,7 +394,7 @@ export class VMExecution extends Execution {
                 if (diffSec > this.MAX_TOLERATED_BLOCK_TIME) {
                   const msg = `Slow block execution for block num=${
                     block.header.number
-                  } hash=0x${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
+                  } hash=${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
                     result.gasUsed
                   } time=${diffSec}secs`
                   this.config.logger.warn(msg)
@@ -583,7 +586,7 @@ export class VMExecution extends Execution {
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
-    const vm = await this.vm.copy()
+    const vm = await this.vm.shallowCopy()
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
       const block = await vm.blockchain.getBlock(blockNumber)
@@ -594,7 +597,7 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
       const td = await vm.blockchain.getTotalDifficulty(block.header.parentHash)
-      vm._common.setHardforkBy({
+      vm.common.setHardforkBy({
         blockNumber,
         td,
         timestamp: block.header.timestamp,
@@ -613,9 +616,9 @@ export class VMExecution extends Execution {
         })
         const afterTS = Date.now()
         const diffSec = Math.round((afterTS - beforeTS) / 1000)
-        const msg = `Executed block num=${blockNumber} hash=${bytesToPrefixedHexString(
-          block.hash()
-        )} txs=${block.transactions.length} gasUsed=${res.gasUsed} time=${diffSec}secs`
+        const msg = `Executed block num=${blockNumber} hash=${bytesToHex(block.hash())} txs=${
+          block.transactions.length
+        } gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
           this.config.logger.info(msg)
         } else {

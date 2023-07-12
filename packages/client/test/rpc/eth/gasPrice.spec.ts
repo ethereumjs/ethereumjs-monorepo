@@ -1,7 +1,8 @@
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { bigIntToHex, intToPrefixedHexString } from '@ethereumjs/util'
+import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import * as tape from 'tape'
 
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import {
   baseRequest,
   dummy,
@@ -10,8 +11,6 @@ import {
   runBlockWithTxs,
   setupChain,
 } from '../helpers'
-
-import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_gasPrice'
 
@@ -30,7 +29,7 @@ tape(`${method}: call with legacy transaction data`, async (t) => {
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct suggested gas price with 1 legacy transaction'
-    t.equal(res.body.result, intToPrefixedHexString(GAS_PRICE), msg)
+    t.equal(res.body.result, intToHex(GAS_PRICE), msg)
   }
   await baseRequest(t, server, req, 200, expectRes)
 })
@@ -79,7 +78,7 @@ tape(`${method}: call with multiple legacy transactions in a single block`, asyn
   const req = params(method, [])
   const expectRes = (res: any) => {
     const msg = 'should return the correct gas price with multiple legacy transactions in a block'
-    t.equal(res.body.result, intToPrefixedHexString(Math.trunc(averageGasPrice)), msg)
+    t.equal(res.body.result, intToHex(Math.trunc(averageGasPrice)), msg)
   }
   await baseRequest(t, server, req, 200, () => expectRes)
 })

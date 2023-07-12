@@ -1,4 +1,3 @@
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -8,14 +7,16 @@ import {
   ecsign,
   fromRpcSig,
   hashPersonalMessage,
+  hexToBytes,
   isValidSignature,
   privateToPublic,
   toCompactSig,
   toRpcSig,
+  utf8ToBytes,
 } from '../src/index.js'
 
-const echash = hexToBytes('82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
-const ecprivkey = hexToBytes('3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
+const echash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
+const ecprivkey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
 const chainId = BigInt(3) // ropsten
 
 describe('ecsign', () => {
@@ -23,11 +24,11 @@ describe('ecsign', () => {
     const sig = ecsign(echash, ecprivkey)
     assert.deepEqual(
       sig.r,
-      hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+      hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     )
     assert.deepEqual(
       sig.s,
-      hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+      hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     )
     assert.equal(sig.v, BigInt(27))
   })
@@ -36,21 +37,21 @@ describe('ecsign', () => {
     const sig = ecsign(echash, ecprivkey, chainId)
     assert.deepEqual(
       sig.r,
-      hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+      hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     )
     assert.deepEqual(
       sig.s,
-      hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+      hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     )
     assert.equal(sig.v, BigInt(41))
   })
 
   it('should produce a signature for chainId=150', () => {
     const expectedSigR = hexToBytes(
-      '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'
     )
     const expectedSigS = hexToBytes(
-      '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+      '0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     )
 
     const sig = ecsign(echash, ecprivkey, BigInt(150))
@@ -60,12 +61,12 @@ describe('ecsign', () => {
   })
 
   it('should produce a signature for a high number chainId greater than MAX_SAFE_INTEGER', () => {
-    const chainIDBuffer = hexToBytes('796f6c6f763378')
+    const chainIDBuffer = hexToBytes('0x796f6c6f763378')
     const expectedSigR = hexToBytes(
-      '99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9'
     )
     const expectedSigS = hexToBytes(
-      '129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+      '0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     )
     const expectedSigV = BigInt('68361967398315795')
 
@@ -78,51 +79,51 @@ describe('ecsign', () => {
 
 describe('ecrecover', () => {
   it('should recover a public key', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(27)
     const pubkey = ecrecover(echash, v, r, s)
     assert.deepEqual(pubkey, privateToPublic(ecprivkey))
   })
   it('should recover a public key (chainId = 3)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(41)
     const pubkey = ecrecover(echash, v, r, s, chainId)
     assert.deepEqual(pubkey, privateToPublic(ecprivkey))
   })
   it('should recover a public key (chainId = 150)', () => {
     const chainId = BigInt(150)
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
     const pubkey = ecrecover(echash, v, r, s, chainId)
     assert.deepEqual(pubkey, privateToPublic(ecprivkey))
   })
   it('should recover a public key (v = 0)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(0)
     const pubkey = ecrecover(echash, v, r, s)
     assert.deepEqual(pubkey, privateToPublic(ecprivkey))
   })
   it('should fail on an invalid signature (v = 21)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
       ecrecover(echash, BigInt(21), r, s)
     })
   })
   it('should fail on an invalid signature (v = 29)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
       ecrecover(echash, BigInt(29), r, s)
     })
   })
   it('should fail on an invalid signature (swapped points)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
       ecrecover(echash, BigInt(27), s, r)
     })
@@ -143,12 +144,12 @@ describe('ecrecover', () => {
       }
     */
     const senderPubKey = hexToBytes(
-      '78988201fbceed086cfca7b64e382d08d0bd776898731443d2907c097745b7324c54f522087f5964412cddba019f192de0fd57a0ffa63f098c2b200e53594b15'
+      '0x78988201fbceed086cfca7b64e382d08d0bd776898731443d2907c097745b7324c54f522087f5964412cddba019f192de0fd57a0ffa63f098c2b200e53594b15'
     )
-    const msgHash = hexToBytes('8ae8cb685a7a9f29494b07b287c3f6a103b73fa178419d10d1184861a40f6afe')
+    const msgHash = hexToBytes('0x8ae8cb685a7a9f29494b07b287c3f6a103b73fa178419d10d1184861a40f6afe')
 
-    const r = hexToBytes('ec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f')
-    const s = hexToBytes('4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5')
+    const r = hexToBytes('0xec212841e0b7aaffc3b3e33a08adf32fa07159e856ef23db85175a4f6d71dc0f')
+    const s = hexToBytes('0x4b8e02b96b94064a5aa2f8d72bd0040616ba8e482a5dd96422e38c9a4611f8d5')
 
     const v = BigInt('68361967398315796')
     const chainID = BigInt('34180983699157880')
@@ -162,7 +163,7 @@ describe('hashPersonalMessage', () => {
     const h = hashPersonalMessage(utf8ToBytes('Hello world'))
     assert.deepEqual(
       h,
-      hexToBytes('8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede')
+      hexToBytes('0x8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede')
     )
   })
   it('should throw if input is not a Uint8Array', () => {
@@ -176,23 +177,23 @@ describe('hashPersonalMessage', () => {
 
 describe('isValidSignature', () => {
   it('should fail on an invalid signature (shorter r))', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.notOk(isValidSignature(BigInt(27), r, s))
   })
   it('should fail on an invalid signature (shorter s))', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca')
     assert.notOk(isValidSignature(BigInt(27), r, s))
   })
   it('should fail on an invalid signature (v = 21)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.notOk(isValidSignature(BigInt(21), r, s))
   })
   it('should fail on an invalid signature (v = 29)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.notOk(isValidSignature(BigInt(29), r, s))
   })
   it('should fail when on homestead and s > secp256k1n/2', () => {
@@ -200,7 +201,7 @@ describe('isValidSignature', () => {
       '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0'
     )
 
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = bigIntToBytes(SECP256K1_N_DIV_2 + BigInt(1))
 
     const v = BigInt(27)
@@ -211,47 +212,47 @@ describe('isValidSignature', () => {
       '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0'
     )
 
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = bigIntToBytes(SECP256K1_N_DIV_2 + BigInt(1))
     const v = BigInt(27)
     assert.ok(isValidSignature(v, r, s, false))
   })
   it('should work otherwise', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(27)
     assert.ok(isValidSignature(v, r, s))
   })
   it('should work otherwise (v=0)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(0)
     assert.ok(isValidSignature(v, r, s))
   })
   it('should work otherwise (v=1)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(1)
     assert.ok(isValidSignature(v, r, s))
   })
   it('should work otherwise (chainId=3)', () => {
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(41)
     assert.ok(isValidSignature(v, r, s, false, chainId))
   })
   it('should work otherwise (chainId=150)', () => {
     const chainId = BigInt(150)
-    const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-    const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
     assert.ok(isValidSignature(v, r, s, false, chainId))
   })
 })
 
 describe('message sig', () => {
-  const r = hexToBytes('99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-  const s = hexToBytes('129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+  const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+  const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
 
   it('should return hex strings that the RPC can use', () => {
     const sig =

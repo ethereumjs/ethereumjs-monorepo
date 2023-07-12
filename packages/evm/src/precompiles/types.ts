@@ -1,6 +1,5 @@
-import type { ExecResult } from '../evm.js'
-import type { EVMInterface } from '../types.js'
-import type { Common } from '@ethereumjs/common'
+import type { EVM, ExecResult } from '../evm.js'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { debug } from 'debug'
 
 export interface PrecompileFunc {
@@ -10,7 +9,8 @@ export interface PrecompileFunc {
 export interface PrecompileInput {
   data: Uint8Array
   gasLimit: bigint
-  _common: Common
-  _EVM: EVMInterface
+  common: Common
+  _EVM: EVM
   _debug?: debug.Debugger
+  stateManager: StateManagerInterface
 }

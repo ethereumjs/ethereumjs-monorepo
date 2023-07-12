@@ -7,7 +7,7 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address, hexStringToBytes } from '@ethereumjs/util'
+import { Address, hexToBytes } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { Chain } from '../../src/blockchain'
@@ -63,12 +63,12 @@ tape('[Integration:Merge]', async (t) => {
         },
       ],
     },
-    { baseChain: ChainCommon.Ropsten, hardfork: Hardfork.London }
+    { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London }
   )
   const accounts: [Address, Uint8Array][] = [
     [
-      new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-      hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+      new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     ],
   ]
   async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
@@ -109,7 +109,7 @@ tape('[Integration:Merge]', async (t) => {
     ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
       accounts[0][0],
     ] // stub
-    BlockHeader.prototype._consensusFormatValidation = () => {} //stub
+    ;(BlockHeader as any).prototype._consensusFormatValidation = () => {} //stub
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(5)
     remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {

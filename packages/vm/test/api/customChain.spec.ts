@@ -2,9 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -59,12 +58,12 @@ const block = Block.fromBlockData(
     common,
   }
 )
-const privateKey = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 describe('VM initialized with custom state', () => {
   it('should transfer eth from already existent account', async () => {
     const blockchain = await Blockchain.create({ common, genesisState })
-    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
+    const vm = await VM.create({ blockchain, common, genesisState })
 
     const to = '0x00000000000000000000000000000000000000ff'
     const tx = TransactionFactory.fromTxData(
@@ -92,29 +91,29 @@ describe('VM initialized with custom state', () => {
   it('should retrieve value from storage', async () => {
     const blockchain = await Blockchain.create({ common, genesisState })
     common.setHardfork(Hardfork.London)
-    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
+    const vm = await VM.create({ blockchain, common, genesisState })
     const sigHash = new Interface(['function retrieve()']).getSighash('retrieve')
 
     const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
-      data: hexToBytes(sigHash.slice(2)),
+      data: hexToBytes(sigHash),
       caller: Address.fromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1].slice(2))
+    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1])
   })
 
   it('setHardfork', async () => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
-    let vm = await VM.create({ common, setHardfork: true })
+    let vm = await VM.create({ common, setHardfork: true, genesisState: {} })
     assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, setHardfork: 5001 })
+    vm = await VM.create({ common, setHardfork: 5001, genesisState: {} })
     assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 })

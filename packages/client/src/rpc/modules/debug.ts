@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { bigIntToHex, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { middleware, validators } from '../validation'
@@ -101,7 +101,7 @@ export class Debug {
 
     try {
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-        hexStringToBytes(txHash)
+        hexToBytes(txHash)
       )
       if (!result) return null
       const [_, blockHash, txIndex] = result
@@ -110,7 +110,7 @@ export class Debug {
       const tx = block.transactions[txIndex]
 
       // Copy VM so as to not modify state when running transactions being traced
-      const vmCopy = await this.service.execution.vm.copy()
+      const vmCopy = await this.service.execution.vm.shallowCopy()
       await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
       for (let x = 0; x < txIndex; x++) {
         // Run all txns in the block prior to the traced transaction
@@ -131,7 +131,7 @@ export class Debug {
         }
         if (opts.enableMemory === true) {
           for (let x = 0; x < step.memoryWordCount; x++) {
-            const word = bytesToPrefixedHexString(step.memory.slice(x * 32, 32))
+            const word = bytesToHex(step.memory.slice(x * 32, 32))
             memory.push(word)
           }
         }
@@ -161,7 +161,7 @@ export class Debug {
       const res = await vmCopy.runTx({ tx, block })
       trace.gas = bigIntToHex(res.totalGasSpent)
       trace.failed = res.execResult.exceptionError !== undefined
-      trace.returnValue = bytesToPrefixedHexString(res.execResult.returnValue)
+      trace.returnValue = bytesToHex(res.execResult.returnValue)
       return trace
     } catch (err: any) {
       throw {

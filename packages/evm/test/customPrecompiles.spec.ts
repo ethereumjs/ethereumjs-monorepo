@@ -1,6 +1,4 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Address } from '@ethereumjs/util'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/evm.js'
@@ -8,9 +6,9 @@ import { EVM } from '../src/evm.js'
 import type { ExecResult } from '../src/evm.js'
 import type { PrecompileInput } from '../src/index.js'
 
-const sender = new Address(hexToBytes('44'.repeat(20)))
-const newPrecompile = new Address(hexToBytes('ff'.repeat(20)))
-const shaAddress = new Address(hexToBytes('0000000000000000000000000000000000000002'))
+const sender = new Address(hexToBytes('0x' + '44'.repeat(20)))
+const newPrecompile = new Address(hexToBytes('0x' + 'ff'.repeat(20)))
+const shaAddress = new Address(hexToBytes('0x0000000000000000000000000000000000000002'))
 const expectedReturn = utf8ToBytes('1337')
 const expectedGas = BigInt(10)
 
@@ -23,14 +21,13 @@ function customPrecompile(_input: PrecompileInput): ExecResult {
 
 describe('EVM -> custom precompiles', () => {
   it('should override existing precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
@@ -44,18 +41,17 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should delete existing precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
-      data: hexToBytes(''),
+      data: hexToBytes('0x'),
       caller: sender,
     })
     assert.deepEqual(result.execResult.returnValue, utf8ToBytes(''), 'return value is correct')
@@ -63,19 +59,18 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should add precompiles', async () => {
-    const EVMOverride = await EVM.create({
+    const EVMOverride = new EVM({
       customPrecompiles: [
         {
           address: newPrecompile,
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: newPrecompile,
       gasLimit: BigInt(30000),
-      data: hexToBytes(''),
+      data: hexToBytes('0x'),
       caller: sender,
     })
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
@@ -83,40 +78,35 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should not persist changes to precompiles', async () => {
-    let EVMSha = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    let EVMSha = new EVM()
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
-      data: hexToBytes(''),
+      data: hexToBytes('0x'),
       caller: sender,
     })
-    const EVMOverride = await EVM.create({
+    const EVMOverride = new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
     const result = await EVMOverride.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
-      data: hexToBytes(''),
+      data: hexToBytes('0x'),
       caller: sender,
     })
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    EVMSha = new EVM()
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
-      data: hexToBytes(''),
+      data: hexToBytes('0x'),
       caller: sender,
     })
     assert.deepEqual(
@@ -131,20 +121,19 @@ describe('EVM -> custom precompiles', () => {
     )
   })
   it('shold copy custom precompiles', async () => {
-    const evm = await EVM.create({
+    const evm = new EVM({
       customPrecompiles: [
         {
           address: shaAddress,
           function: customPrecompile,
         },
       ],
-      stateManager: new DefaultStateManager(),
     })
-    const evmCopy = evm.copy()
+    const evmCopy = evm.shallowCopy()
     assert.deepEqual(
       (evm as any)._customPrecompiles,
       (evmCopy as any)._customPrecompiles,
-      'evm.copy() successfully copied customPrecompiles option'
+      'evm.shallowCopy() successfully copied customPrecompiles option'
     )
   })
 })

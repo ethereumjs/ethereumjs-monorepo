@@ -1,9 +1,38 @@
+import { hexToBytes } from '@ethereumjs/util'
+
 export enum Chain {
   Mainnet = 1,
-  Ropsten = 3,
-  Rinkeby = 4,
   Goerli = 5,
   Sepolia = 11155111,
+}
+
+/**
+ * Genesis state meta info which is decoupled from common's genesis params
+ */
+type GenesisState = {
+  /* blockNumber that can be used to update and track the regenesis marker */
+  blockNumber: bigint
+  /* stateRoot of the chain at the blockNumber */
+  stateRoot: Uint8Array
+}
+
+// Having this info as record will force typescript to make sure no chain is missed
+/**
+ * GenesisState info about well known ethereum chains
+ */
+export const ChainGenesis: Record<Chain, GenesisState> = {
+  [Chain.Mainnet]: {
+    blockNumber: BigInt(0),
+    stateRoot: hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'),
+  },
+  [Chain.Goerli]: {
+    blockNumber: BigInt(0),
+    stateRoot: hexToBytes('0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008'),
+  },
+  [Chain.Sepolia]: {
+    blockNumber: BigInt(0),
+    stateRoot: hexToBytes('0x5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494'),
+  },
 }
 
 export enum Hardfork {
@@ -53,13 +82,6 @@ export enum CustomChain {
    * - [Documentation](https://docs.matic.network/docs/develop/network-details/network)
    */
   PolygonMumbai = 'polygon-mumbai',
-
-  /**
-   * Arbitrum Rinkeby Testnet
-   *
-   * - [Documentation](https://developer.offchainlabs.com/docs/public_testnet)
-   */
-  ArbitrumRinkebyTestnet = 'arbitrum-rinkeby-testnet',
 
   /**
    * Arbitrum One - mainnet for Arbitrum roll-up

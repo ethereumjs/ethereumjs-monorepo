@@ -7,14 +7,13 @@ import {
   blobsToProofs,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   computeVersionedHash,
   concatBytes,
   ecrecover,
   equalsBytes,
   getBlobs,
-  hexStringToBytes,
+  hexToBytes,
   kzg,
   toBytes,
   validateNoLeadingZeroes,
@@ -40,8 +39,8 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
 
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
+const TRANSACTION_TYPE_BYTES = hexToBytes(
+  '0x' + TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
 )
 
 const validateBlobTransactionNetworkWrapper = (
@@ -548,11 +547,11 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
       maxFeePerDataGas: bigIntToHex(this.maxFeePerDataGas),
-      versionedHashes: this.versionedHashes.map((hash) => bytesToPrefixedHexString(hash)),
+      versionedHashes: this.versionedHashes.map((hash) => bytesToHex(hash)),
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): BlobEIP4844Transaction {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): BlobEIP4844Transaction {
     const opts = { ...this.txOptions, common: this.common }
 
     return BlobEIP4844Transaction.fromTxData(

@@ -43,6 +43,7 @@ export interface GenesisBlockConfig {
   nonce: string
   extraData: string
   baseFeePerGas?: string
+  excessDataGas?: string
 }
 
 export interface HardforkConfig {
@@ -72,11 +73,7 @@ interface BaseOpts {
   hardfork?: string | Hardfork
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
-   * (e.g. `eips: [ 2537, ]`)
-   *
-   * Currently supported:
-   *
-   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+   * (e.g. `eips: [ 1559, 3860 ]`)
    */
   eips?: number[]
 }

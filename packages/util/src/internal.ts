@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE
  */
 
-import { bytesToHex, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, utf8ToBytes } from './bytes.js'
 
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'

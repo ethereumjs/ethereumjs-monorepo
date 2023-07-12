@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -15,13 +14,13 @@ describe('EIP-2565 ModExp gas cost tests', () => {
 
     for (const test of testData) {
       const testName = test.Name
-      const to = new Address(hexToBytes('0000000000000000000000000000000000000005'))
+      const to = new Address(hexToBytes('0x0000000000000000000000000000000000000005'))
       const result = await vm.evm.runCall({
         caller: Address.zero(),
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: hexToBytes(test.Input),
+        data: hexToBytes('0x' + test.Input),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(test.Gas)) {
@@ -36,7 +35,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
         continue
       }
 
-      if (!equalsBytes(result.execResult.returnValue, hexToBytes(test.Expected))) {
+      if (!equalsBytes(result.execResult.returnValue, hexToBytes('0x' + test.Expected))) {
         assert.fail(
           `[${testName}]: Return value not the expected value (expected: ${
             test.Expected

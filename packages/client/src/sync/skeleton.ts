@@ -471,7 +471,7 @@ export class Skeleton extends MetaDBManager {
       this.config.logger.debug(
         `Skeleton putBlocks start=${blocks[0]?.header.number} hash=${short(
           blocks[0]?.hash()
-        )} fork=${blocks[0]._common.hardfork()} end=${
+        )} fork=${blocks[0].common.hardfork()} end=${
           blocks[blocks.length - 1]?.header.number
         } count=${blocks.length}, subchain head=${this.status.progress.subchains[0]?.head} tail = ${
           this.status.progress.subchains[0].tail
@@ -514,9 +514,9 @@ export class Skeleton extends MetaDBManager {
               this.status.progress.subchains[0].next
             )} tailHash=${short(
               tailBlock?.hash() ?? zeroBlockHash
-            )} tailFork=${tailBlock?._common.hardfork()}, block number=${number} tailparent=${short(
+            )} tailFork=${tailBlock?.common.hardfork()}, block number=${number} tailparent=${short(
               tailBlock?.header.parentHash ?? zeroBlockHash
-            )} hash=${short(block.hash())} fork=${block._common.hardfork()}`
+            )} hash=${short(block.hash())} fork=${block.common.hardfork()}`
           )
           throw Error(`Blocks don't extend canonical subchain`)
         }
@@ -663,7 +663,7 @@ export class Skeleton extends MetaDBManager {
       }
       if (numBlocksInserted !== 1) {
         this.config.logger.error(
-          `Failed to put block number=${number} fork=${block._common.hardfork()} hash=${short(
+          `Failed to put block number=${number} fork=${block.common.hardfork()} hash=${short(
             block.hash()
           )} parentHash=${short(block.header.parentHash)}from skeleton chain to canonical`
         )
@@ -674,7 +674,7 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(
             `ParentByNumber number=${parent?.header.number}, hash=${short(
               parent?.hash() ?? 'undefined'
-            )} hf=${parent?._common.hardfork()}`
+            )} hf=${parent?.common.hardfork()}`
           )
         } catch (e) {
           this.config.logger.error(`Failed to fetch parent of number=${number}`)
@@ -686,7 +686,7 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(
             `parentByHash number=${parentWithHash?.header.number}, hash=${short(
               parentWithHash?.hash() ?? 'undefined'
-            )} hf=${parentWithHash?._common.hardfork()}  `
+            )} hf=${parentWithHash?.common.hardfork()}  `
           )
         } catch (e) {
           this.config.logger.error(
@@ -737,7 +737,7 @@ export class Skeleton extends MetaDBManager {
    */
   private async putBlock(block: Block): Promise<boolean> {
     // Serialize the block with its hardfork so that its easy to load the block latter
-    const rlp = this.serialize({ hardfork: block._common.hardfork(), blockRLP: block.serialize() })
+    const rlp = this.serialize({ hardfork: block.common.hardfork(), blockRLP: block.serialize() })
     await this.put(DBKey.SkeletonBlock, bigIntToBytes(block.header.number), rlp)
     await this.put(
       DBKey.SkeletonBlockHashToNumber,

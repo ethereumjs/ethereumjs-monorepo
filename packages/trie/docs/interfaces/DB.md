@@ -41,9 +41,9 @@ Performs a batch operation on db.
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`DB`](DB.md)
+▸ **shallowCopy**(): [`DB`](DB.md)
 
 Returns a copy of the DB instance, with a reference
 to the **same** underlying leveldb instance.

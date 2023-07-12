@@ -1,23 +1,17 @@
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
-
-export enum EthProtocol { // What does this represent?
-  ETH = 'eth',
-  LES = 'les',
-  SNAP = 'snap',
-}
+const { debug: createDebugLogger } = debugDefault
 
 type MessageCodes = { [key: number | string]: number | string }
 
-export type SendMethod = (code: number, data: Uint8Array) => any
-
-export class Protocol extends EventEmitter {
+export abstract class Protocol extends EventEmitter {
   _version: number
   _peer: Peer
   _send: SendMethod
@@ -38,7 +32,7 @@ export class Protocol extends EventEmitter {
   constructor(
     peer: Peer,
     send: SendMethod,
-    protocol: EthProtocol,
+    protocol: ProtocolType,
     version: number,
     messageCodes: MessageCodes
   ) {
@@ -49,9 +43,9 @@ export class Protocol extends EventEmitter {
     this._version = version
     this._messageCodes = messageCodes
     this._statusTimeoutId =
-      protocol !== EthProtocol.SNAP
+      protocol !== ProtocolType.SNAP
         ? setTimeout(() => {
-            this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
+            this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
           }, 5000) // 5 sec * 1000
         : undefined
 
@@ -60,7 +54,7 @@ export class Protocol extends EventEmitter {
     this.initMsgDebuggers(protocol)
   }
 
-  private initMsgDebuggers(protocol: EthProtocol) {
+  private initMsgDebuggers(protocol: ProtocolType) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
       (value) => typeof value === 'string'
     ) as string[]
@@ -106,4 +100,10 @@ export class Protocol extends EventEmitter {
       this.msgDebuggers[ip](msg)
     }
   }
+  /**
+   * Abstract method to handle incoming messages
+   * @param code
+   * @param data
+   */
+  abstract _handleMessage(code: number, data: Uint8Array): void
 }

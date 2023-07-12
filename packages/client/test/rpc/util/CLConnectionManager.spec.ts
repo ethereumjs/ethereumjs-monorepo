@@ -4,7 +4,7 @@ import * as tape from 'tape'
 import { Config } from '../../../src'
 import { CLConnectionManager } from '../../../src/rpc/util/CLConnectionManager'
 import { Event } from '../../../src/types'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import * as genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const payload = {
   payload: {

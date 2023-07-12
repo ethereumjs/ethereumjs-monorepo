@@ -1,5 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
-import Heap = require('qheap')
+import debugDefault from 'debug'
 import { Readable, Writable } from 'stream'
 
 import { Event } from '../../types'
@@ -10,6 +9,10 @@ import type { PeerPool } from '../../net/peerpool'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+import type QHeap from 'qheap'
+
+const Heap = require('qheap')
+const { debug: createDebugLogger } = debugDefault
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -52,8 +55,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected interval: number
   protected banTime: number
   protected maxQueue: number
-  protected in: Heap<Job<JobTask, JobResult, StorageItem>>
-  protected out: Heap<Job<JobTask, JobResult, StorageItem>>
+  protected in: QHeap<Job<JobTask, JobResult, StorageItem>>
+  protected out: QHeap<Job<JobTask, JobResult, StorageItem>>
   protected total: number
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
@@ -89,13 +92,13 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
       ) => a.index < b.index,
-    })
+    }) as QHeap<Job<JobTask, JobResult, StorageItem>>
     this.out = new Heap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
       ) => a.index < b.index,
-    })
+    }) as QHeap<Job<JobTask, JobResult, StorageItem>>
     this.total = 0
     this.processed = 0
     this.finished = 0
@@ -533,6 +536,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param task
    */
   private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
-    return task !== undefined && 'first' in task && 'count' in task
+    if (task === undefined || task === null) return false
+    const keys = Object.keys(task)
+    return keys.filter((key) => key === 'first' || key === 'count').length === 2
   }
 }

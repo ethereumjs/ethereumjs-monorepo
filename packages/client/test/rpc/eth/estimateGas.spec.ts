@@ -30,7 +30,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
   const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
   t.notEqual(execution, undefined, 'should have valid execution')
   const { vm } = execution
-  await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
+  await vm.stateManager.generateCanonicalGenesis({})
 
   // genesis address with balance
   const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -88,7 +88,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
     return address
   }
   const { totalGasSpent } = await (
-    await vm.copy()
+    await vm.shallowCopy()
   ).runTx({
     tx: estimateTx,
     skipNonce: true,
@@ -111,7 +111,7 @@ tape(`${method}: call with valid arguments`, async (t) => {
 
   // Setup chain to run an EIP1559 tx
   const service = client.services[0] as FullEthereumService
-  service.execution.vm._common.setHardfork('london')
+  service.execution.vm.common.setHardfork('london')
   service.chain.config.chainCommon.setHardfork('london')
   const headBlock = await service.chain.getCanonicalHeadBlock()
   const londonBlock = Block.fromBlockData(

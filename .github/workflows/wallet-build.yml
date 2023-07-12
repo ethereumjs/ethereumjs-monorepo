@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [18]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -39,4 +39,4 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
-      - run: npm run test:node  # Only run node tests for now until vitest browser test issues are sorted out
+      - run: npm run test:node # Only run node tests for now until vitest browser test issues are sorted out

@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, bytesToUtf8, intToBytes, utf8ToBytes } from '@ethereumjs/util'
-import * as pipe from 'it-pipe'
-import * as pushable from 'it-pushable'
+import pipe from 'it-pipe'
+import pushable from 'it-pushable'
 
 import { Sender } from '../../src/net/protocol/sender'
 

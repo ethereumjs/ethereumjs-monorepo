@@ -6,8 +6,14 @@ import {
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import Heap = require('qheap')
+import {
+  Account,
+  Address,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
@@ -20,6 +26,9 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
+import type QHeap from 'qheap'
+
+const Heap = require('qheap')
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -306,7 +315,7 @@ export class TxPool {
     }
 
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
-    const vmCopy = await this.vm.copy()
+    const vmCopy = await this.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     let account = await vmCopy.stateManager.getAccount(senderAddress)
@@ -336,7 +345,7 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    const hash: UnprefixedHash = bytesToHex(tx.hash())
+    const hash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     try {
@@ -365,7 +374,7 @@ export class TxPool {
   getByHash(txHashes: Uint8Array[]): TypedTransaction[] {
     const found = []
     for (const txHash of txHashes) {
-      const txHashStr = bytesToHex(txHash)
+      const txHashStr = bytesToUnprefixedHex(txHash)
       const handled = this.handled.get(txHashStr)
       if (!handled) continue
       const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
@@ -414,11 +423,11 @@ export class TxPool {
     for (const hash of txHashes) {
       const inSent = this.knownByPeer
         .get(peer.id)!
-        .filter((sentObject) => sentObject.hash === bytesToHex(hash)).length
+        .filter((sentObject) => sentObject.hash === bytesToUnprefixedHex(hash)).length
       if (inSent === 0) {
         const added = Date.now()
         const add = {
-          hash: bytesToHex(hash),
+          hash: bytesToUnprefixedHex(hash),
           added,
         }
         this.knownByPeer.get(peer.id)!.push(add)
@@ -473,8 +482,8 @@ export class TxPool {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
         const newHashes = this.addToKnownByPeer(hashes, peer)
-        const newHashesHex = newHashes.map((txHash) => bytesToHex(txHash))
-        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToHex(tx.hash())))
+        const newHashesHex = newHashes.map((txHash) => bytesToUnprefixedHex(txHash))
+        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToUnprefixedHex(tx.hash())))
         peer.eth?.request('Transactions', newTxs).catch((e) => {
           this.markFailedSends(peer, newHashes, e as Error)
         })
@@ -486,7 +495,7 @@ export class TxPool {
     for (const txHash of failedHashes) {
       const sendobject = this.knownByPeer
         .get(peer.id)
-        ?.filter((sendObject) => sendObject.hash === bytesToHex(txHash))[0]
+        ?.filter((sendObject) => sendObject.hash === bytesToUnprefixedHex(txHash))[0]
       if (sendobject) {
         sendobject.error = e
       }
@@ -539,7 +548,7 @@ export class TxPool {
 
     const reqHashes = []
     for (const txHash of txHashes) {
-      const txHashStr: UnprefixedHash = bytesToHex(txHash)
+      const txHashStr: UnprefixedHash = bytesToUnprefixedHex(txHash)
       if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
@@ -550,7 +559,7 @@ export class TxPool {
 
     this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
-    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToHex)
+    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
@@ -589,7 +598,7 @@ export class TxPool {
     if (!this.running) return
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
-        const txHash: UnprefixedHash = bytesToHex(tx.hash())
+        const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
         this.removeByHash(txHash)
       }
     }
@@ -708,7 +717,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(new Address(hexStringToBytes(address)))
+      let account = await vm.stateManager.getAccount(new Address(hexToBytes('0x' + address)))
       if (account === undefined) {
         account = new Account()
       }
@@ -731,10 +740,10 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new Heap<TypedTransaction>({
+    const byPrice = new Heap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
         this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
-    })
+    }) as QHeap<TypedTransaction>
     for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])
       byNonce.set(address, txs.slice(1))

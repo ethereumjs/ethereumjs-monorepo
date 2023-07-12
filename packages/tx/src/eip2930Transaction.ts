@@ -8,7 +8,7 @@ import {
   concatBytes,
   ecrecover,
   equalsBytes,
-  hexStringToBytes,
+  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -31,8 +31,8 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
 
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.AccessListEIP2930.toString(16).padStart(2, '0')
+const TRANSACTION_TYPE_BYTES = hexToBytes(
+  '0x' + TransactionType.AccessListEIP2930.toString(16).padStart(2, '0')
 )
 
 /**
@@ -330,7 +330,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return AccessListEIP2930Transaction.fromTxData(

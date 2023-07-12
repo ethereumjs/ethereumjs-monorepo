@@ -354,7 +354,7 @@ import { RLP } from '@ethereumjs/rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
 const eth = new Eth(transport)
-const common = new Common({ chain: Chain.Rinkeby })
+const common = new Common({ chain: Chain.Sepolia })
 
 let txData: any = { value: 1 }
 let tx: Transaction | FeeMarketEIP1559Transaction

@@ -137,9 +137,9 @@ Commits the latest checkpoint
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`CheckpointDB`](CheckpointDB.md)
+▸ **shallowCopy**(): [`CheckpointDB`](CheckpointDB.md)
 
 Returns a copy of the DB instance, with a reference
 to the **same** underlying leveldb instance.

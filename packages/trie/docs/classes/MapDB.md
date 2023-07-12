@@ -78,9 +78,9 @@ Performs a batch operation on db.
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`DB`](../interfaces/DB.md)
+▸ **shallowCopy**(): [`DB`](../interfaces/DB.md)
 
 Returns a copy of the DB instance, with a reference
 to the **same** underlying leveldb instance.

@@ -4,10 +4,9 @@ import { Address } from '@ethereumjs/util'
 import * as tape from 'tape'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import * as pow from '../../testdata/geth-genesis/pow.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import pow = require('./../../testdata/geth-genesis/pow.json')
 
 const method = 'eth_getStorageAt'
 

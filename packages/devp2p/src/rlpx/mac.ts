@@ -3,7 +3,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { xor } from '../util.js'
 
-export type Hash = ReturnType<typeof keccak256.create>
+type Hash = ReturnType<typeof keccak256.create>
 
 export class MAC {
   _hash: Hash
