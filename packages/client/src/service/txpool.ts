@@ -598,7 +598,7 @@ export class TxPool {
     const [_, txs] = getPooledTxs
     this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
-    const newTxHashes: [number[], number[], Uint8Array[]] = [] as any
+    const newTxHashes: [number[], number[], Uint8Array[]] = [[], [], []] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
