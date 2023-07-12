@@ -27,7 +27,7 @@ import type { Debugger } from 'debug'
  * @param arr Nibble typed nibble array
  * @returns Uint8Array typed byte array
  */
-function nibblesToPackedBytes(arr: Nibbles): Uint8Array {
+function nibbleTypeToPackedBytes(arr: Nibbles): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
@@ -59,7 +59,7 @@ function nibbleTypeToByteType(arr: Nibbles): Uint8Array {
  * @param key Uint8Array typed byte array
  * @returns Nibble typed nibble array
  */
-const bytesToNibbles = (key: Uint8Array): Nibbles => {
+const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
   const bkey = toBytes(key)
   const nibbles = [] as Nibbles
 
@@ -81,11 +81,11 @@ const bytesToNibbles = (key: Uint8Array): Nibbles => {
  */
 const pathToHexKey = (path: string, extension: Nibbles, retType: string): Uint8Array => {
   const b = hexToBytes(path)
-  const n = bytesToNibbles(b)
+  const n = byteTypeToNibbleType(b)
   if (retType === 'hex') {
     return nibbleTypeToByteType(n.concat(extension))
   } else if (retType === 'keybyte') {
-    return nibblesToPackedBytes(n.concat(extension))
+    return nibbleTypeToPackedBytes(n.concat(extension))
   }
   throw Error('retType must be either "keybyte" or "hex"')
 }
