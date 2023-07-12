@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "@ethereumjs/block": "5.0.0-rc.1",
-    "@ethereumjs/blockchain": "^6.2.2",
+    "@ethereumjs/blockchain": "7.0.0-rc.1",
     "@ethereumjs/common": "4.0.0-rc.1",
     "@ethereumjs/evm": "^1.3.2",
     "@ethereumjs/rlp": "5.0.0-rc.1",
