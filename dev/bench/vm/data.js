@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689177288728,
+  "lastUpdate": 1689188674855,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "91f7c9d4986c9214a201976f18e2e84d6bc479e1",
-          "message": "Genesis cleanup (#2815)\n\n* Cleanup genesis imports/types\r\n\r\n* ts config cleanup",
-          "timestamp": "2023-06-23T09:54:25+02:00",
-          "tree_id": "31f0feee9b5b506610e124d984005783b40b7b6c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91f7c9d4986c9214a201976f18e2e84d6bc479e1"
-        },
-        "date": 1687507151479,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 26959,
-            "range": "±8.03%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 27398,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27459,
-            "range": "±3.31%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26670,
-            "range": "±3.44%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24573,
-            "range": "±8.61%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.79%",
             "unit": "ops/sec",
             "extra": "72 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0486f5a314d14e14ecc1b1b87e4cde3c7fe55366",
+          "message": "Update eslint config with file extensions rule (#2881)\n\n* Turn on file extension eslint rule\n\n* Fix genesis linter\n\n* lint fixes\n\n* Add browser CI fixes",
+          "timestamp": "2023-07-12T15:01:06-04:00",
+          "tree_id": "37cf23ac83e7ce0fbf436aebb2ef8d1a44c8ba11",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0486f5a314d14e14ecc1b1b87e4cde3c7fe55366"
+        },
+        "date": 1689188674101,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32699,
+            "range": "±4.47%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32012,
+            "range": "±2.42%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31870,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27870,
+            "range": "±8.93%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30613,
+            "range": "±2.57%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
