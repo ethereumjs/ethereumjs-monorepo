@@ -11,7 +11,6 @@ import type { TAlgorithm } from 'jwt-simple'
 const request = require('superwstest')
 
 const jwtSecret = randomBytes(32)
-const wsPort = 3000
 
 describe('JSON-RPC call', () => {
   it('auth protected server with valid token', () => {
@@ -41,7 +40,7 @@ describe('JSON-RPC call', () => {
         closeRPC(server)
       }
     }
-    server.listen(wsPort, 'localhost', testFn)
+    server.listen(0, 'localhost', testFn)
   })
 
   it('auth protected server without any auth headers', () => {
@@ -56,7 +55,7 @@ describe('JSON-RPC call', () => {
         closeRPC(server)
       }
     }
-    server.listen(wsPort, 'localhost', testFn)
+    server.listen(0, 'localhost', testFn)
   })
 
   it('server without any auth headers', () => {
@@ -83,6 +82,6 @@ describe('JSON-RPC call', () => {
         closeRPC(server)
       }
     }
-    server.listen(wsPort, 'localhost', testFn)
+    server.listen(0, 'localhost', testFn)
   })
 })

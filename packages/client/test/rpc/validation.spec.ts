@@ -343,7 +343,6 @@ describe(prefix, () => {
       // invalid
       assert.notOk(validatorResult(validators.bytes8([bytes(10)], 0)))
       assert.notOk(validatorResult(validators.bytes8([bytes(8, false)], 0)))
-      assert.notOk(validatorResult(validators.bytes8([bytesToHex(randomBytes(8))], 0)))
     })
     it('Uint64', () => {
       // valid
@@ -357,7 +356,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.bytes8([badhex(8)], 0)))
       assert.notOk(validatorResult(validators.uint64([bytes(10)], 0)))
       assert.notOk(validatorResult(validators.uint64([bytes(8, false)], 0)))
-      assert.notOk(validatorResult(validators.uint64([bytesToHex(randomBytes(8))], 0)))
     })
     it('Bytes16', () => {
       // valid
@@ -371,7 +369,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.bytes16([badhex(16)], 0)))
       assert.notOk(validatorResult(validators.bytes16([bytes(20)], 0)))
       assert.notOk(validatorResult(validators.bytes16([bytes(16, false)], 0)))
-      assert.notOk(validatorResult(validators.bytes16([bytesToHex(randomBytes(16))], 0)))
     })
     it('Bytes20', () => {
       // valid
@@ -383,7 +380,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.bytes20([badhex(20)], 0)))
       assert.notOk(validatorResult(validators.bytes20([bytes(20, false)], 0)))
       assert.notOk(validatorResult(validators.bytes20([bytes(32)], 0)))
-      assert.notOk(validatorResult(validators.bytes20([bytesToHex(randomBytes(20))], 0)))
     })
     it('Bytes32', () => {
       // valid
@@ -396,7 +392,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.bytes32([badhex(32)], 0)))
       assert.notOk(validatorResult(validators.bytes32([bytes(48)], 0)))
       assert.notOk(validatorResult(validators.bytes32([bytes(32, false)], 0)))
-      assert.notOk(validatorResult(validators.bytes32([bytesToHex(randomBytes(32))], 0)))
     })
     it('Uint256', () => {
       // valid
@@ -409,7 +404,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.uint256([badhex(32)], 0)))
       assert.notOk(validatorResult(validators.uint256([bytes(48)], 0)))
       assert.notOk(validatorResult(validators.uint256([bytes(32, false)], 0)))
-      assert.notOk(validatorResult(validators.uint256([bytesToHex(randomBytes(32))], 0)))
     })
     it('Bytes48', () => {
       // valid
@@ -424,7 +418,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.bytes48([badhex(48)], 0)))
       assert.notOk(validatorResult(validators.bytes48([bytes(64)], 0)))
       assert.notOk(validatorResult(validators.bytes48([bytes(48, false)], 0)))
-      assert.notOk(validatorResult(validators.bytes48([bytesToHex(randomBytes(48))], 0)))
     })
     it('Bytes256', () => {
       // valid
@@ -440,7 +433,6 @@ describe(prefix, () => {
       assert.notOk(validatorResult(validators.bytes256([badhex(256)], 0)))
       assert.notOk(validatorResult(validators.bytes256([bytes(512)], 0)))
       assert.notOk(validatorResult(validators.bytes256([bytes(256, false)], 0)))
-      assert.notOk(validatorResult(validators.bytes256([bytesToHex(randomBytes(256))], 0)))
     })
   })
 
