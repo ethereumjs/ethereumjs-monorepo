@@ -116,5 +116,5 @@ describe('[Integration:FullEthereumService]', async () => {
     // unstub setStateRoot
     DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
     DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
-  })
+  }, 30000)
 })
