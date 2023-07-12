@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { bytesToUnprefixedHex } from './bytes.js'
 
 import type { BatchDBOp, DB, DBObject } from './db.js'
 
@@ -14,17 +14,17 @@ export class MapDB<
   }
 
   async get(key: TKey): Promise<TValue | undefined> {
-    const dbKey = key instanceof Uint8Array ? bytesToHex(key) : key.toString()
+    const dbKey = key instanceof Uint8Array ? bytesToUnprefixedHex(key) : key.toString()
     return this._database.get(dbKey as TKey)
   }
 
   async put(key: TKey, val: TValue): Promise<void> {
-    const dbKey = key instanceof Uint8Array ? bytesToHex(key) : key.toString()
+    const dbKey = key instanceof Uint8Array ? bytesToUnprefixedHex(key) : key.toString()
     this._database.set(dbKey as TKey, val)
   }
 
   async del(key: TKey): Promise<void> {
-    const dbKey = key instanceof Uint8Array ? bytesToHex(key) : key.toString()
+    const dbKey = key instanceof Uint8Array ? bytesToUnprefixedHex(key) : key.toString()
     this._database.delete(dbKey as TKey)
   }
 
@@ -40,6 +40,11 @@ export class MapDB<
     }
   }
 
+  /**
+   * Note that the returned shallow copy will share the underlying database with the original
+   *
+   * @returns DB
+   */
   shallowCopy(): DB<TKey, TValue> {
     return new MapDB<TKey, TValue>(this._database)
   }

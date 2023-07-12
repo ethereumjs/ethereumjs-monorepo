@@ -1,17 +1,14 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-  const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
 
   const evm = new EVM({
     common,
-    stateManager,
     blockchain,
   })
 
@@ -29,7 +26,7 @@ const main = async () => {
 
   evm
     .runCode({
-      code: hexToBytes(code.join('')),
+      code: hexToBytes('0x' + code.join('')),
       gasLimit: BigInt(0xffff),
     })
     .then((results) => {

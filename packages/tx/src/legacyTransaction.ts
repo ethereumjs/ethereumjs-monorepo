@@ -346,7 +346,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * Validates tx's `v` value
    */
-  private _validateTxV(_v?: bigint, common?: Common): Common {
+  protected _validateTxV(_v?: bigint, common?: Common): Common {
     let chainIdBigInt
     const v = _v !== undefined ? Number(_v) : undefined
     // Check for valid v values in the scope of a signed legacy tx

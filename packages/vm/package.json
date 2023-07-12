@@ -72,9 +72,7 @@
     "@ethereumjs/tx": "^4.1.2",
     "@ethereumjs/util": "^8.0.6",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.0.0",
-    "mcl-wasm": "^0.7.1",
-    "rustbn.js": "~0.2.0"
+    "ethereum-cryptography": "^2.0.0"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
@@ -96,6 +94,6 @@
     "typescript": "^4.4.2"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

@@ -9,7 +9,7 @@ import type { BlockHeader } from '@ethereumjs/block'
 import type { DBObject } from '@ethereumjs/util'
 
 const cacheDb = new MapDB<number, DBObject>()
-const common = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.Petersburg })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
 
 describe('Miner', () => {
   it('Check if miner works as expected', async () => {
@@ -133,13 +133,13 @@ describe('Miner', () => {
     const miner = e.getMiner(block.header)
     const solution = <BlockHeader>await miner.mine(-1)
 
-    assert.ok(solution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
-    assert.ok(solution._common.chainName() === 'ropsten', 'chain name did not change')
+    assert.ok(solution.common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
+    assert.ok(solution.common.chainName() === 'mainnet', 'chain name did not change')
 
     const blockMiner = e.getMiner(block)
     const blockSolution = <Block>await blockMiner.mine(-1)
 
-    assert.ok(blockSolution._common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
-    assert.ok(blockSolution._common.chainName() === 'ropsten', 'chain name did not change')
+    assert.ok(blockSolution.common.hardfork() === Hardfork.Petersburg, 'hardfork did not change')
+    assert.ok(blockSolution.common.chainName() === 'mainnet', 'chain name did not change')
   }, 60000)
 })

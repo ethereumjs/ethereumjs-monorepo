@@ -9,13 +9,15 @@ import {
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
-  concatBytesNoTypeCheck,
+  concatBytes,
   equalsBytes,
+  hexToBytes,
   intToBytes,
+  setLengthLeft,
   short,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import debugDefault from 'debug'
 
 import { Bloom } from './bloom/index.js'
 import * as DAOConfig from './config/dao_fork_accounts_config.json'
@@ -29,13 +31,19 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVM } from '@ethereumjs/evm'
+import type { EVMInterface } from '@ethereumjs/evm'
+
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 
 /* DAO account list */
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
+
+const parentBeaconBlockRootAddress = Address.fromString(
+  '0x000000000000000000000000000000000000000b'
+)
 
 /**
  * @ignore
@@ -60,12 +68,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   if (setHardfork !== false || this._setHardfork !== false) {
     const setHardforkUsed = setHardfork ?? this._setHardfork
     if (setHardforkUsed === true) {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         timestamp: block.header.timestamp,
       })
     } else if (typeof setHardforkUsed !== 'boolean') {
-      this._common.setHardforkBy({
+      this.common.setHardforkBy({
         blockNumber: block.header.number,
         td: setHardforkUsed,
         timestamp: block.header.timestamp,
@@ -78,7 +86,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -92,8 +100,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   // check for DAO support and if we should apply the DAO fork
   if (
-    this._common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
-    block.header.number === this._common.hardforkBlock(Hardfork.Dao)!
+    this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
+    block.header.number === this.common.hardforkBlock(Hardfork.Dao)!
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
@@ -150,7 +158,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       ...block,
       header: { ...block.header, ...generatedFields },
     }
-    block = Block.fromBlockData(blockData, { common: this._common })
+    block = Block.fromBlockData(blockData, { common: this.common })
   } else {
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
@@ -217,7 +225,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(
       `Running block finished hash=${bytesToHex(block.hash())} number=${
         block.header.number
-      } hardfork=${this._common.hardfork()}`
+      } hardfork=${this.common.hardfork()}`
     )
   }
 
@@ -253,17 +261,47 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       await block.validateData()
     }
   }
+  if (this.common.isActivatedEIP(4788)) {
+    // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
+    const root = block.header.parentBeaconBlockRoot!
+    const timestamp = block.header.timestamp
+    const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+    const timestampIndex = timestamp % historicalRootsLength
+    const timestampExtended = timestampIndex + historicalRootsLength
+
+    /**
+     * Note: (by Jochem)
+     * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+     * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+     * All ethereum accounts have empty storage by default
+     */
+
+    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+      await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    }
+
+    await this.stateManager.putContractStorage(
+      parentBeaconBlockRootAddress,
+      setLengthLeft(bigIntToBytes(timestampIndex), 32),
+      bigIntToBytes(block.header.timestamp)
+    )
+    await this.stateManager.putContractStorage(
+      parentBeaconBlockRootAddress,
+      setLengthLeft(bigIntToBytes(timestampExtended), 32),
+      root
+    )
+  }
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
-  if (this._common.isActivatedEIP(4895)) {
+  if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
-  if (block._common.consensusType() === ConsensusType.ProofOfWork) {
+  if (block.common.consensusType() === ConsensusType.ProofOfWork) {
     await assignBlockRewards.bind(this)(block)
   }
 
@@ -292,8 +330,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     const tx = block.transactions[txIdx]
 
     let maxGasLimit
-    if (this._common.isActivatedEIP(1559) === true) {
-      maxGasLimit = block.header.gasLimit * this._common.param('gasConfig', 'elasticityMultiplier')
+    if (this.common.isActivatedEIP(1559) === true) {
+      maxGasLimit = block.header.gasLimit * this.common.param('gasConfig', 'elasticityMultiplier')
     } else {
       maxGasLimit = block.header.gasLimit
     }
@@ -363,7 +401,7 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   if (this.DEBUG) {
     debug(`Assign block rewards`)
   }
-  const minerReward = this._common.param('pow', 'minerReward')
+  const minerReward = this.common.param('pow', 'minerReward')
   const ommers = block.uncleHeaders
   // Reward ommers
   for (const ommer of ommers) {
@@ -402,7 +440,11 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
   return reward
 }
 
-export async function rewardAccount(evm: EVM, address: Address, reward: bigint): Promise<Account> {
+export async function rewardAccount(
+  evm: EVMInterface,
+  address: Address,
+  reward: bigint
+): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     account = new Account()
@@ -418,7 +460,7 @@ export async function rewardAccount(evm: EVM, address: Address, reward: bigint):
 export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
-      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('01')),
+      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),
     bigIntToBytes(receipt.cumulativeBlockGasUsed),
     receipt.bitvector,
     receipt.logs,
@@ -430,15 +472,15 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
 
   // Serialize receipt according to EIP-2718:
   // `typed-receipt = tx-type || receipt-data`
-  return concatBytesNoTypeCheck(intToBytes(txType), encoded)
+  return concatBytes(intToBytes(txType), encoded)
 }
 
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(evm: EVM) {
+async function _applyDAOHardfork(evm: EVMInterface) {
   const state = evm.stateManager
-  const DAORefundContractAddress = new Address(hexToBytes(DAORefundContract))
+  const DAORefundContractAddress = new Address(unprefixedHexToBytes(DAORefundContract))
   if ((await state.getAccount(DAORefundContractAddress)) === undefined) {
     await evm.journal.putAccount(DAORefundContractAddress, new Account())
   }
@@ -449,7 +491,7 @@ async function _applyDAOHardfork(evm: EVM) {
 
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
-    const address = new Address(hexToBytes(addr))
+    const address = new Address(unprefixedHexToBytes(addr))
     let account = await state.getAccount(address)
     if (account === undefined) {
       account = new Account()

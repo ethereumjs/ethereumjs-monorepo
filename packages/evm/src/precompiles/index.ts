@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { type Address, bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { precompile01 } from './01-ecrecover.js'
 import { precompile02 } from './02-sha256.js'
@@ -11,19 +11,10 @@ import { precompile07 } from './07-ecmul.js'
 import { precompile08 } from './08-ecpairing.js'
 import { precompile09 } from './09-blake2f.js'
 import { precompile0a } from './0a-kzg-point-evaluation.js'
-import { precompile0c } from './0c-bls12-g1add.js'
-import { precompile0d } from './0d-bls12-g1mul.js'
-import { precompile0e } from './0e-bls12-g1multiexp.js'
-import { precompile0f } from './0f-bls12-g2add.js'
-import { precompile10 } from './10-bls12-g2mul.js'
-import { precompile11 } from './11-bls12-g2multiexp.js'
-import { precompile12 } from './12-bls12-pairing.js'
-import { precompile13 } from './13-bls12-map-fp-to-g1.js'
-import { precompile14 } from './14-bls12-map-fp2-to-g2.js'
+import { precompile0b } from './0b-beaconroot.js'
 
 import type { PrecompileFunc, PrecompileInput } from './types.js'
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 interface PrecompileEntry {
   address: string
@@ -137,78 +128,13 @@ const precompileEntries: PrecompileEntry[] = [
     },
     precompile: precompile0a,
   },
-  // 0x00..0b: beacon block root, see PR 2810
   {
-    address: '000000000000000000000000000000000000000c',
+    address: '000000000000000000000000000000000000000b',
     check: {
       type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
+      param: 4788,
     },
-    precompile: precompile0c,
-  },
-  {
-    address: '000000000000000000000000000000000000000d',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile0d,
-  },
-  {
-    address: '000000000000000000000000000000000000000e',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile0e,
-  },
-  {
-    address: '000000000000000000000000000000000000000f',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile0f,
-  },
-  {
-    address: '0000000000000000000000000000000000000010',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile10,
-  },
-  {
-    address: '0000000000000000000000000000000000000011',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile11,
-  },
-  {
-    address: '0000000000000000000000000000000000000012',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile12,
-  },
-  {
-    address: '0000000000000000000000000000000000000013',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile13,
-  },
-  {
-    address: '0000000000000000000000000000000000000014',
-    check: {
-      type: PrecompileAvailabilityCheck.EIP,
-      param: 2537,
-    },
-    precompile: precompile14,
+    precompile: precompile0b,
   },
 ]
 
@@ -223,16 +149,7 @@ const precompiles: Precompiles = {
   '0000000000000000000000000000000000000008': precompile08,
   '0000000000000000000000000000000000000009': precompile09,
   '000000000000000000000000000000000000000a': precompile0a,
-  // 0b: beacon block root see PR 2810
-  '000000000000000000000000000000000000000c': precompile0c,
-  '000000000000000000000000000000000000000d': precompile0d,
-  '000000000000000000000000000000000000000e': precompile0e,
-  '000000000000000000000000000000000000000f': precompile0f,
-  '0000000000000000000000000000000000000010': precompile10,
-  '0000000000000000000000000000000000000011': precompile11,
-  '0000000000000000000000000000000000000012': precompile12,
-  '0000000000000000000000000000000000000013': precompile13,
-  '0000000000000000000000000000000000000014': precompile14,
+  '000000000000000000000000000000000000000b': precompile0b,
 }
 
 type DeletePrecompile = {
@@ -254,7 +171,7 @@ function getActivePrecompiles(
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
-        bytesToHex(precompile.address.bytes),
+        bytesToUnprefixedHex(precompile.address.bytes),
         'function' in precompile ? precompile.function : undefined
       )
     }

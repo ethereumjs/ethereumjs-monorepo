@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, bytesToPrefixedHexString, toBytes } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -84,7 +84,7 @@ describe('VM events', () => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(bytesToPrefixedHexString(emitted.execResult.returnValue), '0x')
+    assert.equal(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
   it('should emit the Message before running it', async () => {
@@ -106,7 +106,7 @@ describe('VM events', () => {
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(emitted.to.toString(), '0x1111111111111111111111111111111111111111')
-    assert.equal(bytesToPrefixedHexString(emitted.code), '0x')
+    assert.equal(bytesToHex(emitted.code), '0x')
   })
 
   it('should emit EVMResult after running a message', async () => {
@@ -127,7 +127,7 @@ describe('VM events', () => {
 
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.equal(bytesToPrefixedHexString(emitted.createdAddress), '0x')
+    assert.equal(bytesToHex(emitted.createdAddress), '0x')
   })
 
   it('should emit InterpreterStep on each step', async () => {
@@ -172,7 +172,7 @@ describe('VM events', () => {
     await vm.runTx({ tx, skipBalance: true, skipHardForkValidation: true })
 
     assert.equal(
-      bytesToPrefixedHexString(emitted.code),
+      bytesToHex(emitted.code),
       '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3'
     )
   })

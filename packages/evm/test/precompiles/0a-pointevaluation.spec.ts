@@ -1,14 +1,13 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   bytesToBigInt,
   computeVersionedHash,
-  concatBytesNoTypeCheck,
+  concatBytes,
+  hexToBytes,
   initKZG,
   unpadBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -33,29 +32,30 @@ describe('Precompiles: point evaluation', () => {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
       })
-      const evm = await EVM.create({
+      const evm = new EVM({
         common,
-        stateManager: new DefaultStateManager(),
       })
       const addressStr = '000000000000000000000000000000000000000a'
       const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
 
       const testCase = {
         Proof: hexToBytes(
-          '8ad6f539bc7280de6af4c95e7cef39bb6873f18c46ee5eb67299324ee7c6e6da71be2dbd5e2cbafbae4b2d60b40a808c'
+          '0x8ad6f539bc7280de6af4c95e7cef39bb6873f18c46ee5eb67299324ee7c6e6da71be2dbd5e2cbafbae4b2d60b40a808c'
         ),
         Commitment: hexToBytes(
-          'abb6bcbe313530ce7779abdf633d5a3594a41fbad9a79f4a9b46b89c0cfe78f6a15948dec92c4404aedac8b5e7dd6059'
+          '0xabb6bcbe313530ce7779abdf633d5a3594a41fbad9a79f4a9b46b89c0cfe78f6a15948dec92c4404aedac8b5e7dd6059'
         ),
-        InputPoint: hexToBytes('0000000000000000000000000000000000000000000000000000000000002001'),
+        InputPoint: hexToBytes(
+          '0x0000000000000000000000000000000000000000000000000000000000002001'
+        ),
         ClaimedValue: hexToBytes(
-          '0f69060fb771fa559a9e842e1dd79dde8a107486e801707032d93b5965d0cd48'
+          '0x0f69060fb771fa559a9e842e1dd79dde8a107486e801707032d93b5965d0cd48'
         ),
       }
       const versionedHash = computeVersionedHash(testCase.Commitment, 1)
 
       const opts: PrecompileInput = {
-        data: concatBytesNoTypeCheck(
+        data: concatBytes(
           versionedHash,
           testCase.InputPoint,
           testCase.ClaimedValue,
@@ -64,7 +64,7 @@ describe('Precompiles: point evaluation', () => {
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
-        _common: common,
+        common,
       }
 
       let res = await pointEvaluation(opts)
@@ -75,8 +75,8 @@ describe('Precompiles: point evaluation', () => {
       )
 
       const optsWithInvalidCommitment: PrecompileInput = {
-        data: concatBytesNoTypeCheck(
-          concatBytesNoTypeCheck(Uint8Array.from([0]), versionedHash.slice(1)),
+        data: concatBytes(
+          concatBytes(Uint8Array.from([0]), versionedHash.slice(1)),
           testCase.InputPoint,
           testCase.ClaimedValue,
           testCase.Commitment,
@@ -84,14 +84,13 @@ describe('Precompiles: point evaluation', () => {
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
-        _common: common,
+        common,
       }
 
       res = await pointEvaluation(optsWithInvalidCommitment)
-      assert.equal(
-        res.exceptionError?.error,
-        'kzg commitment does not match versioned hash',
-        'precompile throws when commitment doesnt match versioned hash'
+      assert.ok(
+        res.exceptionError?.error.match('kzg commitment does not match versioned hash'),
+        'precompile throws when commitment does not match versioned hash'
       )
     }
   })

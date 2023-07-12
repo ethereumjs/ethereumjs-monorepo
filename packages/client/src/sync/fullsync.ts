@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'

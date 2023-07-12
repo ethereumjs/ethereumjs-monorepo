@@ -262,9 +262,9 @@ Partial implementation, called from the subclass.
 
 ___
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`EthersStateManager`](EthersStateManager.md)
+▸ **shallowCopy**(): [`EthersStateManager`](EthersStateManager.md)
 
 #### Returns
 

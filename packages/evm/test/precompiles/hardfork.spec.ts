@@ -1,7 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -9,7 +7,7 @@ import { EVM, getActivePrecompiles } from '../../src/index.js'
 describe('Precompiles: hardfork availability', () => {
   it('Test ECPAIRING availability', async () => {
     const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'
-    const ECPAIR_Address = new Address(hexToBytes(ECPAIR_AddressStr))
+    const ECPAIR_Address = new Address(hexToBytes('0x' + ECPAIR_AddressStr))
 
     // ECPAIR was introduced in Byzantium; check if available from Byzantium.
     const commonByzantium = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
@@ -22,9 +20,8 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    let evm = await EVM.create({
+    let evm = new EVM({
       common: commonByzantium,
-      stateManager: new DefaultStateManager(),
     })
     let result = await evm.runCall({
       caller: Address.zero(),
@@ -44,9 +41,8 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    evm = await EVM.create({
+    evm = new EVM({
       common: commonPetersburg,
-      stateManager: new DefaultStateManager(),
     })
     result = await evm.runCall({
       caller: Address.zero(),
@@ -67,9 +63,8 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING not available in homestead')
     }
 
-    evm = await EVM.create({
+    evm = new EVM({
       common: commonHomestead,
-      stateManager: new DefaultStateManager(),
     })
 
     result = await evm.runCall({

@@ -1,8 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { MapDB, toBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { MapDB, hexToBytes, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Ethash } from '../src/index.js'
@@ -23,12 +22,12 @@ describe('Verify POW for valid and invalid blocks', () => {
     const genesisResult = await e.verifyPOW(genesis)
     assert.ok(genesisResult, 'genesis block should be valid')
 
-    const validRlp = hexToBytes(validBlockRlp)
+    const validRlp = hexToBytes('0x' + validBlockRlp)
     const validBlock = Block.fromRLPSerializedBlock(validRlp, { common })
     const validBlockResult = await e.verifyPOW(validBlock)
     assert.ok(validBlockResult, 'should be valid')
 
-    const invalidRlp = hexToBytes(invalidBlockRlp)
+    const invalidRlp = hexToBytes('0x' + invalidBlockRlp)
     // Put correct amount of extraData in block extraData field so block can be deserialized
     const values = RLP.decode(Uint8Array.from(invalidRlp)) as BlockBytes
     values[0][12] = new Uint8Array(32)

@@ -1,4 +1,4 @@
-import { Account, Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
+import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { AccountCache, CacheType } from '../../src/cache/index.js'
@@ -18,7 +18,7 @@ describe('Account Cache: put and get account', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new AccountCache({ size: 100, type })
 
-    const addr = new Address(hexStringToBytes('10'.repeat(20)))
+    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
     const acc: Account = createAccount(BigInt(1), BigInt(0xff11))
     const accRLP = acc.serialize()
 
@@ -51,7 +51,7 @@ describe('Account Cache: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new AccountCache({ size: 100, type })
 
-    const addr = new Address(hexStringToBytes('10'.repeat(20)))
+    const addr = new Address(hexToBytes('0x' + '10'.repeat(20)))
     const acc = createAccount(BigInt(1), BigInt(0xff11))
     const accRLP = acc.serialize()
 

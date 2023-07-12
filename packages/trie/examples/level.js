@@ -38,7 +38,7 @@ class LevelDB {
     await this._leveldb.batch(opStack, ENCODING_OPTS)
   }
 
-  copy() {
+  shallowCopy() {
     return new LevelDB(this._leveldb)
   }
 }

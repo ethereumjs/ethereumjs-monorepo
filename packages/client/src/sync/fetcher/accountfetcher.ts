@@ -9,7 +9,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
@@ -26,6 +26,7 @@ import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 

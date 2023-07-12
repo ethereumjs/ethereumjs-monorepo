@@ -4,10 +4,10 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
   equalsBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { Cache } from './cache.js'
 import { DBOp, DBTarget } from './operation.js'
@@ -35,12 +35,12 @@ export type CacheMap = { [key: string]: Cache<Uint8Array> }
  */
 export class DBManager {
   private _cache: CacheMap
-  private _common: Common
+  public readonly common: Common
   private _db: DB<Uint8Array | string, Uint8Array | string | DBObject>
 
   constructor(db: DB<Uint8Array | string, Uint8Array | string | DBObject>, common: Common) {
     this._db = db
-    this._common = common
+    this.common = common
     this._cache = {
       td: new Cache({ max: 1024 }),
       header: new Cache({ max: 512 }),
@@ -61,7 +61,7 @@ export class DBManager {
       // Heads are stored in DB as hex strings since Level converts Uint8Arrays
       // to nested JSON objects when they are included in a value being stored
       // in the DB
-      decodedHeads[key] = hexToBytes(heads[key] as string)
+      decodedHeads[key] = unprefixedHexToBytes(heads[key] as string)
     }
     return decodedHeads
   }
@@ -127,7 +127,7 @@ export class DBManager {
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
-    const opts: BlockOptions = { common: this._common }
+    const opts: BlockOptions = { common: this.common }
     if (number === BigInt(0)) {
       opts.setHardfork = await this.getTotalDifficulty(hash, BigInt(0))
     } else {
@@ -154,7 +154,7 @@ export class DBManager {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const headerValues = RLP.decode(encodedHeader)
 
-    const opts: BlockOptions = { common: this._common }
+    const opts: BlockOptions = { common: this.common }
     if (blockNumber === BigInt(0)) {
       opts.setHardfork = await this.getTotalDifficulty(blockHash, BigInt(0))
     } else {
@@ -181,7 +181,7 @@ export class DBManager {
   async hashToNumber(blockHash: Uint8Array): Promise<bigint | undefined> {
     const value = await this.get(DBTarget.HashToNumber, { blockHash })
     if (value === undefined) {
-      throw new Error(`value for ${bytesToPrefixedHexString(blockHash)} not found in DB`)
+      throw new Error(`value for ${bytesToHex(blockHash)} not found in DB`)
     }
     return value !== undefined ? bytesToBigInt(value) : undefined
   }

@@ -1,9 +1,7 @@
-import { Ethash } from '../src/index.js'
-import { MemoryLevel } from 'memory-level'
-import { bytesToHex } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Ethash } from '../dist/cjs/index.js'
+import { DBObject, MapDB, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-const ethash = new Ethash(new MemoryLevel())
+const ethash = new Ethash(new MapDB<number, DBObject>())
 
 const verifySubmit = async (
   ethash: Ethash,
@@ -19,8 +17,8 @@ const verifySubmit = async (
   return a.hash
 }
 
-const headerHash = hexToBytes('0e2887aa1a0668bf8254d1a6ae518927de99e3e5d7f30fd1f16096e2608fe05e')
-const nonce = hexToBytes('e360b6170c229d15')
+const headerHash = hexToBytes('0x0e2887aa1a0668bf8254d1a6ae518927de99e3e5d7f30fd1f16096e2608fe05e')
+const nonce = hexToBytes('0xe360b6170c229d15')
 
 verifySubmit(ethash, 35414, headerHash, nonce).then((result) => {
   console.log('Result: ', bytesToHex(result))

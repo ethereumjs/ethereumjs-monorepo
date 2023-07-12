@@ -37,9 +37,9 @@
 
 ## Methods
 
-### copy
+### shallowCopy
 
-▸ **copy**(): [`BlockchainInterface`](BlockchainInterface.md)
+▸ **shallowCopy**(): [`BlockchainInterface`](BlockchainInterface.md)
 
 Returns a copy of the blockchain
 

@@ -1,19 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import {
-  bytesToHex,
-  concatBytes,
-  equalsBytes,
-  hexToBytes,
-  utf8ToBytes,
-} from 'ethereum-cryptography/utils.js'
 
 import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+  hexToBytes,
   toBytes,
+  utf8ToBytes,
   zeros,
 } from './bytes.js'
 import { KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
@@ -169,7 +166,7 @@ export const toChecksumAddress = function (
   }
 
   const bytes = utf8ToBytes(prefix + address)
-  const hash = bytesToHex(keccak256(bytes))
+  const hash = bytesToHex(keccak256(bytes)).slice(2)
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
@@ -236,7 +233,7 @@ export const generateAddress2 = function (
     throw new Error('Expected salt to be of length 32')
   }
 
-  const address = keccak256(concatBytes(hexToBytes('ff'), from, salt, keccak256(initCode)))
+  const address = keccak256(concatBytes(hexToBytes('0xff'), from, salt, keccak256(initCode)))
 
   return address.subarray(-20)
 }
@@ -333,7 +330,7 @@ export const importPublic = function (publicKey: Uint8Array): Uint8Array {
 export const zeroAddress = function (): string {
   const addressLength = 20
   const addr = zeros(addressLength)
-  return bytesToPrefixedHexString(addr)
+  return bytesToHex(addr)
 }
 
 /**

@@ -6,7 +6,7 @@ import {
   Address,
   bigIntToBytes,
   equalsBytes,
-  hexStringToBytes,
+  hexToBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -34,11 +34,15 @@ describe('Ethers State Manager initialization tests', () => {
       state instanceof EthersStateManager,
       'was able to instantiate state manager with JsonRpcProvider subclass'
     )
-    assert.equal((state as any).blockTag, '0x1', 'State manager starts with default block tag of 1')
+    assert.equal(
+      (state as any)._blockTag,
+      '0x1',
+      'State manager starts with default block tag of 1'
+    )
 
     state = new EthersStateManager({ provider, blockTag: 1n })
     assert.equal(
-      (state as any).blockTag,
+      (state as any)._blockTag,
       '0x1',
       'State Manager instantiated with predefined blocktag'
     )
@@ -96,7 +100,8 @@ describe('Ethers State Manager API tests', () => {
 
       await state.putContractCode(UNIerc20ContractAddress, UNIContractCode)
       assert.ok(
-        typeof (state as any).contractCache.get(UNIerc20ContractAddress.toString()) !== 'undefined',
+        typeof (state as any)._contractCache.get(UNIerc20ContractAddress.toString()) !==
+          'undefined',
         'UNI ERC20 contract code was found in cache'
       )
 
@@ -127,6 +132,7 @@ describe('Ethers State Manager API tests', () => {
           state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
         'should not call provider.getStorageAt'
       )
+      await state.checkpoint()
 
       await state.putContractStorage(
         UNIerc20ContractAddress,
@@ -169,6 +175,23 @@ describe('Ethers State Manager API tests', () => {
         'account should not exist after being deleted'
       )
 
+      await state.revert()
+      assert.ok(
+        (await state.getAccount(vitalikDotEth)) !== undefined,
+        'account deleted since last checkpoint should exist after revert called'
+      )
+
+      const deletedSlotAfterRevert = await state.getContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(2n), 32)
+      )
+
+      assert.equal(
+        deletedSlotAfterRevert.length,
+        4,
+        'slot deleted since last checkpoint should exist in storage cache after revert'
+      )
+
       try {
         await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
         assert.fail('should have thrown')
@@ -179,25 +202,19 @@ describe('Ethers State Manager API tests', () => {
         )
       }
 
-      const newState = state.copy()
-
       assert.equal(
+        (state as any)._contractCache.get(UNIerc20ContractAddress),
         undefined,
-        (state as any).contractCache.get(UNIerc20ContractAddress),
-        'should not have any code for contract after cache is cleared'
+        'should not have any code for contract after cache is reverted'
       )
 
-      assert.notEqual(
-        undefined,
-        (newState as any).contractCache.get(UNIerc20ContractAddress.toString()),
-        'state manager copy should have code for contract after cache is cleared on original state manager'
-      )
-
-      assert.equal((state as any).blockTag, '0x1', 'blockTag defaults to 1')
+      assert.equal((state as any)._blockTag, '0x1', 'blockTag defaults to 1')
       state.setBlockTag(5n)
-      assert.equal((state as any).blockTag, '0x5', 'blockTag set to 0x5')
+      assert.equal((state as any)._blockTag, '0x5', 'blockTag set to 0x5')
       state.setBlockTag('earliest')
-      assert.equal((state as any).blockTag, 'earliest', 'blockTag set to earliest')
+      assert.equal((state as any)._blockTag, 'earliest', 'blockTag set to earliest')
+
+      await state.checkpoint()
     }
   })
 })
@@ -216,8 +233,8 @@ describe('runTx custom transaction test', () => {
       const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-      const privateKey = hexStringToBytes(
-        'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      const privateKey = hexToBytes(
+        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
       )
       const tx = FeeMarketEIP1559Transaction.fromTxData(
         { to: vitalikDotEth, value: '0x100', gasLimit: 500000n, maxFeePerGas: 7 },

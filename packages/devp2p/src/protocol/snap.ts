@@ -1,29 +1,32 @@
 import { RLP, utils } from '@ethereumjs/rlp'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
+import { bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
+import { ProtocolType } from '../types.js'
 import { formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol.js'
+import { Protocol } from './protocol.js'
 
 import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from './protocol.js'
+import type { SendMethod } from '../types.js'
 
 export class SNAP extends Protocol {
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, EthProtocol.SNAP, version, SNAP.MESSAGE_CODES)
+    super(peer, send, ProtocolType.SNAP, version, SNAP.MESSAGE_CODES)
   }
 
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
 
-  _handleMessage(code: SNAP.MESSAGE_CODES, data: any) {
-    const payload = RLP.decode(data) as unknown
-    const messageName = this.getMsgPrefix(code)
+  _handleMessage(code: SNAP.MESSAGE_CODES, data: Uint8Array) {
+    const payload = RLP.decode(data)
 
     // Note, this needs optimization, see issue #1882
-    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-    const logData = formatLogData(bytesToHex(data), this._verbose)
-    this.debug(messageName, `${debugMsg}: ${logData}`)
+    this.debug(
+      this.getMsgPrefix(code),
+      `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+        this._peer._socket.remotePort
+      }: ${formatLogData(bytesToHex(data), this._verbose)}`
+    )
 
     switch (code) {
       case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:
@@ -52,11 +55,12 @@ export class SNAP extends Protocol {
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
   sendMessage(code: SNAP.MESSAGE_CODES, payload: any) {
-    const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)
-    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
-
-    this.debug(messageName, debugMsg)
+    this.debug(
+      this.getMsgPrefix(code),
+      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+        this._peer._socket.remotePort
+      }: ${formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)}`
+    )
 
     switch (code) {
       case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:

@@ -32,14 +32,6 @@
       "import": "./dist/esm/genesisStates/goerli.js",
       "require": "./dist/cjs/genesisStates/goerli.js"
     },
-    "./ropsten": {
-      "import": "./dist/esm/genesisStates/ropsten.js",
-      "require": "./dist/cjs/genesisStates/ropsten.js"
-    },
-    "./rinkeby": {
-      "import": "./dist/esm/genesisStates/rinkeby.js",
-      "require": "./dist/cjs/genesisStates/rinkeby.js"
-    },
     "./sepolia": {
       "import": "./dist/esm/genesisStates/sepolia.js",
       "require": "./dist/cjs/genesisStates/sepolia.js"
@@ -68,6 +60,6 @@
     "@ethereumjs/util": "^8.0.6"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

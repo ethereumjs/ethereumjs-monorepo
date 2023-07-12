@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { hexStringToBytes } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -168,7 +168,7 @@ describe('EIP1559 tests', () => {
           parentHash: block1.hash(),
           timestamp: BigInt(2),
           gasLimit: genesis.header.gasLimit * BigInt(2), // Special case on EIP-1559 transition block
-          baseFeePerGas: hexStringToBytes('342770c0'),
+          baseFeePerGas: hexToBytes('0x342770c0'),
         },
       },
       {
@@ -280,7 +280,7 @@ describe('EIP1559 tests', () => {
         parentHash: block1.hash(),
         timestamp: BigInt(2),
         gasLimit: parentGasLimit + parentGasLimit / BigInt(1024) - BigInt(1),
-        baseFeePerGas: hexStringToBytes('342770c0'),
+        baseFeePerGas: hexToBytes('0x342770c0'),
       },
       {
         calcDifficultyFromHeader: block1.header,
@@ -296,7 +296,7 @@ describe('EIP1559 tests', () => {
         parentHash: block1.hash(),
         timestamp: BigInt(2),
         gasLimit: parentGasLimit - parentGasLimit / BigInt(1024) + BigInt(1),
-        baseFeePerGas: hexStringToBytes('342770c0'),
+        baseFeePerGas: hexToBytes('0x342770c0'),
       },
       {
         calcDifficultyFromHeader: block1.header,
@@ -339,7 +339,7 @@ describe('EIP1559 tests', () => {
         parentHash: block1.hash(),
         timestamp: BigInt(2),
         gasLimit: parentGasLimit + parentGasLimit / BigInt(1024),
-        baseFeePerGas: hexStringToBytes('342770c0'),
+        baseFeePerGas: hexToBytes('0x342770c0'),
       },
       {
         calcDifficultyFromHeader: block1.header,
@@ -389,7 +389,7 @@ describe('EIP1559 tests', () => {
         parentHash: block1.hash(),
         timestamp: BigInt(2),
         gasLimit: parentGasLimit - parentGasLimit / BigInt(1024),
-        baseFeePerGas: hexStringToBytes('342770c0'),
+        baseFeePerGas: hexToBytes('0x342770c0'),
       },
       {
         calcDifficultyFromHeader: block1.header,
@@ -414,7 +414,7 @@ describe('EIP1559 tests', () => {
         maxPriorityFeePerGas: BigInt(0),
       },
       { common }
-    ).sign(hexStringToBytes('46'.repeat(32)))
+    ).sign(hexToBytes('0x' + '46'.repeat(32)))
     const block = Block.fromBlockData(
       {
         header: {

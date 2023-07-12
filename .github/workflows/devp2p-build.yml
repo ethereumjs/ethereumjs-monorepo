@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [18]
     steps:
       - uses: actions/checkout@v3
 
@@ -41,11 +41,5 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
-
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: devp2p
-        if: ${{ matrix.node-version == 16 }}
 
       - run: npm run lint

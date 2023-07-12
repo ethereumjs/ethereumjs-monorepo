@@ -1,14 +1,12 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'
 
+const PUSH1 = '60'
 const STOP = '00'
 const JUMP = '56'
 const JUMPDEST = '5b'
-const PUSH1 = '60'
 
 const testCases = [
   { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 6 },
@@ -23,13 +21,11 @@ const testCases = [
 
 describe('VM.runCode: initial program counter', () => {
   it('should work', async () => {
-    const evm = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    const evm = new EVM()
 
     for (const [i, testData] of testCases.entries()) {
       const runCodeArgs = {
-        code: hexToBytes(testData.code.join('')),
+        code: hexToBytes('0x' + testData.code.join('')),
         pc: testData.pc,
         gasLimit: BigInt(0xffff),
       }
@@ -61,13 +57,11 @@ describe('VM.runCode: initial program counter', () => {
 
 describe('VM.runCode: interpreter', () => {
   it('should return a EvmError as an exceptionError on the result', async () => {
-    const evm = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    const evm = new EVM()
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
-      code: hexToBytes(INVALID_opcode),
+      code: hexToBytes('0x' + INVALID_opcode),
       gasLimit: BigInt(0xffff),
     }
 
@@ -82,9 +76,7 @@ describe('VM.runCode: interpreter', () => {
   })
 
   it('should throw on non-EvmError', async () => {
-    const evm = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    const evm = new EVM()
     // NOTE: due to now throwing on `getContractStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
     // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
@@ -98,7 +90,7 @@ describe('VM.runCode: interpreter', () => {
 
     const SSTORE = '55'
     const runCodeArgs = {
-      code: hexToBytes([PUSH1, '01', PUSH1, '05', SSTORE].join('')),
+      code: hexToBytes('0x' + [PUSH1, '01', PUSH1, '05', SSTORE].join('')),
       gasLimit: BigInt(0xffff),
     }
 
@@ -113,9 +105,7 @@ describe('VM.runCode: interpreter', () => {
 
 describe('VM.runCode: RunCodeOptions', () => {
   it('should throw on negative value args', async () => {
-    const evm = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    const evm = new EVM()
 
     const runCodeArgs = {
       value: BigInt(-10),

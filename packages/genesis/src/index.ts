@@ -3,8 +3,6 @@ import { Chain } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 
 import { mainnetGenesis } from './genesisStates/mainnet.js'
-import { ropstenGenesis } from './genesisStates/ropsten.js'
-import { rinkebyGenesis } from './genesisStates/rinkeby.js'
 import { goerliGenesis } from './genesisStates/goerli.js'
 import { sepoliaGenesis } from './genesisStates/sepolia.js'
 
@@ -20,10 +18,6 @@ export function getGenesis(chainId: number): GenesisState | null {
   switch (chainId) {
     case Chain.Mainnet:
       return mainnetGenesis
-    case Chain.Ropsten:
-      return ropstenGenesis
-    case Chain.Rinkeby:
-      return rinkebyGenesis
     case Chain.Goerli:
       return goerliGenesis
     case Chain.Sepolia:

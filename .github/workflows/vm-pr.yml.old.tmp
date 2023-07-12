@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -33,7 +33,7 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
- #     - run: npm run test:API:browser -- disabled until we fix browser tests for vitest
+      #     - run: npm run test:API:browser -- disabled until we fix browser tests for vitest
 
       - uses: codecov/codecov-action@v3
         with:
@@ -53,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -89,7 +89,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -127,7 +127,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -170,7 +170,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -185,7 +185,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci

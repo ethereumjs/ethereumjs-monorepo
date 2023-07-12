@@ -3,12 +3,12 @@ import {
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
-  bytesToHex,
+  bytesToUnprefixedHex,
   bytesToUtf8,
   equalsBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { CheckpointDB } from './db/index.js'
 import {
@@ -47,7 +47,7 @@ interface Path {
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
  */
 export class Trie {
-  private readonly _opts: TrieOptsWithDefaults = {
+  protected readonly _opts: TrieOptsWithDefaults = {
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
     useRootPersistence: false,
@@ -95,13 +95,13 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToHex(key), {
+        const rootHex = await opts?.db.get(bytesToUnprefixedHex(key), {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
-        opts.root = rootHex !== undefined ? hexToBytes(rootHex) : undefined
+        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
       } else {
-        await opts?.db.put(bytesToHex(key), bytesToHex(opts.root), {
+        await opts?.db.put(bytesToUnprefixedHex(key), bytesToUnprefixedHex(opts.root), {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
@@ -354,7 +354,7 @@ export class Trie {
    * Creates the initial node from an empty tree.
    * @private
    */
-  async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
+  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
     const newNode = new LeafNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
@@ -390,7 +390,7 @@ export class Trie {
    * @param keyRemainder
    * @param stack
    */
-  async _updateNode(
+  protected async _updateNode(
     k: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
@@ -486,14 +486,14 @@ export class Trie {
       }
     }
 
-    await this._saveStack(key, stack, toSave)
+    await this.saveStack(key, stack, toSave)
   }
 
   /**
    * Deletes a node from the trie.
    * @private
    */
-  async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
+  protected async _deleteNode(k: Uint8Array, stack: TrieNode[]): Promise<void> {
     const processBranchNode = (
       key: Nibbles,
       branchKey: number,
@@ -614,7 +614,7 @@ export class Trie {
           parentNode as TrieNode,
           stack
         )
-        await this._saveStack(key, stack, opStack)
+        await this.saveStack(key, stack, opStack)
       }
     } else {
       // simple removing a leaf and recalculation the stack
@@ -623,18 +623,18 @@ export class Trie {
       }
 
       stack.push(lastNode)
-      await this._saveStack(key, stack, opStack)
+      await this.saveStack(key, stack, opStack)
     }
   }
 
   /**
    * Saves a stack of nodes to the database.
-   * @private
+   *
    * @param key - the key. Should follow the stack
    * @param stack - a stack of nodes to the value given by the key
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
-  async _saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
+  async saveStack(key: Nibbles, stack: TrieNode[], opStack: BatchDBOp[]): Promise<void> {
     let lastRoot
 
     // update nodes
@@ -828,7 +828,10 @@ export class Trie {
   // (i.e. the Trie is not correctly pruned)
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
   async verifyPrunedIntegrity(): Promise<boolean> {
-    const roots = [bytesToHex(this.root()), bytesToHex(this.appliedKey(ROOT_DB_KEY))]
+    const roots = [
+      bytesToUnprefixedHex(this.root()),
+      bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
+    ]
     for (const dbkey of (<any>this)._db.db._database.keys()) {
       if (roots.includes(dbkey)) {
         // The root key can never be found from the trie, otherwise this would
@@ -847,7 +850,7 @@ export class Trie {
           if (node instanceof BranchNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
-              if (item !== null && bytesToHex(item as Uint8Array) === dbkey) {
+              if (item !== null && bytesToUnprefixedHex(item as Uint8Array) === dbkey) {
                 found = true
                 return
               }
@@ -857,7 +860,7 @@ export class Trie {
           }
           if (node instanceof ExtensionNode) {
             // If the value of the ExtensionNode points to the dbkey, then it is found
-            if (bytesToHex(node.value()) === dbkey) {
+            if (bytesToUnprefixedHex(node.value()) === dbkey) {
               found = true
               return
             }
@@ -894,7 +897,7 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  copy(includeCheckpoints = true): Trie {
+  shallowCopy(includeCheckpoints = true): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
@@ -922,7 +925,7 @@ export class Trie {
    * called by {@link ScratchReadStream}
    * @private
    */
-  async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
+  protected async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
     const outerOnFound: FoundNodeFunction = async (nodeRef, node, key, walkController) => {
       if (isRawNode(nodeRef)) {
         if (node !== null) {

@@ -5,8 +5,9 @@ import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethe
 import {
   Account,
   bytesToHex,
+  bytesToUnprefixedHex,
   concatBytes,
-  hexStringToBytes,
+  hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
 import * as tape from 'tape'
@@ -34,7 +35,7 @@ const setup = () => {
           getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
           setStateRoot: async (_root: Uint8Array) => {},
         },
-        copy: () => service.execution.vm,
+        shallowCopy: () => service.execution.vm,
       },
     },
   }
@@ -98,17 +99,13 @@ tape('[TxPool]', async (t) => {
   DefaultStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
-    address: hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f'),
-    privateKey: hexStringToBytes(
-      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-    ),
+    address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
+    privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
   }
 
   const B = {
-    address: hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df'),
-    privateKey: hexStringToBytes(
-      '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
-    ),
+    address: hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df'),
+    privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
   }
 
   const createTx = (from = A, to = B, nonce = 0, value = 1, feeBump = 0) => {
@@ -209,7 +206,7 @@ tape('[TxPool]', async (t) => {
     t.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
     t.equal(
       (pool as any).knownByPeer.get(peer.id)[0].hash,
-      bytesToHex(txA01.hash()),
+      bytesToUnprefixedHex(txA01.hash()),
       'new known tx hashes entry for announcing peer'
     )
 
@@ -254,7 +251,7 @@ tape('[TxPool]', async (t) => {
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
-      hashes.push(hexStringToBytes(i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
+      hashes.push(hexToBytes('0x' + i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
@@ -298,7 +295,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -343,7 +340,7 @@ tape('[TxPool]', async (t) => {
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn'
       )
-      const poolObject = pool['handled'].get(bytesToHex(txA02_Underpriced.hash()))
+      const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
       t.equal(poolObject?.error, e, 'should have an errored poolObject')
       const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
       t.equal(poolTxs.length, 0, `should not be added in pool`)
@@ -356,7 +353,7 @@ tape('[TxPool]', async (t) => {
       'NewPooledTransactionHashes',
       'should have errored sendObject for NewPooledTransactionHashes broadcast'
     )
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'only one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -390,7 +387,7 @@ tape('[TxPool]', async (t) => {
       await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
 
       t.equal(pool.pool.size, 1, 'pool size 1')
-      const address = bytesToHex(A.address)
+      const address = bytesToUnprefixedHex(A.address)
       const poolContent = pool.pool.get(address)!
       t.equal(poolContent.length, 1, 'only one tx')
       t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -404,8 +401,8 @@ tape('[TxPool]', async (t) => {
     const txs = []
     for (let account = 0; account < 51; account++) {
       const pkey = concatBytes(
-        hexStringToBytes('aa'.repeat(31)),
-        hexStringToBytes(account.toString(16).padStart(2, '0'))
+        hexToBytes('0x' + 'aa'.repeat(31)),
+        hexToBytes('0x' + account.toString(16).padStart(2, '0'))
       )
       const from = {
         address: privateToAddress(pkey),
@@ -662,7 +659,7 @@ tape('[TxPool]', async (t) => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 1, 'one tx')
     t.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -706,7 +703,7 @@ tape('[TxPool]', async (t) => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     t.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(B.address)
+    const address = bytesToUnprefixedHex(B.address)
     let poolContent = pool.pool.get(address)!
     t.equal(poolContent.length, 2, 'two txs')
 
@@ -781,7 +778,7 @@ tape('[TxPool]', async (t) => {
     knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
 
-    const hash = bytesToHex(txB01.hash())
+    const hash = bytesToUnprefixedHex(txB01.hash())
     const handledObj = (pool as any).handled.get(hash)
     handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).handled.set(hash, handledObj)

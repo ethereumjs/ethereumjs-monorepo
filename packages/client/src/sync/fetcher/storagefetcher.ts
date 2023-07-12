@@ -4,10 +4,11 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  bytesToUnprefixedHex,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugDefault from 'debug'
 
 import { LevelDB } from '../../execution/level'
 import { short } from '../../util'
@@ -19,6 +20,7 @@ import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BigInt(1)
 
@@ -396,13 +398,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
         const storageTrie =
-          this.accountToStorageTrie.get(bytesToHex(accountHash)) ??
+          this.accountToStorageTrie.get(bytesToUnprefixedHex(accountHash)) ??
           new Trie({ useKeyHashing: false })
         for (const slot of slotArray as any) {
           slotCount++
           void storageTrie.put(slot.hash, slot.body)
         }
-        this.accountToStorageTrie.set(bytesToHex(accountHash), storageTrie)
+        this.accountToStorageTrie.set(bytesToUnprefixedHex(accountHash), storageTrie)
       })
       this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {

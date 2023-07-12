@@ -1,19 +1,17 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
+import { TWO_POW256, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { FeeMarketEIP1559Transaction } from '../src/index.js'
 
 import testdata from './json/eip1559.json' // Source: Besu
 
-const common = new Common({
-  chain: Chain.Rinkeby,
-  hardfork: Hardfork.London,
-})
+const common = Common.custom({ chainId: 4 })
+common.setHardfork(Hardfork.London)
 
-const validAddress = hexStringToBytes('01'.repeat(20))
-const validSlot = hexStringToBytes('01'.repeat(32))
+const validAddress = hexToBytes('0x' + '01'.repeat(20))
+const validSlot = hexToBytes('0x' + '01'.repeat(32))
 const chainId = BigInt(4)
 
 describe('[FeeMarketEIP1559Transaction]', () => {
@@ -90,12 +88,12 @@ describe('[FeeMarketEIP1559Transaction]', () => {
   it('sign()', () => {
     for (let index = 0; index < testdata.length; index++) {
       const data = testdata[index]
-      const pkey = hexStringToBytes(data.privateKey)
+      const pkey = hexToBytes(data.privateKey)
       const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
       const signed = txn.sign(pkey)
       const rlpSerialized = RLP.encode(Uint8Array.from(signed.serialize()))
       assert.ok(
-        equalsBytes(rlpSerialized, hexStringToBytes(data.signedTransactionRLP)),
+        equalsBytes(rlpSerialized, hexToBytes(data.signedTransactionRLP)),
         'Should sign txs correctly'
       )
     }
@@ -103,11 +101,11 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('hash()', () => {
     const data = testdata[0]
-    const pkey = hexStringToBytes(data.privateKey)
+    const pkey = hexToBytes(data.privateKey)
     let txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
     let signed = txn.sign(pkey)
-    const expectedHash = hexStringToBytes(
-      '2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446'
+    const expectedHash = hexToBytes(
+      '0x2e564c87eb4b40e7f469b2eec5aa5d18b0b46a24e8bf0919439cfb0e8fcae446'
     )
     assert.ok(
       equalsBytes(signed.hash(), expectedHash),
@@ -123,7 +121,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('freeze property propagates from unsigned tx to signed tx', () => {
     const data = testdata[0]
-    const pkey = hexStringToBytes(data.privateKey)
+    const pkey = hexToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
     assert.notOk(Object.isFrozen(txn), 'tx object is not frozen')
     const signedTxn = txn.sign(pkey)
@@ -132,9 +130,12 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('common propagates from the common of tx, not the common in TxOptions', () => {
     const data = testdata[0]
-    const pkey = hexStringToBytes(data.privateKey)
+    const pkey = hexToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common, freeze: false })
-    const newCommon = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London, eips: [2537] })
+
+    const newCommon = Common.custom({ chainId: 4 })
+    newCommon.setHardfork(Hardfork.Paris)
+
     assert.notDeepEqual(newCommon, common, 'new common is different than original common')
     Object.defineProperty(txn, 'common', {
       get() {
@@ -142,26 +143,29 @@ describe('[FeeMarketEIP1559Transaction]', () => {
       },
     })
     const signedTxn = txn.sign(pkey)
-    assert.ok(signedTxn.common.eips().includes(2537), 'signed tx common is taken from tx.common')
+    assert.ok(
+      signedTxn.common.hardfork() === Hardfork.Paris,
+      'signed tx common is taken from tx.common'
+    )
   })
 
   it('unsigned tx -> getMessageToSign()/getHashedMessageToSign()', () => {
     const unsignedTx = FeeMarketEIP1559Transaction.fromTxData(
       {
-        data: hexStringToBytes('010200'),
+        data: hexToBytes('0x010200'),
         to: validAddress,
         accessList: [[validAddress, [validSlot]]],
         chainId,
       },
       { common }
     )
-    const expectedHash = hexStringToBytes(
-      'fa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea'
+    const expectedHash = hexToBytes(
+      '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea'
     )
     assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
 
-    const expectedSerialization = hexStringToBytes(
-      '02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
+    const expectedSerialization = hexToBytes(
+      '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101'
     )
     assert.deepEqual(
       unsignedTx.getMessageToSign(),
@@ -172,7 +176,7 @@ describe('[FeeMarketEIP1559Transaction]', () => {
 
   it('toJSON()', () => {
     const data = testdata[0]
-    const pkey = hexStringToBytes(data.privateKey)
+    const pkey = hexToBytes(data.privateKey)
     const txn = FeeMarketEIP1559Transaction.fromTxData(data, { common })
     const signed = txn.sign(pkey)
 

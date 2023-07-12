@@ -1,20 +1,19 @@
 import { join } from 'path'
 import { readFileSync } from 'fs'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
-import { Address } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.cjs'
 import { getAccountNonce, insertAccount } from './helpers/account-utils.cjs'
 import { Block } from '@ethereumjs/block'
-import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
 const solc = require('solc')
 
 const INITIAL_GREETING = 'Hello, World!'
 const SECOND_GREETING = 'Hola, Mundo!'
 
-const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 const block = Block.fromBlockData({ header: { extraData: new Uint8Array(97) } }, { common })
 
 /**
@@ -150,7 +149,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     to: contractAddress,
     caller: caller,
     origin: caller, // The tx.origin is also the caller here
-    data: hexToBytes(sigHash.slice(2)),
+    data: hexToBytes(sigHash),
     block,
   })
 
@@ -164,7 +163,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
 }
 
 async function main() {
-  const accountPk = hexToBytes('e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+  const accountPk = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
   const vm = await VM.create({ common })
   const accountAddress = Address.fromPrivateKey(accountPk)
@@ -218,8 +217,8 @@ async function main() {
   console.log('-------results-------')
   console.log('nonce: ' + createdAccount!.nonce.toString())
   console.log('balance in wei: ', createdAccount!.balance.toString())
-  console.log('storageRoot: 0x' + bytesToHex(createdAccount!.storageRoot))
-  console.log('codeHash: 0x' + bytesToHex(createdAccount!.codeHash))
+  console.log('storageRoot: ' + bytesToHex(createdAccount!.storageRoot))
+  console.log('codeHash: ' + bytesToHex(createdAccount!.codeHash))
   console.log('---------------------')
 
   console.log('Everything ran correctly!')

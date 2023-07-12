@@ -1,7 +1,6 @@
 import * as eip1153 from './1153.json'
 import * as eip1559 from './1559.json'
 import * as eip2315 from './2315.json'
-import * as eip2537 from './2537.json'
 import * as eip2565 from './2565.json'
 import * as eip2718 from './2718.json'
 import * as eip2929 from './2929.json'
@@ -20,6 +19,7 @@ import * as eip3855 from './3855.json'
 import * as eip3860 from './3860.json'
 import * as eip4345 from './4345.json'
 import * as eip4399 from './4399.json'
+import * as eip4788 from './4788.json'
 import * as eip4844 from './4844.json'
 import * as eip4895 from './4895.json'
 import * as eip5133 from './5133.json'
@@ -30,7 +30,6 @@ export const EIPs: { [key: number]: any } = {
   1153: eip1153,
   1559: eip1559,
   2315: eip2315,
-  2537: eip2537,
   2565: eip2565,
   2718: eip2718,
   2929: eip2929,
@@ -49,6 +48,7 @@ export const EIPs: { [key: number]: any } = {
   3860: eip3860,
   4345: eip4345,
   4399: eip4399,
+  4788: eip4788,
   4844: eip4844,
   4895: eip4895,
   5133: eip5133,

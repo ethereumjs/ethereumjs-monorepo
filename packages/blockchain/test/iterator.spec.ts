@@ -1,4 +1,4 @@
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
@@ -185,7 +185,7 @@ describe('blockchain test', () => {
       assert.deepEqual(head.hash(), genesis.hash(), 'should get head')
       assert.equal(
         bytesToHex((blockchain as any)._heads['head0']),
-        'abcd',
+        '0xabcd',
         'should get state root heads'
       )
     } else {

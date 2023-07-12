@@ -1,8 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToInt, intToBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, bytesToInt, bytesToUtf8, concatBytes, intToBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
-import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   assertEq,
@@ -14,7 +13,8 @@ import {
   unstrictDecode,
 } from '../util.js'
 
-import type { PeerInfo } from './dpt.js'
+import type { PeerInfo } from '../types.js'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('devp2p:dpt:server')
 
@@ -136,7 +136,7 @@ type OutNeighborMsg = { [0]: Uint8Array[][]; [1]: Uint8Array }
 const neighbours = {
   encode(obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Uint8Array)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id as Uint8Array)),
       timestamp.encode(obj.timestamp),
     ]
   },
