@@ -167,6 +167,7 @@ tape('[TxPool]', async (t) => {
     pool.start()
     const peer: any = {
       id: '1',
+      versions: [66],
       eth: {
         getPooledTransactions: () => {
           return [null, [txA01]]
@@ -183,6 +184,7 @@ tape('[TxPool]', async (t) => {
     const peer2: any = {
       id: '2',
       eth: {
+        versions: [66],
         send: () => {
           sentToPeer2++
           t.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
@@ -240,6 +242,7 @@ tape('[TxPool]', async (t) => {
     pool.start()
     const peer = {
       eth: {
+        versions: [66],
         getPooledTransactions: (res: any) => {
           t.equal(res['hashes'].length, TX_RETRIEVAL_LIMIT, 'should limit to TX_RETRIEVAL_LIMIT')
           return [null, []]
@@ -266,6 +269,7 @@ tape('[TxPool]', async (t) => {
     pool.start()
     const peer: any = {
       eth: {
+        versions: [66],
         getPooledTransactions: () => {
           return [null, [txA01, txB01]]
         },
@@ -286,6 +290,7 @@ tape('[TxPool]', async (t) => {
     pool.start()
     const peer: any = {
       eth: {
+        versions: [66],
         getPooledTransactions: () => {
           return [null, [txA01, txA02]]
         },
@@ -311,6 +316,7 @@ tape('[TxPool]', async (t) => {
     const txs = [txA01]
     const peer: any = {
       eth: {
+        versions: [66, 67],
         getPooledTransactions: () => {
           return [null, txs]
         },
@@ -321,6 +327,7 @@ tape('[TxPool]', async (t) => {
     const peer2: any = {
       id: '2',
       eth: {
+        versions: [66, 67],
         request: (methodName: string) => {
           sentToPeer2++
           // throw the error on methodName so as to be handy
@@ -377,6 +384,7 @@ tape('[TxPool]', async (t) => {
       const txs = [txA01, txA02_Underpriced]
       const peer: any = {
         eth: {
+          versions: [66],
           getPooledTransactions: () => {
             return [null, txs]
           },
