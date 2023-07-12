@@ -17,21 +17,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 - Ethereum Wire Protocol (ETH/66)
 - Light Ethereum Subprotocol (LES/4)
 
-## Run/Build
-
-To build the `dist/` directory, run:
-
-```shell
-npm run build
-```
-
-You can also use `ts-node` to run a script without first transpiling to js (you need to `npm i --save-dev ts-node` first):
-
-```shell
-node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
-```
-
-## Usage/Examples
+## Usage
 
 All components of this library are implemented as Node `EventEmitter` objects
 and make heavy use of the Node.js network stack.
@@ -43,6 +29,8 @@ dpt.on('peer:added', (peer) => {
   // Do something...
 })
 ```
+
+## Examples
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
@@ -75,7 +63,10 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 Create your peer table:
 
 ```typescript
-const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
+import { DPT } from '@ethereumjs/devp2p'
+import { hexToBytes } from '@ethereumjs/util'
+
+const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
@@ -394,14 +385,6 @@ While it's possible to bundle this package for the browser, some features do not
 - EIP-1459 (DNS Peer Discovery) is disabled due to the absence of a standard polyfill for Node's `dns`
   module. DNS discovery mode can be toggled on/off via the DPTOption `shouldGetDnsPeers` ("false"
   by default).
-
-## Tests
-
-There are unit tests in the `test/` directory which can be run with:
-
-```shell
-npm run test
-```
 
 ## Debugging
 
