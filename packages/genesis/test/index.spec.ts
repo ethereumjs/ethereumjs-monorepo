@@ -1,7 +1,7 @@
 import { Chain } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { getGenesis } from '../src/index'
+import { getGenesis } from '../src/index.js'
 
 const chainToName: Record<Chain, string> = {
   [Chain.Mainnet]: 'mainnet',
