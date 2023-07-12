@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "4.2.2",
+  "version": "5.0.0-rc.1",
   "description": "Provides Block serialization and help functions",
   "keywords": [
     "ethereum",

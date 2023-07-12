@@ -30,8 +30,8 @@ npm install @ethereumjs/block
 There are five static factories to instantiate a `Block`:
 
 - `Block.fromBlockData(blockData: BlockData = {}, opts?: BlockOptions)`
-- `Block.fromRLPSerializedBlock(serialized: Buffer, opts?: BlockOptions)`
-- `Block.fromValuesArray(values: BlockBuffer, opts?: BlockOptions)`
+- `Block.fromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions)`
+- `Block.fromValuesArray(values: BlockBytes, opts?: BlockOptions)`
 - `Block.fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions)`
 - `Block.fromJsonRpcProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
 
@@ -106,31 +106,30 @@ const blockWithMatchingBaseFee = Block.fromBlockData(
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `LegacyTransaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
 
-### EIP-4895 Beacon Chain Withdrawals Blocks (experimental)
+### EIP-4895 Beacon Chain Withdrawals Blocks
 
-Starting with the `v4.1.0` release there is (experimental) support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a respective `Common` object and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
+Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a `Common` object with a hardfork set to `shanghai` (default) or higher and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
 
 ```typescript
 import { Block } from '@ethereumjs/block'
 import { Common, Chain } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
+import { Address, hexToBytes } from '@ethereumjs/util'
 import type { WithdrawalData } from '@ethereumjs/util'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
+const common = new Common({ chain: Chain.Mainnet })
 
 const withdrawal = <WithdrawalData>{
   index: BigInt(0),
   validatorIndex: BigInt(0),
-  address: new Address(Buffer.from('20'.repeat(20), 'hex')),
+  address: new Address(hexToBytes(`0x${'20'.repeat(20)}`)),
   amount: BigInt(1000),
 }
 
 const block = Block.fromBlockData(
   {
     header: {
-      withdrawalsRoot: Buffer.from(
-        '69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357',
-        'hex'
+      withdrawalsRoot: hexToBytes(
+        '0x69f28913c562b0d38f8dc81e72eb0d99052444d301bf8158dc1f3f94a4526357'
       ),
     },
     withdrawals: [withdrawal],
@@ -141,11 +140,13 @@ const block = Block.fromBlockData(
 )
 ```
 
-Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.validateWithdrawalsTrie()` method.
+Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.withdrawalsTrieIsValid()` method.
 
-### EIP-4844 Shard Blob Transaction Blocks (experimental)
+### EIP-4844 Shard Blob Transaction Blocks
 
-This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v4.2.0`.
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) EIP version from July 2023 deployed along [4844-devnet-7](https://github.com/ethpandaops/4844-testnet) (July 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and following.
+
+**Note:** 4844 support is not yet completely stable and there will still be (4844-)breaking changes along all types of library releases.
 
 #### Initialization
 
@@ -206,8 +207,8 @@ Additionally there are the following utility methods for Clique/PoA related func
 
 - `BlockHeader.cliqueSigHash()`
 - `BlockHeader.cliqueIsEpochTransition(): boolean`
-- `BlockHeader.cliqueExtraVanity(): Buffer`
-- `BlockHeader.cliqueExtraSeal(): Buffer`
+- `BlockHeader.cliqueExtraVanity(): Uint8Array`
+- `BlockHeader.cliqueExtraSeal(): Uint8Array`
 - `BlockHeader.cliqueEpochTransitionSigners(): Address[]`
 - `BlockHeader.cliqueVerifySignature(signerList: Address[]): boolean`
 - `BlockHeader.cliqueSigner(): Address`
@@ -223,7 +224,7 @@ You can instantiate a Merge/PoS block like this:
 ```typescript
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 const block = Block.fromBlockData(
   {
     // Provide your block data here or use default values
