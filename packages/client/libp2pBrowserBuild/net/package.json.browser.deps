@@ -66,7 +66,7 @@
     "@ethereumjs/rlp": "5.0.0-rc.1",
     "@ethereumjs/statemanager": "1.0.5",
     "@ethereumjs/trie": "6.0.0-rc.1",
-    "@ethereumjs/tx": "4.1.2",
+    "@ethereumjs/tx": "5.0.0-rc.1",
     "@ethereumjs/util": "9.0.0-rc.1",
     "@ethereumjs/vm": "6.4.2",
     "abstract-level": "^1.0.3",
