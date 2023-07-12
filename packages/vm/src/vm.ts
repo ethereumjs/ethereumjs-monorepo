@@ -20,6 +20,7 @@ import type {
 } from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { EVMInterface } from '@ethereumjs/evm'
 import type { BigIntLike, GenesisState } from '@ethereumjs/util'
 
 /**
@@ -45,7 +46,7 @@ export class VM {
   /**
    * The EVM used for bytecode execution
    */
-  readonly evm: EVM
+  readonly evm: EVMInterface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
@@ -231,7 +232,7 @@ export class VM {
       blockchain,
       stateManager,
     }
-    const evmCopy = new EVM(evmOpts)
+    const evmCopy = new EVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
       stateManager,
       blockchain: this.blockchain,

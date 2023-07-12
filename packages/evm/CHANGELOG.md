@@ -6,6 +6,195 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.0-rc.1 - 2023-07-11
+
+### Default Shanghai HF / Merge -> Paris Renaming / Cancun Hardfork
+
+The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefore for all libraries who use a Common-based HF setting internally (e.g. Tx, Block or EVM), see PR [#2655](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2655).
+
+Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+```
+
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+```
+
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
+### EEI Removal / Standalone EVM
+
+During the last round of breaking releases we separated the `EVM` and `VM` packages and largely decoupled the outer execution part (`VM`) and the "pure" EVM, being just a package containing the "Ethereum Virtual Machine" code with no notion of the outer txs or blocks which include the executable byte code.
+
+While this was a large step in the "right direction" [TM] we realized over the last months that the structure we introduced with a separate `EEI` as an additional abstraction layer for talking of the EVM with the "outside world" (another [TM]) for e.g. retrieving block hashes or the like still unnecessarily tied the VM/EVM structures together and didn't fully allow for a truly separate EVM initialization.
+
+We have now further refactored this - see PR [#2649](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2649/) and PR [#2702](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2702) - and simplified the interface and completely removed the `EEI` package, with most of the EEI related logic now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package.
+
+So the mandatory `eei` option now goes away and is replaced by two optional `stateManager` and `blockchain` options, and if not provided, default values are taken here.
+
+So the EVM initialization in its most simple form now goes to:
+
+```typescript
+import { hexToBytes } from '@ethereumjs/util'
+import { EVM } from '@ethereumjs/evm'
+
+const evm = new EVM()
+evm.runCode({ code: hexToBytes('0x01') })
+```
+
+🎉
+
+### EIP-5656: MCOPY - Memory copying instruction
+
+This release adds support for [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) "MCOPY - Memory copying instruction" - which is scheduled to be activated along the [Cancun](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md) HF.
+
+You can initialize an EIP-5656 activated EVM with:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '@ethereumjs/evm'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+const evm = new EVM({ common })
+```
+
+See the EVM [EIP-5656 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/test/eips/eip-5656.spec.ts) for a respective test scenario on the bytecode level.
+
+This new copy operation reduces overhead (and therefore saves gas costs) in certain memory copy scenarios.
+
+### EIP-6780: SELFDESTRUCT only in same transaction
+
+Support for [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) "SELFDESTRUCT only in same transaction" - which is scheduled to be activated along the [Cancun](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md) HF - has been added to the EVM.
+
+You can initialize an EIP-6780 activated EVM with:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '@ethereumjs/evm'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+const evm = new EVM({ common })
+```
+
+See the VM [EIP-6780 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-6780-selfdestruct-same-tx.spec.ts) for a respective test scenario on the bytecode level.
+
+## Opcode Renamings: SHA3 -> KECCAK, DIFFICULTY -> PREVRANDAO (post Merge)
+
+In this release two opcodes have been renamed to more adequately match their functionality, see PR [#2706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2706).
+
+The `0x20` opcode - previously wrongly named `SHA3` - has been renamed to `KECCAK`.
+
+The `0x44` (old `DIFFICULTY`) opcode - is now named `PREVRANDAO` - starting with the `Paris` (Merge) HF.
+
+### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
+
+While there might be last-round final tweaks, [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format. A lot of spec changes happened during the last 2-3 months and these are included in this release round. So the released version should be relatively close to a future production ready version.
+
+This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
+
+#### KZG Initialization -> @ethereumjs/util
+
+The global initialization method for the KZG setup has been moved to a dedicated [kzg.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/kzg.ts) module in `@ethereumjs/util` for easy reuse across the libraries, see PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567).
+
+The `initKZG()` method can be used as follows:
+
+```typescript
+// Make the kzg library available globally
+import * as kzg from 'c-kzg'
+import { initKZG } from '@ethereumjs/util'
+
+// Initialize the trusted setup
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
+```
+
+For further information on this see the respective section in `@ethereumjs-util` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util).
+
+#### Library Changes
+
+The following changes are included:
+
+- Fix the availability of versioned hashes in contract calls, PR [#2694](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2694)
+- Rename `DATAHASH` to `BLOBHASH`, PR [#2711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2711)
+- Add `dataGasUsed` to `txReceipt` and EVM execution result, PR [#2620](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2620)
+- Update c-kzg to big endian implementation (`0x0a` KZG point evaluation precompile), PR [#2746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2746)
+
+### Hybrid CJS/ESM Build
+
+We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
+
+There are now two different build directories in our `dist` folder, being `dist/cjs` for the CommonJS and `dist/esm` for the `ESM` build. That means that direct imports (which you generally should try to avoid, rather open an issue on your import needs), need an update within your code (do a `dist` or the like code search).
+
+Both builds have respective separate entrypoints in the distributed `package.json` file.
+
+A CommonJS import of our libraries can then be done like this:
+
+```typescript
+const { Chain, Common } = require('@ethereumjs/common')
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+And this is how an ESM import looks like:
+
+```typescript
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+Side note: along this transition we also rewrote our whole test suite (yes!!!) to now work with [Vitest](https://vitest.dev/) instead of `Tape`.
+
+### Buffer -> Uint8Array
+
+With these releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
+
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
+
+#### How to upgrade?
+
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+
+```typescript
+// evm
+EVM.runCall(opts: EVMRunCallOpts): Promise<EVMResult> // data, code, salt, versionedHashes (4844)
+EVM.runCode(opts: EVMRunCodeOpts): Promise<ExecResult> // data, code, versionedHashes (4844)
+
+// events
+EVM.on('newContract', ...) // code
+EVM.on('beforeMessage', ...) // Message
+EVM.on('afterMessage', ...) // EVMResult
+EVM.on('step', ...) // InterpreterStep
+```
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+#### Prefixed Hex Strings as Default
+
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
+
+We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
+
+The `hexToBytes` and `bytesToHex` methods, also similar methods like `intToHex`, now take `0x`-prefixed hex strings as input and output prefixed strings. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
+
+Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
+### Other Changes
+
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
+- Replace `rustbn.js` with wasm-compiled `rustbn-wasm` module, PR [#2834](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2834)
+- Move KZG precompile address from `0x14` to `0x0a`, PR [#2811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2811)
+- Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
+- Breaking: following properties have been renamed and the underscore removed: `_allowUnlimitedContractSize`, `allowUnlimitedInitCodeSize`, `_transientStorage`, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
+- Fix the gasCost logs in op code trace (`step` event) to better match Geth output and reflect dynamic gas changes, PR [#2686](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2686)
+- EVM runCode/runCall type cleanup, PR [#2861](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2861)
+- Better error handling for contract creation errors, PR [#2723](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2723)
+
 ## 1.3.2 - 2023-04-20
 
 ### Features

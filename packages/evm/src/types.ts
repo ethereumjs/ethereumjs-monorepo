@@ -5,7 +5,9 @@ import type { InterpreterStep } from './interpreter.js'
 import type { Message } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler } from './opcodes/index.js'
-import type { Address } from '@ethereumjs/util'
+import type { PrecompileFunc } from './precompiles/types.js'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
   opcode: number
@@ -132,6 +134,26 @@ export type EVMEvents = {
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
   afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
   step: (data: InterpreterStep, resolve?: (result?: any) => void) => void
+}
+
+export interface EVMInterface {
+  journal: {
+    commit(): Promise<void>
+    revert(): Promise<void>
+    checkpoint(): Promise<void>
+    cleanJournal(): void
+    cleanup(): Promise<void>
+    putAccount(address: Address, account: Account): Promise<void>
+    deleteAccount(address: Address): Promise<void>
+    accessList?: Map<string, Set<string>>
+    addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
+    addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
+    startReportingAccessList(): void
+  }
+  stateManager: EVMStateManagerInterface
+  precompiles: Map<string, PrecompileFunc>
+  runCall(opts: EVMRunCallOpts): Promise<EVMResult>
+  events?: AsyncEventEmitter<EVMEvents>
 }
 
 /**

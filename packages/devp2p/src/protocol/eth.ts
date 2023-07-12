@@ -54,6 +54,7 @@ export class ETH extends Protocol {
   static eth64 = { name: 'eth', version: 64, length: 17, constructor: ETH }
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
+  static eth67 = { name: 'eth', version: 67, length: 17, constructor: ETH }
 
   _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
@@ -97,8 +98,6 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth62.version) break
         return
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
@@ -108,6 +107,11 @@ export class ETH extends Protocol {
       case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
       case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
         if (this._version >= ETH.eth65.version) break
+        return
+
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+        if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
         return
 
       default:
@@ -324,8 +328,6 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth62.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
@@ -335,6 +337,11 @@ export class ETH extends Protocol {
       case ETH.MESSAGE_CODES.GET_POOLED_TRANSACTIONS:
       case ETH.MESSAGE_CODES.POOLED_TRANSACTIONS:
         if (this._version >= ETH.eth65.version) break
+        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+        if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
       default:
