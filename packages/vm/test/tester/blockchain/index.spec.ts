@@ -12,7 +12,6 @@ console.log('-------BLOCKCHAIN_TEST-------')
 console.log(`${new Date().toLocaleTimeString()}`)
 console.log('----------TEST_ARGS------------')
 console.log(printArgs)
-console.log('fork_config', blockchainTest.FORK_CONFIG)
 console.log('verify all: ', process.env.VERIFY_ALLTESTS)
 console.log('-------------------------------')
 const forkSuite = suite(
@@ -33,28 +32,21 @@ forkSuite.on('beforeAll', async (context) => {
     }
     totalDirectories += 1
     for await (const subDir of dir.tasks.filter((d) => 'tasks' in d)) {
-      totalSubDirectories += 1
-      for await (const file of (subDir as any).tasks) {
-        totalFiles += 1
-        for await (const test of file.tasks) {
-          let subs = 0
-          let files = 0
-          if ('tasks' in test) {
-            for await (const task of test.tasks) {
-              if ('tasks' in task) {
-                subs = (subDir as any).tasks.length - 1
-                files = file.tasks.length - 1
-                totalTestCases += task.tasks.length
-              } else {
-                totalTestCases += 1
+      for await (const subSub of (subDir as any).tasks) {
+        totalSubDirectories += 1
+        for await (const file of subSub.tasks) {
+          if (file.name.endsWith('.json') === true) {
+            totalFiles += 1
+            totalTestCases += file.tasks.length
+          } else {
+            totalSubDirectories += 1
+            for await (const _file of file.tasks) {
+              if (_file.name.endsWith('.json') === true) {
+                totalFiles += 1
+                totalTestCases += _file.tasks.length
               }
             }
-          } else {
-            subs += file.tasks.length - 1
-            totalTestCases += 1
           }
-          totalSubDirectories += subs
-          totalFiles += files
         }
       }
     }
@@ -95,10 +87,12 @@ forkSuite.on('afterAll', async (context) => {
                 totalTestCases += task.tasks.length
                 totalPassing += task.tasks.filter((t: any) => t.result.state === 'pass').length
                 skipped += task.tasks.filter((t: any) => t.result.state === 'skip').length
-              } else {
+              } else if ('result' in task) {
                 totalPassing += task.result.state === 'pass' ? 1 : 0
                 skipped += task.result.state === 'skip' ? 1 : 0
                 totalTestCases += 1
+              } else {
+                console.log(Object.keys(task))
               }
             }
           } else {
@@ -133,7 +127,6 @@ forkSuite.on('afterAll', async (context) => {
   console.log(`${' '.repeat(testArgs.fork!.length)} > totalTestRun: (${totalTestCases - skipped})`)
   console.log(`${' '.repeat(testArgs.fork!.length)} > totalPassing: (${totalPassing})`)
   console.log('-------------------------------')
-  clearInterval(undefined)
 })
 
 forkSuite

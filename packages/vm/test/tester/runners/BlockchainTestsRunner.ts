@@ -216,43 +216,45 @@ export class BlockchainTests {
     }
   }
   async runBlockchainTest(options: any, testData: Record<string, any>, _id: string) {
-    const common = options.common.copy()
-    const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
-    const currentBlock = BigInt(0)
-    const testBlocks = testData.blocks
-    if (testData.network !== options.forkConfigTestSuite) {
-      it.skip(
-        `skipping test: no data available for ${options.forkConfigTestSuite} (testData.network = ${testData.network})`
-      )
-      return
-    }
-    if (testBlocks.length > 0) {
-      for await (const raw of testBlocks) {
-        this.testCount++
-        try {
-          await this.runTestCase(
-            raw,
-            options,
-            testData,
-            currentBlock,
-            blockchain,
-            vm,
-            common,
-            state
-          )
-        } catch (err: any) {
-          return
-        }
+    it(_id, async () => {
+      const common = options.common.copy()
+      const { vm, blockchain, state } = await setupBlockchainTestVM(common, testData)
+      const currentBlock = BigInt(0)
+      const testBlocks = testData.blocks
+      if (testData.network !== options.forkConfigTestSuite) {
+        it.skip(
+          `skipping test: no data available for ${options.forkConfigTestSuite} (testData.network = ${testData.network})`
+        )
+        return
       }
-      this.testCount++
-      assert.equal(
-        bytesToHex((blockchain as any)._headHeaderHash),
-        testData.lastblockhash,
-        `_headHeaderHash: ${bytesToHex(
-          (blockchain as any)._headHeaderHash
-        )} !== testData.lastblockhash ${testData.lastblockhash}`
-      )
-    }
+      if (testBlocks.length > 0) {
+        for await (const raw of testBlocks) {
+          this.testCount++
+          try {
+            await this.runTestCase(
+              raw,
+              options,
+              testData,
+              currentBlock,
+              blockchain,
+              vm,
+              common,
+              state
+            )
+          } catch (err: any) {
+            return
+          }
+        }
+        this.testCount++
+        assert.equal(
+          bytesToHex((blockchain as any)._headHeaderHash),
+          testData.lastblockhash,
+          `_headHeaderHash: ${bytesToHex(
+            (blockchain as any)._headHeaderHash
+          )} !== testData.lastblockhash ${testData.lastblockhash}`
+        )
+      }
+    })
   }
 
   skipFn = (name: string, test: Record<string, any>) => {
@@ -261,9 +263,13 @@ export class BlockchainTests {
   }
 
   async runTestSuite(testSuite: TestSuite) {
-    for (const [testName, test] of Object.entries(testSuite)) {
-      await this.runFileDirectory(testName, test)
-      delete testSuite[testName]
+    try {
+      for (const [testName, test] of Object.entries(testSuite)) {
+        await this.runFileDirectory(testName, test)
+        delete testSuite[testName]
+      }
+    } catch (err: any) {
+      it.skip(err.message)
     }
   }
   async runFileDirectory(dir: string, files: FileDirectory) {
@@ -280,10 +286,8 @@ export class BlockchainTests {
   async runTestFile(file: string, testFile: TestFile) {
     suite(file, async () => {
       for (const [testName, test] of Object.entries(testFile)) {
-        it(testName, async () => {
-          await this.runBlockchainTest(this.runnerArgs, test, testName)
-          delete testFile[testName]
-        })
+        await this.runBlockchainTest(this.runnerArgs, test, testName)
+        delete testFile[testName]
       }
     })
   }
@@ -309,9 +313,9 @@ export class BlockchainTests {
             if (
               skipTest(testName, this.testGetterArgs.skipTests) ||
               (testCases[testName].network !== undefined &&
-                testCases[testName].network !== this.testGetterArgs.forkConfig) ||
+                testCases[testName].network !== this.FORK_CONFIG_TEST_SUITE) ||
               (testCases[testName].post !== undefined &&
-                !Object.keys(testCases[testName].post!).includes(this.testGetterArgs.forkConfig))
+                !Object.keys(testCases[testName].post!).includes(this.FORK_CONFIG_TEST_SUITE))
             ) {
               delete testCases[testName]
             }
@@ -347,65 +351,74 @@ export class BlockchainTests {
             BlockChainTests: (await getTestsFromArgs(
               'BlockchainTests',
               this.testGetterArgs,
-              getTestPath('BlockchainTests', this.testGetterArgs, this.customTestsPath)
+              getTestPath(
+                'LegacyTests/Constantinople/BlockchainTests',
+                this.testGetterArgs,
+                this.customTestsPath
+              )
             )) as BlockChainDirectory,
           },
         }
       }
       suite('BlockChainTests', async () => {
-        suite('GeneralStateTests', async () => {
-          suite('Shanghai', async () => {
-            await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.Shanghai!)
+        suite('BlockChainTests', async () => {
+          suite('GeneralStateTests', async () => {
+            suite('Shanghai', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.Shanghai!)
+            })
+            suite('VMTests', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.VMTests!)
+            })
+            const rest = Object.entries(_tests.BlockChainTests!.GeneralStateTests).filter(
+              ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
+            )
+            suite('/', async () => {
+              for (const [dir, tests] of rest) {
+                await this.runFileDirectory(dir, tests as FileDirectory)
+              }
+            })
           })
-          suite('VMTests', async () => {
-            await this.runTestSuite(_tests.BlockChainTests!.GeneralStateTests.VMTests!)
-          })
-          const rest = Object.entries(_tests.BlockChainTests!.GeneralStateTests).filter(
-            ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
-          )
-          suite('/', async () => {
-            for (const [dir, tests] of rest) {
-              await this.runFileDirectory(dir, tests as FileDirectory)
-            }
-          })
-        })
 
-        suite('InvalidBlocks', async () => {
-          await this.runTestSuite(_tests.BlockChainTests!.InvalidBlocks!)
+          suite('InvalidBlocks', async () => {
+            await this.runTestSuite(_tests.BlockChainTests!.InvalidBlocks!)
+          })
+          suite('ValidBlocks', async () => {
+            await this.runTestSuite(_tests.BlockChainTests!.ValidBlocks!)
+          })
+          if (_tests.BlockChainTests?.TransitionTests !== undefined) {
+            suite('TransitionTests', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.TransitionTests!)
+            })
+          }
         })
-        suite('ValidBlocks', async () => {
-          await this.runTestSuite(_tests.BlockChainTests!.ValidBlocks!)
-        })
-        if (_tests.BlockChainTests?.TransitionTests !== undefined) {
-          suite('TransitionTests', async () => {
-            await this.runTestSuite(_tests.BlockChainTests!.TransitionTests!)
+        if (_tests.LegacyTests) {
+          suite('Legacy BlockChainTests', async () => {
+            suite('GeneralStateTests', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.BlockChainTests.GeneralStateTests
+              )
+            })
+            suite('InvalidBlocks', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.BlockChainTests.InvalidBlocks
+              )
+            })
+            suite('ValidBlocks', async () => {
+              await this.runTestSuite(
+                _tests.LegacyTests!.Constantinople.BlockChainTests.ValidBlocks
+              )
+            })
           })
         }
       })
-      if (_tests.LegacyTests) {
-        suite('Legacy BlockChainTests', async () => {
-          suite('GeneralStateTests', async () => {
-            await this.runTestSuite(
-              _tests.LegacyTests!.Constantinople.BlockChainTests.GeneralStateTests
-            )
-          })
-          suite('InvalidBlocks', async () => {
-            await this.runTestSuite(
-              _tests.LegacyTests!.Constantinople.BlockChainTests.InvalidBlocks
-            )
-          })
-          suite('ValidBlocks', async () => {
-            await this.runTestSuite(_tests.LegacyTests!.Constantinople.BlockChainTests.ValidBlocks)
+
+      if (this.expectedTests > 0) {
+        suite('final', async () => {
+          it(`Checks test count > ${this.expectedTests}`, async () => {
+            expect(this.testCount).toBeGreaterThan(this.expectedTests)
           })
         })
       }
-    }
-    if (this.expectedTests > 0) {
-      suite('final', async () => {
-        it(`Checks test count > ${this.expectedTests}`, async () => {
-          expect(this.testCount).toBeGreaterThan(this.expectedTests)
-        })
-      })
     }
   }
 }

@@ -79,43 +79,41 @@ async function getGeneralStateTests(
   args: TestGetterArgs
 ): Promise<StateDirectory> {
   const { forkConfig, skipTests, test } = args
+  const subDirectories = fs.readdirSync(directory + '', {
+    encoding: 'utf8',
+  })
   const GeneralStateTests: StateDirectory = Object.fromEntries(
-    fs
-      .readdirSync(directory + '', {
-        encoding: 'utf8',
-      })
+    subDirectories
       .filter((d: string) => d !== 'VMTests' && d !== 'Shanghai')
       .map((testName) => {
-        return [
-          testName,
-          Object.fromEntries(
-            fs
-              .readdirSync(directory + '/' + testName, {
+        const subSubDirectories = fs.readdirSync(directory + '/' + testName, {
+          encoding: 'utf8',
+        })
+        const testDirectories = Object.fromEntries(
+          subSubDirectories
+            .filter((file: FileName) => !file.endsWith('.stub'))
+
+            .map((file: FileName) => {
+              const testFile = fs.readFileSync(directory + '/' + testName + '/' + file, {
                 encoding: 'utf8',
               })
-              .filter((file: FileName) => !file.endsWith('.stub'))
-
-              .map((file: FileName) => {
-                const testFile = fs.readFileSync(directory + '/' + testName + '/' + file, {
-                  encoding: 'utf8',
-                })
-                const testCases: TestFile = JSON.parse(testFile)
-                for (const testName of Object.keys(testCases)) {
-                  if (
-                    skipTest(testName, skipTests) ||
-                    (testCases[testName].network !== undefined &&
-                      testCases[testName].network !== forkConfig) ||
-                    (testCases[testName].post !== undefined &&
-                      !Object.keys(testCases[testName].post!).includes(forkConfig))
-                  ) {
-                    delete testCases[testName]
-                  }
+              const testCases: TestFile = JSON.parse(testFile)
+              for (const testName of Object.keys(testCases)) {
+                if (
+                  skipTest(testName, skipTests) ||
+                  (testCases[testName].network !== undefined &&
+                    testCases[testName].network !== forkConfig) ||
+                  (testCases[testName].post !== undefined &&
+                    !Object.keys(testCases[testName].post!).includes(forkConfig))
+                ) {
+                  delete testCases[testName]
                 }
-                return [file, testCases] as [FileName, TestFile]
-              })
-              .filter(([, v]) => Object.keys(v).length > 0)
-          ),
-        ]
+              }
+              return [file, testCases] as [FileName, TestFile]
+            })
+            .filter(([, v]) => Object.keys(v).length > 0)
+        )
+        return [testName, testDirectories]
       })
       .filter(([, v]) => Object.keys(v).length > 0)
   )
@@ -249,7 +247,7 @@ async function getBlockchainTests(
                   const forkFilter = new RegExp(`${args.forkConfig}$`)
 
                   if (
-                    (test.network !== undefined && forkFilter.test(test.network)) ||
+                    (test.network !== undefined && !forkFilter.test(test.network)) ||
                     skipTests.includes(testName)
                   ) {
                     delete testCases[testName]
@@ -283,7 +281,10 @@ async function getBlockchainTests(
                 const testCases: TestFile = JSON.parse(testFile)
                 for (const testName of Object.keys(testCases)) {
                   const forkFilter = new RegExp(`${args.forkConfig}$`)
-                  if (forkFilter.test(forkConfig) === false) {
+                  if (
+                    testCases[testName].network !== undefined &&
+                    forkFilter.test(testCases[testName].network!) === false
+                  ) {
                     delete testCases[testName]
                   }
                 }
