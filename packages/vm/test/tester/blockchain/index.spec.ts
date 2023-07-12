@@ -38,7 +38,7 @@ forkSuite.on('beforeAll', async (context) => {
           if (file.name.endsWith('.json') === true) {
             totalFiles += 1
             totalTestCases += file.tasks.length
-          } else {
+          } else if ('tasks' in file) {
             totalSubDirectories += 1
             for await (const _file of file.tasks) {
               if (_file.name.endsWith('.json') === true) {
@@ -46,6 +46,8 @@ forkSuite.on('beforeAll', async (context) => {
                 totalTestCases += _file.tasks.length
               }
             }
+          } else {
+            totalTestCases++
           }
         }
       }
@@ -91,11 +93,9 @@ forkSuite.on('afterAll', async (context) => {
                 totalPassing += task.result.state === 'pass' ? 1 : 0
                 skipped += task.result.state === 'skip' ? 1 : 0
                 totalTestCases += 1
-              } else {
-                console.log(Object.keys(task))
               }
             }
-          } else {
+          } else if ('result' in test) {
             totalTestCases += 1
             totalPassing += test.result.state === 'pass' ? 1 : 0
           }
