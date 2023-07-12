@@ -79,6 +79,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "npx typedoc --options typedoc.js",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- util",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -90,7 +91,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^4.0.1",
-    "ethereum-cryptography": "^2.0.0"
+    "ethereum-cryptography": "^2.1.1"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
@@ -105,6 +106,6 @@
     }
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

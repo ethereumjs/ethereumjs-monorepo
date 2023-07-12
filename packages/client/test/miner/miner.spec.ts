@@ -2,7 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Address, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
+import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import * as td from 'testdouble'
@@ -20,13 +20,13 @@ import type { CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
 
 const A = {
-  address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+  address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: new Address(hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: hexStringToBytes('2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
+  address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
@@ -36,8 +36,8 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 describe('[Miner]', async () => {
-  const originalValidate = BlockHeader.prototype._consensusFormatValidation
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
+  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
@@ -77,23 +77,80 @@ describe('[Miner]', async () => {
       },
       validateHeader: () => {},
       // eslint-disable-next-line no-invalid-this
-      copy: () => this.blockchain,
+      shallowCopy: () => this.blockchain,
       _init: async () => undefined,
     }
   }
 
-  const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
-  common.setMaxListeners(50)
   const accounts: [Address, Uint8Array][] = [[A.address, A.privateKey]]
-  const config = new Config({
+
+  const consensusConfig = {
+    clique: {
+      period: 10,
+      epoch: 30000,
+    },
+  }
+  const defaultChainData = {
+    config: {
+      chainId: 123456,
+      homesteadBlock: 0,
+      eip150Block: 0,
+      eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      eip155Block: 0,
+      eip158Block: 0,
+      byzantiumBlock: 0,
+      constantinopleBlock: 0,
+      petersburgBlock: 0,
+      istanbulBlock: 0,
+      berlinBlock: 0,
+      londonBlock: 0,
+      ...consensusConfig,
+    },
+    nonce: '0x0',
+    timestamp: '0x614b3731',
+    gasLimit: '0x47b760',
+    difficulty: '0x1',
+    mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    coinbase: '0x0000000000000000000000000000000000000000',
+    number: '0x0',
+    gasUsed: '0x0',
+    parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    baseFeePerGas: 7,
+  }
+  const addr = A.address.toString().slice(2)
+
+  const extraData = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+  const chainData = {
+    ...defaultChainData,
+    extraData,
+    alloc: { [addr]: { balance: '0x10000000000000000000' } },
+  }
+  const customCommon = Common.fromGethGenesis(chainData, {
+    chain: 'devnet',
+    hardfork: Hardfork.Berlin,
+  })
+  customCommon.events.setMaxListeners(50)
+  const customConfig = new Config({
     transports: [],
     accountCache: 10000,
     storageCache: 1000,
     accounts,
     mine: true,
-    common,
+    common: customCommon,
   })
-  config.events.setMaxListeners(50)
+  customConfig.events.setMaxListeners(50)
+
+  const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+  goerliCommon.events.setMaxListeners(50)
+  const goerliConfig = new Config({
+    transports: [],
+    accountCache: 10000,
+    storageCache: 1000,
+    accounts,
+    mine: true,
+    common: customCommon,
+  })
+  customConfig.events.setMaxListeners(50)
 
   const createTx = (
     from = A,
@@ -101,7 +158,8 @@ describe('[Miner]', async () => {
     nonce = 0,
     value = 1,
     gasPrice = 1000000000,
-    gasLimit = 100000
+    gasLimit = 100000,
+    common = customCommon
   ) => {
     const txData = {
       nonce,
@@ -116,7 +174,17 @@ describe('[Miner]', async () => {
   }
 
   const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
-  const txA011 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
+  const txA011 = createTx(
+    // A -> B, nonce: 0, value: 1, normal gasPrice, mainnet as chain
+    A,
+    B,
+    0,
+    1,
+    1000000000,
+    100000,
+    goerliCommon
+  ) // A -> B, nonce: 0, value: 1, normal gasPrice
+
   const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
   const txA03 = createTx(A, B, 2, 1, 3000000000) // A -> B, nonce: 2, value: 1, 3x gasPrice
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
@@ -124,20 +192,20 @@ describe('[Miner]', async () => {
   it('should initialize correctly', () => {
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config: customConfig, service })
     assert.notOk(miner.running)
   })
 
   it('should start/stop', async () => {
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    let miner = new Miner({ config, service })
+    let miner = new Miner({ config: customConfig, service })
     assert.notOk(miner.running)
     miner.start()
     assert.ok(miner.running)
@@ -155,10 +223,10 @@ describe('[Miner]', async () => {
   it('assembleBlocks() -> with a single tx', async () => {
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -185,12 +253,12 @@ describe('[Miner]', async () => {
   it('assembleBlocks() -> with a hardfork mismatching tx', async () => {
     const chain = new FakeChain() as any
     const service = new FullEthereumService({
-      config,
+      config: goerliConfig,
       chain,
     })
 
     // no skipHardForkValidation
-    const miner = new Miner({ config, service })
+    const miner = new Miner({ config: goerliConfig, service })
     const { txPool } = service
     const { vm } = service.execution
 
@@ -224,13 +292,13 @@ describe('[Miner]', async () => {
   it('assembleBlocks() -> with multiple txs, properly ordered by gasPrice and nonce', async () => {
     const chain = new FakeChain() as any
     const _config = {
-      ...config,
+      ...customConfig,
     }
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -269,7 +337,7 @@ describe('[Miner]', async () => {
       storageCache: 1000,
       accounts,
       mine: true,
-      common,
+      common: customCommon,
       saveReceipts: true,
     })
     const service = new FullEthereumService({
@@ -324,7 +392,7 @@ describe('[Miner]', async () => {
   it('assembleBlocks() -> should not include tx under the baseFee', async () => {
     const customChainParams = { hardforks: [{ name: 'london', block: 0 }] }
     const common = Common.custom(customChainParams, {
-      baseChain: CommonChain.Rinkeby,
+      baseChain: CommonChain.Goerli,
       hardfork: Hardfork.London,
     })
     const config = new Config({
@@ -384,7 +452,7 @@ describe('[Miner]', async () => {
   it("assembleBlocks() -> should stop assembling a block after it's full", async () => {
     const chain = new FakeChain() as any
     const gasLimit = 100000
-    const block = Block.fromBlockData({ header: { gasLimit } }, { common })
+    const block = Block.fromBlockData({ header: { gasLimit } }, { common: customCommon })
     Object.defineProperty(chain, 'headers', {
       get() {
         return { latest: block.header, height: BigInt(0) }
@@ -396,10 +464,10 @@ describe('[Miner]', async () => {
       },
     })
     const service = new FullEthereumService({
-      config,
+      config: customConfig,
       chain,
     })
-    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
     txPool.start()
@@ -411,11 +479,11 @@ describe('[Miner]', async () => {
     const data = '0xfe' // INVALID opcode, consumes all gas
     const tx1FillsBlockGasLimit = LegacyTransaction.fromTxData(
       { gasLimit: gasLimit - 1, data, gasPrice: BigInt('1000000000') },
-      { common }
+      { common: customCommon }
     ).sign(A.privateKey)
     const tx2ExceedsBlockGasLimit = LegacyTransaction.fromTxData(
       { gasLimit: 21000, to: B.address, nonce: 1, gasPrice: BigInt('1000000000') },
-      { common }
+      { common: customCommon }
     ).sign(A.privateKey)
     await txPool.add(tx1FillsBlockGasLimit)
     await txPool.add(tx2ExceedsBlockGasLimit)
@@ -442,7 +510,7 @@ describe('[Miner]', async () => {
         storageCache: 1000,
         accounts,
         mine: true,
-        common,
+        common: customCommon,
       })
       const service = new FullEthereumService({
         config,
@@ -498,7 +566,7 @@ describe('[Miner]', async () => {
           { name: 'london', block: 3 },
         ],
       }
-      const common = Common.custom(customChainParams, { baseChain: CommonChain.Rinkeby })
+      const common = Common.custom(customChainParams, { baseChain: CommonChain.Goerli })
       common.setHardforkBy({ blockNumber: 0 })
       const config = new Config({
         transports: [],
@@ -576,7 +644,46 @@ describe('[Miner]', async () => {
   it(
     'should handle mining ethash PoW',
     async () => {
-      const common = new Common({ chain: CommonChain.Ropsten, hardfork: Hardfork.Istanbul })
+      const addr = A.address.toString().slice(2)
+      const consensusConfig = { ethash: true }
+      const defaultChainData = {
+        config: {
+          chainId: 123456,
+          homesteadBlock: 0,
+          eip150Block: 0,
+          eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          eip155Block: 0,
+          eip158Block: 0,
+          byzantiumBlock: 0,
+          constantinopleBlock: 0,
+          petersburgBlock: 0,
+          istanbulBlock: 0,
+          berlinBlock: 0,
+          londonBlock: 0,
+          ...consensusConfig,
+        },
+        nonce: '0x0',
+        timestamp: '0x614b3731',
+        gasLimit: '0x47b760',
+        difficulty: '0x1',
+        mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        coinbase: '0x0000000000000000000000000000000000000000',
+        number: '0x0',
+        gasUsed: '0x0',
+        parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        baseFeePerGas: 7,
+      }
+      const extraData = '0x' + '0'.repeat(32)
+      const chainData = {
+        ...defaultChainData,
+        extraData,
+        alloc: { [addr]: { balance: '0x10000000000000000000' } },
+      }
+      const common = Common.fromGethGenesis(chainData, {
+        chain: 'devnet',
+        hardfork: Hardfork.London,
+      })
+      ;(common as any)._chainParams['genesis'].difficulty = 1
       ;(common as any)._chainParams['genesis'].difficulty = 1
       const config = new Config({
         transports: [],
@@ -613,7 +720,7 @@ describe('[Miner]', async () => {
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
   })
 })

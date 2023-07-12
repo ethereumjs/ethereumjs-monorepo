@@ -41,7 +41,7 @@ describe('[Chain]', () => {
     assert.equal(chain.blocks.height.toString(10), '0', 'get chain.blocks.height')
     assert.equal(
       bytesToHex(chain.genesis.hash()),
-      'd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
       'get chain.genesis'
     )
     assert.ok(

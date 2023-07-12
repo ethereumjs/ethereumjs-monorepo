@@ -7,7 +7,7 @@ import { baseRequest, baseSetup, createClient, createManager, params, startRPC }
 
 const method = 'net_version'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 function compareResult(result: any, chainId: any) {
   let msg = 'result should be a string'
@@ -21,7 +21,7 @@ function compareResult(result: any, chainId: any) {
 describe(method, () => {
   it('call on ropsten', async () => {
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
+      createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
     const server = startRPC(manager.getMethods())
 
@@ -46,9 +46,9 @@ describe(method, () => {
 
   it('call on rinkeby', async () => {
     // Stub out block consensusFormatValidation checks
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Rinkeby }) })
+      createClient({ opened: true, commonChain: new Common({ chain: Chain.Sepolia }) })
     )
     const server = startRPC(manager.getMethods())
 
@@ -76,7 +76,7 @@ describe(method, () => {
   })
 
   it('reset TD', () => {
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
   })
 })

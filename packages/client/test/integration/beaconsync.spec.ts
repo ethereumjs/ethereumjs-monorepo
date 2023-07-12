@@ -8,14 +8,14 @@ import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 describe('[Integration:BeaconSync]', () => {
   const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
 
   it('should sync blocks', async () => {
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     td.replace<any>('@ethereumjs/block', { BlockHeader })
 
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
@@ -90,9 +90,9 @@ describe('[Integration:BeaconSync]', () => {
     })
     await localService.synchronizer!.start()
   })
-})
+}, 30000)
 
 it('reset TD', () => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
+  BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
   td.reset()
 })

@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToPrefixedHexString, hexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { blockFromRpc } from '../src/from-rpc.js'
@@ -32,7 +31,7 @@ describe('[fromRPC]: block #2924874', () => {
 
   it('should create a block header with the correct hash', () => {
     const block = blockHeaderFromRpc(blockData, { common })
-    const hash = hexStringToBytes(blockData.hash)
+    const hash = hexToBytes(blockData.hash)
     assert.ok(equalsBytes(block.hash(), hash))
   })
 })
@@ -90,25 +89,25 @@ describe('[fromRPC]:', () => {
       `0x${block.header.baseFeePerGas?.toString(16)}`,
       testDataFromRpcGoerliLondon.baseFeePerGas
     )
-    assert.equal(bytesToPrefixedHexString(block.hash()), testDataFromRpcGoerliLondon.hash)
+    assert.equal(bytesToHex(block.hash()), testDataFromRpcGoerliLondon.hash)
   })
 
   it('should create a block with uncles', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const block = blockFromRpc(blockDataWithUncles, [uncleBlockData], { common })
-    assert.ok(block.validateUnclesHash())
+    assert.ok(block.uncleHashIsValid())
   })
 
   it('should create a block with EIP-4896 withdrawals', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     const block = blockFromRpc(blockDataWithWithdrawals, [], { common })
-    assert.ok(block.validateWithdrawalsTrie())
+    assert.ok(block.withdrawalsTrieIsValid())
   })
 
   it('should create a block header with the correct hash when EIP-4896 withdrawals are present', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
     const block = blockHeaderFromRpc(blockDataWithWithdrawals, { common })
-    const hash = blockDataWithWithdrawals.hash.slice(2)
+    const hash = blockDataWithWithdrawals.hash
     assert.equal(bytesToHex(block.hash()), hash)
   })
 })
@@ -117,20 +116,20 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
   it('should create pre merge block from Alchemy API response to eth_getBlockByHash', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = blockFromRpc(alchemy14151203, [], { common })
-    assert.equal(bytesToPrefixedHexString(block.hash()), alchemy14151203.hash)
+    assert.equal(bytesToHex(block.hash()), alchemy14151203.hash)
   })
 
   it('should create pre and post merge blocks from Infura API responses to eth_getBlockByHash and eth_getBlockByNumber', () => {
     const common = new Common({ chain: Chain.Mainnet })
     let block = blockFromRpc(infura2000004woTxs, [], { common, setHardfork: true })
     assert.equal(
-      bytesToPrefixedHexString(block.hash()),
+      bytesToHex(block.hash()),
       infura2000004woTxs.hash,
       'created premerge block w/o txns'
     )
     block = blockFromRpc(infura2000004wTxs, [], { common, setHardfork: true })
     assert.equal(
-      bytesToPrefixedHexString(block.hash()),
+      bytesToHex(block.hash()),
       infura2000004wTxs.hash,
       'created premerge block with txns'
     )
@@ -139,7 +138,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       setHardfork: 58750000000000000000000n,
     })
     assert.equal(
-      bytesToPrefixedHexString(block.hash()),
+      bytesToHex(block.hash()),
       infura15571241woTxs.hash,
       'created post merge block without txns'
     )
@@ -149,7 +148,7 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       setHardfork: 58750000000000000000000n,
     })
     assert.equal(
-      bytesToPrefixedHexString(block.hash()),
+      bytesToHex(block.hash()),
       infura15571241wTxs.hash,
       'created post merge block with txns'
     )
@@ -188,12 +187,12 @@ describe('[fromJsonRpcProvider]', () => {
     const blockHash = '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24'
     const block = await Block.fromJsonRpcProvider(provider, blockHash, { common })
     assert.equal(
-      bytesToPrefixedHexString(block.hash()),
+      bytesToHex(block.hash()),
       blockHash,
       'assembled a block from blockdata from a provider'
     )
     try {
-      await Block.fromJsonRpcProvider(provider, bytesToPrefixedHexString(randomBytes(32)), {})
+      await Block.fromJsonRpcProvider(provider, bytesToHex(randomBytes(32)), {})
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(

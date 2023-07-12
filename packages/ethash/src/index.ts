@@ -9,11 +9,11 @@ import {
   bytesToHex,
   concatBytes,
   equalsBytes,
+  hexToBytes,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import {
   bytesReverse,
@@ -95,12 +95,12 @@ export class Miner {
         const data = <BlockData>this.block.toJSON()
         data.header!.mixHash = solution.mixHash
         data.header!.nonce = solution.nonce
-        return Block.fromBlockData(data, { common: this.block._common })
+        return Block.fromBlockData(data, { common: this.block.common })
       } else {
         const data = <HeaderData>this.blockHeader.toJSON()
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
-        return BlockHeader.fromHeaderData(data, { common: this.blockHeader._common })
+        return BlockHeader.fromHeaderData(data, { common: this.blockHeader.common })
       }
     }
   }

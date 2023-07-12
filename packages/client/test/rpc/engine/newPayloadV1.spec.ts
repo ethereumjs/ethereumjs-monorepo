@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Address, bytesToPrefixedHexString, hexStringToBytes, zeros } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -16,7 +16,7 @@ const method = 'engine_newPayloadV1'
 
 const [blockData] = blocks
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 /**
  *
@@ -137,7 +137,7 @@ describe(method, () => {
       },
     }
 
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     td.replace<any>('@ethereumjs/block', { BlockHeader })
 
     const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
@@ -147,7 +147,7 @@ describe(method, () => {
     const req = params(method, [blockData, null])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'INVALID')
-      assert.equal(res.body.result.latestValidHash, bytesToPrefixedHexString(zeros(32)))
+      assert.equal(res.body.result.latestValidHash, bytesToHex(zeros(32)))
     }
     await baseRequest(server, req, 200, expectRes)
   })
@@ -200,7 +200,7 @@ describe(method, () => {
       { common }
     )
 
-    const transactions = [bytesToPrefixedHexString(tx.serialize())]
+    const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
       transactions,
@@ -218,8 +218,8 @@ describe(method, () => {
   })
 
   it('call with valid data & valid transaction', async () => {
-    const accountPk = hexStringToBytes(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+    const accountPk = hexToBytes(
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     const accountAddress = Address.fromPrivateKey(accountPk)
     const newGenesisJSON = {
@@ -242,7 +242,7 @@ describe(method, () => {
       },
       { common }
     ).sign(accountPk)
-    const transactions = [bytesToPrefixedHexString(tx.serialize())]
+    const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
       transactions,
@@ -304,7 +304,7 @@ describe(method, () => {
   })
 
   it('reset TD', () => {
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
   })
 })

@@ -1,8 +1,8 @@
-import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
 import {
   arrayContainsArray,
+  bytesToUtf8,
   getBinarySize,
   getKeys,
   isHexPrefixed,
@@ -10,6 +10,7 @@ import {
   padToEven,
   stripHexPrefix,
   toAscii,
+  utf8ToBytes,
 } from '../src/index.js'
 
 const buf = utf8ToBytes('hello')

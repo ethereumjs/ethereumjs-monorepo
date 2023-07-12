@@ -47,6 +47,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.js",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- devp2p",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -60,7 +61,7 @@
     "@ethereumjs/util": "^8.0.6",
     "@scure/base": "1.1.1",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.0.0",
+    "ethereum-cryptography": "^2.1.1",
     "lru-cache": "^7.18.3",
     "multiaddr": "^10.0.1",
     "scanf": "^1.1.2",
@@ -76,6 +77,6 @@
     "testdouble": "^3.8.2"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

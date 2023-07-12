@@ -5,8 +5,9 @@ import { AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '@ethe
 import {
   Account,
   bytesToHex,
+  bytesToUnprefixedHex,
   concatBytes,
-  hexStringToBytes,
+  hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -34,7 +35,7 @@ const setup = () => {
           getAccount: () => new Account(BigInt(0), BigInt('50000000000000000000')),
           setStateRoot: async (_root: Uint8Array) => {},
         },
-        copy: () => service.execution.vm,
+        shallowCopy: () => service.execution.vm,
       },
     },
   }
@@ -98,17 +99,13 @@ describe('[TxPool]', async () => {
   DefaultStateManager.prototype.setStateRoot = (): any => {}
 
   const A = {
-    address: hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f'),
-    privateKey: hexStringToBytes(
-      '64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'
-    ),
+    address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
+    privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
   }
 
   const B = {
-    address: hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df'),
-    privateKey: hexStringToBytes(
-      '2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'
-    ),
+    address: hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df'),
+    privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
   }
 
   const createTx = (from = A, to = B, nonce = 0, value = 1, feeBump = 0) => {
@@ -168,6 +165,7 @@ describe('[TxPool]', async () => {
     pool.start()
     const peer: any = {
       id: '1',
+      versions: [66],
       eth: {
         getPooledTransactions: () => {
           return [null, [txA01]]
@@ -184,6 +182,7 @@ describe('[TxPool]', async () => {
     const peer2: any = {
       id: '2',
       eth: {
+        versions: [66],
         send: () => {
           sentToPeer2++
           assert.equal(sentToPeer2, 1, 'should send once to non-announcing peer')
@@ -211,7 +210,7 @@ describe('[TxPool]', async () => {
     assert.equal((pool as any).knownByPeer.get(peer.id).length, 1, 'one tx added for peer 1')
     assert.equal(
       (pool as any).knownByPeer.get(peer.id)[0].hash,
-      bytesToHex(txA01.hash()),
+      bytesToUnprefixedHex(txA01.hash()),
       'new known tx hashes entry for announcing peer'
     )
 
@@ -249,6 +248,7 @@ describe('[TxPool]', async () => {
     pool.start()
     const peer = {
       eth: {
+        versions: [66],
         getPooledTransactions: (res: any) => {
           assert.equal(
             res['hashes'].length,
@@ -264,7 +264,7 @@ describe('[TxPool]', async () => {
     const hashes = []
     for (let i = 1; i <= TX_RETRIEVAL_LIMIT + 1; i++) {
       // One more than TX_RETRIEVAL_LIMIT
-      hashes.push(hexStringToBytes(i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
+      hashes.push(hexToBytes('0x' + i.toString().padStart(64, '0'))) // '0000000000000000000000000000000000000000000000000000000000000001',...
     }
 
     await pool.handleAnnouncedTxHashes(hashes, peer as any, peerPool)
@@ -279,6 +279,7 @@ describe('[TxPool]', async () => {
     pool.start()
     const peer: any = {
       eth: {
+        versions: [66],
         getPooledTransactions: () => {
           return [null, [txA01, txB01]]
         },
@@ -299,6 +300,7 @@ describe('[TxPool]', async () => {
     pool.start()
     const peer: any = {
       eth: {
+        versions: [66],
         getPooledTransactions: () => {
           return [null, [txA01, txA02]]
         },
@@ -324,6 +326,7 @@ describe('[TxPool]', async () => {
     const txs = [txA01]
     const peer: any = {
       eth: {
+        versions: [66, 67],
         getPooledTransactions: () => {
           return [null, txs]
         },
@@ -334,6 +337,7 @@ describe('[TxPool]', async () => {
     const peer2: any = {
       id: '2',
       eth: {
+        versions: [66, 67],
         request: (methodName: string) => {
           sentToPeer2++
           // throw the error on methodName so as to be handy
@@ -366,7 +370,7 @@ describe('[TxPool]', async () => {
       'NewPooledTransactionHashes',
       'should have errored sendObject for NewPooledTransactionHashes broadcast'
     )
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -411,8 +415,8 @@ describe('[TxPool]', async () => {
     const txs = []
     for (let account = 0; account < 51; account++) {
       const pkey = concatBytes(
-        hexStringToBytes('aa'.repeat(31)),
-        hexStringToBytes(account.toString(16).padStart(2, '0'))
+        hexToBytes('0x' + 'aa'.repeat(31)),
+        hexToBytes('0x' + account.toString(16).padStart(2, '0'))
       )
       const from = {
         address: privateToAddress(pkey),
@@ -779,7 +783,7 @@ describe('[TxPool]', async () => {
     knownByPeerObj1.added = Date.now() - pool.POOLED_STORAGE_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).knownByPeer.set(peer.id, [knownByPeerObj1, knownByPeerObj2])
 
-    const hash = bytesToHex(txB01.hash())
+    const hash = bytesToUnprefixedHex(txB01.hash())
     const handledObj = (pool as any).handled.get(hash)
     handledObj.added = Date.now() - pool.HANDLED_CLEANUP_TIME_LIMIT * 1000 * 60 - 1
     ;(pool as any).handled.set(hash, handledObj)

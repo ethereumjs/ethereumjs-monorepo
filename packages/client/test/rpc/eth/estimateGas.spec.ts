@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -31,7 +32,7 @@ describe(method, () => {
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
-    await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
+    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
     // genesis address with balance
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -89,7 +90,7 @@ describe(method, () => {
       return address
     }
     const { totalGasSpent } = await (
-      await vm.copy()
+      await vm.shallowCopy()
     ).runTx({
       tx: estimateTx,
       skipNonce: true,
@@ -112,7 +113,7 @@ describe(method, () => {
 
     // Setup chain to run an EIP1559 tx
     const service = client.services[0] as FullEthereumService
-    service.execution.vm._common.setHardfork('london')
+    service.execution.vm.common.setHardfork('london')
     service.chain.config.chainCommon.setHardfork('london')
     const headBlock = await service.chain.getCanonicalHeadBlock()
     const londonBlock = Block.fromBlockData(

@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, bytesToPrefixedHexString, zeros } from '@ethereumjs/util'
+import { bytesToHex, zeros } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -11,13 +11,13 @@ import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
-import { batchBlocks } from './newPayloadV1.spec'
+import { batchBlocks } from './newPayloadV1.spec.js'
 
 const crypto = require('crypto')
 
 const method = 'engine_forkchoiceUpdatedV1'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 const validForkChoiceState = {
   headBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a',
@@ -154,7 +154,7 @@ describe(method, () => {
       },
     }
 
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
       engine: true,
     })
@@ -196,7 +196,7 @@ describe(method, () => {
 
     await chain.putBlocks([newBlock])
     const req = params(method, [
-      { ...validForkChoiceState, headBlockHash: bytesToPrefixedHexString(newBlock.hash()) },
+      { ...validForkChoiceState, headBlockHash: bytesToHex(newBlock.hash()) },
       null,
     ])
     const expectRes = (res: any) => {
@@ -416,6 +416,6 @@ describe(method, () => {
   })
   it('reset TD', () => {
     td.reset()
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
   })
 })

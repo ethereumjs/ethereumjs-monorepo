@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code'
@@ -70,7 +70,7 @@ describe(method, () => {
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
-    const req = params(method, [bytesToPrefixedHexString(tx.hash()), {}])
+    const req = params(method, [bytesToHex(tx.hash()), {}])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.structLogs[0].op, 'PUSH1', 'produced a correct trace')
     }
@@ -101,7 +101,7 @@ describe(method, () => {
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
-    const req = params(method, [bytesToPrefixedHexString(tx.hash()), {}])
+    const req = params(method, [bytesToHex(tx.hash()), {}])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.failed, true, 'returns error result with reverting code')
     }
@@ -132,7 +132,7 @@ describe(method, () => {
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
-    const req = params(method, [bytesToPrefixedHexString(tx.hash()), { enableMemory: true }])
+    const req = params(method, [bytesToHex(tx.hash()), { enableMemory: true }])
     const expectRes = (res: any) => {
       assert.equal(
         res.body.result.structLogs[5].memory[0],
@@ -167,7 +167,7 @@ describe(method, () => {
     block.transactions[0] = tx
     await runBlockWithTxs(chain, execution, [tx], true)
 
-    const req = params(method, [bytesToPrefixedHexString(tx.hash()), { disableStack: true }])
+    const req = params(method, [bytesToHex(tx.hash()), { disableStack: true }])
     const expectRes = (res: any) => {
       assert.ok(res.body.result.structLogs[1].stack === undefined, 'returns no stack with trace')
     }

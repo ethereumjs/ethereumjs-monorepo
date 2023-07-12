@@ -3,11 +3,18 @@ import { Chain, Common } from '@ethereumjs/common'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
+import {
+  baseRequest,
+  baseSetup,
+  createClient,
+  createManager,
+  params,
+  startRPC,
+} from '../helpers.js'
 
 const method = 'eth_chainId'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 describe(method, () => {
   it('calls', async () => {
@@ -34,7 +41,7 @@ describe(method, () => {
 
   it('returns 3 for Ropsten', async () => {
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
+      createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
     const server = startRPC(manager.getMethods())
 
@@ -47,7 +54,7 @@ describe(method, () => {
   })
 
   it('reset TD', () => {
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
   })
 })

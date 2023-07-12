@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [18]
     steps:
       - uses: actions/checkout@v3
 
@@ -37,12 +37,6 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
-
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: client
-        if: ${{ matrix.node-version == 16 }}
 
       - uses: nick-fields/retry@v2
         with:
@@ -98,4 +92,4 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npx vitest run ./test/sim/mainnet.spec.ts
+          command: cd ${{github.workspace}}/packages/client && npm run tape -- 'test/integration/cli.spec.ts'

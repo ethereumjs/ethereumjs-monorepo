@@ -99,7 +99,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (maxLen < mLen) {
     maxLen = mLen
   }
-  const Gquaddivisor = opts._common.param('gasPrices', 'modexpGquaddivisor')
+  const Gquaddivisor = opts.common.param('gasPrices', 'modexpGquaddivisor')
   let gasUsed
 
   const bStart = BigInt(96)
@@ -109,7 +109,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mStart = eEnd
   const mEnd = mStart + mLen
 
-  if (!opts._common.isActivatedEIP(2565)) {
+  if (!opts.common.isActivatedEIP(2565)) {
     gasUsed = (adjustedELen * multComplexity(maxLen)) / Gquaddivisor
   } else {
     gasUsed = (adjustedELen * multComplexityEIP2565(maxLen)) / Gquaddivisor

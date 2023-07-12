@@ -1,5 +1,5 @@
-import { bytesToHex, hexStringToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import * as tape from 'tape'
 
 import { Libp2pSender } from '../../../src/net/protocol'
 
@@ -14,7 +14,7 @@ describe('[Libp2pSender]', () => {
       assert.equal(bytesToHex(status.id), '05', 'status received')
       assert.equal(bytesToHex(receiver.status.id), '05', 'status getter')
     })
-    sender.sendStatus({ id: hexStringToBytes('05') })
+    sender.sendStatus({ id: hexToBytes('0x05') })
   })
 
   it('should send/receive message', () => {
@@ -25,7 +25,7 @@ describe('[Libp2pSender]', () => {
       assert.equal(message.code, 1, 'message received (code)')
       assert.equal(bytesToHex(message.payload), '05', 'message received (payload)')
     })
-    sender.sendMessage(1, hexStringToBytes('05'))
+    sender.sendMessage(1, hexToBytes('0x05'))
   })
 
   it('should catch errors', () => {

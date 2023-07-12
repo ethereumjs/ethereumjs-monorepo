@@ -1,4 +1,4 @@
-import { concatBytesNoTypeCheck } from '@ethereumjs/util'
+import { concatBytes } from '@ethereumjs/util'
 
 const ceil = (value: number, ceiling: number): number => {
   const r = value % ceiling
@@ -34,7 +34,7 @@ export class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = concatBytesNoTypeCheck(
+      this._store = concatBytes(
         this._store,
         new Uint8Array(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE)
       )

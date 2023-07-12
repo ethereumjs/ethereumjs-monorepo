@@ -2,8 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytesNoTypeCheck } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, concatBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -20,7 +19,7 @@ describe('BlockBuilder', () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -123,20 +122,67 @@ describe('BlockBuilder', () => {
 
   it('should correctly seal a PoA block', async () => {
     const signer = {
-      address: new Address(hexToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-      privateKey: hexToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+      address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
       publicKey: hexToBytes(
-        '40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
+        '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195'
       ),
     }
 
-    const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+    // const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
+    const consensusConfig = {
+      clique: {
+        period: 10,
+        epoch: 30000,
+      },
+    }
+    const defaultChainData = {
+      config: {
+        chainId: 123456,
+        homesteadBlock: 0,
+        eip150Block: 0,
+        eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        eip155Block: 0,
+        eip158Block: 0,
+        byzantiumBlock: 0,
+        constantinopleBlock: 0,
+        petersburgBlock: 0,
+        istanbulBlock: 0,
+        berlinBlock: 0,
+        londonBlock: 0,
+        ...consensusConfig,
+      },
+      nonce: '0x0',
+      timestamp: '0x614b3731',
+      gasLimit: '0x47b760',
+      difficulty: '0x1',
+      mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      coinbase: '0x0000000000000000000000000000000000000000',
+      number: '0x0',
+      gasUsed: '0x0',
+      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      baseFeePerGas: 7,
+    }
+
+    const A = {
+      address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+    }
+    const addr = A.address.toString().slice(2)
+
+    const extraData2 = '0x' + '0'.repeat(64) + addr + '0'.repeat(130)
+    const chainData = {
+      ...defaultChainData,
+      extraData: extraData2,
+      alloc: { [addr]: { balance: '0x10000000000000000000' } },
+    }
+    const common = Common.fromGethGenesis(chainData, {
+      chain: 'devnet',
+      hardfork: Hardfork.Istanbul,
+    })
+
     // extraData: [vanity, activeSigner, seal]
-    const extraData = concatBytesNoTypeCheck(
-      new Uint8Array(32),
-      signer.address.toBytes(),
-      new Uint8Array(65)
-    )
+    const extraData = concatBytes(new Uint8Array(32), signer.address.toBytes(), new Uint8Array(65))
     const cliqueSigner = signer.privateKey
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, extraData } },
@@ -238,7 +284,7 @@ describe('BlockBuilder', () => {
     const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -267,7 +313,7 @@ describe('BlockBuilder', () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
     await setBalance(vm, address)
 
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

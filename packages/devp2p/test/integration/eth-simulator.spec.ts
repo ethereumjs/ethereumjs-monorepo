@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { intToBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
+import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import * as devp2p from '../../src/index.js'
@@ -8,8 +7,12 @@ import { ETH } from '../../src/index.js'
 
 import * as util from './util.js'
 
+import type { Capabilities } from '../../src/index.js'
+
 const GENESIS_TD = 17179869184
-const GENESIS_HASH = hexToBytes('d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')
+const GENESIS_HASH = hexToBytes(
+  '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'
+)
 
 const capabilities = [devp2p.ETH.eth63, devp2p.ETH.eth62]
 
@@ -40,14 +43,14 @@ describe('ETH simulator tests', () => {
       opts.status0 = Object.assign({}, status)
       opts.status1 = Object.assign({}, status)
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
-        const msg = 'NetworkId mismatch: 01 / 03'
+        const msg = 'NetworkId mismatch: 0x01 / 0xaa36a7'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)
       }
 
       const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const c2 = new Common({ chain: Chain.Ropsten, hardfork: Hardfork.London })
+      const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
       util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 27126)
     })
   })
@@ -61,7 +64,7 @@ describe('ETH simulator tests', () => {
       opts.status1 = status1
       opts.onPeerError0 = function (err: Error, rlpxs: any) {
         const msg =
-          'Genesis block mismatch: d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0000000000000000000000000000000000000000000000000000000000000000'
+          'Genesis block mismatch: 0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 / 0x0000000000000000000000000000000000000000000000000000000000000000'
         assert.equal(err.message, msg, `should emit error: ${msg}`)
         util.destroyRLPXs(rlpxs)
         resolve(undefined)
@@ -70,7 +73,7 @@ describe('ETH simulator tests', () => {
     })
   })
 
-  async function sendWithProtocolVersion(t: typeof it, version: number, cap?: Object) {
+  async function sendWithProtocolVersion(t: typeof it, version: number, cap?: Capabilities[]) {
     await new Promise((resolve) => {
       const opts: any = {}
       opts.status0 = Object.assign({}, status)
@@ -94,7 +97,7 @@ describe('ETH simulator tests', () => {
   async function sendNotAllowed(
     t: typeof it,
     version: number,
-    cap: Object,
+    cap: Capabilities[],
     expectedCode: ETH.MESSAGE_CODES
   ) {
     await new Promise((resolve) => {
@@ -136,6 +139,11 @@ describe('ETH simulator tests', () => {
         resolve(undefined)
       })
     })
+  })
+
+  it('ETH: send not-allowed eth67', async () => {
+    await sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.GET_NODE_DATA)
+    await sendNotAllowed(it, 67, [devp2p.ETH.eth67], ETH.MESSAGE_CODES.NODE_DATA)
   })
 
   it('ETH: should work with allowed eth64', async () => {

@@ -57,7 +57,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide correct access to chain parameters', () => {
-    let c = new Common({ chain: 'mainnet', hardfork: 'chainstart' })
+    let c = new Common({ chain: 'mainnet', hardfork: 'tangerineWhistle' })
     assert.equal(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
     assert.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
     assert.equal(
@@ -72,8 +72,8 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     )
     assert.deepEqual(c.consensusConfig(), {}, 'should return empty dictionary for consensus config')
 
-    c = new Common({ chain: 'rinkeby', hardfork: 'chainstart' })
-    assert.equal(c.hardforks()[3]['block'], 3, 'should return correct hardfork data')
+    c = new Common({ chain: 'goerli', hardfork: 'spuriousDragon' })
+    assert.equal(c.hardforks()[3]['block'], 0, 'should return correct hardfork data')
     assert.equal(typeof c.bootstrapNodes()[0].port, 'number', 'should return a port as number')
     assert.equal(
       c.consensusType(),
@@ -93,7 +93,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide the bootnode information in a uniform way', () => {
-    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    const configs = ['mainnet', 'goerli']
     for (const network of configs) {
       const c = new Common({ chain: network })
       const bootnode = c.bootstrapNodes()[0]
@@ -114,7 +114,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
   })
 
   it('Should provide DNS network information in a uniform way', () => {
-    const configs = ['mainnet', 'ropsten', 'rinkeby', 'goerli']
+    const configs = ['mainnet', 'goerli']
     for (const network of configs) {
       const c = new Common({ chain: network })
       const dnsNetworks = c.dnsNetworks()
@@ -138,16 +138,16 @@ describe('[Common]: copy() listener tests', () => {
   it('Should work', () => {
     const common = new Common({ chain: 'mainnet' })
     // Add two listeners
-    common.on('hardforkChanged', () => {})
-    common.on('hardforkChanged', () => {})
+    common.events.on('hardforkChanged', () => {})
+    common.events.on('hardforkChanged', () => {})
     const commonCopy = common.copy()
     assert.equal(
-      common.listenerCount('hardforkChanged'),
+      common.events.listenerCount('hardforkChanged'),
       2,
       'original common instance should have two listeners'
     )
     assert.equal(
-      commonCopy.listenerCount('hardforkChanged'),
+      commonCopy.events.listenerCount('hardforkChanged'),
       0,
       'copied common instance should have zero listeners'
     )

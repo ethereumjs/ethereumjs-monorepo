@@ -18,7 +18,7 @@ describe('VM Copy Test', () => {
       'account exists before copy'
     )
 
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
     assert.isUndefined(
       await vmCopy.stateManager.getAccount(address),
       'non-committed checkpoints will not be copied'
@@ -27,7 +27,7 @@ describe('VM Copy Test', () => {
     await vm.stateManager.checkpoint()
     await vm.stateManager.commit()
 
-    const vmCopy2 = await vm.copy()
+    const vmCopy2 = await vm.shallowCopy()
 
     assert.ok(
       (await vmCopy2.stateManager.getAccount(address)) !== undefined,

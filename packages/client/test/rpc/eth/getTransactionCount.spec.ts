@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -35,7 +36,7 @@ describe(method, () => {
 
       // since synchronizer.run() is not executed in the mock setup,
       // manually run stateManager.generateCanonicalGenesis()
-      await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
       // a genesis address
       const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

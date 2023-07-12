@@ -5,14 +5,15 @@ import {
   TWO_POW256,
   bigIntToBytes,
   bytesToBigInt,
-  concatBytesNoTypeCheck,
+  bytesToHex,
+  concatBytes,
   ecrecover,
+  hexToBytes,
   publicToAddress,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 import { ERROR } from '../exceptions.js'
 
@@ -33,7 +34,7 @@ import {
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = hexToBytes('03')
+const EIP3074MAGIC = hexToBytes('0x03')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -374,7 +375,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt('0x' + bytesToHex(keccak256(data)))
+      const r = BigInt(bytesToHex(keccak256(data)))
       runState.stack.push(r)
     },
   ],
@@ -523,7 +524,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      runState.stack.push(BigInt('0x' + bytesToHex(account.codeHash)))
+      runState.stack.push(BigInt(bytesToHex(account.codeHash)))
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -796,24 +797,32 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.programCounter = Number(dest)
     },
   ],
-  // 0x5e: JUMPSUB
+  // 0x5e: JUMPSUB (2315) / MCOPY (5656)
   [
     0x5e,
-    function (runState) {
-      const dest = runState.stack.pop()
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        // JUMPSUB
+        const dest = runState.stack.pop()
 
-      if (dest > runState.interpreter.getCodeSize()) {
-        trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        if (dest > runState.interpreter.getCodeSize()) {
+          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        }
+
+        const destNum = Number(dest)
+
+        if (!jumpSubIsValid(runState, destNum)) {
+          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
+        }
+
+        runState.returnStack.push(BigInt(runState.programCounter))
+        runState.programCounter = destNum + 1
+      } else if (common.isActivatedEIP(5656)) {
+        // MCOPY
+        const [dst, src, length] = runState.stack.popN(3)
+        const data = runState.memory.read(Number(src), Number(length), true)
+        runState.memory.write(Number(dst), Number(length), data)
       }
-
-      const destNum = Number(dest)
-
-      if (!jumpSubIsValid(runState, destNum)) {
-        trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
-      }
-
-      runState.returnStack.push(BigInt(runState.programCounter))
-      runState.programCounter = destNum + 1
     },
   ],
   // 0x5f: PUSH0
@@ -921,7 +930,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (
         common.isActivatedEIP(3860) &&
         length > Number(common.param('vm', 'maxInitCodeSize')) &&
-        !runState.interpreter._evm._allowUnlimitedInitCodeSize
+        !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(ERROR.INITCODE_SIZE_VIOLATION)
       }
@@ -951,7 +960,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (
         common.isActivatedEIP(3860) &&
         length > Number(common.param('vm', 'maxInitCodeSize')) &&
-        !runState.interpreter._evm._allowUnlimitedInitCodeSize
+        !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
         trap(ERROR.INITCODE_SIZE_VIOLATION)
       }
@@ -1067,7 +1076,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const message = concatBytesNoTypeCheck(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
+      const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
       const msgHash = keccak256(message)
 
       let recover

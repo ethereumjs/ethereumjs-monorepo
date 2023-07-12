@@ -2,12 +2,12 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, bytesToPrefixedHexString, hexStringToBytes } from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import preShanghaiGenesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import preShanghaiGenesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -36,9 +36,9 @@ describe(method, () => {
   it('call with valid parameters', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
     DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.copy = function () {
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -46,9 +46,7 @@ describe(method, () => {
       hardfork: Hardfork.Cancun,
     })
     common.setHardfork(Hardfork.Cancun)
-    const pkey = hexStringToBytes(
-      '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
-    )
+    const pkey = hexToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
@@ -103,7 +101,7 @@ describe(method, () => {
     const expectRes = (res: any) => {
       assert.equal(
         res.body.result[0].transactions[0],
-        bytesToPrefixedHexString(tx.serialize()),
+        bytesToHex(tx.serialize()),
         'got expected transaction from first payload'
       )
       assert.equal(
@@ -125,15 +123,15 @@ describe(method, () => {
     await baseRequest(server, req2, 200, expectRes2)
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('call with valid parameters on pre-Shanghai hardfork', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
     DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.copy = function () {
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(preShanghaiGenesisJSON, 'london', {
@@ -141,9 +139,7 @@ describe(method, () => {
       hardfork: Hardfork.London,
     })
     common.setHardfork(Hardfork.London)
-    const pkey = hexStringToBytes(
-      '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
-    )
+    const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
@@ -202,10 +198,10 @@ describe(method, () => {
         'withdrawals field is null for pre-shanghai blocks'
       )
     }
-    service.execution.vm._common.setHardfork(Hardfork.London)
+    service.execution.vm.common.setHardfork(Hardfork.London)
     await baseRequest(server, req, 200, expectRes)
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })

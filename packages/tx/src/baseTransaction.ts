@@ -7,7 +7,6 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   ecsign,
   publicToAddress,
   toBytes,
@@ -46,7 +45,7 @@ interface TransactionCache {
 export abstract class BaseTransaction<T extends TransactionType>
   implements TransactionInterface<T>
 {
-  private readonly _type: TransactionType
+  protected readonly _type: TransactionType
 
   public readonly nonce: bigint
   public readonly gasLimit: bigint
@@ -143,7 +142,7 @@ export abstract class BaseTransaction<T extends TransactionType>
    * tx type is unknown (e.g. when instantiated with
    * the tx factory).
    *
-   * See `Capabilites` in the `types` module for a reference
+   * See `Capabilities` in the `types` module for a reference
    * on all supported capabilities.
    */
   supports(capability: Capability) {
@@ -151,24 +150,31 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * Checks if the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {string[]} an array of error strings
    */
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean = false): boolean | string[] {
+  getValidationErrors(): string[] {
     const errors = []
-
-    if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
-    }
 
     if (this.isSigned() && !this.verifySignature()) {
       errors.push('Invalid Signature')
     }
 
-    return stringError ? errors : errors.length === 0
+    if (this.getBaseFee() > this.gasLimit) {
+      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
+    }
+
+    return errors
+  }
+
+  /**
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {boolean} true if the transaction is valid, false otherwise
+   */
+  isValid(): boolean {
+    const errors = this.getValidationErrors()
+
+    return errors.length === 0
   }
 
   protected _validateYParity() {
@@ -257,12 +263,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    */
   abstract serialize(): Uint8Array
 
-  // Returns the unsigned tx (hashed or raw), which is used to sign the transaction.
-  //
-  // Note: do not use code docs here since VS Studio is then not able to detect the
-  // comments from the inherited methods
-  abstract getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
-  abstract getMessageToSign(hashMessage?: true): Uint8Array
+  // Returns the raw unsigned tx, which is used to sign the transaction.
+  abstract getMessageToSign(): Uint8Array | Uint8Array[]
+
+  // Returns the hashed unsigned tx, which is used to sign the transaction.
+  abstract getHashedMessageToSign(): Uint8Array
 
   abstract hash(): Uint8Array
 
@@ -331,7 +336,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       hackApplied = true
     }
 
-    const msgHash = this.getMessageToSign(true)
+    const msgHash = this.getHashedMessageToSign()
     const { v, r, s } = ecsign(msgHash, privateKey)
     const tx = this._processSignature(v, r, s)
 
@@ -356,7 +361,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
       value: bigIntToHex(this.value),
-      data: bytesToPrefixedHexString(this.data),
+      data: bytesToHex(this.data),
       v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,

@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -28,7 +29,7 @@ describe(method, () => {
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
       const { vm } = execution
-      await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
       const gasLimit = 2000000
       const parent = await blockchain.getCanonicalHeadHeader()
       const block = Block.fromBlockData(
@@ -47,7 +48,7 @@ describe(method, () => {
       await vm.runBlock({ block, generate: true, skipBlockValidation: true })
       await vm.blockchain.putBlock(ranBlock!)
       const service = client.services[0] as FullEthereumService
-      service.execution.vm._common.setHardfork('london')
+      service.execution.vm.common.setHardfork('london')
       service.chain.config.chainCommon.setHardfork('london')
       const headBlock = await service.chain.getCanonicalHeadBlock()
       const londonBlock = Block.fromBlockData(

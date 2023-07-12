@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
+import { concatBytes } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
-import { concatBytes } from 'ethereum-cryptography/utils'
 
 import { SyncMode } from '../config'
 import { VMExecution } from '../execution'
@@ -297,7 +297,19 @@ export class FullEthereumService extends EthereumService {
         break
       }
       case 'NewPooledTransactionHashes': {
-        await this.txPool.handleAnnouncedTxHashes(message.data, peer, this.pool)
+        let hashes = []
+        if (peer.eth!['versions'].includes(68)) {
+          // eth/68 message data format - [tx_types: number[], tx_sizes: number[], tx_hashes: uint8array[]]
+          // With eth/68, we can check transaction types and transaction sizes to
+          // decide whether or not to download the transactions announced by this message.  This
+          // can be used to prevent mempool spamming or decide whether or not to filter out certain
+          // transactions - though this is not prescribed in eth/68 (EIP 5793)
+          // https://eips.ethereum.org/EIPS/eip-5793
+          hashes = message.data[2] as Uint8Array[]
+        } else {
+          hashes = message.data
+        }
+        await this.txPool.handleAnnouncedTxHashes(hashes, peer, this.pool)
         break
       }
       case 'GetPooledTransactions': {

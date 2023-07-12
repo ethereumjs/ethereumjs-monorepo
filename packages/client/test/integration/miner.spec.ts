@@ -6,7 +6,7 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address, hexStringToBytes } from '@ethereumjs/util'
+import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
@@ -44,8 +44,8 @@ describe('[Integration:Miner]', async () => {
   )
   const accounts: [Address, Uint8Array][] = [
     [
-      new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-      hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+      new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     ],
   ]
   async function minerSetup(): Promise<[MockServer, FullEthereumService]> {

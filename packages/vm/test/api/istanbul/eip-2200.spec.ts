@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, setLengthLeft, toBytes } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Address, hexToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
@@ -15,6 +14,7 @@ const testCases = [
     gas: undefined,
     err: undefined,
   }, // 0 -> 0 -> 0
+  // TODO check why this is commented out
   /*{ original:BigInt(0), code: '60006000556001600055', used: 20812, refund: 0 }, // 0 -> 0 -> 1
   { original:BigInt(0), code: '60016000556000600055', used: 20812, refund: 19200 }, // 0 -> 1 -> 0
   { original:BigInt(0), code: '60016000556002600055', used: 20812, refund: 0 }, // 0 -> 1 -> 2
@@ -44,8 +44,8 @@ const testCases = [
 
 describe('Istanbul: EIP-2200', () => {
   it('net-metering SSTORE', async () => {
-    const caller = new Address(hexToBytes('0000000000000000000000000000000000000000'))
-    const addr = new Address(hexToBytes('00000000000000000000000000000000000000ff'))
+    const caller = new Address(hexToBytes('0x0000000000000000000000000000000000000000'))
+    const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const key = setLengthLeft(toBytes('0x' + BigInt(0).toString(16)), 32)
 
     for (const testCase of testCases) {
@@ -54,7 +54,7 @@ describe('Istanbul: EIP-2200', () => {
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code))
+      await vm.stateManager.putContractCode(addr, hexToBytes('0x' + testCase.code))
       if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(
           addr,

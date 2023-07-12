@@ -1,20 +1,18 @@
-import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToInt, intToBytes, randomBytes, bytesToHex, hexToBytes  } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
 import ms from 'ms'
 
 import * as devp2p from '../dist/cjs/index.js'
 import { LES, Peer } from '../dist/cjs/index.js'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
 
 const PRIVATE_KEY = randomBytes(32)
 
 const GENESIS_TD = 1
-const GENESIS_HASH = hexToBytes('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177')
+const GENESIS_HASH = hexToBytes('0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177')
 
-const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
@@ -83,7 +81,7 @@ rlpx.on('peer:added', (peer) => {
     genesisHash: GENESIS_HASH,
     announceType: intToBytes(0),
     recentTxLookup: intToBytes(1),
-    forkID: [hexToBytes('3b8e0691'), intToBytes(1)],
+    forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
   })
 
   les.once('status', (status: LES.Status) => {
@@ -211,15 +209,11 @@ function onNewBlock(block: Block, peer: Peer) {
   )
 }
 
-function isValidTx(tx: TypedTransaction) {
-  return tx.validate()
-}
-
 async function isValidBlock(block: Block) {
   return (
-    block.validateUnclesHash() &&
-    block.transactions.every(isValidTx) &&
-    block.validateTransactionsTrie()
+    block.uncleHashIsValid() &&
+    block.transactions.every(({ isValid }) => isValid()) &&
+    block.transactionsTrieIsValid()
   )
 }
 

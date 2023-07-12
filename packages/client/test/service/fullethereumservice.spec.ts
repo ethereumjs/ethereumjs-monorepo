@@ -1,7 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
-import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -276,7 +275,7 @@ describe('[FullEthereumService]', async () => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
-      assert.deepEqual(msg[0], hexStringToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
+      assert.deepEqual(msg[0], hexToBytes('0xabcd'), 'handled NewPooledTransactionhashes')
     }
 
     await service.handle(
@@ -285,7 +284,11 @@ describe('[FullEthereumService]', async () => {
         data: [hexToBytes('0xabcd')],
       },
       'eth',
-      undefined as any
+      {
+        eth: {
+          versions: [66],
+        },
+      } as any
     )
   })
 
@@ -308,6 +311,55 @@ describe('[FullEthereumService]', async () => {
           },
         } as any,
       } as any
+    )
+  })
+
+  it('should handle decoding NewPooledTransactionHashes with eth/68 message format', async () => {
+    const txHash = randomBytes(32)
+
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
+    const service = new FullEthereumService({ config, chain })
+    ;(service.txPool as any).validate = () => {}
+    ;(service.txPool as any).handleAnnouncedTxHashes = (
+      hashes: Uint8Array[],
+      _peer: any,
+      _pool: any
+    ) => {
+      assert.deepEqual(hashes[0], txHash, 'should get correct tx hash from eth68 message')
+    }
+
+    await service.handle(
+      { name: 'NewPooledTransactionHashes', data: [[1], [100], [txHash]] },
+      'eth',
+      {
+        eth: {
+          versions: [67, 68],
+        },
+      } as any
+    )
+  })
+
+  it('should handle structuring NewPooledTransactionHashes with eth/68 message format', async () => {
+    const txHash = randomBytes(32)
+
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
+    const service = new FullEthereumService({ config, chain })
+    ;(service.txPool as any).validate = () => {}
+
+    await service.txPool.sendNewTxHashes(
+      [[1], [100], [txHash]],
+      [
+        {
+          eth: {
+            versions: [67, 68],
+            request: (_: string, data: any): any => {
+              assert.ok(equalsBytes(data[0][2], txHash), 'handled getPooledTransactions')
+            },
+          },
+        } as any,
+      ]
     )
   })
 

@@ -262,6 +262,18 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       },
     ],
     [
+      /* MCOPY */
+      0x5e,
+      async function (runState, gas, common): Promise<bigint> {
+        const [dst, src, length] = runState.stack.peek(3)
+        const wordsCopied = (length + BigInt(31)) / BigInt(32)
+        gas += BigInt(3) * wordsCopied
+        gas += subMemUsage(runState, src, length, common)
+        gas += subMemUsage(runState, dst, length, common)
+        return gas
+      },
+    ],
+    [
       /* LOG */
       0xa0,
       async function (runState, gas, common): Promise<bigint> {

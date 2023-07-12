@@ -6,25 +6,25 @@ import {
   Address,
   blobsToCommitments,
   blobsToProofs,
-  bytesToPrefixedHexString,
+  bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
+  hexToBytes,
   initKZG,
   privateToAddress,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON = require('../../../../client/test/testdata/geth-genesis/eip4844.json')
+import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
 import { VM } from '../../../src/vm'
 import { setBalance } from '../utils'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-const pk = hexToBytes('20'.repeat(32))
-const sender = bytesToPrefixedHexString(privateToAddress(pk))
+const pk = hexToBytes('0x' + '20'.repeat(32))
+const sender = bytesToHex(privateToAddress(pk))
 if (isBrowser() === false) {
   try {
     initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
@@ -47,7 +47,7 @@ describe('EIP4844 tests', () => {
 
     const address = Address.fromString(sender)
     await setBalance(vm, address, 14680063125000000000n)
-    const vmCopy = await vm.copy()
+    const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,

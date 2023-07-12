@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
@@ -28,7 +29,7 @@ describe(method, () => {
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
       const { vm } = execution
-      await vm.stateManager.generateCanonicalGenesis(blockchain.genesisState())
+      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
       // genesis address
       const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')

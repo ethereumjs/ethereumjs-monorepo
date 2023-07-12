@@ -1,7 +1,8 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
-import { Address, KECCAK256_RLP, hexStringToBytes, parseGethGenesisState } from '@ethereumjs/util'
+import { getGenesis } from '@ethereumjs/genesis'
+import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
@@ -21,6 +22,7 @@ import { mockBlockchain } from './mockBlockchain'
 import type { EthereumClient } from '../../src/client'
 import type { FullEthereumService } from '../../src/service'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 
@@ -42,6 +44,7 @@ type createClientArgs = {
   blockchain: Blockchain
   chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
   opened: boolean
+  genesisState: GenesisState
 }
 export function startRPC(
   methods: any,
@@ -69,6 +72,7 @@ export function createManager(client: EthereumClient) {
 
 export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
+  const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
     transports: [],
     common,
@@ -79,8 +83,9 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
-  // @ts-ignore TODO Move to async Chain.create() initialization
-  const chain = clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any })
+  const chain =
+    // @ts-ignore TODO Move to async Chain.create() initialization
+    clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
   chain.opened = true
 
   const defaultClientConfig = {
@@ -242,6 +247,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     blockchain,
     includeVM: true,
     enableMetaDB: true,
+    genesisState,
   })
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
@@ -272,7 +278,7 @@ export async function runBlockWithTxs(
   const { vm } = execution
   // build block with tx
   const parentBlock = await chain.getCanonicalHeadBlock()
-  const vmCopy = await vm.copy()
+  const vmCopy = await vm.shallowCopy()
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {
@@ -311,6 +317,6 @@ export function gethGenesisStartLondon(gethGenesis: any) {
  * This address has preallocated balance in file `testdata/geth-genesis/pow.json`
  */
 export const dummy = {
-  addr: new Address(hexStringToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
-  privKey: hexStringToBytes('5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
+  addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
+  privKey: hexToBytes('0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
 }

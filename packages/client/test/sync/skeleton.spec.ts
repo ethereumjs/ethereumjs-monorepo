@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import { equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
@@ -11,7 +11,7 @@ import { getLogger } from '../../src/logging'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/skeleton'
 import { short } from '../../src/util'
 import { wait } from '../integration/util'
-import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 type Subchain = {
   head: bigint
   tail: bigint
@@ -829,17 +829,17 @@ describe('[Skeleton] / setHead', async () => {
     ;(chain.blockchain as any)._validateConsensus = false
     // Only add td validations to the validateBlock
     chain.blockchain.validateBlock = async (block: Block) => {
-      if (!(block.header._common.consensusType() === 'pos') && block.header.difficulty === 0n) {
+      if (!(block.header.common.consensusType() === 'pos') && block.header.difficulty === 0n) {
         throw Error(
           `Invalid header difficulty=${
             block.header.difficulty
-          } for consensus=${block.header._common.consensusType()}`
+          } for consensus=${block.header.common.consensusType()}`
         )
       }
     }
 
-    const originalValidate = BlockHeader.prototype._consensusFormatValidation
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+    const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
+    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     td.replace<any>('@ethereumjs/block', { BlockHeader })
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
@@ -894,7 +894,7 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should now be at head with correct chain'
     )
 
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
   })
 })

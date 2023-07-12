@@ -12,7 +12,7 @@ import { wait } from '../../integration/util'
 import { _accountRangeRLP } from './accountfetcher.spec'
 
 const _byteCodesRLP =
-  'f89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
+  '0xf89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
 
 describe('[ByteCodeFetcher]', async () => {
   class PeerPool {
@@ -31,14 +31,14 @@ describe('[ByteCodeFetcher]', async () => {
       config,
       pool,
       trie: new Trie({ useKeyHashing: false }),
-      hashes: [hexToBytes('2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc')],
+      hashes: [hexToBytes('0x2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc')],
     })
     fetcher.next = () => false
     assert.notOk((fetcher as any).running, 'not started')
     assert.equal((fetcher as any).in.length, 0, 'No jobs have yet been added')
     assert.equal((fetcher as any).hashes.length, 1, 'one codehash have been added')
     fetcher.enqueueByByteCodeRequestList([
-      hexToBytes('2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc'),
+      hexToBytes('0x2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc'),
     ])
     assert.equal((fetcher as any).in.length, 1, 'A new task has been queued')
     const job = (fetcher as any).in.peek()
@@ -122,11 +122,11 @@ describe('[ByteCodeFetcher]', async () => {
 
     const task = {
       hashes: [
-        hexToBytes('28ec5c6e71bc4243030bc6aa069616b4497c150c883c019dee059279f0593cd8'),
-        hexToBytes('418df730969850c4f5c10d09ca929d018ee4c5d71243aa7440560e2265c37aab'),
-        hexToBytes('01b45b4d94f26e3f7a84ea31f7338c0f621d3f3ee38e439611a0954da7e2d728'),
-        hexToBytes('6bd103c66d7d0908a75ae23d5f6de62865be2784408cf07906eaffe515616212'),
-        hexToBytes('0c9d7b40fa7bb308c9b029f7b2840bc1071760c55cdf136b08f0f81ace379399'),
+        hexToBytes('0x28ec5c6e71bc4243030bc6aa069616b4497c150c883c019dee059279f0593cd8'),
+        hexToBytes('0x418df730969850c4f5c10d09ca929d018ee4c5d71243aa7440560e2265c37aab'),
+        hexToBytes('0x01b45b4d94f26e3f7a84ea31f7338c0f621d3f3ee38e439611a0954da7e2d728'),
+        hexToBytes('0x6bd103c66d7d0908a75ae23d5f6de62865be2784408cf07906eaffe515616212'),
+        hexToBytes('0x0c9d7b40fa7bb308c9b029f7b2840bc1071760c55cdf136b08f0f81ace379399'),
       ],
     }
     const resData = RLP.decode(hexToBytes(_byteCodesRLP)) as unknown
@@ -171,7 +171,7 @@ describe('[ByteCodeFetcher]', async () => {
       hashes: [utf8ToBytes('')],
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    assert.equal(fetcher.peer(), 'peer0', 'found peer')
+    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should reset td', () => {

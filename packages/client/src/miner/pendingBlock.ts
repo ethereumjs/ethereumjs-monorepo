@@ -3,7 +3,6 @@ import {
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
-  bytesToPrefixedHexString,
   concatBytes,
   equalsBytes,
   toBytes,
@@ -112,7 +111,7 @@ export class PendingBlock {
         8
       )
     )
-    const payloadId = bytesToPrefixedHexString(payloadIdBytes)
+    const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
     if (this.pendingPayloads.get(payloadId) !== undefined) {
@@ -126,13 +125,13 @@ export class PendingBlock {
       throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
     }
     const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm._common.setHardforkBy({
+    vm.common.setHardforkBy({
       blockNumber: number,
       td,
       timestamp,
     })
 
-    const baseFeePerGas = vm._common.isActivatedEIP(1559)
+    const baseFeePerGas = vm.common.isActivatedEIP(1559)
       ? parentBlock.header.calcNextBaseFee()
       : undefined
 
@@ -161,9 +160,9 @@ export class PendingBlock {
 
     // Get if and how many blobs are allowed in the tx
     let allowedBlobs
-    if (vm._common.isActivatedEIP(4844)) {
-      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+    if (vm.common.isActivatedEIP(4844)) {
+      const dataGasLimit = vm.common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm.common.param('gasConfig', 'dataGasPerBlob')
       allowedBlobs = Number(dataGasLimit / dataGasPerBlob)
     } else {
       allowedBlobs = 0
@@ -183,7 +182,7 @@ export class PendingBlock {
     )
 
     // Construct initial blobs bundle when payload is constructed
-    if (vm._common.isActivatedEIP(4844)) {
+    if (vm.common.isActivatedEIP(4844)) {
       this.constructBlobsBundle(payloadId, blobTxs)
     }
     return payloadIdBytes
@@ -194,7 +193,7 @@ export class PendingBlock {
    */
   stop(payloadIdBytes: Uint8Array | string) {
     const payloadId =
-      typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
+      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) return
     // Revert blockBuilder
@@ -211,7 +210,7 @@ export class PendingBlock {
     payloadIdBytes: Uint8Array | string
   ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
     const payloadId =
-      typeof payloadIdBytes !== 'string' ? bytesToPrefixedHexString(payloadIdBytes) : payloadIdBytes
+      typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
     if (builder === undefined) {
       return
@@ -224,10 +223,10 @@ export class PendingBlock {
 
     // get the number of blobs that can be further added
     let allowedBlobs
-    if (vm._common.isActivatedEIP(4844)) {
+    if (vm.common.isActivatedEIP(4844)) {
       const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const dataGasLimit = vm._common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = vm._common.param('gasConfig', 'dataGasPerBlob')
+      const dataGasLimit = vm.common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = vm.common.param('gasConfig', 'dataGasPerBlob')
       allowedBlobs = Number(dataGasLimit / dataGasPerBlob) - bundle.blobs.length
     } else {
       allowedBlobs = 0
@@ -249,7 +248,7 @@ export class PendingBlock {
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
     const block = await builder.build()
     // Construct blobs bundle
-    const blobs = block._common.isActivatedEIP(4844)
+    const blobs = block.common.isActivatedEIP(4844)
       ? this.constructBlobsBundle(payloadId, blobTxs)
       : undefined
 
@@ -322,15 +321,13 @@ export class PendingBlock {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()))
         this.config.logger.error(
-          `Pending: Removed from txPool a blob tx ${bytesToPrefixedHexString(
-            tx.hash()
-          )} with missing blobs`
+          `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
         // If there is an error adding a tx, it will be skipped
         this.config.logger.debug(
-          `Pending: Skipping tx ${bytesToPrefixedHexString(
+          `Pending: Skipping tx ${bytesToHex(
             tx.hash()
           )}, error encountered when trying to add tx:\n${error}`
         )

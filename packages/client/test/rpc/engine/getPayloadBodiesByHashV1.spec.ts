@@ -2,13 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  bytesToPrefixedHexString,
-  hexStringToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
@@ -24,7 +18,7 @@ describe(method, () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
     const tooManyHashes: string[] = []
     for (let x = 0; x < 35; x++) {
-      tooManyHashes.push(bytesToPrefixedHexString(randomBytes(32)))
+      tooManyHashes.push(bytesToHex(randomBytes(32)))
     }
     const req = params(method, [tooManyHashes])
     const expectRes = checkError(
@@ -37,9 +31,9 @@ describe(method, () => {
   it('call with valid parameters', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
     DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.copy = function () {
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(genesisJSON, 'post-merge', {
@@ -47,9 +41,7 @@ describe(method, () => {
       hardfork: Hardfork.Cancun,
     })
     common.setHardfork(Hardfork.Cancun)
-    const pkey = hexStringToBytes(
-      '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
-    )
+    const pkey = hexToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
@@ -101,16 +93,12 @@ describe(method, () => {
     await chain.putBlocks([block, block2], true)
 
     const req = params(method, [
-      [
-        bytesToPrefixedHexString(block.hash()),
-        bytesToPrefixedHexString(randomBytes(32)),
-        bytesToPrefixedHexString(block2.hash()),
-      ],
+      [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
     ])
     const expectRes = (res: any) => {
       assert.equal(
         res.body.result[0].transactions[0],
-        bytesToPrefixedHexString(tx.serialize()),
+        bytesToHex(tx.serialize()),
         'got expected transaction from first payload'
       )
       assert.equal(res.body.result[1], null, 'got null for block not found in chain')
@@ -123,15 +111,15 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('call with valid parameters on pre-Shanghai block', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
     DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.copy = function () {
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     const { chain, service, server, common } = await setupChain(
@@ -143,9 +131,7 @@ describe(method, () => {
       }
     )
     common.setHardfork(Hardfork.London)
-    const pkey = hexStringToBytes(
-      '9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355'
-    )
+    const pkey = hexToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
@@ -197,11 +183,7 @@ describe(method, () => {
     await chain.putBlocks([block, block2], true)
 
     const req = params(method, [
-      [
-        bytesToPrefixedHexString(block.hash()),
-        bytesToPrefixedHexString(randomBytes(32)),
-        bytesToPrefixedHexString(block2.hash()),
-      ],
+      [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
     ])
     const expectRes = (res: any) => {
       assert.equal(
@@ -213,6 +195,6 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })

@@ -1,4 +1,4 @@
-import { bytesToHex, bytesToPrefixedHexString, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code'
@@ -50,6 +50,13 @@ describe(prefix, () => {
     return result === undefined ? true : false
   }
 
+  const bytes = (byteLength: number, prefix: boolean = true) => {
+    return prefix ? '0x'.padEnd(byteLength * 2 + 2, '0') : ''.padEnd(byteLength * 2, '0')
+  }
+  const badhex = (byteLength: number) => {
+    return '0x'.padEnd(byteLength * 2 + 2, 'G')
+  }
+
   it('address', () => {
     // valid
     // zero address
@@ -90,6 +97,113 @@ describe(prefix, () => {
     assert.notOk(
       validatorResult(validators.address(['0x62223651d6a33d58be70eb9876c3caf7096169ez'], 0))
     )
+    assert.ok(validatorResult(validators.bytes8([bytesToHex(randomBytes(8))], 0)))
+    assert.ok(validatorResult(validators.bytes8([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.bytes8([bytes(1)], 0)))
+    assert.ok(validatorResult(validators.bytes8([bytes(2)], 0)))
+    assert.ok(validatorResult(validators.bytes8([bytes(4)], 0)))
+    // invalid
+    assert.notOk(validatorResult(validators.bytes8([bytes(10)], 0)))
+    assert.notOk(validatorResult(validators.bytes8([bytes(8, false)], 0)))
+    assert.notOk(validatorResult(validators.bytes8([bytesToUnprefixedHex(randomBytes(8))], 0)))
+  })
+
+  it('Uint64', () => {
+    // valid
+    assert.ok(validatorResult(validators.uint64([bytesToHex(randomBytes(8))], 0)))
+    assert.ok(validatorResult(validators.uint64([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.uint64([bytes(1)], 0)))
+    assert.ok(validatorResult(validators.uint64([bytes(2)], 0)))
+    assert.ok(validatorResult(validators.uint64([bytes(4)], 0)))
+
+    // invalid
+    assert.notOk(validatorResult(validators.bytes8([badhex(8)], 0)))
+    assert.notOk(validatorResult(validators.uint64([bytes(10)], 0)))
+    assert.notOk(validatorResult(validators.uint64([bytes(8, false)], 0)))
+    assert.notOk(validatorResult(validators.uint64([bytesToUnprefixedHex(randomBytes(8))], 0)))
+  })
+  it('Bytes16', () => {
+    // valid
+    assert.ok(validatorResult(validators.bytes16([bytesToHex(randomBytes(16))], 0)))
+    assert.ok(validatorResult(validators.bytes16([bytes(16)], 0)))
+    assert.ok(validatorResult(validators.bytes16([bytes(1)], 0)))
+    assert.ok(validatorResult(validators.bytes16([bytes(2)], 0)))
+    assert.ok(validatorResult(validators.bytes16([bytes(4)], 0)))
+    assert.ok(validatorResult(validators.bytes16([bytes(8)], 0)))
+    // invalid
+    assert.notOk(validatorResult(validators.bytes16([badhex(16)], 0)))
+    assert.notOk(validatorResult(validators.bytes16([bytes(20)], 0)))
+    assert.notOk(validatorResult(validators.bytes16([bytes(16, false)], 0)))
+    assert.notOk(validatorResult(validators.bytes16([bytesToUnprefixedHex(randomBytes(16))], 0)))
+  })
+  it('Bytes20', () => {
+    // valid
+    assert.ok(validatorResult(validators.bytes20([bytes(20)], 0)))
+    assert.ok(validatorResult(validators.bytes20([bytesToHex(randomBytes(20))], 0)))
+    assert.ok(validatorResult(validators.bytes20([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.bytes20([bytes(16)], 0)))
+    // invalid
+    assert.notOk(validatorResult(validators.bytes20([badhex(20)], 0)))
+    assert.notOk(validatorResult(validators.bytes20([bytes(20, false)], 0)))
+    assert.notOk(validatorResult(validators.bytes20([bytes(32)], 0)))
+    assert.notOk(validatorResult(validators.bytes20([bytesToUnprefixedHex(randomBytes(20))], 0)))
+  })
+  it('Bytes32', () => {
+    // valid
+    assert.ok(validatorResult(validators.bytes32([bytesToHex(randomBytes(32))], 0)))
+    assert.ok(validatorResult(validators.bytes32([bytes(32)], 0)))
+    assert.ok(validatorResult(validators.bytes32([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.bytes32([bytes(16)], 0)))
+    assert.ok(validatorResult(validators.bytes32([bytes(20)], 0)))
+    // invalid
+    assert.notOk(validatorResult(validators.bytes32([badhex(32)], 0)))
+    assert.notOk(validatorResult(validators.bytes32([bytes(48)], 0)))
+    assert.notOk(validatorResult(validators.bytes32([bytes(32, false)], 0)))
+    assert.notOk(validatorResult(validators.bytes32([bytesToUnprefixedHex(randomBytes(32))], 0)))
+  })
+  it('Uint256', () => {
+    // valid
+    assert.ok(validatorResult(validators.uint256([bytesToHex(randomBytes(32))], 0)))
+    assert.ok(validatorResult(validators.uint256([bytes(32)], 0)))
+    assert.ok(validatorResult(validators.uint256([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.uint256([bytes(16)], 0)))
+    assert.ok(validatorResult(validators.uint256([bytes(20)], 0)))
+    // invalid
+    assert.notOk(validatorResult(validators.uint256([badhex(32)], 0)))
+    assert.notOk(validatorResult(validators.uint256([bytes(48)], 0)))
+    assert.notOk(validatorResult(validators.uint256([bytes(32, false)], 0)))
+    assert.notOk(validatorResult(validators.uint256([bytesToUnprefixedHex(randomBytes(32))], 0)))
+  })
+  it('Bytes48', () => {
+    // valid
+    assert.ok(validatorResult(validators.bytes48([bytesToHex(randomBytes(48))], 0)))
+    assert.ok(validatorResult(validators.bytes48([bytes(48)], 0)))
+    assert.ok(validatorResult(validators.bytes48([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.bytes48([bytes(16)], 0)))
+    assert.ok(validatorResult(validators.bytes48([bytes(20)], 0)))
+    assert.ok(validatorResult(validators.bytes48([bytes(32)], 0)))
+
+    // invalid
+    assert.notOk(validatorResult(validators.bytes48([badhex(48)], 0)))
+    assert.notOk(validatorResult(validators.bytes48([bytes(64)], 0)))
+    assert.notOk(validatorResult(validators.bytes48([bytes(48, false)], 0)))
+    assert.notOk(validatorResult(validators.bytes48([bytesToUnprefixedHex(randomBytes(48))], 0)))
+  })
+  it('Bytes256', () => {
+    // valid
+    assert.ok(validatorResult(validators.bytes256([bytesToHex(randomBytes(256))], 0)))
+    assert.ok(validatorResult(validators.bytes256([bytes(256)], 0)))
+    assert.ok(validatorResult(validators.bytes256([bytes(8)], 0)))
+    assert.ok(validatorResult(validators.bytes256([bytes(16)], 0)))
+    assert.ok(validatorResult(validators.bytes256([bytes(32)], 0)))
+    assert.ok(validatorResult(validators.bytes256([bytes(64)], 0)))
+    assert.ok(validatorResult(validators.bytes256([bytes(128)], 0)))
+
+    // invalid
+    assert.notOk(validatorResult(validators.bytes256([badhex(256)], 0)))
+    assert.notOk(validatorResult(validators.bytes256([bytes(512)], 0)))
+    assert.notOk(validatorResult(validators.bytes256([bytes(256, false)], 0)))
+    assert.notOk(validatorResult(validators.bytes256([bytesToUnprefixedHex(randomBytes(256))], 0)))
   })
 
   it('blockHash', () => {
@@ -221,7 +335,7 @@ describe(prefix, () => {
     }
     it('Bytes8', () => {
       // valid
-      assert.ok(validatorResult(validators.bytes8([bytesToPrefixedHexString(randomBytes(8))], 0)))
+      assert.ok(validatorResult(validators.bytes8([bytesToHex(randomBytes(8))], 0)))
       assert.ok(validatorResult(validators.bytes8([bytes(8)], 0)))
       assert.ok(validatorResult(validators.bytes8([bytes(1)], 0)))
       assert.ok(validatorResult(validators.bytes8([bytes(2)], 0)))
@@ -233,7 +347,7 @@ describe(prefix, () => {
     })
     it('Uint64', () => {
       // valid
-      assert.ok(validatorResult(validators.uint64([bytesToPrefixedHexString(randomBytes(8))], 0)))
+      assert.ok(validatorResult(validators.uint64([bytesToHex(randomBytes(8))], 0)))
       assert.ok(validatorResult(validators.uint64([bytes(8)], 0)))
       assert.ok(validatorResult(validators.uint64([bytes(1)], 0)))
       assert.ok(validatorResult(validators.uint64([bytes(2)], 0)))
@@ -247,7 +361,7 @@ describe(prefix, () => {
     })
     it('Bytes16', () => {
       // valid
-      assert.ok(validatorResult(validators.bytes16([bytesToPrefixedHexString(randomBytes(16))], 0)))
+      assert.ok(validatorResult(validators.bytes16([bytesToHex(randomBytes(16))], 0)))
       assert.ok(validatorResult(validators.bytes16([bytes(16)], 0)))
       assert.ok(validatorResult(validators.bytes16([bytes(1)], 0)))
       assert.ok(validatorResult(validators.bytes16([bytes(2)], 0)))
@@ -262,7 +376,7 @@ describe(prefix, () => {
     it('Bytes20', () => {
       // valid
       assert.ok(validatorResult(validators.bytes20([bytes(20)], 0)))
-      assert.ok(validatorResult(validators.bytes20([bytesToPrefixedHexString(randomBytes(20))], 0)))
+      assert.ok(validatorResult(validators.bytes20([bytesToHex(randomBytes(20))], 0)))
       assert.ok(validatorResult(validators.bytes20([bytes(8)], 0)))
       assert.ok(validatorResult(validators.bytes20([bytes(16)], 0)))
       // invalid
@@ -273,7 +387,7 @@ describe(prefix, () => {
     })
     it('Bytes32', () => {
       // valid
-      assert.ok(validatorResult(validators.bytes32([bytesToPrefixedHexString(randomBytes(32))], 0)))
+      assert.ok(validatorResult(validators.bytes32([bytesToHex(randomBytes(32))], 0)))
       assert.ok(validatorResult(validators.bytes32([bytes(32)], 0)))
       assert.ok(validatorResult(validators.bytes32([bytes(8)], 0)))
       assert.ok(validatorResult(validators.bytes32([bytes(16)], 0)))
@@ -286,7 +400,7 @@ describe(prefix, () => {
     })
     it('Uint256', () => {
       // valid
-      assert.ok(validatorResult(validators.uint256([bytesToPrefixedHexString(randomBytes(32))], 0)))
+      assert.ok(validatorResult(validators.uint256([bytesToHex(randomBytes(32))], 0)))
       assert.ok(validatorResult(validators.uint256([bytes(32)], 0)))
       assert.ok(validatorResult(validators.uint256([bytes(8)], 0)))
       assert.ok(validatorResult(validators.uint256([bytes(16)], 0)))
@@ -299,7 +413,7 @@ describe(prefix, () => {
     })
     it('Bytes48', () => {
       // valid
-      assert.ok(validatorResult(validators.bytes48([bytesToPrefixedHexString(randomBytes(48))], 0)))
+      assert.ok(validatorResult(validators.bytes48([bytesToHex(randomBytes(48))], 0)))
       assert.ok(validatorResult(validators.bytes48([bytes(48)], 0)))
       assert.ok(validatorResult(validators.bytes48([bytes(8)], 0)))
       assert.ok(validatorResult(validators.bytes48([bytes(16)], 0)))
@@ -314,9 +428,7 @@ describe(prefix, () => {
     })
     it('Bytes256', () => {
       // valid
-      assert.ok(
-        validatorResult(validators.bytes256([bytesToPrefixedHexString(randomBytes(256))], 0))
-      )
+      assert.ok(validatorResult(validators.bytes256([bytesToHex(randomBytes(256))], 0)))
       assert.ok(validatorResult(validators.bytes256([bytes(256)], 0)))
       assert.ok(validatorResult(validators.bytes256([bytes(8)], 0)))
       assert.ok(validatorResult(validators.bytes256([bytes(16)], 0)))

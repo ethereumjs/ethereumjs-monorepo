@@ -11,14 +11,14 @@ import {
   Address,
   toBytes,
   setLengthLeft,
-  bytesToPrefixedHexString,
+  bytesToHex,
+  hexToBytes
 } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 //import testData from './helpers/blockchain-mock-data.json'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
 const testData = require('./helpers/blockchain-mock-data.json')
 async function main() {
@@ -51,7 +51,7 @@ async function main() {
   const blockchainHead = await vm.blockchain.getIteratorHead!()
 
   console.log('--- Finished processing the Blockchain ---')
-  console.log('New head:', bytesToPrefixedHexString(blockchainHead.hash()))
+  console.log('New head:', bytesToHex(blockchainHead.hash()))
   console.log('Expected:', testData.lastblockhash)
 }
 
@@ -61,7 +61,7 @@ async function setupPreConditions(vm: VM, data: any) {
   for (const [addr, acct] of Object.entries(data.pre)) {
     const { nonce, balance, storage, code } = acct as any
 
-    const address = new Address(hexToBytes(addr.slice(2)))
+    const address = new Address(hexToBytes(addr))
     const account = Account.fromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
@@ -71,7 +71,7 @@ async function setupPreConditions(vm: VM, data: any) {
       await vm.stateManager.putContractStorage(address, storageKey, storageVal)
     }
 
-    const codeBuf = hexToBytes(code.slice(2))
+    const codeBuf = hexToBytes('0x' + code)
     await vm.stateManager.putContractCode(address, codeBuf)
   }
 

@@ -1,20 +1,18 @@
-import { short } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils.js'
+import { bytesToHex, bytesToUnprefixedHex, hexToBytes, short } from '@ethereumjs/util'
+import { ec_pairing } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
 
 import type { ExecResult } from '../evm.js'
 import type { PrecompileInput } from './types.js'
 
-const bn128 = require('rustbn.js')
-
 export function precompile08(opts: PrecompileInput): ExecResult {
   const inputData = opts.data
   // no need to care about non-divisible-by-192, because bn128.pairing will properly fail in that case
   const inputDataSize = BigInt(Math.floor(inputData.length / 192))
   const gasUsed =
-    opts._common.param('gasPrices', 'ecPairing') +
-    inputDataSize * opts._common.param('gasPrices', 'ecPairingWord')
+    opts.common.param('gasPrices', 'ecPairing') +
+    inputDataSize * opts.common.param('gasPrices', 'ecPairingWord')
   if (opts._debug !== undefined) {
     opts._debug(
       `Run ECPAIRING (0x08) precompile data=${short(opts.data)} length=${
@@ -30,7 +28,7 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const returnData = hexToBytes(bn128.pairing(bytesToHex(inputData)))
+  const returnData = hexToBytes(ec_pairing(bytesToUnprefixedHex(inputData)))
 
   // check ecpairing success or failure by comparing the output length
   if (returnData.length !== 32) {

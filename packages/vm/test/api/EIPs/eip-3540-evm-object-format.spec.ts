@@ -1,13 +1,12 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOF } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, Address, concatBytesNoTypeCheck, privateToAddress } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, concatBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-const pkey = hexToBytes('20'.repeat(32))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
@@ -34,14 +33,13 @@ describe('EIP 3540 tests', () => {
   it('EOF > codeAnalysis() tests', async () => {
     const eofHeader = Uint8Array.from([EOF.FORMAT, EOF.MAGIC, EOF.VERSION])
     assert.ok(
-      EOF.codeAnalysis(
-        concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00]))
-      )?.code! > 0,
+      EOF.codeAnalysis(concatBytes(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00])))
+        ?.code! > 0,
       'valid code section'
     )
     assert.ok(
       EOF.codeAnalysis(
-        concatBytesNoTypeCheck(
+        concatBytes(
           eofHeader,
           Uint8Array.from([0x01, 0x00, 0x01, 0x02, 0x00, 0x01, 0x00, 0x00, 0xaa])
         )
@@ -51,16 +49,15 @@ describe('EIP 3540 tests', () => {
     assert.ok(
       !(
         EOF.codeAnalysis(
-          concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
+          concatBytes(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00, 0x00, 0x00]))
         ) !== undefined
       ),
       'invalid container length (too long)'
     )
     assert.ok(
       !(
-        EOF.codeAnalysis(
-          concatBytesNoTypeCheck(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))
-        ) !== undefined
+        EOF.codeAnalysis(concatBytes(eofHeader, Uint8Array.from([0x01, 0x00, 0x01, 0x00]))) !==
+        undefined
       ),
       'invalid container length (too short)'
     )

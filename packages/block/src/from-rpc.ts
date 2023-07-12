@@ -45,7 +45,7 @@ export function blockFromRpc(
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  const opts = { common: header._common }
+  const opts = { common: header.common }
   for (const _txParams of blockParams.transactions ?? []) {
     const txParams = normalizeTxParams(_txParams)
     const tx = TransactionFactory.fromTxData(txParams, opts)

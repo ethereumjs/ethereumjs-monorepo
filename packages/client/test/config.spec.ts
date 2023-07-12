@@ -39,7 +39,7 @@ describe('[Config]', () => {
   it('peer discovery default testnet settings', () => {
     let config
 
-    for (const chain of [Chain.Rinkeby, Chain.Goerli, Chain.Ropsten]) {
+    for (const chain of [Chain.Goerli, Chain.Sepolia]) {
       const common = new Common({ chain })
       config = new Config({ common })
       assert.equal(config.discDns, true, `enables DNS peer discovery for ${chain}`)
@@ -55,7 +55,7 @@ describe('[Config]', () => {
     config = new Config({ common, discDns: true })
     assert.equal(config.discDns, true, `default discDns setting can be overridden to true`)
 
-    chain = Chain.Rinkeby
+    chain = Chain.Goerli
     common = new Common({ chain })
     config = new Config({ common, discDns: false })
     assert.equal(config.discDns, false, `default discDns setting can be overridden to false`)
@@ -69,7 +69,7 @@ describe('[Config]', () => {
     config = new Config({ common, discV4: false })
     assert.equal(config.discDns, false, `default discV4 setting can be overridden to false`)
 
-    chain = Chain.Rinkeby
+    chain = Chain.Goerli
     common = new Common({ chain })
     config = new Config({ common, discV4: true })
     assert.equal(config.discDns, true, `default discV4 setting can be overridden to true`)

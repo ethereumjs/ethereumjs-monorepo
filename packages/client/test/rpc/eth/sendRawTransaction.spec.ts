@@ -9,10 +9,10 @@ import {
 import {
   Account,
   blobsToCommitments,
-  bytesToPrefixedHexString,
+  bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  hexStringToBytes,
+  hexToBytes,
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
@@ -31,9 +31,9 @@ describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
     DefaultStateManager.prototype.setStateRoot = function (): any {}
-    DefaultStateManager.prototype.copy = function () {
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     const common = new Common({ chain: Chain.Mainnet })
@@ -49,7 +49,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData))
+    const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
@@ -70,7 +70,7 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('send local tx with gasprice lower than minimum', async () => {
@@ -84,9 +84,9 @@ describe(method, () => {
       gasLimit: 21000,
       gasPrice: 0,
       nonce: 0,
-    }).sign(hexStringToBytes('42'.repeat(32)))
+    }).sign(hexToBytes('42'.repeat(32)))
 
-    const txData = bytesToPrefixedHexString(transaction.serialize())
+    const txData = bytesToHex(transaction.serialize())
 
     const req = params(method, [txData])
     const expectRes = (res: any) => {
@@ -158,14 +158,14 @@ describe(method, () => {
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData), {
+    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(hexToBytes(txData), {
       common,
       freeze: false,
     })
     ;(tx as any).v = undefined
     ;(tx as any).r = undefined
     ;(tx as any).s = undefined
-    const txHex = bytesToPrefixedHexString(tx.serialize())
+    const txHex = bytesToHex(tx.serialize())
     const req = params(method, [txHex])
 
     const expectRes = checkError(INVALID_PARAMS, 'tx needs to be signed')
@@ -176,8 +176,8 @@ describe(method, () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     DefaultStateManager.prototype.setStateRoot = (): any => {}
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
-    DefaultStateManager.prototype.copy = function () {
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -193,7 +193,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexStringToBytes(txData))
+    const transaction = FeeMarketEIP1559Transaction.fromSerializedTx(hexToBytes(txData))
     const address = transaction.getSenderAddress()
     const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
 
@@ -209,20 +209,20 @@ describe(method, () => {
 
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('blob EIP 4844 transaction', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     DefaultStateManager.prototype.setStateRoot = (): any => {}
-    const originalStateManagerCopy = DefaultStateManager.prototype.copy
-    DefaultStateManager.prototype.copy = function () {
+    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
+    DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
     // Disable block header consensus format validation
-    const consensusFormatValidation = BlockHeader.prototype._consensusFormatValidation
-    BlockHeader.prototype._consensusFormatValidation = (): any => {}
+    const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
+    BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
     try {
       initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
@@ -278,8 +278,8 @@ describe(method, () => {
     account!.balance = BigInt(0xfffffffffffff)
     await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
-    const req = params(method, [bytesToPrefixedHexString(tx.serializeNetworkWrapper())])
-    const req2 = params(method, [bytesToPrefixedHexString(replacementTx.serializeNetworkWrapper())])
+    const req = params(method, [bytesToHex(tx.serializeNetworkWrapper())])
+    const req2 = params(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
     const expectRes = (res: any) => {
       assert.equal(res.body.error, undefined, 'initial blob transaction accepted')
     }
@@ -291,7 +291,7 @@ describe(method, () => {
 
     // Restore stubbed out functionality
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
-    BlockHeader.prototype._consensusFormatValidation = consensusFormatValidation
+    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+    BlockHeader.prototype['_consensusFormatValidation'] = consensusFormatValidation
   })
 })

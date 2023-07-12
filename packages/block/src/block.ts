@@ -7,12 +7,11 @@ import {
   Withdrawal,
   bigIntToHex,
   bytesToHex,
-  bytesToPrefixedHexString,
   equalsBytes,
   fetchFromProvider,
   getProvider,
-  hexStringToBytes,
-  intToPrefixedHexString,
+  hexToBytes,
+  intToHex,
   isHexPrefixed,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -49,7 +48,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly txTrie = new Trie()
-  public readonly _common: Common
+  public readonly common: Common
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
@@ -98,7 +97,7 @@ export class Block {
       const tx = TransactionFactory.fromTxData(txData, {
         ...opts,
         // Use header common in case of setHardfork being activated
-        common: header._common,
+        common: header.common,
       } as TxOptions)
       transactions.push(tx)
     }
@@ -108,7 +107,7 @@ export class Block {
     const uncleOpts: BlockOptions = {
       ...opts,
       // Use header common in case of setHardfork being activated
-      common: header._common,
+      common: header.common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
     }
@@ -159,7 +158,7 @@ export class Block {
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
-      header._common.isActivatedEIP(4895) &&
+      header.common.isActivatedEIP(4895) &&
       (values[3] === undefined || !Array.isArray(values[3]))
     ) {
       throw new Error(
@@ -174,7 +173,7 @@ export class Block {
         TransactionFactory.fromBlockBodyData(txData, {
           ...opts,
           // Use header common in case of setHardfork being activated
-          common: header._common,
+          common: header.common,
         })
       )
     }
@@ -184,7 +183,7 @@ export class Block {
     const uncleOpts: BlockOptions = {
       ...opts,
       // Use header common in case of setHardfork being activated
-      common: header._common,
+      common: header.common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
     }
@@ -271,7 +270,7 @@ export class Block {
       for (let x = 0; x < blockData.uncles.length; x++) {
         const headerData = await fetchFromProvider(providerUrl, {
           method: 'eth_getUncleByBlockHashAndIndex',
-          params: [blockData.hash, intToPrefixedHexString(x)],
+          params: [blockData.hash, intToHex(x)],
         })
         uncleHeaders.push(headerData)
       }
@@ -302,7 +301,7 @@ export class Block {
     const txs = []
     for (const [index, serializedTx] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), {
+        const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
           common: options?.common,
         })
         txs.push(tx)
@@ -330,10 +329,10 @@ export class Block {
     // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
-      }, received: ${bytesToPrefixedHexString(block.hash())}`
+      }, received: ${bytesToHex(block.hash())}`
       throw Error(validationError)
     }
 
@@ -366,20 +365,20 @@ export class Block {
     opts: BlockOptions = {}
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
-    this._common = this.header._common
+    this.common = this.header.common
 
     this.transactions = transactions
-    this.withdrawals = withdrawals ?? (this._common.isActivatedEIP(4895) ? [] : undefined)
+    this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
       this.validateUncles()
-      if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
+      if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed'
         )
         throw new Error(msg)
       }
-      if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+      if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoS network is not allowed'
         )
@@ -387,7 +386,7 @@ export class Block {
       }
     }
 
-    if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
+    if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
@@ -447,8 +446,9 @@ export class Block {
   /**
    * Validates the transaction trie by generating a trie
    * and do a check on the root hash.
+   * @returns True if the transaction trie is valid, false otherwise
    */
-  async validateTransactionsTrie(): Promise<boolean> {
+  async transactionsTrieIsValid(): Promise<boolean> {
     let result
     if (this.transactions.length === 0) {
       result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
@@ -464,22 +464,18 @@ export class Block {
 
   /**
    * Validates transaction signatures and minimum gas requirements.
-   *
-   * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
+   * @returns {string[]} an array of error strings
    */
-  validateTransactions(): boolean
-  validateTransactions(stringError: false): boolean
-  validateTransactions(stringError: true): string[]
-  validateTransactions(stringError = false) {
+  getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
     let dataGasUsed = BigInt(0)
-    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    const dataGasLimit = this.common.param('gasConfig', 'maxDataGasPerBlock')
+    const dataGasPerBlob = this.common.param('gasConfig', 'dataGasPerBlob')
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
-      const errs = <string[]>tx.validate(true)
-      if (this._common.isActivatedEIP(1559) === true) {
+      const errs = tx.getValidationErrors()
+      if (this.common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
@@ -492,7 +488,7 @@ export class Block {
           }
         }
       }
-      if (this._common.isActivatedEIP(4844) === true) {
+      if (this.common.isActivatedEIP(4844) === true) {
         if (tx instanceof BlobEIP4844Transaction) {
           dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
           if (dataGasUsed > dataGasLimit) {
@@ -507,13 +503,23 @@ export class Block {
       }
     }
 
-    if (this._common.isActivatedEIP(4844) === true) {
+    if (this.common.isActivatedEIP(4844) === true) {
       if (dataGasUsed !== this.header.dataGasUsed) {
         errors.push(`invalid dataGasUsed expected=${this.header.dataGasUsed} actual=${dataGasUsed}`)
       }
     }
 
-    return stringError ? errors : errors.length === 0
+    return errors
+  }
+
+  /**
+   * Validates transaction signatures and minimum gas requirements.
+   * @returns True if all transactions are valid, false otherwise
+   */
+  transactionsAreValid(): boolean {
+    const errors = this.getTransactionsValidationErrors()
+
+    return errors.length === 0
   }
 
   /**
@@ -526,7 +532,7 @@ export class Block {
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    */
   async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.validateTransactions(true)
+    const txErrors = this.getTransactionsValidationErrors()
     if (txErrors.length > 0) {
       const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
       throw new Error(msg)
@@ -536,18 +542,17 @@ export class Block {
       return
     }
 
-    const validateTxTrie = await this.validateTransactionsTrie()
-    if (!validateTxTrie) {
+    if (!(await this.transactionsTrieIsValid())) {
       const msg = this._errorMsg('invalid transaction trie')
       throw new Error(msg)
     }
 
-    if (!this.validateUnclesHash()) {
+    if (!this.uncleHashIsValid()) {
       const msg = this._errorMsg('invalid uncle hash')
       throw new Error(msg)
     }
 
-    if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
+    if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
     }
@@ -560,9 +565,9 @@ export class Block {
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
-    if (this._common.isActivatedEIP(4844)) {
-      const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    if (this.common.isActivatedEIP(4844)) {
+      const dataGasLimit = this.common.param('gasConfig', 'maxDataGasPerBlock')
+      const dataGasPerBlob = this.common.param('gasConfig', 'dataGasPerBlob')
       let dataGasUsed = BigInt(0)
 
       for (const tx of this.transactions) {
@@ -603,8 +608,9 @@ export class Block {
 
   /**
    * Validates the uncle's hash.
+   * @returns true if the uncle's hash is valid, false otherwise.
    */
-  validateUnclesHash(): boolean {
+  uncleHashIsValid(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
     return equalsBytes(keccak256(raw), this.header.uncleHash)
@@ -612,9 +618,10 @@ export class Block {
 
   /**
    * Validates the withdrawal root
+   * @returns true if the withdrawals trie root is valid, false otherwise
    */
-  async validateWithdrawalsTrie(): Promise<boolean> {
-    if (!this._common.isActivatedEIP(4895)) {
+  async withdrawalsTrieIsValid(): Promise<boolean> {
+    if (!this.common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
     const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
@@ -697,7 +704,7 @@ export class Block {
     }
     let hf = ''
     try {
-      hf = this._common.hardfork()
+      hf = this.common.hardfork()
     } catch (e: any) {
       hf = 'error'
     }

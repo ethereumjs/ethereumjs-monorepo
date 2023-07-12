@@ -40,6 +40,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.js",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- trie",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -55,10 +56,11 @@
     "@ethereumjs/util": "^8.0.6",
     "@types/readable-stream": "^2.3.13",
     "lru-cache": "^10.0.0",
-    "ethereum-cryptography": "^2.0.0",
+    "ethereum-cryptography": "^2.1.1",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
+    "@ethereumjs/genesis": "^0.0.1",
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",
@@ -71,6 +73,6 @@
     "micro-bmark": "0.2.0"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

@@ -9,8 +9,8 @@ import type { PrecompileInput } from './types.js'
 export function precompile02(opts: PrecompileInput): ExecResult {
   const data = opts.data
 
-  let gasUsed = opts._common.param('gasPrices', 'sha256')
-  gasUsed += opts._common.param('gasPrices', 'sha256Word') * BigInt(Math.ceil(data.length / 32))
+  let gasUsed = opts.common.param('gasPrices', 'sha256')
+  gasUsed += opts.common.param('gasPrices', 'sha256Word') * BigInt(Math.ceil(data.length / 32))
 
   if (opts._debug !== undefined) {
     opts._debug(

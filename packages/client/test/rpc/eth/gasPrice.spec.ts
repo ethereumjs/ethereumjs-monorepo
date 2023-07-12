@@ -1,5 +1,5 @@
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { bigIntToHex, intToPrefixedHexString } from '@ethereumjs/util'
+import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
@@ -30,7 +30,7 @@ describe(method, () => {
     const req = params(method, [])
     const expectRes = (res: any) => {
       const msg = 'should return the correct suggested gas price with 1 legacy transaction'
-      assert.equal(res.body.result, intToPrefixedHexString(GAS_PRICE), msg)
+      assert.equal(res.body.result, intToHex(GAS_PRICE), msg)
     }
     await baseRequest(server, req, 200, expectRes)
   })
@@ -79,7 +79,7 @@ describe(method, () => {
     const req = params(method, [])
     const expectRes = (res: any) => {
       const msg = 'should return the correct gas price with multiple legacy transactions in a block'
-      assert.equal(res.body.result, intToPrefixedHexString(Math.trunc(averageGasPrice)), msg)
+      assert.equal(res.body.result, intToHex(Math.trunc(averageGasPrice)), msg)
     }
     await baseRequest(server, req, 200, () => expectRes)
   })

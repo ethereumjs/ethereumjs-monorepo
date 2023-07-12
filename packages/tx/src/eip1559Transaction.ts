@@ -8,7 +8,7 @@ import {
   concatBytes,
   ecrecover,
   equalsBytes,
-  hexStringToBytes,
+  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -31,8 +31,8 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
 
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
+const TRANSACTION_TYPE_BYTES = hexToBytes(
+  '0x' + TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
 )
 
 /**
@@ -276,26 +276,31 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * Returns the raw serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
    *
    * ```javascript
-   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage = true): Uint8Array {
+  getMessageToSign(): Uint8Array {
     const base = this.raw().slice(0, 9)
     const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    if (hashMessage) {
-      return keccak256(message)
-    } else {
-      return message
-    }
+    return message
+  }
+
+  /**
+   * Returns the hashed serialized unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   */
+  getHashedMessageToSign(): Uint8Array {
+    return keccak256(this.getMessageToSign())
   }
 
   /**
@@ -324,7 +329,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Computes a sha3-256 hash which can be used to verify the signature
    */
   public getMessageToVerifySignature(): Uint8Array {
-    return this.getMessageToSign()
+    return this.getHashedMessageToSign()
   }
 
   /**
@@ -354,7 +359,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     }
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
+  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     const opts = { ...this.txOptions, common: this.common }
 
     return FeeMarketEIP1559Transaction.fromTxData(

@@ -1,5 +1,5 @@
 import * as td from 'testdouble'
-import { assert, describe, expect, expectTypeOf, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { EthereumClient } from '../src/client'
 import { Config } from '../src/config'

@@ -12,11 +12,10 @@ import {
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
-  bytesToPrefixedHexString,
   commitmentsToVersionedHashes,
   equalsBytes,
   getBlobs,
-  hexStringToBytes,
+  hexToBytes,
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
@@ -25,6 +24,7 @@ import * as kzg from 'c-kzg'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
+import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'
 import { PendingBlock } from '../../src/miner'
@@ -34,13 +34,13 @@ import { mockBlockchain } from '../rpc/mockBlockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const A = {
-  address: new Address(hexStringToBytes('0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: hexStringToBytes('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
+  address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+  privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
 }
 
 const B = {
-  address: new Address(hexStringToBytes('6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: hexStringToBytes('2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
+  address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
+  privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
 }
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
@@ -49,7 +49,15 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: CommonChain.Rinkeby, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
+// Unschedule any timestamp since tests are not configured for timestamps
+common
+  .hardforks()
+  .filter((hf) => hf.timestamp !== undefined)
+  .map((hf) => {
+    hf.timestamp = undefined
+  })
+
 const config = new Config({
   transports: [],
   common,
@@ -71,7 +79,7 @@ const setup = () => {
     execution: {
       vm: {
         stateManager,
-        copy: () => service.execution.vm,
+        shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
       },
@@ -82,8 +90,8 @@ const setup = () => {
 }
 
 describe('[PendingBlock]', async () => {
-  const originalValidate = BlockHeader.prototype._consensusFormatValidation
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
+  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
+  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
@@ -156,7 +164,7 @@ describe('[PendingBlock]', async () => {
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
-    const payload = pendingBlock.pendingPayloads.get(bytesToPrefixedHexString(payloadId))
+    const payload = pendingBlock.pendingPayloads.get(bytesToHex(payloadId))
     assert.equal(
       (payload as any).transactions.filter(
         (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
@@ -346,7 +354,6 @@ describe('[PendingBlock]', async () => {
       initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
     } catch {}
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -398,8 +405,8 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(500000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
-    vm._common.setHardforkBy = () => {
-      return vm._common.hardfork()
+    vm.common.setHardforkBy = () => {
+      return vm.common.hardfork()
     }
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
@@ -457,8 +464,8 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(500000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
-    vm._common.setHardforkBy = () => {
-      return vm._common.hardfork()
+    vm.common.setHardforkBy = () => {
+      return vm.common.hardfork()
     }
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
@@ -472,7 +479,7 @@ describe('[PendingBlock]', async () => {
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
-    BlockHeader.prototype._consensusFormatValidation = originalValidate
+    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 })

@@ -1,15 +1,14 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { Account, Address } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 
-const address = new Address(hexToBytes('11'.repeat(20)))
-const pkey = hexToBytes('20'.repeat(32))
+const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
+const pkey = hexToBytes('0x' + '20'.repeat(32))
 
 const testCases = [
   {
@@ -126,16 +125,16 @@ describe('EIP-3529 tests', () => {
     })
 
     const gasLimit = BigInt(100000)
-    const key = hexToBytes('00'.repeat(32))
+    const key = hexToBytes('0x' + '00'.repeat(32))
 
     for (const testCase of testCases) {
-      const code = hexToBytes((testCase.code + '00').slice(2)) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
+      const code = hexToBytes(testCase.code + '00') // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
       await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(
         address,
         key,
-        hexToBytes(testCase.original.toString().padStart(64, '0'))
+        hexToBytes('0x' + testCase.original.toString().padStart(64, '0'))
       )
 
       await vm.stateManager.getContractStorage(address, key)
@@ -143,7 +142,7 @@ describe('EIP-3529 tests', () => {
 
       await vm.evm.runCode!({
         code,
-        address,
+        to: address,
         gasLimit,
       })
 
@@ -193,14 +192,14 @@ describe('EIP-3529 tests', () => {
       }
     })
 
-    const address = new Address(hexToBytes('20'.repeat(20)))
+    const address = new Address(hexToBytes('0x' + '20'.repeat(20)))
 
-    const value = hexToBytes('01'.repeat(32))
+    const value = hexToBytes('0x' + '01'.repeat(32))
 
-    let code = ''
+    let code = '0x'
 
     for (let i = 0; i < 100; i++) {
-      const key = hexToBytes(i.toString(16).padStart(64, '0'))
+      const key = hexToBytes('0x' + i.toString(16).padStart(64, '0'))
       await vm.stateManager.putAccount(address, new Account())
       await vm.stateManager.putContractStorage(address, key, value)
       const hex = i.toString(16).padStart(2, '0')

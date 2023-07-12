@@ -340,7 +340,7 @@ const common = Common.custom({ chainId: 1234 })
 
 ### Signing with a hardware or external wallet
 
-To sign a tx with a hardware or external wallet use `tx.getMessageToSign(false)` to return an [EIP-155](https://eips.ethereum.org/EIPS/eip-155) compliant unsigned tx.
+To sign a tx with a hardware or external wallet use `tx.getMessageToSign()` to return an [EIP-155](https://eips.ethereum.org/EIPS/eip-155) compliant unsigned tx.
 
 A legacy transaction will return a Buffer list of the values, and a Typed Transaction ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)) will return the serialized output.
 
@@ -354,7 +354,7 @@ import { RLP } from '@ethereumjs/rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
 const eth = new Eth(transport)
-const common = new Common({ chain: Chain.Rinkeby })
+const common = new Common({ chain: Chain.Sepolia })
 
 let txData: any = { value: 1 }
 let tx: Transaction | FeeMarketEIP1559Transaction
@@ -365,7 +365,7 @@ const bip32Path = "44'/60'/0'/0/0"
 const run = async () => {
   // Signing a legacy tx
   tx = LegacyTransaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign(false)
+  unsignedTx = tx.getMessageToSign()
   unsignedTx = Buffer.from(RLP.encode(bufArrToArr(unsignedTx))) // ledger signTransaction API expects it to be serialized
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
@@ -376,7 +376,7 @@ const run = async () => {
   // Signing a 1559 tx
   txData = { value: 1 }
   tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign(false)
+  unsignedTx = tx.getMessageToSign()
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
   txData = { ...txData, v, r, s }
   signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
