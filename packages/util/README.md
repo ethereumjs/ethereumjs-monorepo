@@ -8,7 +8,8 @@
 
 Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
 
-A collection of utility functions for Ethereum. It can be used in Node.js and in the browser with [browserify](http://browserify.org/).
+| A collection of utility functions for Ethereum. |
+| ----------------------------------------------- |
 
 ## Installation
 
@@ -21,12 +22,11 @@ npm install @ethereumjs/util
 ## Usage
 
 ```js
-import assert from 'assert'
-import { isValidChecksumAddress, unpadBuffer } from '@ethereumjs/util'
+import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
 
-assert.ok(isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'))
+isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A') // true
 
-assert.ok(unpadBuffer(Buffer.from('000000006600', 'hex')).equals(Buffer.from('6600', 'hex')))
+hexToBytes('0x342770c0')
 ```
 
 ## API
@@ -42,6 +42,8 @@ Read the [API docs](docs/).
   - Private/public key and address-related functionality (creation, validation, conversion)
 - [address](src/address.ts)
   - Address class and type
+- [blobs](src/blobs.ts)
+  - Helpers for 4844 blobs and versioned hashes
 - [bytes](src/bytes.ts)
   - Byte-related helper and conversion functions
 - [constants](src/constants.ts)

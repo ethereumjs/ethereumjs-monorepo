@@ -44,15 +44,10 @@ export * from './bytes.js'
 export * from './types.js'
 
 /**
- * Helper function for working with compact encoding
- */
-export * from './encoding.js'
-
-/**
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter.js'
-export * from './blobHelpers.js'
+export * from './blobs.js'
 export * from './genesis.js'
 export {
   arrayContainsArray,
