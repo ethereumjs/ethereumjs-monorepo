@@ -51,7 +51,7 @@ const common = new Common({ chain: 'mainnet', hardfork: 'london' })
 
 If no hardfork is provided, the common is initialized with the default hardfork.
 
-Current `DEFAULT_HARDFORK`: `Hardfork.Merge`
+Current `DEFAULT_HARDFORK`: `Hardfork.Shanghai`
 
 Here are some simple usage examples:
 
@@ -68,7 +68,7 @@ c.param('pow', 'minerReward') // 3000000000000000000
 c.bootstrapNodes() // Array with current nodes
 
 // Instantiate with an EIP activated
-c = new Common({ chain: Chain.Mainnet, eips: [2537] })
+c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 ```
 
 # API
@@ -114,8 +114,7 @@ Please note that number-related API signatures have changed along with this vers
 
 ## Events
 
-The `Common` class is implemented as an `EventEmitter` and is emitting the following events
-on which you can react within your code:
+The `Common` class has a public property `events` which contains an `EventEmitter`. Following events are emitted on which you can react within your code:
 
 | Event             | Description                                                |
 | ----------------- | ---------------------------------------------------------- |
@@ -264,10 +263,11 @@ library supported:
 - `london` (`Hardfork.London`) (since `v2.4.0`)
 - `merge` (`Hardfork.Merge`) (`DEFAULT_HARDFORK`) (since `v2.5.0`)
 - `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
+- `cancun` (`Hardfork.Cancun`) (since `v4.0.0`) (not yet EIP-complete)
 
 ### Future Hardforks
 
-The next upcoming HF `Hardfork.Cancun` is currently not yet supported by this library.
+The next upcoming HF `Hardfork.Prague` is currently not yet supported by this library.
 
 ### Parameter Access
 
@@ -293,32 +293,38 @@ Starting with the `v2.0.0` release of the library, EIPs are now native citizens 
 and can be activated like this:
 
 ```typescript
-const c = new Common({ chain: Chain.Mainnet, eips: [2537] })
+const c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 ```
 
 The following EIPs are currently supported:
 
+- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153): Transient storage opcodes
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559): Fee market change for ETH 1.0 chain
-- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM (`experimental`)
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles
+- [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315): Simple subroutines for the EVM (`outdated`)
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537): BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565): ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565): Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929): gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930): Optional access list tx type
+- [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074): AUTH and AUTHCALL opcodes
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198): Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): Reduction in refunds
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`experimental`)
+- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541): Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554): Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607): Reject transactions from senders with deployed code
 - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651): Warm COINBASE (Shanghai)
-- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670): EOF - Code Validation (`experimental`)
+- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670): EOF - Code Validation (`outdated`)
 - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675): Upgrade consensus to Proof-of-Stake
 - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855): Push0 opcode (Shanghai)
 - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860): Limit and meter initcode (Shanghai)
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345): Difficulty Bomb Delay to June 2022
-- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge) (`experimental`)
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399): Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+- [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788): Beacon block root in the EVM
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): Shard Blob Transactions (Cancun) (`experimental`)
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895): Beacon chain push withdrawals as operations (Shanghai)
+- [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656): MCOPY - Memory copying instruction
+- [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780): SELFDESTRUCT only in same transaction
 
 ### Bootstrap Nodes
 
