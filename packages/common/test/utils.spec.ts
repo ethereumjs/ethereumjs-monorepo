@@ -1,9 +1,9 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Common } from '../src/common'
-import { Hardfork } from '../src/enums'
-import { parseGethGenesis } from '../src/utils'
+import { Common } from '../src/common.js'
+import { Hardfork } from '../src/enums.js'
+import { parseGethGenesis } from '../src/utils.js'
 
 import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
 import * as invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'
