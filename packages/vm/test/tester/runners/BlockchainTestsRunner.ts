@@ -263,16 +263,20 @@ export class BlockchainTests {
   }
 
   async runTestSuite(testSuite: TestSuite) {
-    try {
-      for (const [testName, test] of Object.entries(testSuite)) {
-        await this.runFileDirectory(testName, test)
-        delete testSuite[testName]
-      }
-    } catch (err: any) {
-      it.skip(err.message)
+    if (testSuite === undefined || Object.entries(testSuite).length === 0) {
+      it.skip('0 tests')
+      return
+    }
+    for (const [testName, test] of Object.entries(testSuite)) {
+      await this.runFileDirectory(testName, test)
+      delete testSuite[testName]
     }
   }
   async runFileDirectory(dir: string, files: FileDirectory) {
+    if (Object.entries(files).length === 0) {
+      it.skip('0 Tests')
+      return
+    }
     suite(dir, async () => {
       for (const [fileName, tests] of Object.entries(files)) {
         if (fileName.endsWith('.json')) {
@@ -372,19 +376,22 @@ export class BlockchainTests {
             const rest = Object.entries(_tests.BlockChainTests!.GeneralStateTests).filter(
               ([dir]) => dir !== 'Shanghai' && dir !== 'VMTests'
             )
-            suite('/', async () => {
-              for (const [dir, tests] of rest) {
-                await this.runFileDirectory(dir, tests as FileDirectory)
-              }
-            })
+            rest.length > 0 &&
+              suite('/', async () => {
+                for (const [dir, tests] of rest) {
+                  await this.runFileDirectory(dir, tests as FileDirectory)
+                }
+              })
           })
 
-          suite('InvalidBlocks', async () => {
-            await this.runTestSuite(_tests.BlockChainTests!.InvalidBlocks!)
-          })
-          suite('ValidBlocks', async () => {
-            await this.runTestSuite(_tests.BlockChainTests!.ValidBlocks!)
-          })
+          _tests.BlockChainTests!.InvalidBlocks !== undefined &&
+            suite('InvalidBlocks', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.InvalidBlocks!)
+            })
+          _tests.BlockChainTests!.ValidBlocks !== undefined &&
+            suite('ValidBlocks', async () => {
+              await this.runTestSuite(_tests.BlockChainTests!.ValidBlocks!)
+            })
           if (_tests.BlockChainTests?.TransitionTests !== undefined) {
             suite('TransitionTests', async () => {
               await this.runTestSuite(_tests.BlockChainTests!.TransitionTests!)
