@@ -1,75 +1,69 @@
-[@ethereumjs/tx](../README.md) / AccessListEIP2930Transaction
+[@ethereumjs/tx](../README.md) / LegacyTransaction
 
-# Class: AccessListEIP2930Transaction
+# Class: LegacyTransaction
 
-Typed transaction with optional access lists
-
-- TransactionType: 1
-- EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
+An Ethereum non-typed (legacy) transaction
 
 ## Hierarchy
 
-- `BaseTransaction`<[`AccessListEIP2930`](../enums/TransactionType.md#accesslisteip2930)\>
+- `BaseTransaction`<[`Legacy`](../enums/TransactionType.md#legacy)\>
 
-  ↳ **`AccessListEIP2930Transaction`**
+  ↳ **`LegacyTransaction`**
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](AccessListEIP2930Transaction.md#constructor)
+- [constructor](LegacyTransaction.md#constructor)
 
 ### Properties
 
-- [AccessListJSON](AccessListEIP2930Transaction.md#accesslistjson)
-- [accessList](AccessListEIP2930Transaction.md#accesslist)
-- [chainId](AccessListEIP2930Transaction.md#chainid)
-- [common](AccessListEIP2930Transaction.md#common)
-- [data](AccessListEIP2930Transaction.md#data)
-- [gasLimit](AccessListEIP2930Transaction.md#gaslimit)
-- [gasPrice](AccessListEIP2930Transaction.md#gasprice)
-- [nonce](AccessListEIP2930Transaction.md#nonce)
-- [r](AccessListEIP2930Transaction.md#r)
-- [s](AccessListEIP2930Transaction.md#s)
-- [to](AccessListEIP2930Transaction.md#to)
-- [v](AccessListEIP2930Transaction.md#v)
-- [value](AccessListEIP2930Transaction.md#value)
+- [common](LegacyTransaction.md#common)
+- [data](LegacyTransaction.md#data)
+- [gasLimit](LegacyTransaction.md#gaslimit)
+- [gasPrice](LegacyTransaction.md#gasprice)
+- [nonce](LegacyTransaction.md#nonce)
+- [r](LegacyTransaction.md#r)
+- [s](LegacyTransaction.md#s)
+- [to](LegacyTransaction.md#to)
+- [v](LegacyTransaction.md#v)
+- [value](LegacyTransaction.md#value)
 
 ### Accessors
 
-- [type](AccessListEIP2930Transaction.md#type)
+- [type](LegacyTransaction.md#type)
 
 ### Methods
 
-- [errorStr](AccessListEIP2930Transaction.md#errorstr)
-- [getBaseFee](AccessListEIP2930Transaction.md#getbasefee)
-- [getDataFee](AccessListEIP2930Transaction.md#getdatafee)
-- [getHashedMessageToSign](AccessListEIP2930Transaction.md#gethashedmessagetosign)
-- [getMessageToSign](AccessListEIP2930Transaction.md#getmessagetosign)
-- [getMessageToVerifySignature](AccessListEIP2930Transaction.md#getmessagetoverifysignature)
-- [getSenderAddress](AccessListEIP2930Transaction.md#getsenderaddress)
-- [getSenderPublicKey](AccessListEIP2930Transaction.md#getsenderpublickey)
-- [getUpfrontCost](AccessListEIP2930Transaction.md#getupfrontcost)
-- [getValidationErrors](AccessListEIP2930Transaction.md#getvalidationerrors)
-- [hash](AccessListEIP2930Transaction.md#hash)
-- [isSigned](AccessListEIP2930Transaction.md#issigned)
-- [isValid](AccessListEIP2930Transaction.md#isvalid)
-- [raw](AccessListEIP2930Transaction.md#raw)
-- [serialize](AccessListEIP2930Transaction.md#serialize)
-- [sign](AccessListEIP2930Transaction.md#sign)
-- [supports](AccessListEIP2930Transaction.md#supports)
-- [toCreationAddress](AccessListEIP2930Transaction.md#tocreationaddress)
-- [toJSON](AccessListEIP2930Transaction.md#tojson)
-- [verifySignature](AccessListEIP2930Transaction.md#verifysignature)
-- [fromSerializedTx](AccessListEIP2930Transaction.md#fromserializedtx)
-- [fromTxData](AccessListEIP2930Transaction.md#fromtxdata)
-- [fromValuesArray](AccessListEIP2930Transaction.md#fromvaluesarray)
+- [errorStr](LegacyTransaction.md#errorstr)
+- [getBaseFee](LegacyTransaction.md#getbasefee)
+- [getDataFee](LegacyTransaction.md#getdatafee)
+- [getHashedMessageToSign](LegacyTransaction.md#gethashedmessagetosign)
+- [getMessageToSign](LegacyTransaction.md#getmessagetosign)
+- [getMessageToVerifySignature](LegacyTransaction.md#getmessagetoverifysignature)
+- [getSenderAddress](LegacyTransaction.md#getsenderaddress)
+- [getSenderPublicKey](LegacyTransaction.md#getsenderpublickey)
+- [getUpfrontCost](LegacyTransaction.md#getupfrontcost)
+- [getValidationErrors](LegacyTransaction.md#getvalidationerrors)
+- [hash](LegacyTransaction.md#hash)
+- [isSigned](LegacyTransaction.md#issigned)
+- [isValid](LegacyTransaction.md#isvalid)
+- [raw](LegacyTransaction.md#raw)
+- [serialize](LegacyTransaction.md#serialize)
+- [sign](LegacyTransaction.md#sign)
+- [supports](LegacyTransaction.md#supports)
+- [toCreationAddress](LegacyTransaction.md#tocreationaddress)
+- [toJSON](LegacyTransaction.md#tojson)
+- [verifySignature](LegacyTransaction.md#verifysignature)
+- [fromSerializedTx](LegacyTransaction.md#fromserializedtx)
+- [fromTxData](LegacyTransaction.md#fromtxdata)
+- [fromValuesArray](LegacyTransaction.md#fromvaluesarray)
 
 ## Constructors
 
 ### constructor
 
-• **new AccessListEIP2930Transaction**(`txData`, `opts?`)
+• **new LegacyTransaction**(`txData`, `opts?`)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
@@ -81,48 +75,18 @@ varying data types.
 
 | Name | Type |
 | :------ | :------ |
-| `txData` | [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) |
+| `txData` | [`LegacyTxData`](../README.md#legacytxdata) |
 | `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Overrides
 
-BaseTransaction&lt;TransactionType.AccessListEIP2930\&gt;.constructor
+BaseTransaction&lt;TransactionType.Legacy\&gt;.constructor
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L135)
+[tx/src/legacyTransaction.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L110)
 
 ## Properties
-
-### AccessListJSON
-
-• `Readonly` **AccessListJSON**: [`AccessList`](../README.md#accesslist)
-
-#### Defined in
-
-[tx/src/eip2930Transaction.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L47)
-
-___
-
-### accessList
-
-• `Readonly` **accessList**: [`AccessListBytes`](../README.md#accesslistbytes)
-
-#### Defined in
-
-[tx/src/eip2930Transaction.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L46)
-
-___
-
-### chainId
-
-• `Readonly` **chainId**: `bigint`
-
-#### Defined in
-
-[tx/src/eip2930Transaction.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L45)
-
-___
 
 ### common
 
@@ -134,7 +98,7 @@ BaseTransaction.common
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L50)
+[tx/src/legacyTransaction.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L40)
 
 ___
 
@@ -172,7 +136,7 @@ ___
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L48)
+[tx/src/legacyTransaction.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L38)
 
 ___
 
@@ -298,7 +262,7 @@ BaseTransaction.errorStr
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:372](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L372)
+[tx/src/legacyTransaction.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L395)
 
 ___
 
@@ -338,7 +302,7 @@ BaseTransaction.getDataFee
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L180)
+[tx/src/legacyTransaction.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L230)
 
 ___
 
@@ -348,9 +312,6 @@ ___
 
 Returns the hashed serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
-
-Note: in contrast to the legacy tx the raw message format is already
-serialized and doesn't need to be RLP encoded any more.
 
 #### Returns
 
@@ -362,27 +323,29 @@ BaseTransaction.getHashedMessageToSign
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L273)
+[tx/src/legacyTransaction.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L222)
 
 ___
 
 ### getMessageToSign
 
-▸ **getMessageToSign**(): `Uint8Array`
+▸ **getMessageToSign**(): `Uint8Array`[]
 
-Returns the raw serialized unsigned tx, which can be used
+Returns the raw unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
 
-Note: in contrast to the legacy tx the raw message format is already
-serialized and doesn't need to be RLP encoded any more.
+Note: the raw message message format for the legacy tx is not RLP encoded
+and you might need to do yourself with:
 
 ```javascript
-const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
+import { RLP } from '@ethereumjs/rlp'
+const message = tx.getMessageToSign()
+const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
 ```
 
 #### Returns
 
-`Uint8Array`
+`Uint8Array`[]
 
 #### Overrides
 
@@ -390,7 +353,7 @@ BaseTransaction.getMessageToSign
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L260)
+[tx/src/legacyTransaction.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L199)
 
 ___
 
@@ -410,7 +373,7 @@ BaseTransaction.getMessageToVerifySignature
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L302)
+[tx/src/legacyTransaction.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L277)
 
 ___
 
@@ -450,7 +413,7 @@ BaseTransaction.getSenderPublicKey
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L309)
+[tx/src/legacyTransaction.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L288)
 
 ___
 
@@ -470,7 +433,7 @@ BaseTransaction.getUpfrontCost
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L201)
+[tx/src/legacyTransaction.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L248)
 
 ___
 
@@ -503,7 +466,7 @@ ___
 Computes a sha3-256 hash of the serialized tx.
 
 This method can only be used for signed txs (it throws otherwise).
-Use [getMessageToSign](AccessListEIP2930Transaction.md#getmessagetosign) to get a tx hash for the purpose of signing.
+Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
 
 #### Returns
 
@@ -515,7 +478,7 @@ BaseTransaction.hash
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L283)
+[tx/src/legacyTransaction.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L258)
 
 ___
 
@@ -561,23 +524,23 @@ ___
 
 ### raw
 
-▸ **raw**(): `AccessListEIP2930TxValuesArray`
+▸ **raw**(): `LegacyTxValuesArray`
 
-Returns a Uint8Array Array of the raw Bytess of the EIP-2930 transaction, in order.
+Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
 
-Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)]`
+Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
-Use [serialize](AccessListEIP2930Transaction.md#serialize) to add a transaction to a block
-with Block.fromValuesArray.
+For legacy txs this is also the correct format to add transactions
+to a block with Block.fromValuesArray (use the `serialize()` method
+for typed txs).
 
-For an unsigned tx this method uses the empty Bytes values for the
-signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-representation for external signing use [getMessageToSign](AccessListEIP2930Transaction.md#getmessagetosign).
+For an unsigned tx this method returns the empty Bytes values
+for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
+representation have a look at Transaction.getMessageToSign.
 
 #### Returns
 
-`AccessListEIP2930TxValuesArray`
+`LegacyTxValuesArray`
 
 #### Overrides
 
@@ -585,7 +548,7 @@ BaseTransaction.raw
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L218)
+[tx/src/legacyTransaction.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L159)
 
 ___
 
@@ -593,14 +556,13 @@ ___
 
 ▸ **serialize**(): `Uint8Array`
 
-Returns the serialized encoding of the EIP-2930 transaction.
+Returns the serialized encoding of the legacy transaction.
 
-Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)])`
+Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
-Note that in contrast to the legacy tx serialization format this is not
-valid RLP any more due to the raw tx type preceding and concatenated to
-the RLP encoding of the values.
+For an unsigned tx this method uses the empty Uint8Array values for the
+signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
+representation for external signing use Transaction.getMessageToSign.
 
 #### Returns
 
@@ -612,13 +574,13 @@ BaseTransaction.serialize
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L244)
+[tx/src/legacyTransaction.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L182)
 
 ___
 
 ### sign
 
-▸ **sign**(`privateKey`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+▸ **sign**(`privateKey`): [`LegacyTransaction`](LegacyTransaction.md)
 
 Signs a transaction.
 
@@ -636,7 +598,7 @@ const signedTx = tx.sign(privateKey)
 
 #### Returns
 
-[`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+[`LegacyTransaction`](LegacyTransaction.md)
 
 #### Inherited from
 
@@ -711,7 +673,7 @@ ___
 
 ▸ **toJSON**(): [`JsonTx`](../interfaces/JsonTx.md)
 
-Returns an object with the JSON representation of the transaction
+Returns an object with the JSON representation of the transaction.
 
 #### Returns
 
@@ -723,7 +685,7 @@ BaseTransaction.toJSON
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L357)
+[tx/src/legacyTransaction.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L338)
 
 ___
 
@@ -749,12 +711,11 @@ ___
 
 ### fromSerializedTx
 
-▸ `Static` **fromSerializedTx**(`serialized`, `opts?`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+▸ `Static` **fromSerializedTx**(`serialized`, `opts?`): [`LegacyTransaction`](LegacyTransaction.md)
 
 Instantiate a transaction from the serialized tx.
 
-Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)])`
+Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
 #### Parameters
 
@@ -765,64 +726,61 @@ signatureYParity (v), signatureR (r), signatureS (s)])`
 
 #### Returns
 
-[`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+[`LegacyTransaction`](LegacyTransaction.md)
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L72)
+[tx/src/legacyTransaction.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L59)
 
 ___
 
 ### fromTxData
 
-▸ `Static` **fromTxData**(`txData`, `opts?`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+▸ `Static` **fromTxData**(`txData`, `opts?`): [`LegacyTransaction`](LegacyTransaction.md)
 
 Instantiate a transaction from a data dictionary.
 
-Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-v, r, s }
+Format: { nonce, gasPrice, gasLimit, to, value, data, v, r, s }
 
 Notes:
-- `chainId` will be set automatically if not provided
 - All parameters are optional and have some basic default values
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `txData` | [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) |
+| `txData` | [`LegacyTxData`](../README.md#legacytxdata) |
 | `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
-[`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+[`LegacyTransaction`](LegacyTransaction.md)
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L62)
+[tx/src/legacyTransaction.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L50)
 
 ___
 
 ### fromValuesArray
 
-▸ `Static` **fromValuesArray**(`values`, `opts?`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+▸ `Static` **fromValuesArray**(`values`, `opts?`): [`LegacyTransaction`](LegacyTransaction.md)
 
 Create a transaction from a values array.
 
-Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)]`
+Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `values` | `AccessListEIP2930TxValuesArray` |
+| `values` | `LegacyTxValuesArray` |
 | `opts` | [`TxOptions`](../interfaces/TxOptions.md) |
 
 #### Returns
 
-[`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+[`LegacyTransaction`](LegacyTransaction.md)
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L96)
+[tx/src/legacyTransaction.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacyTransaction.ts#L74)
