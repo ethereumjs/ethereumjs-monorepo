@@ -132,6 +132,7 @@ describe('Ethers State Manager API tests', () => {
           state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
         'should not call provider.getStorageAt'
       )
+      await state.checkpoint()
 
       await state.putContractStorage(
         UNIerc20ContractAddress,
@@ -174,6 +175,23 @@ describe('Ethers State Manager API tests', () => {
         'account should not exist after being deleted'
       )
 
+      await state.revert()
+      assert.ok(
+        (await state.getAccount(vitalikDotEth)) !== undefined,
+        'account deleted since last checkpoint should exist after revert called'
+      )
+
+      const deletedSlotAfterRevert = await state.getContractStorage(
+        UNIerc20ContractAddress,
+        setLengthLeft(bigIntToBytes(2n), 32)
+      )
+
+      assert.equal(
+        deletedSlotAfterRevert.length,
+        4,
+        'slot deleted since last checkpoint should exist in storage cache after revert'
+      )
+
       try {
         await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
         assert.fail('should have thrown')
@@ -184,18 +202,10 @@ describe('Ethers State Manager API tests', () => {
         )
       }
 
-      const newState = state.shallowCopy()
-
       assert.equal(
-        undefined,
         (state as any)._contractCache.get(UNIerc20ContractAddress),
-        'should not have any code for contract after cache is cleared'
-      )
-
-      assert.notEqual(
         undefined,
-        (newState as any)._contractCache.get(UNIerc20ContractAddress.toString()),
-        'state manager copy should have code for contract after cache is cleared on original state manager'
+        'should not have any code for contract after cache is reverted'
       )
 
       assert.equal((state as any)._blockTag, '0x1', 'blockTag defaults to 1')
@@ -203,6 +213,8 @@ describe('Ethers State Manager API tests', () => {
       assert.equal((state as any)._blockTag, '0x5', 'blockTag set to 0x5')
       state.setBlockTag('earliest')
       assert.equal((state as any)._blockTag, 'earliest', 'blockTag set to earliest')
+
+      await state.checkpoint()
     }
   })
 })

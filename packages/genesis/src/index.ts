@@ -1,10 +1,10 @@
 import { Chain } from '@ethereumjs/common'
 
-import type { GenesisState } from '@ethereumjs/util'
-
-import { mainnetGenesis } from './genesisStates/mainnet.js'
 import { goerliGenesis } from './genesisStates/goerli.js'
+import { mainnetGenesis } from './genesisStates/mainnet.js'
 import { sepoliaGenesis } from './genesisStates/sepolia.js'
+
+import type { GenesisState } from '@ethereumjs/util'
 
 /**
  * Utility to get the genesisState of a well known network

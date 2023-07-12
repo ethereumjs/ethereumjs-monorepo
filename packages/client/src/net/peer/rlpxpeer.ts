@@ -18,6 +18,8 @@ import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from 
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
+  eth67: Devp2pETH.eth67,
+  eth68: Devp2pETH.eth68,
   les2: Devp2pLES.les2,
   les3: Devp2pLES.les3,
   les4: Devp2pLES.les4,

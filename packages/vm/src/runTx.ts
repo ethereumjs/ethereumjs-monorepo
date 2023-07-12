@@ -95,7 +95,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this.evm.journal.cleanup()
 
   if (opts.reportAccessList === true) {
-    this.evm.journal.reportAccessList()
+    this.evm.journal.startReportingAccessList()
   }
 
   await this.evm.journal.checkpoint()

@@ -6,6 +6,212 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.0-rc.1 - 2023-07-11
+
+### Default Shanghai HF / Merge -> Paris Renaming / Cancun Hardfork
+
+The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefore for all libraries who use a Common-based HF setting internally (e.g. Tx, Block or EVM), see PR [#2655](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2655).
+
+Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
+```
+
+And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+```
+
+Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+
+### API Validation Methods Clean-Up
+
+We have cleaned up and unified the validation methods in the `Tx` library, see PR [#2792](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2792).
+
+The `Tx.validate()` method (so: for all tx types), previously overloaded with different return types depending on the input, has been split up into:
+
+```typescript
+Tx.isValid(): boolean
+Tx.getValidationErrors(): string[] // If you are interested in the errors, can also be used for validation by checking return array length
+```
+
+The overloaded method `Tx.getMessageToSign()` has been split up into two methods:
+
+```typescript
+getMessageToSign(): Uint8Array | Uint8Array[] // For the unhashed message
+getHashedMessageToSign(): Uint8Array // For the hashed message
+```
+
+### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
+
+While there might be last-round final tweaks, [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format. A lot of spec changes happened during the last 2-3 months and these are included in this release round. So the released version should be relatively close to a future production ready version.
+
+This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7)from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
+
+#### KZG Initialization -> @ethereumjs/util
+
+The global initialization method for the KZG setup has been moved to a dedicated [kzg.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/kzg.ts) module in `@ethereumjs/util` for easy reuse across the libraries, see PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567).
+
+The `initKZG()` method can be used as follows:
+
+```typescript
+// Make the kzg library available globally
+import * as kzg from 'c-kzg'
+import { initKZG } from '@ethereumjs/util'
+
+// Initialize the trusted setup
+initKZG(kzg, 'path/to/my/trusted_setup.txt')
+```
+
+For further information on this see the respective section in `@ethereumjs-util` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util).
+
+### Simple Blob Constructor Parameter
+
+We have added a new `blobsData` parameter to `BlobEIP4844TxData` which allows for an easier Tx initialization with arbitrary blob data, see PR [#2755](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2755).
+
+You can simply pass any arbitrary data to this new data parameter, and separate blobs are automatically extracted and `kzgCommitments` and `versionedHashes` computed for you 🤯:
+
+```typescript
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+
+const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
+  {
+    blobsData: ['hello world'],
+    maxFeePerDataGas: 100000000n,
+    gasLimit: 0xffffffn,
+    to: 0x1122334455667788991011121314151617181920,
+  },
+  { common }
+)
+```
+
+#### Library Changes
+
+The following changes are included:
+
+- Update blob tx type to 0x03, PR [#2363](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2636)
+- Fix the deserialization of blob txs and add no empty blobs validation, PR [#2640](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2640)
+- Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
+- Update c-kzg to big endian implementation (versioned hashes), PR [#2746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2746)
+- Update the kzg validation and replace trusted setup with latest (devnet6), PR [#2756](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2756)
+
+### Hybrid CJS/ESM Build
+
+We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
+
+There are now two different build directories in our `dist` folder, being `dist/cjs` for the CommonJS and `dist/esm` for the `ESM` build. That means that direct imports (which you generally should try to avoid, rather open an issue on your import needs), need an update within your code (do a `dist` or the like code search).
+
+Both builds have respective separate entrypoints in the distributed `package.json` file.
+
+A CommonJS import of our libraries can then be done like this:
+
+```typescript
+const { Chain, Common } = require('@ethereumjs/common')
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+And this is how an ESM import looks like:
+
+```typescript
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+Side note: along this transition we also rewrote our whole test suite (yes!!!) to now work with [Vitest](https://vitest.dev/) instead of `Tape`.
+
+### Buffer -> Uint8Array
+
+With these releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566) and [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607). 😋
+
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
+
+#### How to upgrade?
+
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+
+```typescript
+// All tx types (Transaction is placeholder for specific type class, e.g. FeeMarketEIP1559Transaction)
+TransactionFactory.fromTxData() // data field
+Transaction.fromValuesArray() // whole array
+Transaction.fromSerializedTx()
+Transaction.accessList: AccessListBytes // property
+Transaction.raw()
+Transaction.serialize(): Uint8Array
+Transaction.getMessageToSign(), Transaction.getHashedMessageToSign() // Generally refactored
+Transaction.hash(): Uint8Array
+Transaction.getMessageToVerifySignature(): Uint8Array
+Transaction.getSenderPublicKey(): Uint8Array
+Transaction.sign(privateKey: Uint8Array): TransactionObject
+
+// TransactionFactory
+TransactionFactory.fromTxData()
+TransactionFactory.fromSerializedData()
+TransactionFactory.fromBlockBodyData()
+
+// 2930 transactions
+TransactionFactory.fromTxData() // accessList
+
+// 1559 transactions
+// All 2930 changes + ...
+FeeMarketEIP1559Transaction.maxFeePerGas // property
+FeeMarketEIP1559Transaction.maxPriorityFeePerGas // property
+
+// 4844 transactions
+// All 1559 changes + ...
+BlobEIP4844Transaction.fromTxData() // versionedHashes, blobs, kzgCommitments, kzgProof
+BlobEIP4844Transaction.versionedHashes: Uint8Array[] // property
+BlobEIP4844Transaction.blobs?: Uint8Array[] // optional property
+BlobEIP4844Transaction.kzgCommitments?: Uint8Array[] // optional property
+BlobEIP4844Transaction.aggregateKzgProof?: Uint8Array // optional property
+BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper()
+BlobEIP4844Transaction.serializeNetworkWrapper()
+BlobEIP4844Transaction.unsignedHash(): Uint8Array
+
+// Types
+type AccessListBytesItem // old: AccessListBufferItem
+type AccessListBytes // old: AccessListBuffer
+isAccessListBytes() // old: isAccessListBuffer()
+isAccessList()
+type TxData
+
+// util
+AccessLists.getAccessListData()
+AccessLists.verifyAccessList()
+AccessLists.getAccessListJSON()
+AccessLists.getDataFeeEIP2930()
+
+// blobHelpers
+getBlobs()
+blobsToCommitments()
+commitmentsToVersionedHashes()
+```
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+#### Prefixed Hex Strings as Default
+
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
+
+We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
+
+The `hexToBytes` and `bytesToHex` methods, also similar methods like `intToHex`, now take `0x`-prefixed hex strings as input and output prefixed strings. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
+
+Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
+### Other Changes
+
+- Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
+- Migrate `fromEthersProvider()` to more general `fromJsonRpcProvider()` constructor, remove `Ethers` dependency, PR [#2663](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2663)
+- EIP-4844: De-sszify 4844 blob transaction, PR [#2708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2708)
+- Normalize `toJSON()` for different tx types, PR [#2707](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2707)
+- Remove `@chainsafe/ssz` dependency, PR [#2717](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2717)
+
 ## 4.1.2 - 2023-04-20
 
 ### Features
