@@ -37,7 +37,7 @@ require (CommonJS, Node.js):
 const { Common, Chain, Hardfork } = require('@ethereumjs/common')
 ```
 
-## Parameters
+### Parameters
 
 All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Chain.Mainnet') or the `chain` together with a specific `hardfork` provided:
 
@@ -71,7 +71,13 @@ c.bootstrapNodes() // Array with current nodes
 c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 ```
 
-# API
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+
+## API
 
 ### Docs
 
