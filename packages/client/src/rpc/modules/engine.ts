@@ -631,19 +631,17 @@ export class Engine {
     }
 
     blocks.push(block)
-    let areBlocksPreExecuted = true
 
     let lastBlock: Block
     try {
       for (const [i, block] of blocks.entries()) {
         lastBlock = block
-        const bHash = bytesToHex(block.hash())
+        const bHash = block.hash()
         const isBlockExecuted =
-          (this.remoteBlocks.get(bHash.slice(2)) ??
-            (await validExecutedChainBlock(hexToBytes(bHash), this.chain))) !== null
+          (this.remoteBlocks.get(bytesToUnprefixedHex(bHash)) ??
+            (await validExecutedChainBlock(bHash, this.chain))) !== null
 
-        areBlocksPreExecuted = areBlocksPreExecuted && isBlockExecuted
-        if (!areBlocksPreExecuted) {
+        if (!isBlockExecuted) {
           const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
             .header.stateRoot
           await this.execution.runWithoutSetHead({
