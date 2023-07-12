@@ -258,19 +258,30 @@ tape('[EthProtocol]', (t) => {
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const fakeHash = randomBytes(32)
-    const res = p.encode(
+    const fakeTx = TransactionFactory.fromTxData({}).sign(randomBytes(32))
+    const fakeHash = fakeTx.hash()
+    const encoded = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
       [fakeHash]
     )
-    st.deepEqual(res[0], fakeHash, 'encoded hash correctly')
+
+    const encodedEth68 = p.encode(
+      p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
+      [[fakeTx.type], [fakeTx.serialize().byteLength], [fakeHash]]
+    )
+    st.deepEqual(encoded[0], fakeHash, 'encoded hash correctly with pre-eth/68 format')
+    st.deepEqual(encodedEth68[2][0], fakeHash, 'encoded hash correctly with eth/68 format')
 
     const decoded = p.decode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
-      res
+      encoded
     )
-
-    st.deepEqual(decoded[0], fakeHash, 'decoded hash correctly')
+    const decodedEth68 = p.decode(
+      p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],
+      encodedEth68
+    )
+    st.deepEqual(decoded[0], fakeHash, 'decoded hash correctly with pre-eth/68 format')
+    st.deepEqual(decodedEth68[2][0], fakeHash, 'decoded hash correctly with eth/68 format')
     st.end()
   })
 })

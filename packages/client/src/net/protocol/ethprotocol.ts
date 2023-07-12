@@ -206,8 +206,38 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
-      encode: (hashes: Uint8Array[]) => hashes,
-      decode: (hashes: Uint8Array[]) => hashes,
+      // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
+      // `hashes: Uint8Array[]` to an tuple of arrays of `types, sizes, hashes`, where types corresponds to the
+      // transaction type, sizes is the size of each encoded transaction in bytes, and the transaction hashes
+      encode: (params: Uint8Array[] | [types: number[], sizes: number[], hashes: Uint8Array[]]) => {
+        if (params[0] instanceof Uint8Array) {
+          return params
+        } else {
+          const tupleParams = params as [number[], number[], Uint8Array[]]
+          const encodedData = [
+            tupleParams[0].map((type) => intToUnpaddedBytes(type)),
+            tupleParams[1].map((size) => intToUnpaddedBytes(size)),
+            tupleParams[2],
+          ]
+          return encodedData
+        }
+      },
+      decode: (
+        params: Uint8Array[] | [types: Uint8Array[], sizes: Uint8Array[], hashes: Uint8Array[]]
+      ) => {
+        if (params[0] instanceof Uint8Array) {
+          return params
+        } else {
+          const tupleParams = params as [Uint8Array[], Uint8Array[], Uint8Array[]]
+          const decodedData = [
+            tupleParams[0].map((type) => bytesToInt(type)),
+            tupleParams[1].map((size) => bytesToInt(size)),
+            tupleParams[2],
+          ]
+
+          return decodedData
+        }
+      },
     },
     {
       name: 'GetPooledTransactions',
@@ -343,7 +373,7 @@ export class EthProtocol extends Protocol {
    * Protocol versions supported
    */
   get versions() {
-    return [66]
+    return [66, 67, 68]
   }
 
   /**
