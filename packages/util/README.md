@@ -29,6 +29,12 @@ isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A') // true
 hexToBytes('0x342770c0')
 ```
 
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+
 ## API
 
 ### Documentation
@@ -47,58 +53,23 @@ Read the [API docs](docs/).
 - [bytes](src/bytes.ts)
   - Byte-related helper and conversion functions
 - [constants](src/constants.ts)
-  - Exposed constants
-    - e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null
-- hash
-  - This module has been removed with `v8`, please use [ethereum-cryptography](https://github.com/ethereum/js-ethereum-cryptography) directly instead
+  - Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
+- [db](src/db.ts)
+  - DB interface for database abstraction (Blockchain, Trie)
+- [genesis](src/genesis.ts)
+  - Genesis related interfaces and helpers
+- [internal](src/internal.ts)
+  - Internalized helper methods
+- [kzg](src/kzg.ts)
+  - KZG interface (used for 4844 blob txs)
+- [mapDB](src/mapDB.ts)
+  - Simple map DB implementation using the `DB` interface
 - [signature](src/signature.ts)
   - Signing, signature validation, conversion, recovery
 - [types](src/types.ts)
   - Helpful TypeScript types
-- [internal](src/internal.ts)
-  - Internalized helper methods
 - [withdrawal](src/withdrawal.ts)
   - Withdrawal class (EIP-4895)
-
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files from the ESM build will be used:
-
-```typescript
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
-
-If you use Node.js specific `require` the CJS build will be used:
-
-```typescript
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-Starting with the Summer 2023 EthereumJS breaking release round (Util v9) all methods, constructors, constants and types of the EthereumJS libraries which took a `Buffer` instance as an input or resulted in a `Buffer` (containing) output have been updated to take in an `Uint8Array` instead and/or produce `Uint8Array` as an output.
-
-Here are some examples of the changes:
-
-```typescript
-async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> // StateManager, old
-async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> // StateManager, new
-
-hash(): Buffer // Block, old
-hash(): Uint8Array // Block, new
-
-export const KECCAK256_NULL = Buffer.from(KECCAK256_NULL_S, 'hex') // Util, old
-export const KECCAK256_NULL = hexToBytes(KECCAK256_NULL_S) // Util, new
-
-export type AccessListBufferItem = [Buffer, Buffer[]] // Tx, old (Type)
-export type AccessListBytesItem = [Uint8Array, Uint8Array[]] // Tx, new
-```
-
-As you can see, complex datastructures containing `Buffer` objects are now renamed from containing `Buffer` as an indicator key word to now having a `Bytes` containing name.
 
 ### Upgrade Helpers in bytes-Module
 

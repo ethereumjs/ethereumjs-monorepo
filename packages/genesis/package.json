@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^3.1.2",
-    "@ethereumjs/util": "^8.0.6"
+    "@ethereumjs/util": "9.0.0-rc.1"
   },
   "engines": {
     "node": ">=18"

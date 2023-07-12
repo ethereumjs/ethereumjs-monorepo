@@ -70,7 +70,7 @@
     "@ethereumjs/statemanager": "^1.0.5",
     "@ethereumjs/trie": "^5.0.5",
     "@ethereumjs/tx": "^4.1.2",
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/util": "9.0.0-rc.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2"
   },

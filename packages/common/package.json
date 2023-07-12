@@ -55,7 +55,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/util": "9.0.0-rc.1",
     "crc": "^4.3.2"
   }
 }
