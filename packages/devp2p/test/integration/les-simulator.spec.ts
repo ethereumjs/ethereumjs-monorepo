@@ -65,7 +65,7 @@ describe('LES simulator tests', () => {
 
       const c1 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const c2 = new Common({ chain: Chain.Sepolia, hardfork: Hardfork.London })
-      util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 41591)
+      util.twoPeerMsgExchange(it, opts, capabilities, [c1, c2], 41599)
     })
   })
 
