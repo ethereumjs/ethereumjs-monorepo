@@ -54,13 +54,9 @@
     "@ethereumjs/util": "9.0.0-rc.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
-    "level": "^8.0.0",
     "lru-cache": "^10.0.0"
   },
-  "devDependencies": {
-    "@types/async": "^2.4.1",
-    "@types/level-errors": "^3.0.0"
-  },
+  "devDependencies": {},
   "engines": {
     "node": ">=18"
   }

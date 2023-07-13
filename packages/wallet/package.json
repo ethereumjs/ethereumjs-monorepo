@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "2.0.0",
+  "version": "2.0.0-rc.1",
   "description": "Utilities for handling Ethereum keys",
   "keywords": [
     "ethereum",
