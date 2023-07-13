@@ -93,10 +93,7 @@
     "@ethereumjs/rlp": "5.0.0-rc.1",
     "ethereum-cryptography": "^2.1.2"
   },
-  "devDependencies": {
-    "@types/bn.js": "^5.1.0",
-    "@types/secp256k1": "^4.0.1"
-  },
+  "devDependencies": {},
   "peerDependencies": {
     "c-kzg": "^2.1.0"
   },

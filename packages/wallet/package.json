@@ -57,8 +57,7 @@
     "@types/lodash.zip": "^4.2.7",
     "@types/uuid": "^9.0.2",
     "ethers": "^6.4.0",
-    "lodash.zip": "^4.2.0",
-    "nyc": "^15.1.0"
+    "lodash.zip": "^4.2.0"
   },
   "engines": {
     "node": ">=18"
