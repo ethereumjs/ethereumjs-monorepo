@@ -1,25 +1,25 @@
 import { BlockHeader } from '@ethereumjs/block'
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
+import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher'
 import { Event } from '../../src/types'
 
 describe('[LightSynchronizer]', async () => {
   class PeerPool {
     open() {}
     close() {}
+    idle() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  class HeaderFetcher {
-    fetch() {}
-    clear() {}
-    destroy() {}
-  }
+
   HeaderFetcher.prototype.fetch = td.func<any>()
-  td.replace<any>('../../src/sync/fetcher', { HeaderFetcher })
+  HeaderFetcher.prototype.clear = td.func<any>()
+  HeaderFetcher.prototype.destroy = td.func<any>()
+  vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
 
   const { LightSynchronizer } = await import('../../src/sync/lightsync')
 
@@ -41,7 +41,7 @@ describe('[LightSynchronizer]', async () => {
       pool,
       chain,
     })
-    ;(sync as any).running = true
+    sync['running'] = true
     ;(sync as any).chain = { headers: { td: BigInt(1) } }
     const peers = [
       {
@@ -95,11 +95,17 @@ describe('[LightSynchronizer]', async () => {
       assert.equal(err.message, 'err0', 'got error')
       await sync.stop()
       await sync.close()
+      vi.unmock('../../src/sync/fetcher/headerfetcher')
     }
   })
 
   it('import headers', async () => {
     td.reset()
+    HeaderFetcher.prototype.fetch = td.func<any>()
+    HeaderFetcher.prototype.clear = td.func<any>()
+    HeaderFetcher.prototype.destroy = td.func<any>()
+    vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
+    const { LightSynchronizer } = await import('../../src/sync/lightsync')
     const config = new Config({
       transports: [],
       accountCache: 10000,
@@ -131,6 +137,7 @@ describe('[LightSynchronizer]', async () => {
         config.logger.removeAllListeners()
         await sync.stop()
         await sync.close()
+        vi.unmock('../../src/sync/fetcher/headerfetcher')
       }
     })
     await sync.sync()
