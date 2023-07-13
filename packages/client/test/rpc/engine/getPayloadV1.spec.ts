@@ -36,13 +36,13 @@ tape(`${method}: call with known payload`, async (t) => {
   let expectRes = (res: any) => {
     payloadId = res.body.result.payloadId
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   req = params(method, [payloadId])
   expectRes = (res: any) => {
     t.equal(res.body.result.blockNumber, '0x1')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')

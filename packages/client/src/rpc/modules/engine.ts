@@ -185,7 +185,8 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
 const recursivelyFindParents = async (
   vmHeadHash: Uint8Array,
   parentHash: Uint8Array,
-  chain: Chain
+  chain: Chain,
+  maxDepth: number
 ) => {
   if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
@@ -194,11 +195,17 @@ const recursivelyFindParents = async (
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
   parentBlocks.push(block)
+
   while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), vmHeadHash)) {
     const block: Block = await chain.getBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash
     )
     parentBlocks.push(block)
+
+    // throw error if lookups have exceeded maxDepth
+    if (parentBlocks.length > maxDepth) {
+      throw Error(`recursivelyFindParents lookups deeper than maxDepth=${maxDepth}`)
+    }
   }
   return parentBlocks.reverse()
 }
@@ -624,7 +631,13 @@ export class Engine {
     const vmHead = await this.chain.blockchain.getIteratorHead()
     let blocks: Block[]
     try {
-      blocks = await recursivelyFindParents(vmHead.hash(), block.header.parentHash, this.chain)
+      // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
+      blocks = await recursivelyFindParents(
+        vmHead.hash(),
+        block.header.parentHash,
+        this.chain,
+        this.chain.config.engineParentLookupMaxDepth
+      )
     } catch (error) {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
@@ -642,13 +655,23 @@ export class Engine {
             (await validExecutedChainBlock(bHash, this.chain))) !== null
 
         if (!isBlockExecuted) {
-          const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
-            .header.stateRoot
-          await this.execution.runWithoutSetHead({
-            block,
-            root,
-            setHardfork: this.chain.headers.td,
-          })
+          // Only execute if number of blocks pending to be executed are within limit
+          // else return SYNCING/ACCEPTED and let skeleton led chain execution catch up
+          const executed =
+            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute
+              ? await this.execution.runWithoutSetHead({
+                  block,
+                  root: (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
+                    .header.stateRoot,
+                  setHardfork: this.chain.headers.td,
+                })
+              : false
+          if (!executed) {
+            // determind status to be returned depending on if block could extend chain or not
+            const status = optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
+            const response = { status, latestValidHash: null, validationError: null }
+            return response
+          }
         }
       }
     } catch (error) {
@@ -944,7 +967,8 @@ export class Engine {
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,
-            this.chain
+            this.chain,
+            this.chain.config.engineParentLookupMaxDepth
           )
         } catch (error) {
           const payloadStatus = {
