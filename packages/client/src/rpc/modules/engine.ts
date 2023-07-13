@@ -844,7 +844,7 @@ export class Engine {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bytesToUnprefixedHex(zeros(32)),
+            latestValidHash: bytesToHex(zeros(32)),
           },
           payloadId: null,
         }

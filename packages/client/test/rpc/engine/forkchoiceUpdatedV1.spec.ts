@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, bytesToUnprefixedHex, zeros } from '@ethereumjs/util'
+import { bytesToHex, zeros } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -162,7 +162,7 @@ describe(method, () => {
     const req = params(method, [validForkChoiceState, null])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'INVALID')
-      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToUnprefixedHex(zeros(32)))
+      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
     }
     await baseRequest(server, req, 200, expectRes)
   })
@@ -202,7 +202,7 @@ describe(method, () => {
     ])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'INVALID')
-      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToUnprefixedHex(zeros(32)))
+      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
     }
     await baseRequest(server, req, 200, expectRes)
   })
