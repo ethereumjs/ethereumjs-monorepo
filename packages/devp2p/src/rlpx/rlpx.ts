@@ -43,13 +43,13 @@ export class RLPx extends EventEmitter {
   protected _listenPort: number | null
   protected _dpt: DPT | null
 
-  _peersLRU: LRUCache<string, boolean>
-  _peersQueue: { peer: PeerInfo; ts: number }[]
-  _server: net.Server | null
-  _peers: Map<string, net.Socket | Peer>
+  protected _peersLRU: LRUCache<string, boolean>
+  protected _peersQueue: { peer: PeerInfo; ts: number }[]
+  protected _server: net.Server | null
+  protected _peers: Map<string, net.Socket | Peer>
 
-  _refillIntervalId: NodeJS.Timeout
-  _refillIntervalSelectionCounter: number = 0
+  protected _refillIntervalId: NodeJS.Timeout
+  protected _refillIntervalSelectionCounter: number = 0
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
     super()
