@@ -11,7 +11,7 @@ import type { GenesisState } from '@ethereumjs/util'
  * @param: chainId of the network
  * @returns genesisState of the chain
  */
-export function getGenesis(chainId: number): GenesisState | null {
+export function getGenesis(chainId: number): GenesisState | undefined {
   // Use require statements here in favor of import statements
   // to load json files on demand
   // (high memory usage by large mainnet.json genesis state file)
@@ -24,6 +24,6 @@ export function getGenesis(chainId: number): GenesisState | null {
       return sepoliaGenesis
 
     default:
-      return null
+      return undefined
   }
 }
