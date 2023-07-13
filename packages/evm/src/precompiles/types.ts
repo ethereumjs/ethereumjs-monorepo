@@ -1,4 +1,5 @@
-import type { EVM, ExecResult } from '../evm.js'
+import type { EVM } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { debug } from 'debug'
 
