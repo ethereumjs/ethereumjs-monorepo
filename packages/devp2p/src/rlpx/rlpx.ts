@@ -35,10 +35,10 @@ export class RLPx extends EventEmitter {
   public readonly id: Uint8Array
   private _debug: Debugger
   protected _timeout: number
-  _maxPeers: number
-  _clientId: Uint8Array
-  _remoteClientIdFilter?: string[]
-  _capabilities: Capabilities[]
+  protected _maxPeers: number
+  protected _clientId: Uint8Array
+  protected _remoteClientIdFilter?: string[]
+  protected _capabilities: Capabilities[]
   _common: Common
   _listenPort: number | null
   _dpt: DPT | null
