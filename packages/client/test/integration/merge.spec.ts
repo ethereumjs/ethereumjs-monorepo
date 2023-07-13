@@ -109,29 +109,32 @@ describe('[Integration:Merge]', async () => {
     ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
       accounts[0][0],
     ] // stub
-    ;(BlockHeader as any).prototype._consensusFormatValidation = () => {} //stub
+    BlockHeader.prototype['_consensusFormatValidation'] = () => {} //stub
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(5)
-    remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      const { td } = remoteService.chain.headers
-      if (td === targetTTD) {
-        assert.equal(
-          remoteService.chain.headers.td,
-          targetTTD,
-          'synced blocks to the merge successfully'
-        )
-        // Make sure the miner has stopped
-        assert.notOk(service.miner!.running, 'miner should not be running')
-        await destroy(server, service)
-        await destroy(remoteServer, remoteService)
-      }
-      if (td > targetTTD) {
-        assert.fail('chain should not exceed merge TTD')
-      }
+
+    await new Promise((resolve) => {
+      remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
+        const { td } = remoteService.chain.headers
+        if (td === targetTTD) {
+          assert.equal(
+            remoteService.chain.headers.td,
+            targetTTD,
+            'synced blocks to the merge successfully'
+          )
+          // Make sure the miner has stopped
+          assert.notOk(service.miner!.running, 'miner should not be running')
+          await destroy(server, service)
+          await destroy(remoteServer, remoteService)
+          resolve(undefined)
+        }
+        if (td > targetTTD) {
+          assert.fail('chain should not exceed merge TTD')
+        }
+      })
+      void remoteService.synchronizer!.start()
     })
-    await remoteService.synchronizer!.start()
-    await new Promise(() => {}) // resolves once   is called
-  })
+  }, 20000)
 
   it('should mine and stop at the merge (PoW)', async () => {
     const [server, service] = await minerSetup(commonPoW)
@@ -143,31 +146,33 @@ describe('[Integration:Merge]', async () => {
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(1000)
     let terminalHeight: bigint | undefined
-    remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
-      const { height, td } = remoteService.chain.headers
-      if (td > targetTTD) {
-        if (terminalHeight === undefined || terminalHeight === BigInt(0)) {
-          terminalHeight = height
+    await new Promise((resolve) => {
+      remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
+        const { height, td } = remoteService.chain.headers
+        if (td > targetTTD) {
+          if (terminalHeight === undefined || terminalHeight === BigInt(0)) {
+            terminalHeight = height
+          }
+          assert.equal(
+            remoteService.chain.headers.height,
+            terminalHeight,
+            'synced blocks to the merge successfully'
+          )
+          // Make sure the miner has stopped
+          assert.notOk(service.miner!.running, 'miner should not be running')
+          await destroy(server, service)
+          await destroy(remoteServer, remoteService)
+          resolve(undefined)
         }
-        assert.equal(
-          remoteService.chain.headers.height,
-          terminalHeight,
-          'synced blocks to the merge successfully'
-        )
-        // Make sure the miner has stopped
-        assert.notOk(service.miner!.running, 'miner should not be running')
-        await destroy(server, service)
-        await destroy(remoteServer, remoteService)
-      }
-      if (
-        typeof terminalHeight === 'bigint' &&
-        terminalHeight !== BigInt(0) &&
-        terminalHeight < height
-      ) {
-        assert.fail('chain should not exceed merge terminal block')
-      }
+        if (
+          typeof terminalHeight === 'bigint' &&
+          terminalHeight !== BigInt(0) &&
+          terminalHeight < height
+        ) {
+          assert.fail('chain should not exceed merge terminal block')
+        }
+      })
+      void remoteService.synchronizer!.start()
     })
-    await remoteService.synchronizer!.start()
-    await new Promise(() => {}) // resolves once   is called
-  })
+  }, 60000)
 })
