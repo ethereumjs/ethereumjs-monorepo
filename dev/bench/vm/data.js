@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689242527688,
+  "lastUpdate": 1689244991809,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "dfe77efa69b764fbf15f866bd01f668e9c4d01d3",
-          "message": "Add tests for asyncEventEmitter (#2819)\n\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-06-26T14:43:16+02:00",
-          "tree_id": "3b647a192460a52604ad70ccf25b3317b834db13",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dfe77efa69b764fbf15f866bd01f668e9c4d01d3"
-        },
-        "date": 1687783644706,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32614,
-            "range": "±5.03%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32596,
-            "range": "±2.85%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31859,
-            "range": "±4.46%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24385,
-            "range": "±14.30%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30185,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.63%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d196a05b116cda7b57233cf582f3f404d5bc89af",
+          "message": "Move EVMOpts to types in EVM (#2885)\n\n* evm: move EVMOpts to types file\r\n\r\n* evm: remove stateManager from precompile inputs",
+          "timestamp": "2023-07-13T12:39:46+02:00",
+          "tree_id": "a2e75b0100206983805d39275468c501a7541d5b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d196a05b116cda7b57233cf582f3f404d5bc89af"
+        },
+        "date": 1689244990538,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32622,
+            "range": "±4.12%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32240,
+            "range": "±2.19%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 32132,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27870,
+            "range": "±7.71%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29958,
+            "range": "±2.67%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
