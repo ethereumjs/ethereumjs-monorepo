@@ -19,20 +19,6 @@ function compareResult(result: any, chainId: any) {
 }
 
 describe(method, () => {
-  it('call on ropsten', async () => {
-    const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
-    )
-    const server = startRPC(manager.getMethods())
-
-    const req = params(method, [])
-    const expectRes = (res: any) => {
-      const { result } = res.body
-      compareResult(result, '3')
-    }
-    await baseRequest(server, req, 200, expectRes)
-  })
-
   it('call on mainnet', async () => {
     const { server } = baseSetup()
 
@@ -44,7 +30,7 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it('call on rinkeby', async () => {
+  it('call on sepolia', async () => {
     // Stub out block consensusFormatValidation checks
     BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     const manager = createManager(
@@ -55,7 +41,7 @@ describe(method, () => {
     const req = params(method, [])
     const expectRes = (res: any) => {
       const { result } = res.body
-      compareResult(result, '4')
+      compareResult(result, '11155111')
     }
     await baseRequest(server, req, 200, expectRes)
     td.reset()

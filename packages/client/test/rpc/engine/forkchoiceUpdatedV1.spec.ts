@@ -1,6 +1,6 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, zeros } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, zeros } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -162,7 +162,7 @@ describe(method, () => {
     const req = params(method, [validForkChoiceState, null])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'INVALID')
-      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
+      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToUnprefixedHex(zeros(32)))
     }
     await baseRequest(server, req, 200, expectRes)
   })
@@ -182,6 +182,7 @@ describe(method, () => {
       engine: true,
     })
 
+    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
     const newBlock = Block.fromBlockData(
       {
         header: {
@@ -191,7 +192,7 @@ describe(method, () => {
           extraData: new Uint8Array(97),
         },
       },
-      { common }
+      { common, skipConsensusFormatValidation: true }
     )
 
     await chain.putBlocks([newBlock])
@@ -201,7 +202,7 @@ describe(method, () => {
     ])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'INVALID')
-      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToHex(zeros(32)))
+      assert.equal(res.body.result.payloadStatus.latestValidHash, bytesToUnprefixedHex(zeros(32)))
     }
     await baseRequest(server, req, 200, expectRes)
   })

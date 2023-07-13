@@ -46,7 +46,7 @@ describe(method, () => {
       hardfork: Hardfork.Cancun,
     })
     common.setHardfork(Hardfork.Cancun)
-    const pkey = hexToBytes('9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+    const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
