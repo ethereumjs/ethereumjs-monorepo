@@ -39,9 +39,9 @@ export class RLPx extends EventEmitter {
   protected _clientId: Uint8Array
   protected _remoteClientIdFilter?: string[]
   protected _capabilities: Capabilities[]
-  _common: Common
-  _listenPort: number | null
-  _dpt: DPT | null
+  protected _common: Common
+  protected _listenPort: number | null
+  protected _dpt: DPT | null
 
   _peersLRU: LRUCache<string, boolean>
   _peersQueue: { peer: PeerInfo; ts: number }[]
