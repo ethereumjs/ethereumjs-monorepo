@@ -45,7 +45,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   const historicalRootsLength = BigInt(opts.common.param('vm', 'historicalRootsLength'))
 
   const timestampIndex = timestampInput % historicalRootsLength
-  const recordedTimestamp = await opts.stateManager.getContractStorage(
+  const recordedTimestamp = await opts._EVM.stateManager.getContractStorage(
     address,
     setLengthLeft(bigIntToBytes(timestampIndex), 32)
   )
@@ -58,7 +58,7 @@ export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   }
   const timestampExtended = timestampIndex + historicalRootsLength
   const returnData = setLengthLeft(
-    await opts.stateManager.getContractStorage(
+    await opts._EVM.stateManager.getContractStorage(
       address,
       setLengthLeft(bigIntToBytes(timestampExtended), 32)
     ),
