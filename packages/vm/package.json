@@ -39,7 +39,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "coverage:test": "npm run test:API",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- vm",
     "formatTest": "node ./scripts/formatTest",
     "lint": "../../config/cli/lint.sh",
@@ -72,7 +72,7 @@
     "@ethereumjs/tx": "^4.1.2",
     "@ethereumjs/util": "^8.0.6",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.1.1"
+    "ethereum-cryptography": "^2.1.2"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",

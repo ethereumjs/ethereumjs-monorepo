@@ -34,7 +34,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
-    "docs:build": "npx typedoc --options typedoc.js",
+    "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
@@ -48,7 +48,7 @@
   "dependencies": {
     "@ethereumjs/util": "^8.0.6",
     "@scure/base": "^1.1.1",
-    "ethereum-cryptography": "^2.1.1",
+    "ethereum-cryptography": "^2.1.2",
     "js-md5": "^0.7.3",
     "uuid": "^9.0.0"
   },

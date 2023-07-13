@@ -39,7 +39,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- trie",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
@@ -56,7 +56,7 @@
     "@ethereumjs/util": "^8.0.6",
     "@types/readable-stream": "^2.3.13",
     "lru-cache": "^10.0.0",
-    "ethereum-cryptography": "^2.1.1",
+    "ethereum-cryptography": "^2.1.2",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {

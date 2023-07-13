@@ -22,7 +22,9 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
-
+        with:
+          submodules: recursive # necessary for block tests to load ethereum/tests
+          
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -44,8 +46,8 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/blockchain
       #     No browser tests for ethash
       - run: npm run test:browser -w=@ethereumjs/wallet
-      - run: cd ../statemanager && npm run test:browser
-      - run: cd ../evm && npm run test:browser
+      - run: npm run test:browser -w=@ethereumjs/statemanager
+      - run: npm run test:browser -w=@ethereumjs/evm
 #     VM: several tests not passing yet
 #     - run: npm run test:browser -w=@ethereumjs/vm
 

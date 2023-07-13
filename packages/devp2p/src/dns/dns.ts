@@ -9,7 +9,7 @@ let dns: any
 try {
   dns = require('dns')
 } catch (e: any) {
-  dns = require('../browser/dns')
+  dns = require('../browser/dns.js')
 }
 
 const debug = createDebugLogger('devp2p:dns:dns')
