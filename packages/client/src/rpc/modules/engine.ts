@@ -324,6 +324,7 @@ export class Engine {
   private vm: VM
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
+  private executedBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
 
   private lastNewPayloadHF: string = ''
@@ -346,6 +347,7 @@ export class Engine {
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
+    this.executedBlocks = new Map()
 
     this.newPayloadV1 = cmMiddleware(
       middleware(this.newPayloadV1.bind(this), 1, [
@@ -564,7 +566,7 @@ export class Engine {
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
     // some pre-executed stateroot can be send
     const executedBlockExists =
-      this.remoteBlocks.get(blockHash.slice(2)) ??
+      this.executedBlocks.get(blockHash.slice(2)) ??
       (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
     if (executedBlockExists) {
       const response = {
@@ -610,7 +612,7 @@ export class Engine {
       }
 
       const executedParentExists =
-        this.remoteBlocks.get(parentHash.slice(2)) ??
+        this.executedBlocks.get(parentHash.slice(2)) ??
         (await validExecutedChainBlock(hexToBytes(parentHash), this.chain))
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!executedParentExists) {
@@ -651,7 +653,7 @@ export class Engine {
         lastBlock = block
         const bHash = block.hash()
         const isBlockExecuted =
-          (this.remoteBlocks.get(bytesToUnprefixedHex(bHash)) ??
+          (this.executedBlocks.get(bytesToUnprefixedHex(bHash)) ??
             (await validExecutedChainBlock(bHash, this.chain))) !== null
 
         if (!isBlockExecuted) {
@@ -671,6 +673,8 @@ export class Engine {
             const status = optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
             const response = { status, latestValidHash: null, validationError: null }
             return response
+          } else {
+            this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
           }
         }
       }
@@ -847,23 +851,20 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      headBlock = await this.chain.getBlock(toBytes(headBlockHash))
-    } catch (error) {
+      const head = toBytes(headBlockHash)
       headBlock =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(toBytes(headBlockHash))) ??
-        this.remoteBlocks.get(headBlockHash.slice(2))
-      if (headBlock === undefined) {
-        this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
-        const payloadStatus = {
-          status: Status.SYNCING,
-          latestValidHash: null,
-          validationError: null,
-        }
-        const response = { payloadStatus, payloadId: null }
-        return response
-      } else {
-        this.remoteBlocks.delete(headBlockHash.slice(2))
+        this.remoteBlocks.get(headBlockHash.slice(2)) ??
+        (await this.service.beaconSync?.skeleton.getBlockByHash(head, true)) ??
+        (await this.chain.getBlock(head))
+    } catch (error) {
+      this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
+      const payloadStatus = {
+        status: Status.SYNCING,
+        latestValidHash: null,
+        validationError: null,
       }
+      const response = { payloadStatus, payloadId: null }
+      return response
     }
 
     const hardfork = headBlock.common.hardfork()
@@ -1093,6 +1094,7 @@ export class Engine {
       // value the block
       const [block, receipts, value, blobs] = built
       await this.execution.runWithoutSetHead({ block }, receipts)
+      this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       return blockToExecutionPayload(block, value, blobs)
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
