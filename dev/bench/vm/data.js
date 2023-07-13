@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689249103068,
+  "lastUpdate": 1689271635834,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "71911d4bc5a011a4c396572259213d106b6a2008",
-          "message": "Monorepo: Add Browser Examples (#2835)\n\n* Add browser example (RLP)\r\n\r\n* Add browser example (Util)\r\n\r\n* Align RLP example along Vite browser example\r\n\r\n* Add Common browser example\r\n\r\n* Add tx browser example\r\n\r\n* Add Trie browser example\r\n\r\n* Add Block browser example\r\n\r\n* Add Blockchain browser example\r\n\r\n* StateManager: further guard DEBUG check to fix vite browser bundling\r\n\r\n* Add StateManager browser example\r\n\r\n* More compact ordered lists in example files\r\n\r\n* Add Wallet browser example\r\n\r\n* EVM: remove promisify usage (Node.js primitive)\r\n\r\n* Minor\r\n\r\n* EVM: additional DEBUG check guard to prevent Vite bundling (and potentially others) from breaking\r\n\r\n* Add EVM browser example (not yet working)\r\n\r\n* Add async `emit` back sans util.promisify\r\n\r\n* Switch vm to non-promisify _emit\r\n\r\n* lint\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <konjou@gmail.com>",
-          "timestamp": "2023-06-28T15:40:34-04:00",
-          "tree_id": "f3782e43b12a964560c67c1ca32638a643236919",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/71911d4bc5a011a4c396572259213d106b6a2008"
-        },
-        "date": 1687981489643,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31819,
-            "range": "±5.46%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32142,
-            "range": "±2.93%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27527,
-            "range": "±10.32%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31768,
-            "range": "±3.02%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30343,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.59%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "88b54028b3a2807e07eea965282ef6eb489ca369",
+          "message": "docs updates (#2887)",
+          "timestamp": "2023-07-13T23:32:21+05:30",
+          "tree_id": "803f29a1fc4e1beb51c6374e5c83748095e1d04c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/88b54028b3a2807e07eea965282ef6eb489ca369"
+        },
+        "date": 1689271634396,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18013,
+            "range": "±6.03%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18209,
+            "range": "±3.94%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18182,
+            "range": "±3.57%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18929,
+            "range": "±3.38%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 16784,
+            "range": "±4.44%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
