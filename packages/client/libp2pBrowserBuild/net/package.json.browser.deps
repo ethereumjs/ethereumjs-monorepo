@@ -61,7 +61,7 @@
     "@ethereumjs/blockchain": "7.0.0-rc.1",
     "@ethereumjs/common": "4.0.0-rc.1",
     "@ethereumjs/devp2p": "6.0.0-rc.1",
-    "@ethereumjs/ethash": "2.0.5",
+    "@ethereumjs/ethash": "3.0.0-rc.1",
     "@ethereumjs/evm": "1.3.2",
     "@ethereumjs/rlp": "5.0.0-rc.1",
     "@ethereumjs/statemanager": "2.0.0-rc.1",

@@ -1,7 +1,7 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "2.0.5",
-  "description": "An ethash implementation in JavaScript",
+  "version": "3.0.0-rc.1",
+  "description": "An implementation of the Ethash consensus algorithm in JavaScript",
   "keywords": [
     "ethash",
     "ethereum",
