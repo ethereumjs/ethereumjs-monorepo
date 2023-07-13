@@ -179,6 +179,37 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   return { executionPayload, blockValue: bigIntToHex(value), blobsBundle }
 }
 
+const pruneCachedBlocks = (
+  chain: Chain,
+  remoteBlocks: Map<String, Block>,
+  executedBlocks: Map<String, Block>
+) => {
+  const finalized = chain.blocks.finalized
+  if (finalized !== null) {
+    // prune remoteBlocks
+    const pruneRemoteBlocksTill = finalized.header.number
+    for (const blockHash of remoteBlocks.keys()) {
+      const block = remoteBlocks.get(blockHash)
+      if (block !== undefined && block.header.number <= pruneRemoteBlocksTill) {
+        remoteBlocks.delete(blockHash)
+      }
+    }
+
+    // prune executedBlocks
+    const vm = chain.blocks.vm
+    if (vm !== null) {
+      const pruneExecutedBlocksTill =
+        vm.header.number < finalized.header.number ? vm.header.number : finalized.header.number
+      for (const blockHash of executedBlocks.keys()) {
+        const block = executedBlocks.get(blockHash)
+        if (block !== undefined && block.header.number <= pruneExecutedBlocksTill) {
+          executedBlocks.delete(blockHash)
+        }
+      }
+    }
+  }
+}
+
 /**
  * Recursively finds parent blocks starting from the parentHash.
  */
@@ -1000,9 +1031,9 @@ export class Engine {
       }
     }
 
-    /*
-     * If payloadAttributes is present, start building block and return payloadId
-     */
+    // prepare valid response
+    let validResponse
+    // If payloadAttributes is present, start building block and return payloadId
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
       const timestampBigInt = BigInt(timestamp)
@@ -1028,14 +1059,16 @@ export class Engine {
       )
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      const response = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
-      return response
+      validResponse = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
+    } else {
+      const latestValidHash = await validHash(headBlock.hash(), this.chain)
+      const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+      validResponse = { payloadStatus, payloadId: null, headBlock }
     }
 
-    const latestValidHash = await validHash(headBlock.hash(), this.chain)
-    const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-    const response = { payloadStatus, payloadId: null, headBlock }
-    return response
+    // before returning response prune cached blocks based on finalized and vmHead
+    pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks)
+    return validResponse
   }
 
   private async forkchoiceUpdatedV1(

@@ -54,6 +54,12 @@ export interface ChainBlocks {
   safe: Block | null
 
   /**
+   * The header signalled as `vm` head
+   * This corresponds to the last executed block in the canonical chain
+   */
+  vm: Block | null
+
+  /**
    * The total difficulty of the blockchain
    */
   td: bigint
@@ -74,16 +80,22 @@ export interface ChainHeaders {
   latest: BlockHeader | null
 
   /**
-   * The block as signalled `finalized` in the fcU
+   * The header as signalled `finalized` in the fcU
    * This corresponds to the last finalized beacon block
    */
   finalized: BlockHeader | null
 
   /**
-   * The block as signalled `safe` in the fcU
+   * The header as signalled `safe` in the fcU
    * This corresponds to the last justified beacon block
    */
   safe: BlockHeader | null
+
+  /**
+   * The header signalled as `vm` head
+   * This corresponds to the last executed block in the canonical chain
+   */
+  vm: BlockHeader | null
 
   /**
    * The total difficulty of the headerchain
@@ -112,6 +124,7 @@ export class Chain {
     latest: null,
     finalized: null,
     safe: null,
+    vm: null,
     td: BigInt(0),
     height: BigInt(0),
   }
@@ -120,6 +133,7 @@ export class Chain {
     latest: null,
     finalized: null,
     safe: null,
+    vm: null,
     td: BigInt(0),
     height: BigInt(0),
   }
@@ -174,6 +188,7 @@ export class Chain {
       latest: null,
       finalized: null,
       safe: null,
+      vm: null,
       td: BigInt(0),
       height: BigInt(0),
     }
@@ -181,6 +196,7 @@ export class Chain {
       latest: null,
       finalized: null,
       safe: null,
+      vm: null,
       td: BigInt(0),
       height: BigInt(0),
     }
@@ -263,6 +279,7 @@ export class Chain {
       latest: null,
       finalized: null,
       safe: null,
+      vm: null,
       td: BigInt(0),
       height: BigInt(0),
     }
@@ -270,6 +287,7 @@ export class Chain {
       latest: null,
       finalized: null,
       safe: null,
+      vm: null,
       td: BigInt(0),
       height: BigInt(0),
     }
@@ -279,10 +297,12 @@ export class Chain {
     // before they can be saved in chain
     headers.finalized = (await this.getCanonicalFinalizedBlock()).header
     headers.safe = (await this.getCanonicalSafeBlock()).header
+    headers.vm = (await this.getCanonicalVmHead()).header
 
     blocks.latest = await this.getCanonicalHeadBlock()
     blocks.finalized = await this.getCanonicalFinalizedBlock()
     blocks.safe = await this.getCanonicalSafeBlock()
+    blocks.vm = await this.getCanonicalVmHead()
 
     headers.height = headers.latest.number
     blocks.height = blocks.latest.header.number
@@ -498,6 +518,14 @@ export class Chain {
   async getCanonicalFinalizedBlock(): Promise<Block> {
     if (!this.opened) throw new Error('Chain closed')
     return this.blockchain.getIteratorHead('finalized')
+  }
+
+  /**
+   * Gets the latest block in the canonical chain
+   */
+  async getCanonicalVmHead(): Promise<Block> {
+    if (!this.opened) throw new Error('Chain closed')
+    return this.blockchain.getIteratorHead()
   }
 
   /**
