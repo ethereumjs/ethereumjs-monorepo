@@ -39,7 +39,7 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it('returns 3 for Ropsten', async () => {
+  it('returns 3 for Goerli', async () => {
     const manager = createManager(
       createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
@@ -47,8 +47,8 @@ describe(method, () => {
 
     const req = params(method, [])
     const expectRes = (res: any) => {
-      const msg = 'should return chainId 3'
-      assert.equal(res.body.result, '0x3', msg)
+      const msg = 'should return chainId 5'
+      assert.equal(res.body.result, '0x5', msg)
     }
     await baseRequest(server, req, 200, expectRes)
   })
