@@ -15,9 +15,9 @@ describe('genesis test', () => {
     for (const chainId of chainIds) {
       const name = chainToName[chainId as unknown as Chain]
 
-      assert.ok(getGenesis(Number(chainId)) !== null, `${name} genesis found`)
+      assert.ok(getGenesis(Number(chainId)) !== undefined, `${name} genesis found`)
     }
 
-    assert.ok(getGenesis(2) === null, `genesis for chainId 2 not found`)
+    assert.ok(getGenesis(2) === undefined, `genesis for chainId 2 not found`)
   })
 })

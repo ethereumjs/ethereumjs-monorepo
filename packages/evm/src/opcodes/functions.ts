@@ -778,23 +778,53 @@ export const handlers: Map<number, OpHandler> = new Map([
   ],
   // 0x5b: JUMPDEST
   [0x5b, function () {}],
-  // 0x5c: BEGINSUB
+  // 0x5c: BEGINSUB (EIP 2315) / TLOAD (EIP 1153)
   [
     0x5c,
-    function (runState) {
-      trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        // BEGINSUB
+        trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
+      } else if (common.isActivatedEIP(1153)) {
+        // TLOAD
+        const key = runState.stack.pop()
+        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+        const value = runState.interpreter.transientStorageLoad(keyBuf)
+        const valueBN = value.length ? bytesToBigInt(value) : BigInt(0)
+        runState.stack.push(valueBN)
+      }
     },
   ],
-  // 0x5d: RETURNSUB
+  // 0x5d: RETURNSUB (EIP 2315) / TSTORE (EIP 1153)
   [
     0x5d,
-    function (runState) {
-      if (runState.returnStack.length < 1) {
-        trap(ERROR.INVALID_RETURNSUB)
-      }
+    function (runState, common) {
+      if (common.isActivatedEIP(2315)) {
+        // RETURNSUB
+        if (runState.returnStack.length < 1) {
+          trap(ERROR.INVALID_RETURNSUB)
+        }
 
-      const dest = runState.returnStack.pop()
-      runState.programCounter = Number(dest)
+        const dest = runState.returnStack.pop()
+        runState.programCounter = Number(dest)
+      } else if (common.isActivatedEIP(1153)) {
+        // TSTORE
+        if (runState.interpreter.isStatic()) {
+          trap(ERROR.STATIC_STATE_CHANGE)
+        }
+        const [key, val] = runState.stack.popN(2)
+
+        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+        // NOTE: this should be the shortest representation
+        let value
+        if (val === BigInt(0)) {
+          value = Uint8Array.from([])
+        } else {
+          value = bigIntToBytes(val)
+        }
+
+        runState.interpreter.transientStorageStore(keyBuf, value)
+      }
     },
   ],
   // 0x5e: JUMPSUB (2315) / MCOPY (5656)
@@ -886,38 +916,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       runState.interpreter.log(mem, topicsCount, topicsBuf)
-    },
-  ],
-  // 0xb3: TLOAD
-  [
-    0xb3,
-    function (runState) {
-      const key = runState.stack.pop()
-      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-      const value = runState.interpreter.transientStorageLoad(keyBuf)
-      const valueBN = value.length ? bytesToBigInt(value) : BigInt(0)
-      runState.stack.push(valueBN)
-    },
-  ],
-  // 0xb4: TSTORE
-  [
-    0xb4,
-    function (runState) {
-      if (runState.interpreter.isStatic()) {
-        trap(ERROR.STATIC_STATE_CHANGE)
-      }
-      const [key, val] = runState.stack.popN(2)
-
-      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-      // NOTE: this should be the shortest representation
-      let value
-      if (val === BigInt(0)) {
-        value = Uint8Array.from([])
-      } else {
-        value = bigIntToBytes(val)
-      }
-
-      runState.interpreter.transientStorageStore(keyBuf, value)
     },
   ],
   // '0xf0' range - closures
