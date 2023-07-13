@@ -105,7 +105,7 @@ export class RlpxServer extends Server {
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
-    const id = bytesToUnprefixedHex(this.rlpx._id)
+    const id = bytesToUnprefixedHex(this.rlpx.id)
     return {
       enode: `enode://${id}@${listenAddr}`,
       id,

@@ -31,10 +31,10 @@ const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
 
 export class RLPx extends EventEmitter {
-  _privateKey: Uint8Array
-  _id: Uint8Array
-  _debug: Debugger
-  _timeout: number
+  protected _privateKey: Uint8Array
+  public readonly id: Uint8Array
+  private _debug: Debugger
+  protected _timeout: number
   _maxPeers: number
   _clientId: Uint8Array
   _remoteClientIdFilter?: string[]
@@ -55,7 +55,7 @@ export class RLPx extends EventEmitter {
     super()
 
     this._privateKey = privateKey
-    this._id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
+    this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
     // options
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
@@ -205,7 +205,7 @@ export class RLPx extends EventEmitter {
       socket,
       remoteId: peerId!,
       privateKey: this._privateKey,
-      id: this._id,
+      id: this.id,
       timeout: this._timeout,
       clientId: this._clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
@@ -232,7 +232,7 @@ export class RLPx extends EventEmitter {
       }
       this._debug(msg)
       const id = peer.getId()
-      if (id && equalsBytes(id, this._id)) {
+      if (id && equalsBytes(id, this.id)) {
         return peer.disconnect(DISCONNECT_REASON.SAME_IDENTITY)
       }
 
