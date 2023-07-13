@@ -73,7 +73,7 @@ Starting with v6 there is a dedicated consensus class for each type of supported
 - `validateDifficulty(header: BlockHeader): Promise<void>`
 - `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
 
-#### Custom Conensus Algorithms
+#### Custom Consensus Algorithms
 
 Also part of V6, you can also create a custom consensus class implementing the above interface and pass it into the `Blockchain` constructor using the `consensus` option at instantiation. See [this test script](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/test/customConsensus.spec.ts) for a complete example of how write and use a custom consensus implementation.
 
