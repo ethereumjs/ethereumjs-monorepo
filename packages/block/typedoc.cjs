@@ -1,5 +1,5 @@
 module.exports = {
-  extends: '../../config/typedoc.js',
+  extends: '../../config/typedoc.cjs',
   entryPoints: ['src'],
   out: 'docs',
   exclude: ['test/**/*.ts', 'src/helpers.ts'],

@@ -39,7 +39,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- trie",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
