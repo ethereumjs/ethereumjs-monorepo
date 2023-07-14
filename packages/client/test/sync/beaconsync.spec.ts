@@ -111,7 +111,7 @@ describe('[BeaconSynchronizer]', async () => {
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
       await skeleton.open()
-      console.log('cheese', ReverseBlockFetcher)
+
       const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
       sync.best = td.func<typeof sync['best']>()
       sync.latest = td.func<typeof sync['latest']>()
