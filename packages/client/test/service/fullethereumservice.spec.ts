@@ -60,7 +60,6 @@ describe('[FullEthereumService]', async () => {
 
   vi.mock('@ethereumjs/block')
   vi.mock('../../src/net/server')
-  //vi.mock('../../src/blockchain')
   vi.mock('../../src/execution')
   const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
