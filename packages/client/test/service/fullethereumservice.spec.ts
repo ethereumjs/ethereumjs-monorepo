@@ -60,7 +60,7 @@ describe('[FullEthereumService]', async () => {
 
   vi.mock('@ethereumjs/block')
   vi.mock('../../src/net/server')
-  vi.mock('../../src/blockchain')
+  //vi.mock('../../src/blockchain')
   vi.mock('../../src/execution')
   const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
@@ -88,8 +88,11 @@ describe('[FullEthereumService]', async () => {
   it('should open', async () => {
     const server = new RlpxServer({} as any)
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+
     const chain = await Chain.create({ config })
+    chain.open = vi.fn()
     const service = new FullEthereumService({ config, chain })
+
     await service.open()
     expect(service.synchronizer!.open).toBeCalled()
     expect(server.addProtocols).toBeCalled()
@@ -110,6 +113,7 @@ describe('[FullEthereumService]', async () => {
     const server = new RlpxServer({} as any)
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
+
     const service = new FullEthereumService({ config, chain })
 
     await service.start()
@@ -123,6 +127,8 @@ describe('[FullEthereumService]', async () => {
 
   it('should correctly handle GetBlockHeaders', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    vi.unmock('../../src/blockchain')
+    await import('../../src/blockchain')
     const chain = await Chain.create({ config })
     chain.getHeaders = () => [{ number: 1n }] as any
     const service = new FullEthereumService({ config, chain })
@@ -205,9 +211,6 @@ describe('[FullEthereumService]', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
-    service.execution = {
-      receiptsManager: { getReceipts: vi.fn() },
-    } as any
     const blockHash = new Uint8Array(32).fill(1)
     const receipts = [
       {
@@ -237,9 +240,10 @@ describe('[FullEthereumService]', async () => {
         txType: TransactionType.Legacy,
       },
     ]
-    ;(service.execution.receiptsManager!.getReceipts as any)
-      .mockResolvedValue(blockHash, true, true)
-      .thenResolve(receipts)
+    service.execution = {
+      receiptsManager: { getReceipts: vi.fn().mockReturnValue(receipts) },
+    } as any
+
     const peer = { eth: { send: vi.fn() } } as any
     await service.handle({ name: 'GetReceipts', data: [BigInt(1), [blockHash]] }, 'eth', peer)
     expect(peer.eth.send).toBeCalledWith('Receipts', { reqId: BigInt(1), receipts })
