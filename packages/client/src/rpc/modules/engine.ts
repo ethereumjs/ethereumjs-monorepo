@@ -1117,7 +1117,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   private async getPayload(params: [Bytes8]) {
-    const payloadId = hexToBytes(params[0])
+    const payloadId = params[0]
     try {
       const built = await this.pendingBlock.build(payloadId)
       if (!built) {
@@ -1126,7 +1126,13 @@ export class Engine {
       // The third arg returned is the minerValue which we will use to
       // value the block
       const [block, receipts, value, blobs] = built
-      await this.execution.runWithoutSetHead({ block }, receipts)
+
+      // do a blocking call even if execution might be busy for the moment
+      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true)
+      if (!executed) {
+        throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
+      }
+
       this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       return blockToExecutionPayload(block, value, blobs)
     } catch (error: any) {

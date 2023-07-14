@@ -153,13 +153,22 @@ export class VMExecution extends Execution {
    * It relies on the additional {@link VMExecution.setHead} call to finalize
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
+   * @param optional param if runWithoutSetHead should block for execution
+   * @returns if the block was executed or not, throws on block execution failure
    */
-  async runWithoutSetHead(opts: RunBlockOpts, receipts?: TxReceipt[]): Promise<boolean> {
-    if (this.running || !this.started || this.config.shutdown) return false
-    this.running = true
+  async runWithoutSetHead(
+    opts: RunBlockOpts,
+    receipts?: TxReceipt[],
+    blocking: boolean = false
+  ): Promise<boolean> {
+    // if its not blocking request then return early if its already running else wait to grab the lock
+    if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
 
-    try {
-      await this.runWithLock<void>(async () => {
+    await this.runWithLock<void>(async () => {
+      try {
+        // running should be false here because running is always changed inside the lock and switched
+        // to false before the lock is released
+        this.running = true
         const { block, root } = opts
 
         if (receipts === undefined) {
@@ -189,11 +198,11 @@ export class VMExecution extends Execution {
           // Skip the op for number to hash to not alter canonical chain
           ...DBSaveLookups(hash, num, true),
         ])
-      })
-      return true
-    } finally {
-      this.running = false
-    }
+      } finally {
+        this.running = false
+      }
+    })
+    return true
   }
 
   /**
@@ -277,12 +286,12 @@ export class VMExecution extends Execution {
    */
   async run(loop = true, runOnlybatched = false): Promise<number> {
     if (this.running || !this.started || this.config.shutdown) return 0
-    this.running = true
 
-    try {
-      // 1. await the run so as to switch this.running to false even in case of errors
-      // 2. run inside a lock so as to not be entangle with runWithoutSetHead or setHead
-      return await this.runWithLock<number>(async () => {
+    return this.runWithLock<number>(async () => {
+      try {
+        // 1. await the run so as to switch this.running to false even in case of errors
+        // 2. run inside a lock so as to not be entangle with runWithoutSetHead or setHead
+        this.running = true
         let numExecuted: number | null | undefined = undefined
 
         const { blockchain } = this.vm
@@ -527,10 +536,10 @@ export class VMExecution extends Execution {
         }
 
         return numExecuted ?? 0
-      })
-    } finally {
-      this.running = false
-    }
+      } finally {
+        this.running = false
+      }
+    })
   }
 
   /**
