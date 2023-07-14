@@ -65,8 +65,8 @@ describe('[LesProtocol]', () => {
     })
     let status = p.encodeStatus()
     assert.ok(
-      bytesToHex(status.networkId) === '01' &&
-        bytesToHex(status.headTd) === '64' &&
+      bytesToHex(status.networkId) === '0x01' &&
+        bytesToHex(status.headTd) === '0x64' &&
         status.headHash === '0xaa' &&
         bytesToHex(status.headNum) === '0x64' &&
         status.genesisHash === '0xbb' &&
