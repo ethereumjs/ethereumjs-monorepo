@@ -1,70 +1,67 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
+import { RlpxServer } from '../../src/net/server'
 import { Event } from '../../src/types'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
+import type { BeaconSynchronizer } from '../../src/sync'
 import type { Log } from '@ethereumjs/evm'
 
 describe('[FullEthereumService]', async () => {
-  class PeerPool {
-    open() {}
-    close() {}
-    start() {}
-    stop() {}
-  }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  PeerPool.prototype.start = td.func<any>()
-  PeerPool.prototype.stop = td.func<any>()
-  td.replace<any>('../../src/net/peerpool', { PeerPool })
-  const MockChain = td.constructor([] as any)
-  MockChain.prototype.open = td.func<any>()
-  td.replace<any>('../../src/blockchain', { Chain: MockChain })
-  const EthProtocol = td.constructor([] as any)
-  const LesProtocol = td.constructor([] as any)
-  td.replace<any>('../../src/net/protocol/ethprotocol', { EthProtocol })
-  td.replace<any>('../../src/net/protocol/lesprotocol', { LesProtocol })
-  class FullSynchronizer {
-    start() {}
-    stop() {}
-    open() {}
-    close() {}
-    handleNewBlock() {}
-    handleNewBlockHashes() {}
-  }
-  FullSynchronizer.prototype.start = td.func<any>()
-  FullSynchronizer.prototype.stop = td.func<any>()
-  FullSynchronizer.prototype.open = td.func<any>()
-  FullSynchronizer.prototype.close = td.func<any>()
-  FullSynchronizer.prototype.handleNewBlock = td.func<any>()
-  FullSynchronizer.prototype.handleNewBlockHashes = td.func<any>()
-  class BeaconSynchronizer {
-    start() {}
-    stop() {}
-    open() {}
-    close() {}
-    get type() {
-      return 'beacon'
-    }
-  }
-  BeaconSynchronizer.prototype.start = td.func<any>()
-  BeaconSynchronizer.prototype.stop = td.func<any>()
-  BeaconSynchronizer.prototype.open = td.func<any>()
-  BeaconSynchronizer.prototype.close = td.func<any>()
-  td.replace<any>('../../src/sync', { FullSynchronizer, BeaconSynchronizer })
+  vi.mock('../../src/net/peerpool', () => {
+    const PeerPool = vi.fn()
+    PeerPool.prototype.open = vi.fn()
+    PeerPool.prototype.close = vi.fn()
+    PeerPool.prototype.start = vi.fn()
+    PeerPool.prototype.stop = vi.fn()
+    return { PeerPool }
+  })
 
-  class Block {
-    static fromValuesArray() {
-      return {}
+  vi.mock('../../src/net/protocol/ethprotocol', () => {
+    const EthProtocol = vi.fn()
+    EthProtocol.prototype.name = 'eth'
+    return { EthProtocol }
+  })
+
+  vi.mock('../../src/net/protocol/lesprotocol', () => {
+    const LesProtocol = vi.fn()
+    LesProtocol.prototype.name = 'les'
+    return { LesProtocol }
+  })
+
+  vi.mock('../../src/sync/fullsync', () => {
+    const FullSynchronizer = vi.fn()
+    FullSynchronizer.prototype.start = vi.fn()
+    FullSynchronizer.prototype.stop = vi.fn()
+    FullSynchronizer.prototype.open = vi.fn()
+    FullSynchronizer.prototype.close = vi.fn()
+    FullSynchronizer.prototype.handleNewBlock = vi.fn()
+    FullSynchronizer.prototype.handleNewBlockHashes = vi.fn()
+    FullSynchronizer.prototype.type = 'full'
+
+    return { FullSynchronizer }
+  })
+  vi.mock('../../src/sync/beaconsync', () => {
+    const BeaconSynchronizer = vi.fn()
+    BeaconSynchronizer.prototype.start = vi.fn()
+    BeaconSynchronizer.prototype.stop = vi.fn()
+    BeaconSynchronizer.prototype.open = vi.fn()
+    BeaconSynchronizer.prototype.close = vi.fn()
+    BeaconSynchronizer.prototype.type = 'beacon'
+    return {
+      BeaconSynchronizer,
     }
-  }
-  td.replace<any>('@ethereumjs/block', { Block })
+  })
+
+  vi.mock('@ethereumjs/block')
+  vi.mock('../../src/net/server')
+  vi.mock('../../src/blockchain')
+  vi.mock('../../src/execution')
   const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
   it('should initialize correctly', async () => {
@@ -72,7 +69,7 @@ describe('[FullEthereumService]', async () => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
 
-    assert.equal(service.synchronizer?.type, 'full', 'full mode')
+    assert.equal('full', service.synchronizer?.type, 'full mode')
     assert.equal(service.name, 'eth', 'got name')
   })
 
@@ -89,13 +86,13 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should open', async () => {
-    const server = td.object() as any
+    const server = new RlpxServer({} as any)
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     await service.open()
-    td.verify(service.synchronizer!.open())
-    td.verify(server.addProtocols(td.matchers.anything()))
+    expect(service.synchronizer!.open).toBeCalled()
+    expect(server.addProtocols).toBeCalled()
     service.config.events.on(Event.SYNC_SYNCHRONIZED, () => assert.ok(true, 'synchronized'))
     service.config.events.on(Event.SYNC_ERROR, (err) => {
       if (err.message === 'error0') assert.ok(true, 'got error 1')
@@ -110,17 +107,17 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should start/stop', async () => {
-    const server = td.object() as any
+    const server = new RlpxServer({} as any)
     const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
 
     await service.start()
 
-    td.verify(service.synchronizer!.start())
+    expect(service.synchronizer!.start).toBeCalled()
     assert.notOk(await service.start(), 'already started')
     await service.stop()
-    td.verify(service.synchronizer!.stop())
+    expect(service.synchronizer!.stop).toBeCalled()
     assert.notOk(await service.stop(), 'already stopped')
   })
 
@@ -176,9 +173,9 @@ describe('[FullEthereumService]', async () => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
-    td.verify((service.synchronizer as any).handleNewBlock({}, undefined))
+    expect((service.synchronizer as any).handleNewBlock).toBeCalled()
     await service.handle({ name: 'NewBlockHashes', data: [{}, BigInt(1)] }, 'eth', undefined as any)
-    td.verify((service.synchronizer as any).handleNewBlockHashes([{}, BigInt(1)]))
+    expect((service.synchronizer as any).handleNewBlockHashes).toBeCalledWith([{}, BigInt(1)])
     // should not call when using BeaconSynchronizer
     // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
     await service.switchToBeaconSync()
@@ -209,7 +206,7 @@ describe('[FullEthereumService]', async () => {
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.execution = {
-      receiptsManager: { getReceipts: td.func<any>() },
+      receiptsManager: { getReceipts: vi.fn() },
     } as any
     const blockHash = new Uint8Array(32).fill(1)
     const receipts = [
@@ -240,12 +237,12 @@ describe('[FullEthereumService]', async () => {
         txType: TransactionType.Legacy,
       },
     ]
-    td.when(service.execution.receiptsManager!.getReceipts(blockHash, true, true)).thenResolve(
-      receipts
-    )
-    const peer = { eth: { send: td.func() } } as any
+    ;(service.execution.receiptsManager!.getReceipts as any)
+      .mockResolvedValue(blockHash, true, true)
+      .thenResolve(receipts)
+    const peer = { eth: { send: vi.fn() } } as any
     await service.handle({ name: 'GetReceipts', data: [BigInt(1), [blockHash]] }, 'eth', peer)
-    td.verify(peer.eth.send('Receipts', { reqId: BigInt(1), receipts }))
+    expect(peer.eth.send).toBeCalledWith('Receipts', { reqId: BigInt(1), receipts })
   })
 
   it('should handle Transactions', async () => {
@@ -373,9 +370,5 @@ describe('[FullEthereumService]', async () => {
     const configDisableBeaconSync = new Config({ transports: [], common, disableBeaconSync: true })
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
     assert.notOk(service.beaconSync, 'beacon sync should not be available')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })
