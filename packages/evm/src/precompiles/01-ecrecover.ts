@@ -10,7 +10,7 @@ import {
 
 import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
