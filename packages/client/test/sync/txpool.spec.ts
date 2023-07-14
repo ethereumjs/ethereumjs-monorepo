@@ -310,7 +310,7 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     assert.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -357,7 +357,7 @@ describe('[TxPool]', async () => {
         e.message.includes('replacement gas too low'),
         'successfully failed adding underpriced txn'
       )
-      const poolObject = pool['handled'].get(bytesToHex(txA02_Underpriced.hash()))
+      const poolObject = pool['handled'].get(bytesToUnprefixedHex(txA02_Underpriced.hash()))
       assert.equal(poolObject?.error, e, 'should have an errored poolObject')
       const poolTxs = pool.getByHash([txA02_Underpriced.hash()])
       assert.equal(poolTxs.length, 0, `should not be added in pool`)
@@ -402,7 +402,7 @@ describe('[TxPool]', async () => {
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
 
     assert.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -664,7 +664,7 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     assert.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(A.address)
+    const address = bytesToUnprefixedHex(A.address)
     const poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 1, 'one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -708,7 +708,7 @@ describe('[TxPool]', async () => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     assert.equal(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToHex(B.address)
+    const address = bytesToUnprefixedHex(B.address)
     let poolContent = pool.pool.get(address)!
     assert.equal(poolContent.length, 2, 'two txs')
 
