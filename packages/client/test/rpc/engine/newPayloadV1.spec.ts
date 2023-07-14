@@ -31,7 +31,7 @@ export const batchBlocks = async (t: Test, server: HttpServer, inputBlocks: any[
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(t, server, req, 200, expectRes, false, false)
   }
 }
 
@@ -111,13 +111,13 @@ tape(
     let expectRes = (res: any) => {
       t.equal(res.body.result.status, 'ACCEPTED')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(t, server, req, 200, expectRes, false, false)
 
     req = params(method, [blocks[0]])
     expectRes = (res: any) => {
       t.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(t, server, req, 200, expectRes, false, false)
 
     const state = {
       headBlockHash: blocks[1].blockHash,

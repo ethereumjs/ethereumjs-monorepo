@@ -212,14 +212,14 @@ tape(`${method}: call with deep parent lookup`, async (t) => {
   let expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   for (let i = 0; i < 3; i++) {
     const req = params('engine_newPayloadV1', [blocks[i]])
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(t, server, req, 200, expectRes, false, false)
   }
 
   // Now set the head to the last hash
@@ -237,7 +237,7 @@ tape(`${method}: call with deep parent lookup and with stored safe block hash`, 
   let expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   await batchBlocks(t, server)
 
@@ -285,7 +285,7 @@ tape(`${method}: latest block after reorg`, async (t) => {
   let expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   await batchBlocks(t, server)
 
@@ -299,20 +299,20 @@ tape(`${method}: latest block after reorg`, async (t) => {
   expectRes = (res: any) => {
     t.equal(res.body.result.payloadStatus.status, 'VALID')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   // check safe and finalized
   req = params('eth_getBlockByNumber', ['finalized', false])
   expectRes = (res: any) => {
     t.equal(res.body.result.number, '0x0', 'finalized should be set to genesis')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   req = params('eth_getBlockByNumber', ['safe', false])
   expectRes = (res: any) => {
     t.equal(res.body.result.number, '0x1', 'safe should be set to first block')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   req = params(method, [
     {
