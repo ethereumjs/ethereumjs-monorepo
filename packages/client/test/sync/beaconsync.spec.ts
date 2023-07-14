@@ -1,11 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { Skeleton } from '../../src/sync'
+import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher'
 
 describe('[BeaconSynchronizer]', async () => {
   const execution: any = { run: () => {} }
@@ -23,22 +24,12 @@ describe('[BeaconSynchronizer]', async () => {
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
   PeerPool.prototype.idle = td.func<any>()
-  class ReverseBlockFetcher {
-    first: bigint
-    count: bigint
-    constructor(opts: any) {
-      this.first = opts.first
-      this.count = opts.count
-    }
-    fetch() {}
-    clear() {}
-    destroy() {}
-  }
+
   ReverseBlockFetcher.prototype.fetch = td.func<any>()
   ReverseBlockFetcher.prototype.clear = td.func<any>()
   ReverseBlockFetcher.prototype.destroy = td.func<any>()
-  td.replace<any>('../../src/sync/fetcher', { ReverseBlockFetcher })
 
+  vi.doMock('../../src/sync/fetcher/reverseblockfetcher', () => td.constructor(ReverseBlockFetcher))
   const { BeaconSynchronizer } = await import('../../src/sync/beaconsync')
 
   it('should initialize correctly', async () => {
@@ -100,7 +91,7 @@ describe('[BeaconSynchronizer]', async () => {
     ])
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    assert.equal(await sync.best(), peers[1], 'found best')
+    assert.equal(await sync.best(), <any>peers[1], 'found best')
     await sync.stop()
     await sync.close()
   })
@@ -120,6 +111,7 @@ describe('[BeaconSynchronizer]', async () => {
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       skeleton['getSyncStatus'] = td.func<typeof skeleton['getSyncStatus']>()
       await skeleton.open()
+      console.log('cheese', ReverseBlockFetcher)
       const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
       sync.best = td.func<typeof sync['best']>()
       sync.latest = td.func<typeof sync['latest']>()

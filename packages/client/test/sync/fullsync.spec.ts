@@ -98,7 +98,7 @@ describe('[FullSynchronizer]', async () => {
     td.when((sync as any).height(peers[1])).thenDo((peer: any) =>
       Promise.resolve(peer.eth.status.td)
     )
-    assert.equal(await sync.best(), peers[1], 'found best')
+    assert.equal(await sync.best(), <any>peers[1], 'found best')
     await sync.stop()
     await sync.close()
   })

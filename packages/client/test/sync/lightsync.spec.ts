@@ -55,7 +55,7 @@ describe('[LightSynchronizer]', async () => {
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    assert.equal(await sync.best(), peers[1], 'found best')
+    assert.equal(await sync.best(), <any>peers[1], 'found best')
   })
 
   it('should sync', async () => {
