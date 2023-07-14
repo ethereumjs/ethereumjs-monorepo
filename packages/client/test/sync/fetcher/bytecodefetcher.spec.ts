@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
-import { hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes } from '@ethereumjs/util'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
