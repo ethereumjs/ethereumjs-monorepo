@@ -253,7 +253,7 @@ tape('[TrieNodeFetcher]', async (t) => {
 
     t.equal(
       paths.reduce((count, subArray) => count + subArray.length, 0),
-      7,
+      pathStrings.length,
       'should have correct number of paths'
     )
     t.deepEqual(
