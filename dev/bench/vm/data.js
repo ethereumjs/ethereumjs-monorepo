@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689330988677,
+  "lastUpdate": 1689335788468,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ecce06bc820fab2240e6efa0ef14f7b1f9d8e64e",
-          "message": "Common, Other: Remove deprecated Ropsten and Rinkeby networks (#2813)\n\n* Remove ropstein from code\r\n\r\n* Update tests\r\n\r\n* Fix tests\r\n\r\n* Remove rinkeby from code\r\n\r\n* Update tests\r\n\r\n* Fix test\r\n\r\n* Fix linting error\r\n\r\n* Fix linting error\r\n\r\n* Fix genesis index.ts\r\n\r\n* Fix linting issue\r\n\r\n* Fix test\r\n\r\n* Update examples to remove Rinkeby\r\n\r\n* Update examples to remove Ropsten\r\n\r\n* Remove genesis state files for Ropsten and Rinkeby\r\n\r\n* Fix example\r\n\r\n* Remove ropsten from docs\r\n\r\n* Remove rinkeby from docs\r\n\r\n* Remove ropsten and rinkeby import symbols from package.json\r\n\r\n* Remove commented code\r\n\r\n* Reintroduce removed ropsten test for mainnet\r\n\r\n* Reintroduce removed ropsten test for mainnet\r\n\r\n* Reintroduce removed ropsten test for mainnet\r\n\r\n* Reintroduce removed ropsten test for custom chain\r\n\r\n* Reintroduce removed ropsten test for mainnet\r\n\r\n* Reintroduce removed ropsten test\r\n\r\n* Reintroduce removed ropsten test for custom chain\r\n\r\n* Reintroduce ropsten tests\r\n\r\n* Fix test\r\n\r\n* Fix tests\r\n\r\n* Clean up naming and comments\r\n\r\n* Use goerli for hardfork mismatch test\r\n\r\n* fix the miner spec\r\n\r\n* fix pending block spec\r\n\r\n* fix other client errors\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-06-29T12:57:07+02:00",
-          "tree_id": "66defcda16ee68bb4b7800c2b95bdb410eb2bb6e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ecce06bc820fab2240e6efa0ef14f7b1f9d8e64e"
-        },
-        "date": 1688036438431,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32288,
-            "range": "±5.80%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29397,
-            "range": "±8.76%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32497,
-            "range": "±2.80%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 31999,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30955,
-            "range": "±3.08%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.40%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "47714a6020d283437ee811ebc789037bbe4124d4",
+          "message": "VM: docs builder fix, EVM: cleanup types (#2888)\n\n* evm: move EVMResult, ExecResult into evm types\r\n\r\n* evm: fix precompile input type\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-07-14T13:53:07+02:00",
+          "tree_id": "233aaf145ec5aed6d2ba6fb6f96d7e6ff41f3871",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/47714a6020d283437ee811ebc789037bbe4124d4"
+        },
+        "date": 1689335787761,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32993,
+            "range": "±3.96%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31791,
+            "range": "±2.31%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31981,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27457,
+            "range": "±9.82%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30656,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
           }
         ]
       }
