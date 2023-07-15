@@ -652,7 +652,7 @@ export class BlockHeader {
       rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
     }
-    if (this.common.isActivatedEIP(4788) === true){
+    if (this.common.isActivatedEIP(4788) === true) {
       rawItems.push(this.parentBeaconBlockRoot!)
     }
 

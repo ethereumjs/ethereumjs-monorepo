@@ -336,6 +336,11 @@ export class BlockBuilder {
 
   async initState() {
     if (this.vm.common.isActivatedEIP(4788)) {
+      if (!this.checkpointed) {
+        await this.vm.evm.journal.checkpoint()
+        this.checkpointed = true
+      }
+
       const { parentBeaconBlockRoot, timestamp } = this.headerData
       // timestamp should already be set in constructor
       const timestampBigInt = toType(timestamp ?? 0, TypeOutput.BigInt)
