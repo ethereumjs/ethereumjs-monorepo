@@ -30,7 +30,7 @@ export const batchBlocks = async (server: HttpServer, inputBlocks: any[] = block
     const expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
   }
 }
 
@@ -107,13 +107,13 @@ describe(method, () => {
     let expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'ACCEPTED')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     req = params(method, [blocks[0]])
     expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     const state = {
       headBlockHash: blocks[1].blockHash,
@@ -276,7 +276,7 @@ describe(method, () => {
     const expectResFcu = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectResFcu, false)
+    await baseRequest(server, req, 200, expectResFcu, false, false)
 
     // Now let's try to re-execute payload
     req = params(method, [blockData])

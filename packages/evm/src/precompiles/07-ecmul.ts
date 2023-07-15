@@ -3,7 +3,7 @@ import { ec_mul } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile07(opts: PrecompileInput): ExecResult {

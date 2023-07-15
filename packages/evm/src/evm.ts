@@ -26,7 +26,7 @@ import { getActivePrecompiles } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 import { DefaultBlockchain } from './types.js'
 
-import type { InterpreterOpts, RunState } from './interpreter.js'
+import type { InterpreterOpts } from './interpreter.js'
 import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler, OpcodeList } from './opcodes/index.js'
@@ -38,9 +38,10 @@ import type {
   EVMEvents,
   EVMInterface,
   EVMOpts,
+  EVMResult,
   EVMRunCallOpts,
   EVMRunCodeOpts,
-  Log,
+  ExecResult,
 } from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
@@ -882,63 +883,6 @@ export class EVM implements EVMInterface {
     ;(opts.stateManager as any).common = common
     return new EVM(opts)
   }
-}
-
-/**
- * Result of executing a message via the {@link EVM}.
- */
-export interface EVMResult {
-  /**
-   * Address of created account during transaction, if any
-   */
-  createdAddress?: Address
-  /**
-   * Contains the results from running the code, if any, as described in {@link runCode}
-   */
-  execResult: ExecResult
-}
-
-/**
- * Result of executing a call via the {@link EVM}.
- */
-export interface ExecResult {
-  runState?: RunState
-  /**
-   * Description of the exception, if any occurred
-   */
-  exceptionError?: EvmError
-  /**
-   * Amount of gas left
-   */
-  gas?: bigint
-  /**
-   * Amount of gas the code used to run
-   */
-  executionGasUsed: bigint
-  /**
-   * Return value from the contract
-   */
-  returnValue: Uint8Array
-  /**
-   * Array of logs that the contract emitted
-   */
-  logs?: Log[]
-  /**
-   * A set of accounts to selfdestruct
-   */
-  selfdestruct?: Set<string>
-  /**
-   * Map of addresses which were created (used in EIP 6780)
-   */
-  createdAddresses?: Set<string>
-  /**
-   * The gas refund counter
-   */
-  gasRefund?: bigint
-  /**
-   * Amount of data gas consumed by the transaction
-   */
-  dataGasUsed?: bigint
 }
 
 export function OOGResult(gasLimit: bigint): ExecResult {

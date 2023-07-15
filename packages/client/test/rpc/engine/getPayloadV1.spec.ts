@@ -36,13 +36,13 @@ describe(method, () => {
     let expectRes = (res: any) => {
       payloadId = res.body.result.payloadId
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     req = params(method, [payloadId])
     expectRes = (res: any) => {
       assert.equal(res.body.result.blockNumber, '0x1')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')

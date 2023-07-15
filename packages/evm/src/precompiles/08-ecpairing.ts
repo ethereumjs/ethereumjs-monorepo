@@ -3,7 +3,7 @@ import { ec_pairing } from 'rustbn-wasm'
 
 import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile08(opts: PrecompileInput): ExecResult {

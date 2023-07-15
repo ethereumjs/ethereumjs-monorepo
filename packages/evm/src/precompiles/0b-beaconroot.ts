@@ -7,9 +7,10 @@ import {
   zeros,
 } from '@ethereumjs/util'
 
-import { type ExecResult, OOGResult } from '../evm.js'
+import { OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 const address = Address.fromString('0x000000000000000000000000000000000000000b')

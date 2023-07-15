@@ -118,7 +118,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       INVALID_PARAMS,
       'PayloadAttributesV2 MUST be used after Shanghai is activated'
     )
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     req = params('engine_forkchoiceUpdatedV2', [
       validForkChoiceState,
@@ -129,7 +129,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       assert.equal(res.body.result.payloadId !== undefined, true)
       payloadId = res.body.result.payloadId
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     let payload: ExecutionPayload | undefined = undefined
     req = params('engine_getPayloadV2', [payloadId])
@@ -144,7 +144,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       assert.equal(blockValue, '0x0', 'No value should be returned')
       payload = executionPayload
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     if (gethBlockRlp !== undefined) {
       // check if stateroot matches
@@ -159,7 +159,7 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
     expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     req = params('engine_forkchoiceUpdatedV2', [
       {

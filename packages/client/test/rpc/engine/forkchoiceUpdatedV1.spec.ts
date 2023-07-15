@@ -214,14 +214,14 @@ describe(method, () => {
     let expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     for (let i = 0; i < 3; i++) {
       const req = params('engine_newPayloadV1', [blocks[i]])
       const expectRes = (res: any) => {
         assert.equal(res.body.result.status, 'VALID')
       }
-      await baseRequest(server, req, 200, expectRes, false)
+      await baseRequest(server, req, 200, expectRes, false, false)
     }
 
     // Now set the head to the last hash
@@ -239,7 +239,7 @@ describe(method, () => {
     let expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     await batchBlocks(server)
 
@@ -287,7 +287,7 @@ describe(method, () => {
     let expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     await batchBlocks(server)
 
@@ -301,20 +301,20 @@ describe(method, () => {
     expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     // check safe and finalized
     req = params('eth_getBlockByNumber', ['finalized', false])
     expectRes = (res: any) => {
       assert.equal(res.body.result.number, '0x0', 'finalized should be set to genesis')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     req = params('eth_getBlockByNumber', ['safe', false])
     expectRes = (res: any) => {
       assert.equal(res.body.result.number, '0x1', 'safe should be set to first block')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     req = params(method, [
       {

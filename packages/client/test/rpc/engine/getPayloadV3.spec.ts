@@ -87,7 +87,7 @@ describe(method, () => {
       payloadId = res.body.result.payloadId
       assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
     }
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(txBlobs)
@@ -132,7 +132,7 @@ describe(method, () => {
       assert.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
     }
 
-    await baseRequest(server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
     DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
