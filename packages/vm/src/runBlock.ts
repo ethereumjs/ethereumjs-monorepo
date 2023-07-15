@@ -262,35 +262,15 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     }
   }
   if (this.common.isActivatedEIP(4788)) {
-    // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
-    const root = block.header.parentBeaconBlockRoot!
-    const timestamp = block.header.timestamp
-    const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
-    const timestampIndex = timestamp % historicalRootsLength
-    const timestampExtended = timestampIndex + historicalRootsLength
-
-    /**
-     * Note: (by Jochem)
-     * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
-     * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
-     * All ethereum accounts have empty storage by default
-     */
-
-    if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-      await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    if (this.DEBUG) {
+      debug(`accumulate parentBeaconBlockRoot`)
     }
-
-    await this.stateManager.putContractStorage(
-      parentBeaconBlockRootAddress,
-      setLengthLeft(bigIntToBytes(timestampIndex), 32),
-      bigIntToBytes(block.header.timestamp)
-    )
-    await this.stateManager.putContractStorage(
-      parentBeaconBlockRootAddress,
-      setLengthLeft(bigIntToBytes(timestampExtended), 32),
-      root
+    await accumulateParentBeaconBlockRoot.bind(this)(
+      block.header.parentBeaconBlockRoot!,
+      block.header.timestamp
     )
   }
+
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
@@ -306,6 +286,39 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
 
   return blockResults
+}
+
+export async function accumulateParentBeaconBlockRoot(
+  this: VM,
+  root: Uint8Array,
+  timestamp: bigint
+) {
+  // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
+  const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+  const timestampIndex = timestamp % historicalRootsLength
+  const timestampExtended = timestampIndex + historicalRootsLength
+
+  /**
+   * Note: (by Jochem)
+   * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+   * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+   * All ethereum accounts have empty storage by default
+   */
+
+  if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+    await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+  }
+
+  await this.stateManager.putContractStorage(
+    parentBeaconBlockRootAddress,
+    setLengthLeft(bigIntToBytes(timestampIndex), 32),
+    bigIntToBytes(timestamp)
+  )
+  await this.stateManager.putContractStorage(
+    parentBeaconBlockRootAddress,
+    setLengthLeft(bigIntToBytes(timestampExtended), 32),
+    root
+  )
 }
 
 /**
