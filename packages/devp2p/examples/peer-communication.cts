@@ -371,7 +371,11 @@ async function isValidBlock(block: Block) {
 setInterval(() => {
   const peersCount = dpt.getPeers().length
   const openSlots = rlpx._getOpenSlots()
+
+  // @ts-ignore
   const queueLength = rlpx._peersQueue.length
+  
+  // @ts-ignore
   const queueLength2 = rlpx._peersQueue.filter((o) => o.ts <= Date.now()).length
 
   console.log(
