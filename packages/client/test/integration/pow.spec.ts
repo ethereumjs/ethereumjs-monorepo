@@ -1,7 +1,7 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { removeSync } from 'fs-extra'
-import { assert, describe } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src'
 import { createInlineClient } from '../sim/simutils'
@@ -87,12 +87,11 @@ const mineBlockAndstopClient = async (client: EthereumClient) => {
   })
 }
 
-describe(
-  'PoW client test',
-  async () => {
+describe('PoW client test', async () => {
+  it('starts the client successfully', async () => {
     const client = await setupPowDevnet(minerAddress, true)
     assert.ok(client.started, 'client started successfully')
     await mineBlockAndstopClient(client)
-  },
-  { timeout: 60000 }
-)
+  }),
+    { timeout: 60000 }
+})

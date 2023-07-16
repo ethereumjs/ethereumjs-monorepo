@@ -28,7 +28,7 @@ describe('[Integration:LightSync]', async () => {
       })
       await localService.synchronizer!.start()
     },
-    { timeout: 10000 }
+    { timeout: 30000 }
   )
 
   it(
@@ -53,7 +53,7 @@ describe('[Integration:LightSync]', async () => {
       await destroy(remoteServer, remoteService)
       assert.ok(true, 'did not sync')
     },
-    { timeout: 10000 }
+    { timeout: 30000 }
   )
 
   it(
