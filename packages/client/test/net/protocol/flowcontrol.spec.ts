@@ -16,7 +16,7 @@ describe('[FlowControl]', () => {
   }
   const peer = { id: '1', les: { status: settings } } as any
 
-  it.only('should handle incoming flow control', () => {
+  it('should handle incoming flow control', () => {
     const expected = [700, 410, 120, -170]
     const flow = new FlowControl(settings)
     let correct = 0
