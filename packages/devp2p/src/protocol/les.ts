@@ -175,7 +175,7 @@ export class LES extends Protocol {
       status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = intToBytes(this._version)
-    status['networkId'] = bigIntToBytes(this._peer._common.chainId())
+    status['networkId'] = bigIntToBytes(this._peer.common.chainId())
 
     this._status = status
 

@@ -35,7 +35,7 @@ export class ETH extends Protocol {
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
-      const c = this._peer._common
+      const c = this._peer.common
       this._hardfork = c.hardfork() ?? this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
@@ -127,7 +127,7 @@ export class ETH extends Protocol {
    * @param forkId Remote fork ID
    */
   _validateForkId(forkId: Uint8Array[]) {
-    const c = this._peer._common
+    const c = this._peer.common
 
     const peerForkHash = bytesToHex(forkId[0])
     const peerNextFork = bytesToBigInt(forkId[1])
@@ -263,7 +263,7 @@ export class ETH extends Protocol {
     if (this._status !== null) return
     this._status = [
       intToBytes(this._version),
-      bigIntToBytes(this._peer._common.chainId()),
+      bigIntToBytes(this._peer.common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash,
