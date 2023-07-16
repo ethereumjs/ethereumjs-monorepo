@@ -23,9 +23,9 @@ import { checkError } from '../util'
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
 const validForkChoiceState = {
-  headBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
-  safeBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
-  finalizedBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
+  headBlockHash: '0xb5785cb83fccc2280113e494cad4f6659eb73977421a78588b6e251a0563d9da',
+  safeBlockHash: '0xb5785cb83fccc2280113e494cad4f6659eb73977421a78588b6e251a0563d9da',
+  finalizedBlockHash: '0xb5785cb83fccc2280113e494cad4f6659eb73977421a78588b6e251a0563d9da',
 }
 const validPayloadAttributes = {
   timestamp: '0x2f',
@@ -116,7 +116,7 @@ tape(`${method}: call with known payload`, async (t) => {
     const { executionPayload, blobsBundle } = res.body.result
     t.equal(
       executionPayload.blockHash,
-      '0x9db3128f029d4043d32786a8896fbaadac4c07ec475213a43534ec06079f08b1',
+      '0x8925d1a8b7ac4aa69e1898dbb8ff0ebb55a45a65749e6e9b3819066c5afff5bf',
       'built expected block'
     )
     t.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
