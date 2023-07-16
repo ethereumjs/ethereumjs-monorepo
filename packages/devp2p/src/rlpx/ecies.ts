@@ -58,24 +58,24 @@ function concatKDF(keyMaterial: Uint8Array, keyLength: number) {
 }
 
 export class ECIES {
-  _privateKey: Uint8Array
-  _publicKey: Uint8Array
-  _remotePublicKey: Uint8Array | null
-  _nonce: Uint8Array
-  _remoteNonce: Uint8Array | null = null
-  _initMsg: Uint8Array | null | undefined = null
-  _remoteInitMsg: Uint8Array | null = null
-  _gotEIP8Auth: boolean = false
-  _gotEIP8Ack: boolean = false
-  _ingressAes: Decipher | null = null
-  _egressAes: Decipher | null = null
-  _ingressMac: MAC | null = null
-  _egressMac: MAC | null = null
-  _ephemeralPrivateKey: Uint8Array
-  _ephemeralPublicKey: Uint8Array
-  _remoteEphemeralPublicKey: Uint8Array | null = null // we don't need store this key, but why don't?
-  _ephemeralSharedSecret: Uint8Array | null = null
-  _bodySize: number | null = null
+  protected _privateKey: Uint8Array
+  protected _publicKey: Uint8Array
+  protected _remotePublicKey: Uint8Array | null
+  protected _nonce: Uint8Array
+  protected _remoteNonce: Uint8Array | null = null
+  protected _initMsg: Uint8Array | null | undefined = null
+  protected _remoteInitMsg: Uint8Array | null = null
+  protected _gotEIP8Auth: boolean = false
+  protected _gotEIP8Ack: boolean = false
+  protected _ingressAes: Decipher | null = null
+  protected _egressAes: Decipher | null = null
+  protected _ingressMac: MAC | null = null
+  protected _egressMac: MAC | null = null
+  protected _ephemeralPrivateKey: Uint8Array
+  protected _ephemeralPublicKey: Uint8Array
+  protected _remoteEphemeralPublicKey: Uint8Array | null = null // we don't need store this key, but why don't?
+  protected _ephemeralSharedSecret: Uint8Array | null = null
+  protected _bodySize: number | null = null
 
   constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array) {
     this._privateKey = privateKey
