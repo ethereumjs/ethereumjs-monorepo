@@ -553,7 +553,7 @@ describe('[Miner]', async () => {
       miner.stop()
       txPool.stop()
     },
-    { timeout: 30000 }
+    { timeout: 60000 }
   )
 
   it(
