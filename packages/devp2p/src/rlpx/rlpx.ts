@@ -224,9 +224,13 @@ export class RLPx extends EventEmitter {
 
     peer.once('connect', () => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
+
+      // @ts-ignore
       if (peer._eciesSession._gotEIP8Auth === true) {
         msg += ` (peer eip8 auth)`
       }
+
+      // @ts-ignore
       if (peer._eciesSession._gotEIP8Ack === true) {
         msg += ` (peer eip8 ack)`
       }
