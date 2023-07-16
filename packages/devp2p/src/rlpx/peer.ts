@@ -64,29 +64,29 @@ interface Hello {
 }
 
 export class Peer extends EventEmitter {
-  protected readonly _clientId: Uint8Array
+  public readonly clientId: Uint8Array
   protected _capabilities?: Capabilities[]
   public common: Common
   protected _port: number
-  protected readonly _id: Uint8Array
+  public readonly id: Uint8Array
   protected _remoteClientIdFilter?: string[]
   protected _remoteId: Uint8Array
   protected _EIP8: Uint8Array | boolean
   protected _eciesSession: ECIES
   protected _state: string
-  _weHello: HelloMsg | null
-  _hello: Hello | null
-  _nextPacketSize: number
-  _socket: Socket
-  _socketData: Uint8Array
-  _pingIntervalId: NodeJS.Timeout | null
-  _pingTimeoutId: NodeJS.Timeout | null
-  _closed: boolean
-  _connected: boolean
-  _disconnectReason?: DISCONNECT_REASON
-  _disconnectWe: null | boolean
-  _pingTimeout: number
-  _logger: Debugger
+  protected _weHello: HelloMsg | null
+  protected _hello: Hello | null
+  protected _nextPacketSize: number
+  protected _socket: Socket
+  protected _socketData: Uint8Array
+  protected _pingIntervalId: NodeJS.Timeout | null
+  protected _pingTimeoutId: NodeJS.Timeout | null
+  protected _closed: boolean
+  protected _connected: boolean
+  protected _disconnectReason?: DISCONNECT_REASON
+  protected _disconnectWe: null | boolean
+  protected _pingTimeout: number
+  private _logger: Debugger
 
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
@@ -98,17 +98,17 @@ export class Peer extends EventEmitter {
     super()
 
     // hello data
-    this._clientId = options.clientId
+    this.clientId = options.clientId
     this._capabilities = options.capabilities
     this.common = options.common
     this._port = options.port
-    this._id = options.id
+    this.id = options.id
     this._remoteClientIdFilter = options.remoteClientIdFilter
 
     // ECIES session
     this._remoteId = options.remoteId
     this._EIP8 = options.EIP8 ?? true
-    this._eciesSession = new ECIES(options.privateKey, this._id, this._remoteId)
+    this._eciesSession = new ECIES(options.privateKey, this.id, this._remoteId)
 
     // Auth, Ack, Header, Body
     this._state = 'Auth'
@@ -221,14 +221,14 @@ export class Peer extends EventEmitter {
         // TODO: Remove when we can also serve snap requests from other peers
         .filter((c) => c.name !== 'snap')
         .map((c) => `${c.name}${c.version}`)
-        .join(',')} clientId=${bytesToUtf8(this._clientId)}`
+        .join(',')} clientId=${bytesToUtf8(this.clientId)}`
     )
     const payload: HelloMsg = [
       intToBytes(BASE_PROTOCOL_VERSION),
-      this._clientId,
+      this.clientId,
       this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
       this._port === null ? new Uint8Array(0) : intToBytes(this._port),
-      this._id,
+      this.id,
     ]
 
     if (!this._closed) {

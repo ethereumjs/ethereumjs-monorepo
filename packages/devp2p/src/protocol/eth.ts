@@ -60,7 +60,9 @@ export class ETH extends Protocol {
   _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
     const debugMsg = this.DEBUG
-      ? `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+      ? // @ts-ignore
+        `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
           this._peer._socket.remotePort
         }`
       : undefined
@@ -289,7 +291,10 @@ export class ETH extends Protocol {
     if (this.DEBUG) {
       this.debug(
         'STATUS',
+
+        // @ts-ignore
         `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
           this._peer._socket.remotePort
         } (eth${this._version}): ${this._getStatusString(this._status)}`
       )
@@ -298,6 +303,7 @@ export class ETH extends Protocol {
     let payload = RLP.encode(this._status)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
@@ -310,6 +316,7 @@ export class ETH extends Protocol {
     if (this.DEBUG) {
       const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
+      // @ts-ignore
       const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
       this.debug(messageName, debugMsg)
@@ -352,6 +359,7 @@ export class ETH extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }

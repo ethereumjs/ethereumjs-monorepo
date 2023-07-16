@@ -254,7 +254,9 @@ export class RlpxServer extends Server {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToUnprefixedHex(rlpxPeer.getId()!),
+          // @ts-ignore
           host: rlpxPeer._socket.remoteAddress!,
+          // @ts-ignore
           port: rlpxPeer._socket.remotePort!,
           protocols: Array.from(this.protocols),
           // @ts-ignore: Property 'server' does not exist on type 'Socket'.

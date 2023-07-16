@@ -63,6 +63,7 @@ export abstract class Protocol extends EventEmitter {
     }
 
     // Remote Peer IP logger
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend(ip)
@@ -76,6 +77,7 @@ export abstract class Protocol extends EventEmitter {
    * Can be used together with the `devp2p:FIRST_PEER` debugger.
    */
   _addFirstPeerDebugger() {
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
@@ -95,6 +97,8 @@ export abstract class Protocol extends EventEmitter {
     if (this.msgDebuggers[messageName] !== undefined) {
       this.msgDebuggers[messageName](msg)
     }
+
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string' && this.msgDebuggers[ip] !== undefined) {
       this.msgDebuggers[ip](msg)
