@@ -116,7 +116,7 @@ tape(`${method}: call with known payload`, async (t) => {
     const { executionPayload, blobsBundle } = res.body.result
     t.equal(
       executionPayload.blockHash,
-      '0x8925d1a8b7ac4aa69e1898dbb8ff0ebb55a45a65749e6e9b3819066c5afff5bf',
+      '0x0a4f946a9dac3f6d2b86d02dfa6cf221b4fe72bbaff51b50cee4c5784156dd52',
       'built expected block'
     )
     t.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
