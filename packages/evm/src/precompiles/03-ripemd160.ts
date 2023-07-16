@@ -3,7 +3,7 @@ import { ripemd160 } from 'ethereum-cryptography/ripemd160.js'
 
 import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile03(opts: PrecompileInput): ExecResult {
