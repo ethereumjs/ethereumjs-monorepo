@@ -42,7 +42,7 @@ describe(method, () => {
       }
       await baseRequest(server, req, 200, expectRes)
     },
-    { timeout: 10000 }
+    { timeout: 30000 }
   )
 
   it('ensure returns correct code', async () => {

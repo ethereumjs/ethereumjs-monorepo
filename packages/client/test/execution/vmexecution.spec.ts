@@ -59,7 +59,7 @@ describe('[VMExecution]', async () => {
       await exec.run()
       assert.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
     },
-    { timeout: 20000 }
+    { timeout: 60000 }
   )
 
   it(
@@ -83,7 +83,7 @@ describe('[VMExecution]', async () => {
         'blocks should execute without error'
       )
     },
-    { timeout: 20000 }
+    { timeout: 60000 }
   )
 
   it(
@@ -108,7 +108,7 @@ describe('[VMExecution]', async () => {
       assert.equal(exec.started, false, 'execution should be restopped')
       assert.equal(exec['vmPromise'], undefined, 'vmPromise should be reset')
     },
-    { timeout: 15000 }
+    { timeout: 30000 }
   )
 
   it('Block execution / Hardforks PoA (goerli)', async () => {

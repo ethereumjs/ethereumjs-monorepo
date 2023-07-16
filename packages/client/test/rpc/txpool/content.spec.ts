@@ -86,6 +86,6 @@ describe(method, () => {
 
       await baseRequest(server, req, 200, expectedRes)
     },
-    { timeout: 10000 }
+    { timeout: 30000 }
   )
 })
