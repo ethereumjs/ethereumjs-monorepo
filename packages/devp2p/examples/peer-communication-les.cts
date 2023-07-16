@@ -34,6 +34,7 @@ const REMOTE_CLIENTID_FILTER = [
   'prichain',
 ]
 
+// @ts-ignore
 const getPeerAddr = (peer: Peer) => `${peer._socket.remoteAddress}:${peer._socket.remotePort}`
 
 // DPT
