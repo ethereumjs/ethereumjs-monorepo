@@ -20,15 +20,15 @@ import type { SendMethod } from '../types.js'
 import type { Input } from '@ethereumjs/rlp'
 
 export class ETH extends Protocol {
-  _status: ETH.StatusMsg | null = null
-  _peerStatus: ETH.StatusMsg | null = null
-  DEBUG: boolean = false
+  protected _status: ETH.StatusMsg | null = null
+  protected _peerStatus: ETH.StatusMsg | null = null
+  private DEBUG: boolean = false
 
   // Eth64
-  _hardfork: string = 'chainstart'
-  _latestBlock = BigInt(0)
-  _forkHash: string = ''
-  _nextForkBlock = BigInt(0)
+  protected _hardfork: string = 'chainstart'
+  protected _latestBlock = BigInt(0)
+  protected _forkHash: string = ''
+  protected _nextForkBlock = BigInt(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)

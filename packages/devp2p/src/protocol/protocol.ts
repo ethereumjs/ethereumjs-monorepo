@@ -12,13 +12,13 @@ const { debug: createDebugLogger } = debugDefault
 type MessageCodes = { [key: number | string]: number | string }
 
 export abstract class Protocol extends EventEmitter {
-  _version: number
-  _peer: Peer
-  _send: SendMethod
-  _statusTimeoutId?: NodeJS.Timeout
-  _messageCodes: MessageCodes
-  _debug: Debugger
-  _verbose: boolean
+  protected _version: number
+  protected _peer: Peer
+  protected _send: SendMethod
+  protected _statusTimeoutId?: NodeJS.Timeout
+  protected _messageCodes: MessageCodes
+  private _debug: Debugger
+  protected _verbose: boolean
 
   /**
    * Will be set to the first successfully connected peer to allow for

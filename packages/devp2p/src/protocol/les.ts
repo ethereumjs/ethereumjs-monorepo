@@ -21,8 +21,8 @@ import type { Input, NestedUint8Array } from '@ethereumjs/rlp'
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
 export class LES extends Protocol {
-  _status: LES.Status | null = null
-  _peerStatus: LES.Status | null = null
+  protected _status: LES.Status | null = null
+  protected _peerStatus: LES.Status | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.LES, version, LES.MESSAGE_CODES)
