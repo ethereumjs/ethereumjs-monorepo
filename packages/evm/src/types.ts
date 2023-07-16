@@ -1,7 +1,7 @@
 import { zeros } from '@ethereumjs/util'
 
-import type { EVMResult } from './evm.js'
-import type { InterpreterStep } from './interpreter.js'
+import type { EvmError } from './exceptions.js'
+import type { InterpreterStep, RunState } from './interpreter.js'
 import type { Message } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
 import type { OpHandler } from './opcodes/index.js'
@@ -154,6 +154,7 @@ export interface EVMInterface {
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
+  runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: AsyncEventEmitter<EVMEvents>
 }
 
@@ -246,6 +247,63 @@ export interface EVMOpts {
    *
    */
   blockchain?: Blockchain
+}
+
+/**
+ * Result of executing a message via the {@link EVM}.
+ */
+export interface EVMResult {
+  /**
+   * Address of created account during transaction, if any
+   */
+  createdAddress?: Address
+  /**
+   * Contains the results from running the code, if any, as described in {@link runCode}
+   */
+  execResult: ExecResult
+}
+
+/**
+ * Result of executing a call via the {@link EVM}.
+ */
+export interface ExecResult {
+  runState?: RunState
+  /**
+   * Description of the exception, if any occurred
+   */
+  exceptionError?: EvmError
+  /**
+   * Amount of gas left
+   */
+  gas?: bigint
+  /**
+   * Amount of gas the code used to run
+   */
+  executionGasUsed: bigint
+  /**
+   * Return value from the contract
+   */
+  returnValue: Uint8Array
+  /**
+   * Array of logs that the contract emitted
+   */
+  logs?: Log[]
+  /**
+   * A set of accounts to selfdestruct
+   */
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
+  /**
+   * The gas refund counter
+   */
+  gasRefund?: bigint
+  /**
+   * Amount of data gas consumed by the transaction
+   */
+  dataGasUsed?: bigint
 }
 
 /**

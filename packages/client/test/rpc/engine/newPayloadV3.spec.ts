@@ -25,7 +25,7 @@ export const batchBlocks = async (t: Test, server: HttpServer) => {
     const expectRes = (res: any) => {
       t.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(t, server, req, 200, expectRes, false, false)
   }
 }
 
@@ -106,13 +106,13 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       let expectRes = (res: any) => {
         t.equal(res.body.result.status, 'ACCEPTED')
       }
-      await baseRequest(t, server, req, 200, expectRes, false)
+      await baseRequest(t, server, req, 200, expectRes, false, false)
 
       req = params(method, [blocks[0]])
       expectRes = (res: any) => {
         t.equal(res.body.result.status, 'VALID')
       }
-      await baseRequest(t, server, req, 200, expectRes, false)
+      await baseRequest(t, server, req, 200, expectRes, false, false)
 
       const state = {
         headBlockHash: blocks[1].blockHash,
@@ -274,7 +274,7 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     const expectResFcu = (res: any) => {
       t.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectResFcu, false)
+    await baseRequest(t, server, req, 200, expectResFcu, false, false)
 
     // Now let's try to re-execute payload
     req = params(method, [blockData])

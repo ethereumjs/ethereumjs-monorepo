@@ -87,7 +87,7 @@ tape(`${method}: call with known payload`, async (t) => {
     payloadId = res.body.result.payloadId
     t.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
   }
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes, false, false)
 
   const txBlobs = getBlobs('hello world')
   const txCommitments = blobsToCommitments(txBlobs)
@@ -132,7 +132,7 @@ tape(`${method}: call with known payload`, async (t) => {
     t.equal(blobs[0], bytesToHex(txBlobs[0]), 'blob should match')
   }
 
-  await baseRequest(t, server, req, 200, expectRes, false)
+  await baseRequest(t, server, req, 200, expectRes)
   DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
 })

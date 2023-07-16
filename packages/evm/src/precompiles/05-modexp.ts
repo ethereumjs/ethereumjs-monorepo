@@ -9,7 +9,7 @@ import {
 
 import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 function multComplexity(x: bigint): bigint {
