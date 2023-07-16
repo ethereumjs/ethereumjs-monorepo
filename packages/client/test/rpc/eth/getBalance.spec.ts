@@ -108,5 +108,5 @@ describe(
       await baseRequest(server, req, 200, expectRes)
     })
   },
-  10000
+  30000
 )

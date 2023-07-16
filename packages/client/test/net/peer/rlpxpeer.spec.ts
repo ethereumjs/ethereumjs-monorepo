@@ -3,7 +3,6 @@ import { EventEmitter } from 'events'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config'
-import { RlpxSender } from '../../../src/net/protocol/rlpxsender'
 import { Event } from '../../../src/types'
 
 describe('[RlpxPeer]', async () => {
