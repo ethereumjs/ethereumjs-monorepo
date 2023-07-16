@@ -36,7 +36,7 @@ export class RLPx extends EventEmitter {
   private _debug: Debugger
   protected _timeout: number
   protected _maxPeers: number
-  protected _clientId: Uint8Array
+  public readonly clientId: Uint8Array
   protected _remoteClientIdFilter?: string[]
   protected _capabilities: Capabilities[]
   protected _common: Common
@@ -61,7 +61,7 @@ export class RLPx extends EventEmitter {
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
-    this._clientId = options.clientId
+    this.clientId = options.clientId
       ? options.clientId
       : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
@@ -207,7 +207,7 @@ export class RLPx extends EventEmitter {
       privateKey: this._privateKey,
       id: this.id,
       timeout: this._timeout,
-      clientId: this._clientId,
+      clientId: this.clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
       common: this._common,
