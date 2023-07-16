@@ -64,16 +64,16 @@ interface Hello {
 }
 
 export class Peer extends EventEmitter {
-  _clientId: Uint8Array
-  _capabilities?: Capabilities[]
-  _common: Common
-  _port: number
-  _id: Uint8Array
-  _remoteClientIdFilter?: string[]
-  _remoteId: Uint8Array
-  _EIP8: Uint8Array | boolean
-  _eciesSession: ECIES
-  _state: string
+  protected readonly _clientId: Uint8Array
+  protected _capabilities?: Capabilities[]
+  public common: Common
+  protected _port: number
+  protected readonly _id: Uint8Array
+  protected _remoteClientIdFilter?: string[]
+  protected _remoteId: Uint8Array
+  protected _EIP8: Uint8Array | boolean
+  protected _eciesSession: ECIES
+  protected _state: string
   _weHello: HelloMsg | null
   _hello: Hello | null
   _nextPacketSize: number
@@ -100,7 +100,7 @@ export class Peer extends EventEmitter {
     // hello data
     this._clientId = options.clientId
     this._capabilities = options.capabilities
-    this._common = options.common
+    this.common = options.common
     this._port = options.port
     this._id = options.id
     this._remoteClientIdFilter = options.remoteClientIdFilter
