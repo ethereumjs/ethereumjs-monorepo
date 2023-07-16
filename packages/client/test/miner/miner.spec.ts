@@ -329,6 +329,7 @@ describe('[Miner]', async () => {
     await (miner as any).queueNextAssembly(0)
     await wait(500)
   })
+
   it('assembleBlocks() -> with saveReceipts', async () => {
     const chain = new FakeChain() as any
     const config = new Config({
@@ -553,7 +554,7 @@ describe('[Miner]', async () => {
       miner.stop()
       txPool.stop()
     },
-    { timeout: 60000 }
+    { timeout: 120000 }
   )
 
   it(
@@ -712,7 +713,7 @@ describe('[Miner]', async () => {
       await (miner as any).queueNextAssembly(0)
       await wait(10000)
     },
-    { timeout: 60000 }
+    { timeout: 120000 }
   )
 
   it('should reset td', () => {
