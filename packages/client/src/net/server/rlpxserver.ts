@@ -223,9 +223,9 @@ export class RlpxServer extends Server {
         dnsAddr: this.config.dnsAddr,
       })
 
-      this.dpt.on('error', (e: Error) => this.error(e))
+      this.dpt.events.on('error', (e: Error) => this.error(e))
 
-      this.dpt.on('listening', () => {
+      this.dpt.events.on('listening', () => {
         resolve()
       })
 

@@ -48,7 +48,7 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
 })
 
 /* eslint-disable no-console */
-dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
+dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 

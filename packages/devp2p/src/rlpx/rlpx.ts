@@ -73,7 +73,7 @@ export class RLPx {
     // DPT
     this._dpt = options.dpt ?? null
     if (this._dpt !== null) {
-      this._dpt.on('peer:new', (peer: PeerInfo) => {
+      this._dpt.events.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
           this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
@@ -89,7 +89,7 @@ export class RLPx {
           this._peersQueue.push({ peer, ts: 0 }) // save to queue
         }
       })
-      this._dpt.on('peer:removed', (peer: PeerInfo) => {
+      this._dpt.events.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
         this._peersQueue = this._peersQueue.filter(
           (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array)

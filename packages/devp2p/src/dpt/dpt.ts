@@ -14,7 +14,8 @@ import type { Debugger } from 'debug'
 
 const DEBUG_BASE_NAME = 'dpt'
 
-export class DPT extends EventEmitter {
+export class DPT {
+  public events: EventEmitter
   protected _privateKey: Uint8Array
   protected _banlist: BanList
   protected _dns: DNS
@@ -32,8 +33,7 @@ export class DPT extends EventEmitter {
   protected _dnsAddr: string
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
-    super()
-
+    this.events = new EventEmitter()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
@@ -47,8 +47,8 @@ export class DPT extends EventEmitter {
     this._banlist = new BanList()
 
     this._kbucket = new KBucket(this.id)
-    this._kbucket.on('added', (peer: PeerInfo) => this.emit('peer:added', peer))
-    this._kbucket.on('removed', (peer: PeerInfo) => this.emit('peer:removed', peer))
+    this._kbucket.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
+    this._kbucket.on('removed', (peer: PeerInfo) => this.events.emit('peer:removed', peer))
     this._kbucket.on('ping', this._onKBucketPing.bind(this))
 
     this._server = new DPTServer(this, this._privateKey, {
@@ -56,9 +56,9 @@ export class DPT extends EventEmitter {
       endpoint: options.endpoint,
       createSocket: options.createSocket,
     })
-    this._server.events.once('listening', () => this.emit('listening'))
-    this._server.events.once('close', () => this.emit('close'))
-    this._server.events.on('error', (err) => this.emit('error', err))
+    this._server.events.once('listening', () => this.events.emit('listening'))
+    this._server.events.once('close', () => this.events.emit('close'))
+    this._server.events.on('error', (err) => this.events.emit('error', err))
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     // When not using peer neighbour discovery we don't add peers here
     // because it results in duplicate calls for the same targets
@@ -108,7 +108,7 @@ export class DPT extends EventEmitter {
     for (const peer of peers) {
       setTimeout(() => {
         this.addPeer(peer).catch((error) => {
-          this.emit('error', error)
+          this.events.emit('error', error)
         })
       }, ms)
       ms += DIFF_TIME_MS
@@ -119,7 +119,7 @@ export class DPT extends EventEmitter {
     try {
       peer = await this.addPeer(peer)
     } catch (error: any) {
-      this.emit('error', error)
+      this.events.emit('error', error)
       return
     }
     if (!this.id) return
@@ -139,7 +139,7 @@ export class DPT extends EventEmitter {
     // check that peer is alive
     try {
       const peer = await this._server.ping(obj)
-      this.emit('peer:new', peer)
+      this.events.emit('peer:new', peer)
       this._kbucket.add(peer)
       return peer
     } catch (err: any) {
