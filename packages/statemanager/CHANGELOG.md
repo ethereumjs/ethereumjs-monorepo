@@ -34,7 +34,7 @@ So: jump right in and enjoy. We can't wait to hear your feedback and see if you 
 
 The EthereumJS Team
 
-### Default Shanghai HF / Merge -> Paris Renaming / Cancun Hardfork
+### Default Shanghai HF / Merge -> Paris Renaming / Full Cancun Hardfork Support
 
 The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefore for all libraries who use a Common-based HF setting internally (e.g. Tx, Block or EVM), see PR [#2655](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2655).
 
@@ -45,14 +45,14 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
-And third on hardforks 🙂: while not all Cancun EIPs are finalized yet, Cancun is now an officially selectable hardfork in our libraries (see PR [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659)) and can be activated with:
+And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
 
-Note that EIPs added to `Cancun` in `Common` are aligned with the EIPs added to Cancun-related devnets, so currently only `EIP-4844` activates when setting the hardfork.
+Note that not all Cancun EIPs are in a `FINAL` EIP state though and particularly `EIP-4844` will likely still receive some changes.
 
 ### StateManager / Cache Refactoring
 
