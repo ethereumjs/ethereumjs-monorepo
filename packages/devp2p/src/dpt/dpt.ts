@@ -47,9 +47,9 @@ export class DPT {
     this._banlist = new BanList()
 
     this._kbucket = new KBucket(this.id)
-    this._kbucket.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
-    this._kbucket.on('removed', (peer: PeerInfo) => this.events.emit('peer:removed', peer))
-    this._kbucket.on('ping', this._onKBucketPing.bind(this))
+    this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
+    this._kbucket.events.on('removed', (peer: PeerInfo) => this.events.emit('peer:removed', peer))
+    this._kbucket.events.on('ping', this._onKBucketPing.bind(this))
 
     this._server = new DPTServer(this, this._privateKey, {
       timeout: options.timeout,
