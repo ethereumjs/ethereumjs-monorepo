@@ -92,6 +92,5 @@ describe('PoW client test', async () => {
     const client = await setupPowDevnet(minerAddress, true)
     assert.ok(client.started, 'client started successfully')
     await mineBlockAndstopClient(client)
-  }),
-    { timeout: 60000 }
+  }, 60000)
 })

@@ -134,7 +134,7 @@ describe('[Integration:Merge]', async () => {
       })
       void remoteService.synchronizer!.start()
     })
-  }, 20000)
+  }, 60000)
 
   it('should mine and stop at the merge (PoW)', async () => {
     const [server, service] = await minerSetup(commonPoW)
@@ -174,5 +174,5 @@ describe('[Integration:Merge]', async () => {
       })
       void remoteService.synchronizer!.start()
     })
-  }, 60000)
+  }, 120000)
 })

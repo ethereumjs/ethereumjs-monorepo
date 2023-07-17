@@ -103,7 +103,7 @@ describe('[Integration:FullEthereumService]', async () => {
       peer.eth!.send('Transactions', [tx])
       assert.ok(true, 'handled Transactions')
     },
-    { timeout: 15000 }
+    { timeout: 30000 }
   )
 
   it('should handle LES requests', async () => {

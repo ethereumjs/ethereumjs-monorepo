@@ -93,19 +93,22 @@ describe('[Integration:Miner]', async () => {
       ;(remoteService as FullEthereumService).execution.run = async () => 1 // stub
       await server.discover('remotePeer1', '127.0.0.2')
       const targetHeight = BigInt(5)
-      remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
-        if (chainHeight === targetHeight) {
-          assert.equal(
-            remoteService.chain.blocks.height,
-            targetHeight,
-            'synced blocks successfully'
-          )
-          await destroy(server, service)
-          await destroy(remoteServer, remoteService)
-        }
+      await new Promise((resolve) => {
+        remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async (chainHeight) => {
+          if (chainHeight === targetHeight) {
+            assert.equal(
+              remoteService.chain.blocks.height,
+              targetHeight,
+              'synced blocks successfully'
+            )
+            await destroy(server, service)
+            await destroy(remoteServer, remoteService)
+            resolve(undefined)
+
+            void remoteService.synchronizer!.start()
+          }
+        })
       })
-      await remoteService.synchronizer!.start()
-      await new Promise(() => {}) // resolves once   is called
     },
     { timeout: 25000 }
   )
