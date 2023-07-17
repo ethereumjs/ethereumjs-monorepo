@@ -261,14 +261,14 @@ tape('[RlpxServer]', async (t) => {
     config.events.on(Event.SERVER_LISTENING, (info) =>
       t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
     )
-    server.rlpx!.emit('peer:added', rlpxPeer)
+    server.rlpx!.events.emit('peer:added', rlpxPeer)
     ;(server as any).peers.set('01', { id: '01' } as any)
-    server.rlpx!.emit('peer:removed', rlpxPeer)
-    server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
+    server.rlpx!.events.emit('peer:removed', rlpxPeer)
+    server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
 
     // @ts-ignore
     server.rlpx!.id = hexToBytes('0xff')
-    server.rlpx!.emit('listening')
+    server.rlpx!.events.emit('listening')
   })
 
   t.test('should handles errors from id-less peers', async (t) => {
@@ -282,7 +282,7 @@ tape('[RlpxServer]', async (t) => {
       throw error
     })
     config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
-    server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
+    server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
   })
 
   t.test('should reset td', (t) => {
