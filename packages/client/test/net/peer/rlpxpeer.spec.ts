@@ -89,9 +89,9 @@ tape('[RlpxPeer]', async (t) => {
     peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
       t.equals(rlpxPeer.pooled, false, 'got disconnected')
     )
-    peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
-    peer.rlpx!.emit('peer:added', rlpxPeer)
-    peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
+    peer.rlpx!.events.emit('peer:added', rlpxPeer)
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
     ;(peer as any).bindProtocols = td.func<typeof peer['bindProtocols']>()
     peer.rlpxPeer = rlpxPeer
     await peer.connect()
@@ -101,8 +101,8 @@ tape('[RlpxPeer]', async (t) => {
       if (err.message === 'err1') t.pass('got err1')
       if (err.message === 'err2') t.pass('got err2')
     })
-    peer.rlpx!.emit('peer:added', rlpxPeer)
-    peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:added', rlpxPeer)
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
   })
 
   t.test('should accept peer connection', async (t) => {
