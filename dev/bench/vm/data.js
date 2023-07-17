@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689585510531,
+  "lastUpdate": 1689602158763,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "49cf0845b5234f4c8483c58ff6aeeb6bf7155ccf",
-          "message": "Common: Fix genesis parsing for 4844 (#2847)\n\n* fix for genesis mismatch\r\n\r\n* fix for genesis mismatch\r\n\r\n* blockchain: remove unnecessary genesis field\r\n\r\n---------\r\n\r\nCo-authored-by: spencer-tb <spencer@spencertaylorbrown.uk>",
-          "timestamp": "2023-07-03T12:01:55+02:00",
-          "tree_id": "df91ed54f91f43da6a16b4ceb1dcdbc730fef69f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/49cf0845b5234f4c8483c58ff6aeeb6bf7155ccf"
-        },
-        "date": 1688378761023,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32282,
-            "range": "±4.77%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31942,
-            "range": "±2.83%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31934,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26421,
-            "range": "±10.56%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30605,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.58%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "66c98f386e4a7807978e3e8f0c19608d10849896",
+          "message": "RC1 Releases (#2876)\n\n* Bump version, updated upstream dependency versions, updated README (RLP)\r\n\r\n* Update release date to 2023-07-13\r\n\r\n* Add generic Buffer -> Uint8Array README section\r\n\r\n* Add generic README unreleased note\r\n\r\n* Add generic ESM sections\r\n\r\n* Add a first browser example section to README (EVM)\r\n\r\n* Small updates\r\n\r\n* Renamed blobHelpers.ts -> blobs.ts (Util), moved Util encoding to Trie\r\n\r\n* Version bump, update upstream dependency versions, update README (Util)\r\n\r\n* Move encoding tests from Util to Trie\r\n\r\n* Version bump, update upstream dependency versions, update README (Common)\r\n\r\n* Rebuild docs\r\n\r\n* Version bump, update upstream dependency versions, update README (Trie)\r\n\r\n* Version bump, update upstream dependency versions, update README (devp2p)\r\n\r\n* Rebuild docs (Tx)\r\n\r\n* Version bump, update upstream dependency versions, update README (Tx)\r\n\r\n* Version bump, update upstream dependency versions, update README (Block)\r\n\r\n* Rebuild docs (Block)\r\n\r\n* Version bump, update upstream dependency versions, update README (Blockchain)\r\n\r\n* Rebuild docs (Blockchain)\r\n\r\n* Version bump, update upstream dependency versions, update README, added LICENSE file (Genesis)\r\n\r\n* Version bump, update upstream dependency versions, update README (StateManager)\r\n\r\n* Rebuild docs (StateManager)\r\n\r\n* Version bump, update upstream dependency versions, update README (Ethash)\r\n\r\n* Version bump, update upstream dependency versions, update README (EVM)\r\n\r\n* First part of VM README additions\r\n\r\n* Blockchain: remove level dependency, other changes\r\n\r\n* Dependency clean-up\r\n\r\n* Bump client version to v0.8.0\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Small updates\r\n\r\n* Add CHANGELOG introduction sections\r\n\r\n* Adjust Cancun HF CHANGELOG note (all EIPs included)\r\n\r\n* Bring release notes up to date\r\n\r\n* Rebuild Block, Common docs\r\n\r\n* Rebuild Ethash docs\r\n\r\n* Small updates and corrections\r\n\r\n* More small corrections",
+          "timestamp": "2023-07-17T15:51:34+02:00",
+          "tree_id": "680b78f0dc42a6f7fc8257ba4e8179857964af42",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/66c98f386e4a7807978e3e8f0c19608d10849896"
+        },
+        "date": 1689602157424,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 24695,
+            "range": "±6.32%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25315,
+            "range": "±3.25%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 24673,
+            "range": "±3.36%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 24062,
+            "range": "±3.55%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18866,
+            "range": "±11.52%",
+            "unit": "ops/sec",
+            "extra": "64 samples"
           }
         ]
       }
