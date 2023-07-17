@@ -63,7 +63,8 @@ interface Hello {
   id: Uint8Array
 }
 
-export class Peer extends EventEmitter {
+export class Peer {
+  public events: EventEmitter
   public readonly clientId: Uint8Array
   protected _capabilities?: Capabilities[]
   public common: Common
@@ -95,7 +96,7 @@ export class Peer extends EventEmitter {
   _protocols: ProtocolDescriptor[]
 
   constructor(options: PeerOptions) {
-    super()
+    this.events = new EventEmitter()
 
     // hello data
     this.clientId = options.clientId
@@ -120,7 +121,7 @@ export class Peer extends EventEmitter {
     this._socket = options.socket
     this._socketData = new Uint8Array()
     this._socket.on('data', this._onSocketData.bind(this))
-    this._socket.on('error', (err: Error) => this.emit('error', err))
+    this._socket.on('error', (err: Error) => this.events.emit('error', err))
     this._socket.once('close', this._onSocketClose.bind(this))
     this._logger =
       this._socket.remoteAddress !== undefined
@@ -240,7 +241,7 @@ export class Peer extends EventEmitter {
         this._weHello = payload
       }
       if (this._hello) {
-        this.emit('connect')
+        this.events.emit('connect')
       }
     }
   }
@@ -428,7 +429,7 @@ export class Peer extends EventEmitter {
     this._connected = true
     this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
     if (this._weHello) {
-      this.emit('connect')
+      this.events.emit('connect')
     }
   }
 
@@ -595,7 +596,7 @@ export class Peer extends EventEmitter {
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer subprotocol message handling: ${err}`)
-      this.emit('error', err)
+      this.events.emit('error', err)
     }
     this._socketData = this._socketData.subarray(bytesCount)
   }
@@ -627,7 +628,7 @@ export class Peer extends EventEmitter {
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer socket data handling: ${err}`)
-      this.emit('error', err)
+      this.events.emit('error', err)
     }
   }
 
@@ -639,7 +640,7 @@ export class Peer extends EventEmitter {
     clearTimeout(this._pingTimeoutId!)
 
     this._closed = true
-    if (this._connected) this.emit('close', this._disconnectReason, this._disconnectWe)
+    if (this._connected) this.events.emit('close', this._disconnectReason, this._disconnectWe)
   }
 
   /**

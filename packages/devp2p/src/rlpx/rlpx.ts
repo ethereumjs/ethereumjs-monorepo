@@ -213,16 +213,16 @@ export class RLPx {
       common: this._common,
       port: this._listenPort!,
     })
-    peer.on('error', (err) => this.events.emit('peer:error', peer, err))
+    peer.events.on('error', (err) => this.events.emit('peer:error', peer, err))
 
     // handle incoming connection
     if (peerId === null && this._getOpenSlots() === 0) {
-      peer.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
+      peer.events.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
       socket.once('error', () => {})
       return
     }
 
-    peer.once('connect', () => {
+    peer.events.once('connect', () => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
 
       // @ts-ignore
@@ -250,7 +250,7 @@ export class RLPx {
       this.events.emit('peer:added', peer)
     })
 
-    peer.once('close', (reason, disconnectWe) => {
+    peer.events.once('close', (reason, disconnectWe) => {
       if (disconnectWe === true) {
         this._debug(
           `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,

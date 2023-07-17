@@ -142,7 +142,7 @@ export function twoPeerMsgExchange(
     protocol.on('message', async (code: any, payload: any) => {
       if (opts.onOnMsg0 !== undefined) opts.onOnMsg0(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err: Error) => {
+    peer.events.on('error', (err: Error) => {
       if (opts.onPeerError0 !== undefined) {
         opts.onPeerError0(err, rlpxs)
       } else {
@@ -168,7 +168,7 @@ export function twoPeerMsgExchange(
       }
       if (opts.onOnMsg1 !== undefined) opts.onOnMsg1(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err: any) => {
+    peer.events.on('error', (err: any) => {
       if (opts.onPeerError1 !== undefined) {
         opts.onPeerError1(err, rlpxs)
       } else {
@@ -206,7 +206,7 @@ export async function twoPeerMsgExchange2(
     // Set peer's devp2p protocol version to 4
     protocol._peer._hello = v4Hello
     protocol.sendStatus(opts.status0)
-    peer.on('error', (err: Error) => {
+    peer.events.on('error', (err: Error) => {
       assert.fail(`Unexpected peer 0 error: ${err}`)
     })
   })
@@ -220,7 +220,7 @@ export async function twoPeerMsgExchange2(
           break
       }
     })
-    peer.once('error', (err: any) => {
+    peer.events.once('error', (err: any) => {
       assert.equal(
         err.message,
         'Invalid Snappy bitstream',
@@ -259,7 +259,7 @@ export function twoPeerMsgExchange3(
     protocol.on('message', async (code: any, payload: any) => {
       opts.receiveMessage(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err: any) => {
+    peer.events.on('error', (err: any) => {
       if (opts.onPeerError1 !== false) {
         opts.onPeerError1(err, rlpxs)
       } else {
