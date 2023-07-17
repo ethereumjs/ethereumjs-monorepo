@@ -29,29 +29,29 @@ tape('[RlpxSender]', (t) => {
   })
 
   t.test('should receive status', (t) => {
-    const rlpxProtocol = new EventEmitter()
+    const rlpxProtocol = { events: new EventEmitter() }
     const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
     sender.on('status', (status: any) => {
       t.equal(status.id, 5, 'status received')
       t.equal(sender.status.id, 5, 'status getter')
       t.end()
     })
-    rlpxProtocol.emit('status', { id: 5 })
+    rlpxProtocol.events.emit('status', { id: 5 })
   })
 
   t.test('should receive message', (t) => {
-    const rlpxProtocol = new EventEmitter()
+    const rlpxProtocol = { events: new EventEmitter() }
     const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
     sender.on('message', (message: any) => {
       t.equal(message.code, 1, 'message received (code)')
       t.equal(message.payload, 5, 'message received (payload)')
       t.end()
     })
-    rlpxProtocol.emit('message', 1, 5)
+    rlpxProtocol.events.emit('message', 1, 5)
   })
 
   t.test('should catch errors', (t) => {
-    const rlpxProtocol = new EventEmitter()
+    const rlpxProtocol = { events: new EventEmitter() }
     const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
     t.throws(() => sender.sendStatus({ id: 5 }), /not a function/, 'sendStatus error')
     t.throws(() => sender.sendMessage(1, 5), /not a function/, 'sendMessage error')
