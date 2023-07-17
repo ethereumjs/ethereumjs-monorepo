@@ -132,7 +132,7 @@ export function twoPeerMsgExchange(
   basePort = 30306
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].on('peer:added', function (peer: any) {
+  rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)
 
@@ -151,7 +151,7 @@ export function twoPeerMsgExchange(
     }) // (-> 2)
   })
 
-  rlpxs[1].on('peer:added', function (peer: any) {
+  rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.on('message', async (code: any, payload: any) => {
       switch (code) {
@@ -194,7 +194,7 @@ export async function twoPeerMsgExchange2(
   basePort = 30306
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].on('peer:added', function (peer: any) {
+  rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     const v4Hello = {
       protocolVersion: 4,
@@ -211,7 +211,7 @@ export async function twoPeerMsgExchange2(
     })
   })
 
-  rlpxs[1].on('peer:added', function (peer: any) {
+  rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.once('message', async (code: any, _payload: any) => {
       switch (code) {
@@ -249,12 +249,12 @@ export function twoPeerMsgExchange3(
   basePort = 30306
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].on('peer:added', function (peer: any) {
+  rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     opts.sendMessage(rlpxs, protocol)
   })
 
-  rlpxs[1].on('peer:added', function (peer: any) {
+  rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.on('message', async (code: any, payload: any) => {
       opts.receiveMessage(rlpxs, protocol, code, payload)

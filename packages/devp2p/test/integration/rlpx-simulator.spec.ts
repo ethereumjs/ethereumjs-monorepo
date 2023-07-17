@@ -10,7 +10,7 @@ describe('RLPx simulator tests', () => {
     const basePort = 40404
     const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, basePort)
 
-    rlpxs[0].on('peer:added', async (peer: any) => {
+    rlpxs[0].events.on('peer:added', async (peer: any) => {
       assert.equal(
         peer._port,
         basePort + 1,
@@ -26,7 +26,7 @@ describe('RLPx simulator tests', () => {
   it('RLPX: ban node with missing tcp port', () => {
     const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40444)
 
-    rlpxs[0].on('peer:added', async () => {
+    rlpxs[0].events.on('peer:added', async () => {
       const peer = {
         id: hexToBytes('0xabcd'),
         address: '127.0.0.1',
@@ -48,10 +48,10 @@ describe('RLPx simulator tests', () => {
     const rlpxs = util.initTwoPeerRLPXSetup(undefined, undefined, undefined, 40504)
 
     try {
-      rlpxs[0].once('peer:added', (peer: any) => {
+      rlpxs[0].events.once('peer:added', (peer: any) => {
         rlpxs[0].disconnect(peer._remoteId)
       })
-      rlpxs[0].once('peer:removed', async (peer: any, reason: any) => {
+      rlpxs[0].events.once('peer:removed', async (peer: any, reason: any) => {
         assert.equal(
           reason,
           DISCONNECT_REASON.CLIENT_QUITTING,
@@ -72,7 +72,7 @@ describe('RLPx simulator tests', () => {
     const peer = { address: util.localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
     rlpxs[0]._dpt!.addPeer(peer)
     try {
-      rlpxs[0].on('peer:added', async (peer) => {
+      rlpxs[0].events.on('peer:added', async (peer) => {
         if (peer._socket._peername.port === basePort + 1) {
           assert.equal(rlpxs[0]._peersQueue.length, 0, 'peers queue should contain no peers')
           const peer2 = {
