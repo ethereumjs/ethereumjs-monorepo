@@ -91,7 +91,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
-const vm = new VM({ common })
+const vm = await VM.create({ common })
 ```
 
 See the EVM [EIP-5656 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/test/eips/eip-5656.spec.ts) for a respective test scenario on the bytecode level.
@@ -109,7 +109,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
-const vm = new VM({ common })
+const vm = await VM.create({ common })
 ```
 
 See the VM [EIP-6780 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-6780-selfdestruct-same-tx.spec.ts) for a respective test scenario on the bytecode level.
