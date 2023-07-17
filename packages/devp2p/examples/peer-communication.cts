@@ -103,7 +103,7 @@ rlpx.events.on('peer:added', (peer) => {
   // check CHECK_BLOCK
   let forkDrop: NodeJS.Timeout
   let forkVerified = false
-  eth.once('status', () => {
+  eth.events.once('status', () => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
       Uint8Array.from([1]),
       [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
@@ -114,7 +114,7 @@ rlpx.events.on('peer:added', (peer) => {
     peer.once('close', () => clearTimeout(forkDrop))
   })
 
-  eth.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+  eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
     if (code in ETH.MESSAGE_CODES) {
       requests.msgTypes[code] = code + 1
     } else {
