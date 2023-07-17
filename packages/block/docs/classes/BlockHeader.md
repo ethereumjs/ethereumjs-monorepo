@@ -388,7 +388,7 @@ in conjunction with [cliqueIsEpochTransition](BlockHeader.md#cliqueisepochtransi
 
 #### Defined in
 
-[header.ts:835](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L835)
+[header.ts:838](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L838)
 
 ___
 
@@ -405,7 +405,7 @@ Returns extra seal data
 
 #### Defined in
 
-[header.ts:799](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L799)
+[header.ts:802](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L802)
 
 ___
 
@@ -422,7 +422,7 @@ Returns extra vanity data
 
 #### Defined in
 
-[header.ts:790](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L790)
+[header.ts:793](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L793)
 
 ___
 
@@ -439,7 +439,7 @@ header (only clique PoA, throws otherwise)
 
 #### Defined in
 
-[header.ts:778](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L778)
+[header.ts:781](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L781)
 
 ___
 
@@ -455,7 +455,7 @@ PoA clique signature hash without the seal.
 
 #### Defined in
 
-[header.ts:767](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L767)
+[header.ts:770](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L770)
 
 ___
 
@@ -471,7 +471,7 @@ Returns the signer address
 
 #### Defined in
 
-[header.ts:872](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L872)
+[header.ts:875](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L875)
 
 ___
 
@@ -496,7 +496,7 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 #### Defined in
 
-[header.ts:860](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L860)
+[header.ts:863](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L863)
 
 ___
 
@@ -512,7 +512,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[header.ts:955](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L955)
+[header.ts:958](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L958)
 
 ___
 
@@ -534,7 +534,7 @@ Returns the canonical difficulty for this block.
 
 #### Defined in
 
-[header.ts:694](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L694)
+[header.ts:697](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L697)
 
 ___
 
@@ -568,7 +568,7 @@ Returns the hash of the block header.
 
 #### Defined in
 
-[header.ts:662](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L662)
+[header.ts:665](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L665)
 
 ___
 
@@ -584,7 +584,7 @@ Checks if the block header is a genesis header.
 
 #### Defined in
 
-[header.ts:676](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L676)
+[header.ts:679](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L679)
 
 ___
 
@@ -616,7 +616,7 @@ Returns the rlp encoding of the block header.
 
 #### Defined in
 
-[header.ts:889](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L889)
+[header.ts:892](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L892)
 
 ___
 
@@ -632,7 +632,7 @@ Returns the block header in JSON format.
 
 #### Defined in
 
-[header.ts:896](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L896)
+[header.ts:899](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L899)
 
 ___
 

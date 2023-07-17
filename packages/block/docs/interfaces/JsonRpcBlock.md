@@ -19,6 +19,7 @@
 - [mixHash](JsonRpcBlock.md#mixhash)
 - [nonce](JsonRpcBlock.md#nonce)
 - [number](JsonRpcBlock.md#number)
+- [parentBeaconBlockRoot](JsonRpcBlock.md#parentbeaconblockroot)
 - [parentHash](JsonRpcBlock.md#parenthash)
 - [receiptsRoot](JsonRpcBlock.md#receiptsroot)
 - [sha3Uncles](JsonRpcBlock.md#sha3uncles)
@@ -161,6 +162,16 @@ ___
 #### Defined in
 
 [types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L169)
+
+___
+
+### parentBeaconBlockRoot
+
+• `Optional` **parentBeaconBlockRoot**: `string`
+
+#### Defined in
+
+[types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L194)
 
 ___
 

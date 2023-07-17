@@ -26,7 +26,7 @@
 
 #### Defined in
 
-[packages/common/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L119)
+[types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L117)
 
 ___
 
@@ -35,11 +35,7 @@ ___
 • `Optional` **eips**: `number`[]
 
 Selected EIPs which can be activated, please use an array for instantiation
-(e.g. `eips: [ 2537, ]`)
-
-Currently supported:
-
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+(e.g. `eips: [ 1559, 3860 ]`)
 
 #### Inherited from
 
@@ -47,17 +43,17 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
+[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L78)
 
 ___
 
 ### genesisHash
 
-• `Optional` **genesisHash**: `Buffer`
+• `Optional` **genesisHash**: `Uint8Array`
 
 #### Defined in
 
-[packages/common/src/types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L120)
+[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L118)
 
 ___
 
@@ -75,7 +71,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L71)
+[types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L73)
 
 ___
 
@@ -85,4 +81,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L121)
+[types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L119)

@@ -79,6 +79,7 @@ ___
 | `gasLimit` | `PrefixedHexString` |
 | `gasUsed` | `PrefixedHexString` |
 | `logsBloom` | `PrefixedHexString` |
+| `parentBeaconBlockRoot?` | `PrefixedHexString` |
 | `parentHash` | `PrefixedHexString` |
 | `prevRandao` | `PrefixedHexString` |
 | `receiptsRoot` | `PrefixedHexString` |
@@ -89,7 +90,7 @@ ___
 
 #### Defined in
 
-[types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L205)
+[types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L206)
 
 ___
 
@@ -130,7 +131,7 @@ ___
 
 #### Defined in
 
-[types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L197)
+[types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L198)
 
 ___
 
