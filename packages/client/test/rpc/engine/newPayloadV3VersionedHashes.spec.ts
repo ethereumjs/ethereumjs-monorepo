@@ -37,7 +37,7 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x5ffbb3eef91d4dfbc8d02309cb7e8824040f823707dc234b1727ab14a8ecf0ff',
+        blockHash: '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64',
         withdrawals: [],
         dataGasUsed: '0x0',
         excessDataGas: '0x0',
@@ -78,7 +78,7 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x8346f46bbac879e28dd521762b50de3946fbdb84d1af466eeb1f3c4c9893abff',
+        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
         withdrawals: [],
         dataGasUsed: '0x40000',
         excessDataGas: '0x0',
@@ -101,7 +101,7 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x8346f46bbac879e28dd521762b50de3946fbdb84d1af466eeb1f3c4c9893abff',
+        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
         withdrawals: [],
         dataGasUsed: '0x40000',
         excessDataGas: '0x0',
@@ -124,7 +124,7 @@ tape(`${method}: Cancun validations`, (v1) => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x8346f46bbac879e28dd521762b50de3946fbdb84d1af466eeb1f3c4c9893abff',
+        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
         withdrawals: [],
         dataGasUsed: '0x40000',
         excessDataGas: '0x0',

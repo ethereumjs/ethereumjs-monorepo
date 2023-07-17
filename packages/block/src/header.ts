@@ -212,7 +212,7 @@ export class BlockHeader {
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       dataGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       excessDataGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
-      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? KECCAK256_RLP : undefined,
+      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
     }
 
     const baseFeePerGas =
@@ -651,6 +651,9 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(4844) === true) {
       rawItems.push(bigIntToUnpaddedBytes(this.dataGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessDataGas!))
+    }
+    if (this.common.isActivatedEIP(4788) === true) {
+      rawItems.push(this.parentBeaconBlockRoot!)
     }
 
     return rawItems

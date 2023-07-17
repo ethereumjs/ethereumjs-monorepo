@@ -191,6 +191,7 @@ export interface JsonRpcBlock {
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
   dataGasUsed?: string // If EIP-4844 is enabled for this block, returns the data gas used for the block
   excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
+  parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
 }
 
 // Note: all these strings are 0x-prefixed
@@ -220,4 +221,5 @@ export type ExecutionPayload = {
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
   dataGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessDataGas?: PrefixedHexString // QUANTITY, 64 Bits
+  parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
 }
