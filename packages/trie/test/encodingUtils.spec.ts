@@ -1,11 +1,11 @@
+import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
   bytesToNibbles,
   compactBytesToNibbles,
-  hexToBytes,
   nibblesToCompactBytes,
-} from '../src/index.js'
+} from '../src/util/encoding.js'
 
 describe('encoding', () => {
   it('nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly', () => {

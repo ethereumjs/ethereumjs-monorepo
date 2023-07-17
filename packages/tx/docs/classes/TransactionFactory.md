@@ -7,8 +7,8 @@
 ### Methods
 
 - [fromBlockBodyData](TransactionFactory.md#fromblockbodydata)
-- [fromEthersProvider](TransactionFactory.md#fromethersprovider)
-- [fromRPCTx](TransactionFactory.md#fromrpctx)
+- [fromJsonRpcProvider](TransactionFactory.md#fromjsonrpcprovider)
+- [fromRPC](TransactionFactory.md#fromrpc)
 - [fromSerializedData](TransactionFactory.md#fromserializeddata)
 - [fromTxData](TransactionFactory.md#fromtxdata)
 
@@ -16,33 +16,33 @@
 
 ### fromBlockBodyData
 
-▸ `Static` **fromBlockBodyData**(`data`, `txOptions?`): [`TypedTransaction`](../README.md#typedtransaction)
+▸ `Static` **fromBlockBodyData**(`data`, `txOptions?`): [`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)
 
 When decoding a BlockBody, in the transactions field, a field is either:
-A Buffer (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
-A Buffer[] (Legacy Transaction)
+A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
+A Uint8Array[] (Legacy Transaction)
 This method returns the right transaction.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `data` | `Buffer` \| `Buffer`[] | A Buffer or Buffer[] |
+| `data` | `Uint8Array` \| `Uint8Array`[] | A Uint8Array or Uint8Array[] |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
 
-[`TypedTransaction`](../README.md#typedtransaction)
+[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)
 
 #### Defined in
 
-[transactionFactory.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L84)
+[tx/src/transactionFactory.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L87)
 
 ___
 
-### fromEthersProvider
+### fromJsonRpcProvider
 
-▸ `Static` **fromEthersProvider**(`provider`, `txHash`, `txOptions?`): `Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+▸ `Static` **fromJsonRpcProvider**(`provider`, `txHash`, `txOptions?`): `Promise`<[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)\>
 
 Method to retrieve a transaction from the provider
 
@@ -50,86 +50,104 @@ Method to retrieve a transaction from the provider
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `provider` | `any` | An Ethers JsonRPCProvider |
+| `provider` | `string` \| `EthersProvider` | a url string for a JSON-RPC provider or an Ethers JsonRPCProvider object |
 | `txHash` | `string` | Transaction hash |
 | `txOptions?` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
 
-`Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+`Promise`<[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md) \| [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md) \| [`BlobEIP4844Transaction`](BlobEIP4844Transaction.md) \| [`LegacyTransaction`](LegacyTransaction.md)\>
 
 the transaction specified by `txHash`
 
 #### Defined in
 
-[transactionFactory.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L102)
+[tx/src/transactionFactory.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L105)
 
 ___
 
-### fromRPCTx
+### fromRPC
 
-▸ `Static` **fromRPCTx**(`txData`, `txOptions?`): `Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+▸ `Static` **fromRPC**<`T`\>(`txData`, `txOptions?`): `Promise`<[`Transaction`](../interfaces/Transaction.md)[`T`]\>
 
 Method to decode data retrieved from RPC, such as `eth_getTransactionByHash`
 Note that this normalizes some of the parameters
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`TransactionType`](../enums/TransactionType.md) |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `txData` | [`BlobEIP4844TxData`](../interfaces/BlobEIP4844TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`TxData`](../README.md#txdata) | The RPC-encoded data |
+| `txData` | [`TxData`](../interfaces/TxData.md)[`T`] | The RPC-encoded data |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
 
-`Promise`<[`TypedTransaction`](../README.md#typedtransaction)\>
+`Promise`<[`Transaction`](../interfaces/Transaction.md)[`T`]\>
 
 #### Defined in
 
-[transactionFactory.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L125)
+[tx/src/transactionFactory.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L128)
 
 ___
 
 ### fromSerializedData
 
-▸ `Static` **fromSerializedData**(`data`, `txOptions?`): [`TypedTransaction`](../README.md#typedtransaction)
+▸ `Static` **fromSerializedData**<`T`\>(`data`, `txOptions?`): [`Transaction`](../interfaces/Transaction.md)[`T`]
 
 This method tries to decode serialized data.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`TransactionType`](../enums/TransactionType.md) |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `data` | `Buffer` | The data Buffer |
+| `data` | `Uint8Array` | The data Uint8Array |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | The transaction options |
 
 #### Returns
 
-[`TypedTransaction`](../README.md#typedtransaction)
+[`Transaction`](../interfaces/Transaction.md)[`T`]
 
 #### Defined in
 
-[transactionFactory.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L57)
+[tx/src/transactionFactory.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L57)
 
 ___
 
 ### fromTxData
 
-▸ `Static` **fromTxData**(`txData`, `txOptions?`): [`TypedTransaction`](../README.md#typedtransaction)
+▸ `Static` **fromTxData**<`T`\>(`txData`, `txOptions?`): [`Transaction`](../interfaces/Transaction.md)[`T`]
 
 Create a transaction from a `txData` object
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`TransactionType`](../enums/TransactionType.md) |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `txData` | [`BlobEIP4844TxData`](../interfaces/BlobEIP4844TxData.md) \| [`FeeMarketEIP1559TxData`](../interfaces/FeeMarketEIP1559TxData.md) \| [`AccessListEIP2930TxData`](../interfaces/AccessListEIP2930TxData.md) \| [`TxData`](../README.md#txdata) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
+| `txData` | [`TypedTxData`](../README.md#typedtxdata) | The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction) |
 | `txOptions` | [`TxOptions`](../interfaces/TxOptions.md) | Options to pass on to the constructor of the transaction |
 
 #### Returns
 
-[`TypedTransaction`](../README.md#typedtransaction)
+[`Transaction`](../interfaces/Transaction.md)[`T`]
 
 #### Defined in
 
-[transactionFactory.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L28)
+[tx/src/transactionFactory.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L29)
