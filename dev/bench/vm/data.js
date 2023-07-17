@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689335788468,
+  "lastUpdate": 1689577186435,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9fbc8b08f3ffc52b6381b690409564b6392e50b8",
-          "message": "update node-versions (#2839)",
-          "timestamp": "2023-06-29T13:37:26+02:00",
-          "tree_id": "5659cc0b6c80b075acb8be06096fd322cf58988f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9fbc8b08f3ffc52b6381b690409564b6392e50b8"
-        },
-        "date": 1688039029071,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28634,
-            "range": "±5.92%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28537,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29205,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25363,
-            "range": "±10.72%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23098,
-            "range": "±13.55%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.40%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0af73095b19c564791c5da107153edef2c787e4c",
+          "message": "Update devp2p API names and access specifiers (#2889)\n\n* Change access specifiers for RLPx _privateKey, _id, _debug, _timeout\r\n\r\n* Renaming accessed id property in client tests\r\n\r\n* Change access specifiers for RLPx _maxPeers, _clientId, _remoteClientIdFilter, and _capabilities\r\n\r\n* Ignore error message from reassigning readonly property in tests\r\n\r\n* Change access specifiers for _common, _listenPort, and _dpt\r\n\r\n* Change access specifiers for _peersLRU, _peersQueue, _server, _peers, _refillIntervalId, and _refillIntervalSelectionCounter\r\n\r\n* Ignore accessibility errors in examples\r\n\r\n* Update names and access specifiers of Peer fields\r\n\r\n* Ignore access errors for _eciesSession\r\n\r\n* Make common field public for Peer class\r\n\r\n* Update names and access specifiers of Peer fields\r\n\r\n* Make id public readonly\r\n\r\n* Update names and access specifiers of Mac class fields\r\n\r\n* Update names and access specifiers of ECIES class fields\r\n\r\n* Update names and access specifiers of Peer class fields\r\n\r\n* Ignore accessibility errors in examples\r\n\r\n* Update example\r\n\r\n* Update names and access specifiers of class fields in protocol subpackage\r\n\r\n* Update names and access specifiers of class fields in ext subpackage\r\n\r\n* Update names and access specifiers of class fields in dpt subpackage\r\n\r\n* Update names and access specifiers of class fields in dns subpackage\r\n\r\n* Fix name of accessed field\r\n\r\n* Update tests",
+          "timestamp": "2023-07-17T08:56:20+02:00",
+          "tree_id": "799b19d9ccb9182461e44b531b44c278d7f67ad7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0af73095b19c564791c5da107153edef2c787e4c"
+        },
+        "date": 1689577185295,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32686,
+            "range": "±4.65%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31925,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31851,
+            "range": "±2.45%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27626,
+            "range": "±8.64%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30215,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
