@@ -4,38 +4,33 @@
 
 ## Table of contents
 
+### Enumerations
+
+- [CacheType](enums/CacheType.md)
+
 ### Classes
 
-- [BaseStateManager](classes/BaseStateManager.md)
+- [AccountCache](classes/AccountCache.md)
 - [DefaultStateManager](classes/DefaultStateManager.md)
 - [EthersStateManager](classes/EthersStateManager.md)
+- [StorageCache](classes/StorageCache.md)
 
 ### Interfaces
 
+- [CacheOpts](interfaces/CacheOpts.md)
+- [DefaultStateManagerOpts](interfaces/DefaultStateManagerOpts.md)
 - [EthersStateManagerOpts](interfaces/EthersStateManagerOpts.md)
-- [StateAccess](interfaces/StateAccess.md)
-- [StateManager](interfaces/StateManager.md)
 
 ### Type Aliases
 
-- [AccountFields](README.md#accountfields)
 - [Proof](README.md#proof)
+- [StorageProof](README.md#storageproof)
 
 ### Variables
 
 - [CODEHASH\_PREFIX](README.md#codehash_prefix)
 
 ## Type Aliases
-
-### AccountFields
-
-Ƭ **AccountFields**: `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"storageRoot"`` \| ``"codeHash"``\>\>
-
-#### Defined in
-
-[interface.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/interface.ts#L11)
-
-___
 
 ### Proof
 
@@ -51,17 +46,35 @@ ___
 | `codeHash` | `PrefixedHexString` |
 | `nonce` | `PrefixedHexString` |
 | `storageHash` | `PrefixedHexString` |
-| `storageProof` | `StorageProof`[] |
+| `storageProof` | [`StorageProof`](README.md#storageproof)[] |
 
 #### Defined in
 
-[stateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L29)
+[stateManager.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L41)
+
+___
+
+### StorageProof
+
+Ƭ **StorageProof**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `key` | `PrefixedHexString` |
+| `proof` | `PrefixedHexString`[] |
+| `value` | `PrefixedHexString` |
+
+#### Defined in
+
+[stateManager.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L35)
 
 ## Variables
 
 ### CODEHASH\_PREFIX
 
-• `Const` **CODEHASH\_PREFIX**: `Buffer`
+• `Const` **CODEHASH\_PREFIX**: `Uint8Array`
 
 Prefix to distinguish between a contract deployed with code `0x80`
 and `RLP([])` (also having the value `0x80`).
@@ -72,4 +85,4 @@ misbehaviour in the underlying trie library.
 
 #### Defined in
 
-[stateManager.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L47)
+[stateManager.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L102)

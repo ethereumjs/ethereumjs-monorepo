@@ -20,7 +20,6 @@ The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
 - [checkRoot](Trie.md#checkroot)
 - [checkpoint](Trie.md#checkpoint)
 - [commit](Trie.md#commit)
-- [copy](Trie.md#copy)
 - [createProof](Trie.md#createproof)
 - [createReadStream](Trie.md#createreadstream)
 - [database](Trie.md#database)
@@ -35,6 +34,8 @@ The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
 - [put](Trie.md#put)
 - [revert](Trie.md#revert)
 - [root](Trie.md#root)
+- [saveStack](Trie.md#savestack)
+- [shallowCopy](Trie.md#shallowcopy)
 - [verifyProof](Trie.md#verifyproof)
 - [verifyPrunedIntegrity](Trie.md#verifyprunedintegrity)
 - [verifyRangeProof](Trie.md#verifyrangeproof)
@@ -57,19 +58,19 @@ Creates a new trie.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L59)
+[packages/trie/src/trie.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L73)
 
 ## Properties
 
 ### EMPTY\_TRIE\_ROOT
 
-• **EMPTY\_TRIE\_ROOT**: `Buffer`
+• **EMPTY\_TRIE\_ROOT**: `Uint8Array`
 
 The root for an empty trie
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L45)
+[packages/trie/src/trie.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L59)
 
 ## Methods
 
@@ -78,17 +79,17 @@ The root for an empty trie
 ▸ **batch**(`ops`): `Promise`<`void`\>
 
 The given hash of operations (key additions or deletions) are executed on the trie
-(delete operations are only executed on DB with `useNodePruning` set to `true`)
+(delete operations are only executed on DB with `deleteFromDB` set to `true`)
 
 **`Example`**
 
 ```ts
 const ops = [
-   { type: 'del', key: Buffer.from('father') }
- , { type: 'put', key: Buffer.from('name'), value: Buffer.from('Yuri Irsenovich Kim') }
- , { type: 'put', key: Buffer.from('dob'), value: Buffer.from('16 February 1941') }
- , { type: 'put', key: Buffer.from('spouse'), value: Buffer.from('Kim Young-sook') }
- , { type: 'put', key: Buffer.from('occupation'), value: Buffer.from('Clown') }
+   { type: 'del', key: Uint8Array.from('father') }
+ , { type: 'put', key: Uint8Array.from('name'), value: Uint8Array.from('Yuri Irsenovich Kim') }
+ , { type: 'put', key: Uint8Array.from('dob'), value: Uint8Array.from('16 February 1941') }
+ , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') }
+ , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
 ]
 await trie.batch(ops)
 ```
@@ -97,7 +98,7 @@ await trie.batch(ops)
 
 | Name | Type |
 | :------ | :------ |
-| `ops` | [`BatchDBOp`](../README.md#batchdbop)[] |
+| `ops` | `BatchDBOp`<`Uint8Array`, `Uint8Array`\>[] |
 
 #### Returns
 
@@ -105,7 +106,7 @@ await trie.batch(ops)
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:697](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L697)
+[packages/trie/src/trie.ts:722](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L722)
 
 ___
 
@@ -119,7 +120,7 @@ Checks if a given root exists.
 
 | Name | Type |
 | :------ | :------ |
-| `root` | `Buffer` |
+| `root` | `Uint8Array` |
 
 #### Returns
 
@@ -127,7 +128,7 @@ Checks if a given root exists.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L129)
+[packages/trie/src/trie.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L148)
 
 ___
 
@@ -144,7 +145,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:927](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L927)
+[packages/trie/src/trie.ts:968](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L968)
 
 ___
 
@@ -165,29 +166,7 @@ If not during a checkpoint phase
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:936](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L936)
-
-___
-
-### shallowCopy
-
-▸ **shallowCopy**(`includeCheckpoints?`): [`Trie`](Trie.md)
-
-Returns a copy of the underlying trie.
-
-#### Parameters
-
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `includeCheckpoints` | `boolean` | `true` | If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db. |
-
-#### Returns
-
-[`Trie`](Trie.md)
-
-#### Defined in
-
-[packages/trie/src/trie/trie.ts:860](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L860)
+[packages/trie/src/trie.ts:977](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L977)
 
 ___
 
@@ -201,7 +180,7 @@ Creates a proof from a trie and key that can be verified using [verifyProof](Tri
 
 | Name | Type |
 | :------ | :------ |
-| `key` | `Buffer` |
+| `key` | `Uint8Array` |
 
 #### Returns
 
@@ -209,7 +188,7 @@ Creates a proof from a trie and key that can be verified using [verifyProof](Tri
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L737)
+[packages/trie/src/trie.ts:762](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L762)
 
 ___
 
@@ -217,7 +196,7 @@ ___
 
 ▸ **createReadStream**(): [`TrieReadStream`](TrieReadStream.md)
 
-The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Buffers.
+The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
 
 #### Returns
 
@@ -227,7 +206,7 @@ Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#str
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:852](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L852)
+[packages/trie/src/trie.ts:884](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L884)
 
 ___
 
@@ -239,7 +218,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `db?` | [`DB`](../interfaces/DB.md) |
+| `db?` | `DB`<`string`, `string`\> |
 
 #### Returns
 
@@ -247,7 +226,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L95)
+[packages/trie/src/trie.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L114)
 
 ___
 
@@ -256,13 +235,13 @@ ___
 ▸ **del**(`key`): `Promise`<`void`\>
 
 Deletes a value given a `key` from the trie
-(delete operations are only executed on DB with `useNodePruning` set to `true`)
+(delete operations are only executed on DB with `deleteFromDB` set to `true`)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `key` | `Buffer` |
+| `key` | `Uint8Array` |
 
 #### Returns
 
@@ -272,7 +251,7 @@ A Promise that resolves once value is deleted.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L218)
+[packages/trie/src/trie.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L240)
 
 ___
 
@@ -287,7 +266,7 @@ It returns a `stack` of nodes to the closest node.
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `key` | `Buffer` | `undefined` | the search key |
+| `key` | `Uint8Array` | `undefined` | the search key |
 | `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
 
 #### Returns
@@ -296,7 +275,7 @@ It returns a `stack` of nodes to the closest node.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L253)
+[packages/trie/src/trie.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L278)
 
 ___
 
@@ -312,7 +291,7 @@ Flushes all checkpoints, restoring the initial checkpoint state.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:966](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L966)
+[packages/trie/src/trie.ts:1007](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1007)
 
 ___
 
@@ -334,13 +313,13 @@ Saves the nodes from a proof into the trie.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:715](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L715)
+[packages/trie/src/trie.ts:740](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L740)
 
 ___
 
 ### get
 
-▸ **get**(`key`, `throwIfMissing?`): `Promise`<``null`` \| `Buffer`\>
+▸ **get**(`key`, `throwIfMissing?`): `Promise`<``null`` \| `Uint8Array`\>
 
 Gets a value given a `key`
 
@@ -348,18 +327,18 @@ Gets a value given a `key`
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `key` | `Buffer` | `undefined` | the key to search for |
+| `key` | `Uint8Array` | `undefined` | the key to search for |
 | `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
 
 #### Returns
 
-`Promise`<``null`` \| `Buffer`\>
+`Promise`<``null`` \| `Uint8Array`\>
 
-A Promise that resolves to `Buffer` if a value was found or `null` if no value was found.
+A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L148)
+[packages/trie/src/trie.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L167)
 
 ___
 
@@ -375,7 +354,7 @@ Is the trie during a checkpoint phase?
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:919](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L919)
+[packages/trie/src/trie.ts:960](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L960)
 
 ___
 
@@ -389,7 +368,7 @@ Retrieves a node from db by hash.
 
 | Name | Type |
 | :------ | :------ |
-| `node` | `Buffer` \| `Buffer`[] |
+| `node` | `Uint8Array` \| `Uint8Array`[] |
 
 #### Returns
 
@@ -397,7 +376,7 @@ Retrieves a node from db by hash.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L344)
+[packages/trie/src/trie.ts:369](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L369)
 
 ___
 
@@ -413,7 +392,7 @@ Persists the root hash in the underlying database
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:875](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L875)
+[packages/trie/src/trie.ts:916](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L916)
 
 ___
 
@@ -422,14 +401,14 @@ ___
 ▸ **put**(`key`, `value`): `Promise`<`void`\>
 
 Stores a given `value` at the given `key` or do a delete if `value` is empty
-(delete operations are only executed on DB with `useNodePruning` set to `true`)
+(delete operations are only executed on DB with `deleteFromDB` set to `true`)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `key` | `Buffer` |
-| `value` | `Buffer` |
+| `key` | `Uint8Array` |
+| `value` | `Uint8Array` |
 
 #### Returns
 
@@ -439,7 +418,7 @@ A Promise that resolves once value is stored.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L164)
+[packages/trie/src/trie.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L183)
 
 ___
 
@@ -457,13 +436,13 @@ parent checkpoint as current.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:952](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L952)
+[packages/trie/src/trie.ts:993](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L993)
 
 ___
 
 ### root
 
-▸ **root**(`value?`): `Buffer`
+▸ **root**(`value?`): `Uint8Array`
 
 Gets and/or Sets the current root of the `trie`
 
@@ -471,21 +450,74 @@ Gets and/or Sets the current root of the `trie`
 
 | Name | Type |
 | :------ | :------ |
-| `value?` | ``null`` \| `Buffer` |
+| `value?` | ``null`` \| `Uint8Array` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L110)
+[packages/trie/src/trie.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L129)
+
+___
+
+### saveStack
+
+▸ **saveStack**(`key`, `stack`, `opStack`): `Promise`<`void`\>
+
+Saves a stack of nodes to the database.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `key` | [`Nibbles`](../README.md#nibbles) | the key. Should follow the stack |
+| `stack` | [`TrieNode`](../README.md#trienode)[] | a stack of nodes to the value given by the key |
+| `opStack` | `BatchDBOp`<`Uint8Array`, `Uint8Array`\>[] | a stack of levelup operations to commit at the end of this function |
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[packages/trie/src/trie.ts:637](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L637)
+
+___
+
+### shallowCopy
+
+▸ **shallowCopy**(`includeCheckpoints?`): [`Trie`](Trie.md)
+
+Returns a copy of the underlying trie.
+
+Note on db: the copy will create a reference to the
+same underlying database.
+
+Note on cache: for memory reasons a copy will not
+recreate a new LRU cache but initialize with cache
+being deactivated.
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `includeCheckpoints` | `boolean` | `true` | If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db. |
+
+#### Returns
+
+[`Trie`](Trie.md)
+
+#### Defined in
+
+[packages/trie/src/trie.ts:900](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L900)
 
 ___
 
 ### verifyProof
 
-▸ **verifyProof**(`rootHash`, `key`, `proof`): `Promise`<``null`` \| `Buffer`\>
+▸ **verifyProof**(`rootHash`, `key`, `proof`): `Promise`<``null`` \| `Uint8Array`\>
 
 Verifies a proof.
 
@@ -497,19 +529,19 @@ If proof is found to be invalid.
 
 | Name | Type |
 | :------ | :------ |
-| `rootHash` | `Buffer` |
-| `key` | `Buffer` |
+| `rootHash` | `Uint8Array` |
+| `key` | `Uint8Array` |
 | `proof` | [`Proof`](../README.md#proof) |
 
 #### Returns
 
-`Promise`<``null`` \| `Buffer`\>
+`Promise`<``null`` \| `Uint8Array`\>
 
 The value from the key, or null if valid proof of non-existence.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:753](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L753)
+[packages/trie/src/trie.ts:778](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L778)
 
 ___
 
@@ -523,7 +555,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:801](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L801)
+[packages/trie/src/trie.ts:830](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L830)
 
 ___
 
@@ -537,12 +569,12 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `rootHash` | `Buffer` |
-| `firstKey` | ``null`` \| `Buffer` |
-| `lastKey` | ``null`` \| `Buffer` |
-| `keys` | `Buffer`[] |
-| `values` | `Buffer`[] |
-| `proof` | ``null`` \| `Buffer`[] |
+| `rootHash` | `Uint8Array` |
+| `firstKey` | ``null`` \| `Uint8Array` |
+| `lastKey` | ``null`` \| `Uint8Array` |
+| `keys` | `Uint8Array`[] |
+| `values` | `Uint8Array`[] |
+| `proof` | ``null`` \| `Uint8Array`[] |
 
 #### Returns
 
@@ -550,7 +582,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:778](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L778)
+[packages/trie/src/trie.ts:807](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L807)
 
 ___
 
@@ -564,7 +596,7 @@ Walks a trie until finished.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `root` | `Buffer` |  |
+| `root` | `Uint8Array` |  |
 | `onFound` | [`FoundNodeFunction`](../README.md#foundnodefunction) | callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves. |
 
 #### Returns
@@ -575,7 +607,7 @@ Resolves when finished walking trie.
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L324)
+[packages/trie/src/trie.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L349)
 
 ___
 
@@ -595,4 +627,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/trie.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/trie.ts#L75)
+[packages/trie/src/trie.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L89)

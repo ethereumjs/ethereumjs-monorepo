@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "1.0.5",
+  "version": "2.0.0-rc.1",
   "description": "An Ethereum statemanager implementation",
   "keywords": [
     "ethereum",
@@ -48,8 +48,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^3.1.2",
-    "@ethereumjs/rlp": "^4.0.1",
+    "@ethereumjs/common": "4.0.0-rc.1",
+    "@ethereumjs/rlp": "5.0.0-rc.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "ethers": "^6.4.0",
@@ -57,23 +57,11 @@
     "lru-cache": "^10.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^4.2.2",
-    "@ethereumjs/genesis": "^0.0.1",
-    "@ethereumjs/trie": "^5.0.5",
-    "@ethereumjs/util": "^8.0.6",
-    "@types/tape": "^4.13.2",
+    "@ethereumjs/block": "5.0.0-rc.1",
+    "@ethereumjs/genesis": "0.1.0-rc.1",
+    "@ethereumjs/trie": "6.0.0-rc.1",
+    "@ethereumjs/util": "9.0.0-rc.1",
     "debug": "^4.3.3",
-    "eslint": "^8.0.0",
-    "ethereum-cryptography": "^2.1.2",
-    "functional-red-black-tree": "^1.0.1",
-    "karma": "^6.3.2",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-firefox-launcher": "^2.1.0",
-    "karma-tap": "^4.2.0",
-    "karma-typescript": "^5.5.3",
-    "nyc": "^15.1.0",
-    "standard": "^10.0.0",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "ethereum-cryptography": "^2.1.2"
   }
 }

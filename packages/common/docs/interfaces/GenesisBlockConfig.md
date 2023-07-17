@@ -8,6 +8,7 @@
 
 - [baseFeePerGas](GenesisBlockConfig.md#basefeepergas)
 - [difficulty](GenesisBlockConfig.md#difficulty)
+- [excessDataGas](GenesisBlockConfig.md#excessdatagas)
 - [extraData](GenesisBlockConfig.md#extradata)
 - [gasLimit](GenesisBlockConfig.md#gaslimit)
 - [nonce](GenesisBlockConfig.md#nonce)
@@ -21,17 +22,27 @@
 
 #### Defined in
 
-[packages/common/src/types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L44)
+[types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L45)
 
 ___
 
 ### difficulty
 
-• **difficulty**: `number`
+• **difficulty**: `string` \| `number`
 
 #### Defined in
 
-[packages/common/src/types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L41)
+[types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L42)
+
+___
+
+### excessDataGas
+
+• `Optional` **excessDataGas**: `string`
+
+#### Defined in
+
+[types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L46)
 
 ___
 
@@ -41,17 +52,17 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L43)
+[types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L44)
 
 ___
 
 ### gasLimit
 
-• **gasLimit**: `number`
+• **gasLimit**: `string` \| `number`
 
 #### Defined in
 
-[packages/common/src/types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L40)
+[types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L41)
 
 ___
 
@@ -61,7 +72,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L42)
+[types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L43)
 
 ___
 
@@ -71,4 +82,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L39)
+[types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L40)

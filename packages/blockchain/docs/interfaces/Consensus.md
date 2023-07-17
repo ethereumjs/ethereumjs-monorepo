@@ -32,7 +32,7 @@ Interface that a consensus class needs to implement.
 
 #### Defined in
 
-[consensus/interface.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L9)
+[types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L184)
 
 ## Methods
 
@@ -54,7 +54,7 @@ Initialize genesis for consensus mechanism
 
 #### Defined in
 
-[consensus/interface.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L14)
+[types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L189)
 
 ___
 
@@ -78,7 +78,7 @@ Update consensus on new block
 
 #### Defined in
 
-[consensus/interface.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L35)
+[types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L210)
 
 ___
 
@@ -92,7 +92,7 @@ Set up consensus mechanism
 
 | Name | Type |
 | :------ | :------ |
-| `__namedParameters` | `ConsensusOptions` |
+| `__namedParameters` | [`ConsensusOptions`](ConsensusOptions.md) |
 
 #### Returns
 
@@ -100,7 +100,7 @@ Set up consensus mechanism
 
 #### Defined in
 
-[consensus/interface.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L19)
+[types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L194)
 
 ___
 
@@ -122,7 +122,7 @@ Validate block consensus parameters
 
 #### Defined in
 
-[consensus/interface.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L25)
+[types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L200)
 
 ___
 
@@ -142,4 +142,4 @@ ___
 
 #### Defined in
 
-[consensus/interface.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/interface.ts#L27)
+[types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L202)

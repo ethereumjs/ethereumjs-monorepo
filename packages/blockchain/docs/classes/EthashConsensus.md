@@ -36,7 +36,7 @@ This class encapsulates Ethash-related consensus functionality when used with th
 
 #### Defined in
 
-[consensus/ethash.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L17)
+[consensus/ethash.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L16)
 
 ## Properties
 
@@ -46,7 +46,7 @@ This class encapsulates Ethash-related consensus functionality when used with th
 
 #### Defined in
 
-[consensus/ethash.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L15)
+[consensus/ethash.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L14)
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 #### Defined in
 
-[consensus/ethash.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L14)
+[consensus/ethash.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L13)
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 #### Defined in
 
-[consensus/ethash.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L13)
+[consensus/ethash.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L12)
 
 ## Methods
 
@@ -90,7 +90,7 @@ Initialize genesis for consensus mechanism
 
 #### Defined in
 
-[consensus/ethash.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L45)
+[consensus/ethash.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L44)
 
 ___
 
@@ -110,7 +110,7 @@ Update consensus on new block
 
 #### Defined in
 
-[consensus/ethash.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L50)
+[consensus/ethash.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L49)
 
 ___
 
@@ -124,7 +124,7 @@ Set up consensus mechanism
 
 | Name | Type |
 | :------ | :------ |
-| `__namedParameters` | `ConsensusOptions` |
+| `__namedParameters` | [`ConsensusOptions`](../interfaces/ConsensusOptions.md) |
 
 #### Returns
 
@@ -136,7 +136,7 @@ Set up consensus mechanism
 
 #### Defined in
 
-[consensus/ethash.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L46)
+[consensus/ethash.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L45)
 
 ___
 
@@ -162,7 +162,7 @@ Validate block consensus parameters
 
 #### Defined in
 
-[consensus/ethash.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L21)
+[consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L20)
 
 ___
 
@@ -188,4 +188,4 @@ Checks that the block's `difficulty` matches the canonical difficulty of the par
 
 #### Defined in
 
-[consensus/ethash.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L35)
+[consensus/ethash.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L34)
