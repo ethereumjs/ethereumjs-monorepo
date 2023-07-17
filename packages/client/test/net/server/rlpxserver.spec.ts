@@ -128,7 +128,9 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).rlpx = td.object({
       destroy: td.func(),
     })
-    server.rlpx!._id = hexToBytes('0x' + mockId)
+
+    // @ts-ignore
+    server.rlpx!.id = hexToBytes('0x' + mockId)
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)
@@ -172,7 +174,9 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).rlpx = td.object({
       destroy: td.func(),
     })
-    server.rlpx!._id = hexToBytes('0x' + mockId)
+
+    // @ts-ignore
+    server.rlpx!.id = hexToBytes('0x' + mockId)
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
     ).thenResolve(undefined)
@@ -261,7 +265,9 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).peers.set('01', { id: '01' } as any)
     server.rlpx!.emit('peer:removed', rlpxPeer)
     server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
-    server.rlpx!._id = hexToBytes('0xff')
+
+    // @ts-ignore
+    server.rlpx!.id = hexToBytes('0xff')
     server.rlpx!.emit('listening')
   })
 

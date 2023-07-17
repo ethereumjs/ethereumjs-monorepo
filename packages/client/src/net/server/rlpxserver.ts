@@ -105,7 +105,7 @@ export class RlpxServer extends Server {
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
-    const id = bytesToUnprefixedHex(this.rlpx._id)
+    const id = bytesToUnprefixedHex(this.rlpx.id)
     return {
       enode: `enode://${id}@${listenAddr}`,
       id,
@@ -254,7 +254,9 @@ export class RlpxServer extends Server {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToUnprefixedHex(rlpxPeer.getId()!),
+          // @ts-ignore
           host: rlpxPeer._socket.remoteAddress!,
+          // @ts-ignore
           port: rlpxPeer._socket.remotePort!,
           protocols: Array.from(this.protocols),
           // @ts-ignore: Property 'server' does not exist on type 'Socket'.

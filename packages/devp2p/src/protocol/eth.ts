@@ -20,22 +20,22 @@ import type { SendMethod } from '../types.js'
 import type { Input } from '@ethereumjs/rlp'
 
 export class ETH extends Protocol {
-  _status: ETH.StatusMsg | null = null
-  _peerStatus: ETH.StatusMsg | null = null
-  DEBUG: boolean = false
+  protected _status: ETH.StatusMsg | null = null
+  protected _peerStatus: ETH.StatusMsg | null = null
+  private DEBUG: boolean = false
 
   // Eth64
-  _hardfork: string = 'chainstart'
-  _latestBlock = BigInt(0)
-  _forkHash: string = ''
-  _nextForkBlock = BigInt(0)
+  protected _hardfork: string = 'chainstart'
+  protected _latestBlock = BigInt(0)
+  protected _forkHash: string = ''
+  protected _nextForkBlock = BigInt(0)
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
-      const c = this._peer._common
+      const c = this._peer.common
       this._hardfork = c.hardfork() ?? this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
@@ -60,7 +60,9 @@ export class ETH extends Protocol {
   _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
     const debugMsg = this.DEBUG
-      ? `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+      ? // @ts-ignore
+        `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
           this._peer._socket.remotePort
         }`
       : undefined
@@ -127,7 +129,7 @@ export class ETH extends Protocol {
    * @param forkId Remote fork ID
    */
   _validateForkId(forkId: Uint8Array[]) {
-    const c = this._peer._common
+    const c = this._peer.common
 
     const peerForkHash = bytesToHex(forkId[0])
     const peerNextFork = bytesToBigInt(forkId[1])
@@ -263,7 +265,7 @@ export class ETH extends Protocol {
     if (this._status !== null) return
     this._status = [
       intToBytes(this._version),
-      bigIntToBytes(this._peer._common.chainId()),
+      bigIntToBytes(this._peer.common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash,
@@ -289,7 +291,10 @@ export class ETH extends Protocol {
     if (this.DEBUG) {
       this.debug(
         'STATUS',
+
+        // @ts-ignore
         `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
           this._peer._socket.remotePort
         } (eth${this._version}): ${this._getStatusString(this._status)}`
       )
@@ -298,6 +303,7 @@ export class ETH extends Protocol {
     let payload = RLP.encode(this._status)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
@@ -310,6 +316,7 @@ export class ETH extends Protocol {
     if (this.DEBUG) {
       const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
+      // @ts-ignore
       const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
       this.debug(messageName, debugMsg)
@@ -352,6 +359,7 @@ export class ETH extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }

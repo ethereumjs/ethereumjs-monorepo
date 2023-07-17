@@ -9,8 +9,8 @@ const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
 export class KBucket extends EventEmitter {
-  _peers: Map<string, PeerInfo> = new Map()
-  _kbucket: _KBucket
+  protected _peers: Map<string, PeerInfo> = new Map()
+  protected _kbucket: _KBucket
   constructor(localNodeId: Uint8Array) {
     super()
 

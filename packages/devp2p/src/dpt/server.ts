@@ -22,14 +22,14 @@ const verbose = createDebugLogger('verbose').enabled
 const VERSION = 0x04
 
 export class Server extends EventEmitter {
-  _dpt: DPT
-  _privateKey: Uint8Array
-  _timeout: number
-  _endpoint: PeerInfo
-  _requests: Map<string, any>
-  _requestsCache: LRUCache<string, Promise<any>>
-  _socket: DgramSocket | null
-  _debug: Debugger
+  protected _dpt: DPT
+  protected _privateKey: Uint8Array
+  protected _timeout: number
+  protected _endpoint: PeerInfo
+  protected _requests: Map<string, any>
+  protected _requestsCache: LRUCache<string, Promise<any>>
+  protected _socket: DgramSocket | null
+  private _debug: Debugger
 
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
     super()
