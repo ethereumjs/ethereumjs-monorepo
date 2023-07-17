@@ -136,10 +136,10 @@ export function twoPeerMsgExchange(
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)
 
-    protocol.once('status', () => {
+    protocol.events.once('status', () => {
       if (opts.onOnceStatus0 !== undefined) opts.onOnceStatus0(rlpxs, protocol)
     }) // (-> 2)
-    protocol.on('message', async (code: any, payload: any) => {
+    protocol.events.on('message', async (code: any, payload: any) => {
       if (opts.onOnMsg0 !== undefined) opts.onOnMsg0(rlpxs, protocol, code, payload)
     })
     peer.events.on('error', (err: Error) => {
@@ -153,7 +153,7 @@ export function twoPeerMsgExchange(
 
   rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.on('message', async (code: any, payload: any) => {
+    protocol.events.on('message', async (code: any, payload: any) => {
       switch (code) {
         // Comfortability hack, use constants like devp2p.ETH.MESSAGE_CODES.STATUS
         // in production use
@@ -213,7 +213,7 @@ export async function twoPeerMsgExchange2(
 
   rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.once('message', async (code: any, _payload: any) => {
+    protocol.events.once('message', async (code: any, _payload: any) => {
       switch (code) {
         case ETH.MESSAGE_CODES.STATUS:
           assert.fail('should not have been able to process status message')
@@ -256,7 +256,7 @@ export function twoPeerMsgExchange3(
 
   rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.on('message', async (code: any, payload: any) => {
+    protocol.events.on('message', async (code: any, payload: any) => {
       opts.receiveMessage(rlpxs, protocol, code, payload)
     })
     peer.events.on('error', (err: any) => {

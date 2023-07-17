@@ -19,10 +19,10 @@ export class RlpxSender extends Sender {
     super()
 
     this.sender = rlpxProtocol
-    this.sender.on('status', (status: any) => {
+    this.sender.events.on('status', (status: any) => {
       this.status = status
     })
-    this.sender.on('message', (code: number, payload: any) => {
+    this.sender.events.on('message', (code: number, payload: any) => {
       this.emit('message', { code, payload })
     })
   }
