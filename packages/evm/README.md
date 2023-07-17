@@ -193,7 +193,7 @@ outer VM with the respective EIPs, e.g.:
 
 ```typescript
 import { Chain, Common } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
+import { EVM } from '@ethereumjs/evm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
 const evm = new EVM({ common })
