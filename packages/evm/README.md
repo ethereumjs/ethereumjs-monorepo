@@ -196,7 +196,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-const vm = new VM({ common })
+const evm = new EVM({ common })
 ```
 
 Currently supported EIPs:

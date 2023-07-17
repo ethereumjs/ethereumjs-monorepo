@@ -178,7 +178,7 @@ import { hexToBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Goerli })
-const vm = new VM({ common, setHardfork: true })
+const vm = await VM.create({ common, setHardfork: true })
 
 const serialized = hexToBytes('0xf901f7a06bfee7294bf4457...')
 const block = Block.fromRLPSerializedBlock(serialized, { setHardfork: true })
@@ -196,7 +196,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-const vm = new VM({ common })
+const vm = await VM.create({ common })
 ```
 
 ### Custom genesis state support
@@ -239,7 +239,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-const vm = new VM({ common })
+const vm = await VM.create({ common })
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
