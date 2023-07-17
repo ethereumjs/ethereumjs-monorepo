@@ -55,13 +55,13 @@ type KBucketNode = {
  * @extends EventEmitter
  */
 export class KBucket extends EventEmitter {
-  localNodeId: Uint8Array
-  numberOfNodesPerKBucket: number
-  numberOfNodesToPing: number
+  protected _localNodeId: Uint8Array
+  protected _numberOfNodesPerKBucket: number
+  protected _numberOfNodesToPing: number
   distance: (firstId: Uint8Array, secondId: Uint8Array) => number
   arbiter: (incumbent: Contact, candidate: Contact) => Contact
-  metadata: object
-  root: KBucketNode
+  protected _metadata: object
+  protected _root: KBucketNode
   /**
    *
    * @param {KBucketOptions} options
@@ -69,15 +69,15 @@ export class KBucket extends EventEmitter {
   constructor(options: KBucketOptions = {}) {
     super()
 
-    this.localNodeId = options.localNodeId ?? randomBytes(20)
-    this.numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
-    this.numberOfNodesToPing = options.numberOfNodesToPing ?? 3
+    this._localNodeId = options.localNodeId ?? randomBytes(20)
+    this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
+    this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3
     this.distance = options.distance ?? KBucket.distance
     // use an arbiter from options or vectorClock arbiter by default
     this.arbiter = options.arbiter ?? KBucket.arbiter
-    this.metadata = Object.assign({}, options.metadata)
+    this._metadata = Object.assign({}, options.metadata)
 
-    this.root = createNode()
+    this._root = createNode()
   }
 
   /**
@@ -126,7 +126,7 @@ export class KBucket extends EventEmitter {
     }
 
     let bitIndex = 0
-    let node = this.root
+    let node = this._root
 
     while (node.contacts === null) {
       // this is not a leaf node but an inner node with 'low' and 'high'
@@ -142,7 +142,7 @@ export class KBucket extends EventEmitter {
       return this
     }
 
-    if (node.contacts.length < this.numberOfNodesPerKBucket) {
+    if (node.contacts.length < this._numberOfNodesPerKBucket) {
       node.contacts.push(contact as Contact)
       this.emit('added', contact)
       return this
@@ -151,11 +151,11 @@ export class KBucket extends EventEmitter {
     // the bucket is full
     if (node.dontSplit !== undefined) {
       // we are not allowed to split the bucket
-      // we need to ping the first this.numberOfNodesToPing
+      // we need to ping the first this._numberOfNodesToPing
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
       // be added (this prevents DoS flodding with new invalid contacts)
-      this.emit('ping', node.contacts.slice(0, this.numberOfNodesToPing), contact)
+      this.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
       return this
     }
 
@@ -182,7 +182,7 @@ export class KBucket extends EventEmitter {
 
     let contacts: Contact[] = []
 
-    for (let nodes = [this.root], bitIndex = 0; nodes.length > 0 && contacts.length < n; ) {
+    for (let nodes = [this._root], bitIndex = 0; nodes.length > 0 && contacts.length < n; ) {
       const node = nodes.pop()!
       if (node.contacts === null) {
         const detNode = this._determineNode(node, id, bitIndex++)
@@ -204,7 +204,7 @@ export class KBucket extends EventEmitter {
    */
   count(): number {
     let count = 0
-    for (const nodes = [this.root]; nodes.length > 0; ) {
+    for (const nodes = [this._root]; nodes.length > 0; ) {
       const node = nodes.pop()!
       if (node.contacts === null) nodes.push(node.right!, node.left!)
       else count += node.contacts.length
@@ -217,7 +217,7 @@ export class KBucket extends EventEmitter {
    * Return left leaf if `id` at `bitIndex` is 0, right leaf otherwise
    *
    * @param  {KBucketNode} node     internal object that has 2 leafs: left and right
-   * @param  {Uint8Array} id   Id to compare localNodeId with.
+   * @param  {Uint8Array} id   Id to compare _localNodeId with.
    * @param  {Number} bitIndex Integer (Default: 0) The bit index to which bit
    *                           to check in the id Uint8Array.
    * @return {KBucketNode}          left leaf if id at bitIndex is 0, right leaf otherwise.
@@ -267,7 +267,7 @@ export class KBucket extends EventEmitter {
   get(id: Uint8Array): Contact | null {
     let bitIndex = 0
 
-    let node = this.root
+    let node = this._root
     while (node.contacts === null) {
       node = this._determineNode(node, id, bitIndex++)
     }
@@ -302,7 +302,7 @@ export class KBucket extends EventEmitter {
    */
   remove(id: Uint8Array): KBucket {
     let bitIndex = 0
-    let node = this.root
+    let node = this._root
 
     while (node.contacts === null) {
       node = this._determineNode(node, id, bitIndex++)
@@ -320,7 +320,7 @@ export class KBucket extends EventEmitter {
   /**
    * Splits the node, redistributes contacts to the new nodes, and marks the
    * node that was split as an inner node of the binary tree of nodes by
-   * setting this.root.contacts = null
+   * setting this._root.contacts = null
    *
    * @param  {object} node     node for splitting
    * @param  {number} bitIndex the bitIndex to which byte to check in the
@@ -340,7 +340,7 @@ export class KBucket extends EventEmitter {
     // don't split the "far away" node
     // we check where the local node would end up and mark the other one as
     // "dontSplit" (i.e. "far away")
-    const detNode = this._determineNode(node, this.localNodeId, bitIndex)
+    const detNode = this._determineNode(node, this._localNodeId, bitIndex)
     const otherNode = node.left === detNode ? node.right : node.left
     otherNode.dontSplit = true
   }
@@ -354,7 +354,7 @@ export class KBucket extends EventEmitter {
    */
   toArray(): Contact[] {
     let result: Contact[] = []
-    for (const nodes = [this.root]; nodes.length > 0; ) {
+    for (const nodes = [this._root]; nodes.length > 0; ) {
       const node = nodes.pop()!
       if (node.contacts === null) nodes.push(node.right!, node.left!)
       else result = result.concat(node.contacts)
@@ -370,7 +370,7 @@ export class KBucket extends EventEmitter {
    * @return {Contact} All of the contacts in the tree, as an iterable
    */
   *toIterable(): Iterable<Contact> {
-    for (const nodes = [this.root]; nodes.length > 0; ) {
+    for (const nodes = [this._root]; nodes.length > 0; ) {
       const node = nodes.pop()!
       if (node.contacts === null) {
         nodes.push(node.right!, node.left!)
