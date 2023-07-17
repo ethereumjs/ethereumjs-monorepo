@@ -23,9 +23,9 @@ import { checkError } from '../util'
 // Since the genesis is copy of withdrawals with just sharding hardfork also started
 // at 0, we can re-use the same payload args
 const validForkChoiceState = {
-  headBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
-  safeBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
-  finalizedBlockHash: '0x771d2330f20db47cef611364dc643ab75e1e99159fe37dc86942ab03c6a6344b',
+  headBlockHash: '0xb5785cb83fccc2280113e494cad4f6659eb73977421a78588b6e251a0563d9da',
+  safeBlockHash: '0xb5785cb83fccc2280113e494cad4f6659eb73977421a78588b6e251a0563d9da',
+  finalizedBlockHash: '0xb5785cb83fccc2280113e494cad4f6659eb73977421a78588b6e251a0563d9da',
 }
 const validPayloadAttributes = {
   timestamp: '0x2f',
@@ -88,6 +88,7 @@ describe(method, () => {
       assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
     }
     await baseRequest(server, req, 200, expectRes, false, false)
+    ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(txBlobs)
@@ -116,7 +117,7 @@ describe(method, () => {
       const { executionPayload, blobsBundle } = res.body.result
       assert.equal(
         executionPayload.blockHash,
-        '0x9db3128f029d4043d32786a8896fbaadac4c07ec475213a43534ec06079f08b1',
+        '0x0a4f946a9dac3f6d2b86d02dfa6cf221b4fe72bbaff51b50cee4c5784156dd52',
         'built expected block'
       )
       assert.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')

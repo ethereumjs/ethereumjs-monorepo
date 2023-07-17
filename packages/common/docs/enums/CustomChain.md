@@ -7,7 +7,6 @@
 ### Enumeration Members
 
 - [ArbitrumOne](CustomChain.md#arbitrumone)
-- [ArbitrumRinkebyTestnet](CustomChain.md#arbitrumrinkebytestnet)
 - [OptimisticEthereum](CustomChain.md#optimisticethereum)
 - [OptimisticKovan](CustomChain.md#optimistickovan)
 - [PolygonMainnet](CustomChain.md#polygonmainnet)
@@ -26,21 +25,7 @@ Arbitrum One - mainnet for Arbitrum roll-up
 
 #### Defined in
 
-[packages/common/src/enums.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L69)
-
-___
-
-### ArbitrumRinkebyTestnet
-
-• **ArbitrumRinkebyTestnet** = ``"arbitrum-rinkeby-testnet"``
-
-Arbitrum Rinkeby Testnet
-
-- [Documentation](https://developer.offchainlabs.com/docs/public_testnet)
-
-#### Defined in
-
-[packages/common/src/enums.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L62)
+[enums.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L91)
 
 ___
 
@@ -54,7 +39,7 @@ Optimistic Ethereum - mainnet for Optimism roll-up
 
 #### Defined in
 
-[packages/common/src/enums.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L90)
+[enums.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L112)
 
 ___
 
@@ -68,7 +53,7 @@ Optimistic Kovan - testnet for Optimism roll-up
 
 #### Defined in
 
-[packages/common/src/enums.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L83)
+[enums.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L105)
 
 ___
 
@@ -82,7 +67,7 @@ Polygon (Matic) Mainnet
 
 #### Defined in
 
-[packages/common/src/enums.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L48)
+[enums.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L77)
 
 ___
 
@@ -96,7 +81,7 @@ Polygon (Matic) Mumbai Testnet
 
 #### Defined in
 
-[packages/common/src/enums.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L55)
+[enums.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L84)
 
 ___
 
@@ -110,4 +95,4 @@ xDai EVM sidechain with a native stable token
 
 #### Defined in
 
-[packages/common/src/enums.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L76)
+[enums.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L98)

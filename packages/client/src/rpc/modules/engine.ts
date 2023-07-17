@@ -141,6 +141,7 @@ const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
   withdrawals: validators.optional(validators.array(validators.withdrawal())),
 }
+
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
@@ -176,7 +177,11 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
     transactions,
     ...withdrawalsArr,
   }
-  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle }
+
+  // ethereumjs doesnot provide any transaction censoring detection (yet) to suggest
+  // overriding builder/mev-boost blocks
+  const shouldOverrideBuilder = false
+  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle, shouldOverrideBuilder }
 }
 
 const pruneCachedBlocks = (
@@ -1150,7 +1155,8 @@ export class Engine {
   }
 
   async getPayloadV2(params: [Bytes8]) {
-    return this.getPayload(params)
+    const { executionPayload, blockValue } = await this.getPayload(params)
+    return { executionPayload, blockValue }
   }
 
   async getPayloadV3(params: [Bytes8]) {

@@ -6,6 +6,8 @@
 [![Code Coverage][tx-coverage-badge]][tx-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
 | Implements schema and functions related to Ethereum's transaction. |
 | ------------------------------------------------------------------ |
 
@@ -39,6 +41,8 @@ The following two manual installation steps for a KZG library and the trusted se
 Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
 
 ```typescript
+import { initKZG } from '@ethereumjs/util'
+
 // Make the kzg library available globally
 import * as kzg from 'c-kzg'
 
@@ -53,8 +57,8 @@ initKZG(kzg, 'path/to/my/trusted_setup.txt')
 To instantiate a tx it is not recommended to use the constructor directly. Instead each tx type comes with the following set of static constructor methods which helps on instantiation depending on the input data format:
 
 - `public static fromTxData(txData: TxData, opts: TxOptions = {})`: instantiate from a data dictionary
-- `public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {})`: instantiate from a serialized tx
-- `public static fromValuesArray(values: Buffer[], opts: TxOptions = {})`: instantiate from a values array
+- `public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {})`: instantiate from a serialized tx
+- `public static fromValuesArray(values: Uint8Array[], opts: TxOptions = {})`: instantiate from a values array
 
 See one of the code examples on the tx types below on how to use.
 
@@ -64,9 +68,7 @@ All types of transaction objects are frozen with `Object.freeze()` which gives y
 
 The `LegacyTransaction` constructor receives a parameter of an [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) object that lets you specify the chain and hardfork to be used. If there is no `Common` provided the chain ID provided as a parameter on typed tx or the chain ID derived from the `v` value on signed EIP-155 conforming legacy txs will be taken (introduced in `v3.2.1`). In other cases the chain defaults to `mainnet`.
 
-Base default HF (determined by `Common`): `merge`
-
-Starting with `v3.2.1` the tx library now deviates from the default HF for typed tx using the following rule: "The default HF is the default HF from `Common` if the tx type is active on that HF. Otherwise it is set to the first greater HF where the tx is active."
+Base default HF (determined by `Common`): `Hardfork.Shanghai`
 
 Hardforks adding features and/or tx types:
 
@@ -77,16 +79,7 @@ Hardforks adding features and/or tx types:
 | `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
 | `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
-
-### Standalone EIPs
-
-The following "standalone" EIPs are supported by the library can be manually activated using a respectively initialized `Common` instance, e.g.:
-
-```typescript
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3860] })
-```
-
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3855): Limit and meter initcode (`experimental`)
+| `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
 
 ### Transaction Types
 
@@ -95,15 +88,18 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), proto-danksharding)
 - `FeeMarketEIP1559Transaction` ([EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), gas fee market)
 - `AccessListEIP2930Transaction` ([EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), optional access lists)
-- `Transaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
+- `BlobEIP4844Transaction` ([EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), blob transactions)
+- `LegacyTransaction`, the Ethereum standard tx up to `berlin`, now referred to as legacy txs with the introduction of tx types
 
 #### Blob Transactions (EIP-4844)
 
 - Class: `BlobEIP4844Transaction`
-- Activation: `sharding`
-- Type: `5`
+- Activation: `cancun`
+- Type: `3`
 
-This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349).
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) EIP version from July 2023 deployed along [4844-devnet-7](https://github.com/ethpandaops/4844-testnet) (July 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and following.
+
+**Note:** 4844 support is not yet completely stable and there will still be (4844-)breaking changes along all types of library releases.
 
 **Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
@@ -113,7 +109,8 @@ See the following code snipped for an example on how to instantiate (using the `
 
 ```typescript
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
 initKZG(kzg, 'path/to/my/trusted_setup.txt')
@@ -283,8 +280,8 @@ The correct tx type class for instantiation will then be chosen on runtime based
 `TransactionFactory` supports the following static constructor methods:
 
 - `public static fromTxData(txData: TxData | AccessListEIP2930TxData, txOptions: TxOptions = {}): TypedTransaction`
-- `public static fromSerializedData(data: Buffer, txOptions: TxOptions = {}): TypedTransaction`
-- `public static fromBlockBodyData(data: Buffer | Buffer[], txOptions: TxOptions = {})`
+- `public static fromSerializedData(data: Uint8Array, txOptions: TxOptions = {}): TypedTransaction`
+- `public static fromBlockBodyData(data: Uint8Array | Uint8Array[], txOptions: TxOptions = {})`
 - `public static async fromJsonRpcProvider(provider: string | EthersProvider, txHash: string, txOptions?: TxOptions)`
 
 ### Sending a Transaction
@@ -294,8 +291,9 @@ The correct tx type class for instantiation will then be chosen on runtime based
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
 ```typescript
-import { LegacyTransaction } from '@ethereumjs/tx'
 import { Common } from '@ethereumjs/common'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { hexToBytes } from '@ethereumjs/util'
 
 const from = 'PUBLIC_KEY'
 const PRIV_KEY = process.argv[2]
@@ -313,7 +311,7 @@ const txData = {
 }
 
 const tx = LegacyTransaction.fromTxData(txData, { common })
-const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
+const signedTx = tx.sign(hexToBytes(PRIV_KEY))
 ```
 
 The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
@@ -336,6 +334,12 @@ For a non-predefined custom chain it is also possible to just provide a chain ID
 const common = Common.custom({ chainId: 1234 })
 ```
 
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+
 ## Special Topics
 
 ### Signing with a hardware or external wallet
@@ -347,9 +351,9 @@ A legacy transaction will return a Buffer list of the values, and a Typed Transa
 Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 
 ```typescript
-import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Chain, Common } from '@ethereumjs/common'
-import { bufArrToArr } from '@ethereumjs/util'
+import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 import Eth from '@ledgerhq/hw-app-eth'
 
@@ -358,7 +362,7 @@ const common = new Common({ chain: Chain.Sepolia })
 
 let txData: any = { value: 1 }
 let tx: Transaction | FeeMarketEIP1559Transaction
-let unsignedTx: Buffer[] | Buffer
+let unsignedTx: Uint8Array[] | Uint8Array
 let signedTx: typeof tx
 const bip32Path = "44'/60'/0'/0/0"
 
@@ -366,12 +370,12 @@ const run = async () => {
   // Signing a legacy tx
   tx = LegacyTransaction.fromTxData(txData, { common })
   unsignedTx = tx.getMessageToSign()
-  unsignedTx = Buffer.from(RLP.encode(bufArrToArr(unsignedTx))) // ledger signTransaction API expects it to be serialized
+  unsignedTx = RLP.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
   signedTx = LegacyTransaction.fromTxData(txData, { common })
-  let from = signedTx.getSenderAddress().toString()
-  console.log(`signedTx: 0x${signedTx.serialize().toString('hex')}\nfrom: ${from}`)
+  let from = bytesToHex(signedTx.getSenderAddress())
+  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
 
   // Signing a 1559 tx
   txData = { value: 1 }
@@ -380,8 +384,8 @@ const run = async () => {
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
   txData = { ...txData, v, r, s }
   signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  from = signedTx.getSenderAddress().toString()
-  console.log(`signedTx: ${signedTx.serialize().toString('hex')}\nfrom: ${from}`)
+  from = bytesToHex(signedTx.getSenderAddress())
+  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
 }
 
 run()
@@ -414,6 +418,30 @@ _getFakeTransaction(txParams: TxParams): Transaction {
 ### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
+
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require` the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
 ### BigInt Support
 

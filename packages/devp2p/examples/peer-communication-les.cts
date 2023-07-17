@@ -34,6 +34,7 @@ const REMOTE_CLIENTID_FILTER = [
   'prichain',
 ]
 
+// @ts-ignore
 const getPeerAddr = (peer: Peer) => `${peer._socket.remoteAddress}:${peer._socket.remotePort}`
 
 // DPT
@@ -220,7 +221,11 @@ async function isValidBlock(block: Block) {
 setInterval(() => {
   const peersCount = dpt.getPeers().length
   const openSlots = rlpx._getOpenSlots()
+
+  // @ts-ignore
   const queueLength = rlpx._peersQueue.length
+
+  // @ts-ignore
   const queueLength2 = rlpx._peersQueue.filter((o) => o.ts <= Date.now()).length
 
   console.log(

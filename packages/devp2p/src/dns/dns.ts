@@ -21,8 +21,8 @@ type SearchContext = {
 }
 
 export class DNS {
-  private _DNSTreeCache: { [key: string]: string }
-  private readonly _errorTolerance: number = 10
+  protected _DNSTreeCache: { [key: string]: string }
+  protected readonly _errorTolerance: number = 10
 
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}

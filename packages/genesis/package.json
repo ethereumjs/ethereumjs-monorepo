@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.0.1",
+  "version": "0.1.0-rc.1",
   "description": "A module to provide genesis states of well known networks",
   "keywords": [
     "ethereum",
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "license": "MPL-2.0",
+  "license": "MIT",
   "author": "g11tech <gajinder@g11.in>",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -56,8 +56,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^3.1.2",
-    "@ethereumjs/util": "^8.0.6"
+    "@ethereumjs/common": "4.0.0-rc.1",
+    "@ethereumjs/util": "9.0.0-rc.1"
   },
   "engines": {
     "node": ">=18"

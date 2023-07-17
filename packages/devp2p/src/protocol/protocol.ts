@@ -12,13 +12,13 @@ const { debug: createDebugLogger } = debugDefault
 type MessageCodes = { [key: number | string]: number | string }
 
 export abstract class Protocol extends EventEmitter {
-  _version: number
-  _peer: Peer
-  _send: SendMethod
-  _statusTimeoutId?: NodeJS.Timeout
-  _messageCodes: MessageCodes
-  _debug: Debugger
-  _verbose: boolean
+  protected _version: number
+  protected _peer: Peer
+  protected _send: SendMethod
+  protected _statusTimeoutId?: NodeJS.Timeout
+  protected _messageCodes: MessageCodes
+  private _debug: Debugger
+  protected _verbose: boolean
 
   /**
    * Will be set to the first successfully connected peer to allow for
@@ -63,6 +63,7 @@ export abstract class Protocol extends EventEmitter {
     }
 
     // Remote Peer IP logger
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend(ip)
@@ -76,6 +77,7 @@ export abstract class Protocol extends EventEmitter {
    * Can be used together with the `devp2p:FIRST_PEER` debugger.
    */
   _addFirstPeerDebugger() {
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
@@ -95,6 +97,8 @@ export abstract class Protocol extends EventEmitter {
     if (this.msgDebuggers[messageName] !== undefined) {
       this.msgDebuggers[messageName](msg)
     }
+
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string' && this.msgDebuggers[ip] !== undefined) {
       this.msgDebuggers[ip](msg)

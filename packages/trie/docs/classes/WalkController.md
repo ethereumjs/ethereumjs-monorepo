@@ -109,7 +109,7 @@ Push a node to the queue. If the queue has places left for tasks, the node is ex
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `nodeRef` | `Buffer` | `undefined` | Push a node reference to the event queue. This reference is a 32-byte keccak hash of the value corresponding to the `key`. |
+| `nodeRef` | `Uint8Array` | `undefined` | Push a node reference to the event queue. This reference is a 32-byte keccak hash of the value corresponding to the `key`. |
 | `key` | [`Nibbles`](../README.md#nibbles) | `[]` | The current key. |
 | `priority?` | `number` | `undefined` | Optional priority, defaults to key length |
 
@@ -135,7 +135,7 @@ Async function to create and start a new walk over a trie.
 | :------ | :------ | :------ |
 | `onNode` | [`FoundNodeFunction`](../README.md#foundnodefunction) | The `FoundNodeFunction to call if a node is found. |
 | `trie` | [`Trie`](Trie.md) | The trie to walk on. |
-| `root` | `Buffer` | The root key to walk on. |
+| `root` | `Uint8Array` | The root key to walk on. |
 | `poolSize?` | `number` | Task execution pool size to prevent OOM errors. Defaults to 500. |
 
 #### Returns

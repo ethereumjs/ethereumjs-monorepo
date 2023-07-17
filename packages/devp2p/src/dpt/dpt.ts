@@ -15,27 +15,27 @@ import type { Debugger } from 'debug'
 const DEBUG_BASE_NAME = 'dpt'
 
 export class DPT extends EventEmitter {
-  privateKey: Uint8Array
-  banlist: BanList
-  dns: DNS
-  _debug: Debugger
+  protected _privateKey: Uint8Array
+  protected _banlist: BanList
+  protected _dns: DNS
+  private _debug: Debugger
 
-  private _id: Uint8Array | undefined
-  private _kbucket: KBucket
-  private _server: DPTServer
-  private _refreshIntervalId: NodeJS.Timeout
-  private _refreshIntervalSelectionCounter: number = 0
-  private _shouldFindNeighbours: boolean
-  private _shouldGetDnsPeers: boolean
-  private _dnsRefreshQuantity: number
-  private _dnsNetworks: string[]
-  private _dnsAddr: string
+  public readonly id: Uint8Array | undefined
+  protected _kbucket: KBucket
+  protected _server: DPTServer
+  protected _refreshIntervalId: NodeJS.Timeout
+  protected _refreshIntervalSelectionCounter: number = 0
+  protected _shouldFindNeighbours: boolean
+  protected _shouldGetDnsPeers: boolean
+  protected _dnsRefreshQuantity: number
+  protected _dnsNetworks: string[]
+  protected _dnsAddr: string
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
     super()
 
-    this.privateKey = privateKey
-    this._id = pk2id(secp256k1.getPublicKey(this.privateKey, false))
+    this._privateKey = privateKey
+    this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
     this._shouldGetDnsPeers = options.shouldGetDnsPeers ?? false
     // By default, tries to connect to 12 new peers every 3s
@@ -43,15 +43,15 @@ export class DPT extends EventEmitter {
     this._dnsNetworks = options.dnsNetworks ?? []
     this._dnsAddr = options.dnsAddr ?? '8.8.8.8'
 
-    this.dns = new DNS({ dnsServerAddress: this._dnsAddr })
-    this.banlist = new BanList()
+    this._dns = new DNS({ dnsServerAddress: this._dnsAddr })
+    this._banlist = new BanList()
 
-    this._kbucket = new KBucket(this._id)
+    this._kbucket = new KBucket(this.id)
     this._kbucket.on('added', (peer: PeerInfo) => this.emit('peer:added', peer))
     this._kbucket.on('removed', (peer: PeerInfo) => this.emit('peer:removed', peer))
     this._kbucket.on('ping', this._onKBucketPing.bind(this))
 
-    this._server = new DPTServer(this, this.privateKey, {
+    this._server = new DPTServer(this, this._privateKey, {
       timeout: options.timeout,
       endpoint: options.endpoint,
       createSocket: options.createSocket,
@@ -82,7 +82,7 @@ export class DPT extends EventEmitter {
   }
 
   _onKBucketPing(oldPeers: PeerInfo[], newPeer: PeerInfo): void {
-    if (this.banlist.has(newPeer)) return
+    if (this._banlist.has(newPeer)) return
 
     let count = 0
     let err: Error | null = null
@@ -90,13 +90,13 @@ export class DPT extends EventEmitter {
       this._server
         .ping(peer)
         .catch((_err: Error) => {
-          this.banlist.add(peer, 300000) // 5 min * 60 * 1000
+          this._banlist.add(peer, 300000) // 5 min * 60 * 1000
           this._kbucket.remove(peer)
           err = err ?? _err
         })
         .then(() => {
           if (++count < oldPeers.length) return
-          if (err === null) this.banlist.add(newPeer, 300000) // 5 min * 60 * 1000
+          if (err === null) this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
           else this._kbucket.add(newPeer)
         })
     }
@@ -122,14 +122,14 @@ export class DPT extends EventEmitter {
       this.emit('error', error)
       return
     }
-    if (!this._id) return
+    if (!this.id) return
     if (this._shouldFindNeighbours) {
-      this._server.findneighbours(peer, this._id)
+      this._server.findneighbours(peer, this.id)
     }
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
-    if (this.banlist.has(obj)) throw new Error('Peer is banned')
+    if (this._banlist.has(obj)) throw new Error('Peer is banned')
     this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
 
     // check k-bucket first
@@ -143,7 +143,7 @@ export class DPT extends EventEmitter {
       this._kbucket.add(peer)
       return peer
     } catch (err: any) {
-      this.banlist.add(obj, 300000) // 5 min * 60 * 1000
+      this._banlist.add(obj, 300000) // 5 min * 60 * 1000
       throw err
     }
   }
@@ -165,12 +165,12 @@ export class DPT extends EventEmitter {
   }
 
   banPeer(obj: string | PeerInfo | Uint8Array, maxAge?: number) {
-    this.banlist.add(obj, maxAge)
+    this._banlist.add(obj, maxAge)
     this._kbucket.remove(obj)
   }
 
   async getDnsPeers(): Promise<PeerInfo[]> {
-    return this.dns.getPeers(this._dnsRefreshQuantity, this._dnsNetworks)
+    return this._dns.getPeers(this._dnsRefreshQuantity, this._dnsNetworks)
   }
 
   async refresh(): Promise<void> {
