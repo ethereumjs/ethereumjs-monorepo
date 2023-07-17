@@ -61,9 +61,9 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
 })
 
-rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
+rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
 
-rlpx.on('peer:added', (peer) => {
+rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
   const les = peer.getProtocols()[0]
   const requests: { headers: BlockHeader[]; bodies: any[] } = { headers: [], bodies: [] }
@@ -148,7 +148,7 @@ rlpx.on('peer:added', (peer) => {
   })
 })
 
-rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
+rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   const who = disconnectWe === true ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
@@ -160,7 +160,7 @@ rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   )
 })
 
-rlpx.on('peer:error', (peer, err) => {
+rlpx.events.on('peer:error', (peer, err) => {
   if (err.code === 'ECONNRESET') return
 
   if (err instanceof Error) {
