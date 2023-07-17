@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689602158763,
+  "lastUpdate": 1689619851575,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "629c80f42d84f76ec96186b06f3dabd2caa352fa",
-          "message": "VM/SM/Blockchain/Trie/EVM: Copy() -> shallowCopy() function renaming (#2826)\n\n* Rename vm copy function to shallowCopy\r\n\r\n* Rename StateManager copy function to shallowCopy\r\n\r\n* Rename evm copy function to shallowCopy\r\n\r\n* Rename Blockchain copy function to shallowCopy\r\n\r\n* Fix interface copy function naming\r\n\r\n* Rename Trie copy function to shallowCopy\r\n\r\n* Fix tests\r\n\r\n* Fix tests\r\n\r\n* Fix test\r\n\r\n* Update mocked objects in tests to reflect naming change\r\n\r\n* Fix test\r\n\r\n* Update examples and recipes to reflect naming changes\r\n\r\n* Fix tests\r\n\r\n* Update documentation to reflect naming changes\r\n\r\n* Update benchmarks and tests\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-07-03T13:09:25+02:00",
-          "tree_id": "2f1df6dbd0d96b9e45a954301ad853ee68af557d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/629c80f42d84f76ec96186b06f3dabd2caa352fa"
-        },
-        "date": 1688382784302,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32186,
-            "range": "±5.50%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32182,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31939,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25988,
-            "range": "±11.24%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30742,
-            "range": "±3.07%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.52%",
             "unit": "ops/sec",
             "extra": "64 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6b2389219322b5279fb73281eccc4a8128bcd5a0",
+          "message": "Small RC1 Release Cleanup Round (#2894)\n\n* EVM: add @ethereumjs/statemanager dependency, new RC.2 release\r\n\r\n* Some small clean-ups\r\n\r\n* VM constructor new VM() -> VM.create() doc update\r\n\r\n* Update packages/evm/README.md\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2023-07-17T20:36:20+02:00",
+          "tree_id": "f1804204ff8b739f7a03bb0a616a3413a1fe7057",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6b2389219322b5279fb73281eccc4a8128bcd5a0"
+        },
+        "date": 1689619850260,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30358,
+            "range": "±5.94%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30222,
+            "range": "±3.27%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29346,
+            "range": "±3.46%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25617,
+            "range": "±9.03%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29539,
+            "range": "±3.37%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
