@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689577186435,
+  "lastUpdate": 1689582740582,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9132b40326493c44aca33c7fcfb0ad86efa450d5",
-          "message": "VM Browser Example and Various Browser Compatibility Fixes (#2840)\n\n* EVM: update EC precompile dependency to new package name rustbn.wasm -> rustbn-wasm\n\n* Rebuild package-lock.json\n\n* Activate EVM CI browser test run\n\n* EVM: add dedicated vite.config.ts to avoid have to run npx vite pointing to browser config\n\n* VM/EVM: another vite.config.ts, exlude from linting\n\n* VM: guard DEBUG property setting to fix Vite breaking\n\n* EVM: update mcl-wasm import from require -> import\n\n* VM: add browser example\n\n* Make mcl namespace import\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-06-29T11:34:53-04:00",
-          "tree_id": "4d369b022d2575607f4a45d739e9d5e7b9d6816a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9132b40326493c44aca33c7fcfb0ad86efa450d5"
-        },
-        "date": 1688053295862,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31328,
-            "range": "±5.35%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31639,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31399,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25708,
-            "range": "±11.32%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30528,
-            "range": "±3.31%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.54%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "54e10a23c8095cc57ff9f0be5fa505fc48ed532b",
+          "message": "common: add Cancun CFI EIPs for devnet8 and fix eip-4788 block building issues (#2892)\n\n* common: add Cancun CFI EIPs for devnet8\r\n\r\n* fix the parentBeaconBlockRoot related issues\r\n\r\n* fix issues\r\n\r\n* fix execution payload to block conversion for 4788\r\n\r\n* fix client specs\r\n\r\n* fix spec\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-07-17T10:28:34+02:00",
+          "tree_id": "51e9e4a245596f83b4a99a012ee813e77e4b77b4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/54e10a23c8095cc57ff9f0be5fa505fc48ed532b"
+        },
+        "date": 1689582739478,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30704,
+            "range": "±5.43%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30641,
+            "range": "±3.04%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30421,
+            "range": "±3.32%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25132,
+            "range": "±11.32%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29181,
+            "range": "±3.49%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
