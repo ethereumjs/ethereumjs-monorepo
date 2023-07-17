@@ -14,7 +14,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
-- Ethereum Wire Protocol (ETH/66)
+- Ethereum Wire Protocol (ETH/68)
 - Light Ethereum Subprotocol (LES/4)
 
 ## Usage
