@@ -56,13 +56,13 @@ export class DPT extends EventEmitter {
       endpoint: options.endpoint,
       createSocket: options.createSocket,
     })
-    this._server.once('listening', () => this.emit('listening'))
-    this._server.once('close', () => this.emit('close'))
-    this._server.on('error', (err) => this.emit('error', err))
+    this._server.events.once('listening', () => this.emit('listening'))
+    this._server.events.once('close', () => this.emit('close'))
+    this._server.events.on('error', (err) => this.emit('error', err))
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     // When not using peer neighbour discovery we don't add peers here
     // because it results in duplicate calls for the same targets
-    this._server.on('peers', (peers) => {
+    this._server.events.on('peers', (peers) => {
       if (!this._shouldFindNeighbours) return
       this._addPeerBatch(peers)
     })
