@@ -119,7 +119,7 @@ If you use an ES6-style `import` in your code files from the ESM build will be u
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
-If you use Node.js specific `require` the CJS build will be used:
+If you use Node.js specific `require`, the CJS build will be used:
 
 ```typescript
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')

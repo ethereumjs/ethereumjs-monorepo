@@ -59,7 +59,7 @@ blockchain.iterator('i', (block) => {
 
 With the v7 release the Blockchain library database has gotten an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669) and PR [#2673](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2673). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
 
-By default the blockchain package is now using a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
+By default the blockchain package now uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
 
 If you need a persistent data store for your use case you can consider using the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
 
@@ -156,7 +156,7 @@ If you use an ES6-style `import` in your code files from the ESM build will be u
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
-If you use Node.js specific `require` the CJS build will be used:
+If you use Node.js specific `require`, the CJS build will be used:
 
 ```typescript
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
