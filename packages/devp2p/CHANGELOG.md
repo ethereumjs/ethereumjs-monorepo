@@ -54,15 +54,25 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 
 Note that not all Cancun EIPs are in a `FINAL` EIP state though and particularly `EIP-4844` will likely still receive some changes.
 
+### ETH/67 and ETH/68 Support
+
+Support for both `ETH/67` (see PR [#2263](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2263)) and `ETH/68` (see PR [#2828](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2828)) have been added to the library.
+
+The [ETH/67](https://github.com/ethereum/devp2p/blob/master/caps/eth.md#eth67-eip-4938-march-2022) protocol version removes `GetNodeData` and `NodeData` messages, now largely substituted by the `SNAP` protocol.
+
+The [ETH/68](https://github.com/ethereum/devp2p/blob/master/caps/eth.md#eth68-eip-5793-october-2022) protocol version "changes the `NewPooledTransactionHashes` message to include types and sizes of the announced transactions".
+
 ### Improved Typing / API Changes
 
-Typing for the `devp2p` library has been significantly improved with PR [#2863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2863).
+Typing for the `devp2p` library has been significantly improved with PR [#2863](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2863) and the API has been consolidated along PR [#2889(https://github.com/ethereumjs/ethereumjs-monorepo/pull/2889).
 
-This goes along with the following API changes:
+There are the following distinct API changes:
 
 - Types and interfaces generally have been consolidated in a `types.ts` file (as in the other EthereumJS libraries)
 - Rename: `devp2p.DISCONNECT_REASONS` -> `devp2p.DISCONNECT_REASON`
 - Rename: `EthProtocol` -> `ProtocolType` (e.g. `ProtocolType.ETH`)
+
+Beyond all `_*` methods and properties are now explicitly marked as `protected` (to leave some room for extensibility) in TypeScript which makes the API easier to use in IDEs and the like and avoids accidental accesses.
 
 ### Hybrid CJS/ESM Build
 

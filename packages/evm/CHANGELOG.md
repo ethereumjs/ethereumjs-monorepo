@@ -214,10 +214,12 @@ Please therefore check you code base on updating and ensure that values you are 
 
 - Support for `Node.js 16` has been removed (minimal version: `Node.js 18`), PR [#2859](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2859)
 - Replace `rustbn.js` with wasm-compiled `rustbn-wasm` module, PR [#2834](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2834)
+- Consistent usage of an `EVMInterface` for easier EVM adoption, PR [#2869](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2869)
 - Move KZG precompile address from `0x14` to `0x0a`, PR [#2811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2811)
 - Breaking: The `copy()` method has been renamed to `shallowCopy()` (same underlying state DB), PR [#2826](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2826)
 - Breaking: following properties have been renamed and the underscore removed: `_allowUnlimitedContractSize`, `allowUnlimitedInitCodeSize`, `_transientStorage`, PR [#2857](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2857)
 - Fix the gasCost logs in op code trace (`step` event) to better match Geth output and reflect dynamic gas changes, PR [#2686](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2686)
+- EIP-1153 TLOAD TSTORE update opcode byte, PR [#2884](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2884)
 - EVM runCode/runCall type cleanup, PR [#2861](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2861)
 - Better error handling for contract creation errors, PR [#2723](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2723)
 
