@@ -49,11 +49,10 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "preinstall": "npm run binWorkaround",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:unit && npm run test:integration",
-    "test:cli": "npm run tape -- 'test/cli/*.spec.ts'",
-    "test:integration": "npm run tape -- 'test/integration/**/*.spec.ts'",
-    "test:unit": "npm run tape -- 'test/!(integration|cli|sim)/**/*.spec.ts' 'test/*.spec.ts'",
+    "test:cli": "npx vitest run ./test/cli/*.spec.ts",
+    "test:integration": "npx vitest run ./test/integration/*.spec.ts",
+    "test:unit": "npx vitest run test/* -c=./vitest.config.unit.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

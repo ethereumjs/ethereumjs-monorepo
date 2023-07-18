@@ -1,20 +1,18 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-const { Sender } = require('../../../src/net/protocol')
+import { Sender } from '../../../src/net/protocol'
 
-tape('[Sender]', (t) => {
-  t.test('should get/set status', (t) => {
+describe('[Sender]', () => {
+  it('should get/set status', () => {
     const sender = new Sender()
-    t.deepEquals(sender.status, null, 'empty status')
+    assert.deepEqual(sender.status, null, 'empty status')
     sender.status = { id: 1 }
-    t.deepEquals(sender.status, { id: 1 }, 'status correct')
-    t.end()
+    assert.deepEqual(sender.status, { id: 1 }, 'status correct')
   })
 
-  t.test('should error on abstract method calls', (t) => {
+  it('should error on abstract method calls', () => {
     const sender = new Sender()
-    t.throws(() => sender.sendStatus(), /Unimplemented/)
-    t.throws(() => sender.sendMessage(), /Unimplemented/)
-    t.end()
+    assert.throws(() => sender.sendStatus(undefined), /Unimplemented/)
+    assert.throws(() => sender.sendMessage(0, []), /Unimplemented/)
   })
 })

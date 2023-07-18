@@ -108,7 +108,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * blockchain. Returns null if no valid peer is found
    */
   async best(): Promise<Peer | undefined> {
-    let best: [Peer, BigInt] | undefined
+    let best: [Peer, bigint] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {

@@ -1,15 +1,14 @@
 import { spawn } from 'child_process'
-import * as tape from 'tape'
-
-tape('[CLI]', (t) => {
-  t.test('should start up client and execute blocks blocks', { timeout: 300000 }, (t) => {
+import { assert, describe, it } from 'vitest'
+describe('[CLI]', () => {
+  it('should start up client and execute blocks blocks', () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, '--dev=poa'])
 
     let hasEnded = false
 
     const timeout = setTimeout(() => {
-      t.fail('timed out before finishing')
+      assert.fail('timed out before finishing')
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       end()
     }, 240000)
@@ -19,7 +18,6 @@ tape('[CLI]', (t) => {
       if (!hasEnded) {
         hasEnded = true
         child.kill('SIGINT')
-        t.end()
       }
     }
 
@@ -30,25 +28,22 @@ tape('[CLI]', (t) => {
       console.log(message)
 
       if (message.toLowerCase().includes('error') === true) {
-        t.fail(message)
-        return end()
+        assert.fail(message)
       }
       if (message.includes('Executed') === true) {
-        t.pass('successfully executed blocks')
+        assert.ok(true, 'successfully executed blocks')
         return end()
       }
     })
 
     child.stderr.on('data', (data) => {
       const message = data.toString()
-      t.fail(`stderr: ${message}`)
-      end()
+      assert.fail(`stderr: ${message}`)
     })
 
     child.on('close', (code) => {
       if (code !== null && code > 0) {
-        t.fail(`child process exited with code ${code}`)
-        end()
+        assert.fail(`child process exited with code ${code}`)
       }
     })
   })

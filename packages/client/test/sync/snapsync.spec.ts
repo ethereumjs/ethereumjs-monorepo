@@ -1,11 +1,11 @@
 import { BlockHeader } from '@ethereumjs/block'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 
-tape('[SnapSynchronizer]', async (t) => {
+describe('[SnapSynchronizer]', async () => {
   class PeerPool {
     open() {}
     close() {}
@@ -38,16 +38,15 @@ tape('[SnapSynchronizer]', async (t) => {
 
   const { SnapSynchronizer } = await import('../../src/sync/snapsync')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({ config, pool, chain })
-    t.equals(sync.type, 'snap', 'snap type')
-    t.end()
+    assert.equal(sync.type, 'snap', 'snap type')
   })
 
-  t.test('should open', async (t) => {
+  it('should open', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -56,12 +55,11 @@ tape('[SnapSynchronizer]', async (t) => {
     ;(sync as any).pool.peers = []
     td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
-    t.pass('opened')
+    assert.ok(true, 'opened')
     await sync.close()
-    t.end()
   })
 
-  t.test('should find best', async (t) => {
+  it('should find best', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -96,9 +94,7 @@ tape('[SnapSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    t.equal(await sync.best(), peers[1], 'found best')
+    assert.equal(await sync.best(), peers[1], 'found best')
     await sync.start()
-
-    t.end()
   })
 })

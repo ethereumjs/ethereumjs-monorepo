@@ -1,15 +1,14 @@
 import { BlockHeader } from '@ethereumjs/block'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import * as blocks from '../../testdata/blocks/beacon.json'
-import * as genesisJSON from '../../testdata/geth-genesis/eip4844.json'
+import blocks from '../../testdata/blocks/beacon.json'
+import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
 import type { HttpServer } from 'jayson'
-type Test = tape.Test
 
 const method = 'engine_newPayloadV3'
 
@@ -19,18 +18,18 @@ const [blockData] = blocks
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
-export const batchBlocks = async (t: Test, server: HttpServer) => {
+export const batchBlocks = async (server: HttpServer) => {
   for (let i = 0; i < 3; i++) {
     const req = params(method, [blocks[i], []])
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
+      assert.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false)
   }
 }
 
-tape(`${method}: Cancun validations`, (v1) => {
-  v1.test(`${method}: versionedHashes`, async (t) => {
+describe(`${method}: Cancun validations`, () => {
+  it('versionedHashes', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const blockDataExtraVersionedHashes = [
@@ -46,14 +45,14 @@ tape(`${method}: Cancun validations`, (v1) => {
     ]
     let req = params(method, blockDataExtraVersionedHashes)
     let expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
-      t.equal(
+      assert.equal(res.body.result.status, 'INVALID')
+      assert.equal(
         res.body.result.validationError,
         'Error verifying versionedHashes: expected=0 received=2'
       )
     }
 
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false)
 
     const txString =
       '0x03f87c01808405f5e1008502540be4008401c9c380808080c001e1a001317228841f747eac2b4987a0225753a4f81688b31b21192ad2d2a3f5d252c580a01146addbda4889ddeaa8e4d74baae37c55f9796ab17030c762260faa797ca33ea0555a673397ea115d81c390a560ab77d3f63e93a59270b1b8d12cd2a1fb8b9b11'
@@ -71,8 +70,8 @@ tape(`${method}: Cancun validations`, (v1) => {
       },
     ]
     req = params(method, blockDataNoneHashes)
-    expectRes = checkError(t, INVALID_PARAMS, 'Missing versionedHashes after Cancun is activated')
-    await baseRequest(t, server, req, 200, expectRes, false)
+    expectRes = checkError(INVALID_PARAMS, 'Missing versionedHashes after Cancun is activated')
+    await baseRequest(server, req, 200, expectRes, false)
 
     const blockDataExtraMissingHashes1 = [
       {
@@ -89,13 +88,13 @@ tape(`${method}: Cancun validations`, (v1) => {
     ]
     req = params(method, blockDataExtraMissingHashes1)
     expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
-      t.equal(
+      assert.equal(res.body.result.status, 'INVALID')
+      assert.equal(
         res.body.result.validationError,
         'Error verifying versionedHashes: expected=2 received=1'
       )
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false)
 
     const blockDataExtraMisMatchingHashes1 = [
       {
@@ -112,13 +111,13 @@ tape(`${method}: Cancun validations`, (v1) => {
     ]
     req = params(method, blockDataExtraMisMatchingHashes1)
     expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
-      t.equal(
+      assert.equal(res.body.result.status, 'INVALID')
+      assert.equal(
         res.body.result.validationError,
         'Error verifying versionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…'
       )
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false)
 
     const blockDataMatchingVersionedHashes = [
       {
@@ -135,15 +134,13 @@ tape(`${method}: Cancun validations`, (v1) => {
     ]
     req = params(method, blockDataMatchingVersionedHashes)
     expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'ACCEPTED')
+      assert.equal(res.body.result.status, 'ACCEPTED')
     }
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`reset TD`, (t) => {
-    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
+  it(`reset TD`, () => {
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
-    t.end()
   })
-  v1.end()
 })
