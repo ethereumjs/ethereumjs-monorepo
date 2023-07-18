@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689619851575,
+  "lastUpdate": 1689670938548,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d7131f555e3332955e5fab45cb9036f5b7fdb5b4",
-          "message": "Update function docs to detail shallow copy behavior (#2855)",
-          "timestamp": "2023-07-04T15:44:15+02:00",
-          "tree_id": "e96ec5e98b72cbc58aaa2c4bf433e54551d725f4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d7131f555e3332955e5fab45cb9036f5b7fdb5b4"
-        },
-        "date": 1688478466025,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 33924,
-            "range": "±4.69%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 33799,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 33266,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28587,
-            "range": "±8.85%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 31723,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.37%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "894660973cfd06faae39f74c66a39616f5b2239f",
+          "message": "client: migrate tests to vite (#2797)\n\n* client: migrate tests to vite\r\n\r\n* client: update test scripts\r\n\r\n* client: fix rpc engine tests\r\n\r\n* client: fix rpc engine tests\r\n\r\n* client: remove unnecessary stringification\r\n\r\n* client: fix more rpc tests\r\n\r\n* client: misc test fixes\r\n\r\n* client: fix ci script still using tape\r\n\r\n* Rename libp2p tests to avoid vitest running them\r\n\r\n* fix instanceof tests\r\n\r\n* Update vitest.config so that test:CLI runs\r\n\r\n* Update vitest.config so that test:CLI runs\r\n\r\n* Fixes for client.spec.ts\r\n\r\n* Fix error in sender.spec.ts\r\n\r\n* Fix test formatting rlpxserver.spec.ts\r\n\r\n* Update unit test config, randomize rpc port\r\n\r\n* test fixes\r\n\r\n* more test fixes\r\n\r\n* Fix engine tests\r\n\r\n* Partial test fixes\r\n\r\n* Fix merge integration test\r\n\r\n* fix fcu hex handling\r\n\r\n* Add timeouts and fix lightsync\r\n\r\n* Various test and type fixes\r\n\r\n* fix txpool tests\r\n\r\n* correct bytes2hex import\r\n\r\n* Fix lightethereumservice tests\r\n\r\n* client: fix lesprotocol test\r\n\r\n* Fix most full ethereum service tests\r\n\r\n* Fix fullethereumservice test\r\n\r\n* \"Fix\" flow control test\r\n\r\n* Fix rlxppeer test\r\n\r\n* client: fix lightsync integration test timeouts\r\n\r\n* client: update client ci\r\n\r\n* client: increase timeout for some tests\r\n\r\n* client: remove only from flowcontrol test\r\n\r\n* client: more test fixes\r\n\r\n* client: increase timeout for miner\r\n\r\n* client: increase timeout for miner\r\n\r\n* client: increase more timeouts and fix missing it statement\r\n\r\n* fix integration tests\r\n\r\n* fix lint rules\r\n\r\n* fix npm script\r\n\r\n* Fix lint file extension\r\n\r\n* Fix lint config, again\r\n\r\n* File path fix\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-07-18T10:56:04+02:00",
+          "tree_id": "fd0ef2f3a54ea89c2075dd8b8f0734dac570ab03",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/894660973cfd06faae39f74c66a39616f5b2239f"
+        },
+        "date": 1689670937363,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32725,
+            "range": "±4.11%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32203,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31769,
+            "range": "±2.51%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27923,
+            "range": "±8.45%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30450,
+            "range": "±2.82%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
