@@ -11,6 +11,7 @@ RUN npm i
 
 FROM node:18-alpine
 WORKDIR /usr/app
+RUN apk --no-cache add dumb-init
 COPY --from=build /usr/app .
 
 # Sanity check
@@ -23,4 +24,4 @@ RUN node /usr/app/node_modules/.bin/ethereumjs --help
 # since memory may spike during certain network conditions.
 ENV NODE_OPTIONS=--max_old_space_size=6144
 
-ENTRYPOINT ["node", "/usr/app/node_modules/.bin/ethereumjs"]
+ENTRYPOINT ["dumb-init", "node", "/usr/app/node_modules/.bin/ethereumjs"]
