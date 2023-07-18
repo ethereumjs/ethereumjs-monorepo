@@ -1,4 +1,3 @@
-import { RLPx } from '@ethereumjs/devp2p'
 import { EventEmitter } from 'events'
 import { assert, describe, expect, it, vi } from 'vitest'
 
@@ -6,7 +5,20 @@ import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'
 
 describe('[RlpxPeer]', async () => {
-  vi.mock('@ethereumjs/devp2p')
+  vi.mock('@ethereumjs/devp2p', async () => {
+    const devp2p = await vi.importActual<any>('@ethereumjs/devp2p')
+    const RLPx = vi.fn().mockImplementation(() => {
+      return {
+        events: new EventEmitter(),
+        connect: vi.fn(),
+      }
+    })
+
+    return {
+      ...devp2p,
+      RLPx,
+    }
+  })
 
   const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
 
@@ -22,7 +34,7 @@ describe('[RlpxPeer]', async () => {
     assert.notOk(peer.connected, 'not connected')
   })
 
-  it('should compute capabilities', () => {
+  it('should compute capabilities', async () => {
     const protocols: any = [
       { name: 'eth', versions: [66] },
       { name: 'les', versions: [4] },
@@ -57,7 +69,7 @@ describe('[RlpxPeer]', async () => {
     proto0.open = vi.fn().mockResolvedValue(null)
     await peer.connect()
     assert.ok('connected successfully')
-    expect(RLPx.prototype.connect).toBeCalled()
+    expect(peer.rlpx!.connect).toBeCalled()
   })
 
   it('should handle peer events', async () => {
@@ -83,9 +95,9 @@ describe('[RlpxPeer]', async () => {
     peer.config.events.on(Event.PEER_DISCONNECTED, (rlpxPeer) =>
       assert.equal(rlpxPeer.pooled, false, 'got disconnected')
     )
-    peer.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
-    peer.rlpx!.emit('peer:added', rlpxPeer)
-    peer.rlpx!.emit('peer:removed', rlpxPeer, 'reason')
+    peer.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
+    peer.rlpx!.events.emit('peer:added', rlpxPeer)
+    peer.rlpx!.events.emit('peer:removed', rlpxPeer, 'reason')
     ;(peer as any).bindProtocols = vi.fn().mockRejectedValue(new Error('err1'))
     rlpxPeer.getDisconnectPrefix = vi.fn().mockImplementation((param: string) => {
       if (param === 'reason') throw new Error('err2')
@@ -114,8 +126,20 @@ describe('[RlpxPeer]', async () => {
   it('should bind protocols', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const protocols = [{ name: 'proto0' }] as any
-    const peer = new RlpxPeer({ config, id: 'abcdef0123', protocols, host: '10.0.0.1', port: 1234 })
-    const proto0 = new (class Proto0 extends EventEmitter {})()
+    const peer = new RlpxPeer({
+      config,
+      id: 'abcdef0123',
+      protocols,
+      host: '10.0.0.1',
+      port: 1234,
+    })
+    class Proto0 {
+      events: EventEmitter
+      constructor() {
+        this.events = new EventEmitter()
+      }
+    }
+    const proto0 = new Proto0()
 
     const rlpxPeer = {
       getProtocols: vi.fn().mockReturnValue([proto0]),
