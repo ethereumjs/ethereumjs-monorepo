@@ -1,5 +1,5 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config'
 import { PeerPool } from '../../src/net/peerpool'
@@ -10,7 +10,7 @@ import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'
 import { wait } from './util'
 
-tape('[Integration:PeerPool]', async (t) => {
+describe('[Integration:PeerPool]', async () => {
   async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
     const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config: serverConfig }) as any
@@ -27,43 +27,43 @@ tape('[Integration:PeerPool]', async (t) => {
     await server.stop()
   }
 
-  t.test('should open', async (t) => {
+  it('should open', async () => {
     const [server, pool] = await setup()
-    t.ok((pool as any).opened, 'opened')
+    assert.ok((pool as any).opened, 'opened')
     await destroy(server, pool)
   })
 
-  t.test('should add/remove peer', async (t) => {
+  it('should add/remove peer', async () => {
     const [server, pool] = await setup()
     pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
-      t.equal(peer.id, 'peer0', 'added peer')
+      assert.equal(peer.id, 'peer0', 'added peer')
     )
     pool.config.events.on(Event.POOL_PEER_REMOVED, (peer: any) =>
-      t.equal(peer.id, 'peer0', 'removed peer')
+      assert.equal(peer.id, 'peer0', 'removed peer')
     )
     pool.add(await server.accept('peer0'))
     await wait(100)
     server.disconnect('peer0')
     await destroy(server, pool)
-    t.pass('destroyed')
+    assert.ok(true, 'destroyed')
   })
 
-  t.test('should ban peer', async (t) => {
+  it('should ban peer', async () => {
     const [server, pool] = await setup()
     pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
-      t.equal(peer.id, 'peer0', 'added peer')
+      assert.equal(peer.id, 'peer0', 'added peer')
     )
     pool.config.events.on(Event.POOL_PEER_BANNED, (peer: any) =>
-      t.equal(peer.id, 'peer0', 'banned peer')
+      assert.equal(peer.id, 'peer0', 'banned peer')
     )
     pool.add(await server.accept('peer0'))
     await wait(100)
     pool.ban(pool.peers[0])
     await destroy(server, pool)
-    t.pass('destroyed')
+    assert.ok(true, 'destroyed')
   })
 
-  t.test('should handle peer messages', async (t) => {
+  it('should handle peer messages', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const blockchain = await Blockchain.create({
       validateBlocks: false,
@@ -78,14 +78,16 @@ tape('[Integration:PeerPool]', async (t) => {
       }),
     ]
     const [server, pool] = await setup(protocols)
-    config.events.on(Event.POOL_PEER_ADDED, (peer: any) => t.equal(peer.id, 'peer0', 'added peer'))
+    config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
+      assert.equal(peer.id, 'peer0', 'added peer')
+    )
     config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, peer: any) => {
-      t.deepEqual([msg, proto, peer.id], ['msg0', 'proto0', 'peer0'], 'got message')
+      assert.deepEqual([msg, proto, peer.id], ['msg0', 'proto0', 'peer0'], 'got message')
     })
     pool.add(await server.accept('peer0'))
     await wait(100)
     config.events.emit(Event.PROTOCOL_MESSAGE, 'msg0', 'proto0', pool.peers[0])
     await destroy(server, pool)
-    t.pass('destroyed')
+    assert.ok(true, 'destroyed')
   })
 })

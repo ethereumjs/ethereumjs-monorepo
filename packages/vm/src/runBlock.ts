@@ -13,6 +13,7 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
+  setLengthLeft,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -30,7 +31,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVM } from '@ethereumjs/evm'
+import type { EVMInterface } from '@ethereumjs/evm'
 import type { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 const { debug: createDebugLogger } = debugDefault
 
@@ -39,6 +40,10 @@ const debug = createDebugLogger('vm:block')
 /* DAO account list */
 const DAOAccountList = DAOConfig.DAOAccounts
 const DAORefundContract = DAOConfig.DAORefundContract
+
+const parentBeaconBlockRootAddress = Address.fromString(
+  '0x000000000000000000000000000000000000000b'
+)
 
 /**
  * @ignore
@@ -265,6 +270,16 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       await block.validateData()
     }
   }
+  if (this.common.isActivatedEIP(4788)) {
+    if (this.DEBUG) {
+      debug(`accumulate parentBeaconBlockRoot`)
+    }
+    await accumulateParentBeaconBlockRoot.bind(this)(
+      block.header.parentBeaconBlockRoot!,
+      block.header.timestamp
+    )
+  }
+
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
@@ -280,6 +295,39 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
 
   return blockResults
+}
+
+export async function accumulateParentBeaconBlockRoot(
+  this: VM,
+  root: Uint8Array,
+  timestamp: bigint
+) {
+  // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
+  const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+  const timestampIndex = timestamp % historicalRootsLength
+  const timestampExtended = timestampIndex + historicalRootsLength
+
+  /**
+   * Note: (by Jochem)
+   * If we don't do this (put account if undefined / non-existant), block runner crashes because the beacon root address does not exist
+   * This is hence (for me) again a reason why it should /not/ throw if the address does not exist
+   * All ethereum accounts have empty storage by default
+   */
+
+  if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
+    await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+  }
+
+  await this.stateManager.putContractStorage(
+    parentBeaconBlockRootAddress,
+    setLengthLeft(bigIntToBytes(timestampIndex), 32),
+    bigIntToBytes(timestamp)
+  )
+  await this.stateManager.putContractStorage(
+    parentBeaconBlockRootAddress,
+    setLengthLeft(bigIntToBytes(timestampExtended), 32),
+    root
+  )
 }
 
 /**
@@ -414,7 +462,11 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
   return reward
 }
 
-export async function rewardAccount(evm: EVM, address: Address, reward: bigint): Promise<Account> {
+export async function rewardAccount(
+  evm: EVMInterface,
+  address: Address,
+  reward: bigint
+): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     account = new Account()
@@ -448,7 +500,7 @@ export function encodeReceipt(receipt: TxReceipt, txType: TransactionType) {
 /**
  * Apply the DAO fork changes to the VM
  */
-async function _applyDAOHardfork(evm: EVM) {
+async function _applyDAOHardfork(evm: EVMInterface) {
   const state = evm.stateManager
   const DAORefundContractAddress = new Address(unprefixedHexToBytes(DAORefundContract))
   if ((await state.getAccount(DAORefundContractAddress)) === undefined) {

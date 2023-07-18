@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "3.1.2",
+  "version": "4.0.0-rc.1",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -43,7 +43,8 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- common",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -54,7 +55,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/util": "9.0.0-rc.1",
     "crc": "^4.3.2"
   }
 }

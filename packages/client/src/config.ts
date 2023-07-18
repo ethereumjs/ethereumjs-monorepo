@@ -293,6 +293,16 @@ export interface ConfigOptions {
    */
   syncedStateRemovalPeriod?: number
 
+  /**
+   * Max depth for parent lookups in engine's newPayload and forkchoiceUpdated
+   */
+  engineParentLookupMaxDepth?: number
+
+  /**
+   * Max blocks including unexecuted parents to be executed in engine's newPayload
+   */
+  engineNewpayloadMaxExecute?: number
+
   maxStorageRange?: bigint
 }
 
@@ -331,6 +341,9 @@ export class Config {
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
+  // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
+  public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
+  public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -371,6 +384,8 @@ export class Config {
   public readonly maxAccountRange: bigint
   public readonly maxStorageRange: bigint
   public readonly syncedStateRemovalPeriod: number
+  public readonly engineParentLookupMaxDepth: number
+  public readonly engineNewpayloadMaxExecute: number
 
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
@@ -432,6 +447,10 @@ export class Config {
     this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
+    this.engineParentLookupMaxDepth =
+      options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
+    this.engineNewpayloadMaxExecute =
+      options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false

@@ -37,7 +37,10 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run coverage
-
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: client
       - uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
@@ -92,4 +95,4 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npm run tape -- 'test/integration/cli.spec.ts'
+          command: cd ${{github.workspace}}/packages/client && npx vitest run test/integration/cli.spec.ts

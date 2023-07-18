@@ -18,6 +18,8 @@ import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from 
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
+  eth67: Devp2pETH.eth67,
+  eth68: Devp2pETH.eth68,
   les2: Devp2pLES.les2,
   les3: Devp2pLES.les3,
   les4: Devp2pLES.les4,
@@ -166,7 +168,7 @@ export class RlpxPeer extends Peer {
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
-          const sender = new RlpxSender(rlpxProtocol)
+          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
           return this.bindProtocol(protocol, sender).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
@@ -179,7 +181,9 @@ export class RlpxPeer extends Peer {
                     )
                   : undefined
               if (snapProtocol !== undefined) {
-                const snapSender = new RlpxSender(snapRlpxProtocol)
+                const snapSender = new RlpxSender(
+                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
+                )
                 return this.bindProtocol(snapProtocol, snapSender)
               }
             }

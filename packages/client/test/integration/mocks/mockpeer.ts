@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { pipe } from 'it-pipe'
-import * as pushable from 'it-pushable'
+import pushable from 'it-pushable'
 
 import { Peer } from '../../../src/net/peer'
 import { Event } from '../../../src/types'

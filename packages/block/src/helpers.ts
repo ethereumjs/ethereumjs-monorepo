@@ -42,6 +42,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     withdrawalsRoot,
     dataGasUsed,
     excessDataGas,
+    parentBeaconBlockRoot,
   ] = values
 
   if (values.length > 20) {
@@ -85,6 +86,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     withdrawalsRoot,
     dataGasUsed,
     excessDataGas,
+    parentBeaconBlockRoot,
   }
 }
 

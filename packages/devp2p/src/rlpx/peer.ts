@@ -13,11 +13,13 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 import * as snappy from 'snappyjs'
 
+import { DISCONNECT_REASON } from '../types.js'
 import { devp2pDebug, formatLogData } from '../util.js'
 
 import { ECIES } from './ecies.js'
 
-import type { ETH, LES } from '../protocol/index.js'
+import type { Protocol } from '../protocol/protocol.js'
+import type { Capabilities, PeerOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket } from 'net'
@@ -26,35 +28,19 @@ const { debug: createDebugLogger } = debugDefault
 const DEBUG_BASE_NAME = 'rlpx:peer'
 const verbose = createDebugLogger('verbose').enabled
 
-export const BASE_PROTOCOL_VERSION = 5
-export const BASE_PROTOCOL_LENGTH = 16
+const BASE_PROTOCOL_VERSION = 5
+const BASE_PROTOCOL_LENGTH = 16
 
-export const PING_INTERVAL = 15000 // 15 sec * 1000
+const PING_INTERVAL = 15000 // 15 sec * 1000
 
-export enum PREFIXES {
+enum PREFIXES {
   HELLO = 0x00,
   DISCONNECT = 0x01,
   PING = 0x02,
   PONG = 0x03,
 }
 
-export enum DISCONNECT_REASONS {
-  DISCONNECT_REQUESTED = 0x00,
-  NETWORK_ERROR = 0x01,
-  PROTOCOL_ERROR = 0x02,
-  USELESS_PEER = 0x03,
-  TOO_MANY_PEERS = 0x04,
-  ALREADY_CONNECTED = 0x05,
-  INCOMPATIBLE_VERSION = 0x06,
-  INVALID_IDENTITY = 0x07,
-  CLIENT_QUITTING = 0x08,
-  UNEXPECTED_IDENTITY = 0x09,
-  SAME_IDENTITY = 0x0a,
-  TIMEOUT = 0x0b,
-  SUBPROTOCOL_ERROR = 0x10,
-}
-
-export type HelloMsg = {
+type HelloMsg = {
   0: Uint8Array
   1: Uint8Array
   2: Uint8Array[][]
@@ -63,24 +49,13 @@ export type HelloMsg = {
   length: 5
 }
 
-export interface ProtocolDescriptor {
-  protocol: any
+interface ProtocolDescriptor {
+  protocol: Protocol
   offset: number
   length?: number
 }
 
-export interface ProtocolConstructor {
-  new (...args: any[]): any
-}
-
-export interface Capabilities {
-  name: string
-  version: number
-  length: number
-  constructor: ProtocolConstructor
-}
-
-export interface Hello {
+interface Hello {
   protocolVersion: number
   clientId: string
   capabilities: Capabilities[]
@@ -89,29 +64,29 @@ export interface Hello {
 }
 
 export class Peer extends EventEmitter {
-  _clientId: Uint8Array
-  _capabilities?: Capabilities[]
-  _common: Common
-  _port: number
-  _id: Uint8Array
-  _remoteClientIdFilter: any
-  _remoteId: Uint8Array
-  _EIP8: Uint8Array | boolean
-  _eciesSession: ECIES
-  _state: string
-  _weHello: HelloMsg | null
-  _hello: Hello | null
-  _nextPacketSize: number
-  _socket: Socket
-  _socketData: Uint8Array
-  _pingIntervalId: NodeJS.Timeout | null
-  _pingTimeoutId: NodeJS.Timeout | null
-  _closed: boolean
-  _connected: boolean
-  _disconnectReason?: DISCONNECT_REASONS
-  _disconnectWe: null | boolean
-  _pingTimeout: number
-  _logger: Debugger
+  public readonly clientId: Uint8Array
+  protected _capabilities?: Capabilities[]
+  public common: Common
+  protected _port: number
+  public readonly id: Uint8Array
+  protected _remoteClientIdFilter?: string[]
+  protected _remoteId: Uint8Array
+  protected _EIP8: Uint8Array | boolean
+  protected _eciesSession: ECIES
+  protected _state: string
+  protected _weHello: HelloMsg | null
+  protected _hello: Hello | null
+  protected _nextPacketSize: number
+  protected _socket: Socket
+  protected _socketData: Uint8Array
+  protected _pingIntervalId: NodeJS.Timeout | null
+  protected _pingTimeoutId: NodeJS.Timeout | null
+  protected _closed: boolean
+  protected _connected: boolean
+  protected _disconnectReason?: DISCONNECT_REASON
+  protected _disconnectWe: null | boolean
+  protected _pingTimeout: number
+  private _logger: Debugger
 
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
@@ -119,21 +94,21 @@ export class Peer extends EventEmitter {
    */
   _protocols: ProtocolDescriptor[]
 
-  constructor(options: any) {
+  constructor(options: PeerOptions) {
     super()
 
     // hello data
-    this._clientId = options.clientId
+    this.clientId = options.clientId
     this._capabilities = options.capabilities
-    this._common = options.common
+    this.common = options.common
     this._port = options.port
-    this._id = options.id
+    this.id = options.id
     this._remoteClientIdFilter = options.remoteClientIdFilter
 
     // ECIES session
     this._remoteId = options.remoteId
-    this._EIP8 = options.EIP8 !== undefined ? options.EIP8 : true
-    this._eciesSession = new ECIES(options.privateKey, this._id, this._remoteId)
+    this._EIP8 = options.EIP8 ?? true
+    this._eciesSession = new ECIES(options.privateKey, this.id, this._remoteId)
 
     // Auth, Ack, Header, Body
     this._state = 'Auth'
@@ -194,8 +169,10 @@ export class Peer extends EventEmitter {
   _sendAck() {
     if (this._closed) return
     this._logger(
+      // @ts-ignore
       `Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
+    // @ts-ignore
     if (this._eciesSession._gotEIP8Auth) {
       const ackEIP8 = this._eciesSession.createAckEIP8()
       if (!ackEIP8) return
@@ -237,21 +214,23 @@ export class Peer extends EventEmitter {
    * Send HELLO message
    */
   _sendHello() {
-    const debugMsg = `Send HELLO to ${this._socket.remoteAddress}:${
-      this._socket.remotePort
-    }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
-      // Filter out snap because we can't yet provide snap endpoints to the peers
-      // TODO: Remove when we can also serve snap requests from other peers
-      .filter((c) => c.name !== 'snap')
-      .map((c) => `${c.name}${c.version}`)
-      .join(',')} clientId=${bytesToUtf8(this._clientId)}`
-    this.debug('HELLO', debugMsg)
+    this.debug(
+      'HELLO',
+      `Send HELLO to ${this._socket.remoteAddress}:${
+        this._socket.remotePort
+      }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
+        // Filter out snap because we can't yet provide snap endpoints to the peers
+        // TODO: Remove when we can also serve snap requests from other peers
+        .filter((c) => c.name !== 'snap')
+        .map((c) => `${c.name}${c.version}`)
+        .join(',')} clientId=${bytesToUtf8(this.clientId)}`
+    )
     const payload: HelloMsg = [
       intToBytes(BASE_PROTOCOL_VERSION),
-      this._clientId,
+      this.clientId,
       this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
       this._port === null ? new Uint8Array(0) : intToBytes(this._port),
-      this._id,
+      this.id,
     ]
 
     if (!this._closed) {
@@ -270,10 +249,13 @@ export class Peer extends EventEmitter {
    * Send DISCONNECT message
    * @param reason
    */
-  _sendDisconnect(reason: DISCONNECT_REASONS) {
+  _sendDisconnect(reason: DISCONNECT_REASON) {
     const reasonName = this.getDisconnectPrefix(reason)
-    const debugMsg = `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`
-    this.debug('DISCONNECT', debugMsg, reasonName)
+    this.debug(
+      'DISCONNECT',
+      `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`,
+      reasonName
+    )
     const data = RLP.encode(reason)
     if (this._sendMessage(PREFIXES.DISCONNECT, data) !== true) return
 
@@ -287,8 +269,7 @@ export class Peer extends EventEmitter {
    * Send PING message
    */
   _sendPing() {
-    const debugMsg = `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    this.debug('PING', debugMsg)
+    this.debug('PING', `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     let data = RLP.encode([])
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
@@ -298,7 +279,7 @@ export class Peer extends EventEmitter {
 
     clearTimeout(this._pingTimeoutId!)
     this._pingTimeoutId = setTimeout(() => {
-      this.disconnect(DISCONNECT_REASONS.TIMEOUT)
+      this.disconnect(DISCONNECT_REASON.TIMEOUT)
     }, this._pingTimeout)
   }
 
@@ -306,8 +287,7 @@ export class Peer extends EventEmitter {
    * Send PONG message
    */
   _sendPong() {
-    const debugMsg = `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    this.debug('PONG', debugMsg)
+    this.debug('PONG', `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     let data = RLP.encode([])
 
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
@@ -322,10 +302,12 @@ export class Peer extends EventEmitter {
   _handleAuth() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
+    // @ts-ignore
     if (!this._eciesSession._gotEIP8Auth) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
+        // @ts-ignore
         this._eciesSession._gotEIP8Auth = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
@@ -345,6 +327,7 @@ export class Peer extends EventEmitter {
   _handleAck() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
+    // @ts-ignore
     if (!this._eciesSession._gotEIP8Ack) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
@@ -352,6 +335,7 @@ export class Peer extends EventEmitter {
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
         )
       } else {
+        // @ts-ignore
         this._eciesSession._gotEIP8Ack = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
@@ -382,28 +366,30 @@ export class Peer extends EventEmitter {
       id: payload[4],
     }
 
-    const debugMsg = `Received HELLO ${this._socket.remoteAddress}:${
-      this._socket.remotePort
-    } protocolVersion=${this._hello.protocolVersion} capabilities=${(this._hello.capabilities ?? [])
-      .map((c) => `${c.name}${c.version}`)
-      .join(',')} clientId=${this._hello.clientId}`
-    this.debug('HELLO', debugMsg)
+    this.debug(
+      'HELLO',
+      `Received HELLO ${this._socket.remoteAddress}:${this._socket.remotePort} protocolVersion=${
+        this._hello.protocolVersion
+      } capabilities=${(this._hello.capabilities ?? [])
+        .map((c) => `${c.name}${c.version}`)
+        .join(',')} clientId=${this._hello.clientId}`
+    )
 
     if (this._remoteId === null) {
       this._remoteId = this._hello.id
     } else if (!equalsBytes(this._remoteId, this._hello.id)) {
-      return this.disconnect(DISCONNECT_REASONS.INVALID_IDENTITY)
+      return this.disconnect(DISCONNECT_REASON.INVALID_IDENTITY)
     }
 
     if (this._remoteClientIdFilter !== undefined) {
       for (const filterStr of this._remoteClientIdFilter) {
         if (this._hello.clientId.toLowerCase().includes(filterStr.toLowerCase())) {
-          return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
+          return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
         }
       }
     }
 
-    const shared: any = {}
+    const shared: { [name: string]: Capabilities } = {}
     for (const item of this._hello.capabilities) {
       for (const c of this._capabilities!) {
         if (c.name !== item.name || c.version !== item.version) continue
@@ -436,7 +422,7 @@ export class Peer extends EventEmitter {
       })
 
     if (this._protocols.length === 0) {
-      return this.disconnect(DISCONNECT_REASONS.USELESS_PEER)
+      return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
     }
 
     this._connected = true
@@ -457,9 +443,13 @@ export class Peer extends EventEmitter {
       payload instanceof Uint8Array
         ? bytesToInt(payload)
         : bytesToInt(payload[0] ?? Uint8Array.from([0]))
-    const reason = DISCONNECT_REASONS[this._disconnectReason as number]
-    const debugMsg = `DISCONNECT reason: ${reason} ${this._socket.remoteAddress}:${this._socket.remotePort}`
-    this.debug('DISCONNECT', debugMsg, reason)
+    this.debug(
+      'DISCONNECT',
+      `DISCONNECT reason: ${DISCONNECT_REASON[this._disconnectReason as number]} ${
+        this._socket.remoteAddress
+      }:${this._socket.remotePort}`,
+      DISCONNECT_REASON[this._disconnectReason as number]
+    )
     this._disconnectWe = false
     this._socket.end()
   }
@@ -544,12 +534,12 @@ export class Peer extends EventEmitter {
     if (code === 0x80) code = 0
 
     if (code !== PREFIXES.HELLO && code !== PREFIXES.DISCONNECT && this._hello === null) {
-      return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+      return this.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR)
     }
     // Protocol object referencing either this Peer object or the
     // underlying subprotocol (e.g. `ETH`)
     const protocolObj = this._getProtocol(code)
-    if (protocolObj === undefined) return this.disconnect(DISCONNECT_REASONS.PROTOCOL_ERROR)
+    if (protocolObj === undefined) return this.disconnect(DISCONNECT_REASON.PROTOCOL_ERROR)
 
     const msgCode = code - protocolObj.offset
     const protocolName = protocolObj.protocol.constructor.name
@@ -601,9 +591,9 @@ export class Peer extends EventEmitter {
           }
         }
       }
-      protocolObj.protocol._handleMessage(msgCode, payload)
+      protocolObj.protocol._handleMessage?.(msgCode, payload)
     } catch (err: any) {
-      this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
+      this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.emit('error', err)
     }
@@ -635,7 +625,7 @@ export class Peer extends EventEmitter {
         }
       }
     } catch (err: any) {
-      this.disconnect(DISCONNECT_REASONS.SUBPROTOCOL_ERROR)
+      this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer socket data handling: ${err}`)
       this.emit('error', err)
     }
@@ -658,7 +648,7 @@ export class Peer extends EventEmitter {
    * (depending on the `code` provided)
    */
   _getProtocol(code: number): ProtocolDescriptor | undefined {
-    if (code < BASE_PROTOCOL_LENGTH) return { protocol: this, offset: 0 }
+    if (code < BASE_PROTOCOL_LENGTH) return { protocol: this as unknown as Protocol, offset: 0 }
     for (const obj of this._protocols) {
       if (code >= obj.offset && code < obj.offset + obj.length!) return obj
     }
@@ -673,7 +663,7 @@ export class Peer extends EventEmitter {
     return this._hello
   }
 
-  getProtocols<T extends ETH | LES>(): T[] {
+  getProtocols(): Protocol[] {
     return this._protocols.map((obj) => obj.protocol)
   }
 
@@ -681,11 +671,11 @@ export class Peer extends EventEmitter {
     return PREFIXES[code]
   }
 
-  getDisconnectPrefix(code: DISCONNECT_REASONS): string {
-    return DISCONNECT_REASONS[code]
+  getDisconnectPrefix(code: DISCONNECT_REASON): string {
+    return DISCONNECT_REASON[code]
   }
 
-  disconnect(reason: DISCONNECT_REASONS = DISCONNECT_REASONS.DISCONNECT_REQUESTED) {
+  disconnect(reason: DISCONNECT_REASON = DISCONNECT_REASON.DISCONNECT_REQUESTED) {
     this._sendDisconnect(reason)
   }
 

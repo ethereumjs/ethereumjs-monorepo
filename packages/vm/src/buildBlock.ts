@@ -3,10 +3,23 @@ import { ConsensusType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address, GWEI_TO_WEI, TypeOutput, Withdrawal, toBytes, toType } from '@ethereumjs/util'
+import {
+  Address,
+  GWEI_TO_WEI,
+  TypeOutput,
+  Withdrawal,
+  toBytes,
+  toType,
+  zeros,
+} from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
-import { calculateMinerReward, encodeReceipt, rewardAccount } from './runBlock.js'
+import {
+  accumulateParentBeaconBlockRoot,
+  calculateMinerReward,
+  encodeReceipt,
+  rewardAccount,
+} from './runBlock.js'
 
 import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
 import type { VM } from './vm.js'
@@ -64,6 +77,7 @@ export class BlockBuilder {
       parentHash: opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
+      timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
 
@@ -274,7 +288,8 @@ export class BlockBuilder {
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
-    const timestamp = this.headerData.timestamp ?? Math.round(Date.now() / 1000)
+    // timestamp should already be set in constructor
+    const timestamp = this.headerData.timestamp ?? BigInt(0)
 
     let dataGasUsed = undefined
     if (this.vm.common.isActivatedEIP(4844) === true) {
@@ -318,9 +333,28 @@ export class BlockBuilder {
 
     return block
   }
+
+  async initState() {
+    if (this.vm.common.isActivatedEIP(4788)) {
+      if (!this.checkpointed) {
+        await this.vm.evm.journal.checkpoint()
+        this.checkpointed = true
+      }
+
+      const { parentBeaconBlockRoot, timestamp } = this.headerData
+      // timestamp should already be set in constructor
+      const timestampBigInt = toType(timestamp ?? 0, TypeOutput.BigInt)
+      const parentBeaconBlockRootBuf =
+        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+
+      await accumulateParentBeaconBlockRoot.bind(this.vm)(parentBeaconBlockRootBuf, timestampBigInt)
+    }
+  }
 }
 
 export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
   // let opts override excessDataGas if there is some value passed there
-  return new BlockBuilder(this, opts)
+  const blockBuilder = new BlockBuilder(this, opts)
+  await blockBuilder.initState()
+  return blockBuilder
 }

@@ -6,30 +6,18 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
 ## Introduction
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
-- Ethereum Wire Protocol (ETH/66)
+- Ethereum Wire Protocol (ETH/68)
 - Light Ethereum Subprotocol (LES/4)
 
-## Run/Build
-
-To build the `dist/` directory, run:
-
-```shell
-npm run build
-```
-
-You can also use `ts-node` to run a script without first transpiling to js (you need to `npm i --save-dev ts-node` first):
-
-```shell
-node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
-```
-
-## Usage/Examples
+## Usage
 
 All components of this library are implemented as Node `EventEmitter` objects
 and make heavy use of the Node.js network stack.
@@ -41,6 +29,8 @@ dpt.on('peer:added', (peer) => {
   // Do something...
 })
 ```
+
+## Examples
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
@@ -73,7 +63,10 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 Create your peer table:
 
 ```typescript
-const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
+import { DPT } from '@ethereumjs/devp2p'
+import { hexToBytes } from '@ethereumjs/util'
+
+const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
@@ -342,7 +335,31 @@ Send initial status message.
 - `reqId` - Request ID, will be echoed back on response.
 - `payload` - Payload as a list, will be rlp-encoded.
 
-#### BigInt Support
+#### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+### BigInt Support
 
 Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
@@ -368,14 +385,6 @@ While it's possible to bundle this package for the browser, some features do not
 - EIP-1459 (DNS Peer Discovery) is disabled due to the absence of a standard polyfill for Node's `dns`
   module. DNS discovery mode can be toggled on/off via the DPTOption `shouldGetDnsPeers` ("false"
   by default).
-
-## Tests
-
-There are unit tests in the `test/` directory which can be run with:
-
-```shell
-npm run test
-```
 
 ## Debugging
 

@@ -17,14 +17,14 @@
 
 #### Defined in
 
-[ethersStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L27)
+[ethersStateManager.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L18)
 
 ___
 
 ### provider
 
-• **provider**: `string` \| `JsonRpcProvider` \| `StaticJsonRpcProvider`
+• **provider**: `string` \| `JsonRpcProvider`
 
 #### Defined in
 
-[ethersStateManager.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L26)
+[ethersStateManager.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L17)

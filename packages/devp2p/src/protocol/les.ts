@@ -9,25 +9,26 @@ import {
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { assertEq, formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol.js'
+import { Protocol } from './protocol.js'
 
 import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from './protocol.js'
+import type { SendMethod } from '../types.js'
+import type { Input, NestedUint8Array } from '@ethereumjs/rlp'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
 export class LES extends Protocol {
-  _status: LES.Status | null = null
-  _peerStatus: LES.Status | null = null
+  protected _status: LES.Status | null = null
+  protected _peerStatus: LES.Status | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, EthProtocol.LES, version, LES.MESSAGE_CODES)
+    super(peer, send, ProtocolType.LES, version, LES.MESSAGE_CODES)
 
     this._statusTimeoutId = setTimeout(() => {
-      this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
+      this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
     }, 5000) // 5 sec * 1000
   }
 
@@ -35,13 +36,18 @@ export class LES extends Protocol {
   static les3 = { name: 'les', version: 3, length: 23, constructor: LES }
   static les4 = { name: 'les', version: 4, length: 23, constructor: LES }
 
-  _handleMessage(code: LES.MESSAGE_CODES, data: any) {
+  _handleMessage(code: LES.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
-    const messageName = this.getMsgPrefix(code)
-    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
     if (code !== LES.MESSAGE_CODES.STATUS) {
-      const logData = formatLogData(bytesToHex(data), this._verbose)
-      this.debug(messageName, `${debugMsg}: ${logData}`)
+      const logData = formatLogData(bytesToHex(data as Uint8Array), this._verbose)
+      this.debug(
+        this.getMsgPrefix(code),
+        // @ts-ignore
+        `${`Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
+          this._peer._socket.remotePort
+        }`}: ${logData}`
+      )
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS: {
@@ -52,13 +58,19 @@ export class LES extends Protocol {
           this.debug.bind(this),
           'STATUS'
         )
-        const statusArray: any = {}
-        for (const value of payload as any) {
-          statusArray[bytesToUtf8(value[0])] = value[1]
+        const status: LES.Status = Object.assign({})
+        for (const value of payload as NestedUint8Array) {
+          status[bytesToUtf8(value[0] as Uint8Array)] = value[1]
         }
-        this._peerStatus = statusArray
-        const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
-        this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+        this._peerStatus = status
+        this.debug(
+          this.getMsgPrefix(code),
+          `${`Received ${this.getMsgPrefix(code)} message from ${
+            // @ts-ignore
+            this._peer._socket.remoteAddress
+            // @ts-ignore
+          }:${this._peer._socket.remotePort}`}: ${this._getStatusString(this._peerStatus)}`
+        )
         this._handleStatus()
         break
       }
@@ -167,18 +179,20 @@ export class LES extends Protocol {
       status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
     }
     status['protocolVersion'] = intToBytes(this._version)
-    status['networkId'] = bigIntToBytes(this._peer._common.chainId())
+    status['networkId'] = bigIntToBytes(this._peer.common.chainId())
 
     this._status = status
 
-    const statusList: any[][] = []
+    const statusList: [Uint8Array, Uint8Array][] = []
     for (const key of Object.keys(status)) {
       statusList.push([utf8ToBytes(key), status[key]])
     }
 
     this.debug(
       'STATUS',
+      // @ts-ignore
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+        // @ts-ignore
         this._peer._socket.remotePort
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
@@ -186,6 +200,7 @@ export class LES extends Protocol {
     let payload = RLP.encode(statusList)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
@@ -199,12 +214,15 @@ export class LES extends Protocol {
    * @param code Message code
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
-  sendMessage(code: LES.MESSAGE_CODES, payload: any) {
-    const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
-    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
-
-    this.debug(messageName, debugMsg)
+  sendMessage(code: LES.MESSAGE_CODES, payload: Input) {
+    this.debug(
+      this.getMsgPrefix(code),
+      // @ts-ignore
+      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+        // @ts-ignore
+        this._peer._socket.remotePort
+      }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`
+    )
 
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:
@@ -246,6 +264,7 @@ export class LES extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }

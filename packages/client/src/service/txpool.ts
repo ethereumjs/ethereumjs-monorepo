@@ -446,7 +446,8 @@ export class TxPool {
    * @param txHashes Array with transactions to send
    * @param peers
    */
-  async sendNewTxHashes(txHashes: Uint8Array[], peers: Peer[]) {
+  async sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
+    const txHashes = txs[2]
     for (const peer of peers) {
       // Make sure data structure is initialized
       if (!this.knownByPeer.has(peer.id)) {
@@ -457,11 +458,32 @@ export class TxPool {
 
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
-        try {
-          await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
-        } catch (e) {
-          this.markFailedSends(peer, hashesToSend, e as Error)
+        if (
+          peer.eth !== undefined &&
+          peer.eth['versions'] !== undefined &&
+          peer.eth['versions'].includes(68)
+        ) {
+          // If peer supports eth/68, send eth/68 formatted message (tx_types[], tx_sizes[], hashes[])
+          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []] as any
+          for (const hash of hashesToSend) {
+            const index = txs[2].findIndex((el) => equalsBytes(el, hash))
+            txsToSend[0].push(txs[0][index])
+            txsToSend[1].push(txs[1][index])
+            txsToSend[2].push(hash)
+          }
+          try {
+            await peer.eth?.request('NewPooledTransactionHashes', txsToSend)
+          } catch (e) {
+            this.markFailedSends(peer, hashesToSend, e as Error)
+          }
         }
+        // If peer doesn't support eth/68, just send tx hashes
+        else
+          try {
+            await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
+          } catch (e) {
+            this.markFailedSends(peer, hashesToSend, e as Error)
+          }
       }
     }
   }
@@ -517,11 +539,13 @@ export class TxPool {
       peer
     )
 
-    const newTxHashes = []
+    const newTxHashes: [number[], number[], Uint8Array[]] = [] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
-        newTxHashes.push(tx.hash())
+        newTxHashes[0].push(tx.type)
+        newTxHashes[1].push(tx.serialize().byteLength)
+        newTxHashes[2].push(tx.hash())
       } catch (error: any) {
         this.config.logger.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
@@ -577,7 +601,7 @@ export class TxPool {
     const [_, txs] = getPooledTxs
     this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
-    const newTxHashes = []
+    const newTxHashes: [number[], number[], Uint8Array[]] = [[], [], []] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
@@ -586,7 +610,9 @@ export class TxPool {
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
         )
       }
-      newTxHashes.push(tx.hash())
+      newTxHashes[0].push(tx.type)
+      newTxHashes[1].push(tx.serialize().length)
+      newTxHashes[2].push(tx.hash())
     }
     await this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }

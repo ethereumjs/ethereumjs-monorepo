@@ -6,6 +6,7 @@
 
 ### Properties
 
+- [cacheSize](TrieOpts.md#cachesize)
 - [db](TrieOpts.md#db)
 - [root](TrieOpts.md#root)
 - [useKeyHashing](TrieOpts.md#usekeyhashing)
@@ -15,27 +16,41 @@
 
 ## Properties
 
+### cacheSize
+
+• `Optional` **cacheSize**: `number`
+
+LRU cache for trie nodes to allow for faster node retrieval.
+
+Default: 0 (deactivated)
+
+#### Defined in
+
+[packages/trie/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L72)
+
+___
+
 ### db
 
-• `Optional` **db**: [`DB`](DB.md)
+• `Optional` **db**: `DB`<`string`, `string`\>
 
 A database instance.
 
 #### Defined in
 
-[packages/trie/src/types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L27)
+[packages/trie/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L30)
 
 ___
 
 ### root
 
-• `Optional` **root**: `Buffer`
+• `Optional` **root**: `Uint8Array`
 
-A `Buffer` for the root of a previously stored trie
+A `Uint8Array` for the root of a previously stored trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L32)
+[packages/trie/src/types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L35)
 
 ___
 
@@ -56,7 +71,7 @@ instantiation with `useKeyHashing` set to `true`.
 
 #### Defined in
 
-[packages/trie/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L46)
+[packages/trie/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L49)
 
 ___
 
@@ -68,7 +83,7 @@ Hash function used for hashing trie node and securing key.
 
 #### Defined in
 
-[packages/trie/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L51)
+[packages/trie/src/types.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L54)
 
 ___
 
@@ -81,7 +96,7 @@ unreachable nodes will be pruned (deleted) from the trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L62)
+[packages/trie/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L65)
 
 ___
 
@@ -93,4 +108,4 @@ Store the root inside the database after every `write` operation
 
 #### Defined in
 
-[packages/trie/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L56)
+[packages/trie/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L59)

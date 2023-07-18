@@ -3,23 +3,17 @@ import { EventEmitter } from 'events'
 
 import { KBucket as _KBucket } from '../ext/index.js'
 
-import type { PeerInfo } from './dpt.js'
+import type { PeerInfo } from '../types.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
-export interface CustomContact extends PeerInfo {
-  id: Uint8Array
-  vectorClock: number
-}
-
 export class KBucket extends EventEmitter {
-  _peers: Map<string, PeerInfo> = new Map()
-  _kbucket: _KBucket
+  protected _peers: Map<string, PeerInfo> = new Map()
+  protected _kbucket: _KBucket
   constructor(localNodeId: Uint8Array) {
     super()
 
-    // new _KBucket<CustomContact>({
     this._kbucket = new _KBucket({
       localNodeId,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
@@ -56,12 +50,12 @@ export class KBucket extends EventEmitter {
     return keys
   }
 
-  add(peer: PeerInfo) {
+  add(peer: PeerInfo): _KBucket | void {
     const isExists = KBucket.getKeys(peer).some((key) => this._peers.has(key))
-    if (!isExists) this._kbucket.add(peer as CustomContact)
+    if (!isExists) this._kbucket.add(peer)
   }
 
-  get(obj: Uint8Array | string | PeerInfo) {
+  get(obj: Uint8Array | string | PeerInfo): PeerInfo | null {
     for (const key of KBucket.getKeys(obj)) {
       const peer = this._peers.get(key)
       if (peer !== undefined) return peer
@@ -80,6 +74,6 @@ export class KBucket extends EventEmitter {
 
   remove(obj: Uint8Array | string | PeerInfo) {
     const peer = this.get(obj)
-    if (peer !== null) this._kbucket.remove((peer as CustomContact).id)
+    if (peer?.id !== undefined) this._kbucket.remove(peer.id)
   }
 }

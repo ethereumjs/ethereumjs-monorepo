@@ -6,7 +6,10 @@
 [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-[Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser.
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
+| [Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser. |
+| ----------------------------------------------------------------------------------------------------------------------------------------- |
 
 ## Installation
 
@@ -29,6 +32,12 @@ const encoded = RLP.encode(nestedList)
 const decoded = RLP.decode(encoded)
 assert.deepEqual(nestedList, decoded)
 ```
+
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -53,6 +62,12 @@ const decodedAsBuffers = arrToBufArr(decoded)
 assert.deepEqual(bufferList, decodedAsBuffers)
 ```
 
+### Buffer -> Uint8Arrayy
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
 ### BigInt Support
 
 Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
@@ -70,22 +85,6 @@ Please note that number-related API signatures have changed along with this vers
 - `rlp encode '[5]'` -> `0xc105`
 - `rlp encode '["cat", "dog"]'` -> `0xc88363617483646f67`
 - `rlp decode 0xc88363617483646f67` -> `["cat","dog"]`
-
-## Tests
-
-Tests use mocha.
-
-To run tests and linting: `npm test`
-
-To auto-fix linting problems run: `npm run lint:fix`
-
-## Code Coverage
-
-Install dev dependencies: `npm install`
-
-Run coverage: `npm run coverage`
-
-The results will be at: `coverage/lcov-report/index.html`
 
 ## EthereumJS
 

@@ -12,6 +12,7 @@ import {
   hexToBytes,
   initKZG,
   privateToAddress,
+  zeros,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
@@ -34,9 +35,14 @@ if (isBrowser() === false) {
 
 describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
-    const common = Common.fromGethGenesis(genesisJSON, { chain: 'eip4844' })
-    common.setHardfork(Hardfork.Cancun)
-    const genesisBlock = Block.fromBlockData({ header: { gasLimit: 50000 } }, { common })
+    const common = Common.fromGethGenesis(genesisJSON, {
+      chain: 'eip4844',
+      hardfork: Hardfork.Cancun,
+    })
+    const genesisBlock = Block.fromBlockData(
+      { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
+      { common }
+    )
     const blockchain = await Blockchain.create({
       genesisBlock,
       common,

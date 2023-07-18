@@ -40,31 +40,31 @@
 
 | Name | Type |
 | :------ | :------ |
-| `cacheDB?` | [`EthashCacheDB`](../README.md#ethashcachedb) |
+| `cacheDB?` | `DB`<`number`, `DBObject`\> |
 
 #### Defined in
 
-[index.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L169)
+[index.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L168)
 
 ## Properties
 
 ### cache
 
-• **cache**: `Buffer`[]
+• **cache**: `Uint8Array`[]
 
 #### Defined in
 
-[index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L163)
+[index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
 
 ___
 
 ### cacheDB
 
-• `Optional` **cacheDB**: [`EthashCacheDB`](../README.md#ethashcachedb)
+• `Optional` **cacheDB**: `DB`<`number`, `DBObject`\>
 
 #### Defined in
 
-[index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
+[index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L161)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
+[index.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L165)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L161)
+[index.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L160)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
+[index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L163)
 
 ___
 
@@ -104,17 +104,17 @@ ___
 
 #### Defined in
 
-[index.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L165)
+[index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
 
 ___
 
 ### seed
 
-• `Optional` **seed**: `Buffer`
+• `Optional` **seed**: `Uint8Array`
 
 #### Defined in
 
-[index.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L167)
+[index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
 
 ## Methods
 
@@ -134,27 +134,27 @@ ___
 
 #### Defined in
 
-[index.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L341)
+[index.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L368)
 
 ___
 
 ### cacheHash
 
-▸ **cacheHash**(): `Buffer`
+▸ **cacheHash**(): `Uint8Array`
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[index.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L250)
+[index.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L256)
 
 ___
 
 ### calcDatasetItem
 
-▸ **calcDatasetItem**(`i`): `Buffer`
+▸ **calcDatasetItem**(`i`): `Uint8Array`
 
 #### Parameters
 
@@ -164,11 +164,11 @@ ___
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[index.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L198)
+[index.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L196)
 
 ___
 
@@ -193,27 +193,27 @@ To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(blo
 
 #### Defined in
 
-[index.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L337)
+[index.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L364)
 
 ___
 
 ### headerHash
 
-▸ **headerHash**(`rawHeader`): `Buffer`
+▸ **headerHash**(`rawHeader`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `rawHeader` | `Buffer`[] |
+| `rawHeader` | `Uint8Array`[] |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[index.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L254)
+[index.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L271)
 
 ___
 
@@ -235,28 +235,28 @@ Loads the seed and cache given a block number.
 
 #### Defined in
 
-[index.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L261)
+[index.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L278)
 
 ___
 
 ### mkcache
 
-▸ **mkcache**(`cacheSize`, `seed`): `Buffer`[]
+▸ **mkcache**(`cacheSize`, `seed`): `Uint8Array`[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
 | `cacheSize` | `number` |
-| `seed` | `Buffer` |
+| `seed` | `Uint8Array` |
 
 #### Returns
 
-`Buffer`[]
+`Uint8Array`[]
 
 #### Defined in
 
-[index.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L177)
+[index.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L176)
 
 ___
 
@@ -268,8 +268,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `val` | `Buffer` |
-| `nonce` | `Buffer` |
+| `val` | `Uint8Array` |
+| `nonce` | `Uint8Array` |
 | `fullSize?` | `number` |
 
 #### Returns
@@ -278,12 +278,12 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `hash` | `Buffer` |
-| `mix` | `Buffer` |
+| `hash` | `Uint8Array` |
+| `mix` | `Uint8Array` |
 
 #### Defined in
 
-[index.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L211)
+[index.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L210)
 
 ___
 
@@ -303,4 +303,4 @@ ___
 
 #### Defined in
 
-[index.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L352)
+[index.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L378)

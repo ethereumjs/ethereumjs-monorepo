@@ -1,31 +1,24 @@
 import debugDefault from 'debug'
 import { EventEmitter } from 'events'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer.js'
+import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { devp2pDebug } from '../util.js'
 
 import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from '../types.js'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-export enum EthProtocol { // What does this represent?
-  ETH = 'eth',
-  LES = 'les',
-  SNAP = 'snap',
-}
-
 type MessageCodes = { [key: number | string]: number | string }
 
-export type SendMethod = (code: number, data: Uint8Array) => any
-
-export class Protocol extends EventEmitter {
-  _version: number
-  _peer: Peer
-  _send: SendMethod
-  _statusTimeoutId?: NodeJS.Timeout
-  _messageCodes: MessageCodes
-  _debug: Debugger
-  _verbose: boolean
+export abstract class Protocol extends EventEmitter {
+  protected _version: number
+  protected _peer: Peer
+  protected _send: SendMethod
+  protected _statusTimeoutId?: NodeJS.Timeout
+  protected _messageCodes: MessageCodes
+  private _debug: Debugger
+  protected _verbose: boolean
 
   /**
    * Will be set to the first successfully connected peer to allow for
@@ -39,7 +32,7 @@ export class Protocol extends EventEmitter {
   constructor(
     peer: Peer,
     send: SendMethod,
-    protocol: EthProtocol,
+    protocol: ProtocolType,
     version: number,
     messageCodes: MessageCodes
   ) {
@@ -50,9 +43,9 @@ export class Protocol extends EventEmitter {
     this._version = version
     this._messageCodes = messageCodes
     this._statusTimeoutId =
-      protocol !== EthProtocol.SNAP
+      protocol !== ProtocolType.SNAP
         ? setTimeout(() => {
-            this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
+            this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
           }, 5000) // 5 sec * 1000
         : undefined
 
@@ -61,7 +54,7 @@ export class Protocol extends EventEmitter {
     this.initMsgDebuggers(protocol)
   }
 
-  private initMsgDebuggers(protocol: EthProtocol) {
+  private initMsgDebuggers(protocol: ProtocolType) {
     const MESSAGE_NAMES = Object.values(this._messageCodes).filter(
       (value) => typeof value === 'string'
     ) as string[]
@@ -70,6 +63,7 @@ export class Protocol extends EventEmitter {
     }
 
     // Remote Peer IP logger
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend(ip)
@@ -83,6 +77,7 @@ export class Protocol extends EventEmitter {
    * Can be used together with the `devp2p:FIRST_PEER` debugger.
    */
   _addFirstPeerDebugger() {
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string') {
       this.msgDebuggers[ip] = devp2pDebug.extend('FIRST_PEER')
@@ -102,9 +97,17 @@ export class Protocol extends EventEmitter {
     if (this.msgDebuggers[messageName] !== undefined) {
       this.msgDebuggers[messageName](msg)
     }
+
+    // @ts-ignore
     const ip = this._peer._socket.remoteAddress
     if (typeof ip === 'string' && this.msgDebuggers[ip] !== undefined) {
       this.msgDebuggers[ip](msg)
     }
   }
+  /**
+   * Abstract method to handle incoming messages
+   * @param code
+   * @param data
+   */
+  abstract _handleMessage(code: number, data: Uint8Array): void
 }

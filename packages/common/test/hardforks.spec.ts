@@ -218,20 +218,20 @@ describe('[Common]: Hardfork logic', () => {
     let c = new Common({ chain: Chain.Mainnet })
     const mainnetGenesisHash = chains[0][1]
     let msg = 'should calc correctly for chainstart (only genesis)'
-    assert.equal(c._calcForkHash(Hardfork.Chainstart, mainnetGenesisHash), '0xfc64ec04', msg)
+    assert.equal(c['_calcForkHash'](Hardfork.Chainstart, mainnetGenesisHash), '0xfc64ec04', msg)
 
     msg = 'should calc correctly for first applied HF'
-    assert.equal(c._calcForkHash(Hardfork.Homestead, mainnetGenesisHash), '0x97c2c34c', msg)
+    assert.equal(c['_calcForkHash'](Hardfork.Homestead, mainnetGenesisHash), '0x97c2c34c', msg)
 
     msg = 'should calc correctly for in-between applied HF'
-    assert.equal(c._calcForkHash(Hardfork.Byzantium, mainnetGenesisHash), '0xa00bc324', msg)
+    assert.equal(c['_calcForkHash'](Hardfork.Byzantium, mainnetGenesisHash), '0xa00bc324', msg)
 
     for (const [chain, genesisHash] of chains) {
       c = new Common({ chain })
       for (const hf of c.hardforks()) {
         if (typeof hf.forkHash === 'string') {
           const msg = `Verify forkHash calculation for: ${Chain[chain]} -> ${hf.name}`
-          assert.equal(c._calcForkHash(hf.name, genesisHash), hf.forkHash, msg)
+          assert.equal(c['_calcForkHash'](hf.name, genesisHash), hf.forkHash, msg)
         }
       }
     }

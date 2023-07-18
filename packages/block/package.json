@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/block",
-  "version": "4.2.2",
+  "version": "5.0.0-rc.1",
   "description": "Provides Block serialization and help functions",
   "keywords": [
     "ethereum",
@@ -33,7 +33,8 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- block",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -44,12 +45,12 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^3.1.2",
-    "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/trie": "^5.0.5",
-    "@ethereumjs/tx": "^4.1.2",
-    "@ethereumjs/util": "^8.0.6",
-    "ethereum-cryptography": "^2.0.0"
+    "@ethereumjs/common": "4.0.0-rc.1",
+    "@ethereumjs/rlp": "5.0.0-rc.1",
+    "@ethereumjs/trie": "6.0.0-rc.1",
+    "@ethereumjs/tx": "5.0.0-rc.1",
+    "@ethereumjs/util": "9.0.0-rc.1",
+    "ethereum-cryptography": "^2.1.2"
   },
   "devDependencies": {
     "c-kzg": "^2.1.0"

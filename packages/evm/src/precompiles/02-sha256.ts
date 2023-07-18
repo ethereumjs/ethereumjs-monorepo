@@ -3,7 +3,7 @@ import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile02(opts: PrecompileInput): ExecResult {

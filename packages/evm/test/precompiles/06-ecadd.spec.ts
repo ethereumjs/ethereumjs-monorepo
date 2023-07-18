@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -7,9 +6,8 @@ import { EVM, getActivePrecompiles } from '../../src/index.js'
 describe('Precompiles: ECADD', () => {
   it('ECADD', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     const addressStr = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(addressStr)!

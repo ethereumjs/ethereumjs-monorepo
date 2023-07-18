@@ -9,10 +9,10 @@ import { Message } from './message.js'
 import { trap } from './opcodes/index.js'
 import { Stack } from './stack.js'
 
-import type { EVM, EVMResult } from './evm.js'
+import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
-import type { Block, Blockchain, Log } from './types.js'
+import type { Block, Blockchain, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault

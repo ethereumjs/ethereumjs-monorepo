@@ -84,7 +84,8 @@ export function getTestRLPXs(
   const dpts = getTestDPTs(numRLPXs, basePort)
 
   for (let i = 0; i < numRLPXs; ++i) {
-    const rlpx = new RLPx(dpts[i].privateKey, {
+    // @ts-ignore
+    const rlpx = new RLPx(dpts[i]._privateKey, {
       dpt: dpts[i],
       maxPeers,
       capabilities,
@@ -126,7 +127,7 @@ export function initTwoPeerRLPXSetup(
 export function twoPeerMsgExchange(
   t: typeof it,
   opts: any,
-  capabilities?: any,
+  capabilities?: Capabilities[],
   common?: Object | Common,
   basePort = 30306
 ) {

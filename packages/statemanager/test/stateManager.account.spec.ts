@@ -11,7 +11,7 @@ describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
     it(`should set the state root to empty`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
-      assert.ok(equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has default root')
+      assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')
 
       // commit some data to the trie
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -20,7 +20,7 @@ describe('StateManager -> General/Account', () => {
       await stateManager.putAccount(address, account)
       await stateManager.commit()
       await stateManager.flush()
-      assert.ok(!equalsBytes(stateManager._trie.root(), KECCAK256_RLP), 'it has a new root')
+      assert.ok(!equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has a new root')
 
       // set state root to empty trie root
       await stateManager.setStateRoot(KECCAK256_RLP)
@@ -84,7 +84,7 @@ describe('StateManager -> General/Account', () => {
       assert.equal(res1!.balance, BigInt(0xfff384))
 
       await stateManager.flush()
-      stateManager._accountCache?.clear()
+      stateManager['_accountCache']?.clear()
 
       const res2 = await stateManager.getAccount(address)
 

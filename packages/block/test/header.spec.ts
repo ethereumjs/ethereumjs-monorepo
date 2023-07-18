@@ -162,7 +162,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> fromValuesArray() -> error cases', () => {
-    const headerArray = Array(20).fill(new Uint8Array(0))
+    const headerArray = Array(21).fill(new Uint8Array(0))
 
     // mock header data (if set to zeros(0) header throws)
     headerArray[0] = zeros(32) //parentHash
@@ -457,9 +457,13 @@ describe('[Block]: Header functions', () => {
     const bcBlockGasLimitTestData = testData.tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
-      const genesisRlp = toBytes(bcBlockGasLimitTestData[key].genesisRLP)
+      const genesisRlp = toBytes(
+        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].genesisRLP
+      )
       const parentBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
-      const blockRlp = toBytes(bcBlockGasLimitTestData[key].blocks[0].rlp)
+      const blockRlp = toBytes(
+        bcBlockGasLimitTestData[key as keyof typeof bcBlockGasLimitTestData].blocks[0].rlp
+      )
       const block = Block.fromRLPSerializedBlock(blockRlp, { common })
       assert.doesNotThrow(() => block.validateGasLimit(parentBlock))
     }

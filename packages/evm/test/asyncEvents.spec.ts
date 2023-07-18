@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -8,9 +7,8 @@ describe('async events', () => {
   it('should work', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Constantinople })
-    const evm = await EVM.create({
+    const evm = new EVM({
       common,
-      stateManager: new DefaultStateManager(),
     })
     evm.events.on('step', async (event, next) => {
       const startTime = Date.now()

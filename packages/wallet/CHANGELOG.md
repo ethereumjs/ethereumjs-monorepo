@@ -6,6 +6,100 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.0-rc.1 - 2023-07-18
+
+### New Package Name and General Library Update
+
+This is the first release of this library under a new namespaced package name switching from:
+
+- `ethereumjs-wallet` -> `@ethereumjs/wallet`
+
+So the new version of the library can now be installed with:
+
+```shell
+npm i @ethereumjs/wallet
+```
+
+The wallet library has now also been integrated into the EthereumJS monorepo, see PR [#2729](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2729) and PR [#2739](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2739) and got a general update along the way aligning with the other EthereumJS libraries by e.g. switching from Buffer usage to Uint8Array and providing a hybrid CJS/ESM build.
+
+### Removed default Exports
+
+All default exports for the libraries have been removed since these cause reoccuring import problems under certain build and usage conditions.
+
+So imports needs to be updated as follows:
+
+```typescript
+import Wallet from 'ethereumjs-wallet'
+import { Wallet } from '@ethereumjs/wallet'
+
+import { thirdparty } from 'ethereumjs-wallet'
+import { thirdparty } from '@ethereumjs/wallet'
+
+import { hdkey } from 'ethereumjs-wallet'
+import { hdkey } from '@ethereumjs/wallet'
+```
+
+### Hybrid CJS/ESM Build
+
+We now provide both a CommonJS and an ESM build for all our libraries. 🥳 This transition was a huge undertaking and should make the usage of our libraries in the browser a lot more straight-forward, see PR [#2685](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2685), [#2783](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2783), [#2786](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2786), [#2764](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2764), [#2804](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2804) and [#2809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2809) (and others). We rewrote the whole set of imports and exports within the libraries, updated or completely removed a lot of dependencies along the way and removed the usage of all native Node.js primitives (like `https` or `util`).
+
+There are now two different build directories in our `dist` folder, being `dist/cjs` for the CommonJS and `dist/esm` for the `ESM` build. That means that direct imports (which you generally should try to avoid, rather open an issue on your import needs), need an update within your code (do a `dist` or the like code search).
+
+Both builds have respective separate entrypoints in the distributed `package.json` file.
+
+A CommonJS import of our libraries can then be done like this:
+
+```typescript
+const { Chain, Common } = require('@ethereumjs/common')
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+And this is how an ESM import looks like:
+
+```typescript
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+Side note: along this transition we also rewrote our whole test suite (yes!!!) to now work with [Vitest](https://vitest.dev/) instead of `Tape`.
+
+### Buffer -> Uint8Array
+
+With these releases we remove all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`). While this is a big step towards interoperability and browser compatibility of our libraries, this is also one of the most invasive operations we have ever done, see the huge changeset from PR [#2566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2566), additional updates in [#2607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2607) as well as the Wallet specific update in [#2739](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2739). 😋
+
+We nevertheless think this is very much worth it and we tried to make transition work as easy as possible.
+
+#### How to upgrade?
+
+For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
+
+```typescript
+// wallet
+Wallet.fromPrivateKey()
+Wallet.getPublicKey()
+Wallet.verifyPublicKey()
+Wallet.getAddress()
+Wallet.toV3String()
+Wallet.toV3()
+
+// hdkey
+EthereumHDKey.fromMasterSeed()
+```
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+#### Prefixed Hex Strings as Default
+
+The mixed usage of prefixed and unprefixed hex strings is a constant source of errors in byte-handling code bases.
+
+We have therefore decided to go "prefixed" by default, see PR [#2830](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2830) and [#2845](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2845).
+
+The `hexToBytes` and `bytesToHex` methods, also similar methods like `intToHex`, now take `0x`-prefixed hex strings as input and output prefixed strings. The corresponding unprefixed methods are marked as `deprecated` and usage should be avoided.
+
+Please therefore check you code base on updating and ensure that values you are passing to constructors and methods are prefixed with a `0x`.
+
 ## [1.0.2] - 2021-10-08
 
 - Updated dependencies to latest, added browser build, PR [#157](https://github.com/ethereumjs/ethereumjs-wallet/pull/157)

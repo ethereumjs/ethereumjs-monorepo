@@ -2,14 +2,14 @@ import debugDefault from 'debug'
 
 import { ENR } from './enr.js'
 
-import type { PeerInfo } from '../dpt/index.js'
+import type { DNSOptions, PeerInfo } from '../types.js'
 const { debug: createDebugLogger } = debugDefault
 
 let dns: any
 try {
   dns = require('dns')
 } catch (e: any) {
-  dns = require('../browser/dns')
+  dns = require('../browser/dns.js')
 }
 
 const debug = createDebugLogger('devp2p:dns:dns')
@@ -20,19 +20,9 @@ type SearchContext = {
   visits: { [key: string]: boolean }
 }
 
-export type DNSOptions = {
-  /**
-   * ipv4 or ipv6 address of server to pass to native dns.setServers()
-   * Sets the IP address of servers to be used when performing
-   * DNS resolution.
-   * @type {string}
-   */
-  dnsServerAddress?: string
-}
-
 export class DNS {
-  private _DNSTreeCache: { [key: string]: string }
-  private readonly _errorTolerance: number = 10
+  protected _DNSTreeCache: { [key: string]: string }
+  protected readonly _errorTolerance: number = 10
 
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
@@ -49,7 +39,7 @@ export class DNS {
    * search exceeds `maxQuantity` plus the `errorTolerance` factor.
    *
    * @param {number}        maxQuantity  max number to get
-   * @param {string}        treeEntry enrtree string (See EIP-1459 for format)
+   * @param {string[]}        dnsNetworks enrTree strings (See EIP-1459 for format)
    * @return {PeerInfo}
    */
   async getPeers(maxQuantity: number, dnsNetworks: string[]): Promise<PeerInfo[]> {
@@ -69,8 +59,8 @@ export class DNS {
       const peer = await this._search(domain, context)
 
       if (this._isNewPeer(peer, peers)) {
-        peers.push(peer as PeerInfo)
-        debug(`got new peer candidate from DNS address=${peer!.address}`)
+        peers.push(peer)
+        debug(`got new peer candidate from DNS address=${peer.address}`)
       }
 
       totalSearches++
@@ -192,12 +182,13 @@ export class DNS {
    * Returns false if candidate peer already exists in the
    * current collection of peers.
    * Returns true otherwise.
+   * Also acts as a typeguard for peer
    *
    * @param  {PeerInfo}   peer
    * @param  {PeerInfo[]} peers
    * @return {boolean}
    */
-  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): boolean {
+  private _isNewPeer(peer: PeerInfo | null, peers: PeerInfo[]): peer is PeerInfo {
     if (peer === null || peer.address === undefined) return false
 
     for (const existingPeer of peers) {

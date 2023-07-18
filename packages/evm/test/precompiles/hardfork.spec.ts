@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -21,9 +20,8 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    let evm = await EVM.create({
+    let evm = new EVM({
       common: commonByzantium,
-      stateManager: new DefaultStateManager(),
     })
     let result = await evm.runCall({
       caller: Address.zero(),
@@ -43,9 +41,8 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    evm = await EVM.create({
+    evm = new EVM({
       common: commonPetersburg,
-      stateManager: new DefaultStateManager(),
     })
     result = await evm.runCall({
       caller: Address.zero(),
@@ -66,9 +63,8 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING not available in homestead')
     }
 
-    evm = await EVM.create({
+    evm = new EVM({
       common: commonHomestead,
-      stateManager: new DefaultStateManager(),
     })
 
     result = await evm.runCall({

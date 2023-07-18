@@ -6,7 +6,7 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import crc from 'crc/crc32'
+import { crc32 as crc } from 'crc'
 import { EventEmitter } from 'events'
 
 import * as goerli from './chains/goerli.json'

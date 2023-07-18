@@ -28,6 +28,7 @@ module.exports = {
     'webpack.config.js',
     'vitest.config.ts',
     'vitest.config.browser.ts',
+    'vitest.config.unit.ts'
   ],
   extends: [
     'typestrict',
@@ -67,7 +68,7 @@ module.exports = {
     'import/default': 'error',
     'import/export': 'error',
     'import/exports-last': 'off', // TODO: set to `warn` for fixing and then `error`
-    'import/extensions': 'off',
+    'import/extensions': ['error','ignorePackages'],
     'import/first': 'error',
     'import/group-exports': 'off',
     'import/named': 'error',

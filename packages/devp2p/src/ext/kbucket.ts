@@ -32,37 +32,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 // (side note: this was once done by tomonari-t dedicatedly for this library
 // (please nevertheless include the original license reference))
 
-import { randomBytes } from '@ethereumjs/util'
+import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
-/**
- * @param  {Uint8Array} array1
- * @param  {Uint8Array} array2
- * @return {Boolean}
- */
-function arrayEquals(array1: any, array2: any) {
-  if (array1 === array2) {
-    return true
-  }
-  if (array1.length !== array2.length) {
-    return false
-  }
-  for (let i = 0, length = array1.length; i < length; ++i) {
-    if (array1[i] !== array2[i]) {
-      return false
-    }
-  }
-  return true
-}
+import type { Contact, KBucketOptions, PeerInfo } from '../types'
 
 function createNode() {
   return { contacts: [], dontSplit: false, left: null, right: null }
 }
 
-function ensureInt8(name: any, val: any) {
-  if (!(val instanceof Uint8Array)) {
-    throw new TypeError(name + ' is not a Uint8Array')
-  }
+type KBucketNode = {
+  contacts: Contact[] | null
+  dontSplit: boolean
+  left: KBucketNode | null
+  right: KBucketNode | null
 }
 
 /**
@@ -72,67 +55,42 @@ function ensureInt8(name: any, val: any) {
  * @extends EventEmitter
  */
 export class KBucket extends EventEmitter {
-  localNodeId: any
-  numberOfNodesPerKBucket: any
-  numberOfNodesToPing: any
-  distance: any
-  arbiter: any
-  metadata: any
-  root: any
-
+  protected _localNodeId: Uint8Array
+  protected _numberOfNodesPerKBucket: number
+  protected _numberOfNodesToPing: number
+  distance: (firstId: Uint8Array, secondId: Uint8Array) => number
+  arbiter: (incumbent: Contact, candidate: Contact) => Contact
+  protected _metadata: object
+  protected _root: KBucketNode
   /**
-   * `options`:
-   *   `distance`: _Function_
-   *     `function (firstId, secondId) { return distance }` An optional
-   *     `distance` function that gets two `id` Uint8Arrays
-   *     and return distance (as number) between them.
-   *   `arbiter`: _Function_ _(Default: vectorClock arbiter)_
-   *     `function (incumbent, candidate) { return contact; }` An optional
-   *     `arbiter` function that givent two `contact` objects with the same `id`
-   *     returns the desired object to be used for updating the k-bucket. For
-   *     more details, see [arbiter function](#arbiter-function).
-   *   `localNodeId`: _Uint8Array_ An optional Uint8Array representing the local node id.
-   *     If not provided, a local node id will be created via `randomBytes(20)`.
-   *     `metadata`: _Object_ _(Default: {})_ Optional satellite data to include
-   *     with the k-bucket. `metadata` property is guaranteed not be altered by,
-   *     it is provided as an explicit container for users of k-bucket to store
-   *     implementation-specific data.
-   *   `numberOfNodesPerKBucket`: _Integer_ _(Default: 20)_ The number of nodes
-   *     that a k-bucket can contain before being full or split.
-   *     `numberOfNodesToPing`: _Integer_ _(Default: 3)_ The number of nodes to
-   *     ping when a bucket that should not be split becomes full. KBucket will
-   *     emit a `ping` event that contains `numberOfNodesToPing` nodes that have
-   *     not been contacted the longest.
    *
-   * @param {Object=} options optional
+   * @param {KBucketOptions} options
    */
-  constructor(options: any = {}) {
+  constructor(options: KBucketOptions = {}) {
     super()
 
-    this.localNodeId = options.localNodeId ?? randomBytes(20)
-    this.numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
-    this.numberOfNodesToPing = options.numberOfNodesToPing ?? 3
+    this._localNodeId = options.localNodeId ?? randomBytes(20)
+    this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
+    this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3
     this.distance = options.distance ?? KBucket.distance
     // use an arbiter from options or vectorClock arbiter by default
     this.arbiter = options.arbiter ?? KBucket.arbiter
-    this.metadata = Object.assign({}, options.metadata)
+    this._metadata = Object.assign({}, options.metadata)
 
-    ensureInt8('option.localNodeId as parameter 1', this.localNodeId)
-
-    this.root = createNode()
+    this._root = createNode()
   }
 
   /**
    * Default arbiter function for contacts with the same id. Uses
    * contact.vectorClock to select which contact to update the k-bucket with.
    * Contact with larger vectorClock field will be selected. If vectorClock is
-   * the same, candidat will be selected.
+   * the same, candidate will be selected.
    *
-   * @param  {Object} incumbent Contact currently stored in the k-bucket.
-   * @param  {Object} candidate Contact being added to the k-bucket.
-   * @return {Object}           Contact to updated the k-bucket with.
+   * @param  {Contact} incumbent Contact currently stored in the k-bucket.
+   * @param  {Contact} candidate Contact being added to the k-bucket.
+   * @return {Contact}           Contact to updated the k-bucket with.
    */
-  static arbiter(incumbent: any, candidate: any) {
+  static arbiter(incumbent: Contact, candidate: Contact): Contact {
     return incumbent.vectorClock > candidate.vectorClock ? incumbent : candidate
   }
 
@@ -142,10 +100,10 @@ export class KBucket extends EventEmitter {
    *
    * @param  {Uint8Array} firstId  Uint8Array containing first id.
    * @param  {Uint8Array} secondId Uint8Array containing second id.
-   * @return {Number}              Integer The XOR distance between firstId
+   * @return {number}              Integer The XOR distance between firstId
    *                               and secondId.
    */
-  static distance(firstId: any, secondId: any) {
+  static distance(firstId: Uint8Array, secondId: Uint8Array): number {
     let distance = 0
     let i = 0
     const min = Math.min(firstId.length, secondId.length)
@@ -160,13 +118,15 @@ export class KBucket extends EventEmitter {
   /**
    * Adds a contact to the k-bucket.
    *
-   * @param {Object} contact the contact object to add
+   * @param {PeerInfo} contact the contact object to add
    */
-  add(contact: any): any {
-    ensureInt8('contact.id', (contact ?? {}).id)
+  add(contact: PeerInfo): KBucket {
+    if (!(contact.id instanceof Uint8Array)) {
+      throw new Error('Contact must have an id')
+    }
 
     let bitIndex = 0
-    let node = this.root
+    let node = this._root
 
     while (node.contacts === null) {
       // this is not a leaf node but an inner node with 'low' and 'high'
@@ -178,12 +138,12 @@ export class KBucket extends EventEmitter {
     // check if the contact already exists
     const index = this._indexOf(node, contact.id)
     if (index >= 0) {
-      this._update(node, index, contact)
+      this._update(node, index, contact as Contact)
       return this
     }
 
-    if (node.contacts.length < this.numberOfNodesPerKBucket) {
-      node.contacts.push(contact)
+    if (node.contacts.length < this._numberOfNodesPerKBucket) {
+      node.contacts.push(contact as Contact)
       this.emit('added', contact)
       return this
     }
@@ -191,11 +151,11 @@ export class KBucket extends EventEmitter {
     // the bucket is full
     if (node.dontSplit !== undefined) {
       // we are not allowed to split the bucket
-      // we need to ping the first this.numberOfNodesToPing
+      // we need to ping the first this._numberOfNodesToPing
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
       // be added (this prevents DoS flodding with new invalid contacts)
-      this.emit('ping', node.contacts.slice(0, this.numberOfNodesToPing), contact)
+      this.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
       return this
     }
 
@@ -208,48 +168,45 @@ export class KBucket extends EventEmitter {
    * closest according to the XOR metric of the contact node id.
    *
    * @param  {Uint8Array} id  Contact node id
-   * @param  {Number=} n      Integer (Default: Infinity) The maximum number of
-   *                          closest contacts to return
-   * @return {Array}          Array Maximum of n closest contacts to the node id
+   * @param  {number} n      Integer (Default: Infinity) The maximum number of closest contacts to return
+   * @return {Contact[]}          Array Maximum of n closest contacts to the node id
    */
-  closest(id: any, n = Infinity) {
-    ensureInt8('id', id)
+  closest(id: Uint8Array, n: number | undefined = Infinity): Contact[] {
+    if (!(id instanceof Uint8Array)) {
+      throw new TypeError('id must be a Uint8Array')
+    }
 
     if ((!Number.isInteger(n) && n !== Infinity) || n <= 0) {
       throw new TypeError('n is not positive number')
     }
 
-    let contacts: any = []
+    let contacts: Contact[] = []
 
-    for (let nodes = [this.root], bitIndex = 0; nodes.length > 0 && contacts.length < n; ) {
-      const node = nodes.pop()
+    for (let nodes = [this._root], bitIndex = 0; nodes.length > 0 && contacts.length < n; ) {
+      const node = nodes.pop()!
       if (node.contacts === null) {
         const detNode = this._determineNode(node, id, bitIndex++)
-        nodes.push(node.left === detNode ? node.right : node.left)
+        nodes.push(node.left === detNode ? node.right! : node.left!)
         nodes.push(detNode)
       } else {
         contacts = contacts.concat(node.contacts)
       }
     }
 
-    return contacts
-      .map((a: any) => [this.distance(a.id, id), a])
-      .sort((a: any, b: any) => a[0] - b[0])
-      .slice(0, n)
-      .map((a: any) => a[1])
+    // Sort the contacts by distance from node id and return `n` closest ones
+    return contacts.sort((a, b) => this.distance(a.id, id) - this.distance(b.id, id)).slice(0, n)
   }
 
   /**
    * Counts the total number of contacts in the tree.
    *
-   * @return {Number} The number of contacts held in the tree
+   * @return {number} The number of contacts held in the tree
    */
-  count() {
-    // return this.toArray().length
+  count(): number {
     let count = 0
-    for (const nodes = [this.root]; nodes.length > 0; ) {
-      const node = nodes.pop()
-      if (node.contacts === null) nodes.push(node.right, node.left)
+    for (const nodes = [this._root]; nodes.length > 0; ) {
+      const node = nodes.pop()!
+      if (node.contacts === null) nodes.push(node.right!, node.left!)
       else count += node.contacts.length
     }
     return count
@@ -259,13 +216,13 @@ export class KBucket extends EventEmitter {
    * Determines whether the id at the bitIndex is 0 or 1.
    * Return left leaf if `id` at `bitIndex` is 0, right leaf otherwise
    *
-   * @param  {Object} node     internal object that has 2 leafs: left and right
-   * @param  {Uint8Array} id   Id to compare localNodeId with.
+   * @param  {KBucketNode} node     internal object that has 2 leafs: left and right
+   * @param  {Uint8Array} id   Id to compare _localNodeId with.
    * @param  {Number} bitIndex Integer (Default: 0) The bit index to which bit
    *                           to check in the id Uint8Array.
-   * @return {Object}          left leaf if id at bitIndex is 0, right leaf otherwise.
+   * @return {KBucketNode}          left leaf if id at bitIndex is 0, right leaf otherwise.
    */
-  _determineNode(node: any, id: any, bitIndex: any) {
+  _determineNode(node: KBucketNode, id: Uint8Array, bitIndex: number): KBucketNode {
     // **NOTE** remember that id is a Uint8Array and has granularity of
     // bytes (8 bits), whereas the bitIndex is the _bit_ index (not byte)
 
@@ -279,7 +236,7 @@ export class KBucket extends EventEmitter {
     const bytesDescribedByBitIndex = bitIndex >> 3
     const bitIndexWithinByte = bitIndex % 8
     if (id.length <= bytesDescribedByBitIndex && bitIndexWithinByte !== 0) {
-      return node.left
+      return node.left!
     }
 
     const byteUnderConsideration = id[bytesDescribedByBitIndex]
@@ -292,10 +249,10 @@ export class KBucket extends EventEmitter {
     // for example, if bitIndexWithinByte is 3, we will construct 00010000 by
     // (1 << (7 - 3)) -> (1 << 4) -> 16
     if (byteUnderConsideration & (1 << (7 - bitIndexWithinByte))) {
-      return node.right
+      return node.right!
     }
 
-    return node.left
+    return node.left!
   }
 
   /**
@@ -305,14 +262,12 @@ export class KBucket extends EventEmitter {
    * which branch of the tree to traverse and repeat.
    *
    * @param  {Uint8Array} id The ID of the contact to fetch.
-   * @return {Object|Null}   The contact if available, otherwise null
+   * @return {Contact|null}   The contact if available, otherwise null
    */
-  get(id: any) {
-    ensureInt8('id', id)
-
+  get(id: Uint8Array): Contact | null {
     let bitIndex = 0
 
-    let node = this.root
+    let node = this._root
     while (node.contacts === null) {
       node = this._determineNode(node, id, bitIndex++)
     }
@@ -326,14 +281,14 @@ export class KBucket extends EventEmitter {
    * Returns the index of the contact with provided
    * id if it exists, returns -1 otherwise.
    *
-   * @param  {Object} node    internal object that has 2 leafs: left and right
+   * @param  {KBucketNode} node    internal object that has 2 leafs: left and right
    * @param  {Uint8Array} id  Contact node id.
-   * @return {Number}         Integer Index of contact with provided id if it
+   * @return {number}         Integer Index of contact with provided id if it
    *                          exists, -1 otherwise.
    */
-  _indexOf(node: any, id: any) {
-    for (let i = 0; i < node.contacts.length; ++i) {
-      if (arrayEquals(node.contacts[i].id, id)) return i
+  _indexOf(node: KBucketNode, id: Uint8Array): number {
+    for (let i = 0; i < node.contacts!.length; ++i) {
+      if (equalsBytes(node.contacts![i].id, id)) return i
     }
 
     return -1
@@ -343,13 +298,11 @@ export class KBucket extends EventEmitter {
    * Removes contact with the provided id.
    *
    * @param  {Uint8Array} id The ID of the contact to remove.
-   * @return {Object}        The k-bucket itself.
+   * @return {KBucket}        The k-bucket itself.
    */
-  remove(id: any) {
-    ensureInt8('the id as parameter 1', id)
-
+  remove(id: Uint8Array): KBucket {
     let bitIndex = 0
-    let node = this.root
+    let node = this._root
 
     while (node.contacts === null) {
       node = this._determineNode(node, id, bitIndex++)
@@ -367,19 +320,19 @@ export class KBucket extends EventEmitter {
   /**
    * Splits the node, redistributes contacts to the new nodes, and marks the
    * node that was split as an inner node of the binary tree of nodes by
-   * setting this.root.contacts = null
+   * setting this._root.contacts = null
    *
-   * @param  {Object} node     node for splitting
-   * @param  {Number} bitIndex the bitIndex to which byte to check in the
+   * @param  {object} node     node for splitting
+   * @param  {number} bitIndex the bitIndex to which byte to check in the
    *                           Uint8Array for navigating the binary tree
    */
-  _split(node: any, bitIndex: any) {
+  _split(node: KBucketNode, bitIndex: number) {
     node.left = createNode()
     node.right = createNode()
 
     // redistribute existing contacts amongst the two newly created nodes
-    for (const contact of node.contacts) {
-      this._determineNode(node, contact.id, bitIndex).contacts.push(contact)
+    for (const contact of node.contacts!) {
+      this._determineNode(node, contact.id, bitIndex).contacts!.push(contact)
     }
 
     node.contacts = null // mark as inner tree node
@@ -387,7 +340,7 @@ export class KBucket extends EventEmitter {
     // don't split the "far away" node
     // we check where the local node would end up and mark the other one as
     // "dontSplit" (i.e. "far away")
-    const detNode = this._determineNode(node, this.localNodeId, bitIndex)
+    const detNode = this._determineNode(node, this._localNodeId, bitIndex)
     const otherNode = node.left === detNode ? node.right : node.left
     otherNode.dontSplit = true
   }
@@ -397,13 +350,13 @@ export class KBucket extends EventEmitter {
    * If this is a leaf, return a copy of the bucket. If this is not a leaf,
    * return the union of the low and high branches (themselves also as arrays).
    *
-   * @return {Array} All of the contacts in the tree, as an array
+   * @return {Contact[]} All of the contacts in the tree, as an array
    */
-  toArray() {
-    let result: any = []
-    for (const nodes = [this.root]; nodes.length > 0; ) {
-      const node = nodes.pop()
-      if (node.contacts === null) nodes.push(node.right, node.left)
+  toArray(): Contact[] {
+    let result: Contact[] = []
+    for (const nodes = [this._root]; nodes.length > 0; ) {
+      const node = nodes.pop()!
+      if (node.contacts === null) nodes.push(node.right!, node.left!)
       else result = result.concat(node.contacts)
     }
     return result
@@ -414,13 +367,13 @@ export class KBucket extends EventEmitter {
    * array before returning it, yields contacts as they are encountered while
    * walking the tree.
    *
-   * @return {Iterable} All of the contacts in the tree, as an iterable
+   * @return {Contact} All of the contacts in the tree, as an iterable
    */
-  *toIterable() {
-    for (const nodes = [this.root]; nodes.length > 0; ) {
-      const node = nodes.pop()
+  *toIterable(): Iterable<Contact> {
+    for (const nodes = [this._root]; nodes.length > 0; ) {
+      const node = nodes.pop()!
       if (node.contacts === null) {
-        nodes.push(node.right, node.left)
+        nodes.push(node.right!, node.left!)
       } else {
         yield* node.contacts
       }
@@ -437,17 +390,19 @@ export class KBucket extends EventEmitter {
    * If the selection is our new contact, the old contact is removed and the new
    * contact is marked as most recently contacted.
    *
-   * @param  {Object} node    internal object that has 2 leafs: left and right
-   * @param  {Number} index   the index in the bucket where contact exists
+   * @param  {KBucketNode} node    internal object that has 2 leafs: left and right
+   * @param  {number} index   the index in the bucket where contact exists
    *                          (index has already been computed in a previous
    *                          calculation)
-   * @param  {Object} contact The contact object to update.
+   * @param  {Contact} contact The contact object to update.
    */
-  _update(node: any, index: any, contact: any) {
+  _update(node: KBucketNode, index: number, contact: Contact) {
     // sanity check
-    if (!arrayEquals(node.contacts[index].id, contact.id)) {
+    if (!equalsBytes(node.contacts![index].id, contact.id)) {
       throw new Error('wrong index for _update')
     }
+
+    if (node.contacts === null) throw new Error('Missing node.contacts')
 
     const incumbent = node.contacts[index]
     const selection = this.arbiter(incumbent, contact)
