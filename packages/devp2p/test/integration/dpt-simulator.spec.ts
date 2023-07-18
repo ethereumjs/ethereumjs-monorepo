@@ -120,7 +120,7 @@ describe('DPT simulator tests', () => {
       await util.delay(400)
     }
 
-    await util.delay(250)
+    await util.delay(500)
 
     for (const dpt of dpts) {
       assert.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')
