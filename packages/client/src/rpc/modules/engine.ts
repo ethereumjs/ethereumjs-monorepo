@@ -46,9 +46,12 @@ type Uint64 = string
 type Uint256 = string
 
 type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
-export type ExecutionPayloadV1 = Omit<ExecutionPayload, 'withdrawals' | 'excessDataGas'>
-export type ExecutionPayloadV2 = ExecutionPayload & { withdrawals: WithdrawalV1[] }
-export type ExecutionPayloadV3 = ExecutionPayload & { excessDataGas: Uint64; dataGasUsed: Uint64 }
+
+// ExecutionPayload has higher version fields as optionals to make it easy for typescript
+export type ExecutionPayloadV1 = ExecutionPayload
+export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
+// parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
+export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessDataGas: Uint64; dataGasUsed: Uint64 }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -56,14 +59,19 @@ export type ForkchoiceStateV1 = {
   finalizedBlockHash: Bytes32
 }
 
+// PayloadAttributes has higher version fields as optionals to make it easy for typescript
 type PayloadAttributes = {
   timestamp: Uint64
   prevRandao: Bytes32
   suggestedFeeRecipient: Bytes20
+  // add higher version fields as optionals to make it easy for typescript
   withdrawals?: WithdrawalV1[]
+  parentBeaconBlockRoot?: Bytes32
 }
-type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals'>
-type PayloadAttributesV2 = PayloadAttributes & { withdrawals: WithdrawalV1[] }
+
+type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals' | 'parentBeaconBlockRoot'>
+type PayloadAttributesV2 = PayloadAttributesV1 & { withdrawals: WithdrawalV1[] }
+type PayloadAttributesV3 = PayloadAttributesV2 & { parentBeaconBlockRoot: Bytes32 }
 
 export type PayloadStatusV1 = {
   status: Status
@@ -139,9 +147,14 @@ const payloadAttributesFieldValidatorsV1 = {
 }
 const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
+  // withdrawals is optional in V2 because its backward forward compatible with V1
   withdrawals: validators.optional(validators.array(validators.withdrawal())),
 }
-
+const payloadAttributesFieldValidatorsV3 = {
+  ...payloadAttributesFieldValidatorsV1,
+  withdrawals: validators.array(validators.withdrawal()),
+  parentBeaconBlockRoot: validators.bytes32,
+}
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
@@ -406,14 +419,9 @@ export class Engine {
 
     this.newPayloadV3 = cmMiddleware(
       middleware(this.newPayloadV3.bind(this), 1, [
-        [
-          validators.either(
-            validators.object(executionPayloadV1FieldValidators),
-            validators.object(executionPayloadV2FieldValidators),
-            validators.object(executionPayloadV3FieldValidators)
-          ),
-        ],
-        [validators.optional(validators.array(validators.bytes32))],
+        [validators.object(executionPayloadV3FieldValidators)],
+        [validators.array(validators.bytes32)],
+        [validators.bytes32],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -440,11 +448,17 @@ export class Engine {
       ]),
       forkchoiceUpdatedResponseCMHandler
     )
-
     this.forkchoiceUpdatedV2 = cmMiddleware(
       middleware(this.forkchoiceUpdatedV2.bind(this), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV2))],
+      ]),
+      forkchoiceUpdatedResponseCMHandler
+    )
+    this.forkchoiceUpdatedV3 = cmMiddleware(
+      middleware(this.forkchoiceUpdatedV3.bind(this), 1, [
+        [validators.object(forkchoiceFieldValidators)],
+        [validators.optional(validators.object(payloadAttributesFieldValidatorsV3))],
       ]),
       forkchoiceUpdatedResponseCMHandler
     )
@@ -516,14 +530,22 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   private async newPayload(
-    params: [ExecutionPayload, (Bytes32[] | null)?]
+    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?]
   ): Promise<PayloadStatusV1> {
-    const [payload, versionedHashes] = params
+    const [payload, versionedHashes, parentBeaconBlockRoot] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
     const { parentHash, blockHash } = payload
-    const { block, error } = await assembleBlock(payload, this.chain)
+    // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
+    const { block, error } = await assembleBlock(
+      {
+        ...payload,
+        // ExecutionPayload only handles undefined
+        parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
+      },
+      this.chain
+    )
     if (!block || error) {
       let response = error
       if (!response) {
@@ -741,14 +763,31 @@ export class Engine {
   }
 
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
+    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const ts = parseInt(params[0].timestamp)
+    if (shanghaiTimestamp !== null && ts >= shanghaiTimestamp) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'NewPayloadV2 MUST be used after Cancun is activated',
+      }
+    }
+
     return this.newPayload(params)
   }
 
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
+    const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+    const ts = parseInt(params[0].timestamp)
+
     const withdrawals = (params[0] as ExecutionPayloadV2).withdrawals
 
-    if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
+    if (eip4844Timestamp !== null && ts >= eip4844Timestamp) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'NewPayloadV3 MUST be used after Cancun is activated',
+      }
+    } else if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
       if (withdrawals !== undefined && withdrawals !== null) {
         throw {
           code: INVALID_PARAMS,
@@ -763,78 +802,28 @@ export class Engine {
         }
       }
     }
-    const newPayload = await this.newPayload(params)
-    if (newPayload.status === Status.INVALID_BLOCK_HASH) {
-      newPayload.status = Status.INVALID
+    const newPayloadRes = await this.newPayload(params)
+    if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
+      newPayloadRes.status = Status.INVALID
     }
-    return newPayload
+    return newPayloadRes
   }
 
-  async newPayloadV3(
-    params: [ExecutionPayloadV3 | ExecutionPayloadV2 | ExecutionPayloadV1, (Bytes32[] | null)?]
-  ): Promise<PayloadStatusV1> {
+  async newPayloadV3(params: [ExecutionPayloadV3, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
-    if (
-      eip4844Timestamp !== null &&
-      parseInt(params[0].timestamp) >= eip4844Timestamp &&
-      (params[1] === undefined || params[1] === null)
-    ) {
+    const ts = parseInt(params[0].timestamp)
+    if (eip4844Timestamp === null || ts < eip4844Timestamp) {
       throw {
         code: INVALID_PARAMS,
-        message: 'Missing versionedHashes after Cancun is activated',
-      }
-    } else if (
-      (eip4844Timestamp === null || parseInt(params[0].timestamp) < eip4844Timestamp) &&
-      params[1] !== undefined &&
-      params[1] !== null
-    ) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'Recieved versionedHashes before Cancun is activated',
+        message: 'NewPayloadV{1|2} MUST be used before Cancun is activated',
       }
     }
 
-    const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
-    if (shanghaiTimestamp === null || parseInt(params[0].timestamp) < shanghaiTimestamp) {
-      if ('withdrawals' in params[0]) {
-        throw {
-          code: INVALID_PARAMS,
-          message: 'ExecutionPayloadV1 MUST be used before Shanghai is activated',
-        }
-      }
-    } else if (
-      eip4844Timestamp === null ||
-      (parseInt(params[0].timestamp) >= shanghaiTimestamp &&
-        parseInt(params[0].timestamp) < eip4844Timestamp)
-    ) {
-      if (
-        'extraDataGas' in params[0] ||
-        'dataGasUsed' in params[0] ||
-        !('withdrawals' in params[0])
-      ) {
-        throw {
-          code: INVALID_PARAMS,
-          message: 'ExecutionPayloadV2 MUST be used if Shanghai is activated and Cancun is not',
-        }
-      }
-    } else if (parseInt(params[0].timestamp) >= eip4844Timestamp) {
-      if (
-        !('extraData' in params[0]) ||
-        !('dataGasUsed' in params[0]) ||
-        !('withdrawals' in params[0])
-      ) {
-        throw {
-          code: INVALID_PARAMS,
-          message: 'ExecutionPayloadV3 MUST be used after Cancun is activated',
-        }
-      }
+    const newPayloadRes = await this.newPayload(params)
+    if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
+      newPayloadRes.status = Status.INVALID
     }
-
-    const newPayload = await this.newPayload(params)
-    if (newPayload.status === Status.INVALID_BLOCK_HASH) {
-      newPayload.status = Status.INVALID
-    }
-    return newPayload
+    return newPayloadRes
   }
 
   /**
@@ -1040,7 +1029,8 @@ export class Engine {
     let validResponse
     // If payloadAttributes is present, start building block and return payloadId
     if (payloadAttributes) {
-      const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
+      const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals, parentBeaconBlockRoot } =
+        payloadAttributes
       const timestampBigInt = BigInt(timestamp)
 
       if (timestampBigInt <= headBlock.header.timestamp) {
@@ -1059,6 +1049,7 @@ export class Engine {
           timestamp,
           mixHash: prevRandao,
           coinbase: suggestedFeeRecipient,
+          parentBeaconBlockRoot,
         },
         withdrawals
       )
@@ -1106,6 +1097,24 @@ export class Engine {
             code: INVALID_PARAMS,
             message: 'PayloadAttributesV2 MUST be used after Shanghai is activated',
           }
+        }
+      }
+    }
+
+    return this.forkchoiceUpdated(params)
+  }
+
+  private async forkchoiceUpdatedV3(
+    params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV3 | undefined]
+  ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    const payloadAttributes = params[1]
+    if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+      const ts = BigInt(payloadAttributes.timestamp)
+      if (ts < cancunTimestamp!) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV{1|2} MUST be used before Cancun is activated',
         }
       }
     }
