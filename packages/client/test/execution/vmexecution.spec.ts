@@ -3,25 +3,24 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { VMExecution } from '../../src/execution'
 import { closeRPC, setupChain } from '../rpc/helpers'
-import * as blocksDataGoerli from '../testdata/blocks/goerli.json'
-import * as blocksDataMainnet from '../testdata/blocks/mainnet.json'
-import * as testnet from '../testdata/common/testnet.json'
-import * as shanghaiJSON from '../testdata/geth-genesis/withdrawals.json'
+import blocksDataGoerli from '../testdata/blocks/goerli.json'
+import blocksDataMainnet from '../testdata/blocks/mainnet.json'
+import testnet from '../testdata/common/testnet.json'
+import shanghaiJSON from '../testdata/geth-genesis/withdrawals.json'
 
-tape('[VMExecution]', async (t) => {
-  t.test('Initialization', async (t) => {
+describe('[VMExecution]', async () => {
+  it('Initialization', async () => {
     const vm = await VM.create()
     const config = new Config({ vm, transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const exec = new VMExecution({ config, chain })
-    t.equals(exec.vm, vm, 'should use vm provided')
-    t.end()
+    assert.equal(exec.vm, vm, 'should use vm provided')
   })
 
   async function testSetup(blockchain: Blockchain, common?: Common) {
@@ -33,76 +32,86 @@ tape('[VMExecution]', async (t) => {
     return exec
   }
 
-  t.test('Block execution / Hardforks PoW (mainnet)', async (t) => {
-    let blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    let exec = await testSetup(blockchain)
-    const oldHead = await exec.vm.blockchain.getIteratorHead!()
-    await exec.run()
-    let newHead = await exec.vm.blockchain.getIteratorHead!()
-    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
+  it(
+    'Block execution / Hardforks PoW (mainnet)',
+    async () => {
+      let blockchain = await Blockchain.create({
+        validateBlocks: true,
+        validateConsensus: false,
+      })
+      let exec = await testSetup(blockchain)
+      const oldHead = await exec.vm.blockchain.getIteratorHead!()
+      await exec.run()
+      let newHead = await exec.vm.blockchain.getIteratorHead!()
+      assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
-    blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    exec = await testSetup(blockchain)
-    await exec.run()
-    newHead = await exec.vm.blockchain.getIteratorHead!()
-    t.equals(newHead.header.number, BigInt(5), 'should run all blocks')
+      blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
+        validateBlocks: true,
+        validateConsensus: false,
+      })
+      exec = await testSetup(blockchain)
+      await exec.run()
+      newHead = await exec.vm.blockchain.getIteratorHead!()
+      assert.equal(newHead.header.number, BigInt(5), 'should run all blocks')
 
-    const common = new Common({ chain: 'testnet', customChains: [testnet] })
-    exec = await testSetup(blockchain, common)
-    await exec.run()
-    t.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
+      const common = new Common({ chain: 'testnet', customChains: [testnet] })
+      exec = await testSetup(blockchain, common)
+      await exec.run()
+      assert.equal(exec.hardfork, 'byzantium', 'should update HF on block run')
+    },
+    { timeout: 60000 }
+  )
 
-    t.end()
-  })
+  it(
+    'Test block execution using executeBlocks function',
+    async () => {
+      let blockchain = await Blockchain.create({
+        validateBlocks: true,
+        validateConsensus: false,
+      })
+      let exec = await testSetup(blockchain)
 
-  t.test('Test block execution using executeBlocks function', async (t) => {
-    let blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    let exec = await testSetup(blockchain)
+      blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
+        validateBlocks: true,
+        validateConsensus: false,
+      })
+      exec = await testSetup(blockchain)
+      await exec.run()
 
-    blockchain = await Blockchain.fromBlocksData(blocksDataMainnet, {
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    exec = await testSetup(blockchain)
-    await exec.run()
+      assert.doesNotThrow(
+        async () => exec.executeBlocks(1, 5, []),
+        'blocks should execute without error'
+      )
+    },
+    { timeout: 60000 }
+  )
 
-    t.doesNotThrow(async () => exec.executeBlocks(1, 5, []), 'blocks should execute without error')
+  it(
+    'Should fail opening if vmPromise already assigned',
+    async () => {
+      const blockchain = await Blockchain.create({
+        validateBlocks: true,
+        validateConsensus: false,
+      })
+      const exec = await testSetup(blockchain)
+      assert.equal(exec.started, true, 'execution should be opened')
+      await exec.stop()
+      assert.equal(exec.started, false, 'execution should be stopped')
+      exec['vmPromise'] = (async () => 0)()
+      await exec.open()
+      assert.equal(exec.started, false, 'execution should be stopped')
+      exec['vmPromise'] = undefined
+      await exec.open()
+      assert.equal(exec.started, true, 'execution should be restarted')
+      exec['vmPromise'] = (async () => 0)()
+      await exec.stop()
+      assert.equal(exec.started, false, 'execution should be restopped')
+      assert.equal(exec['vmPromise'], undefined, 'vmPromise should be reset')
+    },
+    { timeout: 30000 }
+  )
 
-    t.end()
-  })
-
-  t.test('Should fail opening if vmPromise already assigned', async (t) => {
-    const blockchain = await Blockchain.create({
-      validateBlocks: true,
-      validateConsensus: false,
-    })
-    const exec = await testSetup(blockchain)
-    t.equal(exec.started, true, 'execution should be opened')
-    await exec.stop()
-    t.equal(exec.started, false, 'execution should be stopped')
-    exec['vmPromise'] = (async () => 0)()
-    await exec.open()
-    t.equal(exec.started, false, 'execution should be stopped')
-    exec['vmPromise'] = undefined
-    await exec.open()
-    t.equal(exec.started, true, 'execution should be restarted')
-    exec['vmPromise'] = (async () => 0)()
-    await exec.stop()
-    t.equal(exec.started, false, 'execution should be restopped')
-    t.equal(exec['vmPromise'], undefined, 'vmPromise should be reset')
-    t.end()
-  })
-
-  t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
+  it('Block execution / Hardforks PoA (goerli)', async () => {
     const common = new Common({ chain: ChainEnum.Goerli, hardfork: Hardfork.Chainstart })
     let blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -113,7 +122,7 @@ tape('[VMExecution]', async (t) => {
     const oldHead = await exec.vm.blockchain.getIteratorHead!()
     await exec.run()
     let newHead = await exec.vm.blockchain.getIteratorHead!()
-    t.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
+    assert.deepEqual(newHead.hash(), oldHead.hash(), 'should not modify blockchain on empty run')
 
     blockchain = await Blockchain.fromBlocksData(blocksDataGoerli, {
       validateBlocks: true,
@@ -123,12 +132,10 @@ tape('[VMExecution]', async (t) => {
     exec = await testSetup(blockchain, common)
     await exec.run()
     newHead = await exec.vm.blockchain.getIteratorHead!()
-    t.equals(newHead.header.number, BigInt(7), 'should run all blocks')
-
-    t.end()
+    assert.equal(newHead.header.number, BigInt(7), 'should run all blocks')
   })
 
-  t.test('Block execution / Hardforks PoA (goerli)', async (t) => {
+  it('Block execution / Hardforks PoA (goerli)', async () => {
     const { server, execution, blockchain } = await setupChain(shanghaiJSON, 'post-merge', {
       engine: true,
     })
@@ -144,7 +151,7 @@ tape('[VMExecution]', async (t) => {
     await execution.run()
 
     let newHead = await blockchain.getIteratorHead()
-    t.equal(
+    assert.equal(
       bytesToHex(block.hash()),
       bytesToHex(newHead.hash()),
       'vmHead should be on the latest block'
@@ -153,7 +160,7 @@ tape('[VMExecution]', async (t) => {
     // reset head and run again
     await blockchain.setIteratorHead('vm', oldHead.hash())
     newHead = await blockchain.getIteratorHead()
-    t.equal(
+    assert.equal(
       bytesToHex(oldHead.hash()),
       bytesToHex(newHead.hash()),
       'vmHead should be on the latest block'
@@ -161,14 +168,13 @@ tape('[VMExecution]', async (t) => {
     await execution.run()
 
     newHead = await blockchain.getIteratorHead()
-    t.equal(
+    assert.equal(
       bytesToHex(block.hash()),
       bytesToHex(newHead.hash()),
       'vmHead should be on the latest block'
     )
 
     closeRPC(server)
-    t.end()
   })
 })
 

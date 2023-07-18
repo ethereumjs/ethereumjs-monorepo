@@ -3,7 +3,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   createBlobTxs,
@@ -28,7 +28,7 @@ export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
-tape('sharding/eip4844 hardfork tests', async (t) => {
+describe('sharding/eip4844 hardfork tests', async () => {
   if (process.env.EXTRA_CL_PARAMS === undefined) {
     process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0 --params.DENEB_FORK_EPOCH 0'
   }
@@ -40,21 +40,21 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
   })
 
   if (result.includes('EthereumJS')) {
-    t.pass('connected to client')
+    assert.ok(true, 'connected to client')
   } else {
-    t.fail('connected to wrong client')
+    assert.fail('connected to wrong client')
   }
 
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    t.pass('ethereumjs<>lodestar started successfully')
+    assert.ok(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
-    t.fail('ethereumjs<>lodestar failed to start')
+    assert.fail('ethereumjs<>lodestar failed to start')
     throw e
   }
 
-  t.test('Simple blob tx', async (st) => {
+  it('Simple blob tx', async () => {
     const txResult = await runBlobTx(
       client,
       2 ** 14,
@@ -93,15 +93,14 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       }
     }
 
-    st.equal(
+    assert.equal(
       eth2kzgs[0],
       bytesToHex(txResult.tx.kzgCommitments![0]),
       'found expected blob commitments on CL'
     )
-    st.end()
   })
 
-  t.test('data gas fee market tests', async (st) => {
+  it('data gas fee market tests', async () => {
     const txns = await createBlobTxs(
       4,
       4096,
@@ -137,10 +136,10 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       [txReceipt.result.blockHash, false],
       2.0
     )
-    st.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
+    assert.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
   })
 
-  t.test('point precompile contract test', async (st) => {
+  it('point precompile contract test', async () => {
     const nonce = await client.request(
       'eth_getTransactionCount',
       [sender.toString(), 'latest'],
@@ -183,28 +182,25 @@ tape('sharding/eip4844 hardfork tests', async (t) => {
       receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
       await sleep(1000)
     }
-    st.ok(
+    assert.ok(
       receipt.result.contractAddress !== undefined,
       'successfully deployed contract that calls precompile'
     )
   })
   /*
-  t.test('multipeer setup', async (st) => {
+  it('multipeer setup', async () => {
     const multiPeer = Client.http({ port: 8947 })
     const res = await multiPeer.request('eth_syncing', [], 2.0)
     console.log(res)
-    st.equal(res.result, 'false', 'multipeer is up and running')
+    assert.equal(res.result, 'false', 'multipeer is up and running')
   })*/
 
-  t.test('should reset td', async (st) => {
+  it('should reset td', async () => {
     try {
       await teardownCallBack()
-      st.pass('network cleaned')
+      assert.ok(true, 'network cleaned')
     } catch (e) {
-      st.fail('network not cleaned properly')
+      assert.fail('network not cleaned properly')
     }
-    st.end()
   })
-
-  t.end()
 })

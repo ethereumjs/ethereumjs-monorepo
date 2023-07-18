@@ -1,20 +1,19 @@
 import { spawn } from 'child_process'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
-const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean, st: tape.Test) => {
+const end = (child: ChildProcessWithoutNullStreams, hasEnded: boolean) => {
   if (hasEnded) return
   hasEnded = true
   child.stdout.removeAllListeners()
   child.stderr.removeAllListeners()
   const res = child.kill('SIGINT')
-  st.ok(res, 'client shut down successfully')
-  st.end()
+  assert.ok(res, 'client shut down successfully')
 }
 
-tape('[CLI] rpc', (t) => {
-  t.test('libp2p should start up', (st) => {
+describe('[CLI] rpc', () => {
+  it('libp2p should start up', () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [
       file,
@@ -32,7 +31,7 @@ tape('[CLI] rpc', (t) => {
       const message: string = data.toString()
 
       if (message.includes('transport=libp2p')) {
-        st.pass('libp2p server started')
+        assert.ok(true, 'libp2p server started')
         const bootnodeAddressArray = message.split(' ')
         const bootnodeAddressIndex = bootnodeAddressArray.findIndex((chunk: string) =>
           chunk.startsWith('url=')
@@ -54,10 +53,10 @@ tape('[CLI] rpc', (t) => {
         child2.stdout.on('data', async (data) => {
           const message: string = data.toString()
           if (message.includes('Peer added')) {
-            st.pass('connected to peer over libp2p')
+            assert.ok(true, 'connected to peer over libp2p')
             child2.kill('SIGINT')
             child2.stdout.removeAllListeners()
-            end(child, false, st)
+            end(child, false)
           }
         })
       }
@@ -65,14 +64,14 @@ tape('[CLI] rpc', (t) => {
 
     child.stderr.on('data', (data) => {
       const message: string = data.toString()
-      st.fail(`stderr: ${message}`)
-      end(child, hasEnded, st)
+      assert.fail(`stderr: ${message}`)
+      end(child, hasEnded)
     })
 
     child.on('close', (code) => {
       if (typeof code === 'number' && code > 0) {
-        st.fail(`child process exited with code ${code}`)
-        end(child, hasEnded, st)
+        assert.fail(`child process exited with code ${code}`)
+        end(child, hasEnded)
       }
     })
   })

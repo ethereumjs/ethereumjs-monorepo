@@ -3,7 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
 
@@ -35,26 +35,27 @@ const expectedProof = {
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-tape(`${method}: call with valid arguments`, async (t) => {
-  const blockchain = await Blockchain.create({
-    common,
-    validateBlocks: false,
-    validateConsensus: false,
-  })
+describe(method, async () => {
+  it('call with valid arguments', async () => {
+    const blockchain = await Blockchain.create({
+      common,
+      validateBlocks: false,
+      validateConsensus: false,
+    })
 
-  const client = createClient({ blockchain, commonChain: common, includeVM: true })
-  const manager = createManager(client)
-  const server = startRPC(manager.getMethods())
+    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const manager = createManager(client)
+    const server = startRPC(manager.getMethods())
 
-  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  t.notEqual(execution, undefined, 'should have valid execution')
-  const { vm } = execution
+    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    assert.notEqual(execution, undefined, 'should have valid execution')
+    const { vm } = execution
 
-  // genesis address with balance
-  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    // genesis address with balance
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-  // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
-  /*
+    // contract inspired from https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_getstorageat/
+    /*
     // SPDX-License-Identifier: MIT
     pragma solidity ^0.7.4;
 
@@ -67,71 +68,72 @@ tape(`${method}: call with valid arguments`, async (t) => {
         }
     }
   */
-  const data =
-    '0x6080604052348015600f57600080fd5b5060bc8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063975057e714602d575b600080fd5b60336035565b005b6104d260008190555061162e600160003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000208190555056fea2646970667358221220b16fe0abdbdcae31fa05c5717ebc442024b20fb637907d1a05547ea2d8ec8e5964736f6c63430007060033'
+    const data =
+      '0x6080604052348015600f57600080fd5b5060bc8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063975057e714602d575b600080fd5b60336035565b005b6104d260008190555061162e600160003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000208190555056fea2646970667358221220b16fe0abdbdcae31fa05c5717ebc442024b20fb637907d1a05547ea2d8ec8e5964736f6c63430007060033'
 
-  // construct block with tx
-  const gasLimit = 2000000
-  const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
-  tx.getSenderAddress = () => {
-    return address
-  }
-  const parent = await blockchain.getCanonicalHeadHeader()
-  const block = Block.fromBlockData(
-    {
-      header: {
-        parentHash: parent.hash(),
-        number: 1,
-        gasLimit,
+    // construct block with tx
+    const gasLimit = 2000000
+    const tx = LegacyTransaction.fromTxData({ gasLimit, data }, { common, freeze: false })
+    tx.getSenderAddress = () => {
+      return address
+    }
+    const parent = await blockchain.getCanonicalHeadHeader()
+    const block = Block.fromBlockData(
+      {
+        header: {
+          parentHash: parent.hash(),
+          number: 1,
+          gasLimit,
+        },
       },
-    },
-    { common, calcDifficultyFromHeader: parent }
-  )
-  block.transactions[0] = tx
+      { common, calcDifficultyFromHeader: parent }
+    )
+    block.transactions[0] = tx
 
-  // deploy contract
-  let ranBlock: Block | undefined = undefined
-  vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
-  const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
-  const { createdAddress } = result.results[0]
-  await vm.blockchain.putBlock(ranBlock!)
+    // deploy contract
+    let ranBlock: Block | undefined = undefined
+    vm.events.once('afterBlock', (result: any) => (ranBlock = result.block))
+    const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+    const { createdAddress } = result.results[0]
+    await vm.blockchain.putBlock(ranBlock!)
 
-  // call store() method
-  const funcHash = '975057e7' // store()
-  const storeTxData = {
-    to: createdAddress!.toString(),
-    from: address.toString(),
-    data: `0x${funcHash}`,
-    gasLimit: bigIntToHex(BigInt(530000)),
-    nonce: 1,
-  }
-  const storeTx = LegacyTransaction.fromTxData(storeTxData, { common, freeze: false })
-  storeTx.getSenderAddress = () => {
-    return address
-  }
-  const block2 = Block.fromBlockData(
-    {
-      header: {
-        parentHash: ranBlock!.hash(),
-        number: 2,
-        gasLimit,
+    // call store() method
+    const funcHash = '975057e7' // store()
+    const storeTxData = {
+      to: createdAddress!.toString(),
+      from: address.toString(),
+      data: `0x${funcHash}`,
+      gasLimit: bigIntToHex(BigInt(530000)),
+      nonce: 1,
+    }
+    const storeTx = LegacyTransaction.fromTxData(storeTxData, { common, freeze: false })
+    storeTx.getSenderAddress = () => {
+      return address
+    }
+    const block2 = Block.fromBlockData(
+      {
+        header: {
+          parentHash: ranBlock!.hash(),
+          number: 2,
+          gasLimit,
+        },
       },
-    },
-    { common, calcDifficultyFromHeader: block.header }
-  )
-  block2.transactions[0] = storeTx
+      { common, calcDifficultyFromHeader: block.header }
+    )
+    block2.transactions[0] = storeTx
 
-  // run block
-  let ranBlock2: Block | undefined = undefined
-  vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
-  await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
-  await vm.blockchain.putBlock(ranBlock2!)
+    // run block
+    let ranBlock2: Block | undefined = undefined
+    vm.events.once('afterBlock', (result: any) => (ranBlock2 = result.block))
+    await vm.runBlock({ block: block2, generate: true, skipBlockValidation: true })
+    await vm.blockchain.putBlock(ranBlock2!)
 
-  // verify proof is accurate
-  const req = params(method, [createdAddress!.toString(), ['0x0'], 'latest'])
-  const expectRes = (res: any) => {
-    const msg = 'should return the correct proof'
-    t.deepEqual(res.body.result, expectedProof, msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
+    // verify proof is accurate
+    const req = params(method, [createdAddress!.toString(), ['0x0'], 'latest'])
+    const expectRes = (res: any) => {
+      const msg = 'should return the correct proof'
+      assert.deepEqual(res.body.result, expectedProof, msg)
+    }
+    await baseRequest(server, req, 200, expectRes)
+  })
 })

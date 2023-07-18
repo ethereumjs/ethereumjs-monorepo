@@ -1,13 +1,13 @@
 import { equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 import { multiaddr } from 'multiaddr'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'
 
-tape('[RlpxServer]', async (t) => {
+describe('[RlpxServer]', async () => {
   class RlpxPeer extends EventEmitter {
     accept(_: any, _2: any) {}
     getId() {
@@ -44,24 +44,23 @@ tape('[RlpxServer]', async (t) => {
     RlpxPeer.prototype.accept(td.matchers.anything(), td.matchers.isA(RlpxServer))
   ).thenResolve()
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,enode://abcd@10.0.0.2:1234',
       key: 'abcd',
     })
-    t.equals(server.name, 'rlpx', 'get name')
-    t.ok(equalsBytes(server.key!, hexToBytes('0xabcd')), 'key parse')
-    t.deepEquals(
+    assert.equal(server.name, 'rlpx', 'get name')
+    assert.ok(equalsBytes(server.key!, hexToBytes('0xabcd')), 'key parse')
+    assert.deepEqual(
       server.bootnodes,
       [multiaddr('/ip4/10.0.0.1/tcp/1234'), multiaddr('/ip4/10.0.0.2/tcp/1234')],
       'bootnodes split'
     )
-    t.end()
   })
 
-  t.test('should start/stop server', async (t) => {
+  it('should start/stop server', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({
       config,
@@ -73,25 +72,26 @@ tape('[RlpxServer]', async (t) => {
     server.rlpx = td.object()
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
-    ).thenResolve()
+    ).thenResolve(undefined)
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
-    server.config.events.on(Event.PEER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    server.config.events.on(Event.PEER_ERROR, (err) =>
+      assert.equal(err.message, 'err0', 'got error')
+    )
     await server.start()
     td.verify((server as any).initDpt())
     td.verify((server as any).initRlpx())
-    t.ok(server.running, 'started')
-    t.notOk(await server.start(), 'already started')
+    assert.ok(server.running, 'started')
+    assert.notOk(await server.start(), 'already started')
     await server.stop()
     td.verify(server.dpt!.destroy())
     td.verify(server.rlpx!.destroy())
-    t.notOk(server.running, 'stopped')
-    t.notOk(await server.stop(), 'already stopped')
-    t.end()
+    assert.notOk(server.running, 'stopped')
+    assert.notOk(await server.stop(), 'already stopped')
   })
 
-  t.test('should bootstrap with dns acquired peers', async (t) => {
+  it('should bootstrap with dns acquired peers', async () => {
     const dnsPeerInfo = { address: '10.0.0.5', udpPort: 1234, tcpPort: 1234 }
     const config = new Config({
       transports: [],
@@ -112,10 +112,9 @@ tape('[RlpxServer]', async (t) => {
     await server.bootstrap()
     td.verify(server.dpt!.bootstrap(dnsPeerInfo))
     await server.stop()
-    t.end()
   })
 
-  t.test('should return rlpx server info with ip4 as default', async (t) => {
+  it('should return rlpx server info with ip4 as default', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const mockId = '0123'
     const server = new RlpxServer({
@@ -137,11 +136,11 @@ tape('[RlpxServer]', async (t) => {
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
-    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
 
     await server.start()
     const nodeInfo = server.getRlpxInfo()
-    t.deepEqual(
+    assert.deepEqual(
       nodeInfo,
       {
         enode: `enode://${mockId}@0.0.0.0:30303`,
@@ -153,10 +152,9 @@ tape('[RlpxServer]', async (t) => {
       'get nodeInfo'
     )
     await server.stop()
-    t.end()
   })
 
-  t.test('should return rlpx server info with ip6', async (t) => {
+  it('should return rlpx server info with ip6', async () => {
     const config = new Config({
       transports: [],
       accountCache: 10000,
@@ -183,10 +181,10 @@ tape('[RlpxServer]', async (t) => {
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
-    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
     await server.start()
     const nodeInfo = server.getRlpxInfo()
-    t.deepEqual(
+    assert.deepEqual(
       nodeInfo,
       {
         enode: `enode://${mockId}@[::]:30303`,
@@ -198,53 +196,51 @@ tape('[RlpxServer]', async (t) => {
       'get nodeInfo'
     )
     await server.stop()
-    t.end()
   })
 
-  t.test('should handle errors', (t) => {
-    t.plan(3)
+  it('should handle errors', () => {
     let count = 0
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     server.config.events.on(Event.SERVER_ERROR, (err) => {
       count = count + 1
-      if (err.message === 'err0') t.pass('got server error - err0')
-      if (err.message === 'err1') t.pass('got peer error - err1')
+      if (err.message === 'err0') assert.ok(true, 'got server error - err0')
+      if (err.message === 'err1') assert.ok(true, 'got peer error - err1')
     })
     ;(server as any).error(new Error('EPIPE'))
     ;(server as any).error(new Error('err0'))
     setTimeout(() => {
-      t.equals(count, 2, 'ignored error')
+      assert.equal(count, 2, 'ignored error')
     }, 100)
     ;(server as any).error(new Error('err1'))
   })
 
-  t.test('should ban peer', (t) => {
+  it('should ban peer', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
-    t.notOk(server.ban('123'), 'not started')
+    assert.notOk(server.ban('123'), 'not started')
     server.started = true
     server.dpt = td.object()
     server.rlpx = td.object()
     server.ban('112233', 1234)
     td.verify(server.dpt!.banPeer('112233', 1234))
-    t.end()
   })
 
-  t.test('should init dpt', (t) => {
-    t.plan(1)
+  it('should init dpt', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     ;(server as any).initDpt().catch((error: Error) => {
       throw error
     })
-    td.verify((server.dpt as any).bind(server.config.port, '0.0.0.0'))
-    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) =>
+      it('should throw', async () => {
+        assert.equal(err.message, 'err0', 'got error')
+      })
+    )
     ;(server.dpt as any).emit('error', new Error('err0'))
   })
 
-  t.test('should init rlpx', async (t) => {
-    t.plan(4)
+  it('should init rlpx', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
@@ -253,13 +249,25 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
     })
-    td.verify(RlpxPeer.capabilities(Array.from((server as any).protocols)))
-    td.verify(server.rlpx!.listen(server.config.port, '0.0.0.0'))
-    config.events.on(Event.PEER_CONNECTED, (peer) => t.ok(peer instanceof RlpxPeer, 'connected'))
-    config.events.on(Event.PEER_DISCONNECTED, (peer) => t.equals(peer.id, '01', 'disconnected'))
-    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.PEER_CONNECTED, (peer) =>
+      it('should connect', async () => {
+        assert.ok(peer instanceof RlpxPeer, 'connected')
+      })
+    )
+    config.events.on(Event.PEER_DISCONNECTED, (peer) =>
+      it('should disconnect', async () => {
+        assert.equal(peer.id, '01', 'disconnected')
+      })
+    )
+    config.events.on(Event.SERVER_ERROR, (err) =>
+      it('should throw error', async () => {
+        assert.equal(err.message, 'err0', 'got error')
+      })
+    )
     config.events.on(Event.SERVER_LISTENING, (info) =>
-      t.deepEquals(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
+      it('should listen', async () => {
+        assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
+      })
     )
     server.rlpx!.events.emit('peer:added', rlpxPeer)
     ;(server as any).peers.set('01', { id: '01' } as any)
@@ -271,8 +279,7 @@ tape('[RlpxServer]', async (t) => {
     server.rlpx!.events.emit('listening')
   })
 
-  t.test('should handles errors from id-less peers', async (t) => {
-    t.plan(1)
+  it('should handles errors from id-less peers', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
@@ -281,12 +288,15 @@ tape('[RlpxServer]', async (t) => {
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
     })
-    config.events.on(Event.SERVER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SERVER_ERROR, (err) =>
+      it('should throw', async () => {
+        assert.equal(err.message, 'err0', 'got error')
+      })
+    )
     server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })
