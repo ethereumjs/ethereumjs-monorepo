@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689670938548,
+  "lastUpdate": 1689708706933,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5f8552fedb45314bc4594d0978e64ff44abb835c",
-          "message": "Monorepo: make _* methods protected / _common -> common (#2857)\n\n* Common: switch to a separated EventEmitter structure (API cleanliness)\r\n\r\n* EVM: added additional shallowCopy() test for event emitter functionality\r\n\r\n* Test fixes\r\n\r\n* Common: _* methods/properties -> protected\r\n\r\n* Common: make getInitializedChains() public\r\n\r\n* Tx: _* methods/properties -> protected\r\n\r\n* Block: _* methods/properties -> protected\r\n\r\n* Block: _common -> common\r\n\r\n* Small fix\r\n\r\n* Blockchain: _common -> common\r\n\r\n* EVM/VM: _common -> common\r\n\r\n* Client: _common -> common\r\n\r\n* Lint fixes\r\n\r\n* Client test fixes\r\n\r\n* Trie: _* methods/properties -> protected\r\n\r\n* StateManager: _* methods/properties -> protected\r\n\r\n* EVM: _* methods/properties -> protected",
-          "timestamp": "2023-07-04T17:17:31+02:00",
-          "tree_id": "5a562e8d13d31aa72ffd747a6ebae0e20a927606",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5f8552fedb45314bc4594d0978e64ff44abb835c"
-        },
-        "date": 1688484086205,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31781,
-            "range": "±5.83%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32122,
-            "range": "±2.93%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31764,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26578,
-            "range": "±10.02%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30343,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.82%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9fec1f405a36e94d176e6cc4b497fc0afbdaea71",
+          "message": "Resolve access errors from doc build process (#2898)",
+          "timestamp": "2023-07-18T15:15:19-04:00",
+          "tree_id": "098a5c4e7228c43b38bfe19d99faf38a5efc12e7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9fec1f405a36e94d176e6cc4b497fc0afbdaea71"
+        },
+        "date": 1689708706126,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30403,
+            "range": "±5.81%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30938,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29941,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25142,
+            "range": "±10.80%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29211,
+            "range": "±3.46%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
