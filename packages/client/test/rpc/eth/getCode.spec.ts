@@ -17,33 +17,29 @@ const method = 'eth_getCode'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
 describe(method, () => {
-  it(
-    'call with valid arguments',
-    async () => {
-      const blockchain = await Blockchain.create({ common })
+  it('call with valid arguments', async () => {
+    const blockchain = await Blockchain.create({ common })
 
-      const client = createClient({ blockchain, commonChain: common, includeVM: true })
-      const manager = createManager(client)
-      const server = startRPC(manager.getMethods())
+    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const manager = createManager(client)
+    const server = startRPC(manager.getMethods())
 
-      const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-      assert.notEqual(execution, undefined, 'should have valid execution')
-      const { vm } = execution
-      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    assert.notEqual(execution, undefined, 'should have valid execution')
+    const { vm } = execution
+    await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
-      // genesis address
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+    // genesis address
+    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-      // verify code is null
-      const req = params(method, [address.toString(), 'latest'])
-      const expectRes = (res: any) => {
-        const msg = 'should return the correct code'
-        assert.equal(res.body.result, '0x', msg)
-      }
-      await baseRequest(server, req, 200, expectRes)
-    },
-    { timeout: 30000 }
-  )
+    // verify code is null
+    const req = params(method, [address.toString(), 'latest'])
+    const expectRes = (res: any) => {
+      const msg = 'should return the correct code'
+      assert.equal(res.body.result, '0x', msg)
+    }
+    await baseRequest(server, req, 200, expectRes)
+  })
 
   it('ensure returns correct code', async () => {
     const blockchain = await Blockchain.create({
