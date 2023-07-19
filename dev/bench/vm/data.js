@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689708706933,
+  "lastUpdate": 1689792517361,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ef133de3c1de045b55abe0b441d74eb901e39227",
-          "message": "monorepo/Util: deprecate node 16 / remove Node.js fetch primitive (#2859)\n\n* util: remove https usage\r\n\r\n* monorepo: update engine to node >=18\r\n\r\n* ci: update to node 18\r\n\r\n* monorepo: update monorepo and libp2pbrowser node version\r\n\r\n* monorepo: update @types/node\r\n\r\n* util: remove fetch check from test",
-          "timestamp": "2023-07-05T10:29:09+02:00",
-          "tree_id": "6bc830a8f201ba912300de9c74a96fcd4b35d001",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ef133de3c1de045b55abe0b441d74eb901e39227"
-        },
-        "date": 1688546523426,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21614,
-            "range": "±5.03%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21076,
-            "range": "±3.39%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19072,
-            "range": "±9.90%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20959,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19682,
-            "range": "±3.65%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.46%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "966d7dd7943a2dab20c83c6e6ef29a276756de3f",
+          "message": "Devp2p EventEmitter refactor (#2893)\n\n* Change access specifiers for RLPx _privateKey, _id, _debug, _timeout\r\n\r\n* Renaming accessed id property in client tests\r\n\r\n* Change access specifiers for RLPx _maxPeers, _clientId, _remoteClientIdFilter, and _capabilities\r\n\r\n* Ignore error message from reassigning readonly property in tests\r\n\r\n* Change access specifiers for _common, _listenPort, and _dpt\r\n\r\n* Change access specifiers for _peersLRU, _peersQueue, _server, _peers, _refillIntervalId, and _refillIntervalSelectionCounter\r\n\r\n* Ignore accessibility errors in examples\r\n\r\n* Update names and access specifiers of Peer fields\r\n\r\n* Ignore access errors for _eciesSession\r\n\r\n* Make common field public for Peer class\r\n\r\n* Update names and access specifiers of Peer fields\r\n\r\n* Make id public readonly\r\n\r\n* Update names and access specifiers of Mac class fields\r\n\r\n* Update names and access specifiers of ECIES class fields\r\n\r\n* Update names and access specifiers of Peer class fields\r\n\r\n* Ignore accessibility errors in examples\r\n\r\n* Update example\r\n\r\n* Update names and access specifiers of class fields in protocol subpackage\r\n\r\n* Update names and access specifiers of class fields in ext subpackage\r\n\r\n* Update names and access specifiers of class fields in dpt subpackage\r\n\r\n* Update names and access specifiers of class fields in dns subpackage\r\n\r\n* Fix name of accessed field\r\n\r\n* Update tests\r\n\r\n* Don't extend EventEmitter in RLPx class\r\n\r\n* Update tests\r\n\r\n* Update tests\r\n\r\n* Update examples\r\n\r\n* Update tests\r\n\r\n* Don't exten EventEmitter in Protocol class\r\n\r\n* Update tests\r\n\r\n* Update examples\r\n\r\n* Update tests\r\n\r\n* Don't extend EventEmitter in dpt class\r\n\r\n* Don't extend EventEmitter in kbucket class\r\n\r\n* Update tests\r\n\r\n* Update tests\r\n\r\n* Fix rlpxserver test\r\n\r\n* Fix tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-07-19T14:43:48-04:00",
+          "tree_id": "5e8d6cc92cd46f6b00c75be2850c9c5e59ed5f0d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/966d7dd7943a2dab20c83c6e6ef29a276756de3f"
+        },
+        "date": 1689792516556,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18831,
+            "range": "±6.57%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19208,
+            "range": "±3.49%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19943,
+            "range": "±3.41%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19449,
+            "range": "±3.58%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18842,
+            "range": "±3.38%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
