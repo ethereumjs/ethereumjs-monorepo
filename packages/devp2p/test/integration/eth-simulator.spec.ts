@@ -130,7 +130,7 @@ describe('ETH simulator tests', () => {
       status0['latestBlock'] = intToBytes(100000) // lower than Byzantium fork block 4370000
 
       const rlpxs = util.initTwoPeerRLPXSetup(null, cap, common, 50505)
-      rlpxs[0].on('peer:added', function (peer: any) {
+      rlpxs[0].events.on('peer:added', function (peer: any) {
         const protocol = peer.getProtocols()[0]
         assert.throws(() => {
           protocol.sendStatus(status0)

@@ -54,7 +54,8 @@ type KBucketNode = {
  *
  * @extends EventEmitter
  */
-export class KBucket extends EventEmitter {
+export class KBucket {
+  public events: EventEmitter
   protected _localNodeId: Uint8Array
   protected _numberOfNodesPerKBucket: number
   protected _numberOfNodesToPing: number
@@ -67,8 +68,7 @@ export class KBucket extends EventEmitter {
    * @param {KBucketOptions} options
    */
   constructor(options: KBucketOptions = {}) {
-    super()
-
+    this.events = new EventEmitter()
     this._localNodeId = options.localNodeId ?? randomBytes(20)
     this._numberOfNodesPerKBucket = options.numberOfNodesPerKBucket ?? 20
     this._numberOfNodesToPing = options.numberOfNodesToPing ?? 3
@@ -144,7 +144,7 @@ export class KBucket extends EventEmitter {
 
     if (node.contacts.length < this._numberOfNodesPerKBucket) {
       node.contacts.push(contact as Contact)
-      this.emit('added', contact)
+      this.events.emit('added', contact)
       return this
     }
 
@@ -155,7 +155,7 @@ export class KBucket extends EventEmitter {
       // in order to determine if they are alive
       // only if one of the pinged nodes does not respond, can the new contact
       // be added (this prevents DoS flodding with new invalid contacts)
-      this.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
+      this.events.emit('ping', node.contacts.slice(0, this._numberOfNodesToPing), contact)
       return this
     }
 
@@ -311,7 +311,7 @@ export class KBucket extends EventEmitter {
     const index = this._indexOf(node, id)
     if (index >= 0) {
       const contact = node.contacts.splice(index, 1)[0]
-      this.emit('removed', contact)
+      this.events.emit('removed', contact)
     }
 
     return this
@@ -412,6 +412,6 @@ export class KBucket extends EventEmitter {
 
     node.contacts.splice(index, 1) // remove old contact
     node.contacts.push(selection) // add more recent contact version
-    this.emit('updated', incumbent, selection)
+    this.events.emit('updated', incumbent, selection)
   }
 }
