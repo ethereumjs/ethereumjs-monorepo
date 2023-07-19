@@ -121,7 +121,7 @@ export class ETH extends Protocol {
         return
     }
 
-    this.emit('message', code, payload)
+    this.events.emit('message', code, payload)
   }
 
   /**
@@ -223,7 +223,7 @@ export class ETH extends Protocol {
       status.forkId = this._peerStatus[5]
     }
 
-    this.emit('status', status)
+    this.events.emit('status', status)
     if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }

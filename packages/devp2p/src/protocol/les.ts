@@ -108,7 +108,7 @@ export class LES extends Protocol {
         return
     }
 
-    this.emit('message', code, payload)
+    this.events.emit('message', code, payload)
   }
 
   _handleStatus() {
@@ -136,7 +136,7 @@ export class LES extends Protocol {
       'STATUS'
     )
 
-    this.emit('status', this._peerStatus)
+    this.events.emit('status', this._peerStatus)
     if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }

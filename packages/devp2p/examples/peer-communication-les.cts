@@ -48,7 +48,7 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
 })
 
 /* eslint-disable no-console */
-dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
+dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -61,9 +61,9 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
 })
 
-rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
+rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
 
-rlpx.on('peer:added', (peer) => {
+rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
   const les = peer.getProtocols()[0]
   const requests: { headers: BlockHeader[]; bodies: any[] } = { headers: [], bodies: [] }
@@ -85,7 +85,7 @@ rlpx.on('peer:added', (peer) => {
     forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
   })
 
-  les.once('status', (status: LES.Status) => {
+  les.events.once('status', (status: LES.Status) => {
     const msg = [
       Uint8Array.from([]),
       [
@@ -98,7 +98,7 @@ rlpx.on('peer:added', (peer) => {
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
 
-  les.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
+  les.events.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
     switch (code) {
       case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
         if (payload[2].length > 1) {
@@ -148,7 +148,7 @@ rlpx.on('peer:added', (peer) => {
   })
 })
 
-rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
+rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   const who = disconnectWe === true ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
@@ -160,7 +160,7 @@ rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   )
 })
 
-rlpx.on('peer:error', (peer, err) => {
+rlpx.events.on('peer:error', (peer, err) => {
   if (err.code === 'ECONNRESET') return
 
   if (err instanceof Error) {
