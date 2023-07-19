@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689792517361,
+  "lastUpdate": 1689795872309,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "79761c10225c03e6d52517289c87baca45ab99e6",
-          "message": "blockchain: remove genesis state dependancy from blockchain (#2844)\n\n* blockchain: remove genesis state dependancy from blockchain\r\n\r\nfix the blockchain init and statepassing from client\r\n\r\npass custom genesis from client's chain to blockchain\r\n\r\nsimplify stateroot fetch\r\n\r\nremove need to genesis state in blockchain\r\n\r\nremove package dependancy\r\n\r\nrebase fixes\r\n\r\nlint\r\n\r\nfix statemanager spec\r\n\r\nfix vm spec\r\n\r\nfix client spec\r\n\r\nfix client spec\r\n\r\n* lint\r\n\r\n* address genesisstate in test helper\r\n\r\n* fix client spec\r\n\r\n* add as a dev dependancy in trie for tests\r\n\r\n* cleanup genesis state references in client and add some comments\r\n\r\n* further cleanup genesis state passing\r\n\r\n* improve jsdocs\r\n\r\n* fix jsdocs\r\n\r\n* fix client sim runner",
-          "timestamp": "2023-07-05T13:43:30+02:00",
-          "tree_id": "731d22d29ff370032d20741d98111156a5678f46",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/79761c10225c03e6d52517289c87baca45ab99e6"
-        },
-        "date": 1688558470462,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31468,
-            "range": "±4.48%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30817,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31045,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26237,
-            "range": "±9.76%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29432,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.38%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1950acac1518ff15dc128d58253df4de81760b8",
+          "message": "Troubleshoot failing node versions tests: Adjust timeouts in devp2p tests to avoid race conditions (#2895)\n\n* Make timeout and wait longer\r\n\r\n* Update comment\r\n\r\n---------\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-07-19T15:41:08-04:00",
+          "tree_id": "f573b1cca55fe493289895b168088c04a0836fa1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1950acac1518ff15dc128d58253df4de81760b8"
+        },
+        "date": 1689795871592,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31963,
+            "range": "±4.58%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31831,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31446,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27279,
+            "range": "±8.87%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29870,
+            "range": "±2.68%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
