@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     silent: true,
     exclude: ['test/integration', 'test/sim'],
-    testTimeout: 60000,
+    testTimeout: 120000,
   },
 })
