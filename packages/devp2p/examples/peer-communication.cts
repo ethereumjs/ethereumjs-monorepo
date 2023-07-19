@@ -63,7 +63,7 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
 })
 
 /* eslint-disable no-console */
-dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
+dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -76,9 +76,9 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
 })
 
-rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
+rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
 
-rlpx.on('peer:added', (peer) => {
+rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
   const eth = peer.getProtocols()[0]
   const requests: {
@@ -103,7 +103,7 @@ rlpx.on('peer:added', (peer) => {
   // check CHECK_BLOCK
   let forkDrop: NodeJS.Timeout
   let forkVerified = false
-  eth.once('status', () => {
+  eth.events.once('status', () => {
     eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
       Uint8Array.from([1]),
       [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
@@ -114,7 +114,7 @@ rlpx.on('peer:added', (peer) => {
     peer.once('close', () => clearTimeout(forkDrop))
   })
 
-  eth.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+  eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
     if (code in ETH.MESSAGE_CODES) {
       requests.msgTypes[code] = code + 1
     } else {
@@ -289,7 +289,7 @@ rlpx.on('peer:added', (peer) => {
   })
 })
 
-rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
+rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   const who = disconnectWe === true ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
@@ -301,7 +301,7 @@ rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   )
 })
 
-rlpx.on('peer:error', (peer, err) => {
+rlpx.events.on('peer:error', (peer, err) => {
   if (err.code === 'ECONNRESET') return
 
   if (err instanceof Error) {
