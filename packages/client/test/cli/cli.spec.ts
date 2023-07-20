@@ -19,6 +19,10 @@ describe('[CLI]', () => {
           child.kill()
           resolve(undefined)
         }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
       })
 
       child.stderr.on('data', (data) => {
@@ -32,7 +36,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  })
+  }, 10000)
 
   it('should start WS RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -69,7 +73,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  })
+  }, 10000)
 
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -105,5 +109,5 @@ describe('[CLI]', () => {
         }
       })
     })
-  })
-}, 180000)
+  }, 20000)
+})
