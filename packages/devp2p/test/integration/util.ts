@@ -106,7 +106,7 @@ export function initTwoPeerRLPXSetup(
 ) {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
-  rlpxs[0]._dpt!.addPeer(peer).catch(() => {
+  rlpxs[0]['_dpt']!.addPeer(peer).catch(() => {
     /* Silently catch rejections here since not an actual test error */
   })
   return rlpxs
@@ -132,17 +132,17 @@ export function twoPeerMsgExchange(
   basePort = 30306
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].on('peer:added', function (peer: any) {
+  rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     protocol.sendStatus(opts.status0) // (1 ->)
 
-    protocol.once('status', () => {
+    protocol.events.once('status', () => {
       if (opts.onOnceStatus0 !== undefined) opts.onOnceStatus0(rlpxs, protocol)
     }) // (-> 2)
-    protocol.on('message', async (code: any, payload: any) => {
+    protocol.events.on('message', async (code: any, payload: any) => {
       if (opts.onOnMsg0 !== undefined) opts.onOnMsg0(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err: Error) => {
+    peer.events.on('error', (err: Error) => {
       if (opts.onPeerError0 !== undefined) {
         opts.onPeerError0(err, rlpxs)
       } else {
@@ -151,9 +151,9 @@ export function twoPeerMsgExchange(
     }) // (-> 2)
   })
 
-  rlpxs[1].on('peer:added', function (peer: any) {
+  rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.on('message', async (code: any, payload: any) => {
+    protocol.events.on('message', async (code: any, payload: any) => {
       switch (code) {
         // Comfortability hack, use constants like devp2p.ETH.MESSAGE_CODES.STATUS
         // in production use
@@ -168,7 +168,7 @@ export function twoPeerMsgExchange(
       }
       if (opts.onOnMsg1 !== undefined) opts.onOnMsg1(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err: any) => {
+    peer.events.on('error', (err: any) => {
       if (opts.onPeerError1 !== undefined) {
         opts.onPeerError1(err, rlpxs)
       } else {
@@ -194,7 +194,7 @@ export async function twoPeerMsgExchange2(
   basePort = 30306
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].on('peer:added', function (peer: any) {
+  rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     const v4Hello = {
       protocolVersion: 4,
@@ -206,21 +206,21 @@ export async function twoPeerMsgExchange2(
     // Set peer's devp2p protocol version to 4
     protocol._peer._hello = v4Hello
     protocol.sendStatus(opts.status0)
-    peer.on('error', (err: Error) => {
+    peer.events.on('error', (err: Error) => {
       assert.fail(`Unexpected peer 0 error: ${err}`)
     })
   })
 
-  rlpxs[1].on('peer:added', function (peer: any) {
+  rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.once('message', async (code: any, _payload: any) => {
+    protocol.events.once('message', async (code: any, _payload: any) => {
       switch (code) {
         case ETH.MESSAGE_CODES.STATUS:
           assert.fail('should not have been able to process status message')
           break
       }
     })
-    peer.once('error', (err: any) => {
+    peer.events.once('error', (err: any) => {
       assert.equal(
         err.message,
         'Invalid Snappy bitstream',
@@ -249,17 +249,17 @@ export function twoPeerMsgExchange3(
   basePort = 30306
 ) {
   const rlpxs = initTwoPeerRLPXSetup(null, capabilities, common, basePort)
-  rlpxs[0].on('peer:added', function (peer: any) {
+  rlpxs[0].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
     opts.sendMessage(rlpxs, protocol)
   })
 
-  rlpxs[1].on('peer:added', function (peer: any) {
+  rlpxs[1].events.on('peer:added', function (peer: any) {
     const protocol = peer.getProtocols()[0]
-    protocol.on('message', async (code: any, payload: any) => {
+    protocol.events.on('message', async (code: any, payload: any) => {
       opts.receiveMessage(rlpxs, protocol, code, payload)
     })
-    peer.on('error', (err: any) => {
+    peer.events.on('error', (err: any) => {
       if (opts.onPeerError1 !== false) {
         opts.onPeerError1(err, rlpxs)
       } else {

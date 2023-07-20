@@ -5,6 +5,7 @@ import { getGenesis } from '@ethereumjs/genesis'
 import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
+import { assert } from 'vitest'
 
 import { Chain } from '../../src/blockchain/chain'
 import { Config } from '../../src/config'
@@ -24,7 +25,6 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
-import type * as tape from 'tape'
 
 const request = require('supertest')
 
@@ -48,7 +48,7 @@ type createClientArgs = {
 }
 export function startRPC(
   methods: any,
-  opts: StartRPCOpts = { port: 3001 },
+  opts: StartRPCOpts = { port: 0 },
   withEngineMiddleware?: WithEngineMiddleware
 ) {
   const { port, wsServer } = opts
@@ -193,7 +193,6 @@ export function params(method: string, params: Array<any> = []) {
 }
 
 export async function baseRequest(
-  t: tape.Test,
   server: HttpServer,
   req: Object,
   expect: number,
@@ -212,11 +211,11 @@ export async function baseRequest(
       closeRPC(server)
     }
     if (endOnFinish) {
-      t.end()
+      assert.ok(true)
     }
   } catch (err) {
     closeRPC(server)
-    t.end(err)
+    assert.notOk(err)
   }
 }
 

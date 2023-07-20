@@ -1,5 +1,5 @@
 import { multiaddr } from 'multiaddr'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 import * as td from 'testdouble'
 
 import { Config } from '../../../src/config'
@@ -8,7 +8,7 @@ import { Event } from '../../../src/types'
 import type { Libp2pPeer } from '../../../src/net/peer'
 import type { Protocol } from '../../../src/net/protocol'
 
-tape('[Libp2pPeer]', async (t) => {
+describe('[Libp2pPeer]', async () => {
   td.replace('peer-id')
 
   const Libp2pNode = td.constructor(['start', 'stop', 'dial', 'dialProtocol'] as any)
@@ -20,39 +20,40 @@ tape('[Libp2pPeer]', async (t) => {
 
   const { Libp2pPeer } = await import('../peer/libp2ppeer')
 
-  t.test('should initialize correctly', async (t) => {
+  it('should initialize correctly', async () => {
     const config = new Config()
     const multiaddrs = [
       multiaddr('/ip4/192.0.2.1/tcp/12345'),
       multiaddr('/ip4/192.0.2.1/tcp/23456'),
     ]
     const peer = new Libp2pPeer({ config, multiaddrs })
-    t.equals(peer.address, '/ip4/192.0.2.1/tcp/12345,/ip4/192.0.2.1/tcp/23456', 'address correct')
-    t.end()
+    assert.equal(
+      peer.address,
+      '/ip4/192.0.2.1/tcp/12345,/ip4/192.0.2.1/tcp/23456',
+      'address correct'
+    )
   })
 
-  t.test('should connect to peer', async (t) => {
+  it('should connect to peer', async () => {
     const config = new Config()
     const peer = new Libp2pPeer({ config })
     config.events.on(Event.PEER_CONNECTED, (peer) => {
-      t.equals((peer as Libp2pPeer).address, '/ip4/0.0.0.0/tcp/0', 'connected')
-      t.end()
+      assert.equal((peer as Libp2pPeer).address, '/ip4/0.0.0.0/tcp/0', 'connected')
     })
     await peer.connect()
   })
 
-  t.test('should accept peer connection', async (t) => {
+  it('should accept peer connection', async () => {
     const config = new Config()
     const peer: any = new Libp2pPeer({ config })
     peer.bindProtocol = td.func<typeof peer['bindProtocol']>()
     td.when(peer.bindProtocol('proto' as any, 'conn' as any)).thenResolve(null)
     await peer.accept('proto', 'conn', 'server')
-    t.equals(peer.server, 'server', 'server set')
-    t.ok(peer.inbound, 'inbound set to true')
-    t.end()
+    assert.equal(peer.server, 'server', 'server set')
+    assert.ok(peer.inbound, 'inbound set to true')
   })
 
-  t.test('should bind protocols', async (t) => {
+  it('should bind protocols', async () => {
     const config = new Config()
     const protocol = { name: 'proto', versions: [1], open: () => {} } as Protocol
     const badProto = { name: 'bad', versions: [1], open: () => {} } as Protocol
@@ -66,13 +67,11 @@ tape('[Libp2pPeer]', async (t) => {
     td.when(node.dialProtocol(td.matchers.anything(), '/proto/1')).thenResolve(null)
     td.when(node.dialProtocol(td.matchers.anything(), '/bad/1')).thenReject(new Error('bad'))
     await peer.bindProtocols(node, td.matchers.anything(), 'server')
-    t.equals(peer.server, 'server', 'server set')
-    t.ok((peer as any).connected, 'connected set to true')
-    t.end()
+    assert.equal(peer.server, 'server', 'server set')
+    assert.ok((peer as any).connected, 'connected set to true')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

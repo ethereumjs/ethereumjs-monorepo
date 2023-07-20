@@ -223,9 +223,9 @@ export class RlpxServer extends Server {
         dnsAddr: this.config.dnsAddr,
       })
 
-      this.dpt.on('error', (e: Error) => this.error(e))
+      this.dpt.events.on('error', (e: Error) => this.error(e))
 
-      this.dpt.on('listening', () => {
+      this.dpt.events.on('listening', () => {
         resolve()
       })
 
@@ -250,7 +250,7 @@ export class RlpxServer extends Server {
         common: this.config.chainCommon,
       })
 
-      this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
+      this.rlpx.events.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToUnprefixedHex(rlpxPeer.getId()!),
@@ -276,7 +276,7 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
+      this.rlpx.events.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
         const id = bytesToUnprefixedHex(rlpxPeer.getId() as Uint8Array)
         const peer = this.peers.get(id)
         if (peer) {
@@ -288,11 +288,13 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => this.error(error))
+      this.rlpx.events.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) =>
+        this.error(error)
+      )
 
-      this.rlpx.on('error', (e: Error) => this.error(e))
+      this.rlpx.events.on('error', (e: Error) => this.error(e))
 
-      this.rlpx.on('listening', () => {
+      this.rlpx.events.on('listening', () => {
         this.config.events.emit(Event.SERVER_LISTENING, {
           transport: this.name,
           url: this.getRlpxInfo().enode ?? '',

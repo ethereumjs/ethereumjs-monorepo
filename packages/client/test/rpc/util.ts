@@ -1,6 +1,6 @@
-import type * as tape from 'tape'
+import { assert } from 'vitest'
 
-export function checkError(t: tape.Test, expectedCode: number, expectedMessage?: string) {
+export function checkError(expectedCode: number, expectedMessage?: string) {
   return (res: any) => {
     if (res.body.error === undefined) {
       throw new Error('should return an error object')
@@ -16,6 +16,6 @@ export function checkError(t: tape.Test, expectedCode: number, expectedMessage?:
         `should have an error message "${expectedMessage}", got "${res.body.error.message}"`
       )
     }
-    t.pass('should return error object with error code and message')
+    assert.ok(true, 'should return error object with error code and message')
   }
 }

@@ -30,7 +30,8 @@ const LRU = require('lru-cache')
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
 
-export class RLPx extends EventEmitter {
+export class RLPx {
+  public events: EventEmitter
   protected _privateKey: Uint8Array
   public readonly id: Uint8Array
   private _debug: Debugger
@@ -52,8 +53,7 @@ export class RLPx extends EventEmitter {
   protected _refillIntervalSelectionCounter: number = 0
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
-    super()
-
+    this.events = new EventEmitter()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
@@ -73,7 +73,7 @@ export class RLPx extends EventEmitter {
     // DPT
     this._dpt = options.dpt ?? null
     if (this._dpt !== null) {
-      this._dpt.on('peer:new', (peer: PeerInfo) => {
+      this._dpt.events.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
           this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
@@ -89,7 +89,7 @@ export class RLPx extends EventEmitter {
           this._peersQueue.push({ peer, ts: 0 }) // save to queue
         }
       })
-      this._dpt.on('peer:removed', (peer: PeerInfo) => {
+      this._dpt.events.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
         this._peersQueue = this._peersQueue.filter(
           (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array)
@@ -98,9 +98,9 @@ export class RLPx extends EventEmitter {
     }
     // internal
     this._server = net.createServer()
-    this._server.once('listening', () => this.emit('listening'))
-    this._server.once('close', () => this.emit('close'))
-    this._server.on('error', (err) => this.emit('error', err))
+    this._server.once('listening', () => this.events.emit('listening'))
+    this._server.once('close', () => this.events.emit('close'))
+    this._server.on('error', (err) => this.events.emit('error', err))
     this._server.on('connection', (socket) => this._onConnect(socket, null))
     const serverAddress = this._server.address()
     this._debug =
@@ -213,16 +213,16 @@ export class RLPx extends EventEmitter {
       common: this._common,
       port: this._listenPort!,
     })
-    peer.on('error', (err) => this.emit('peer:error', peer, err))
+    peer.events.on('error', (err) => this.events.emit('peer:error', peer, err))
 
     // handle incoming connection
     if (peerId === null && this._getOpenSlots() === 0) {
-      peer.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
+      peer.events.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
       socket.once('error', () => {})
       return
     }
 
-    peer.once('connect', () => {
+    peer.events.once('connect', () => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
 
       // @ts-ignore
@@ -247,10 +247,10 @@ export class RLPx extends EventEmitter {
       }
 
       this._peers.set(peerKey, peer)
-      this.emit('peer:added', peer)
+      this.events.emit('peer:added', peer)
     })
 
-    peer.once('close', (reason, disconnectWe) => {
+    peer.events.once('close', (reason, disconnectWe) => {
       if (disconnectWe === true) {
         this._debug(
           `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
@@ -278,7 +278,7 @@ export class RLPx extends EventEmitter {
       if (id) {
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
-        this.emit('peer:removed', peer, reason, disconnectWe)
+        this.events.emit('peer:removed', peer, reason, disconnectWe)
       }
     })
   }

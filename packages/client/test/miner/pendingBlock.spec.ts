@@ -21,10 +21,10 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import * as kzg from 'c-kzg'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
-import * as gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
+import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'
 import { PendingBlock } from '../../src/miner'
@@ -89,9 +89,9 @@ const setup = () => {
   return { txPool }
 }
 
-tape('[PendingBlock]', async (t) => {
-  const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-  ;(BlockHeader as any).prototype._consensusFormatValidation = td.func<any>()
+describe('[PendingBlock]', async () => {
+  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
+  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
@@ -123,7 +123,7 @@ tape('[PendingBlock]', async (t) => {
   const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
   const txB011 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
 
-  t.test('should start and build', async (t) => {
+  it('should start and build', async () => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -134,20 +134,23 @@ tape('[PendingBlock]', async (t) => {
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     await txPool.add(txB01)
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 3, 'should include txs from pool')
-    t.equal(receipts.length, 3, 'receipts should match number of transactions')
+    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.equal(block?.transactions.length, 3, 'should include txs from pool')
+    assert.equal(receipts.length, 3, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
-    t.end()
+    assert.equal(
+      pendingBlock.pendingPayloads.size,
+      0,
+      'should reset the pending payload after build'
+    )
   })
 
-  t.test('should include txs with mismatching hardforks that can still be executed', async (t) => {
+  it('should include txs with mismatching hardforks that can still be executed', async () => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -155,14 +158,14 @@ tape('[PendingBlock]', async (t) => {
 
     txA011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txA011)
-    t.equal(txPool.txsInPool, 1, '1 txA011 should be added')
+    assert.equal(txPool.txsInPool, 1, '1 txA011 should be added')
     // skip hardfork validation for ease
     const pendingBlock = new PendingBlock({ config, txPool })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const payload = pendingBlock.pendingPayloads.get(bytesToHex(payloadId))
-    t.equal(
+    assert.equal(
       (payload as any).transactions.filter(
         (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash())
       ).length,
@@ -172,13 +175,13 @@ tape('[PendingBlock]', async (t) => {
 
     txB011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txB011)
-    t.equal(txPool.txsInPool, 2, '1 txB011 should be added')
+    assert.equal(txPool.txsInPool, 2, '1 txB011 should be added')
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (!built) return assert.fail('pendingBlock did not return')
     const [block] = built
-    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 2, 'should include txs from pool')
-    t.equal(
+    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.equal(block?.transactions.length, 2, 'should include txs from pool')
+    assert.equal(
       (payload as any).transactions.filter(
         (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash())
       ).length,
@@ -186,11 +189,14 @@ tape('[PendingBlock]', async (t) => {
       'txB011 should be in block'
     )
     pendingBlock.pruneSetToMax(0)
-    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
-    t.end()
+    assert.equal(
+      pendingBlock.pendingPayloads.size,
+      0,
+      'should reset the pending payload after build'
+    )
   })
 
-  t.test('should start and stop', async (t) => {
+  it('should start and stop', async () => {
     const { txPool } = setup()
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
@@ -198,13 +204,16 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     pendingBlock.stop(payloadId)
-    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after stopping')
-    t.end()
+    assert.equal(
+      pendingBlock.pendingPayloads.size,
+      0,
+      'should reset the pending payload after stopping'
+    )
   })
 
-  t.test('should stop adding txs when block is full', async (t) => {
+  it('should stop adding txs when block is full', async () => {
     const { txPool } = setup()
 
     // set gas limit low so that can accomodate 2 txs
@@ -236,24 +245,31 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
 
     // Add a tx to
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
-    t.equal(receipts.length, 2, 'receipts should match number of transactions')
+    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.equal(
+      block?.transactions.length,
+      2,
+      'should include txs from pool that fit in the block'
+    )
+    assert.equal(receipts.length, 2, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
+    assert.equal(
+      pendingBlock.pendingPayloads.size,
+      0,
+      'should reset the pending payload after build'
+    )
 
     // reset gas Limit
     common['_chainParams'].genesis.gasLimit = prevGasLimit
-    t.end()
   })
 
-  t.test('should skip adding txs when tx too big to fit', async (t) => {
+  it('should skip adding txs when tx too big to fit', async () => {
     const { txPool } = setup()
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -273,57 +289,67 @@ tape('[PendingBlock]', async (t) => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    t.equal(block?.transactions.length, 2, 'should include txs from pool that fit in the block')
-    t.equal(receipts.length, 2, 'receipts should match number of transactions')
+    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.equal(
+      block?.transactions.length,
+      2,
+      'should include txs from pool that fit in the block'
+    )
+    assert.equal(receipts.length, 2, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
-    t.end()
+    assert.equal(
+      pendingBlock.pendingPayloads.size,
+      0,
+      'should reset the pending payload after build'
+    )
   })
 
-  t.test('should not add tx that errors (sender with insufficient funds)', async (t) => {
+  it('should not add tx that errors (sender with insufficient funds)', async () => {
     const { txPool } = setup()
     await txPool.add(txA01)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const vm = await VM.create({ common })
     const parentBlock = await vm.blockchain.getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    t.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
-    if (!built) return t.fail('pendingBlock did not return')
+    if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    t.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    t.equal(
+    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.equal(
       block.transactions.length,
       0,
       'should not include tx with sender that has insufficient funds'
     )
-    t.equal(receipts.length, 0, 'receipts should match number of transactions')
+    assert.equal(receipts.length, 0, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    t.equal(pendingBlock.pendingPayloads.size, 0, 'should reset the pending payload after build')
-    t.end()
+    assert.equal(
+      pendingBlock.pendingPayloads.size,
+      0,
+      'should reset the pending payload after build'
+    )
   })
 
-  t.test('should throw when blockchain does not have getTotalDifficulty function', async (st) => {
+  it('should throw when blockchain does not have getTotalDifficulty function', async () => {
     const { txPool } = setup()
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const vm = (txPool as any).vm
     try {
       await pendingBlock.start(vm, new Block())
-      st.fail('should have thrown')
+      assert.fail('should have thrown')
     } catch (err: any) {
-      st.equal(
+      assert.equal(
         err.message,
         'cannot get iterator head: blockchain has no getTotalDifficulty function'
       )
     }
   })
 
-  t.test('construct blob bundles', async (st) => {
+  it('construct blob bundles', async () => {
     try {
       initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
@@ -372,7 +398,7 @@ tape('[PendingBlock]', async (t) => {
     ).sign(A.privateKey)
     await txPool.add(txNorm)
 
-    st.equal(txPool.txsInPool, 4, '4 txs should still be in the pool')
+    assert.equal(txPool.txsInPool, 4, '4 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
@@ -385,20 +411,19 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    st.ok(block !== undefined && blobsBundles !== undefined)
-    st.equal(block!.transactions.length, 2, 'Only two blob txs should be included')
-    st.equal(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
-    st.equal(blobsBundles!.commitments.length, 6, 'maximum 6 commitments should be included')
-    st.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
+    assert.ok(block !== undefined && blobsBundles !== undefined)
+    assert.equal(block!.transactions.length, 2, 'Only two blob txs should be included')
+    assert.equal(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
+    assert.equal(blobsBundles!.commitments.length, 6, 'maximum 6 commitments should be included')
+    assert.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
-    st.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
+    assert.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
     const blobProof = blobsBundles!.proofs[0]
-    st.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
-    st.end()
+    assert.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
   })
 
-  t.test('should exclude missingBlobTx', async (st) => {
+  it('should exclude missingBlobTx', async () => {
     try {
       initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
       // eslint-disable-next-line
@@ -432,7 +457,7 @@ tape('[PendingBlock]', async (t) => {
     ).sign(A.privateKey)
     await txPool.add(missingBlobTx)
 
-    st.equal(txPool.txsInPool, 1, '1 txs should still be in the pool')
+    assert.equal(txPool.txsInPool, 1, '1 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
     const vm = await VM.create({ common })
@@ -445,19 +470,16 @@ tape('[PendingBlock]', async (t) => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    st.ok(block !== undefined && blobsBundles !== undefined)
-    st.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
-    st.end()
+    assert.ok(block !== undefined && blobsBundles !== undefined)
+    assert.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
   })
 
-  t.test('should reset td', (st) => {
+  it('should reset td', () => {
     td.reset()
     // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
     // mocking indirect dependencies is not properly supported, but it works for us in this file,
     // so we will replace the original functions to avoid issues in other tests that come after
     ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-
-    st.end()
   })
 })
