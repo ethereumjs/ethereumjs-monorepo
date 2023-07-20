@@ -95,4 +95,4 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npx vitest run test/cli
+          command: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
