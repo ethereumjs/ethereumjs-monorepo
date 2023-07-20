@@ -93,7 +93,7 @@ EOT
         # Therefore the usage with the find command
         # 
         find dist/esm -name "*.js" -exec sed -E -i'.js-e' -e "s/(from '[^']+\.json');/\1 assert { type: \"json\" };/" {} \;
-        rm -Rf ./dist/esm/**/*.js-e
+        find ./dist/esm -name "*.js-e" -type f -delete
     else
         echo "Skipping post build fixes (no ESM setup yet)."
     fi
