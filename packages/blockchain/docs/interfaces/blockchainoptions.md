@@ -4,6 +4,12 @@
 
 This are the options that the Blockchain constructor can receive.
 
+## Hierarchy
+
+- [`GenesisOptions`](GenesisOptions.md)
+
+  ↳ **`BlockchainOptions`**
+
 ## Table of contents
 
 ### Properties
@@ -13,6 +19,7 @@ This are the options that the Blockchain constructor can receive.
 - [db](BlockchainOptions.md#db)
 - [genesisBlock](BlockchainOptions.md#genesisblock)
 - [genesisState](BlockchainOptions.md#genesisstate)
+- [genesisStateRoot](BlockchainOptions.md#genesisstateroot)
 - [hardforkByHeadBlockNumber](BlockchainOptions.md#hardforkbyheadblocknumber)
 - [validateBlocks](BlockchainOptions.md#validateblocks)
 - [validateConsensus](BlockchainOptions.md#validateconsensus)
@@ -29,7 +36,7 @@ If not provided this defaults to chain `mainnet` and hardfork `chainstart`
 
 #### Defined in
 
-[types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L93)
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L136)
 
 ___
 
@@ -41,25 +48,20 @@ Optional custom consensus that implements the [Consensus](Consensus.md) class
 
 #### Defined in
 
-[types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L174)
+[types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L177)
 
 ___
 
 ### db
 
-• `Optional` **db**: `AbstractLevel`<`string` \| `Uint8Array` \| `Buffer`, `string` \| `Buffer`, `string` \| `Buffer`\>
+• `Optional` **db**: `DB`<`string` \| `number` \| `Uint8Array`, `string` \| `Uint8Array` \| `DBObject`\>
 
 Database to store blocks and metadata.
-Should be an `abstract-leveldown` compliant store
-wrapped with `encoding-down`.
-For example:
-  `levelup(encode(leveldown('./db1')))`
-or use the `level` convenience package:
-  `new MemoryLevel('./db1')`
+Can be any database implementation that adheres to the `DB` interface
 
 #### Defined in
 
-[types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L115)
+[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L153)
 
 ___
 
@@ -73,9 +75,13 @@ then the provided `genesisBlock` will be used as genesis. If no block is
 present in the DB and no block is provided, then the genesis block as
 provided from the `common` will be used.
 
+#### Inherited from
+
+[GenesisOptions](GenesisOptions.md).[genesisBlock](GenesisOptions.md#genesisblock)
+
 #### Defined in
 
-[types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L143)
+[types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L92)
 
 ___
 
@@ -106,9 +112,29 @@ A complex genesis state with Contract and EoA states would have the following fo
 }
 ```
 
+#### Inherited from
+
+[GenesisOptions](GenesisOptions.md).[genesisState](GenesisOptions.md#genesisstate)
+
 #### Defined in
 
-[types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L169)
+[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L118)
+
+___
+
+### genesisStateRoot
+
+• `Optional` **genesisStateRoot**: `Uint8Array`
+
+State root of the genesis state
+
+#### Inherited from
+
+[GenesisOptions](GenesisOptions.md).[genesisStateRoot](GenesisOptions.md#genesisstateroot)
+
+#### Defined in
+
+[types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L123)
 
 ___
 
@@ -126,7 +152,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 #### Defined in
 
-[types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L104)
+[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L147)
 
 ___
 
@@ -140,7 +166,7 @@ see Block#validate for details.
 
 #### Defined in
 
-[types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L134)
+[types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L172)
 
 ___
 
@@ -158,4 +184,4 @@ Default: `true`.
 
 #### Defined in
 
-[types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L126)
+[types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L164)

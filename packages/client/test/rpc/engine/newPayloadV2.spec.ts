@@ -1,17 +1,16 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import * as blocks from '../../testdata/blocks/beacon.json'
-import * as genesisJSON from '../../testdata/geth-genesis/post-merge.json'
+import blocks from '../../testdata/blocks/beacon.json'
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, baseSetup, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
 import type { HttpServer } from 'jayson'
-type Test = tape.Test
 
 const method = 'engine_newPayloadV2'
 
@@ -19,18 +18,18 @@ const [blockData] = blocks
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
-export const batchBlocks = async (t: Test, server: HttpServer) => {
+export const batchBlocks = async (server: HttpServer) => {
   for (let i = 0; i < 3; i++) {
     const req = params(method, [blocks[i]])
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
+      assert.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes, false)
+    await baseRequest(server, req, 200, expectRes, false, false)
   }
 }
 
-tape(`${method}: call with executionPayloadV1`, (v1) => {
-  v1.test(`${method}: call with invalid block hash without 0x`, async (t) => {
+describe(`${method}: call with executionPayloadV1`, () => {
+  it('call with invalid block hash without 0x', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidParentHash = [
@@ -42,27 +41,25 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
 
     const req = params(method, blockDataWithInvalidParentHash)
     const expectRes = checkError(
-      t,
       INVALID_PARAMS,
       "invalid argument 0 for key 'parentHash': hex string without 0x prefix"
     )
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with invalid hex string as block hash`, async (t) => {
+  it('call with invalid hex string as block hash', async () => {
     const { server } = baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
     const req = params(method, blockDataWithInvalidBlockHash)
     const expectRes = checkError(
-      t,
       INVALID_PARAMS,
       "invalid argument 0 for key 'blockHash': invalid block hash"
     )
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with non existent block hash`, async (t) => {
+  it('call with non existent block hash', async () => {
     const { server } = await setupChain(genesisJSON, 'merge', { engine: true })
 
     const blockDataNonExistentBlockHash = [
@@ -73,13 +70,13 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     ]
     const req = params(method, blockDataNonExistentBlockHash)
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
+      assert.equal(res.body.result.status, 'INVALID')
     }
 
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with non existent parent hash`, async (t) => {
+  it('call with non existent parent hash', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const blockDataNonExistentParentHash = [
@@ -91,44 +88,41 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     ]
     const req = params(method, blockDataNonExistentParentHash)
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'ACCEPTED')
+      assert.equal(res.body.result.status, 'ACCEPTED')
     }
 
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(
-    `${method}: call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU`,
-    async (t) => {
-      const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  it('call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU', async () => {
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-      let req = params(method, [blocks[1]])
-      let expectRes = (res: any) => {
-        t.equal(res.body.result.status, 'ACCEPTED')
-      }
-      await baseRequest(t, server, req, 200, expectRes, false)
-
-      req = params(method, [blocks[0]])
-      expectRes = (res: any) => {
-        t.equal(res.body.result.status, 'VALID')
-      }
-      await baseRequest(t, server, req, 200, expectRes, false)
-
-      const state = {
-        headBlockHash: blocks[1].blockHash,
-        safeBlockHash: blocks[1].blockHash,
-        finalizedBlockHash: blocks[0].blockHash,
-      }
-      req = params('engine_forkchoiceUpdatedV1', [state])
-      expectRes = (res: any) => {
-        t.equal(res.body.result.payloadStatus.status, 'VALID')
-      }
-
-      await baseRequest(t, server, req, 200, expectRes)
+    let req = params(method, [blocks[1]])
+    let expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'ACCEPTED')
     }
-  )
+    await baseRequest(server, req, 200, expectRes, false, false)
 
-  v1.test(`${method}: invalid terminal block`, async (t) => {
+    req = params(method, [blocks[0]])
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(server, req, 200, expectRes, false, false)
+
+    const state = {
+      headBlockHash: blocks[1].blockHash,
+      safeBlockHash: blocks[1].blockHash,
+      finalizedBlockHash: blocks[0].blockHash,
+    }
+    req = params('engine_forkchoiceUpdatedV1', [state])
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.payloadStatus.status, 'VALID')
+    }
+
+    await baseRequest(server, req, 200, expectRes)
+  })
+
+  it('invalid terminal block', async () => {
     const genesisWithHigherTtd = {
       ...genesisJSON,
       config: {
@@ -146,24 +140,24 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
 
     const req = params(method, [blockData, null])
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
-      t.equal(res.body.result.latestValidHash, bytesToHex(zeros(32)))
+      assert.equal(res.body.result.status, 'INVALID')
+      assert.equal(res.body.result.latestValidHash, bytesToHex(zeros(32)))
     }
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with valid data`, async (t) => {
+  it('call with valid data', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const req = params(method, [blockData])
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
-      t.equal(res.body.result.latestValidHash, blockData.blockHash)
+      assert.equal(res.body.result.status, 'VALID')
+      assert.equal(res.body.result.latestValidHash, blockData.blockHash)
     }
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with valid data but invalid transactions`, async (t) => {
+  it('call with valid data but invalid transactions', async () => {
     const { chain, server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     chain.config.logger.silent = true
     const blockDataWithInvalidTransaction = {
@@ -171,21 +165,21 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       transactions: ['0x1'],
     }
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
-      t.equal(res.body.result.latestValidHash, blockData.parentHash)
+      assert.equal(res.body.result.status, 'INVALID')
+      assert.equal(res.body.result.latestValidHash, blockData.parentHash)
       const expectedError =
         'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
-      t.ok(
+      assert.ok(
         res.body.result.validationError.includes(expectedError),
         `should error with - ${expectedError}`
       )
     }
 
     const req = params(method, [blockDataWithInvalidTransaction])
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with valid data & valid transaction but not signed`, async (t) => {
+  it('call with valid data & valid transaction but not signed', async () => {
     const { server, common, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     chain.config.logger.silent = true
 
@@ -207,15 +201,17 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       blockHash: '0x308f490332a31fade8b2b46a8e1132cd15adeaffbb651cb523c067b3f007dd9e',
     }
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
-      t.true(res.body.result.validationError.includes('Error verifying block while running:'))
+      assert.equal(res.body.result.status, 'INVALID')
+      assert.isTrue(
+        res.body.result.validationError.includes('Error verifying block while running:')
+      )
     }
 
     const req = params(method, [blockDataWithValidTransaction])
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: call with valid data & valid transaction`, async (t) => {
+  it('call with valid data & valid transaction', async () => {
     const accountPk = hexToBytes(
       '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
@@ -251,16 +247,16 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
       blockHash: '0x625f2fd36bf278f92211376cbfe5acd7ac5da694e28f3d94d59488b7dbe213a4',
     }
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
+      assert.equal(res.body.result.status, 'VALID')
     }
     const req = params(method, [blockDataWithValidTransaction])
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: re-execute payload and verify that no errors occur`, async (t) => {
+  it('re-execute payload and verify that no errors occur', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-    await batchBlocks(t, server)
+    await batchBlocks(server)
 
     let req = params('engine_forkchoiceUpdatedV1', [
       {
@@ -272,20 +268,20 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
 
     // Let's set new head hash
     const expectResFcu = (res: any) => {
-      t.equal(res.body.result.payloadStatus.status, 'VALID')
+      assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectResFcu, false)
+    await baseRequest(server, req, 200, expectResFcu, false, false)
 
     // Now let's try to re-execute payload
     req = params(method, [blockData])
 
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'VALID')
+      assert.equal(res.body.result.status, 'VALID')
     }
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`${method}: parent hash equals to block hash`, async (t) => {
+  it('parent hash equals to block hash', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const blockDataHasBlockHashSameAsParentHash = [
       {
@@ -295,22 +291,19 @@ tape(`${method}: call with executionPayloadV1`, (v1) => {
     ]
     const req = params(method, blockDataHasBlockHashSameAsParentHash)
     const expectRes = (res: any) => {
-      t.equal(res.body.result.status, 'INVALID')
+      assert.equal(res.body.result.status, 'INVALID')
     }
 
-    await baseRequest(t, server, req, 200, expectRes)
+    await baseRequest(server, req, 200, expectRes)
   })
 
-  v1.test(`reset TD`, (t) => {
-    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
+  it(`reset TD`, () => {
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
-    t.end()
   })
-  v1.end()
-})
 
-tape(`${method}: call with executionPayloadV2`, (v2) => {
-  v2.pass('TODO: add tests for executionPayloadV2')
-  // TODO: add tests for executionPayloadV2
-  v2.end()
+  it('call with executionPayloadV2', () => {
+    assert.ok(true, 'TODO: add tests for executionPayloadV2')
+    // TODO: add tests for executionPayloadV2
+  })
 })

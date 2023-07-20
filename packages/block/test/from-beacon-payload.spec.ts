@@ -52,7 +52,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
       const block = await Block.fromBeaconPayloadJson(
         {
           ...payload87475,
-          block_hash: '0x5be157c3b687537d20a252ad072e8d6a458108eb1b95944368f5a8f8f3325b07',
+          block_hash: '0x573714bdd0ca5e47bc32008751c4fc74237f8cb354fbc1475c1d0ece38236ea4',
         },
         { common }
       )

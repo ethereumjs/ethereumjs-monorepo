@@ -141,6 +141,7 @@ const payloadAttributesFieldValidatorsV2 = {
   ...payloadAttributesFieldValidatorsV1,
   withdrawals: validators.optional(validators.array(validators.withdrawal())),
 }
+
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
  */
@@ -176,7 +177,42 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
     transactions,
     ...withdrawalsArr,
   }
-  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle }
+
+  // ethereumjs doesnot provide any transaction censoring detection (yet) to suggest
+  // overriding builder/mev-boost blocks
+  const shouldOverrideBuilder = false
+  return { executionPayload, blockValue: bigIntToHex(value), blobsBundle, shouldOverrideBuilder }
+}
+
+const pruneCachedBlocks = (
+  chain: Chain,
+  remoteBlocks: Map<String, Block>,
+  executedBlocks: Map<String, Block>
+) => {
+  const finalized = chain.blocks.finalized
+  if (finalized !== null) {
+    // prune remoteBlocks
+    const pruneRemoteBlocksTill = finalized.header.number
+    for (const blockHash of remoteBlocks.keys()) {
+      const block = remoteBlocks.get(blockHash)
+      if (block !== undefined && block.header.number <= pruneRemoteBlocksTill) {
+        remoteBlocks.delete(blockHash)
+      }
+    }
+
+    // prune executedBlocks
+    const vm = chain.blocks.vm
+    if (vm !== null) {
+      const pruneExecutedBlocksTill =
+        vm.header.number < finalized.header.number ? vm.header.number : finalized.header.number
+      for (const blockHash of executedBlocks.keys()) {
+        const block = executedBlocks.get(blockHash)
+        if (block !== undefined && block.header.number <= pruneExecutedBlocksTill) {
+          executedBlocks.delete(blockHash)
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -185,7 +221,8 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
 const recursivelyFindParents = async (
   vmHeadHash: Uint8Array,
   parentHash: Uint8Array,
-  chain: Chain
+  chain: Chain,
+  maxDepth: number
 ) => {
   if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
@@ -194,11 +231,17 @@ const recursivelyFindParents = async (
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
   parentBlocks.push(block)
-  while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), parentHash)) {
+
+  while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), vmHeadHash)) {
     const block: Block = await chain.getBlock(
       parentBlocks[parentBlocks.length - 1].header.parentHash
     )
     parentBlocks.push(block)
+
+    // throw error if lookups have exceeded maxDepth
+    if (parentBlocks.length > maxDepth) {
+      throw Error(`recursivelyFindParents lookups deeper than maxDepth=${maxDepth}`)
+    }
   }
   return parentBlocks.reverse()
 }
@@ -218,9 +261,24 @@ const validHash = async (hash: Uint8Array, chain: Chain): Promise<string | null>
 /**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
  */
-const validBlock = async (hash: Uint8Array, chain: Chain): Promise<Block | null> => {
+const validExecutedChainBlock = async (
+  blockOrHash: Uint8Array | Block,
+  chain: Chain
+): Promise<Block | null> => {
   try {
-    return await chain.getBlock(hash)
+    const block = blockOrHash instanceof Block ? blockOrHash : await chain.getBlock(blockOrHash)
+    const vmHead = await chain.blockchain.getIteratorHead()
+
+    if (vmHead.header.number >= block.header.number) {
+      // check if block is canonical
+      const canonicalHash = await chain.blockchain.safeNumberToHash(block.header.number)
+      if (canonicalHash instanceof Uint8Array && equalsBytes(block.hash(), canonicalHash)) {
+        return block
+      }
+    }
+
+    // if the block was canonical and executed we would have returned by now
+    return null
   } catch (error: any) {
     return null
   }
@@ -302,6 +360,7 @@ export class Engine {
   private vm: VM
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
+  private executedBlocks: Map<String, Block>
   private connectionManager: CLConnectionManager
 
   private lastNewPayloadHF: string = ''
@@ -324,6 +383,7 @@ export class Engine {
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
+    this.executedBlocks = new Map()
 
     this.newPayloadV1 = cmMiddleware(
       middleware(this.newPayloadV1.bind(this), 1, [
@@ -538,21 +598,24 @@ export class Engine {
     // is pow block which this client would like to mint and attempt proposing it
     const optimisticLookup = await this.service.beaconSync?.extendChain(block)
 
-    const blockExists = await validBlock(hexToBytes(blockHash), this.chain)
-    if (blockExists) {
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(blockExists.header.stateRoot)
-      if (isBlockExecuted) {
-        const response = {
-          status: Status.VALID,
-          latestValidHash: blockHash,
-          validationError: null,
-        }
-        return response
+    // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
+    // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
+    // some pre-executed stateroot can be send
+    const executedBlockExists =
+      this.executedBlocks.get(blockHash.slice(2)) ??
+      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
+    if (executedBlockExists) {
+      const response = {
+        status: Status.VALID,
+        latestValidHash: blockHash,
+        validationError: null,
       }
+      return response
     }
 
     try {
       // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
+      // to run basic validations based on parent
       const parent =
         (await this.service.beaconSync?.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
@@ -584,9 +647,11 @@ export class Engine {
         }
       }
 
-      const isBlockExecuted = await this.vm.stateManager.hasStateRoot(parent.header.stateRoot)
+      const executedParentExists =
+        this.executedBlocks.get(parentHash.slice(2)) ??
+        (await validExecutedChainBlock(hexToBytes(parentHash), this.chain))
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
-      if (!isBlockExecuted) {
+      if (!executedParentExists) {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
     } catch (error: any) {
@@ -601,10 +666,16 @@ export class Engine {
       return response
     }
 
-    const vmHead = this.chain.headers.latest!
+    const vmHead = await this.chain.blockchain.getIteratorHead()
     let blocks: Block[]
     try {
-      blocks = await recursivelyFindParents(vmHead.hash(), block.header.parentHash, this.chain)
+      // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
+      blocks = await recursivelyFindParents(
+        vmHead.hash(),
+        block.header.parentHash,
+        this.chain,
+        this.chain.config.engineParentLookupMaxDepth
+      )
     } catch (error) {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
@@ -616,13 +687,32 @@ export class Engine {
     try {
       for (const [i, block] of blocks.entries()) {
         lastBlock = block
-        const root = (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
-          .header.stateRoot
-        await this.execution.runWithoutSetHead({
-          block,
-          root,
-          setHardfork: this.chain.headers.td,
-        })
+        const bHash = block.hash()
+        const isBlockExecuted =
+          (this.executedBlocks.get(bytesToUnprefixedHex(bHash)) ??
+            (await validExecutedChainBlock(bHash, this.chain))) !== null
+
+        if (!isBlockExecuted) {
+          // Only execute if number of blocks pending to be executed are within limit
+          // else return SYNCING/ACCEPTED and let skeleton led chain execution catch up
+          const executed =
+            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute
+              ? await this.execution.runWithoutSetHead({
+                  block,
+                  root: (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
+                    .header.stateRoot,
+                  setHardfork: this.chain.headers.td,
+                })
+              : false
+          if (!executed) {
+            // determind status to be returned depending on if block could extend chain or not
+            const status = optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
+            const response = { status, latestValidHash: null, validationError: null }
+            return response
+          } else {
+            this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
+          }
+        }
       }
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`
@@ -797,23 +887,20 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      headBlock = await this.chain.getBlock(toBytes(headBlockHash))
-    } catch (error) {
+      const head = toBytes(headBlockHash)
       headBlock =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(toBytes(headBlockHash))) ??
-        this.remoteBlocks.get(headBlockHash.slice(2))
-      if (headBlock === undefined) {
-        this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
-        const payloadStatus = {
-          status: Status.SYNCING,
-          latestValidHash: null,
-          validationError: null,
-        }
-        const response = { payloadStatus, payloadId: null }
-        return response
-      } else {
-        this.remoteBlocks.delete(headBlockHash.slice(2))
+        this.remoteBlocks.get(headBlockHash.slice(2)) ??
+        (await this.service.beaconSync?.skeleton.getBlockByHash(head, true)) ??
+        (await this.chain.getBlock(head))
+    } catch (error) {
+      this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
+      const payloadStatus = {
+        status: Status.SYNCING,
+        latestValidHash: null,
+        validationError: null,
       }
+      const response = { payloadStatus, payloadId: null }
+      return response
     }
 
     const hardfork = headBlock.common.hardfork()
@@ -844,7 +931,7 @@ export class Engine {
           payloadStatus: {
             status: Status.INVALID,
             validationError: null,
-            latestValidHash: bytesToUnprefixedHex(zeros(32)),
+            latestValidHash: bytesToHex(zeros(32)),
           },
           payloadId: null,
         }
@@ -877,7 +964,9 @@ export class Engine {
         try {
           // Right now only check if the block is available, canonicality check is done
           // in setHead after chain.putBlocks so as to reflect latest canonical chain
-          safeBlock = await this.chain.getBlock(safe)
+          safeBlock =
+            (await this.service.beaconSync?.skeleton.getBlockByHash(safe, true)) ??
+            (await this.chain.getBlock(safe))
         } catch (_error: any) {
           throw {
             code: INVALID_PARAMS,
@@ -893,7 +982,9 @@ export class Engine {
       try {
         // Right now only check if the block is available, canonicality check is done
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
-        finalizedBlock = await this.chain.getBlock(finalized)
+        finalizedBlock =
+          (await this.service.beaconSync?.skeleton.getBlockByHash(finalized, true)) ??
+          (await this.chain.getBlock(finalized))
       } catch (error: any) {
         throw {
           message: 'finalized block not available',
@@ -904,7 +995,8 @@ export class Engine {
       finalizedBlock = undefined
     }
 
-    const vmHeadHash = this.chain.headers.latest!.hash()
+    const vmHeadHash = (await this.chain.blockchain.getIteratorHead()).hash()
+
     if (!equalsBytes(vmHeadHash, headBlock.hash())) {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
@@ -912,7 +1004,8 @@ export class Engine {
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,
-            this.chain
+            this.chain,
+            this.chain.config.engineParentLookupMaxDepth
           )
         } catch (error) {
           const payloadStatus = {
@@ -943,9 +1036,9 @@ export class Engine {
       }
     }
 
-    /*
-     * If payloadAttributes is present, start building block and return payloadId
-     */
+    // prepare valid response
+    let validResponse
+    // If payloadAttributes is present, start building block and return payloadId
     if (payloadAttributes) {
       const { timestamp, prevRandao, suggestedFeeRecipient, withdrawals } = payloadAttributes
       const timestampBigInt = BigInt(timestamp)
@@ -971,14 +1064,16 @@ export class Engine {
       )
       const latestValidHash = await validHash(headBlock.hash(), this.chain)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-      const response = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
-      return response
+      validResponse = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
+    } else {
+      const latestValidHash = await validHash(headBlock.hash(), this.chain)
+      const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
+      validResponse = { payloadStatus, payloadId: null, headBlock }
     }
 
-    const latestValidHash = await validHash(headBlock.hash(), this.chain)
-    const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
-    const response = { payloadStatus, payloadId: null, headBlock }
-    return response
+    // before returning response prune cached blocks based on finalized and vmHead
+    pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks)
+    return validResponse
   }
 
   private async forkchoiceUpdatedV1(
@@ -1027,7 +1122,7 @@ export class Engine {
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
   private async getPayload(params: [Bytes8]) {
-    const payloadId = hexToBytes(params[0])
+    const payloadId = params[0]
     try {
       const built = await this.pendingBlock.build(payloadId)
       if (!built) {
@@ -1036,7 +1131,14 @@ export class Engine {
       // The third arg returned is the minerValue which we will use to
       // value the block
       const [block, receipts, value, blobs] = built
-      await this.execution.runWithoutSetHead({ block }, receipts)
+
+      // do a blocking call even if execution might be busy for the moment
+      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true)
+      if (!executed) {
+        throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
+      }
+
+      this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       return blockToExecutionPayload(block, value, blobs)
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
@@ -1053,7 +1155,8 @@ export class Engine {
   }
 
   async getPayloadV2(params: [Bytes8]) {
-    return this.getPayload(params)
+    const { executionPayload, blockValue } = await this.getPayload(params)
+    return { executionPayload, blockValue }
   }
 
   async getPayloadV3(params: [Bytes8]) {

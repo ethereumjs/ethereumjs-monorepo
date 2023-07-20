@@ -72,12 +72,12 @@ it(
   randomBefore((t: EciesTestContext) => {
     assert.doesNotThrow(() => {
       const auth = t.context.a.createAuthNonEIP8()
-      t.context.b._gotEIP8Auth = false
+      t.context.b['_gotEIP8Auth'] = false
       t.context.b.parseAuthPlain(auth as Uint8Array)
     }, 'should not throw on auth creation/parsing')
 
     assert.doesNotThrow(() => {
-      t.context.b._gotEIP8Ack = false
+      t.context.b['_gotEIP8Ack'] = false
       const ack = t.context.b.createAckOld()
       t.context.a.parseAckPlain(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
@@ -97,13 +97,13 @@ it(
   randomBefore((t: EciesTestContext) => {
     assert.doesNotThrow(() => {
       const auth = t.context.a.createAuthEIP8()
-      t.context.b._gotEIP8Auth = true
+      t.context.b['_gotEIP8Auth'] = true
       t.context.b.parseAuthEIP8(auth as Uint8Array)
     }, 'should not throw on auth creation/parsing')
 
     assert.doesNotThrow(() => {
       const ack = t.context.b.createAckEIP8()
-      t.context.a._gotEIP8Ack = true
+      t.context.a['_gotEIP8Ack'] = true
       t.context.a.parseAckEIP8(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
   })
@@ -113,13 +113,13 @@ it(
   'Testdata: auth -> ack (old format/no EIP8)',
   testdataBefore((t: EciesTestContext) => {
     assert.doesNotThrow(() => {
-      t.context.b._gotEIP8Auth = false
+      t.context.b['_gotEIP8Auth'] = false
       t.context.b.parseAuthPlain(t.context.h0?.auth as Uint8Array)
-      t.context.a._initMsg = t.context.h0?.auth
+      t.context.a['_initMsg'] = t.context.h0?.auth
     }, 'should not throw on auth parsing')
 
     assert.doesNotThrow(() => {
-      t.context.a._gotEIP8Ack = false
+      t.context.a['_gotEIP8Ack'] = false
       t.context.a.parseAckPlain(t.context.h0?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
   })
@@ -129,12 +129,12 @@ it(
   'Testdata: auth -> ack (EIP8)',
   testdataBefore((t: EciesTestContext) => {
     assert.doesNotThrow(() => {
-      t.context.b._gotEIP8Auth = true
+      t.context.b['_gotEIP8Auth'] = true
       t.context.b.parseAuthEIP8(t.context.h1?.auth as Uint8Array)
-      t.context.a._initMsg = t.context.h1?.auth
+      t.context.a['_initMsg'] = t.context.h1?.auth
     }, 'should not throw on auth parsing')
     assert.doesNotThrow(() => {
-      t.context.a._gotEIP8Ack = true
+      t.context.a['_gotEIP8Ack'] = true
       t.context.a.parseAckEIP8(t.context.h1?.ack as Uint8Array)
     }, 'should not throw on ack parsing')
   })

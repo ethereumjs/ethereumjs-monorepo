@@ -1,7 +1,7 @@
 {
   "name": "@ethereumjs/trie",
-  "version": "5.0.5",
-  "description": "This is an implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
+  "version": "6.0.0-rc.1",
+  "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": [
     "merkle",
     "radix",
@@ -39,7 +39,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
-    "docs:build": "typedoc --options typedoc.js",
+    "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- trie",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
@@ -52,15 +52,15 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/rlp": "5.0.0-rc.1",
+    "@ethereumjs/util": "9.0.0-rc.1",
     "@types/readable-stream": "^2.3.13",
     "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.1.2",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
-    "@ethereumjs/genesis": "^0.0.1",
+    "@ethereumjs/genesis": "0.1.0-rc.1",
     "0x": "^4.9.1",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",

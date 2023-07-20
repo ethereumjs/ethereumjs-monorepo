@@ -8,34 +8,34 @@ import type { PeerInfo } from '../types.js'
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
-export class KBucket extends EventEmitter {
-  _peers: Map<string, PeerInfo> = new Map()
-  _kbucket: _KBucket
+export class KBucket {
+  public events: EventEmitter
+  protected _peers: Map<string, PeerInfo> = new Map()
+  protected _kbucket: _KBucket
   constructor(localNodeId: Uint8Array) {
-    super()
-
+    this.events = new EventEmitter()
     this._kbucket = new _KBucket({
       localNodeId,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
       numberOfNodesToPing: KBUCKET_CONCURRENCY,
     })
 
-    this._kbucket.on('added', (peer: PeerInfo) => {
+    this._kbucket.events.on('added', (peer: PeerInfo) => {
       for (const key of KBucket.getKeys(peer)) {
         this._peers.set(key, peer)
       }
-      this.emit('added', peer)
+      this.events.emit('added', peer)
     })
 
-    this._kbucket.on('removed', (peer: PeerInfo) => {
+    this._kbucket.events.on('removed', (peer: PeerInfo) => {
       for (const key of KBucket.getKeys(peer)) {
         this._peers.delete(key)
       }
-      this.emit('removed', peer)
+      this.events.emit('removed', peer)
     })
 
-    this._kbucket.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
-      this.emit('ping', oldPeers, newPeer)
+    this._kbucket.events.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
+      this.events.emit('ping', oldPeers, newPeer)
     })
   }
 

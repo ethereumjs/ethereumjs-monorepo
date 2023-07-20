@@ -3,7 +3,7 @@ import { bytesToHex, short } from '@ethereumjs/util'
 import { OOGResult } from '../evm.js'
 import { ERROR, EvmError } from '../exceptions.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):

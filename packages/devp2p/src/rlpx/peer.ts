@@ -63,30 +63,31 @@ interface Hello {
   id: Uint8Array
 }
 
-export class Peer extends EventEmitter {
-  _clientId: Uint8Array
-  _capabilities?: Capabilities[]
-  _common: Common
-  _port: number
-  _id: Uint8Array
-  _remoteClientIdFilter?: string[]
-  _remoteId: Uint8Array
-  _EIP8: Uint8Array | boolean
-  _eciesSession: ECIES
-  _state: string
-  _weHello: HelloMsg | null
-  _hello: Hello | null
-  _nextPacketSize: number
-  _socket: Socket
-  _socketData: Uint8Array
-  _pingIntervalId: NodeJS.Timeout | null
-  _pingTimeoutId: NodeJS.Timeout | null
-  _closed: boolean
-  _connected: boolean
-  _disconnectReason?: DISCONNECT_REASON
-  _disconnectWe: null | boolean
-  _pingTimeout: number
-  _logger: Debugger
+export class Peer {
+  public events: EventEmitter
+  public readonly clientId: Uint8Array
+  protected _capabilities?: Capabilities[]
+  public common: Common
+  protected _port: number
+  public readonly id: Uint8Array
+  protected _remoteClientIdFilter?: string[]
+  protected _remoteId: Uint8Array
+  protected _EIP8: Uint8Array | boolean
+  protected _eciesSession: ECIES
+  protected _state: string
+  protected _weHello: HelloMsg | null
+  protected _hello: Hello | null
+  protected _nextPacketSize: number
+  protected _socket: Socket
+  protected _socketData: Uint8Array
+  protected _pingIntervalId: NodeJS.Timeout | null
+  protected _pingTimeoutId: NodeJS.Timeout | null
+  protected _closed: boolean
+  protected _connected: boolean
+  protected _disconnectReason?: DISCONNECT_REASON
+  protected _disconnectWe: null | boolean
+  protected _pingTimeout: number
+  private _logger: Debugger
 
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
@@ -95,20 +96,20 @@ export class Peer extends EventEmitter {
   _protocols: ProtocolDescriptor[]
 
   constructor(options: PeerOptions) {
-    super()
+    this.events = new EventEmitter()
 
     // hello data
-    this._clientId = options.clientId
+    this.clientId = options.clientId
     this._capabilities = options.capabilities
-    this._common = options.common
+    this.common = options.common
     this._port = options.port
-    this._id = options.id
+    this.id = options.id
     this._remoteClientIdFilter = options.remoteClientIdFilter
 
     // ECIES session
     this._remoteId = options.remoteId
     this._EIP8 = options.EIP8 ?? true
-    this._eciesSession = new ECIES(options.privateKey, this._id, this._remoteId)
+    this._eciesSession = new ECIES(options.privateKey, this.id, this._remoteId)
 
     // Auth, Ack, Header, Body
     this._state = 'Auth'
@@ -120,7 +121,7 @@ export class Peer extends EventEmitter {
     this._socket = options.socket
     this._socketData = new Uint8Array()
     this._socket.on('data', this._onSocketData.bind(this))
-    this._socket.on('error', (err: Error) => this.emit('error', err))
+    this._socket.on('error', (err: Error) => this.events.emit('error', err))
     this._socket.once('close', this._onSocketClose.bind(this))
     this._logger =
       this._socket.remoteAddress !== undefined
@@ -169,8 +170,10 @@ export class Peer extends EventEmitter {
   _sendAck() {
     if (this._closed) return
     this._logger(
+      // @ts-ignore
       `Send ack (EIP8: ${this._eciesSession._gotEIP8Auth}) to ${this._socket.remoteAddress}:${this._socket.remotePort}`
     )
+    // @ts-ignore
     if (this._eciesSession._gotEIP8Auth) {
       const ackEIP8 = this._eciesSession.createAckEIP8()
       if (!ackEIP8) return
@@ -221,14 +224,14 @@ export class Peer extends EventEmitter {
         // TODO: Remove when we can also serve snap requests from other peers
         .filter((c) => c.name !== 'snap')
         .map((c) => `${c.name}${c.version}`)
-        .join(',')} clientId=${bytesToUtf8(this._clientId)}`
+        .join(',')} clientId=${bytesToUtf8(this.clientId)}`
     )
     const payload: HelloMsg = [
       intToBytes(BASE_PROTOCOL_VERSION),
-      this._clientId,
+      this.clientId,
       this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
       this._port === null ? new Uint8Array(0) : intToBytes(this._port),
-      this._id,
+      this.id,
     ]
 
     if (!this._closed) {
@@ -238,7 +241,7 @@ export class Peer extends EventEmitter {
         this._weHello = payload
       }
       if (this._hello) {
-        this.emit('connect')
+        this.events.emit('connect')
       }
     }
   }
@@ -300,10 +303,12 @@ export class Peer extends EventEmitter {
   _handleAuth() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
+    // @ts-ignore
     if (!this._eciesSession._gotEIP8Auth) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
+        // @ts-ignore
         this._eciesSession._gotEIP8Auth = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
@@ -323,6 +328,7 @@ export class Peer extends EventEmitter {
   _handleAck() {
     const bytesCount = this._nextPacketSize
     const parseData = this._socketData.subarray(0, bytesCount)
+    // @ts-ignore
     if (!this._eciesSession._gotEIP8Ack) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
@@ -330,6 +336,7 @@ export class Peer extends EventEmitter {
           `Received ack (old format) from ${this._socket.remoteAddress}:${this._socket.remotePort}`
         )
       } else {
+        // @ts-ignore
         this._eciesSession._gotEIP8Ack = true
         this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
         return
@@ -422,7 +429,7 @@ export class Peer extends EventEmitter {
     this._connected = true
     this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
     if (this._weHello) {
-      this.emit('connect')
+      this.events.emit('connect')
     }
   }
 
@@ -589,7 +596,7 @@ export class Peer extends EventEmitter {
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer subprotocol message handling: ${err}`)
-      this.emit('error', err)
+      this.events.emit('error', err)
     }
     this._socketData = this._socketData.subarray(bytesCount)
   }
@@ -621,7 +628,7 @@ export class Peer extends EventEmitter {
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this._logger(`Error on peer socket data handling: ${err}`)
-      this.emit('error', err)
+      this.events.emit('error', err)
     }
   }
 
@@ -633,7 +640,7 @@ export class Peer extends EventEmitter {
     clearTimeout(this._pingTimeoutId!)
 
     this._closed = true
-    if (this._connected) this.emit('close', this._disconnectReason, this._disconnectWe)
+    if (this._connected) this.events.emit('close', this._disconnectReason, this._disconnectWe)
   }
 
   /**

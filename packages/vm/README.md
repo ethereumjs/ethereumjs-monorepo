@@ -6,12 +6,17 @@
 [![Code Coverage][vm-coverage-badge]][vm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
+
 | Execution Context for the Ethereum EVM Implementation. |
 | ------------------------------------------------------ |
 
 This package provides an Ethereum `mainnet` compatible execution context for the
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
 EVM implementation.
+
+So beyond bytecode processing this package allows to run or build new Ethereum blocks or single transactions
+and update a blockchain state accordingly.
 
 Note that up till `v5` this package also was the bundled package for the EVM implementation itself.
 
@@ -35,7 +40,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
 const vm = await VM.create({ common })
 
 const tx = LegacyTransaction.fromTxData({
@@ -88,11 +93,41 @@ This projects contain the following examples:
 
 All of the examples have their own `README.md` explaining how to run them.
 
-# API
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+
+## API
 
 ### Docs
 
 For documentation on `VM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
+
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
 
 ### BigInt Support
 
@@ -117,9 +152,9 @@ vm.evm.events.on('step', function (data) {
 
 Note that it's now also possible to pass in an own or customized `EVM` instance by using the optional `evm` constructor option.
 
-### Execution Environment (EEI) and State
+### State and Blockchain Information
 
-This package provides a concrete implementation of the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) EEI interface to instantiate a VM/EVM combination with an Ethereum `mainnet` compatible execution context.
+With `VM` v7 a previously needed EEI interface for EVM/VM communication is not needed any more and the API has been simplified, also see the respective EVM README section. Most of the EEI related logic is now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package, with the `EVM` now taking in both an (optional) `stateManager` and `blockchain` argument for the constructor (which the `VM` passes over by default).
 
 With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
@@ -138,15 +173,15 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 The following is a simple example for a block run on `Goerli`:
 
 ```typescript
-import { VM } from '@ethereumjs/vm'
 import { Chain, Common } from '@ethereumjs/common'
+import { hexToBytes } from '@ethereumjs/util'
+import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Goerli })
-const hardforkByBlockNumber = true
-const vm = new VM({ common, hardforkByBlockNumber })
+const vm = await VM.create({ common, setHardfork: true })
 
-const serialized = Buffer.from('f901f7a06bfee7294bf4457...', 'hex')
-const block = Block.fromRLPSerializedBlock(serialized, { hardforkByBlockNumber })
+const serialized = hexToBytes('0xf901f7a06bfee7294bf4457...')
+const block = Block.fromRLPSerializedBlock(serialized, { setHardfork: true })
 const result = await vm.runBlock(block)
 ```
 
@@ -161,33 +196,38 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-const vm = new VM({ common })
+const vm = await VM.create({ common })
 ```
 
 ### Custom genesis state support
 
-Genesis state code logic has been reworked substantially along the v6 breaking releases and a lot of the genesis state code moved from both the `@ethereumjs/common` and `@ethereumjs/block` libraries to the `@ethereumjs/blockchain` library, see PR [#1916](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1916) for an overview on the broad set of changes.
+#### Genesis in v7 (removed genesis dependency)
 
-For initializing a custom genesis state you can now use the `genesisState` constructor option in the `Blockchain` library in a similar way this had been done in the `Common` library before.
+Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
 
-If you want to create a new instance of the VM and add your own genesis state, you can do it by passing a `Blockchain` instance with custom genesis state set with the `genesisState` constructor option and passing the flag `activateGenesisState` in `VMOpts`.
+Starting with the v7 release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
+
+For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
 
 ```typescript
-import { Common } from '@ethereumjs/common'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Chain, Common } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
 import { VM } from '@ethereumjs/vm'
-import myCustomChain1 from '[PATH_TO_MY_CHAINS]/myCustomChain1.json'
-import chain1GenesisState from '[PATH_TO_GENESIS_STATES]/chain1GenesisState.json'
 
-const common = new Common({
-  // TODO: complete example
-})
-const blockchain = await Blockchain.create({
-  // TODO: complete example
-})
-const vm = await VM.create({ common, activateGenesisState: true })
+const genesisState = getGenesis(Chain.Mainnet)
+
+const blockchain = await Blockchain.create({ genesisState })
+const vm = await VM.create({ blockchain, genesisState })
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
+
+#### Genesis in v6
+
+For the v6 release responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
+
+A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
 
 ### EIP Support
 
@@ -199,7 +239,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
 const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-const vm = new VM({ common })
+const vm = await VM.create({ common })
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.

@@ -31,7 +31,7 @@ passed in via [customChains](CommonOpts.md#customchains).
 
 #### Defined in
 
-[packages/common/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L92)
+[types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L90)
 
 ___
 
@@ -51,7 +51,7 @@ const common = new Common({ chain: 'myCustomChain1', customChains: [ myCustomCha
 
 #### Defined in
 
-[packages/common/src/types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L104)
+[types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L102)
 
 ___
 
@@ -60,11 +60,7 @@ ___
 • `Optional` **eips**: `number`[]
 
 Selected EIPs which can be activated, please use an array for instantiation
-(e.g. `eips: [ 2537, ]`)
-
-Currently supported:
-
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+(e.g. `eips: [ 1559, 3860 ]`)
 
 #### Inherited from
 
@@ -72,7 +68,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
+[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L78)
 
 ___
 
@@ -90,4 +86,4 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L71)
+[types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L73)

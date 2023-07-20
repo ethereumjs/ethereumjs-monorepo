@@ -21,23 +21,23 @@ const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
 
-export class Server extends EventEmitter {
-  _dpt: DPT
-  _privateKey: Uint8Array
-  _timeout: number
-  _endpoint: PeerInfo
-  _requests: Map<string, any>
-  _requestsCache: LRUCache<string, Promise<any>>
-  _socket: DgramSocket | null
-  _debug: Debugger
+export class Server {
+  public events: EventEmitter
+  protected _dpt: DPT
+  protected _privateKey: Uint8Array
+  protected _timeout: number
+  protected _endpoint: PeerInfo
+  protected _requests: Map<string, any>
+  protected _requestsCache: LRUCache<string, Promise<any>>
+  protected _socket: DgramSocket | null
+  private _debug: Debugger
 
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
-    super()
-
+    this.events = new EventEmitter()
     this._dpt = dpt
     this._privateKey = privateKey
 
-    this._timeout = options.timeout ?? 2000 // 2 * 1000
+    this._timeout = options.timeout ?? 4000 // 4 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
     this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
@@ -46,14 +46,14 @@ export class Server extends EventEmitter {
     this._socket = createSocket()
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     if (this._socket) {
-      this._socket.once('listening', () => this.emit('listening'))
-      this._socket.once('close', () => this.emit('close'))
-      this._socket.on('error', (err) => this.emit('error', err))
+      this._socket.once('listening', () => this.events.emit('listening'))
+      this._socket.once('close', () => this.events.emit('close'))
+      this._socket.on('error', (err) => this.events.emit('error', err))
       this._socket.on('message', (msg: Uint8Array, rinfo: RemoteInfo) => {
         try {
           this._handler(msg, rinfo)
         } catch (err: any) {
-          this.emit('error', err)
+          this.events.emit('error', err)
         }
       })
     }
@@ -150,7 +150,7 @@ export class Server extends EventEmitter {
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
     if (peer === null && info.typename === 'ping' && info.data.from.udpPort !== null) {
-      setTimeout(() => this.emit('peers', [info.data.from]), 100) // 100 ms
+      setTimeout(() => this.events.emit('peers', [info.data.from]), 100) // 100 ms
     }
 
     switch (info.typename) {
@@ -198,7 +198,7 @@ export class Server extends EventEmitter {
       }
 
       case 'neighbours': {
-        this.emit(
+        this.events.emit(
           'peers',
           info.data.peers.map((peer: any) => peer.endpoint)
         )

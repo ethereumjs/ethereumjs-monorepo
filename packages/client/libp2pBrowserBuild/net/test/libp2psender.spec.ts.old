@@ -1,0 +1,41 @@
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import * as tape from 'tape'
+
+import { Libp2pSender } from '../../../src/net/protocol'
+
+const DuplexPair = require('it-pair/duplex')
+
+describe('[Libp2pSender]', () => {
+  it('should send/receive status', () => {
+    const conn = DuplexPair()
+    const sender = new Libp2pSender(conn[0])
+    const receiver = new Libp2pSender(conn[1])
+    receiver.on('status', (status: any) => {
+      assert.equal(bytesToHex(status.id), '05', 'status received')
+      assert.equal(bytesToHex(receiver.status.id), '05', 'status getter')
+    })
+    sender.sendStatus({ id: hexToBytes('0x05') })
+  })
+
+  it('should send/receive message', () => {
+    const conn = DuplexPair()
+    const sender = new Libp2pSender(conn[0])
+    const receiver = new Libp2pSender(conn[1])
+    receiver.on('message', (message: any) => {
+      assert.equal(message.code, 1, 'message received (code)')
+      assert.equal(bytesToHex(message.payload), '05', 'message received (payload)')
+    })
+    sender.sendMessage(1, hexToBytes('0x05'))
+  })
+
+  it('should catch errors', () => {
+    const [conn] = DuplexPair()
+    const err0 = {
+      ...conn,
+      sink: () => {
+        throw new Error('err0')
+      },
+    } as any
+    assert.throws(() => new Libp2pSender(err0), /err0/, 'catch error')
+  })
+})

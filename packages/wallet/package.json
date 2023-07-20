@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "2.0.0",
+  "version": "2.0.0-rc.1",
   "description": "Utilities for handling Ethereum keys",
   "keywords": [
     "ethereum",
@@ -34,7 +34,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
-    "docs:build": "npx typedoc --options typedoc.js",
+    "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
@@ -46,7 +46,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/util": "9.0.0-rc.1",
     "@scure/base": "^1.1.1",
     "ethereum-cryptography": "^2.1.2",
     "js-md5": "^0.7.3",
@@ -57,8 +57,7 @@
     "@types/lodash.zip": "^4.2.7",
     "@types/uuid": "^9.0.2",
     "ethers": "^6.4.0",
-    "lodash.zip": "^4.2.0",
-    "nyc": "^15.1.0"
+    "lodash.zip": "^4.2.0"
   },
   "engines": {
     "node": ">=18"

@@ -28,6 +28,7 @@ module.exports = {
     'webpack.config.js',
     'vitest.config.ts',
     'vitest.config.browser.ts',
+    'vitest.config.unit.ts'
   ],
   extends: [
     'typestrict',

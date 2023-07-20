@@ -1,5 +1,5 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../../src/config'
 import { Fetcher } from '../../../src/sync/fetcher/fetcher'
@@ -24,9 +24,8 @@ class FetcherTest extends Fetcher<any, any, any> {
   }
 }
 
-tape('[Fetcher]', (t) => {
-  t.test('should handle bad result', (t) => {
-    t.plan(2)
+describe('[Fetcher]', () => {
+  it('should handle bad result', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job: any = { peer: {}, state: 'active' }
@@ -35,24 +34,24 @@ tape('[Fetcher]', (t) => {
     fetcher.wait = td.func<FetcherTest['wait']>()
     td.when(fetcher.wait()).thenResolve(undefined)
     ;(fetcher as any).success(job, undefined)
-    t.equals((fetcher as any).in.length, 1, 'enqueued job')
-    setTimeout(() => t.ok(job.peer.idle, 'peer idled'), 10)
+    assert.equal((fetcher as any).in.length, 1, 'enqueued job')
+    setTimeout(() => assert.ok(job.peer.idle, 'peer idled'), 10)
   })
 
-  t.test('should handle failure', (t) => {
-    t.plan(2)
+  it('should handle failure', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object() })
     const job = { peer: {}, state: 'active' }
     ;(fetcher as any).running = true
     fetcher.next = td.func<FetcherTest['next']>()
-    config.events.on(Event.SYNC_FETCHER_ERROR, (err) => t.equals(err.message, 'err0', 'got error'))
+    config.events.on(Event.SYNC_FETCHER_ERROR, (err) =>
+      assert.equal(err.message, 'err0', 'got error')
+    )
     ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
-    t.equals((fetcher as any).in.length, 1, 'enqueued job')
+    assert.equal((fetcher as any).in.length, 1, 'enqueued job')
   })
 
-  t.test('should handle expiration', (t) => {
-    t.plan(2)
+  it('should handle expiration', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
       config,
@@ -74,13 +73,12 @@ tape('[Fetcher]', (t) => {
     ;(fetcher as any).total = 10
     fetcher.next()
     setTimeout(() => {
-      t.deepEquals(job, { index: 0, peer: { idle: false }, state: 'expired' }, 'expired job')
-      t.equals((fetcher as any).in.length, 1, 'enqueued job')
+      assert.deepEqual(job, { index: 0, peer: { idle: false }, state: 'expired' }, 'expired job')
+      assert.equal((fetcher as any).in.length, 1, 'enqueued job')
     }, 20)
   })
 
-  t.test('should handle queue management', (t) => {
-    t.plan(3)
+  it('should handle queue management', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
       config,
@@ -92,9 +90,9 @@ tape('[Fetcher]', (t) => {
     ;(fetcher as any).in.insert(job1)
     ;(fetcher as any).in.insert(job2)
     ;(fetcher as any).in.insert(job3)
-    t.equals((fetcher as any).in.length, 3, 'queue filled')
+    assert.equal((fetcher as any).in.length, 3, 'queue filled')
     fetcher.clear()
-    t.equals((fetcher as any).in.length, 0, 'queue cleared')
+    assert.equal((fetcher as any).in.length, 0, 'queue cleared')
     const job4 = { index: 3 }
     const job5 = { index: 4 }
 
@@ -104,11 +102,10 @@ tape('[Fetcher]', (t) => {
     ;(fetcher as any).in.insert(job4)
     ;(fetcher as any).in.insert(job5)
 
-    t.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
+    assert.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
   })
 
-  t.test('should re-enqueue on a non-fatal error', (t) => {
-    t.plan(1)
+  it('should re-enqueue on a non-fatal error', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
     const task = { first: BigInt(50), count: 10 }
@@ -128,28 +125,26 @@ tape('[Fetcher]', (t) => {
     })
     ;(fetcher as any).success(job, ['something'])
     setTimeout(() => {
-      t.ok(
+      assert.ok(
         (fetcher as any).in.peek().task.first === BigInt(1),
         'should step back for safeReorgDistance'
       )
     }, 20)
   })
 
-  t.test('should reset td', (st) => {
+  it('should reset td', () => {
     td.reset()
-    st.end()
   })
 
-  t.test('should handle fatal errors correctly', (st) => {
+  it('should handle fatal errors correctly', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
     const task = { first: BigInt(50), count: 10 }
     const job: any = { peer: {}, task, state: 'active', index: 0 }
     ;(fetcher as any).in.insert(job)
     fetcher.error({ name: 'VeryBadError', message: 'Something very bad happened' }, job, true)
-    st.equals(fetcher.syncErrored?.name, 'VeryBadError', 'fatal error has correct name')
-    st.equals((fetcher as any).in.length, 0, 'fatal error clears job queue')
+    assert.equal(fetcher.syncErrored?.name, 'VeryBadError', 'fatal error has correct name')
+    assert.equal((fetcher as any).in.length, 0, 'fatal error clears job queue')
     fetcher.clear()
-    st.end()
   })
 })

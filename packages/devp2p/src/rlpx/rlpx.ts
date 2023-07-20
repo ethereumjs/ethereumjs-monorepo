@@ -30,38 +30,38 @@ const LRU = require('lru-cache')
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
 
-export class RLPx extends EventEmitter {
-  _privateKey: Uint8Array
-  _id: Uint8Array
-  _debug: Debugger
-  _timeout: number
-  _maxPeers: number
-  _clientId: Uint8Array
-  _remoteClientIdFilter?: string[]
-  _capabilities: Capabilities[]
-  _common: Common
-  _listenPort: number | null
-  _dpt: DPT | null
+export class RLPx {
+  public events: EventEmitter
+  protected _privateKey: Uint8Array
+  public readonly id: Uint8Array
+  private _debug: Debugger
+  protected _timeout: number
+  protected _maxPeers: number
+  public readonly clientId: Uint8Array
+  protected _remoteClientIdFilter?: string[]
+  protected _capabilities: Capabilities[]
+  protected _common: Common
+  protected _listenPort: number | null
+  protected _dpt: DPT | null
 
-  _peersLRU: LRUCache<string, boolean>
-  _peersQueue: { peer: PeerInfo; ts: number }[]
-  _server: net.Server | null
-  _peers: Map<string, net.Socket | Peer>
+  protected _peersLRU: LRUCache<string, boolean>
+  protected _peersQueue: { peer: PeerInfo; ts: number }[]
+  protected _server: net.Server | null
+  protected _peers: Map<string, net.Socket | Peer>
 
-  _refillIntervalId: NodeJS.Timeout
-  _refillIntervalSelectionCounter: number = 0
+  protected _refillIntervalId: NodeJS.Timeout
+  protected _refillIntervalSelectionCounter: number = 0
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
-    super()
-
+    this.events = new EventEmitter()
     this._privateKey = privateKey
-    this._id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
+    this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
     // options
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
-    this._clientId = options.clientId
+    this.clientId = options.clientId
       ? options.clientId
       : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
@@ -73,7 +73,7 @@ export class RLPx extends EventEmitter {
     // DPT
     this._dpt = options.dpt ?? null
     if (this._dpt !== null) {
-      this._dpt.on('peer:new', (peer: PeerInfo) => {
+      this._dpt.events.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
           this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
@@ -89,7 +89,7 @@ export class RLPx extends EventEmitter {
           this._peersQueue.push({ peer, ts: 0 }) // save to queue
         }
       })
-      this._dpt.on('peer:removed', (peer: PeerInfo) => {
+      this._dpt.events.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
         this._peersQueue = this._peersQueue.filter(
           (item) => !equalsBytes(item.peer.id! as Uint8Array, peer.id as Uint8Array)
@@ -98,9 +98,9 @@ export class RLPx extends EventEmitter {
     }
     // internal
     this._server = net.createServer()
-    this._server.once('listening', () => this.emit('listening'))
-    this._server.once('close', () => this.emit('close'))
-    this._server.on('error', (err) => this.emit('error', err))
+    this._server.once('listening', () => this.events.emit('listening'))
+    this._server.once('close', () => this.events.emit('close'))
+    this._server.on('error', (err) => this.events.emit('error', err))
     this._server.on('connection', (socket) => this._onConnect(socket, null))
     const serverAddress = this._server.address()
     this._debug =
@@ -205,34 +205,38 @@ export class RLPx extends EventEmitter {
       socket,
       remoteId: peerId!,
       privateKey: this._privateKey,
-      id: this._id,
+      id: this.id,
       timeout: this._timeout,
-      clientId: this._clientId,
+      clientId: this.clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
       common: this._common,
       port: this._listenPort!,
     })
-    peer.on('error', (err) => this.emit('peer:error', peer, err))
+    peer.events.on('error', (err) => this.events.emit('peer:error', peer, err))
 
     // handle incoming connection
     if (peerId === null && this._getOpenSlots() === 0) {
-      peer.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
+      peer.events.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
       socket.once('error', () => {})
       return
     }
 
-    peer.once('connect', () => {
+    peer.events.once('connect', () => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
+
+      // @ts-ignore
       if (peer._eciesSession._gotEIP8Auth === true) {
         msg += ` (peer eip8 auth)`
       }
+
+      // @ts-ignore
       if (peer._eciesSession._gotEIP8Ack === true) {
         msg += ` (peer eip8 ack)`
       }
       this._debug(msg)
       const id = peer.getId()
-      if (id && equalsBytes(id, this._id)) {
+      if (id && equalsBytes(id, this.id)) {
         return peer.disconnect(DISCONNECT_REASON.SAME_IDENTITY)
       }
 
@@ -243,10 +247,10 @@ export class RLPx extends EventEmitter {
       }
 
       this._peers.set(peerKey, peer)
-      this.emit('peer:added', peer)
+      this.events.emit('peer:added', peer)
     })
 
-    peer.once('close', (reason, disconnectWe) => {
+    peer.events.once('close', (reason, disconnectWe) => {
       if (disconnectWe === true) {
         this._debug(
           `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
@@ -260,7 +264,9 @@ export class RLPx extends EventEmitter {
           this._peersQueue.push({
             peer: {
               id: peer.getId()!,
+              // @ts-ignore
               address: peer._socket.remoteAddress,
+              // @ts-ignore
               tcpPort: peer._socket.remotePort,
             },
             ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
@@ -272,7 +278,7 @@ export class RLPx extends EventEmitter {
       if (id) {
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
-        this.emit('peer:removed', peer, reason, disconnectWe)
+        this.events.emit('peer:removed', peer, reason, disconnectWe)
       }
     })
   }
