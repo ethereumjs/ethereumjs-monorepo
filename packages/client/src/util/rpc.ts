@@ -1,6 +1,4 @@
 import { json as jsonParser } from 'body-parser'
-import Connect from 'connect'
-import cors from 'cors'
 import { createServer } from 'http'
 import { Server as RPCServer } from 'jayson/promise'
 import { decode } from 'jwt-simple'
@@ -11,6 +9,9 @@ import type { RPCManager } from '../rpc'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
+
+const Connect = require('connect')
+const cors = require('cors')
 
 const algorithm: TAlgorithm = 'HS256'
 
@@ -164,14 +165,14 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
   const { server, withEngineMiddleware, rpcCors } = opts
 
-  const app = Connect()
+  const app = Connect() as any
   if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
   app.use(jsonParser({ limit: '11mb' }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
-    app.use((req, res, next) => {
+    app.use((req: any, res: any, next: any) => {
       try {
         if (unlessFn && unlessFn(req)) return next()
         checkHeaderAuth(req, jwtSecret)
