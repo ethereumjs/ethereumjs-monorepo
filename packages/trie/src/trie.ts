@@ -21,6 +21,7 @@ import {
 } from './node/index.js'
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
+import { _walkTrie } from './util/asyncWalk.js'
 import { Lock } from './util/lock.js'
 import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
@@ -349,6 +350,8 @@ export class Trie {
   async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
   }
+
+  walkTrieIterable = _walkTrie.bind(this)
 
   /**
    * Creates the initial node from an empty tree.
