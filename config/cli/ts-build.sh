@@ -79,6 +79,21 @@ EOT
     "type": "module"
 }
 EOT
+        echo "Adding JSON type assertions for ESM build"
+        # Following command is designed to be both Mac OS and GNU Linux (Ubuntu) compatible.
+        # 
+        # Some notes:
+        # - Usage of both -i and -e is needed for Mac OS compatibility
+        # https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux
+        # 
+        # - Then -i option behavior differs between Mac OS and Linux (Mac OS creates backup files with -i'')
+        # Therefore the explicit addition of -i'.js-e' and the subsequent deletion
+        # 
+        # - Using sed with a direct path minimally doesn't work using the command within this script on Mac OS
+        # Therefore the usage with the find command
+        # 
+        find dist/esm -name "*.js" -exec sed -E -i'.js-e' -e "s/(from '[^']+\.json');/\1 assert { type: \"json\" };/" {} \;
+        rm -Rf ./dist/esm/**/*.js-e
     else
         echo "Skipping post build fixes (no ESM setup yet)."
     fi
