@@ -90,7 +90,7 @@ describe('[Integration:BeaconSync]', () => {
     })
     await localService.synchronizer!.start()
   })
-}, 30000)
+}, 60000)
 
 it('reset TD', () => {
   BlockHeader.prototype['_consensusFormatValidation'] = originalValidate

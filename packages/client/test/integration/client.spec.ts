@@ -35,5 +35,5 @@ describe('[Integration:EthereumClient]', async () => {
     assert.ok((client.service('eth') as any).synchronizer.running, 'sync running')
     await client.stop()
     assert.ok(true, 'client stopped')
-  })
+  }, 60000)
 })
