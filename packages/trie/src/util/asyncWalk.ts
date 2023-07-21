@@ -44,9 +44,6 @@ export async function* _walkTrie(
     }
     if (node instanceof BranchNode) {
       for (const [nibble, childNode] of node._branches.entries()) {
-        if (childNode === null) {
-          continue
-        }
         const nextKey = [...currentKey, nibble]
         const _childNode: Uint8Array =
           childNode instanceof Uint8Array ? childNode : this.hash(RLP.encode(childNode))
