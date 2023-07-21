@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@ethereumjs/genesis": "0.1.0-rc.1",
-    "0x": "^4.9.1",
+    "0x": "^5.5.0",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",
     "level": "^8.0.0",
