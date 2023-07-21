@@ -379,7 +379,7 @@ describe('[BaseTransaction]', () => {
     }
   })
 
-  it.only('initialization with defaults', () => {
+  it('initialization with defaults', () => {
     const bufferZero = toBytes('0x')
     const tx = LegacyTransaction.fromTxData({
       nonce: '',
