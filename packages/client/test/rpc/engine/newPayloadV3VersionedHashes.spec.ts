@@ -32,16 +32,20 @@ describe(`${method}: Cancun validations`, () => {
   it('versionedHashes', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
+    const parentBeaconBlockRoot =
+      '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
     const blockDataExtraVersionedHashes = [
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64',
+        blockHash: '0xb8b9607bd09f0c18bccfa4dcb6fe355f07d383c902f0fc2a1671cf20792e131c',
         withdrawals: [],
         dataGasUsed: '0x0',
         excessDataGas: '0x0',
       },
+      // versioned hashes
       ['0x3434', '0x2334'],
+      parentBeaconBlockRoot,
     ]
     let req = params(method, blockDataExtraVersionedHashes)
     let expectRes = (res: any) => {
@@ -64,20 +68,43 @@ describe(`${method}: Cancun validations`, () => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x701f665755524486783d70ea3808f6d013ddfcd03972bd87eace1f29a44a83e8',
+        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
         // two blob transactions but no versioned hashes
         transactions: [txString, txString],
+        withdrawals: [],
+        dataGasUsed: '0x40000',
+        excessDataGas: '0x0',
       },
     ]
     req = params(method, blockDataNoneHashes)
-    expectRes = checkError(INVALID_PARAMS, 'Missing versionedHashes after Cancun is activated')
+    expectRes = checkError(INVALID_PARAMS, 'missing value for required argument versionedHashes')
+    await baseRequest(server, req, 200, expectRes, false)
+
+    const blockDataMissingParentBeaconRoot = [
+      {
+        ...blockData,
+        parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
+        // two blob transactions but no versioned hashes
+        transactions: [txString, txString],
+        withdrawals: [],
+        dataGasUsed: '0x40000',
+        excessDataGas: '0x0',
+      },
+      txVersionedHashesString,
+    ]
+    req = params(method, blockDataMissingParentBeaconRoot)
+    expectRes = checkError(
+      INVALID_PARAMS,
+      'missing value for required argument parentBeaconBlockRoot'
+    )
     await baseRequest(server, req, 200, expectRes, false)
 
     const blockDataExtraMissingHashes1 = [
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
+        blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
         withdrawals: [],
         dataGasUsed: '0x40000',
         excessDataGas: '0x0',
@@ -85,6 +112,7 @@ describe(`${method}: Cancun validations`, () => {
         transactions: [txString, txString],
       },
       txVersionedHashesString,
+      parentBeaconBlockRoot,
     ]
     req = params(method, blockDataExtraMissingHashes1)
     expectRes = (res: any) => {
@@ -100,7 +128,7 @@ describe(`${method}: Cancun validations`, () => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
+        blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
         withdrawals: [],
         dataGasUsed: '0x40000',
         excessDataGas: '0x0',
@@ -108,6 +136,7 @@ describe(`${method}: Cancun validations`, () => {
         transactions: [txString, txString],
       },
       [...txVersionedHashesString, '0x3456'],
+      parentBeaconBlockRoot,
     ]
     req = params(method, blockDataExtraMisMatchingHashes1)
     expectRes = (res: any) => {
@@ -123,7 +152,7 @@ describe(`${method}: Cancun validations`, () => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0x141462264b2c27594e8cfcafcadd3545e08c657af4e5882096191632dd4cfc1c',
+        blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
         withdrawals: [],
         dataGasUsed: '0x40000',
         excessDataGas: '0x0',
@@ -131,6 +160,7 @@ describe(`${method}: Cancun validations`, () => {
         transactions: [txString, txString],
       },
       [...txVersionedHashesString, ...txVersionedHashesString],
+      parentBeaconBlockRoot,
     ]
     req = params(method, blockDataMatchingVersionedHashes)
     expectRes = (res: any) => {
