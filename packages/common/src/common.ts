@@ -9,9 +9,7 @@ import {
 import { crc32 as crc } from 'crc'
 import { EventEmitter } from 'events'
 
-import * as goerli from './chains/goerli.json'
-import * as mainnet from './chains/mainnet.json'
-import * as sepolia from './chains/sepolia.json'
+import { chains as CHAIN_SPECS } from './chains.js'
 import { EIPs } from './eips.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
 import { hardforks as HARDFORK_SPECS } from './hardforks.js'
@@ -999,7 +997,7 @@ export class Common {
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains = { mainnet, goerli, sepolia } as ChainsConfig
+    const chains = { ...CHAIN_SPECS } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain
