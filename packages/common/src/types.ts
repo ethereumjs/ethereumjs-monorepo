@@ -16,6 +16,15 @@ export type CliqueConfig = {
 export type EthashConfig = {}
 
 export type CasperConfig = {}
+
+type ConsensusConfig = {
+  type: ConsensusType | string
+  algorithm: ConsensusAlgorithm | string
+  clique?: CliqueConfig
+  ethash?: EthashConfig
+  casper?: CasperConfig
+}
+
 export interface ChainConfig {
   name: string
   chainId: number | bigint
@@ -27,13 +36,7 @@ export interface ChainConfig {
   hardforks: HardforkTransitionConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
-  consensus: {
-    type: ConsensusType | string
-    algorithm: ConsensusAlgorithm | string
-    clique?: CliqueConfig
-    ethash?: EthashConfig
-    casper?: CasperConfig
-  }
+  consensus: ConsensusConfig
 }
 
 export interface GenesisBlockConfig {
@@ -126,16 +129,14 @@ export interface HardforkByOpts {
 }
 
 type ParamDict = {
-  v: number
+  v: number | bigint | null
   d: string
 }
 
-export type EIPConfig = {
+type EIPOrHFConfig = {
   comment: string
   url: string
   status: string
-  minimumHardfork: Hardfork
-  requiredEIPs: number[]
   gasConfig?: {
     [key: string]: ParamDict
   }
@@ -152,3 +153,14 @@ export type EIPConfig = {
     [key: string]: ParamDict
   }
 }
+
+export type EIPConfig = {
+  minimumHardfork: Hardfork
+  requiredEIPs: number[]
+} & EIPOrHFConfig
+
+export type HardforkConfig = {
+  name: string
+  eips?: number[]
+  consensus?: ConsensusConfig
+} & EIPOrHFConfig

@@ -14,7 +14,7 @@ import * as mainnet from './chains/mainnet.json'
 import * as sepolia from './chains/sepolia.json'
 import { EIPs } from './eips.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
-import { hardforks as HARDFORK_SPECS } from './hardforks/index.js'
+import { hardforks as HARDFORK_SPECS } from './hardforks.js'
 import { parseGethGenesis } from './utils.js'
 
 import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
@@ -506,7 +506,7 @@ export class Common {
       // EIP-referencing HF file (e.g. berlin.json)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
-        for (const eip of hfEIPs) {
+        for (const eip of hfEIPs!) {
           const valueEIP = this.paramByEIP(topic, name, eip)
           value = typeof valueEIP === 'bigint' ? valueEIP : value
         }
@@ -681,6 +681,7 @@ export class Common {
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         if ((hf['eips'] as any).includes(eip)) {
+          // @ts-ignore
           return this.hardforkBlock(hfChanges[0])
         }
       }
@@ -926,7 +927,7 @@ export class Common {
     let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
-        value = hfChanges[1]['consensus']['type']
+        value = (hfChanges[1] as any)['consensus']['type']
       }
       if (hfChanges[0] === hardfork) break
     }
@@ -948,7 +949,7 @@ export class Common {
     let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
-        value = hfChanges[1]['consensus']['algorithm']
+        value = (hfChanges[1] as any)['consensus']['algorithm']
       }
       if (hfChanges[0] === hardfork) break
     }
@@ -975,7 +976,7 @@ export class Common {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
-        value = (hfChanges[1] as any)['consensus'][hfChanges[1]['consensus']['algorithm']]
+        value = (hfChanges[1] as any)['consensus'][(hfChanges[1] as any)['consensus']['algorithm']]
       }
       if (hfChanges[0] === hardfork) break
     }
