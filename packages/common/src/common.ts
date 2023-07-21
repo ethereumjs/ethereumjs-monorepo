@@ -33,7 +33,7 @@ import type {
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
-type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
+type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -679,7 +679,6 @@ export class Common {
       if ('eips' in hf) {
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         if ((hf['eips'] as any).includes(eip)) {
-          // @ts-ignore
           return this.hardforkBlock(hfChanges[0])
         }
       }
@@ -947,7 +946,7 @@ export class Common {
     let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
-        value = (hfChanges[1] as any)['consensus']['algorithm']
+        value = hfChanges[1]['consensus']!['algorithm']
       }
       if (hfChanges[0] === hardfork) break
     }
@@ -974,7 +973,9 @@ export class Common {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
-        value = (hfChanges[1] as any)['consensus'][(hfChanges[1] as any)['consensus']['algorithm']]
+        const config = hfChanges[1]
+        const algorithm = config['consensus']!['algorithm']
+        value = (config['consensus'] as any)[algorithm]
       }
       if (hfChanges[0] === hardfork) break
     }
