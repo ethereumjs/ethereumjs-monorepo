@@ -12,7 +12,6 @@ import { checkError } from '../util'
 import type { HttpServer } from 'jayson'
 
 const method = 'engine_newPayloadV3'
-
 const [blockData] = blocks
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
@@ -42,15 +41,11 @@ describe(`${method}: call with executionPayloadV1`, () => {
     }
 
     const req = params(method, [validBlock, [], parentBeaconBlockRoot])
-    let expectRes = checkError(
+    const expectRes = checkError(
       INVALID_PARAMS,
       'NewPayloadV{1|2} MUST be used before Cancun is activated'
     )
     await baseRequest(server, req, 200, expectRes)
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-      assert.equal(res.body.result.latestValidHash, blockData.blockHash)
-    }
   })
 
   it('valid data', async () => {
@@ -71,9 +66,24 @@ describe(`${method}: call with executionPayloadV1`, () => {
       blockHash: '0x6ec6f32e6931199f8f84faf46a59bc9a1e65a23aa73ca21278b5cb48aa2d059d',
       stateRoot: '0x454a9db6943b17a5f88aea507d0c3f4420d533d143b4eb5194cc7589d721b024',
     }
+    let expectRes, req
 
-    const req = params(method, [validBlock, [], parentBeaconBlockRoot])
-    const expectRes = (res: any) => {
+    const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2']
+    const expectedErrors = [
+      'NewPayloadV2 MUST be used after Shanghai is activated',
+      'NewPayloadV3 MUST be used after Cancun is activated',
+    ]
+    for (let index = 0; index < oldMethods.length; index++) {
+      const oldMethod = oldMethods[index]
+      const expectedError = expectedErrors[index]
+      // extra params for old methods should be auto ignored
+      req = params(oldMethod, [validBlock, [], parentBeaconBlockRoot])
+      expectRes = checkError(INVALID_PARAMS, expectedError)
+      await baseRequest(server, req, 200, expectRes, false, false)
+    }
+
+    req = params(method, [validBlock, [], parentBeaconBlockRoot])
+    expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
       assert.equal(res.body.result.latestValidHash, validBlock.blockHash)
     }

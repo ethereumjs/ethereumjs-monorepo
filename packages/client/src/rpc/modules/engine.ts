@@ -773,7 +773,7 @@ export class Engine {
     if (shanghaiTimestamp !== null && ts >= shanghaiTimestamp) {
       throw {
         code: INVALID_PARAMS,
-        message: 'NewPayloadV2 MUST be used after Cancun is activated',
+        message: 'NewPayloadV2 MUST be used after Shanghai is activated',
       }
     }
 
