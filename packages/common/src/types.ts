@@ -24,7 +24,7 @@ export interface ChainConfig {
   comment?: string
   url?: string
   genesis: GenesisBlockConfig
-  hardforks: HardforkConfig[]
+  hardforks: HardforkTransitionConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
   consensus: {
@@ -46,7 +46,7 @@ export interface GenesisBlockConfig {
   excessDataGas?: string
 }
 
-export interface HardforkConfig {
+export interface HardforkTransitionConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string

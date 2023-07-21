@@ -31,7 +31,7 @@ import type {
   GenesisBlockConfig,
   GethConfigOpts,
   HardforkByOpts,
-  HardforkConfig,
+  HardforkTransitionConfig,
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
@@ -392,7 +392,10 @@ export class Common {
     if (timestamp !== undefined) {
       const minTimeStamp = hfs
         .slice(0, hfStartIndex)
-        .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
+        .reduce(
+          (acc: number, hf: HardforkTransitionConfig) => Math.max(Number(hf.timestamp ?? '0'), acc),
+          0
+        )
       if (minTimeStamp > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
       }
@@ -400,7 +403,8 @@ export class Common {
       const maxTimeStamp = hfs
         .slice(hfIndex + 1)
         .reduce(
-          (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
+          (acc: number, hf: HardforkTransitionConfig) =>
+            Math.min(Number(hf.timestamp ?? timestamp), acc),
           Number(timestamp)
         )
       if (maxTimeStamp < timestamp) {
@@ -433,7 +437,7 @@ export class Common {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  private _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
+  private _getHardfork(hardfork: string | Hardfork): HardforkTransitionConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -814,8 +818,8 @@ export class Common {
    * @param forkHash Fork hash as a hex string
    * @returns Array with hardfork data (name, block, forkHash)
    */
-  hardforkForForkHash(forkHash: string): HardforkConfig | null {
-    const resArray = this.hardforks().filter((hf: HardforkConfig) => {
+  hardforkForForkHash(forkHash: string): HardforkTransitionConfig | null {
+    const resArray = this.hardforks().filter((hf: HardforkTransitionConfig) => {
       return hf.forkHash === forkHash
     })
     return resArray.length >= 1 ? resArray[resArray.length - 1] : null
@@ -850,7 +854,7 @@ export class Common {
    * Returns the hardforks for current chain
    * @returns {Array} Array with arrays of hardforks
    */
-  hardforks(): HardforkConfig[] {
+  hardforks(): HardforkTransitionConfig[] {
     return this._chainParams.hardforks
   }
 
