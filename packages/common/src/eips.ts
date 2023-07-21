@@ -274,6 +274,13 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  3651: {
+    comment: 'Warm COINBASE',
+    url: 'https://eips.ethereum.org/EIPS/eip-3651',
+    status: Status.Review,
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [2929],
+  },
   3670: {
     comment: 'Reject transactions from senders with deployed code',
     url: 'https://eips.ethereum.org/EIPS/eip-3607',
