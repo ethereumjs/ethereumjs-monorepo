@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-import Multiaddr from '@multiformats/multiaddr'
-import { convertToString } from '@multiformats/multiaddr/src/convert.js'
+import { protocols } from '@multiformats/multiaddr'
+import { convertToString } from '@multiformats/multiaddr/convert'
 import { base32, base64url } from '@scure/base'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sscanf } from 'scanf'
@@ -184,10 +184,10 @@ export class ENR {
 
     switch (bytesToUtf8(protocolId)) {
       case 'v4':
-        ipCode = Multiaddr.protocols(4).code
+        ipCode = protocols(4).code
         break
       case 'v6':
-        ipCode = Multiaddr.protocols(6).code
+        ipCode = protocols(41).code
         break
       default:
         throw new Error("IP protocol must be 'v4' or 'v6'")
@@ -195,8 +195,8 @@ export class ENR {
 
     return {
       ipCode,
-      tcpCode: Multiaddr.protocols('tcp').code,
-      udpCode: Multiaddr.protocols('udp').code,
+      tcpCode: protocols('tcp').code,
+      udpCode: protocols('udp').code,
     }
   }
 }
