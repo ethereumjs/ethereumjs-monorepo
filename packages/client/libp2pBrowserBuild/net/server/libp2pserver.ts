@@ -1,8 +1,8 @@
 //@ts-nocheck
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
-import { multiaddr } from 'multiaddr'
-import PeerId from 'peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
+import { PeerId } from '@libp2p/interface-peer-id'
 
 import { Event } from '../../../src/types'
 import { Libp2pPeer } from '../../../src/net/peer'
@@ -12,7 +12,8 @@ import { Server } from '../../../src/net/server/server'
 
 import type { ServerOptions } from '../../../src/net/server/server'
 import type Connection from 'libp2p-interfaces/dist/src/connection/connection'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { createFromPrivKey } from '@libp2p/peer-id-factory'
 
 export interface Libp2pServerOptions extends ServerOptions {
   /* Multiaddrs to listen on */
@@ -79,7 +80,7 @@ export class Libp2pServer extends Server {
       }
     }
     this.node.on('peer:discovery', async (peerId: PeerId) => {
-      const id = peerId.toB58String()
+      const id = peerId.toString()
       if (this.peers.get(id) || this.isBanned(id)) {
         return
       }
@@ -103,7 +104,7 @@ export class Libp2pServer extends Server {
     this.node.addressManager.getListenAddrs().map(async (ma) => {
       this.config.events.emit(Event.SERVER_LISTENING, {
         transport: this.name,
-        url: `${ma}/p2p/${peerId.toB58String()}`,
+        url: `${ma}/p2p/${peerId.toString()}`,
       })
     })
     this.started = true
@@ -161,7 +162,7 @@ export class Libp2pServer extends Server {
   async getPeerId() {
     const privKey = await keys.generateKeyPairFromSeed('ed25519', this.key, 512)
     const protoBuf = keys.marshalPrivateKey(privKey)
-    return PeerId.createFromPrivKey(protoBuf)
+    return createFromPrivKey(protoBuf)
   }
 
   getPeerInfo(connection: Connection): [peerId: PeerId, multiaddr: Multiaddr, inbound: boolean] {
@@ -171,7 +172,7 @@ export class Libp2pServer extends Server {
   createPeer(peerId: PeerId, multiaddrs?: Multiaddr[], inbound = false) {
     const peer = new Libp2pPeer({
       config: this.config,
-      id: peerId.toB58String(),
+      id: peerId.toString(),
       multiaddrs,
       protocols: Array.from(this.protocols),
       inbound,

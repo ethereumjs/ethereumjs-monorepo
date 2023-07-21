@@ -7,8 +7,8 @@ import { NOISE } from '@chainsafe/libp2p-noise'
 import LibP2P from 'libp2p'
 import Bootstrap from 'libp2p-bootstrap'
 
-import type { Multiaddr } from 'multiaddr'
-import type * as PeerId from 'peer-id'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { PeerId } from '@libp2p/interface-peer-id'
 
 const KadDht = require('libp2p-kad-dht')
 const MPLEX = require('libp2p-mplex')

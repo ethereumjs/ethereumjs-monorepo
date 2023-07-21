@@ -1,6 +1,5 @@
 //@ts-nocheck
-import { multiaddr } from 'multiaddr'
-import PeerId from 'peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 
 import { Peer } from '../../../src/net/peer/peer'
 import { Libp2pSender } from '../libp2psender'
@@ -12,7 +11,8 @@ import type { PeerOptions } from '../../../src/net/peer/peer'
 import type { Protocol } from '../../../src/net/protocol'
 import type { Libp2pServer } from '../../../src/net/server'
 import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import { PeerId, isPeerId } from '@libp2p/interface-peer-id'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
   /* Multiaddrs to listen on */
@@ -104,7 +104,7 @@ export class Libp2pPeer extends Peer {
           const { stream } = await node.dialProtocol(peer as any, protocol)
           await this.bindProtocol(p, new Libp2pSender(stream))
         } catch (err: any) {
-          const peerInfo = peer instanceof PeerId ? `id=${peer.toB58String()}` : `multiaddr=${peer}`
+          const peerInfo = isPeerId(peer) ? `id=${peer.toB58String()}` : `multiaddr=${peer}`
           this.config.logger.debug(
             `Peer doesn't support protocol=${protocol} ${peerInfo} ${err.stack}`
           )
