@@ -33,7 +33,14 @@ const validPayloadAttributes = {
   suggestedFeeRecipient: '0xaa00000000000000000000000000000000000000',
 }
 
-const validPayload = [validForkChoiceState, { ...validPayloadAttributes, withdrawals: [] }]
+const validPayload = [
+  validForkChoiceState,
+  {
+    ...validPayloadAttributes,
+    withdrawals: [],
+    parentBeaconBlockRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  },
+]
 
 try {
   initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
@@ -81,7 +88,7 @@ describe(method, () => {
 
     account!.balance = 0xfffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    let req = params('engine_forkchoiceUpdatedV2', validPayload)
+    let req = params('engine_forkchoiceUpdatedV3', validPayload)
     let payloadId
     let expectRes = (res: any) => {
       payloadId = res.body.result.payloadId
