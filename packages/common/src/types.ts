@@ -124,3 +124,31 @@ export interface HardforkByOpts {
   timestamp?: BigIntLike
   td?: BigIntLike
 }
+
+type ParamDict = {
+  v: number
+  d: string
+}
+
+export type EIPConfig = {
+  comment: string
+  url: string
+  status: string
+  minimumHardfork: Hardfork
+  requiredEIPs: number[]
+  gasConfig?: {
+    [key: string]: ParamDict
+  }
+  gasPrices?: {
+    [key: string]: ParamDict
+  }
+  pow?: {
+    [key: string]: ParamDict
+  }
+  sharding?: {
+    [key: string]: ParamDict
+  }
+  vm?: {
+    [key: string]: ParamDict
+  }
+}

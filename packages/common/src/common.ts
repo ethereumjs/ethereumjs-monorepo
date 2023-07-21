@@ -508,10 +508,10 @@ export class Common {
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
-        if ((hfChanges[1] as any)[topic] === undefined) {
-          throw new Error(`Topic ${topic} not defined`)
-        }
-        if ((hfChanges[1] as any)[topic][name] !== undefined) {
+        if (
+          (hfChanges[1] as any)[topic] !== undefined &&
+          (hfChanges[1] as any)[topic][name] !== undefined
+        ) {
           value = (hfChanges[1] as any)[topic][name].v
         }
       }
@@ -534,7 +534,7 @@ export class Common {
 
     const eipParams = (EIPs as any)[eip]
     if (!(topic in eipParams)) {
-      throw new Error(`Topic ${topic} not defined`)
+      return undefined
     }
     if (eipParams[topic][name] === undefined) {
       return undefined
