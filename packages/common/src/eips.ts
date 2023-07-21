@@ -288,6 +288,17 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [2929],
   },
+  3670: {
+    comment: 'EOF - Code Validation',
+    url: 'https://eips.ethereum.org/EIPS/eip-3670',
+    status: 'Review',
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [3540],
+    gasConfig: {},
+    gasPrices: {},
+    vm: {},
+    pow: {},
+  },
   3675: {
     comment: 'Upgrade consensus to Proof-of-Stake',
     url: 'https://eips.ethereum.org/EIPS/eip-3675',
