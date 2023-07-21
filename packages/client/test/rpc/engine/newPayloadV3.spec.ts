@@ -27,7 +27,7 @@ export const batchBlocks = async (server: HttpServer) => {
 }
 const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
 
-describe(`${method}: call with executionPayloadV1`, () => {
+describe(`${method}: call with executionPayloadV3`, () => {
   it('invalid call before Cancun', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
