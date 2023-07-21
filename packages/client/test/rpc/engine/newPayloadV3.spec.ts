@@ -18,7 +18,7 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 
 export const batchBlocks = async (server: HttpServer) => {
   for (let i = 0; i < 3; i++) {
-    const req = params(method, [blocks[i]])
+    const req = params('engine_newPayloadV1', [blocks[i]])
     const expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
     }
@@ -49,7 +49,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
   })
 
   it('valid data', async () => {
-    // get the genesis json with current date
+    // get the genesis json with late enougt date with respect to block data in batchBlocks
     const cancunTime = 1689945325
     // deep copy json and add shanghai and cancun to genesis to avoid contamination
     const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
@@ -86,6 +86,40 @@ describe(`${method}: call with executionPayloadV3`, () => {
     expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
       assert.equal(res.body.result.latestValidHash, validBlock.blockHash)
+    }
+    await baseRequest(server, req, 200, expectRes)
+  })
+
+  it('fcU and verify that no errors occur on new payload', async () => {
+    // get the genesis json with late enougt date with respect to block data in batchBlocks
+    const cancunTime = 1689945325
+    // deep copy json and add shanghai and cancun to genesis to avoid contamination
+    const cancunJson = JSON.parse(JSON.stringify(genesisJSON))
+    cancunJson.config.shanghaiTime = cancunTime
+    cancunJson.config.cancunTime = cancunTime
+    const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
+
+    await batchBlocks(server)
+
+    let req = params('engine_forkchoiceUpdatedV3', [
+      {
+        headBlockHash: blocks[2].blockHash,
+        finalizedBlockHash: blocks[2].blockHash,
+        safeBlockHash: blocks[2].blockHash,
+      },
+    ])
+
+    // Let's set new head hash
+    const expectResFcu = (res: any) => {
+      assert.equal(res.body.result.payloadStatus.status, 'VALID')
+    }
+    await baseRequest(server, req, 200, expectResFcu, false, false)
+
+    // use new payload v1 as blocks all belong to pre-shanghai
+    req = params('engine_newPayloadV1', [blockData])
+
+    const expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
     }
     await baseRequest(server, req, 200, expectRes)
   })
