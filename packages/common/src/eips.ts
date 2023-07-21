@@ -1,7 +1,5 @@
 export const EIPs = {
   1153: {
-    name: 'EIP-1153',
-    number: 1153,
     comment: 'Transient storage opcodes',
     url: 'https://eips.ethereum.org/EIPS/eip-1153',
     status: 'Review',
@@ -22,8 +20,6 @@ export const EIPs = {
     pow: {},
   },
   1559: {
-    name: 'EIP-1559',
-    number: 1559,
     comment: 'Fee market change for ETH 1.0 chain',
     url: 'https://eips.ethereum.org/EIPS/eip-1559',
     status: 'Final',
@@ -48,8 +44,6 @@ export const EIPs = {
     pow: {},
   },
   2315: {
-    name: 'EIP-2315',
-    number: 2315,
     comment: 'Simple subroutines for the EVM',
     url: 'https://eips.ethereum.org/EIPS/eip-2315',
     status: 'Draft',
@@ -73,8 +67,6 @@ export const EIPs = {
     pow: {},
   },
   2565: {
-    name: 'EIP-2565',
-    number: 2565,
     comment: 'ModExp gas cost',
     url: 'https://eips.ethereum.org/EIPS/eip-2565',
     status: 'Final',
@@ -90,7 +82,6 @@ export const EIPs = {
     pow: {},
   },
   2718: {
-    name: 'EIP-2718',
     comment: 'Typed Transaction Envelope',
     url: 'https://eips.ethereum.org/EIPS/eip-2718',
     status: 'Final',
@@ -101,7 +92,6 @@ export const EIPs = {
     pow: {},
   },
   2929: {
-    name: 'EIP-2929',
     comment: 'Gas cost increases for state access opcodes',
     url: 'https://eips.ethereum.org/EIPS/eip-2929',
     status: 'Final',
@@ -185,7 +175,6 @@ export const EIPs = {
     pow: {},
   },
   2930: {
-    name: 'EIP-2930',
     comment: 'Optional access lists',
     url: 'https://eips.ethereum.org/EIPS/eip-2930',
     status: 'Final',
@@ -206,8 +195,6 @@ export const EIPs = {
     pow: {},
   },
   3074: {
-    name: 'EIP-3074',
-    number: 3074,
     comment: 'AUTH and AUTHCALL opcodes',
     url: 'https://eips.ethereum.org/EIPS/eip-3074',
     status: 'Review',
@@ -231,8 +218,6 @@ export const EIPs = {
     pow: {},
   },
   3198: {
-    name: 'EIP-3198',
-    number: 3198,
     comment: 'BASEFEE opcode',
     url: 'https://eips.ethereum.org/EIPS/eip-3198',
     status: 'Final',
@@ -248,7 +233,6 @@ export const EIPs = {
     pow: {},
   },
   3529: {
-    name: 'EIP-3529',
     comment: 'Reduction in refunds',
     url: 'https://eips.ethereum.org/EIPS/eip-3529',
     status: 'Final',
@@ -274,8 +258,6 @@ export const EIPs = {
     pow: {},
   },
   3540: {
-    name: 'EIP-3540',
-    number: 3540,
     comment: 'EVM Object Format (EOF) v1',
     url: 'https://eips.ethereum.org/EIPS/eip-3540',
     status: 'Review',
@@ -287,7 +269,6 @@ export const EIPs = {
     pow: {},
   },
   3541: {
-    name: 'EIP-3541',
     comment: 'Reject new contracts starting with the 0xEF byte',
     url: 'https://eips.ethereum.org/EIPS/eip-3541',
     status: 'Final',
@@ -299,7 +280,6 @@ export const EIPs = {
     pow: {},
   },
   3554: {
-    name: 'EIP-3554',
     comment: 'Reduction in refunds',
     url: 'Difficulty Bomb Delay to December 1st 2021',
     status: 'Final',
@@ -316,8 +296,6 @@ export const EIPs = {
     },
   },
   3670: {
-    name: 'EIP-3607',
-    number: 3607,
     comment: 'Reject transactions from senders with deployed code',
     url: 'https://eips.ethereum.org/EIPS/eip-3607',
     status: 'Final',
@@ -329,8 +307,6 @@ export const EIPs = {
     pow: {},
   },
   3675: {
-    name: 'EIP-3675',
-    number: 3675,
     comment: 'Upgrade consensus to Proof-of-Stake',
     url: 'https://eips.ethereum.org/EIPS/eip-3675',
     status: 'Final',
@@ -342,8 +318,6 @@ export const EIPs = {
     pow: {},
   },
   3855: {
-    name: 'EIP-3855',
-    number: 3855,
     comment: 'PUSH0 instruction',
     url: 'https://eips.ethereum.org/EIPS/eip-3855',
     status: 'Review',
@@ -360,8 +334,6 @@ export const EIPs = {
     pow: {},
   },
   3860: {
-    name: 'EIP-3860',
-    number: 3860,
     comment: 'Limit and meter initcode',
     url: 'https://eips.ethereum.org/EIPS/eip-3860',
     status: 'Review',
@@ -383,8 +355,6 @@ export const EIPs = {
     pow: {},
   },
   4345: {
-    name: 'EIP-4345',
-    number: 4345,
     comment: 'Difficulty Bomb Delay to June 2022',
     url: 'https://eips.ethereum.org/EIPS/eip-4345',
     status: 'Final',
@@ -400,8 +370,6 @@ export const EIPs = {
     },
   },
   4399: {
-    name: 'EIP-4399',
-    number: 4399,
     comment: 'Supplant DIFFICULTY opcode with PREVRANDAO',
     url: 'https://eips.ethereum.org/EIPS/eip-4399',
     status: 'Review',
@@ -418,8 +386,6 @@ export const EIPs = {
     pow: {},
   },
   4788: {
-    name: 'EIP-4788',
-    number: 4788,
     comment: 'Beacon block root in the EVM',
     url: 'https://eips.ethereum.org/EIPS/eip-4788',
     status: 'Draft',
@@ -441,8 +407,6 @@ export const EIPs = {
     pow: {},
   },
   4844: {
-    name: 'EIP-4844',
-    number: 4844,
     comment: 'Shard Blob Transactions',
     url: 'https://eips.ethereum.org/EIPS/eip-4844',
     status: 'Draft',
@@ -498,8 +462,6 @@ export const EIPs = {
     pow: {},
   },
   4895: {
-    name: 'EIP-4895',
-    number: 4895,
     comment: 'Beacon chain push withdrawals as operations',
     url: 'https://eips.ethereum.org/EIPS/eip-4895',
     status: 'Review',
@@ -511,8 +473,6 @@ export const EIPs = {
     pow: {},
   },
   5133: {
-    name: 'EIP-5133',
-    number: 5133,
     comment: 'Delaying Difficulty Bomb to mid-September 2022',
     url: 'https://eips.ethereum.org/EIPS/eip-5133',
     status: 'Draft',
@@ -528,8 +488,6 @@ export const EIPs = {
     },
   },
   5656: {
-    name: 'EIP-5656',
-    number: 5656,
     comment: 'MCOPY - Memory copying instruction',
     url: 'https://eips.ethereum.org/EIPS/eip-5656',
     status: 'Draft',
@@ -545,8 +503,6 @@ export const EIPs = {
     pow: {},
   },
   6780: {
-    name: 'EIP-6780',
-    number: 6780,
     comment: 'SELFDESTRUCT only in same transaction',
     url: 'https://eips.ethereum.org/EIPS/eip-6780',
     status: 'Draft',
