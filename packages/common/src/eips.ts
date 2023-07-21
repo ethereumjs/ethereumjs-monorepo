@@ -262,8 +262,8 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
   },
   3554: {
-    comment: 'Reduction in refunds',
-    url: 'Difficulty Bomb Delay to December 1st 2021',
+    comment: 'Difficulty Bomb Delay to December 1st 2021',
+    url: 'https://eips.ethereum.org/EIPS/eip-3554',
     status: Status.Final,
     minimumHardfork: Hardfork.MuirGlacier,
     requiredEIPs: [],
@@ -274,19 +274,19 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  3607: {
+    comment: 'Reject transactions from senders with deployed code',
+    url: 'https://eips.ethereum.org/EIPS/eip-3607',
+    status: Status.Final,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
   3651: {
     comment: 'Warm COINBASE',
     url: 'https://eips.ethereum.org/EIPS/eip-3651',
     status: Status.Review,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [2929],
-  },
-  3670: {
-    comment: 'Reject transactions from senders with deployed code',
-    url: 'https://eips.ethereum.org/EIPS/eip-3607',
-    status: Status.Final,
-    minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [],
   },
   3675: {
     comment: 'Upgrade consensus to Proof-of-Stake',
