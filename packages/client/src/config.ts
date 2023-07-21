@@ -12,7 +12,7 @@ import type { EventBusType, MultiaddrLike } from './types'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { Address } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export enum DataDirectory {
   Chain = 'chain',

@@ -5,7 +5,7 @@ import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Address } from '@ethereumjs/util'
-import type { Multiaddr } from 'multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * Types for the central event bus, emitted
