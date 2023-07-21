@@ -418,11 +418,16 @@ export class Engine {
     )
 
     this.newPayloadV3 = cmMiddleware(
-      middleware(this.newPayloadV3.bind(this), 1, [
-        [validators.object(executionPayloadV3FieldValidators)],
-        [validators.array(validators.bytes32)],
-        [validators.bytes32],
-      ]),
+      middleware(
+        this.newPayloadV3.bind(this),
+        3,
+        [
+          [validators.object(executionPayloadV3FieldValidators)],
+          [validators.array(validators.bytes32)],
+          [validators.bytes32],
+        ],
+        ['executionPayload', 'versionedHashes', 'parentBeaconBlockRoot']
+      ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
