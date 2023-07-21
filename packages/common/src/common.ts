@@ -12,7 +12,7 @@ import { EventEmitter } from 'events'
 import * as goerli from './chains/goerli.json'
 import * as mainnet from './chains/mainnet.json'
 import * as sepolia from './chains/sepolia.json'
-import { EIPs } from './eips/index.js'
+import { EIPs } from './eips.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
 import { hardforks as HARDFORK_SPECS } from './hardforks/index.js'
 import { parseGethGenesis } from './utils.js'
@@ -450,14 +450,14 @@ export class Common {
       if (!(eip in EIPs)) {
         throw new Error(`${eip} not supported`)
       }
-      const minHF = this.gteHardfork(EIPs[eip]['minimumHardfork'])
+      const minHF = this.gteHardfork((EIPs as any)[eip]['minimumHardfork'])
       if (!minHF) {
         throw new Error(
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
-      if (EIPs[eip].requiredEIPs !== undefined) {
-        for (const elem of EIPs[eip].requiredEIPs) {
+      if ((EIPs as any)[eip].requiredEIPs !== undefined) {
+        for (const elem of (EIPs as any)[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -532,7 +532,7 @@ export class Common {
       throw new Error(`${eip} not supported`)
     }
 
-    const eipParams = EIPs[eip]
+    const eipParams = (EIPs as any)[eip]
     if (!(topic in eipParams)) {
       throw new Error(`Topic ${topic} not defined`)
     }
