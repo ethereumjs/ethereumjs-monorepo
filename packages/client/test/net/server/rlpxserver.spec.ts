@@ -1,6 +1,6 @@
 import { equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { multiaddr } from '@multiformats/multiaddr'
 import { EventEmitter } from 'events'
-import { multiaddr } from 'multiaddr'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -237,7 +237,7 @@ describe('[RlpxServer]', async () => {
         assert.equal(err.message, 'err0', 'got error')
       })
     )
-    server['dpt'].events.emit('error', new Error('err0'))
+    server['dpt']?.events.emit('error', new Error('err0'))
   })
 
   it('should init rlpx', async () => {
