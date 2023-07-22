@@ -7,13 +7,18 @@ import { INVALID_PARAMS } from './error-code'
  * @param requiredParamsCount required parameters count
  * @param validators array of validators
  */
-export function middleware(method: any, requiredParamsCount: number, validators: any[] = []): any {
+export function middleware(
+  method: any,
+  requiredParamsCount: number,
+  validators: any[] = [],
+  names: string[] = []
+): any {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
       if (params.length < requiredParamsCount) {
         const error = {
           code: INVALID_PARAMS,
-          message: `missing value for required argument ${params.length}`,
+          message: `missing value for required argument ${names[params.length] ?? params.length}`,
         }
         return reject(error)
       }
