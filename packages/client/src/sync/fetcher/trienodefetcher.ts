@@ -39,6 +39,7 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
 }
 
 export type JobTask = {
+  pathStrings: string[]
   paths: Uint8Array[][] // paths to nodes for requesting from SNAP API kept in compact encoding
 }
 
@@ -123,7 +124,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     job: Job<JobTask, Uint8Array[], Uint8Array>
   ): Promise<TrieNodesResponse | undefined> {
     const { task, peer } = job
-    const { paths } = task
+    const { paths, pathStrings } = task
 
     const rangeResult = await peer!.snap!.getTrieNodes({
       root: this.root,
@@ -134,7 +135,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     // Response is valid, but check if peer is signalling that it does not have
     // the requested data. For bytecode range queries that means the peer is not
     // yet synced.
-    const requestedNodeCount = paths.reduce((count, subArray) => count + subArray.length, 0)
+    const requestedNodeCount = pathStrings.length
     if (rangeResult === undefined || requestedNodeCount < rangeResult.nodes.length) {
       this.debug(`Peer rejected trienode request`)
 
