@@ -1,3 +1,7 @@
+import { hexToBytes, toBytes } from '@ethereumjs/util'
+
+import type { Nibbles } from '../types.js'
+
 // Reference: https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/
 //
 // Trie keys are dealt with in three distinct encodings:
@@ -97,4 +101,73 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
   // i.e.  chop 2 left nibbles when even else 1 when odd
   const chop = 2 - (base[0] & 1)
   return base.subarray(chop)
+}
+
+/**
+ * Packs every two nibbles into a single byte
+ *
+ * @param arr Nibble typed nibble array
+ * @returns Uint8Array typed byte array
+ */
+export const nibbleTypeToPackedBytes = (arr: Nibbles): Uint8Array => {
+  const buf = new Uint8Array(arr.length / 2)
+  for (let i = 0; i < buf.length; i++) {
+    let q = i * 2
+    buf[i] = (arr[q] << 4) + arr[++q]
+  }
+
+  return buf
+}
+
+/**
+ * Converts each nibble into a single byte
+ *
+ * @param arr Nibble typed nibble array
+ * @returns Uint8Array typed byte array
+ */
+export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
+  const l = arr.length
+  const buf = new Uint8Array(l)
+  for (let i = 0; i < buf.length; i++) {
+    buf[i] = arr[i]
+  }
+
+  return buf
+}
+
+/**
+ * Turns each byte into a single nibble, only extracting the lower nibble of each byte
+ *
+ * @param key Uint8Array typed byte array
+ * @returns Nibble typed nibble array
+ */
+export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
+  const bkey = toBytes(key)
+  const nibbles = [] as Nibbles
+
+  for (let i = 0; i < bkey.length; i++) {
+    const q = i
+    nibbles[q] = bkey[i] % 16
+  }
+
+  return nibbles
+}
+
+/**
+ * Takes a string path and extends it by the given extension nibbles
+ *
+ * @param path String node path
+ * @param extension nibbles to extend by
+ * @param retType string indicating whether to return the key in "keybyte" or "hex" encoding
+ * @returns hex-encoded key
+ */
+export const pathToHexKey = (path: string, extension: Nibbles, retType: string): Uint8Array => {
+  const b = hexToBytes('0x' + path)
+  const n = byteTypeToNibbleType(b)
+  if (retType === 'hex') {
+    return nibbleTypeToByteType(n.concat(extension))
+  } else if (retType === 'keybyte') {
+    return nibbleTypeToPackedBytes(n.concat(extension))
+  }
+  throw Error('retType must be either "keybyte" or "hex"')
 }

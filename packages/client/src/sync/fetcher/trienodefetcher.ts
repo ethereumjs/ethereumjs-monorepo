@@ -1,12 +1,14 @@
-import { BranchNode, ExtensionNode, LeafNode, Trie, decodeNode } from '@ethereumjs/trie'
 import {
-  Account,
-  KECCAK256_NULL,
-  KECCAK256_RLP,
+  BranchNode,
+  ExtensionNode,
+  LeafNode,
+  Trie,
+  decodeNode,
   hexToKeybytes,
   nibblesToCompactBytes,
-  toBytes,
-} from '@ethereumjs/util'
+  pathToHexKey,
+} from '@ethereumjs/trie'
+import { Account, KECCAK256_NULL, KECCAK256_RLP } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
@@ -20,75 +22,6 @@ import type { Job } from './types'
 import type { Nibbles } from '@ethereumjs/trie'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-
-/**
- * Packs every two nibbles into a single byte
- *
- * @param arr Nibble typed nibble array
- * @returns Uint8Array typed byte array
- */
-function nibbleTypeToPackedBytes(arr: Nibbles): Uint8Array {
-  const buf = new Uint8Array(arr.length / 2)
-  for (let i = 0; i < buf.length; i++) {
-    let q = i * 2
-    buf[i] = (arr[q] << 4) + arr[++q]
-  }
-
-  return buf
-}
-
-/**
- * Converts each nibble into a single byte
- *
- * @param arr Nibble typed nibble array
- * @returns Uint8Array typed byte array
- */
-function nibbleTypeToByteType(arr: Nibbles): Uint8Array {
-  const l = arr.length
-  const buf = new Uint8Array(l)
-  for (let i = 0; i < buf.length; i++) {
-    buf[i] = arr[i]
-  }
-
-  return buf
-}
-
-/**
- * Turns each byte into a single nibble, only extracting the lower nibble of each byte
- *
- * @param key Uint8Array typed byte array
- * @returns Nibble typed nibble array
- */
-const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
-  const bkey = toBytes(key)
-  const nibbles = [] as Nibbles
-
-  for (let i = 0; i < bkey.length; i++) {
-    const q = i
-    nibbles[q] = bkey[i] % 16
-  }
-
-  return nibbles
-}
-
-/**
- * Takes a string path and extends it by the given extension nibbles
- *
- * @param path String node path
- * @param extension nibbles to extend by
- * @param retType string indicating whether to return the key in "keybyte" or "hex" encoding
- * @returns hex-encoded key
- */
-const pathToHexKey = (path: string, extension: Nibbles, retType: string): Uint8Array => {
-  const b = hexToBytes(path)
-  const n = byteTypeToNibbleType(b)
-  if (retType === 'hex') {
-    return nibbleTypeToByteType(n.concat(extension))
-  } else if (retType === 'keybyte') {
-    return nibbleTypeToPackedBytes(n.concat(extension))
-  }
-  throw Error('retType must be either "keybyte" or "hex"')
-}
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
