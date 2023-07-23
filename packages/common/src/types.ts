@@ -16,6 +16,15 @@ export type CliqueConfig = {
 export type EthashConfig = {}
 
 export type CasperConfig = {}
+
+type ConsensusConfig = {
+  type: ConsensusType | string
+  algorithm: ConsensusAlgorithm | string
+  clique?: CliqueConfig
+  ethash?: EthashConfig
+  casper?: CasperConfig
+}
+
 export interface ChainConfig {
   name: string
   chainId: number | bigint
@@ -24,16 +33,10 @@ export interface ChainConfig {
   comment?: string
   url?: string
   genesis: GenesisBlockConfig
-  hardforks: HardforkConfig[]
+  hardforks: HardforkTransitionConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
-  consensus: {
-    type: ConsensusType | string
-    algorithm: ConsensusAlgorithm | string
-    clique?: CliqueConfig
-    ethash?: EthashConfig
-    casper?: CasperConfig
-  }
+  consensus: ConsensusConfig
 }
 
 export interface GenesisBlockConfig {
@@ -46,7 +49,7 @@ export interface GenesisBlockConfig {
   excessDataGas?: string
 }
 
-export interface HardforkConfig {
+export interface HardforkTransitionConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string
@@ -124,3 +127,40 @@ export interface HardforkByOpts {
   timestamp?: BigIntLike
   td?: BigIntLike
 }
+
+type ParamDict = {
+  v: number | bigint | null
+  d: string
+}
+
+type EIPOrHFConfig = {
+  comment: string
+  url: string
+  status: string
+  gasConfig?: {
+    [key: string]: ParamDict
+  }
+  gasPrices?: {
+    [key: string]: ParamDict
+  }
+  pow?: {
+    [key: string]: ParamDict
+  }
+  sharding?: {
+    [key: string]: ParamDict
+  }
+  vm?: {
+    [key: string]: ParamDict
+  }
+}
+
+export type EIPConfig = {
+  minimumHardfork: Hardfork
+  requiredEIPs: number[]
+} & EIPOrHFConfig
+
+export type HardforkConfig = {
+  name: string
+  eips?: number[]
+  consensus?: ConsensusConfig
+} & EIPOrHFConfig

@@ -24,11 +24,8 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
   it('Error cases for param(), paramByHardfork()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
-    const f = function () {
-      c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium')
-    }
-    const msg = 'Should throw when called with non-existing topic'
-    assert.throws(f, /Topic gasPrizes not defined$/, undefined, msg)
+    const msg = 'Should return 0n when called with non-existing topic'
+    assert.equal(c.paramByHardfork('gasPrizes', 'ecAdd', 'byzantium'), 0n, msg)
 
     c.setHardfork(Hardfork.Byzantium)
     assert.equal(
@@ -87,20 +84,17 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
     let msg = 'Should return undefined for non-existing value'
-    assert.equal(c.paramByEIP('gasPrices', 'notexistingvalue', 1559), undefined, msg)
+    assert.equal(c.paramByEIP('gasConfig', 'notexistingvalue', 1559), undefined, msg)
 
     const UNSUPPORTED_EIP = 1000000
-    let f = function () {
+    const f = function () {
       c.paramByEIP('gasPrices', 'Bls12381G1AddGas', UNSUPPORTED_EIP)
     }
     msg = 'Should throw for using paramByEIP() with an unsupported EIP'
     assert.throws(f, /not supported$/, undefined, msg)
 
-    f = function () {
-      c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 1559)
-    }
-    msg = 'Should throw for using paramByEIP() with a not existing topic'
-    assert.throws(f, /not defined$/, undefined, msg)
+    msg = 'Should return undefined for paramByEIP() with a not existing topic'
+    assert.equal(c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 1559), undefined, msg)
   })
 
   it('returns the right block delay for EIP3554', () => {
