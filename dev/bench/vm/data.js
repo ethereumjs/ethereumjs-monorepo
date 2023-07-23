@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1689961673535,
+  "lastUpdate": 1690074984614,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4caa60785dfa066fe23db17cddef54127f5c4fcd",
-          "message": "EVM runCode/runCall type cleanup (#2861)\n\n* evm: rename runCode to -> address\r\n\r\n* evm: remove pc option runCode\r\n\r\n* evm: unify interfaces\r\n\r\n* vm: fix vm tests\r\n\r\n* evm: re-introduce pc opt\r\n\r\n* evm: StateManager is now optional\r\n\r\n* evm: remove EVMInterface",
-          "timestamp": "2023-07-06T11:46:40+02:00",
-          "tree_id": "66942778ed2282d9bd6102572576e79e7b84682f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4caa60785dfa066fe23db17cddef54127f5c4fcd"
-        },
-        "date": 1688637081929,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19193,
-            "range": "±6.79%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20116,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18814,
-            "range": "±5.95%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18402,
-            "range": "±6.33%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19498,
-            "range": "±3.48%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.46%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "532eff80e57c4d7780df43de891323ead2962d97",
+          "message": "Monorepo: JSON -> JS Transition (#2911)\n\n* Common: move EIP configs to single eips.ts file\r\n\r\n* Common: delete all separate EIP JSON files\r\n\r\n* Common: remove EIP config name and number properties\r\n\r\n* Common: EIPs typing, parameter cleanup, test adjustments\r\n\r\n* Add missing 3651 WARM COINBASE EIP config\r\n\r\n* Minor\r\n\r\n* Fix EIP number typo, other small fixes\r\n\r\n* Common: rename HardforkConfig -> HardforkTransitionConfig\r\n\r\n* Add missing EIP\r\n\r\n* Common: moved hardfork JSON file configurations to single hardforks.ts file\r\n\r\n* Common: delete HF files\r\n\r\n* Common: replace chain JSON file configs with single chains.ts file\r\n\r\n* Common: delete chain JSON files\r\n\r\n* VM: internalize DAO configuration (account list and refund contract)\r\n\r\n* Common type improvements",
+          "timestamp": "2023-07-22T21:12:08-04:00",
+          "tree_id": "26a170c0cbb898aa67f73dfe19902b6945e7a8f0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/532eff80e57c4d7780df43de891323ead2962d97"
+        },
+        "date": 1690074983370,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22865,
+            "range": "±4.87%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21936,
+            "range": "±3.40%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 22628,
+            "range": "±2.86%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21719,
+            "range": "±3.05%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18200,
+            "range": "±10.08%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
           }
         ]
       }
