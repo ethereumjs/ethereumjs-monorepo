@@ -1,3 +1,7 @@
+/**
+ * External Interfaces for other EthereumJS libraries
+ */
+
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 
 export interface StorageDump {
