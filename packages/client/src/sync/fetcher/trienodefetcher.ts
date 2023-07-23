@@ -19,7 +19,6 @@ import { Fetcher } from './fetcher'
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
-import type { Nibbles } from '@ethereumjs/trie'
 import type { BatchDBOp } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -40,7 +39,6 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
 }
 
 export type JobTask = {
-  pathStrings: string[] // paths kept in keybyte encoding until they are ready to send out
   paths: Uint8Array[][] // paths to nodes for requesting from SNAP API kept in compact encoding
 }
 
@@ -49,7 +47,6 @@ type FetchedNodeData = {
   deps: number
   nodeData: Uint8Array
   path: string
-  // storageNodes?: Uint8Array[] // if fetched node is account node with a storage component, storage node data is stored here until it is ready to be put
   pathToStorageNode?: Map<string, Uint8Array>
 }
 
@@ -62,8 +59,19 @@ type NodeRequestData = {
 export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
   root: Uint8Array
-  // Holds all paths and nodes that need to be requested
+
+  /**
+   * Holds all paths and nodes that need to be requested
+   *
+   * A path is represented as a string of variable length between 0 to 129 characters.
+   * The first 64 are used to represent the hex-encoded path in the account trie. The
+   * final 64 are used to represent the hex-encoded path in the storage trie. A forward
+   * slash ('/') is used as a separator. This format is referred to as a "sync" or
+   * "stacked" path, representing the full path to a node in an account or storage trie.
+   * All keys in pathToNodeRequestData are sync paths.
+   */
   pathToNodeRequestData: OrderedMap<string, NodeRequestData>
+
   // Holds active requests to remove after storing
   requestedNodeToPath: Map<string, string>
   fetchedAccountNodes: Map<string, FetchedNodeData> // key is node hash
