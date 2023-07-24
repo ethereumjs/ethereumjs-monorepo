@@ -9,12 +9,10 @@ import {
 import { crc32 as crc } from 'crc'
 import { EventEmitter } from 'events'
 
-import * as goerli from './chains/goerli.json'
-import * as mainnet from './chains/mainnet.json'
-import * as sepolia from './chains/sepolia.json'
-import { EIPs } from './eips/index.js'
+import { chains as CHAIN_SPECS } from './chains.js'
+import { EIPs } from './eips.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
-import { hardforks as HARDFORK_SPECS } from './hardforks/index.js'
+import { hardforks as HARDFORK_SPECS } from './hardforks.js'
 import { parseGethGenesis } from './utils.js'
 
 import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
@@ -31,11 +29,11 @@ import type {
   GenesisBlockConfig,
   GethConfigOpts,
   HardforkByOpts,
-  HardforkConfig,
+  HardforkTransitionConfig,
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
-type HardforkSpecKeys = keyof typeof HARDFORK_SPECS
+type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -392,7 +390,10 @@ export class Common {
     if (timestamp !== undefined) {
       const minTimeStamp = hfs
         .slice(0, hfStartIndex)
-        .reduce((acc: number, hf: HardforkConfig) => Math.max(Number(hf.timestamp ?? '0'), acc), 0)
+        .reduce(
+          (acc: number, hf: HardforkTransitionConfig) => Math.max(Number(hf.timestamp ?? '0'), acc),
+          0
+        )
       if (minTimeStamp > timestamp) {
         throw Error(`Maximum HF determined by timestamp is lower than the block number/ttd HF`)
       }
@@ -400,7 +401,8 @@ export class Common {
       const maxTimeStamp = hfs
         .slice(hfIndex + 1)
         .reduce(
-          (acc: number, hf: HardforkConfig) => Math.min(Number(hf.timestamp ?? timestamp), acc),
+          (acc: number, hf: HardforkTransitionConfig) =>
+            Math.min(Number(hf.timestamp ?? timestamp), acc),
           Number(timestamp)
         )
       if (maxTimeStamp < timestamp) {
@@ -433,7 +435,7 @@ export class Common {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  private _getHardfork(hardfork: string | Hardfork): HardforkConfig | null {
+  private _getHardfork(hardfork: string | Hardfork): HardforkTransitionConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -450,14 +452,14 @@ export class Common {
       if (!(eip in EIPs)) {
         throw new Error(`${eip} not supported`)
       }
-      const minHF = this.gteHardfork(EIPs[eip]['minimumHardfork'])
+      const minHF = this.gteHardfork((EIPs as any)[eip]['minimumHardfork'])
       if (!minHF) {
         throw new Error(
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
-      if (EIPs[eip].requiredEIPs !== undefined) {
-        for (const elem of EIPs[eip].requiredEIPs) {
+      if ((EIPs as any)[eip].requiredEIPs !== undefined) {
+        for (const elem of (EIPs as any)[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
             throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
           }
@@ -502,16 +504,16 @@ export class Common {
       // EIP-referencing HF file (e.g. berlin.json)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
-        for (const eip of hfEIPs) {
+        for (const eip of hfEIPs!) {
           const valueEIP = this.paramByEIP(topic, name, eip)
           value = typeof valueEIP === 'bigint' ? valueEIP : value
         }
         // Parameter-inlining HF file (e.g. istanbul.json)
       } else {
-        if ((hfChanges[1] as any)[topic] === undefined) {
-          throw new Error(`Topic ${topic} not defined`)
-        }
-        if ((hfChanges[1] as any)[topic][name] !== undefined) {
+        if (
+          (hfChanges[1] as any)[topic] !== undefined &&
+          (hfChanges[1] as any)[topic][name] !== undefined
+        ) {
           value = (hfChanges[1] as any)[topic][name].v
         }
       }
@@ -532,9 +534,9 @@ export class Common {
       throw new Error(`${eip} not supported`)
     }
 
-    const eipParams = EIPs[eip]
+    const eipParams = (EIPs as any)[eip]
     if (!(topic in eipParams)) {
-      throw new Error(`Topic ${topic} not defined`)
+      return undefined
     }
     if (eipParams[topic][name] === undefined) {
       return undefined
@@ -814,8 +816,8 @@ export class Common {
    * @param forkHash Fork hash as a hex string
    * @returns Array with hardfork data (name, block, forkHash)
    */
-  hardforkForForkHash(forkHash: string): HardforkConfig | null {
-    const resArray = this.hardforks().filter((hf: HardforkConfig) => {
+  hardforkForForkHash(forkHash: string): HardforkTransitionConfig | null {
+    const resArray = this.hardforks().filter((hf: HardforkTransitionConfig) => {
       return hf.forkHash === forkHash
     })
     return resArray.length >= 1 ? resArray[resArray.length - 1] : null
@@ -850,7 +852,7 @@ export class Common {
    * Returns the hardforks for current chain
    * @returns {Array} Array with arrays of hardforks
    */
-  hardforks(): HardforkConfig[] {
+  hardforks(): HardforkTransitionConfig[] {
     return this._chainParams.hardforks
   }
 
@@ -922,7 +924,7 @@ export class Common {
     let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
-        value = hfChanges[1]['consensus']['type']
+        value = (hfChanges[1] as any)['consensus']['type']
       }
       if (hfChanges[0] === hardfork) break
     }
@@ -944,7 +946,7 @@ export class Common {
     let value
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
-        value = hfChanges[1]['consensus']['algorithm']
+        value = hfChanges[1]['consensus']!['algorithm']
       }
       if (hfChanges[0] === hardfork) break
     }
@@ -971,7 +973,9 @@ export class Common {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       if ('consensus' in hfChanges[1]) {
         // The config parameter is named after the respective consensus algorithm
-        value = (hfChanges[1] as any)['consensus'][hfChanges[1]['consensus']['algorithm']]
+        const config = hfChanges[1]
+        const algorithm = config['consensus']!['algorithm']
+        value = (config['consensus'] as any)[algorithm]
       }
       if (hfChanges[0] === hardfork) break
     }
@@ -994,7 +998,7 @@ export class Common {
     for (const [name, id] of Object.entries(Chain)) {
       names[id] = name.toLowerCase()
     }
-    const chains = { mainnet, goerli, sepolia } as ChainsConfig
+    const chains = { ...CHAIN_SPECS } as ChainsConfig
     if (customChains) {
       for (const chain of customChains) {
         const { name } = chain
