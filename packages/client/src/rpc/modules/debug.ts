@@ -188,10 +188,11 @@ export class Debug {
   /**
    * Returns a trace of an eth_call within the context of the given block execution using the final state of the parent block
    * @param params an array of 3 parameters:
-   *    1. an RpxTx object that mirrors the eth_call parameters object
+   *    1. an {@link RpcTx} object that mirrors the eth_call parameters object
    *    2. A block hash or number formatted as a hex prefixed string
    *    3. An optional tracer options object
-   * @returns an execution trace of an eth_call in teh context of a given block execution
+   * @returns an execution trace of an {@link eth_call} in the context of a given block execution
+   * mirroring the output from {@link traceTransaction}
    */
   async traceCall(params: [RpcTx, string, tracerOpts]) {
     const [callArgs, blockOpt, tracerOpts] = params

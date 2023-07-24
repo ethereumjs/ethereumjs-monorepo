@@ -28,7 +28,7 @@ describe(method, () => {
   it(`expects param[0] to be type "object"`, async () => {
     const req = params(method, ['', ''])
     const expectRes = (res: any) => {
-      expect(res._body.error.message).toBe('invalid argument 0: argument must be an object')
+      expect(res.body.error.message).toBe('invalid argument 0: argument must be an object')
       return res
     }
     await baseRequest(server, req, 200, expectRes)
@@ -36,7 +36,7 @@ describe(method, () => {
   it(`expects param[1] to be type string`, async () => {
     const req = params(method, [{}, 0])
     const expectRes = (res: any) => {
-      expect(res._body.error.message).toBe('invalid argument 1: argument must be a string')
+      expect(res.body.error.message).toBe('invalid argument 1: argument must be a string')
       return res
     }
     await baseRequest(server, req, 200, expectRes)
@@ -44,7 +44,7 @@ describe(method, () => {
   it(`expects receiptManager`, async () => {
     const req = params(method, [{}, '0x0'])
     const expectRes = (res: any) => {
-      expect(res._body.error.message).toBe('missing receiptsManager')
+      expect(res.body.error.message).toBe('missing receiptsManager')
       return res
     }
     await baseRequest(server, req, 200, expectRes)
@@ -78,7 +78,7 @@ describe('trace a call', async () => {
     const rpcTxReq = params('eth_getTransactionByHash', [bytesToHex(tx.hash())])
     let rpcTx: any
     const expectResTx = async (res: any) => {
-      const t = res._body.result
+      const t = res.body.result
 
       rpcTx = {
         from: t.from,
@@ -94,14 +94,14 @@ describe('trace a call', async () => {
     await baseRequest(server, rpcTxReq, 200, expectResTx, true)
     const req2 = params('debug_traceCall', [rpcTx, '0x1', {}])
     const expectRes2 = (res2: any) => {
-      expectTypeOf(res2._body.result)
+      expectTypeOf(res2.body.result)
         .toHaveProperty('gas')
         .toHaveProperty('returnValue')
         .toHaveProperty('failed')
         .toHaveProperty('structLogs')
 
       assert.deepEqual(
-        res2._body.result,
+        res2.body.result,
         {
           gas: '0x3',
           returnValue: '0x',
