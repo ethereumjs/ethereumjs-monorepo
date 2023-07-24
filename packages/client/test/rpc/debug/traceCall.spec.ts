@@ -22,7 +22,7 @@ describe(method, () => {
   const methods = manager.getMethods()
   const server = startRPC(methods)
 
-  it(' debug_traceCall method exists', async () => {
+  it('debug_traceCall method exists', async () => {
     expect(Object.keys(methods)).toContain(method)
   })
   it(`expects param[0] to be type "object"`, async () => {
