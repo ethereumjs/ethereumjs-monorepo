@@ -210,7 +210,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               const syncPath =
                 storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
               this.debug('branch node found')
-              childNodes.unshift({
+              childNodes.push({
                 nodeHash: embeddedNode,
                 path: syncPath,
               })
@@ -225,7 +225,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             nodeHash: node.value(),
             path: syncPath,
           }
-          childNodes.unshift(val)
+          childNodes.push(val)
         } else {
           this.debug('leaf node found')
           if (storagePath === undefined) {
@@ -317,7 +317,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const node = decodeNode(nodeData)
           if (node instanceof LeafNode) {
             const key = bytesToHex(pathToHexKey(path, node.key(), 'keybyte'))
-            ops.unshift({
+            ops.push({
               type: 'put',
               key: hexToBytes(key),
               value: node.value(),
@@ -332,7 +332,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
                 const storageNode = decodeNode(data)
                 if (storageNode instanceof LeafNode) {
                   const storageKey = bytesToHex(pathToHexKey(path, storageNode.key(), 'keybyte'))
-                  storageTrieOps.unshift({
+                  storageTrieOps.push({
                     type: 'put',
                     key: hexToBytes(storageKey),
                     value: storageNode.value(),
