@@ -45,7 +45,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       (fetcher as any).pathToNodeRequestData.length,
       1,
-      'one node request has been added',
+      'one node request has been added'
     )
 
     void fetcher.fetch()
@@ -78,7 +78,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.deepEqual(
       (fetcher.process(job, NodeDataResponse) as any)[0],
       fullResult[0],
-      'got results',
+      'got results'
     )
     assert.notOk(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
   })
@@ -109,7 +109,7 @@ describe('[TrieNodeFetcher]', async () => {
         root: new Uint8Array(0),
         paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
         bytes: BigInt(50000),
-      }),
+      })
     )
   })
 
@@ -133,7 +133,7 @@ describe('[TrieNodeFetcher]', async () => {
     fetcher.requestedNodeToPath = new Map()
     fetcher.requestedNodeToPath.set(
       '9100b295173da75cf0f160214e47b480abc2c9d2fe11330fe8befa69aac69656',
-      '',
+      ''
     )
 
     const resData = RLP.decode(hexToBytes(_trieNodesRLP)) as unknown
@@ -158,7 +158,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       requestResult[0][0],
       res.nodes[0],
-      'Request phase should cross-validate received nodes with requested nodes',
+      'Request phase should cross-validate received nodes with requested nodes'
     )
 
     await fetcher.store(requestResult)
@@ -168,7 +168,7 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       children.length,
       fetcher.pathToNodeRequestData.length,
-      'Should generate requests for all child nodes',
+      'Should generate requests for all child nodes'
     )
   })
 
@@ -252,17 +252,17 @@ describe('[TrieNodeFetcher]', async () => {
     assert.equal(
       paths.reduce((count, subArray) => count + subArray.length, 0),
       pathStrings.length,
-      'should have correct number of paths',
+      'should have correct number of paths'
     )
     assert.deepEqual(
       paths[0],
       [Uint8Array.of(26), Uint8Array.of(27), Uint8Array.of(28), Uint8Array.of(29)],
-      'should merge paths correctly',
+      'should merge paths correctly'
     )
     assert.deepEqual(
       paths[1],
       [Uint8Array.of(30), Uint8Array.of(26)],
-      'should merge paths correctly',
+      'should merge paths correctly'
     )
     assert.deepEqual(paths[2], [Uint8Array.of(31)], 'should merge paths correctly')
   })
