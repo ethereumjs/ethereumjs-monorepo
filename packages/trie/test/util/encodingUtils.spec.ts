@@ -2,10 +2,16 @@ import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
+  byteTypeToNibbleType,
   bytesToNibbles,
   compactBytesToNibbles,
+  nibbleTypeToByteType,
+  nibbleTypeToPackedBytes,
   nibblesToCompactBytes,
-} from '../src/util/encoding.js'
+  pathToHexKey,
+} from '../../src/util/encoding.js'
+
+import type { Nibbles } from '../../src/types.js'
 
 describe('encoding', () => {
   it('nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly', () => {
@@ -59,5 +65,51 @@ describe('encoding', () => {
       const test = tests[i]
       assert.equal(JSON.stringify(bytesToNibbles(test.key)), JSON.stringify(test.hexOut))
     }
+  })
+
+  it('should return the correct hex-encoded key in "hex" encoding', () => {
+    const path = 'aabbcc'
+    const extension: Nibbles = [10, 11, 12]
+    const result = pathToHexKey(path, extension, 'hex')
+
+    // Calculate the expected result manually based on the functions used in the pathToHexKey function
+    const b = hexToBytes('0x' + path)
+    const n = byteTypeToNibbleType(b)
+    const expected = nibbleTypeToByteType(n.concat(extension))
+
+    assert.deepEqual(
+      result,
+      expected,
+      'Returned hex-encoded key does not match the expected result'
+    )
+  })
+
+  it('should return the correct hex-encoded key in "keybyte" encoding', () => {
+    const path = '112233'
+    const extension: Nibbles = [13, 14, 15]
+    const result = pathToHexKey(path, extension, 'keybyte')
+
+    // Calculate the expected result manually based on the functions used in the pathToHexKey function
+    const b = hexToBytes('0x' + path)
+    const n = byteTypeToNibbleType(b)
+    const expected = nibbleTypeToPackedBytes(n.concat(extension))
+
+    assert.deepEqual(
+      result,
+      expected,
+      'Returned hex-encoded key in "keybyte" encoding does not match the expected result'
+    )
+  })
+
+  it('should throw an error when retType is invalid', () => {
+    const path = 'abcdef'
+    const extension: Nibbles = [1, 2, 3]
+
+    // Pass an invalid retType to the function
+    assert.throws(
+      () => pathToHexKey(path, extension, 'invalid'),
+      Error,
+      'retType must be either "keybyte" or "hex"'
+    )
   })
 })
