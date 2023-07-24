@@ -33,7 +33,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes)
   })
-  it(`expects param[1] to be type string`, async () => {
+  it(`expects param[1] to be type "string"`, async () => {
     const req = params(method, [{}, 0])
     const expectRes = (res: any) => {
       expect(res.body.error.message).toBe('invalid argument 1: argument must be a string')
