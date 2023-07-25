@@ -2,8 +2,6 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
-// explicitly import util, needed for karma-typescript bundling
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, simple-import-sort/imports
 
 import { blockFromRpc } from '../src/from-rpc.js'
 import { Block } from '../src/index.js'

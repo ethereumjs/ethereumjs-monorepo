@@ -1,5 +1,3 @@
-// explicitly import util and buffer,
-// needed for karma-typescript bundling
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { Account, Address, KECCAK256_RLP, hexToBytes } from '@ethereumjs/util'

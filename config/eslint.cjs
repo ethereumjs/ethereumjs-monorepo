@@ -19,7 +19,6 @@ module.exports = {
     'coverage',
     'dist',
     'examples',
-    'karma.conf.js',
     'node_modules',
     'prettier.config.js',
     'recipes',
