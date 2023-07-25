@@ -9,16 +9,14 @@ export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
 }
 
-export function isBrowser(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
-}
+// Hack to detect if running in browser or not
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const StateManager = DefaultStateManager
 
 describe('stateManager', () => {
   it(`should generate the genesis state root correctly for mainnet from common`, async () => {
-    if (isBrowser()) {
+    if (isBrowser() === true) {
       return
     }
     const expectedStateRoot = hexToBytes(

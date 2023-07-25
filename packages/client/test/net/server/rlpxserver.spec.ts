@@ -237,7 +237,7 @@ describe('[RlpxServer]', async () => {
         assert.equal(err.message, 'err0', 'got error')
       })
     )
-    server['dpt'].events.emit('error', new Error('err0'))
+    server['dpt']?.events.emit('error', new Error('err0'))
   })
 
   it('should init rlpx', async () => {
