@@ -9,8 +9,6 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
-// explicitly import `inherits` to fix karma-typescript issue
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 import { DefaultStateManager } from '../src/index.js'
 

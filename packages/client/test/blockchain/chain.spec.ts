@@ -1,5 +1,3 @@
-// explicitly import util and buffer,
-// needed for karma-typescript bundling
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { KeyEncoding, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
