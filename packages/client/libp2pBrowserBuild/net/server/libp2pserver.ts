@@ -1,7 +1,7 @@
 //@ts-nocheck
 // eslint-disable-next-line implicit-dependencies/no-implicit, import/no-extraneous-dependencies
 import { keys } from 'libp2p-crypto'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from 'multiaddr'
 import { PeerId } from '@libp2p/interface-peer-id'
 
 import { Event } from '../../../src/types'
@@ -12,7 +12,7 @@ import { Server } from '../../../src/net/server/server'
 
 import type { ServerOptions } from '../../../src/net/server/server'
 import type Connection from 'libp2p-interfaces/dist/src/connection/connection'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from 'multiaddr'
 import { createFromPrivKey } from '@libp2p/peer-id-factory'
 
 export interface Libp2pServerOptions extends ServerOptions {

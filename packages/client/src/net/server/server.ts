@@ -3,7 +3,7 @@ import { parseKey, parseMultiaddrs } from '../../util/parse'
 import type { Config } from '../../config'
 import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types'
 import type { Protocol } from '../protocol/protocol'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from 'multiaddr'
 
 export interface ServerOptions {
   /* Config */

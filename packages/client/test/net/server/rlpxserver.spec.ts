@@ -1,5 +1,5 @@
 import { equalsBytes, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from 'multiaddr'
 import { EventEmitter } from 'events'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'

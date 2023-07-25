@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from 'multiaddr'
 
 import { Peer } from '../../../src/net/peer/peer'
 import { Libp2pSender } from '../libp2psender'
@@ -11,7 +11,7 @@ import type { PeerOptions } from '../../../src/net/peer/peer'
 import type { Protocol } from '../../../src/net/protocol'
 import type { Libp2pServer } from '../../../src/net/server'
 import type { MuxedStream } from 'libp2p-interfaces/dist/src/stream-muxer/types'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from 'multiaddr'
 import { PeerId, isPeerId } from '@libp2p/interface-peer-id'
 
 export interface Libp2pPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
