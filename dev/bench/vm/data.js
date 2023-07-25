@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690254412966,
+  "lastUpdate": 1690281181053,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2828cac296397cdace0be2794c918452f9cfcbc6",
-          "message": "Add examples run to CI for all packages (#2862)\n\n* Add examples run to CI for all packages\r\n\r\n* Change ethash example files from ts to cts extension\r\n\r\n* Remove unused import\r\n\r\n* Set timeout on devp2p simple connection example\r\n\r\n* Remove examples run from genesis package",
-          "timestamp": "2023-07-06T11:46:29-07:00",
-          "tree_id": "12c42cd8eb043105383707669b231d98d4362bad",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2828cac296397cdace0be2794c918452f9cfcbc6"
-        },
-        "date": 1688669441864,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25810,
-            "range": "±5.51%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25691,
-            "range": "±3.52%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26113,
-            "range": "±3.33%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26034,
-            "range": "±3.43%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20282,
-            "range": "±11.60%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.62%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d971c39ce0c108e3391d977b2af928fe1442fec9",
+          "message": "Address security vulnerabilities (#2912)\n\n* devp2p: remove deprecated: @types/chalk\n\n* devp2p:  update dependency for 'multaddr'\n\n* client: update dependencies for 'multiaddr' and 'peer-id'\n\n* Fix devp2p imports\n\n* client: update peer-id dependency\n\n* trie: update 0x dependency\n\n* commit package-lock\n\n* trie: use recommended 0x version\n\n* trie: remove 0x dependency completely\n\n* clean up package-lock\n\n* client: update import and fix parse.spec.ts\n\n* client: update import / fix rlpxserver.spec.ts\n\n* devp2p: revert back to multiaddr v10.0.1\n\n* Fix import for Convert\n\n* client: revert back to multiaddr v10.0.1\n\n* commit package-lock\n\n* lint fix\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-07-25T06:29:10-04:00",
+          "tree_id": "a84f131da7544c85b1c9d60f7f05317733ac51a2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d971c39ce0c108e3391d977b2af928fe1442fec9"
+        },
+        "date": 1690281180321,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25056,
+            "range": "±3.96%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25173,
+            "range": "±2.74%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 23091,
+            "range": "±8.18%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25053,
+            "range": "±2.81%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24158,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
