@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
-import { jsonRpcTx } from '../helpers'
+import { getBlockByOption, jsonRpcTx } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -195,50 +195,6 @@ const jsonRpcReceipt = async (
   dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
   dataGasPrice: dataGasPrice !== undefined ? bigIntToHex(dataGasPrice) : undefined,
 })
-
-/**
- * Get block by option
- */
-const getBlockByOption = async (blockOpt: string, chain: Chain) => {
-  if (blockOpt === 'pending') {
-    throw {
-      code: INVALID_PARAMS,
-      message: `"pending" is not yet supported`,
-    }
-  }
-
-  let block: Block
-  const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
-
-  switch (blockOpt) {
-    case 'earliest':
-      block = await chain.getBlock(BigInt(0))
-      break
-    case 'latest':
-      block = latest
-      break
-    case 'safe':
-      block = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
-      break
-    case 'finalized':
-      block = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
-      break
-    default: {
-      const blockNumber = BigInt(blockOpt)
-      if (blockNumber === latest.header.number) {
-        block = latest
-      } else if (blockNumber > latest.header.number) {
-        throw {
-          code: INVALID_PARAMS,
-          message: 'specified block greater than current height',
-        }
-      } else {
-        block = await chain.getBlock(blockNumber)
-      }
-    }
-  }
-  return block
-}
 
 /**
  * eth_* RPC module
