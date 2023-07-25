@@ -3,6 +3,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, expect, expectTypeOf, it } from 'vitest'
 
+import { toRpcTx } from '../../../src/rpc/types'
 import genesisJSON from '../../testdata/geth-genesis/debug.json'
 import {
   baseRequest,
@@ -14,6 +15,8 @@ import {
   setupChain,
   startRPC,
 } from '../helpers'
+
+import type { RpcTx } from '../../../src/rpc/types'
 
 const method = 'debug_traceCall'
 
@@ -76,20 +79,10 @@ describe('trace a call', async () => {
 
   it('call debug_traceCall with valid parameters', async () => {
     const rpcTxReq = params('eth_getTransactionByHash', [bytesToHex(tx.hash())])
-    let rpcTx: any
+    let rpcTx: RpcTx = {}
     const expectResTx = async (res: any) => {
       const t = res.body.result
-
-      rpcTx = {
-        from: t.from,
-        gas: t.gas,
-        gasPrice: t.gasPrice,
-        value: t.value,
-        data: t.input,
-        maxPriorityFeePerGas: t.maxPriorityFeePerGas,
-        maxFeePerGas: t.maxFeePerGas,
-        type: t.type,
-      }
+      rpcTx = toRpcTx(t)
     }
     await baseRequest(server, rpcTxReq, 200, expectResTx, true)
     const req2 = params('debug_traceCall', [rpcTx, '0x1', {}])
