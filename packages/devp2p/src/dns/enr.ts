@@ -1,9 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
-import { protocols } from '@multiformats/multiaddr'
-import { convertToString } from '@multiformats/multiaddr/convert'
 import { base32, base64url } from '@scure/base'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
+import { protocols } from 'multiaddr'
+import { toString } from 'multiaddr/src/convert.js'
 import { sscanf } from 'scanf'
 
 import { keccak256, toNewUint8Array } from '../util.js'
@@ -82,9 +82,9 @@ export class ENR {
     const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      address: convertToString(ipCode, obj.ip) as string,
-      tcpPort: Number(convertToString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: Number(convertToString(udpCode, toNewUint8Array(obj.udp))),
+      address: toString(ipCode, obj.ip) as string,
+      tcpPort: Number(toString(tcpCode, toNewUint8Array(obj.tcp))),
+      udpPort: Number(toString(udpCode, toNewUint8Array(obj.udp))),
     }
 
     return peerInfo
