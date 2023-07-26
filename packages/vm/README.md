@@ -9,7 +9,7 @@
 | Execution Context for the Ethereum EVM Implementation. |
 | ------------------------------------------------------ |
 
-This package provides an Ethereum `mainnet` compatible execution context for the
+This package is a `CELO` compatible fork of [@ethereumjs/vm](https://www.npmjs.com/package/@ethereumjs/vm) and provides an Ethereum `mainnet` compatible execution context for the
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
 EVM implementation.
 
