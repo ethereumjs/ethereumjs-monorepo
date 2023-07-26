@@ -147,11 +147,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       // if the node doesn't has all of the requested trie nodes. We need an index to move forward through the hashes which are
       // absent in the receieved responses
       const receivedNodes: Uint8Array[] = []
-      const requestedNodes = new Set(Array.from(this.requestedNodeToPath.keys()))
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
         const receivedHash = bytesToHex(keccak256(receivedNode) as Uint8Array)
-        if (requestedNodes.has(receivedHash)) {
+        if (this.requestedNodeToPath.has(receivedHash)) {
           receivedNodes.push(rangeResult.nodes[i])
         }
       }
