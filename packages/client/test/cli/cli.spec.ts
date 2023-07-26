@@ -3,12 +3,40 @@ import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
 describe('[CLI]', () => {
+  // chain network tests
+  it('should successfully start client with a custom network and network id', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = ['--network=sepolia', '--networkId=11155111', '--dev=poa']
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('Client started successfully')) {
+          assert.ok('Client started successfully', 'read from HTTP RPC')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -23,12 +51,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -36,12 +62,10 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start engine rpc and provide endpoint with auth disabled', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--rpcEngineAuth=false', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -57,12 +81,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -70,12 +92,10 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start engine rpc on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--rpcEnginePort=8552', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -90,12 +110,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -103,12 +121,10 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start engine rpc on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--rpcEngineAddr="0.0.0.0"', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -123,12 +139,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -136,13 +150,46 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
+  it('should start engine websocket on custom address and port', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = [
+      '--ws',
+      '--rpcEngine',
+      '--wsEnginePort=8552',
+      '--wsEngineAddr="0.0.0.0"',
+      '--dev=poa',
+    ]
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('ws://') && message.includes('engine')) {
+          // if http endpoint startup message detected, call http endpoint with RPC method
+          assert.ok(message.includes('ws://0.0.0.0:8552'), 'read from HTTP RPC')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
   // websocket tests
   it('should start WS RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--ws', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -161,12 +208,10 @@ describe('[CLI]', () => {
           }
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -174,12 +219,10 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start WS RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--ws', '--wsPort=8546', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -198,12 +241,10 @@ describe('[CLI]', () => {
           }
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -211,17 +252,14 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start WS RPC on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--ws', '--wsPort=8546', '--wsAddr="0.0.0.0"', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('ws://')) {
-          console.log(message)
           // if ws endpoint startup message detected, call ws endpoint with RPC method
           const client = Client.websocket({ url: 'ws://0.0.0.0:8546' })
           ;(client as any).ws.on('open', async function () {
@@ -236,12 +274,10 @@ describe('[CLI]', () => {
           }
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -249,13 +285,11 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   // client rpc tests
   it('should start HTTP RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -272,12 +306,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -285,12 +317,10 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start HTTP RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--rpcPort=8546', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -307,12 +337,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -320,12 +348,10 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('should start HTTP RPC on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--rpcAddr="0.0.0.0"', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
-
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
@@ -342,12 +368,10 @@ describe('[CLI]', () => {
           assert.fail(`client encountered error: ${message}`)
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -355,7 +379,6 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
-
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...['--dev=poa']])
@@ -378,12 +401,10 @@ describe('[CLI]', () => {
           assert.fail('client encountered error starting')
         }
       })
-
       child.stderr.on('data', (data) => {
         const message: string = data.toString()
         assert.fail(`stderr: ${message}`)
       })
-
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
@@ -391,4 +412,69 @@ describe('[CLI]', () => {
       })
     })
   }, 20000)
+  // logging and documentation tests
+  it('should start HTTP RPC and return valid responses', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = ['--rpc', '--helpRpc=true', '--dev=poa']
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('JSON-RPC: Supported Methods')) {
+          assert.ok(message, 'read from HTTP RPC')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
+  it('should start HTTP RPC and return valid responses', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = [
+      '--rpc',
+      '--logFile=false',
+      '--logRotate=false',
+      '--logMaxFiles=0',
+      '--logLevelFile="debug"',
+      '--logLevel="debug"',
+      '--dev=poa',
+    ]
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('DEBUG')) {
+          assert.ok(message, 'debug logging is enabled')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
 })
