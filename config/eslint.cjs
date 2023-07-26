@@ -14,12 +14,12 @@ module.exports = {
     node: true,
   },
   ignorePatterns: [
+    '.eslintrc.cjs',
     '.eslintrc.js',
     'benchmarks',
     'coverage',
     'dist',
     'examples',
-    'karma.conf.js',
     'node_modules',
     'prettier.config.js',
     'recipes',

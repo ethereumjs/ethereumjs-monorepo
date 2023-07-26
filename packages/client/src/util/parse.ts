@@ -29,8 +29,8 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
     input = input.split(',')
   }
   try {
-    return (input as string[]).map((s) => {
-      if (Multiaddr.isMultiaddr(s)) {
+    return input.map((s) => {
+      if (s instanceof Multiaddr) {
         return s
       }
       // parse as multiaddr

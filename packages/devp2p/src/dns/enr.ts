@@ -2,14 +2,13 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
-import { Multiaddr } from 'multiaddr'
+import { protocols } from 'multiaddr'
+import { toString } from 'multiaddr/src/convert.js'
 import { sscanf } from 'scanf'
 
 import { keccak256, toNewUint8Array } from '../util.js'
 
 import type { PeerInfo } from '../types.js'
-
-const Convert = require('multiaddr/src/convert')
 
 type ProtocolCodes = {
   ipCode: number
@@ -83,9 +82,9 @@ export class ENR {
     const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      address: Convert.toString(ipCode, obj.ip) as string,
-      tcpPort: Number(Convert.toString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: Number(Convert.toString(udpCode, toNewUint8Array(obj.udp))),
+      address: toString(ipCode, obj.ip) as string,
+      tcpPort: Number(toString(tcpCode, toNewUint8Array(obj.tcp))),
+      udpPort: Number(toString(udpCode, toNewUint8Array(obj.udp))),
     }
 
     return peerInfo
@@ -185,10 +184,10 @@ export class ENR {
 
     switch (bytesToUtf8(protocolId)) {
       case 'v4':
-        ipCode = Multiaddr.protocols.names.ip4.code
+        ipCode = protocols(4).code
         break
       case 'v6':
-        ipCode = Multiaddr.protocols.names.ip6.code
+        ipCode = protocols(41).code
         break
       default:
         throw new Error("IP protocol must be 'v4' or 'v6'")
@@ -196,8 +195,8 @@ export class ENR {
 
     return {
       ipCode,
-      tcpCode: Multiaddr.protocols.names.tcp.code,
-      udpCode: Multiaddr.protocols.names.udp.code,
+      tcpCode: protocols('tcp').code,
+      udpCode: protocols('udp').code,
     }
   }
 }
