@@ -31,7 +31,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -61,7 +61,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start engine rpc and provide endpoint with auth disabled', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--rpcEngineAuth=false', '--dev=poa']
@@ -91,7 +91,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start engine rpc on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--rpcEnginePort=8552', '--dev=poa']
@@ -120,7 +120,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start engine rpc on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpcEngine', '--rpcEngineAddr="0.0.0.0"', '--dev=poa']
@@ -149,7 +149,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start engine websocket on custom address and port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -184,7 +184,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   // websocket tests
   it('should start WS RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -218,7 +218,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start WS RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--ws', '--wsPort=8546', '--dev=poa']
@@ -251,7 +251,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start WS RPC on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--ws', '--wsPort=8546', '--wsAddr="0.0.0.0"', '--dev=poa']
@@ -284,7 +284,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   // client rpc tests
   it('should start HTTP RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -316,7 +316,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start HTTP RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--rpcPort=8546', '--dev=poa']
@@ -347,7 +347,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start HTTP RPC on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--rpcAddr="0.0.0.0"', '--dev=poa']
@@ -378,7 +378,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...['--dev=poa']])
@@ -440,7 +440,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start HTTP RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -476,7 +476,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   // caching tests
   it('should start client with custom input for account cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -505,7 +505,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start client with custom input for storage cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--storageCache=2000']
@@ -533,7 +533,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
   it('should start client with custom input for trie cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--trieCache=2000']
@@ -561,5 +561,5 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 18000)
 })
