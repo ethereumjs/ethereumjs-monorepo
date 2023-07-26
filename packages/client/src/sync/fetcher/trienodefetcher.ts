@@ -133,7 +133,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     })
 
     // Response is valid, but check if peer is signalling that it does not have
-    // the requested data. For bytecode range queries that means the peer is not
+    // the requested data. For trie node range queries that means the peer is not
     // yet synced.
     const requestedNodeCount = pathStrings.length
     if (rangeResult === undefined || requestedNodeCount < rangeResult.nodes.length) {
