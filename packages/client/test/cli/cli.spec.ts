@@ -477,4 +477,89 @@ describe('[CLI]', () => {
       })
     })
   }, 10000)
+  // caching tests
+  it('should start client with custom input for account cache size', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = ['--accountCache=2000']
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('account cache')) {
+          assert.ok(message.includes('2000'), 'account cache option works')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
+  it('should start client with custom input for storage cache size', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = ['--storageCache=2000']
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('storage cache')) {
+          assert.ok(message.includes('2000'), 'storage cache option works')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
+  it('should start client with custom input for trie cache size', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = ['--trieCache=2000']
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('trie cache')) {
+          assert.ok(message.includes('2000'), 'trie cache option works')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 10000)
 })
