@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690311598622,
+  "lastUpdate": 1690333433708,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "31aa264005b655f2fc59ad18ec28ae2418d5da70",
-          "message": "Remove BLS EIP 2537 (remove mcl-wasm package) (#2870)\n\n* monorepo: remove BLS / EIP 2537 / mcl-wasm\r\n\r\n* evm: remove unnecessary async EVM.create\r\n\r\n* evm: lint",
-          "timestamp": "2023-07-10T13:15:11+02:00",
-          "tree_id": "7e053b37a6a25c42cafaa3a9e7fe3de428c1473d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/31aa264005b655f2fc59ad18ec28ae2418d5da70"
-        },
-        "date": 1688988084011,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 33068,
-            "range": "±4.33%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32441,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32261,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27864,
-            "range": "±9.44%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30574,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.35%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "191faf5201aa24fb2052227f8105b2f20c5b9ee7",
+          "message": "Update ESLint Dependency (#2914)\n\n* Use eslint version 8.28.0\n\n* Use eslint version 8.35.0\n\n* Update config file\n\n* Use eslint version 8.45.0\n\n* Update eslint dependencies\n\n* update github plugin\n\n* Update package-lock.json\n\n* Update package-lock.json\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-07-25T21:00:32-04:00",
+          "tree_id": "1944389d527d85e026b794dd565caba367e7fdd8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/191faf5201aa24fb2052227f8105b2f20c5b9ee7"
+        },
+        "date": 1690333432953,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32668,
+            "range": "±4.24%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32110,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31685,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27430,
+            "range": "±9.48%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30070,
+            "range": "±2.55%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
