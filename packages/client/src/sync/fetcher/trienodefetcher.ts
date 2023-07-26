@@ -25,7 +25,7 @@ import type { Debugger } from 'debug'
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
 /**
- * Implements an snap1 based bytecode fetcher
+ * Implements an snap1 based trie node fetcher
  * @memberof module:sync/fetcher
  */
 export interface TrieNodeFetcherOptions extends FetcherOptions {
