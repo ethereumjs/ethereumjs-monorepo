@@ -10,7 +10,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { LevelDB } from '../../execution/level'
 import { short } from '../../util'
 
 import { Fetcher } from './fetcher'
@@ -126,7 +125,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           )
         }
       }
-      const trie = new Trie({ db: new LevelDB() })
+      const trie = new Trie()
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
       return await trie.verifyRangeProof(
@@ -157,7 +156,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           )
         }
       }
-      const trie = new Trie({ db: new LevelDB() })
+      const trie = new Trie()
       await trie.batch(
         slots.map((s) => {
           return {

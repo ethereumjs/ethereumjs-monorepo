@@ -11,7 +11,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
 import { short } from '../../util'
 
@@ -227,7 +226,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie()
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
