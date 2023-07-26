@@ -82,7 +82,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   nodeCount: number
 
   /**
-   * Create new block fetcher
+   * Create new trie node fetcher
    */
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
