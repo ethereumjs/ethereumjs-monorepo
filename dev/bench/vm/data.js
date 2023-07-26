@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690333433708,
+  "lastUpdate": 1690348240074,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0747b4cac564200c4b5ee711ff01738ab558f8b1",
-          "message": "Fix incomplete imports (#2871)",
-          "timestamp": "2023-07-10T09:45:45-04:00",
-          "tree_id": "02f65410c7180c403a13c926d133884d3095e41a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0747b4cac564200c4b5ee711ff01738ab558f8b1"
-        },
-        "date": 1688997382889,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31034,
-            "range": "±4.81%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31004,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30973,
-            "range": "±2.93%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25733,
-            "range": "±9.86%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29706,
-            "range": "±3.17%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.55%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e984704190f520f20e06ec3b348b2674b3bff786",
+          "message": "Trie - async walk generator (#2904)\n\n* Trie:  async iterator _walkTrie function\r\n\r\n* write test/demo script\r\n\r\n* Trie: internalize walkTrieIterable into Trie class\r\n\r\n* Trie: include helper methods for all nodes / value nodes\r\n\r\n* remove null conditional\r\n\r\n* update test with sparse trie example\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-07-25T23:05:27-06:00",
+          "tree_id": "9e0fa927c4bb0414e23baa2557f787d0b22c0ff7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e984704190f520f20e06ec3b348b2674b3bff786"
+        },
+        "date": 1690348238558,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25922,
+            "range": "±5.85%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26371,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26199,
+            "range": "±3.56%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25944,
+            "range": "±3.79%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20488,
+            "range": "±10.71%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
           }
         ]
       }
