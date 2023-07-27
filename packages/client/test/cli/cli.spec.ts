@@ -210,7 +210,7 @@ describe('[CLI]', () => {
           const client = Client.websocket({ url: 'ws://0.0.0.0:8552' })
           ;(client as any).ws.on('open', async function () {
             const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-            assert.ok(res.result.length > 0, 'engine api is responsive on custom address and port')
+            assert.ok(res.result.length > 0, 'read from WS RPC on custom address and port')
             child.kill()
             resolve(undefined)
           })
@@ -277,7 +277,7 @@ describe('[CLI]', () => {
           const client = Client.websocket({ url: 'ws://localhost:8546' })
           ;(client as any).ws.on('open', async function () {
             const res = await client.request('web3_clientVersion', [], 2.0)
-            assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
+            assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC on custom port')
             child.kill()
             resolve(undefined)
           })
@@ -459,7 +459,7 @@ describe('[CLI]', () => {
     })
   }, 20000)
   // logging and documentation tests
-  it('should start HTTP RPC and return valid responses', async () => {
+  it('should log out available RPC methods', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--helpRpc=true', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
@@ -467,7 +467,7 @@ describe('[CLI]', () => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('JSON-RPC: Supported Methods')) {
-          assert.ok(message, 'read from HTTP RPC')
+          assert.ok(message, 'logged out supported RPC methods')
           child.kill()
           resolve(undefined)
         }
