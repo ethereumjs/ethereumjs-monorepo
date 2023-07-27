@@ -45,7 +45,17 @@ describe('[CLI]', () => {
         const message: string = data.toString()
         if (message.includes('http://')) {
           // if http endpoint startup message detected, call http endpoint with RPC method
-          assert.ok(message.includes('engine'), 'read from HTTP RPC')
+          assert.ok(message.includes('engine'), 'engine rpc started')
+          try {
+            const client = Client.http({ port: 8551 })
+            await client.request('engine_exchangeCapabilities', [], 2.0)
+          } catch (e) {
+            assert(
+              e.message.includes('Unauthorized: Error: Missing auth header'),
+              'authentication failure shows that auth is defaulting to active'
+            )
+          }
+          // assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
           child.kill()
           resolve(undefined)
         }
@@ -73,9 +83,14 @@ describe('[CLI]', () => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('http://')) {
-          // if http endpoint startup message detected, call http endpoint with RPC method
-          assert.ok(message.includes('engine'), 'read from HTTP RPC')
-          assert.ok(message.includes('rpcEngineAuth=false'), 'read from HTTP RPC')
+          assert.ok(message.includes('engine'), 'engine rpc started')
+          assert.ok(
+            message.includes('rpcEngineAuth=false'),
+            'auth is disabled according to client logs'
+          )
+          const client = Client.http({ port: 8551 })
+          const res = await client.request('engine_exchangeCapabilities', [], 2.0)
+          assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
           child.kill()
           resolve(undefined)
         }
@@ -97,14 +112,21 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start engine rpc on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpcEngine', '--rpcEnginePort=8552', '--dev=poa']
+    const cliArgs = ['--rpcEngine', '--rpcEnginePort=8552', '--rpcEngineAuth=false', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('http://')) {
-          // if http endpoint startup message detected, call http endpoint with RPC method
-          assert.ok(message.includes('8552'), 'read from HTTP RPC')
+          assert.ok(message.includes('engine'), 'engine rpc started')
+          assert.ok(message.includes('8552'), 'custom port is being used')
+          assert.ok(
+            message.includes('rpcEngineAuth=false'),
+            'auth is disabled according to client logs'
+          )
+          const client = Client.http({ port: 8552 })
+          const res = await client.request('engine_exchangeCapabilities', [], 2.0)
+          assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
           child.kill()
           resolve(undefined)
         }
@@ -126,14 +148,26 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start engine rpc on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpcEngine', '--rpcEngineAddr="0.0.0.0"', '--dev=poa']
+    const cliArgs = [
+      '--rpcEngine',
+      '--rpcEngineAddr="0.0.0.0"',
+      '--rpcEngineAuth=false',
+      '--dev=poa',
+    ]
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('http://')) {
-          // if http endpoint startup message detected, call http endpoint with RPC method
-          assert.ok(message.includes('0.0.0.0'), 'read from HTTP RPC')
+          assert.ok(message.includes('engine'), 'engine rpc started')
+          assert.ok(message.includes('0.0.0.0'), 'custom address is being used')
+          assert.ok(
+            message.includes('rpcEngineAuth=false'),
+            'auth is disabled according to client logs'
+          )
+          const client = Client.http({ hostname: '0.0.0.0', port: 8551 })
+          const res = await client.request('engine_exchangeCapabilities', [], 2.0)
+          assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
           child.kill()
           resolve(undefined)
         }
@@ -160,6 +194,7 @@ describe('[CLI]', () => {
       '--rpcEngine',
       '--wsEnginePort=8552',
       '--wsEngineAddr="0.0.0.0"',
+      '--rpcEngineAuth=false',
       '--dev=poa',
     ]
     const child = spawn(process.execPath, [file, ...cliArgs])
@@ -167,10 +202,18 @@ describe('[CLI]', () => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('ws://') && message.includes('engine')) {
-          // if http endpoint startup message detected, call http endpoint with RPC method
-          assert.ok(message.includes('ws://0.0.0.0:8552'), 'read from HTTP RPC')
-          child.kill()
-          resolve(undefined)
+          assert.ok(
+            message.includes('0.0.0.0:8552'),
+            'client logs show correct custom address and port being used'
+          )
+          assert.ok(message.includes('engine'), 'engine ws started')
+          const client = Client.websocket({ url: 'ws://0.0.0.0:8552' })
+          ;(client as any).ws.on('open', async function () {
+            const res = await client.request('engine_exchangeCapabilities', [], 2.0)
+            assert.ok(res.result.length > 0, 'engine api is responsive on custom address and port')
+            child.kill()
+            resolve(undefined)
+          })
         }
         if (message.toLowerCase().includes('error')) {
           child.kill(9)
@@ -187,7 +230,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // websocket tests
   it('should start WS RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
