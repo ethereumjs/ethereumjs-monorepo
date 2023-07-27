@@ -35,6 +35,48 @@ describe('[CLI]', () => {
       })
     })
   }, 18000)
+  it('should successfully start client with custom inputs for PoW network', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = [
+      '--rpc',
+      '--dev=pow',
+      '--minerCoinbase="abc"',
+      '--saveReceipts=false',
+      '--execution=false',
+    ]
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        //// eth_coinbase rpc endpoint is not yet implemented
+        // if (message.includes('http://')) {
+        //   const client = Client.http({ port: 8545 })
+        //   const res = await client.request('eth_coinbase', [], 2.0)
+        //   assert.ok(res.result === 'abc', 'engine api is responsive without need for auth header')
+        //   child.kill()
+        //   resolve(undefined)
+        // }
+        if (message.includes('Client started successfully')) {
+          assert.ok(message, 'Client started successfully with custom inputs for PoW network')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 18000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
