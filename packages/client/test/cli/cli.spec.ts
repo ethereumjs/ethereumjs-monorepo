@@ -6,13 +6,16 @@ describe('[CLI]', () => {
   // chain network tests
   it('should successfully start client with a custom network and network id', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--network=sepolia', '--networkId=11155111', '--dev=poa']
+    const cliArgs = ['--network=sepolia', '--networkId=11155111']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
-        if (message.includes('Client started successfully')) {
-          assert.ok('Client started successfully', 'read from HTTP RPC')
+        if (message.includes('Initializing Ethereumjs client')) {
+          assert.ok(
+            message.includes('network=sepolia chainId=11155111'),
+            'client is using custom inputs for network and network ID'
+          )
           child.kill()
           resolve(undefined)
         }
