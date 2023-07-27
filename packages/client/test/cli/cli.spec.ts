@@ -664,7 +664,7 @@ describe('[CLI]', () => {
         if (message.includes('Client started successfully')) {
           assert.ok(
             message.includes('Client started successfully'),
-            'Clients starts with client execution limits options'
+            'Clients starts with custom network parameters'
           )
           child.kill()
           resolve(undefined)
