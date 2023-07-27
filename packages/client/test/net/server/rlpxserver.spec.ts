@@ -72,7 +72,7 @@ describe('[RlpxServer]', async () => {
     server.rlpx = td.object()
     td.when(
       server.dpt!.bootstrap({ address: '10.0.0.1', udpPort: 1234, tcpPort: 1234 })
-    ).thenResolve()
+    ).thenResolve(undefined)
     td.when(
       (server.dpt! as any).bootstrap({ address: '10.0.0.2', udpPort: '1234', tcpPort: '1234' })
     ).thenReject(new Error('err0'))
@@ -237,7 +237,7 @@ describe('[RlpxServer]', async () => {
         assert.equal(err.message, 'err0', 'got error')
       })
     )
-    ;(server.dpt as any).emit('error', new Error('err0'))
+    server['dpt']?.events.emit('error', new Error('err0'))
   })
 
   it('should init rlpx', async () => {
@@ -269,14 +269,14 @@ describe('[RlpxServer]', async () => {
         assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
       })
     )
-    server.rlpx!.emit('peer:added', rlpxPeer)
+    server.rlpx!.events.emit('peer:added', rlpxPeer)
     ;(server as any).peers.set('01', { id: '01' } as any)
-    server.rlpx!.emit('peer:removed', rlpxPeer)
-    server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
+    server.rlpx!.events.emit('peer:removed', rlpxPeer)
+    server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
 
     // @ts-ignore
     server.rlpx!.id = hexToBytes('0xff')
-    server.rlpx!.emit('listening')
+    server.rlpx!.events.emit('listening')
   })
 
   it('should handles errors from id-less peers', async () => {
@@ -293,7 +293,7 @@ describe('[RlpxServer]', async () => {
         assert.equal(err.message, 'err0', 'got error')
       })
     )
-    server.rlpx!.emit('peer:error', rlpxPeer, new Error('err0'))
+    server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
   })
 
   it('should reset td', () => {

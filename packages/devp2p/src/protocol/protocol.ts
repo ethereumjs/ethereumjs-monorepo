@@ -11,7 +11,8 @@ const { debug: createDebugLogger } = debugDefault
 
 type MessageCodes = { [key: number | string]: number | string }
 
-export abstract class Protocol extends EventEmitter {
+export abstract class Protocol {
+  public events: EventEmitter
   protected _version: number
   protected _peer: Peer
   protected _send: SendMethod
@@ -36,8 +37,7 @@ export abstract class Protocol extends EventEmitter {
     version: number,
     messageCodes: MessageCodes
   ) {
-    super()
-
+    this.events = new EventEmitter()
     this._peer = peer
     this._send = send
     this._version = version

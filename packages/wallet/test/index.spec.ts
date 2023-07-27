@@ -22,9 +22,9 @@ const fixturePublicKeyBuffer = unprefixedHexToBytes(fixturePublicKey)
 const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBuffer)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
-const isRunningInKarma = (): boolean => {
-  return typeof (global as any).window !== 'undefined' && (global as any).window.__karma__
-}
+// Hack to detect if running in browser or not
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+
 describe('Wallet tests', () => {
   it('.getPrivateKey()', () => {
     assert.equal(bytesToUnprefixedHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
@@ -250,7 +250,7 @@ describe('Wallet tests', () => {
 
   let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
 
-  if (isRunningInKarma()) {
+  if (isBrowser() === true) {
     // These tests take a long time in the browser due to
     // the amount of permutations so we will shorten them.
     permutations = permutations.slice(1)

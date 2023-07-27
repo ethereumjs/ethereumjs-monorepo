@@ -137,11 +137,11 @@ export class RlpxPeer extends Peer {
       this.rlpxPeer = null
       this.connected = false
       this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      this.rlpx?.removeListener('peer:error', peerErrorHandlerBound)
+      this.rlpx?.events.removeListener('peer:error', peerErrorHandlerBound)
     }
-    this.rlpx.on('peer:error', peerErrorHandlerBound)
-    this.rlpx.once('peer:added', peerAddedHandler.bind(this))
-    this.rlpx.once('peer:removed', peerRemovedHandler.bind(this))
+    this.rlpx.events.on('peer:error', peerErrorHandlerBound)
+    this.rlpx.events.once('peer:added', peerAddedHandler.bind(this))
+    this.rlpx.events.once('peer:removed', peerRemovedHandler.bind(this))
   }
 
   /**

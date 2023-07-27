@@ -8,7 +8,7 @@ describe('DPT simulator tests', () => {
   it('DPT: new working node', () => {
     const dpts = util.initTwoPeerDPTSetup(41622)
 
-    dpts[0].on('peer:new', async (peer: any) => {
+    dpts[0].events.on('peer:new', async (peer: any) => {
       assert.equal(peer.address, '127.0.0.1', 'should have added peer on peer:new')
       await util.delay(500)
       util.destroyDPTs(dpts)
@@ -18,7 +18,7 @@ describe('DPT simulator tests', () => {
   it('DPT: working node added', () => {
     const dpts = util.initTwoPeerDPTSetup(42622)
 
-    dpts[0].on('peer:added', async () => {
+    dpts[0].events.on('peer:added', async () => {
       assert.equal(dpts[0].getPeers().length, 1, 'should have added peer to k-bucket on peer:added')
       await util.delay(500)
       util.destroyDPTs(dpts)
@@ -29,11 +29,11 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(42632)
 
     try {
-      dpts[0].on('peer:added', async (peer) => {
+      dpts[0].events.on('peer:added', async (peer) => {
         await util.delay(400)
         dpts[0].removePeer(peer)
       })
-      dpts[0].on('peer:removed', async () => {
+      dpts[0].events.on('peer:removed', async () => {
         assert.equal(
           dpts[0].getPeers().length,
           0,
@@ -51,11 +51,11 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(42642)
 
     try {
-      dpts[0].once('peer:added', async (peer) => {
+      dpts[0].events.once('peer:added', async (peer) => {
         await util.delay(400)
         dpts[0].banPeer(peer)
       })
-      dpts[0].once('peer:removed', async (peer) => {
+      dpts[0].events.once('peer:removed', async (peer) => {
         // @ts-ignore
         assert.equal(dpts[0]._banlist.has(peer), true, 'ban-list should contain peer')
         assert.equal(
@@ -75,7 +75,7 @@ describe('DPT simulator tests', () => {
     const dpts = util.initTwoPeerDPTSetup(42732)
 
     try {
-      dpts[0].once('peer:added', async (peer: any) => {
+      dpts[0].events.once('peer:added', async (peer: any) => {
         dpts[0]._onKBucketPing([peer], peer)
         await util.delay(400)
         assert.equal(dpts[0].getPeers().length, 1, 'should still have one peer in k-bucket')
@@ -120,7 +120,7 @@ describe('DPT simulator tests', () => {
       await util.delay(400)
     }
 
-    await util.delay(250)
+    await util.delay(500)
 
     for (const dpt of dpts) {
       assert.equal(dpt.getPeers().length, numDPTs, 'Peers should be distributed to all DPTs')

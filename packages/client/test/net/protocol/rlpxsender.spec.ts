@@ -27,27 +27,27 @@ describe('[RlpxSender]', () => {
   })
 
   it('should receive status', () => {
-    const rlpxProtocol = new EventEmitter()
+    const rlpxProtocol = { events: new EventEmitter() }
     const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
     sender.on('status', (status: any) => {
       assert.equal(status.id, 5, 'status received')
       assert.equal(sender.status.id, 5, 'status getter')
     })
-    rlpxProtocol.emit('status', { id: 5 })
+    rlpxProtocol.events.emit('status', { id: 5 })
   })
 
   it('should receive message', () => {
-    const rlpxProtocol = new EventEmitter()
+    const rlpxProtocol = { events: new EventEmitter() }
     const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
     sender.on('message', (message: any) => {
       assert.equal(message.code, 1, 'message received (code)')
       assert.equal(message.payload, 5, 'message received (payload)')
     })
-    rlpxProtocol.emit('message', 1, 5)
+    rlpxProtocol.events.emit('message', 1, 5)
   })
 
   it('should catch errors', () => {
-    const rlpxProtocol = new EventEmitter()
+    const rlpxProtocol = { events: new EventEmitter() }
     const sender = new RlpxSender(rlpxProtocol as Devp2pETH)
     assert.throws(() => sender.sendStatus({ id: 5 }), /not a function/, 'sendStatus error')
     assert.throws(() => sender.sendMessage(1, 5), /not a function/, 'sendMessage error')

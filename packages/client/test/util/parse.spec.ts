@@ -49,7 +49,14 @@ describe('[Util/Parse]', () => {
       [{ name: 't1', options: {} }],
       'parsed transport without options'
     )
-    assert.deepEqual(
+    assert.deepEqual<
+      {
+        name: string
+        options: {
+          [key: string]: string | undefined
+        }
+      }[]
+    >(
       parseTransports(['t2:k1=v1,k:k=v2,k3="v3",k4,k5=']),
       [
         {
