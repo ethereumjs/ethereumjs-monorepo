@@ -445,6 +445,7 @@ describe('[CLI]', () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
       '--rpc',
+      '--rpcDebug=false',
       '--executeBlocks="5"',
       '--debugCode=false',
       '--logFile=false',
@@ -567,7 +568,7 @@ describe('[CLI]', () => {
   // test experimental feature options
   it('should start client when passed options for experimental features', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--mine=true', '--forceSnapSync=true', '--dev=poa']
+    const cliArgs = ['--mine=true', '--forceSnapSync=true', '--dev=poa', '--port=30304']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -600,12 +601,53 @@ describe('[CLI]', () => {
   it('should start client when passed options for client execution limits', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
+      '--port=30304',
       '--numBlocksPerIteration=2',
       '--txLookupLimit=2',
       '--maxPerRequest=2',
       '--maxFetcherJobs=2',
       '--minPeers=2',
       '--maxPeers=2',
+      '--startBlock=0',
+      '--dev=poa',
+    ]
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('Client started successfully')) {
+          assert.ok(
+            message.includes('Client started successfully'),
+            'Clients starts with client execution limits options'
+          )
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 18000)
+  // Network protocol tests
+  it('should start client with custom network parameters', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = [
+      '--rpc',
+      '--port=2100',
+      '--extIP=0.0.0.0',
+      '--rpcCors=https://foo.example',
+      '--dnsAddr=8.8.8.8',
       '--dev=poa',
     ]
     const child = spawn(process.execPath, [file, ...cliArgs])
