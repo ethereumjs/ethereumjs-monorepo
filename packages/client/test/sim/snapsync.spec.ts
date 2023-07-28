@@ -4,9 +4,9 @@ import debug from 'debug'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config'
-import { getLogger } from '../../src/logging'
-import { Event } from '../../src/types'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { Event } from '../../src/types.js'
 
 import {
   createInlineClient,
@@ -64,7 +64,7 @@ describe('simple mainnet test run', async () => {
   }
 
   // ------------Sanity checks--------------------------------
-  it('add some EOA transfers', { skip: process.env.ADD_EOA_STATE === undefined }, async () => {
+  it.skipIf(process.env.ADD_EOA_STATE === undefined)('add some EOA transfers', async () => {
     const startBalance = await client.request('eth_getBalance', [
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
@@ -99,7 +99,7 @@ describe('simple mainnet test run', async () => {
     )
   })
 
-  it('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async () => {
+  it.skipIf(process.env.ADD_EOA_STATE === undefined)('setup snap sync', async () => {
     // start client inline here for snap sync, no need for beacon
     const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
       // eslint-disable-next-line @typescript-eslint/no-use-before-define

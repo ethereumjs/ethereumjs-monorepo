@@ -148,7 +148,7 @@ describe('[BlockFetcher]', async () => {
       count: BigInt(0),
     })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    assert.equal(fetcher.peer(), 'peer0', 'found peer')
+    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {
