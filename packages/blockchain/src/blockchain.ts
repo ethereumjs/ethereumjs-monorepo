@@ -612,9 +612,9 @@ export class Blockchain implements BlockchainInterface {
     }
 
     if (header.common.isActivatedEIP(4844) === true) {
-      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
-      if (header.excessDataGas !== expectedExcessDataGas) {
-        throw new Error(`expected data gas: ${expectedExcessDataGas}, got: ${header.excessDataGas}`)
+      const expectedExcessblobGas = parentHeader.calcNextExcessblobGas()
+      if (header.excessblobGas !== expectedExcessblobGas) {
+        throw new Error(`expected data gas: ${expectedExcessblobGas}, got: ${header.excessblobGas}`)
       }
     }
   }

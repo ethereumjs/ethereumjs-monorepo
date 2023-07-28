@@ -30,7 +30,7 @@ const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
 })
-const dataGasPerBlob = common.param('gasConfig', 'dataGasPerBlob')
+const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
 
 describe('EIP4844 header tests', () => {
   it('should work', () => {
@@ -41,7 +41,7 @@ describe('EIP4844 header tests', () => {
         () => {
           BlockHeader.fromHeaderData(
             {
-              excessDataGas: 1n,
+              excessblobGas: 1n,
             },
             {
               common: earlyCommon,
@@ -50,14 +50,14 @@ describe('EIP4844 header tests', () => {
         },
         'excess data gas can only be provided with EIP4844 activated',
         undefined,
-        'should throw when setting excessDataGas with EIP4844 not being activated'
+        'should throw when setting excessblobGas with EIP4844 not being activated'
       )
 
       assert.throws(
         () => {
           BlockHeader.fromHeaderData(
             {
-              dataGasUsed: 1n,
+              blobGasUsed: 1n,
             },
             {
               common: earlyCommon,
@@ -66,22 +66,22 @@ describe('EIP4844 header tests', () => {
         },
         'data gas used can only be provided with EIP4844 activated',
         undefined,
-        'should throw when setting dataGasUsed with EIP4844 not being activated'
+        'should throw when setting blobGasUsed with EIP4844 not being activated'
       )
 
-      const excessDataGas = BlockHeader.fromHeaderData(
+      const excessblobGas = BlockHeader.fromHeaderData(
         {},
         { common, skipConsensusFormatValidation: true }
-      ).excessDataGas
+      ).excessblobGas
       assert.equal(
-        excessDataGas,
+        excessblobGas,
         0n,
         'instantiates block with reasonable default excess data gas value when not provided'
       )
       assert.doesNotThrow(() => {
         BlockHeader.fromHeaderData(
           {
-            excessDataGas: 0n,
+            excessblobGas: 0n,
           },
           {
             common,
@@ -97,9 +97,9 @@ describe('EIP4844 header tests', () => {
         { common, skipConsensusFormatValidation: true }
       )
       assert.equal(
-        block.toJSON().header?.excessDataGas,
+        block.toJSON().header?.excessblobGas,
         '0x0',
-        'JSON output includes excessDataGas'
+        'JSON output includes excessblobGas'
       )
     }
   })
@@ -110,41 +110,41 @@ describe('data gas tests', () => {
     if (isBrowser() === false) {
       const preShardingHeader = BlockHeader.fromHeaderData({})
 
-      let excessDataGas = preShardingHeader.calcNextExcessDataGas()
+      let excessblobGas = preShardingHeader.calcNextExcessblobGas()
       assert.equal(
-        excessDataGas,
+        excessblobGas,
         0n,
         'excess data gas where 4844 is not active on header should be 0'
       )
 
       assert.throws(
         () => preShardingHeader.calcDataFee(1),
-        'header must have excessDataGas field',
+        'header must have excessblobGas field',
         undefined,
-        'calcDataFee throws when header has no excessDataGas field'
+        'calcDataFee throws when header has no excessblobGas field'
       )
 
       const lowGasHeader = BlockHeader.fromHeaderData(
-        { number: 1, excessDataGas: 5000 },
+        { number: 1, excessblobGas: 5000 },
         { common, skipConsensusFormatValidation: true }
       )
 
-      excessDataGas = lowGasHeader.calcNextExcessDataGas()
-      let dataGasPrice = lowGasHeader.getDataGasPrice()
+      excessblobGas = lowGasHeader.calcNextExcessblobGas()
+      let blobGasPrice = lowGasHeader.getblobGasPrice()
       assert.equal(
-        excessDataGas,
+        excessblobGas,
         0n,
         'excess data gas should be 0 for small parent header data gas'
       )
-      assert.equal(dataGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
+      assert.equal(blobGasPrice, 1n, 'data gas price should be 1n when low or no excess data gas')
       const highGasHeader = BlockHeader.fromHeaderData(
-        { number: 1, excessDataGas: 6291456, dataGasUsed: BigInt(6) * dataGasPerBlob },
+        { number: 1, excessblobGas: 6291456, blobGasUsed: BigInt(6) * blobGasPerBlob },
         { common, skipConsensusFormatValidation: true }
       )
-      excessDataGas = highGasHeader.calcNextExcessDataGas()
-      dataGasPrice = highGasHeader.getDataGasPrice()
-      assert.equal(excessDataGas, 6684672n)
-      assert.equal(dataGasPrice, 6n, 'computed correct data gas price')
+      excessblobGas = highGasHeader.calcNextExcessblobGas()
+      blobGasPrice = highGasHeader.getblobGasPrice()
+      assert.equal(excessblobGas, 6684672n)
+      assert.equal(blobGasPrice, 6n, 'computed correct data gas price')
 
       assert.equal(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
       assert.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
@@ -165,7 +165,7 @@ describe('transaction validation tests', () => {
           versionedHashes,
           blobs,
           kzgCommitments: commitments,
-          maxFeePerDataGas: 100000000n,
+          maxFeePerblobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -176,7 +176,7 @@ describe('transaction validation tests', () => {
           versionedHashes,
           blobs,
           kzgCommitments: commitments,
-          maxFeePerDataGas: 1n,
+          maxFeePerblobGas: 1n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -184,10 +184,10 @@ describe('transaction validation tests', () => {
       ).sign(randomBytes(32))
 
       const parentHeader = BlockHeader.fromHeaderData(
-        { number: 1n, excessDataGas: 4194304, dataGasUsed: 0 },
+        { number: 1n, excessblobGas: 4194304, blobGasUsed: 0 },
         { common, skipConsensusFormatValidation: true }
       )
-      const excessDataGas = parentHeader.calcNextExcessDataGas()
+      const excessblobGas = parentHeader.calcNextExcessblobGas()
 
       // eslint-disable-next-line no-inner-declarations
       function getBlock(transactions: TypedTransaction[]) {
@@ -197,8 +197,8 @@ describe('transaction validation tests', () => {
           {
             number: 2n,
             parentHash: parentHeader.hash(),
-            excessDataGas,
-            dataGasUsed: BigInt(blobs) * dataGasPerBlob,
+            excessblobGas,
+            blobGasUsed: BigInt(blobs) * blobGasPerBlob,
           },
           { common, skipConsensusFormatValidation: true }
         )
@@ -217,35 +217,35 @@ describe('transaction validation tests', () => {
 
       assert.doesNotThrow(
         () => blockWithValidTx.validateBlobTransactions(parentHeader),
-        'does not throw when all tx maxFeePerDataGas are >= to block data gas fee'
+        'does not throw when all tx maxFeePerblobGas are >= to block data gas fee'
       )
       const blockJson = blockWithValidTx.toJSON()
-      blockJson.header!.dataGasUsed = '0x0'
+      blockJson.header!.blobGasUsed = '0x0'
       const blockWithInvalidHeader = Block.fromBlockData(blockJson, { common })
       assert.throws(
         () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
-        'block dataGasUsed mismatch',
+        'block blobGasUsed mismatch',
         undefined,
-        'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+        'throws with correct error message when tx maxFeePerblobGas less than block data gas fee'
       )
 
       assert.throws(
         () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
         'than block data gas price',
         undefined,
-        'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+        'throws with correct error message when tx maxFeePerblobGas less than block data gas fee'
       )
       assert.throws(
         () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
         'than block data gas price',
         undefined,
-        'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+        'throws with correct error message when tx maxFeePerblobGas less than block data gas fee'
       )
       assert.throws(
         () => blockWithTooManyBlobs.validateBlobTransactions(parentHeader),
         'exceed maximum data gas per block',
         undefined,
-        'throws with correct error message when tx maxFeePerDataGas less than block data gas fee'
+        'throws with correct error message when tx maxFeePerblobGas less than block data gas fee'
       )
 
       assert.ok(

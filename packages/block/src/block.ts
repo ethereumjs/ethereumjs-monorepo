@@ -468,9 +468,9 @@ export class Block {
    */
   getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
-    let dataGasUsed = BigInt(0)
-    const dataGasLimit = this.common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this.common.param('gasConfig', 'dataGasPerBlob')
+    let blobGasUsed = BigInt(0)
+    const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
+    const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
@@ -490,10 +490,10 @@ export class Block {
       }
       if (this.common.isActivatedEIP(4844) === true) {
         if (tx instanceof BlobEIP4844Transaction) {
-          dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
-          if (dataGasUsed > dataGasLimit) {
+          blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
+          if (blobGasUsed > blobGasLimit) {
             errs.push(
-              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+              `tx causes total data gas of ${blobGasUsed} to exceed maximum data gas per block of ${blobGasLimit}`
             )
           }
         }
@@ -504,8 +504,8 @@ export class Block {
     }
 
     if (this.common.isActivatedEIP(4844) === true) {
-      if (dataGasUsed !== this.header.dataGasUsed) {
-        errors.push(`invalid dataGasUsed expected=${this.header.dataGasUsed} actual=${dataGasUsed}`)
+      if (blobGasUsed !== this.header.blobGasUsed) {
+        errors.push(`invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`)
       }
     }
 
@@ -560,47 +560,47 @@ export class Block {
 
   /**
    * Validates that data gas fee for each transaction is greater than or equal to the
-   * dataGasPrice for the block and that total data gas in block is less than maximum
+   * blobGasPrice for the block and that total data gas in block is less than maximum
    * data gas per block
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this.common.isActivatedEIP(4844)) {
-      const dataGasLimit = this.common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = this.common.param('gasConfig', 'dataGasPerBlob')
-      let dataGasUsed = BigInt(0)
+      const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
+      const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
+      let blobGasUsed = BigInt(0)
 
       for (const tx of this.transactions) {
         if (tx instanceof BlobEIP4844Transaction) {
-          const dataGasPrice = this.header.getDataGasPrice()
-          if (tx.maxFeePerDataGas < dataGasPrice) {
+          const blobGasPrice = this.header.getblobGasPrice()
+          if (tx.maxFeePerblobGas < blobGasPrice) {
             throw new Error(
-              `blob transaction maxFeePerDataGas ${
-                tx.maxFeePerDataGas
-              } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+              `blob transaction maxFeePerblobGas ${
+                tx.maxFeePerblobGas
+              } < than block data gas price ${blobGasPrice} - ${this.errorStr()}`
             )
           }
 
-          dataGasUsed += BigInt(tx.versionedHashes.length) * dataGasPerBlob
+          blobGasUsed += BigInt(tx.versionedHashes.length) * blobGasPerBlob
 
-          if (dataGasUsed > dataGasLimit) {
+          if (blobGasUsed > blobGasLimit) {
             throw new Error(
-              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+              `tx causes total data gas of ${blobGasUsed} to exceed maximum data gas per block of ${blobGasLimit}`
             )
           }
         }
       }
 
-      if (this.header.dataGasUsed !== dataGasUsed) {
+      if (this.header.blobGasUsed !== blobGasUsed) {
         throw new Error(
-          `block dataGasUsed mismatch: have ${this.header.dataGasUsed}, want ${dataGasUsed}`
+          `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`
         )
       }
 
-      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
-      if (this.header.excessDataGas !== expectedExcessDataGas) {
+      const expectedExcessblobGas = parentHeader.calcNextExcessblobGas()
+      if (this.header.excessblobGas !== expectedExcessblobGas) {
         throw new Error(
-          `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+          `block excessblobGas mismatch: have ${this.header.excessblobGas}, want ${expectedExcessblobGas}`
         )
       }
     }

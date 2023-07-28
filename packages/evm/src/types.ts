@@ -310,7 +310,7 @@ export interface ExecResult {
   /**
    * Amount of data gas consumed by the transaction
    */
-  dataGasUsed?: bigint
+  blobGasUsed?: bigint
 }
 
 /**

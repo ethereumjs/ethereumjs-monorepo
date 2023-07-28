@@ -282,7 +282,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The maximum fee per data gas paid for the transaction
    */
-  maxFeePerDataGas?: BigIntLike
+  maxFeePerblobGas?: BigIntLike
   /**
    * The blobs associated with a transaction
    */
@@ -400,7 +400,7 @@ export interface JsonTx {
   type?: string
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
-  maxFeePerDataGas?: string
+  maxFeePerblobGas?: string
   versionedHashes?: string[]
 }
 
@@ -427,6 +427,6 @@ export interface JsonRpcTx {
   v: string // QUANTITY - ECDSA recovery id
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
-  maxFeePerDataGas?: string // QUANTITY - max data fee for blob transactions
+  maxFeePerblobGas?: string // QUANTITY - max data fee for blob transactions
   versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }

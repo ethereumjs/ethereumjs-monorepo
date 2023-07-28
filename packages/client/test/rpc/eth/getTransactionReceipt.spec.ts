@@ -94,7 +94,7 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
-  it('get dataGasUsed/dataGasPrice in blob tx receipt', async () => {
+  it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
     if (isBrowser() === true) {
       assert.ok(true)
@@ -122,7 +122,7 @@ describe(method, () => {
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
-          maxFeePerDataGas: 1000000n,
+          maxFeePerblobGas: 1000000n,
           gasLimit: 0xffffn,
           maxFeePerGas: 10000000n,
           maxPriorityFeePerGas: 1000000n,
@@ -136,8 +136,8 @@ describe(method, () => {
 
       const req = params(method, [bytesToHex(tx.hash())])
       const expectRes = (res: any) => {
-        assert.equal(res.body.result.dataGasUsed, '0x20000', 'receipt has correct data gas usage')
-        assert.equal(res.body.result.dataGasPrice, '0x1', 'receipt has correct data gas price')
+        assert.equal(res.body.result.blobGasUsed, '0x20000', 'receipt has correct data gas usage')
+        assert.equal(res.body.result.blobGasPrice, '0x1', 'receipt has correct data gas price')
       }
 
       await baseRequest(server, req, 200, expectRes)

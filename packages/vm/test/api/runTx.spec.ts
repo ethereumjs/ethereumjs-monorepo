@@ -882,7 +882,7 @@ describe('runTx tests', () => {
             {
               header: BlockHeader.fromHeaderData(
                 {
-                  excessDataGas: 0n,
+                  excessblobGas: 0n,
                   number: 1,
                   parentHash: blockchain.genesisBlock.hash(),
                 },
@@ -910,7 +910,7 @@ describe('runTx tests', () => {
           {
             header: BlockHeader.fromHeaderData(
               {
-                excessDataGas: 1n,
+                excessblobGas: 1n,
                 number: 2,
                 parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
               },
@@ -924,7 +924,7 @@ describe('runTx tests', () => {
         )
         const res = await vm.runTx({ tx, block, skipBalance: true })
         assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
-        assert.equal(res.dataGasUsed, 131072n, 'returns correct data gas used for 1 blob')
+        assert.equal(res.blobGasUsed, 131072n, 'returns correct data gas used for 1 blob')
         Blockchain.prototype.getBlock = oldGetBlockFunction
       }
     })

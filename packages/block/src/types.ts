@@ -92,8 +92,8 @@ export interface HeaderData {
   nonce?: BytesLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BytesLike
-  dataGasUsed?: BigIntLike
-  excessDataGas?: BigIntLike
+  blobGasUsed?: BigIntLike
+  excessblobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
 }
 
@@ -157,8 +157,8 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
-  dataGasUsed?: string
-  excessDataGas?: string
+  blobGasUsed?: string
+  excessblobGas?: string
   parentBeaconBlockRoot?: string
 }
 
@@ -189,8 +189,8 @@ export interface JsonRpcBlock {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
-  dataGasUsed?: string // If EIP-4844 is enabled for this block, returns the data gas used for the block
-  excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
+  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the data gas used for the block
+  excessblobGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
 }
 
@@ -219,7 +219,7 @@ export type ExecutionPayload = {
   blockHash: PrefixedHexString // DATA, 32 Bytes
   transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
-  dataGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
-  excessDataGas?: PrefixedHexString // QUANTITY, 64 Bits
+  blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
+  excessblobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
 }

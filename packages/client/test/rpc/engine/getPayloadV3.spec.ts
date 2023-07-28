@@ -109,7 +109,7 @@ describe(method, () => {
         blobs: txBlobs,
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
-        maxFeePerDataGas: 1n,
+        maxFeePerblobGas: 1n,
         maxFeePerGas: 10000000000n,
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
@@ -127,8 +127,8 @@ describe(method, () => {
         '0x0a4f946a9dac3f6d2b86d02dfa6cf221b4fe72bbaff51b50cee4c5784156dd52',
         'built expected block'
       )
-      assert.equal(executionPayload.excessDataGas, '0x0', 'correct execess data gas')
-      assert.equal(executionPayload.dataGasUsed, '0x20000', 'correct data gas used')
+      assert.equal(executionPayload.excessblobGas, '0x0', 'correct execess data gas')
+      assert.equal(executionPayload.blobGasUsed, '0x20000', 'correct data gas used')
       const { commitments, proofs, blobs } = blobsBundle
       assert.ok(
         commitments.length === proofs.length && commitments.length === blobs.length,

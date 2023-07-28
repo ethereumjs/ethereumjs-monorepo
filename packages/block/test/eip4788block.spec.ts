@@ -30,7 +30,7 @@ describe('EIP4788 header tests', () => {
       () => {
         BlockHeader.fromHeaderData(
           {
-            dataGasUsed: 1n,
+            blobGasUsed: 1n,
           },
           {
             common: earlyCommon,
@@ -39,13 +39,13 @@ describe('EIP4788 header tests', () => {
       },
       'data gas used can only be provided with EIP4844 activated',
       undefined,
-      'should throw when setting dataGasUsed with EIP4844 not being activated'
+      'should throw when setting blobGasUsed with EIP4844 not being activated'
     )
     assert.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
-          excessDataGas: 0n,
-          dataGasUsed: 0n,
+          excessblobGas: 0n,
+          blobGasUsed: 0n,
           parentBeaconBlockRoot: zeros(32),
         },
         {
@@ -64,7 +64,7 @@ describe('EIP4788 header tests', () => {
     assert.equal(
       block.toJSON().header?.parentBeaconBlockRoot,
       bytesToHex(zeros(32)),
-      'JSON output includes excessDataGas'
+      'JSON output includes excessblobGas'
     )
   })
 })

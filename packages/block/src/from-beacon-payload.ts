@@ -64,10 +64,10 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
   }
 
   if (payload.data_gas_used !== undefined && payload.data_gas_used !== null) {
-    executionPayload.dataGasUsed = bigIntToHex(BigInt(payload.data_gas_used))
+    executionPayload.blobGasUsed = bigIntToHex(BigInt(payload.data_gas_used))
   }
   if (payload.excess_data_gas !== undefined && payload.excess_data_gas !== null) {
-    executionPayload.excessDataGas = bigIntToHex(BigInt(payload.excess_data_gas))
+    executionPayload.excessblobGas = bigIntToHex(BigInt(payload.excess_data_gas))
   }
   if (payload.parent_beacon_block_root !== undefined && payload.parent_beacon_block_root !== null) {
     executionPayload.parentBeaconBlockRoot = payload.parent_beacon_block_root

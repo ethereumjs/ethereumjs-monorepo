@@ -54,14 +54,14 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
    * Note: This value is not included in the receiptRLP used for encoding the receiptsRoot in a block
    * and is only provided as part of receipt metadata.
    */
-  dataGasUsed: bigint
+  blobGasUsed: bigint
   /**
    * Data gas price for block transaction was included in
    *
    * Note: This valus is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
    * and is only provided as part of receipt metadata.
    */
-  dataGasPrice: bigint
+  blobGasPrice: bigint
 }
 
 export type VMEvents = {
@@ -394,7 +394,7 @@ export interface RunTxResult extends EVMResult {
   /**
    * This is the data gas units times the fee per data gas for 4844 transactions
    */
-  dataGasUsed?: bigint
+  blobGasUsed?: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {

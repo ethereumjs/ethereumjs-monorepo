@@ -245,11 +245,11 @@ export class TxPool {
     }
 
     if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
-      const minDataGasFee =
-        (existingTx.maxFeePerDataGas *
-          (existingTx.maxFeePerDataGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
+      const minblobGasFee =
+        (existingTx.maxFeePerblobGas *
+          (existingTx.maxFeePerblobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
         BigInt(100)
-      if (addedTx.maxFeePerDataGas < minDataGasFee) {
+      if (addedTx.maxFeePerblobGas < minblobGasFee) {
         throw new Error('replacement data gas too low')
       }
     }

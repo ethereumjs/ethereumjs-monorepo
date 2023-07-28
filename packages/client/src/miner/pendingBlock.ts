@@ -141,7 +141,7 @@ export class PendingBlock {
 
     const builder = await vm.buildBlock({
       parentBlock,
-      // excessDataGas will be correctly calculated and set in buildBlock constructor,
+      // excessblobGas will be correctly calculated and set in buildBlock constructor,
       // unless already explicity provided in headerData
       headerData: {
         ...headerData,
@@ -161,9 +161,9 @@ export class PendingBlock {
     // Get if and how many blobs are allowed in the tx
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
-      const dataGasLimit = vm.common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = vm.common.param('gasConfig', 'dataGasPerBlob')
-      allowedBlobs = Number(dataGasLimit / dataGasPerBlob)
+      const blobGasLimit = vm.common.param('gasConfig', 'maxblobGasPerBlock')
+      const blobGasPerBlob = vm.common.param('gasConfig', 'blobGasPerBlob')
+      allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
     } else {
       allowedBlobs = 0
     }
@@ -225,9 +225,9 @@ export class PendingBlock {
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
       const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const dataGasLimit = vm.common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = vm.common.param('gasConfig', 'dataGasPerBlob')
-      allowedBlobs = Number(dataGasLimit / dataGasPerBlob) - bundle.blobs.length
+      const blobGasLimit = vm.common.param('gasConfig', 'maxblobGasPerBlock')
+      const blobGasPerBlob = vm.common.param('gasConfig', 'blobGasPerBlob')
+      allowedBlobs = Number(blobGasLimit / blobGasPerBlob) - bundle.blobs.length
     } else {
       allowedBlobs = 0
     }

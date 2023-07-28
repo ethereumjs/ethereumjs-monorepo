@@ -21,7 +21,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
       try {
         const block = await Block.fromBeaconPayloadJson(payload, { common })
         const parentHeader = BlockHeader.fromHeaderData(
-          { excessDataGas: BigInt(0), dataGasUsed: block.header.excessDataGas! + BigInt(393216) },
+          { excessblobGas: BigInt(0), blobGasUsed: block.header.excessblobGas! + BigInt(393216) },
           { common }
         )
         block.validateBlobTransactions(parentHeader)
@@ -56,12 +56,12 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
         },
         { common }
       )
-      const parentHeader = BlockHeader.fromHeaderData({ excessDataGas: BigInt(0) }, { common })
+      const parentHeader = BlockHeader.fromHeaderData({ excessblobGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
       assert.fail(`should have failed constructing the block`)
     } catch (e) {
       assert.ok(true, `correctly failed constructing block, error: ${e}`)
-      assert.ok(`${e}`.includes('block excessDataGas mismatch'), 'failed with correct error')
+      assert.ok(`${e}`.includes('block excessblobGas mismatch'), 'failed with correct error')
     }
   })
 })

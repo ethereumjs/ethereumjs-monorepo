@@ -51,7 +51,7 @@ type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
 export type ExecutionPayloadV1 = ExecutionPayload
 export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
 // parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
-export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessDataGas: Uint64; dataGasUsed: Uint64 }
+export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessblobGas: Uint64; blobGasUsed: Uint64 }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -130,8 +130,8 @@ const executionPayloadV2FieldValidators = {
 }
 const executionPayloadV3FieldValidators = {
   ...executionPayloadV2FieldValidators,
-  dataGasUsed: validators.uint64,
-  excessDataGas: validators.uint64,
+  blobGasUsed: validators.uint64,
+  excessblobGas: validators.uint64,
 }
 
 const forkchoiceFieldValidators = {
@@ -183,8 +183,8 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
     timestamp: header.timestamp!,
     extraData: header.extraData!,
     baseFeePerGas: header.baseFeePerGas!,
-    dataGasUsed: header.dataGasUsed,
-    excessDataGas: header.excessDataGas,
+    blobGasUsed: header.blobGasUsed,
+    excessblobGas: header.excessblobGas,
     blockHash: bytesToHex(block.hash()),
     prevRandao: header.mixHash!,
     transactions,
