@@ -572,7 +572,7 @@ export class Block {
 
       for (const tx of this.transactions) {
         if (tx instanceof BlobEIP4844Transaction) {
-          const blobGasPrice = this.header.getblobGasPrice()
+          const blobGasPrice = this.header.getBlobGasPrice()
           if (tx.maxFeePerblobGas < blobGasPrice) {
             throw new Error(
               `blob transaction maxFeePerblobGas ${
