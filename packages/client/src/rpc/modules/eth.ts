@@ -130,7 +130,7 @@ const jsonRpcBlock = async (
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
     blobGasUsed: header.blobGasUsed,
-    excessblobGas: header.excessblobGas,
+    excessBlobGas: header.excessBlobGas,
   }
 }
 

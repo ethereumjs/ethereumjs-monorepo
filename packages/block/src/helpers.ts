@@ -41,7 +41,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     baseFeePerGas,
     withdrawalsRoot,
     blobGasUsed,
-    excessblobGas,
+    excessBlobGas,
     parentBeaconBlockRoot,
   ] = values
 
@@ -71,7 +71,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     baseFeePerGas,
     withdrawalsRoot,
     blobGasUsed,
-    excessblobGas,
+    excessBlobGas,
     parentBeaconBlockRoot,
   }
 }

@@ -55,7 +55,7 @@ export class BlockHeader {
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Uint8Array
   public readonly blobGasUsed?: bigint
-  public readonly excessblobGas?: bigint
+  public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
 
   public readonly common: Common
@@ -109,7 +109,7 @@ export class BlockHeader {
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
     const headerData = valuesArrayToHeaderData(values)
-    const { number, baseFeePerGas, excessblobGas, blobGasUsed, parentBeaconBlockRoot } = headerData
+    const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
@@ -121,8 +121,8 @@ export class BlockHeader {
     }
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (header.common.isActivatedEIP(4844)) {
-      if (excessblobGas === undefined) {
-        throw new Error('invalid header. excessblobGas should be provided')
+      if (excessBlobGas === undefined) {
+        throw new Error('invalid header. excessBlobGas should be provided')
       } else if (blobGasUsed === undefined) {
         throw new Error('invalid header. blobGasUsed should be provided')
       }
@@ -211,7 +211,7 @@ export class BlockHeader {
         : undefined,
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       blobGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
-      excessblobGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      excessBlobGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
     }
 
@@ -221,8 +221,8 @@ export class BlockHeader {
       toType(headerData.withdrawalsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.withdrawalsRoot
     const blobGasUsed =
       toType(headerData.blobGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.blobGasUsed
-    const excessblobGas =
-      toType(headerData.excessblobGas, TypeOutput.BigInt) ?? hardforkDefaults.excessblobGas
+    const excessBlobGas =
+      toType(headerData.excessBlobGas, TypeOutput.BigInt) ?? hardforkDefaults.excessBlobGas
     const parentBeaconBlockRoot =
       toType(headerData.parentBeaconBlockRoot, TypeOutput.Uint8Array) ??
       hardforkDefaults.parentBeaconBlockRoot
@@ -242,7 +242,7 @@ export class BlockHeader {
         throw new Error('blob gas used can only be provided with EIP4844 activated')
       }
 
-      if (headerData.excessblobGas !== undefined) {
+      if (headerData.excessBlobGas !== undefined) {
         throw new Error('excess blob gas can only be provided with EIP4844 activated')
       }
     }
@@ -271,7 +271,7 @@ export class BlockHeader {
     this.baseFeePerGas = baseFeePerGas
     this.withdrawalsRoot = withdrawalsRoot
     this.blobGasUsed = blobGasUsed
-    this.excessblobGas = excessblobGas
+    this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this._genericFormatValidation()
     this._validateDAOExtraData()
@@ -580,12 +580,12 @@ export class BlockHeader {
    * @returns the price in gwei per unit of blob gas spent
    */
   getblobGasPrice(): bigint {
-    if (this.excessblobGas === undefined) {
-      throw new Error('header must have excessblobGas field populated')
+    if (this.excessBlobGas === undefined) {
+      throw new Error('header must have excessBlobGas field populated')
     }
     return fakeExponential(
       this.common.param('gasPrices', 'minblobGasPrice'),
-      this.excessblobGas,
+      this.excessBlobGas,
       this.common.param('gasConfig', 'blobGasPriceUpdateFraction')
     )
   }
@@ -607,15 +607,15 @@ export class BlockHeader {
   /**
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
-  public calcNextExcessblobGas(): bigint {
+  public calcNextExcessBlobGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
-    const targetGasConsumed = (this.excessblobGas ?? BigInt(0)) + (this.blobGasUsed ?? BigInt(0))
-    const targetblobGasPerBlock = this.common.param('gasConfig', 'targetblobGasPerBlock')
+    const targetGasConsumed = (this.excessBlobGas ?? BigInt(0)) + (this.blobGasUsed ?? BigInt(0))
+    const targetBlobGasPerBlock = this.common.param('gasConfig', 'targetBlobGasPerBlock')
 
-    if (targetGasConsumed <= targetblobGasPerBlock) {
+    if (targetGasConsumed <= targetBlobGasPerBlock) {
       return BigInt(0)
     } else {
-      return targetGasConsumed - targetblobGasPerBlock
+      return targetGasConsumed - targetBlobGasPerBlock
     }
   }
 
@@ -650,7 +650,7 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(4844) === true) {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
-      rawItems.push(bigIntToUnpaddedBytes(this.excessblobGas!))
+      rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
     }
     if (this.common.isActivatedEIP(4788) === true) {
       rawItems.push(this.parentBeaconBlockRoot!)
@@ -923,7 +923,7 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(4844) === true) {
       jsonDict.blobGasUsed = bigIntToHex(this.blobGasUsed!)
-      jsonDict.excessblobGas = bigIntToHex(this.excessblobGas!)
+      jsonDict.excessBlobGas = bigIntToHex(this.excessBlobGas!)
     }
     if (this.common.isActivatedEIP(4788) === true) {
       jsonDict.parentBeaconBlockRoot = bytesToHex(this.parentBeaconBlockRoot!)

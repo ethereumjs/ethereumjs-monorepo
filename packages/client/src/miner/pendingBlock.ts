@@ -141,7 +141,7 @@ export class PendingBlock {
 
     const builder = await vm.buildBlock({
       parentBlock,
-      // excessblobGas will be correctly calculated and set in buildBlock constructor,
+      // excessBlobGas will be correctly calculated and set in buildBlock constructor,
       // unless already explicity provided in headerData
       headerData: {
         ...headerData,

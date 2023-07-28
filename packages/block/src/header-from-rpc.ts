@@ -29,7 +29,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
     baseFeePerGas,
     withdrawalsRoot,
     blobGasUsed,
-    excessblobGas,
+    excessBlobGas,
   } = blockParams
 
   const blockHeader = BlockHeader.fromHeaderData(
@@ -52,7 +52,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
       baseFeePerGas,
       withdrawalsRoot,
       blobGasUsed,
-      excessblobGas,
+      excessBlobGas,
     },
     options
   )

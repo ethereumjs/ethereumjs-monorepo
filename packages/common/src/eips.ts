@@ -394,7 +394,7 @@ export const EIPs: EIPsDict = {
         v: 131072,
         d: 'The base fee for blob gas per blob',
       },
-      targetblobGasPerBlock: {
+      targetBlobGasPerBlock: {
         v: 393216,
         d: 'The target blob gas consumed per block',
       },

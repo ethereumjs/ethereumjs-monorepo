@@ -157,9 +157,9 @@ export class CLConnectionManager {
     if ('withdrawals' in payload.payload && payload.payload.withdrawals !== null) {
       msg += ` withdrawals=${(payload.payload as ExecutionPayloadV2).withdrawals.length}`
     }
-    if ('excessblobGas' in payload.payload && payload.payload.excessblobGas !== null) {
-      msg += ` blobGasUsed=${(payload.payload as ExecutionPayloadV3).blobGasUsed} excessblobGas=${
-        (payload.payload as ExecutionPayloadV3).excessblobGas
+    if ('excessBlobGas' in payload.payload && payload.payload.excessBlobGas !== null) {
+      msg += ` blobGasUsed=${(payload.payload as ExecutionPayloadV3).blobGasUsed} excessBlobGas=${
+        (payload.payload as ExecutionPayloadV3).excessBlobGas
       }`
     }
     return msg

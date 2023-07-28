@@ -882,7 +882,7 @@ describe('runTx tests', () => {
             {
               header: BlockHeader.fromHeaderData(
                 {
-                  excessblobGas: 0n,
+                  excessBlobGas: 0n,
                   number: 1,
                   parentHash: blockchain.genesisBlock.hash(),
                 },
@@ -910,7 +910,7 @@ describe('runTx tests', () => {
           {
             header: BlockHeader.fromHeaderData(
               {
-                excessblobGas: 1n,
+                excessBlobGas: 1n,
                 number: 2,
                 parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
               },

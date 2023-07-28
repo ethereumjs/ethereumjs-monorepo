@@ -44,7 +44,7 @@ describe('EIP4788 header tests', () => {
     assert.doesNotThrow(() => {
       BlockHeader.fromHeaderData(
         {
-          excessblobGas: 0n,
+          excessBlobGas: 0n,
           blobGasUsed: 0n,
           parentBeaconBlockRoot: zeros(32),
         },
@@ -64,7 +64,7 @@ describe('EIP4788 header tests', () => {
     assert.equal(
       block.toJSON().header?.parentBeaconBlockRoot,
       bytesToHex(zeros(32)),
-      'JSON output includes excessblobGas'
+      'JSON output includes excessBlobGas'
     )
   })
 })

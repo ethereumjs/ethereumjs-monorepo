@@ -12,7 +12,7 @@ import type { HttpServer } from 'jayson'
 
 const method = 'engine_newPayloadV3'
 
-// blocks are missing excessblobGas and blobGasUsed which will be set to default 0 for 4844 blocks
+// blocks are missing excessBlobGas and blobGasUsed which will be set to default 0 for 4844 blocks
 // however its not required to set to correct value to test for versioned hashes test cases
 const [blockData] = blocks
 
@@ -41,7 +41,7 @@ describe(`${method}: Cancun validations`, () => {
         blockHash: '0xb8b9607bd09f0c18bccfa4dcb6fe355f07d383c902f0fc2a1671cf20792e131c',
         withdrawals: [],
         blobGasUsed: '0x0',
-        excessblobGas: '0x0',
+        excessBlobGas: '0x0',
       },
       // versioned hashes
       ['0x3434', '0x2334'],
@@ -73,7 +73,7 @@ describe(`${method}: Cancun validations`, () => {
         transactions: [txString, txString],
         withdrawals: [],
         blobGasUsed: '0x40000',
-        excessblobGas: '0x0',
+        excessBlobGas: '0x0',
       },
     ]
     req = params(method, blockDataNoneHashes)
@@ -89,7 +89,7 @@ describe(`${method}: Cancun validations`, () => {
         transactions: [txString, txString],
         withdrawals: [],
         blobGasUsed: '0x40000',
-        excessblobGas: '0x0',
+        excessBlobGas: '0x0',
       },
       txVersionedHashesString,
     ]
@@ -107,7 +107,7 @@ describe(`${method}: Cancun validations`, () => {
         blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
         withdrawals: [],
         blobGasUsed: '0x40000',
-        excessblobGas: '0x0',
+        excessBlobGas: '0x0',
         // two blob transactions but missing versioned hash of second
         transactions: [txString, txString],
       },
@@ -131,7 +131,7 @@ describe(`${method}: Cancun validations`, () => {
         blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
         withdrawals: [],
         blobGasUsed: '0x40000',
-        excessblobGas: '0x0',
+        excessBlobGas: '0x0',
         // two blob transactions but mismatching versioned hash of second
         transactions: [txString, txString],
       },
@@ -155,7 +155,7 @@ describe(`${method}: Cancun validations`, () => {
         blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
         withdrawals: [],
         blobGasUsed: '0x40000',
-        excessblobGas: '0x0',
+        excessBlobGas: '0x0',
         // two blob transactions with matching versioned hashes
         transactions: [txString, txString],
       },

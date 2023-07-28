@@ -37,7 +37,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     gasLimit,
     coinbase,
     baseFeePerGas,
-    excessblobGas,
+    excessBlobGas,
   }: {
     name: string
     config: any
@@ -46,7 +46,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     gasLimit: string
     coinbase: string
     baseFeePerGas: string
-    excessblobGas: string
+    excessBlobGas: string
   } = json
   let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
     json
@@ -87,7 +87,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
       mixHash,
       coinbase,
       baseFeePerGas,
-      excessblobGas,
+      excessBlobGas,
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],

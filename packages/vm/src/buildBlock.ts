@@ -90,9 +90,9 @@ export class BlockBuilder {
 
     if (
       this.vm.common.isActivatedEIP(4844) === true &&
-      typeof this.headerData.excessblobGas === 'undefined'
+      typeof this.headerData.excessBlobGas === 'undefined'
     ) {
-      this.headerData.excessblobGas = opts.parentBlock.header.calcNextExcessblobGas()
+      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
     }
   }
 
@@ -223,7 +223,7 @@ export class BlockBuilder {
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
-      // correct excessblobGas should already part of headerData used above
+      // correct excessBlobGas should already part of headerData used above
       blobGasUsed,
     }
 
@@ -305,7 +305,7 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
-      // correct excessblobGas should already be part of headerData used above
+      // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
     }
 
@@ -353,7 +353,6 @@ export class BlockBuilder {
 }
 
 export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  // let opts override excessblobGas if there is some value passed there
   const blockBuilder = new BlockBuilder(this, opts)
   await blockBuilder.initState()
   return blockBuilder

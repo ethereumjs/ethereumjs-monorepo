@@ -136,7 +136,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       [txReceipt.result.blockHash, false],
       2.0
     )
-    assert.ok(BigInt(block1.result.excessblobGas) > 0n, 'block1 has excess blob gas > 0')
+    assert.ok(BigInt(block1.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
   })
 
   it('point precompile contract test', async () => {
