@@ -75,7 +75,7 @@ Hardforks adding features and/or tx types:
 | Hardfork         | Introduced | Description                                                                                             |
 | ---------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
 | `spuriousDragon` |  `v2.0.0`  |  `EIP-155` replay protection (disable by setting HF pre-`spuriousDragon`)                               |
-| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call data gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
+| `istanbul`       |  `v2.1.1`  | Support for reduced non-zero call blob gas prices ([EIP-2028](https://eips.ethereum.org/EIPS/eip-2028)) |
 | `muirGlacier`    |  `v2.1.2`  |  -                                                                                                      |
 | `berlin`         | `v3.1.0`   |  `EIP-2718` Typed Transactions, Optional Access Lists Tx Type `EIP-2930`                                |
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
