@@ -79,7 +79,7 @@ describe('EIP4844 tests', () => {
         kzgCommitments: commitments,
         kzgProofs: proofs,
         maxFeePerGas: 10000000000n,
-        maxFeePerDataGas: 100000000n,
+        maxFeePerblobGas: 100000000n,
         gasLimit: 0xffffn,
         to: hexToBytes('0xffb38a7a99e3e2335be83fc74b7faa19d5531243'),
       },
@@ -97,8 +97,8 @@ describe('EIP4844 tests', () => {
       'blob transaction should be same'
     )
 
-    const dataGasPerBlob = common.param('gasConfig', 'dataGasPerBlob')
-    assert.equal(block.header.dataGasUsed, dataGasPerBlob, 'data gas used for 1 blob should match')
+    const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
+    assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block, skipBlockValidation: true })

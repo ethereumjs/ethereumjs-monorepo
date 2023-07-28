@@ -36,8 +36,8 @@ describe(`${method}: call with executionPayloadV3`, () => {
     const validBlock = {
       ...blockData,
       withdrawals: [],
-      dataGasUsed: '0x0',
-      excessDataGas: '0x0',
+      blobGasUsed: '0x0',
+      excessBlobGas: '0x0',
     }
 
     const req = params(method, [validBlock, [], parentBeaconBlockRoot])
@@ -61,8 +61,8 @@ describe(`${method}: call with executionPayloadV3`, () => {
       ...blockData,
       timestamp: bigIntToHex(BigInt(cancunTime)),
       withdrawals: [],
-      dataGasUsed: '0x0',
-      excessDataGas: '0x0',
+      blobGasUsed: '0x0',
+      excessBlobGas: '0x0',
       blockHash: '0x6ec6f32e6931199f8f84faf46a59bc9a1e65a23aa73ca21278b5cb48aa2d059d',
       stateRoot: '0x454a9db6943b17a5f88aea507d0c3f4420d533d143b4eb5194cc7589d721b024',
     }

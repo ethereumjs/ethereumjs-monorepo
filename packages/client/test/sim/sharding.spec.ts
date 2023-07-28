@@ -100,7 +100,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
     )
   })
 
-  it('data gas fee market tests', async () => {
+  it('blob gas fee market tests', async () => {
     const txns = await createBlobTxs(
       4,
       4096,
@@ -110,7 +110,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       {
         to: bytesToHex(randomBytes(20)),
         chainId: 1,
-        maxFeePerDataGas: BigInt(1000) as any,
+        maxFeePerblobGas: BigInt(1000) as any,
         maxPriorityFeePerGas: BigInt(1) as any,
         maxFeePerGas: '0xff' as any,
         gasLimit: BigInt(1000000) as any,
@@ -136,7 +136,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       [txReceipt.result.blockHash, false],
       2.0
     )
-    assert.ok(BigInt(block1.result.excessDataGas) > 0n, 'block1 has excess data gas > 0')
+    assert.ok(BigInt(block1.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
   })
 
   it('point precompile contract test', async () => {
