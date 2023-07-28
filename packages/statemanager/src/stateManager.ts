@@ -9,6 +9,7 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   bigIntToHex,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -28,6 +29,7 @@ import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { StorageRange } from '@ethereumjs/common/src'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -793,6 +795,70 @@ export class DefaultStateManager implements EVMStateManagerInterface {
           })
           stream.on('end', () => {
             resolve(storage)
+          })
+        })
+        .catch((e) => {
+          reject(e)
+        })
+    })
+  }
+
+  /**
+   Dumps a limited number of RLP-encoded storage values for an account specified by `address`,
+   starting from `startKey` or greater.
+   @param address - The address of the `account` to return storage for.
+   @param startKey - The bigint representation of the smallest storage key that will be returned.
+   @param limit - The maximum number of storage values that will be returned.
+   @returns {Promise<StorageRange>} - A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
+   The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
+   */
+  async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+    if (limit < 0) {
+      throw new Error(`dumpStorageRange() can not be called with a negative limit.`)
+    }
+
+    await this.flush()
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`dumpStorageRange() can only be called for an existing account.`)
+    }
+
+    return new Promise((resolve, reject) => {
+      this._getStorageTrie(address, account)
+        .then((trie) => {
+          let inRange = false
+          let i = 0
+
+          /** Object conforming to {@link StorageRange.storage}. */
+          const storageMap: StorageRange['storage'] = {}
+          const stream = trie.createReadStream()
+
+          stream.on('data', (val: any) => {
+            if (!inRange) {
+              // Check if the key is already in the correct range.
+              if (bytesToBigInt(val.key) >= startKey) {
+                inRange = true
+              } else {
+                return
+              }
+            }
+
+            if (i < limit) {
+              storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
+              i++
+            } else if (i === limit) {
+              resolve({
+                storage: storageMap,
+                nextKey: bytesToHex(val.key),
+              })
+            }
+          })
+
+          stream.on('end', () => {
+            resolve({
+              storage: storageMap,
+              nextKey: null,
+            })
           })
         })
         .catch((e) => {
