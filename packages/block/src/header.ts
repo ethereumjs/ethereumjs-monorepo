@@ -579,12 +579,12 @@ export class BlockHeader {
    * Returns the price per unit of blob gas for a blob transaction in the current/pending block
    * @returns the price in gwei per unit of blob gas spent
    */
-  getblobGasPrice(): bigint {
+  getBlobGasPrice(): bigint {
     if (this.excessBlobGas === undefined) {
       throw new Error('header must have excessBlobGas field populated')
     }
     return fakeExponential(
-      this.common.param('gasPrices', 'minblobGasPrice'),
+      this.common.param('gasPrices', 'minBlobGasPrice'),
       this.excessBlobGas,
       this.common.param('gasConfig', 'blobGasPriceUpdateFraction')
     )

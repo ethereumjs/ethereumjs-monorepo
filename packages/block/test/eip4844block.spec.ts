@@ -142,7 +142,7 @@ describe('blob gas tests', () => {
         { common, skipConsensusFormatValidation: true }
       )
       excessBlobGas = highGasHeader.calcNextExcessBlobGas()
-      blobGasPrice = highGasHeader.getblobGasPrice()
+      blobGasPrice = highGasHeader.getBlobGasPrice()
       assert.equal(excessBlobGas, 6684672n)
       assert.equal(blobGasPrice, 6n, 'computed correct blob gas price')
 
