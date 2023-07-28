@@ -68,8 +68,8 @@ type JsonRpcReceipt = {
   // It also returns either:
   root?: string // DATA, 32 bytes of post-transaction stateroot (pre Byzantium)
   status?: string // QUANTITY, either 1 (success) or 0 (failure)
-  dataGasUsed?: string // QUANTITY, data gas consumed by transaction (if blob transaction)
-  dataGasPrice?: string // QUAntity, data gas price for block including this transaction (if blob transaction)
+  blobGasUsed?: string // QUANTITY, blob gas consumed by transaction (if blob transaction)
+  blobGasPrice?: string // QUAntity, blob gas price for block including this transaction (if blob transaction)
 }
 type JsonRpcLog = {
   removed: boolean // TAG - true when the log was removed, due to a chain reorganization. false if it's a valid log.
@@ -129,8 +129,8 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bytesToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
-    dataGasUsed: header.dataGasUsed,
-    excessDataGas: header.excessDataGas,
+    blobGasUsed: header.blobGasUsed,
+    excessBlobGas: header.excessBlobGas,
   }
 }
 
@@ -167,8 +167,8 @@ const jsonRpcReceipt = async (
   txIndex: number,
   logIndex: number,
   contractAddress?: Address,
-  dataGasUsed?: bigint,
-  dataGasPrice?: bigint
+  blobGasUsed?: bigint,
+  blobGasPrice?: bigint
 ): Promise<JsonRpcReceipt> => ({
   transactionHash: bytesToHex(tx.hash()),
   transactionIndex: intToHex(txIndex),
@@ -192,8 +192,8 @@ const jsonRpcReceipt = async (
     ((receipt as PostByzantiumTxReceipt).status as unknown) instanceof Uint8Array
       ? intToHex((receipt as PostByzantiumTxReceipt).status)
       : undefined,
-  dataGasUsed: dataGasUsed !== undefined ? bigIntToHex(dataGasUsed) : undefined,
-  dataGasPrice: dataGasPrice !== undefined ? bigIntToHex(dataGasPrice) : undefined,
+  blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
+  blobGasPrice: blobGasPrice !== undefined ? bigIntToHex(blobGasPrice) : undefined,
 })
 
 /**
@@ -747,7 +747,7 @@ export class Eth {
       })
 
       const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
-      const { dataGasPrice, dataGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
+      const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
       return await jsonRpcReceipt(
         receipt,
         totalGasSpent,
@@ -757,8 +757,8 @@ export class Eth {
         txIndex,
         logIndex,
         createdAddress,
-        dataGasUsed,
-        dataGasPrice
+        blobGasUsed,
+        blobGasPrice
       )
     } catch (error: any) {
       throw {
@@ -898,13 +898,13 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
 
-        const dataGasLimit = common.param('gasConfig', 'maxDataGasPerBlock')
-        const dataGasPerBlob = common.param('gasConfig', 'dataGasPerBlob')
+        const blobGasLimit = common.param('gasConfig', 'maxblobGasPerBlock')
+        const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
 
-        if (BigInt((tx.blobs ?? []).length) * dataGasPerBlob > dataGasLimit) {
+        if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
           throw Error(
             `tx blobs=${(tx.blobs ?? []).length} exceeds block limit=${
-              dataGasLimit / dataGasPerBlob
+              blobGasLimit / blobGasPerBlob
             }`
           )
         }

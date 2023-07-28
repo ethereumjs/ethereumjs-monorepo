@@ -40,8 +40,8 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
-    dataGasUsed,
-    excessDataGas,
+    blobGasUsed,
+    excessBlobGas,
     parentBeaconBlockRoot,
   ] = values
 
@@ -84,8 +84,8 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
-    dataGasUsed,
-    excessDataGas,
+    blobGasUsed,
+    excessBlobGas,
     parentBeaconBlockRoot,
   }
 }

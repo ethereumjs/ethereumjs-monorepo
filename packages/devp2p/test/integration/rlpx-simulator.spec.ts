@@ -37,7 +37,7 @@ describe('RLPx simulator tests', () => {
         rlpxs[0]['_dpt']!['_banlist'].has(peer),
         'should not be in ban list before bad peer discovered'
       )
-      rlpxs[0]['_dpt']!.emit('peer:new', peer)
+      rlpxs[0]['_dpt']!.events.emit('peer:new', peer)
       assert.ok(
         rlpxs[0]['_dpt']!['_banlist'].has(peer),
         'should be in ban list after bad peer discovered'

@@ -390,21 +390,21 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [1559, 2718, 2930, 4895],
     gasConfig: {
-      dataGasPerBlob: {
+      blobGasPerBlob: {
         v: 131072,
-        d: 'The base fee for data gas per blob',
+        d: 'The base fee for blob gas per blob',
       },
-      targetDataGasPerBlock: {
+      targetBlobGasPerBlock: {
         v: 393216,
-        d: 'The target data gas consumed per block',
+        d: 'The target blob gas consumed per block',
       },
-      maxDataGasPerBlock: {
+      maxblobGasPerBlock: {
         v: 786432,
-        d: 'The max data gas allowable per block',
+        d: 'The max blob gas allowable per block',
       },
-      dataGasPriceUpdateFraction: {
+      blobGasPriceUpdateFraction: {
         v: 3338477,
-        d: 'The denominator used in the exponential when calculating a data gas price',
+        d: 'The denominator used in the exponential when calculating a blob gas price',
       },
     },
     gasPrices: {
@@ -412,9 +412,9 @@ export const EIPs: EIPsDict = {
         v: 12000,
         d: 'The basic gas fee for each blob',
       },
-      minDataGasPrice: {
+      minBlobGasPrice: {
         v: 1,
-        d: 'The minimum fee per data gas',
+        d: 'The minimum fee per blob gas',
       },
       kzgPointEvaluationGasPrecompilePrice: {
         v: 50000,

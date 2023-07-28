@@ -25,12 +25,12 @@ describe('[HeaderFetcher]', async () => {
     assert.deepEqual(
       //@ts-ignore
       fetcher.process({ task: { count: 2 }, peer: 'peer0' }, { headers, bv: BigInt(1) }),
-      headers,
+      headers as any,
       'got results'
     )
     //@ts-ignore
     assert.notOk(
-      fetcher.process({ task: { count: 2 } }, { headers: [], bv: BigInt(1) }),
+      fetcher.process({ task: { count: 2 } } as any, { headers: [], bv: BigInt(1) } as any),
       'bad results'
     )
     td.verify((fetcher as any).flow.handleReply('peer0', 1))
@@ -66,7 +66,7 @@ describe('[HeaderFetcher]', async () => {
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    assert.equal(fetcher.peer(), 'peer0', 'found peer')
+    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {

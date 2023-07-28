@@ -87,7 +87,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   public readonly AccessListJSON: AccessList
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
-  public readonly maxFeePerDataGas: bigint
+  public readonly maxFeePerblobGas: bigint
 
   public readonly common: Common
   public versionedHashes: Uint8Array[]
@@ -104,7 +104,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TransactionType.BlobEIP4844 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerDataGas } = txData
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerblobGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
@@ -149,8 +149,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw new Error(msg)
     }
 
-    this.maxFeePerDataGas = bytesToBigInt(
-      toBytes((maxFeePerDataGas ?? '') === '' ? '0x' : maxFeePerDataGas)
+    this.maxFeePerblobGas = bytesToBigInt(
+      toBytes((maxFeePerblobGas ?? '') === '' ? '0x' : maxFeePerblobGas)
     )
 
     this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBytes(vh))
@@ -274,7 +274,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       value,
       data,
       accessList,
-      maxFeePerDataGas,
+      maxFeePerblobGas,
       versionedHashes,
       v,
       r,
@@ -288,7 +288,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxFeePerGas,
       gasLimit,
       value,
-      maxFeePerDataGas,
+      maxFeePerblobGas,
       v,
       r,
       s,
@@ -305,7 +305,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         value,
         data,
         accessList: accessList ?? [],
-        maxFeePerDataGas,
+        maxFeePerblobGas,
         versionedHashes,
         v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
         r,
@@ -411,7 +411,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
-      bigIntToUnpaddedBytes(this.maxFeePerDataGas),
+      bigIntToUnpaddedBytes(this.maxFeePerblobGas),
       this.versionedHashes,
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
@@ -546,7 +546,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
-      maxFeePerDataGas: bigIntToHex(this.maxFeePerDataGas),
+      maxFeePerblobGas: bigIntToHex(this.maxFeePerblobGas),
       versionedHashes: this.versionedHashes.map((hash) => bytesToHex(hash)),
     }
   }
@@ -568,7 +568,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
-        maxFeePerDataGas: this.maxFeePerDataGas,
+        maxFeePerblobGas: this.maxFeePerblobGas,
         versionedHashes: this.versionedHashes,
         blobs: this.blobs,
         kzgCommitments: this.kzgCommitments,

@@ -277,8 +277,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check balance against max potential cost (for EIP 1559 and 4844)
   let maxCost = tx.value
-  let dataGasPrice = BigInt(0)
-  let totalDataGas = BigInt(0)
+  let blobGasPrice = BigInt(0)
+  let totalblobGas = BigInt(0)
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
@@ -295,23 +295,23 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    totalDataGas = castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalDataGas * castTx.maxFeePerDataGas
+    totalblobGas = castTx.common.param('gasConfig', 'blobGasPerBlob') * BigInt(castTx.numBlobs())
+    maxCost += totalblobGas * castTx.maxFeePerblobGas
 
-    // 4844 minimum datagas price check
+    // 4844 minimum blobGas price check
     if (opts.block === undefined) {
       const msg = _errorMsg(
-        `Block option must be supplied to compute data gas price`,
+        `Block option must be supplied to compute blob gas price`,
         this,
         block,
         tx
       )
       throw new Error(msg)
     }
-    dataGasPrice = opts.block.header.getDataGasPrice()
-    if (castTx.maxFeePerDataGas < dataGasPrice) {
+    blobGasPrice = opts.block.header.getBlobGasPrice()
+    if (castTx.maxFeePerblobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
+        `Transaction's maxFeePerblobGas ${castTx.maxFeePerblobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         this,
         block,
         tx
@@ -377,9 +377,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update from account's balance
   const txCost = tx.gasLimit * gasPrice
-  const dataGasCost = totalDataGas * dataGasPrice
+  const blobGasCost = totalblobGas * blobGasPrice
   fromAccount.balance -= txCost
-  fromAccount.balance -= dataGasCost
+  fromAccount.balance -= blobGasCost
   if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
     fromAccount.balance = BigInt(0)
   }
@@ -443,9 +443,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
-  // Add data gas used to result
+  // Add blob gas used to result
   if (isBlobEIP4844Tx(tx)) {
-    results.dataGasUsed = totalDataGas
+    results.blobGasUsed = totalblobGas
   }
 
   // Process any gas refund
@@ -556,8 +556,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     tx,
     results,
     cumulativeGasUsed,
-    totalDataGas,
-    dataGasPrice
+    totalblobGas,
+    blobGasPrice
   )
 
   /**
@@ -607,16 +607,16 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
- * @param dataGasUsed The data gas used in the tx
- * @param dataGasPrice The data gas price for the block including this tx
+ * @param blobGasUsed The blob gas used in the tx
+ * @param blobGasPrice The blob gas price for the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
   cumulativeGasUsed: bigint,
-  dataGasUsed?: bigint,
-  dataGasPrice?: bigint
+  blobGasUsed?: bigint,
+  blobGasPrice?: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
@@ -655,8 +655,8 @@ export async function generateTxReceipt(
     // Typed EIP-2718 Transaction
     if (isBlobEIP4844Tx(tx)) {
       receipt = {
-        dataGasUsed,
-        dataGasPrice,
+        blobGasUsed,
+        blobGasPrice,
         status: txResult.execResult.exceptionError ? 0 : 1,
         ...baseReceipt,
       } as EIP4844BlobTxReceipt

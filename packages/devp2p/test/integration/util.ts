@@ -103,7 +103,7 @@ export function initTwoPeerRLPXSetup(
   capabilities?: any,
   common?: Object | Common,
   basePort = 30306
-) {
+): RLPx[] {
   const rlpxs = getTestRLPXs(2, maxPeers, basePort, capabilities, common)
   const peer = { address: localhost, udpPort: basePort + 1, tcpPort: basePort + 1 }
   rlpxs[0]['_dpt']!.addPeer(peer).catch(() => {

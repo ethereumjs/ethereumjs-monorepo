@@ -170,7 +170,7 @@ ___
 
 • `Optional` **maxFeePerDataGas**: `BigIntLike`
 
-The maximum fee per data gas paid for the transaction
+The maximum fee per blob gas paid for the transaction
 
 #### Defined in
 

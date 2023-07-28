@@ -344,9 +344,9 @@ ___
 
 ▸ **validateBlobTransactions**(`parentHeader`): `void`
 
-Validates that data gas fee for each transaction is greater than or equal to the
-dataGasPrice for the block and that total data gas in block is less than maximum
-data gas per block
+Validates that blob gas fee for each transaction is greater than or equal to the
+dataGasPrice for the block and that total blob gas in block is less than maximum
+blob gas per block
 
 #### Parameters
 
