@@ -73,7 +73,11 @@ describe('[Fetcher]', () => {
     ;(fetcher as any).total = 10
     fetcher.next()
     setTimeout(() => {
-      assert.deepEqual(job, { index: 0, peer: { idle: false }, state: 'expired' }, 'expired job')
+      assert.deepEqual(
+        job as any,
+        { index: 0, peer: { idle: false }, state: 'expired' },
+        'expired job'
+      )
       assert.equal((fetcher as any).in.length, 1, 'enqueued job')
     }, 20)
   })

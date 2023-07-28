@@ -99,12 +99,12 @@ describe('[PeerPool]', async () => {
       pool.ban(p, 1000)
     }
     pool.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
-      assert.equal(peer, peers[1], 'banned peer')
+      assert.equal(peer, peers[1] as any, 'banned peer')
     )
     pool.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
-      assert.equal(peer, peers[1], 'removed peer')
+      assert.equal(peer, peers[1] as any, 'removed peer')
     )
-    assert.equal(pool.peers[0], peers[0], 'outbound peer not banned')
+    assert.equal(pool.peers[0], peers[0] as any, 'outbound peer not banned')
   })
 
   it('should reset td', () => {
