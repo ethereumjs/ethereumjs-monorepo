@@ -284,7 +284,7 @@ describe(method, () => {
       assert.equal(res.body.error, undefined, 'initial blob transaction accepted')
     }
 
-    const expectRes2 = checkError(INVALID_PARAMS, 'replacement data gas too low')
+    const expectRes2 = checkError(INVALID_PARAMS, 'replacement blob gas too low')
 
     await baseRequest(server, req, 200, expectRes, false)
     await baseRequest(server, req2, 200, expectRes2)

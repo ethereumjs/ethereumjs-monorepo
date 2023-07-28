@@ -924,7 +924,7 @@ describe('runTx tests', () => {
         )
         const res = await vm.runTx({ tx, block, skipBalance: true })
         assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
-        assert.equal(res.blobGasUsed, 131072n, 'returns correct data gas used for 1 blob')
+        assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
         Blockchain.prototype.getBlock = oldGetBlockFunction
       }
     })

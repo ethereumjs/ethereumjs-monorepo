@@ -42,7 +42,7 @@ export class BlockBuilder {
    */
   gasUsed = BigInt(0)
   /**
-   *  The cumulative data gas used by the blobs in a block
+   *  The cumulative blob gas used by the blobs in a block
    */
   blobGasUsed = BigInt(0)
   /**
@@ -215,7 +215,7 @@ export class BlockBuilder {
       }
 
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
-        throw new Error('block data gas limit reached')
+        throw new Error('block blob gas limit reached')
       }
 
       blobGasUsed = this.blobGasUsed

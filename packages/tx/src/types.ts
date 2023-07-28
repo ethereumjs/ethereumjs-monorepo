@@ -280,7 +280,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    */
   versionedHashes?: BytesLike[]
   /**
-   * The maximum fee per data gas paid for the transaction
+   * The maximum fee per blob gas paid for the transaction
    */
   maxFeePerblobGas?: BigIntLike
   /**

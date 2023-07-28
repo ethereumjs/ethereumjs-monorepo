@@ -136,8 +136,8 @@ describe(method, () => {
 
       const req = params(method, [bytesToHex(tx.hash())])
       const expectRes = (res: any) => {
-        assert.equal(res.body.result.blobGasUsed, '0x20000', 'receipt has correct data gas usage')
-        assert.equal(res.body.result.blobGasPrice, '0x1', 'receipt has correct data gas price')
+        assert.equal(res.body.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
+        assert.equal(res.body.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
       }
 
       await baseRequest(server, req, 200, expectRes)

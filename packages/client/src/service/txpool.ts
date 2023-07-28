@@ -250,7 +250,7 @@ export class TxPool {
           (existingTx.maxFeePerblobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
         BigInt(100)
       if (addedTx.maxFeePerblobGas < minblobGasFee) {
-        throw new Error('replacement data gas too low')
+        throw new Error('replacement blob gas too low')
       }
     }
   }

@@ -493,7 +493,7 @@ export class Block {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
             errs.push(
-              `tx causes total data gas of ${blobGasUsed} to exceed maximum data gas per block of ${blobGasLimit}`
+              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`
             )
           }
         }
@@ -559,9 +559,9 @@ export class Block {
   }
 
   /**
-   * Validates that data gas fee for each transaction is greater than or equal to the
-   * blobGasPrice for the block and that total data gas in block is less than maximum
-   * data gas per block
+   * Validates that blob gas fee for each transaction is greater than or equal to the
+   * blobGasPrice for the block and that total blob gas in block is less than maximum
+   * blob gas per block
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
@@ -577,7 +577,7 @@ export class Block {
             throw new Error(
               `blob transaction maxFeePerblobGas ${
                 tx.maxFeePerblobGas
-              } < than block data gas price ${blobGasPrice} - ${this.errorStr()}`
+              } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`
             )
           }
 
@@ -585,7 +585,7 @@ export class Block {
 
           if (blobGasUsed > blobGasLimit) {
             throw new Error(
-              `tx causes total data gas of ${blobGasUsed} to exceed maximum data gas per block of ${blobGasLimit}`
+              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`
             )
           }
         }

@@ -98,7 +98,7 @@ describe('EIP4844 tests', () => {
     )
 
     const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
-    assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'data gas used for 1 blob should match')
+    assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await vmCopy.runBlock({ block, skipBlockValidation: true })

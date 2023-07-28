@@ -37,7 +37,7 @@ describe('EIP4788 header tests', () => {
           }
         )
       },
-      'data gas used can only be provided with EIP4844 activated',
+      'blob gas used can only be provided with EIP4844 activated',
       undefined,
       'should throw when setting blobGasUsed with EIP4844 not being activated'
     )

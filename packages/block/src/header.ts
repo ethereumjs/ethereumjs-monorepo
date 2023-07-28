@@ -239,11 +239,11 @@ export class BlockHeader {
 
     if (!this.common.isActivatedEIP(4844)) {
       if (headerData.blobGasUsed !== undefined) {
-        throw new Error('data gas used can only be provided with EIP4844 activated')
+        throw new Error('blob gas used can only be provided with EIP4844 activated')
       }
 
       if (headerData.excessblobGas !== undefined) {
-        throw new Error('excess data gas can only be provided with EIP4844 activated')
+        throw new Error('excess blob gas can only be provided with EIP4844 activated')
       }
     }
 
@@ -576,8 +576,8 @@ export class BlockHeader {
   }
 
   /**
-   * Returns the price per unit of data gas for a blob transaction in the current/pending block
-   * @returns the price in gwei per unit of data gas spent
+   * Returns the price per unit of blob gas for a blob transaction in the current/pending block
+   * @returns the price in gwei per unit of blob gas spent
    */
   getblobGasPrice(): bigint {
     if (this.excessblobGas === undefined) {
@@ -591,10 +591,10 @@ export class BlockHeader {
   }
 
   /**
-   * Returns the total fee for data gas spent for including blobs in block.
+   * Returns the total fee for blob gas spent for including blobs in block.
    *
    * @param numBlobs number of blobs in the transaction/block
-   * @returns the total data gas fee for numBlobs blobs
+   * @returns the total blob gas fee for numBlobs blobs
    */
   calcDataFee(numBlobs: number): bigint {
     const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
@@ -605,7 +605,7 @@ export class BlockHeader {
   }
 
   /**
-   * Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+   * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
   public calcNextExcessblobGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor

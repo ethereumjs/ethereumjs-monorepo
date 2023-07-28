@@ -308,7 +308,7 @@ export interface ExecResult {
    */
   gasRefund?: bigint
   /**
-   * Amount of data gas consumed by the transaction
+   * Amount of blob gas consumed by the transaction
    */
   blobGasUsed?: bigint
 }

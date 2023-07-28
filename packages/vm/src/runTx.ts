@@ -301,7 +301,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // 4844 minimum blobGas price check
     if (opts.block === undefined) {
       const msg = _errorMsg(
-        `Block option must be supplied to compute data gas price`,
+        `Block option must be supplied to compute blob gas price`,
         this,
         block,
         tx
@@ -443,7 +443,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
-  // Add data gas used to result
+  // Add blob gas used to result
   if (isBlobEIP4844Tx(tx)) {
     results.blobGasUsed = totalblobGas
   }
@@ -607,8 +607,8 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
- * @param blobGasUsed The data gas used in the tx
- * @param blobGasPrice The data gas price for the block including this tx
+ * @param blobGasUsed The blob gas used in the tx
+ * @param blobGasPrice The blob gas price for the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,

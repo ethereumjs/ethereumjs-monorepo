@@ -46,9 +46,9 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
     }
   })
 
-  it('should validate excess data gas', async () => {
+  it('should validate excess blob gas', async () => {
     try {
-      // construct a payload with a different excess data gas but matching hash
+      // construct a payload with a different excess blob gas but matching hash
       const block = await Block.fromBeaconPayloadJson(
         {
           ...payload87475,

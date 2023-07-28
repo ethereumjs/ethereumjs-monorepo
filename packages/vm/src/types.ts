@@ -49,14 +49,14 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
 
 export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
   /**
-   * Data gas consumed by a transaction
+   * blob gas consumed by a transaction
    *
    * Note: This value is not included in the receiptRLP used for encoding the receiptsRoot in a block
    * and is only provided as part of receipt metadata.
    */
   blobGasUsed: bigint
   /**
-   * Data gas price for block transaction was included in
+   * blob gas price for block transaction was included in
    *
    * Note: This valus is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
    * and is only provided as part of receipt metadata.
@@ -392,7 +392,7 @@ export interface RunTxResult extends EVMResult {
   minerValue: bigint
 
   /**
-   * This is the data gas units times the fee per data gas for 4844 transactions
+   * This is the blob gas units times the fee per blob gas for 4844 transactions
    */
   blobGasUsed?: bigint
 }

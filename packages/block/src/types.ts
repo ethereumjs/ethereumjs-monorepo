@@ -189,8 +189,8 @@ export interface JsonRpcBlock {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
-  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the data gas used for the block
-  excessblobGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
+  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
+  excessblobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
 }
 
