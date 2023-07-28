@@ -597,7 +597,7 @@ export class Block {
         )
       }
 
-      const expectedExcessblobGas = parentHeader.calcNextExcessblobGas()
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (this.header.excessblobGas !== expectedExcessblobGas) {
         throw new Error(
           `block excessblobGas mismatch: have ${this.header.excessblobGas}, want ${expectedExcessblobGas}`
