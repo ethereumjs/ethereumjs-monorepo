@@ -249,7 +249,7 @@ describe(method, () => {
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,
-        maxFeePerDataGas: 1000000n,
+        maxFeePerblobGas: 1000000n,
         gasLimit: 0xffffn,
         maxFeePerGas: 10000000n,
         maxPriorityFeePerGas: 1000000n,
@@ -264,7 +264,7 @@ describe(method, () => {
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,
-        maxFeePerDataGas: 1000000n,
+        maxFeePerblobGas: 1000000n,
         gasLimit: 0xfffffn,
         maxFeePerGas: 100000000n,
         maxPriorityFeePerGas: 10000000n,
@@ -284,7 +284,7 @@ describe(method, () => {
       assert.equal(res.body.error, undefined, 'initial blob transaction accepted')
     }
 
-    const expectRes2 = checkError(INVALID_PARAMS, 'replacement data gas too low')
+    const expectRes2 = checkError(INVALID_PARAMS, 'replacement blob gas too low')
 
     await baseRequest(server, req, 200, expectRes, false)
     await baseRequest(server, req2, 200, expectRes2)
