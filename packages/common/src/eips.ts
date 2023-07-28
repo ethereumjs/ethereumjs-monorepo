@@ -412,7 +412,7 @@ export const EIPs: EIPsDict = {
         v: 12000,
         d: 'The basic gas fee for each blob',
       },
-      minblobGasPrice: {
+      minBlobGasPrice: {
         v: 1,
         d: 'The minimum fee per blob gas',
       },

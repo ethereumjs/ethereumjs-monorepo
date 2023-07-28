@@ -308,7 +308,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
-    blobGasPrice = opts.block.header.getblobGasPrice()
+    blobGasPrice = opts.block.header.getBlobGasPrice()
     if (castTx.maxFeePerblobGas < blobGasPrice) {
       const msg = _errorMsg(
         `Transaction's maxFeePerblobGas ${castTx.maxFeePerblobGas}) is less than block blobGasPrice (${blobGasPrice}).`,

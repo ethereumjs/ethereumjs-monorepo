@@ -600,7 +600,7 @@ export class BlockHeader {
     const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
     const blobGasUsed = blobGasPerBlob * BigInt(numBlobs)
 
-    const blobGasPrice = this.getblobGasPrice()
+    const blobGasPrice = this.getBlobGasPrice()
     return blobGasUsed * blobGasPrice
   }
 
