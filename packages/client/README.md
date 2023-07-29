@@ -76,6 +76,8 @@ docker build . -f Dockerfile.fromSource --tag ethereumjs:latest
 
 You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
 
+Also, in your `docker run` command, be sure to include the `--init` flag so that the container will properly handle kernel signals (like SIGINT and SIGTERM). Not doing so can lead to unexpected behaviour [(as documented here)](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals)
+
 ## General Usage
 
 You can get the client up and running by going to the shell and run:
