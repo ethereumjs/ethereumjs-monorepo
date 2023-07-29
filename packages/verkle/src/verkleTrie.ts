@@ -20,8 +20,8 @@ import {
 } from './types.js'
 import { Lock } from './util/lock.js'
 
-import type { LeafNode, VerkleNode } from './node/verkleNode.js'
-import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
+import type { VerkleNode } from './node/verkleNode.js'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 
 interface Path {
   node: VerkleNode | null
@@ -180,34 +180,6 @@ export class VerkleTrie {
   }
 
   /**
-   * Walks a trie until finished.
-   * @param root
-   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
-   * @returns Resolves when finished walking trie.
-   */
-  async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
-   * Executes a callback for each node in the trie.
-   * @param onFound - callback to call when a node is found.
-   * @returns Resolves when finished walking trie.
-   */
-  async walkAllNodes(onFound: OnFound): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
-   * Executes a callback for each value node in the trie.
-   * @param onFound - callback to call when a node is found.
-   * @returns Resolves when finished walking trie.
-   */
-  async walkAllValueNodes(onFound: OnFound): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
    * Creates the initial node from an empty tree.
    * @private
    */
@@ -218,7 +190,7 @@ export class VerkleTrie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode | null> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
     throw new Error('Not implemented')
   }
 
@@ -374,7 +346,7 @@ export class VerkleTrie {
    * called by {@link ScratchReadStream}
    * @private
    */
-  protected async _findDbNodes(onFound: FoundNodeFunction): Promise<void> {
+  protected async _findDbNodes(onFound: () => void): Promise<void> {
     throw new Error('Not implemented')
   }
 
@@ -383,7 +355,7 @@ export class VerkleTrie {
    * depending on the `useKeyHashing` option being set or not.
    * @param key
    */
-  protected appliedKey(key: Uint8Array) {
+  protected appliedKey(key: Uint8Array): Uint8Array {
     throw new Error('Not implemented')
   }
 
