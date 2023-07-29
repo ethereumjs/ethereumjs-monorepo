@@ -3,8 +3,7 @@ import {
   Account,
   KECCAK256_NULL,
   KECCAK256_RLP,
-  hexToKeybytes,
-  nibblesToCompactBytes,
+  mergeAndFormatKeyPaths,
   toBytes,
 } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
@@ -432,57 +431,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     return { pathStrings }
   }
 
-  mergeAndFormatPaths(pathStrings: string[]) {
-    this.debug('At start of mergeAndFormatPaths')
-    const ret: string[][] = []
-    let paths: string[] = []
-    let i = 0
-    while (i < pathStrings.length) {
-      const outterPathString = pathStrings[i]!.split('/')
-      const outterAccountPath = outterPathString[0]
-      const outterStoragePath = outterPathString[1]
-
-      paths.push(outterAccountPath)
-      if (outterStoragePath !== undefined) {
-        paths.push(outterStoragePath)
-      }
-
-      let j = ++i
-      while (j < pathStrings.length) {
-        const innerPathString = pathStrings[j]!.split('/')
-        const innerAccountPath = innerPathString[0]
-        const innerStoragePath = innerPathString[1]
-
-        if (innerAccountPath === outterAccountPath) {
-          paths.push(innerStoragePath)
-        } else {
-          ret.push(paths)
-          paths = []
-          i = j
-          break
-        }
-        j++
-      }
-      if (paths.length > 0) {
-        ret.push(paths)
-        paths = []
-      }
-    }
-    if (paths.length > 0) ret.push(paths)
-
-    return ret.map((pathStrings) =>
-      pathStrings.map((s) => {
-        if (s.length < 64) {
-          // partial path is compact encoded
-          return nibblesToCompactBytes(hexToBytes(s))
-        } else {
-          // full path is keybyte encoded
-          return hexToKeybytes(hexToBytes(s))
-        }
-      })
-    )
-  }
-
   /**
    * Generate list of tasks to fetch. Modifies `first` and `count` to indicate
    * remaining items apart from the tasks it pushes in the queue
@@ -501,7 +449,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             if (nodeHash === undefined) throw Error('Path should exist')
             this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
           }
-          const paths = this.mergeAndFormatPaths(requestedPathStrings) as unknown as Uint8Array[][]
+          this.debug('At start of mergeAndFormatPaths')
+          const paths = mergeAndFormatKeyPaths(requestedPathStrings) as unknown as Uint8Array[][]
           tasks.push({
             pathStrings: requestedPathStrings,
             paths,

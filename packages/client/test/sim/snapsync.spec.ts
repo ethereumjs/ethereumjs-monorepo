@@ -48,6 +48,7 @@ tape('simple mainnet test run', async (t) => {
   if (result.includes('Geth')) {
     t.pass('connected to Geth')
   } else {
+    console.log(result)
     t.fail('connected to wrong client')
   }
 

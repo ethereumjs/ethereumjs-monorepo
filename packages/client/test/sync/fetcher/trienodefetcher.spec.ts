@@ -236,34 +236,4 @@ tape('[TrieNodeFetcher]', async (t) => {
 
     t.end()
   })
-
-  t.test('should merge and format pathStrings into paths', async (t) => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-    const pool = new PeerPool() as any
-    const fetcher = new TrieNodeFetcher({
-      config,
-      pool,
-      root: new Uint8Array(0),
-    })
-
-    // should merge all syncPaths that have the same base account path
-    const pathStrings = ['0x0a', '0x0a/0x0b', '0x0a/0x0c', '0x0a/0x0d', '0x0e', '0x0e/0x0a', '0x0f']
-
-    const paths = fetcher.mergeAndFormatPaths(pathStrings)
-
-    t.equal(
-      paths.reduce((count, subArray) => count + subArray.length, 0),
-      pathStrings.length,
-      'should have correct number of paths'
-    )
-    t.deepEqual(
-      paths[0],
-      [Uint8Array.of(26), Uint8Array.of(27), Uint8Array.of(28), Uint8Array.of(29)],
-      'should merge paths correctly'
-    )
-    t.deepEqual(paths[1], [Uint8Array.of(30), Uint8Array.of(26)], 'should merge paths correctly')
-    t.deepEqual(paths[2], [Uint8Array.of(31)], 'should merge paths correctly')
-
-    t.end()
-  })
 })
