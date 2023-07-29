@@ -21,6 +21,7 @@ import {
 } from './node/index.js'
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
+import { _walkTrie } from './util/asyncWalk.js'
 import { Lock } from './util/lock.js'
 import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
@@ -35,6 +36,7 @@ import type {
   TrieOpts,
   TrieOptsWithDefaults,
 } from './types.js'
+import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
@@ -348,6 +350,37 @@ export class Trie {
    */
   async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
+  }
+
+  walkTrieIterable = _walkTrie.bind(this)
+
+  /**
+   * Executes a callback for each node in the trie.
+   * @param onFound - callback to call when a node is found.
+   * @returns Resolves when finished walking trie.
+   */
+  async walkAllNodes(onFound: OnFound): Promise<void> {
+    for await (const { node, currentKey } of this.walkTrieIterable(this.root())) {
+      await onFound(node, currentKey)
+    }
+  }
+
+  /**
+   * Executes a callback for each value node in the trie.
+   * @param onFound - callback to call when a node is found.
+   * @returns Resolves when finished walking trie.
+   */
+  async walkAllValueNodes(onFound: OnFound): Promise<void> {
+    for await (const { node, currentKey } of this.walkTrieIterable(
+      this.root(),
+      [],
+      undefined,
+      async (node) => {
+        return node instanceof LeafNode || (node instanceof BranchNode && node.value() !== null)
+      }
+    )) {
+      await onFound(node, currentKey)
+    }
   }
 
   /**

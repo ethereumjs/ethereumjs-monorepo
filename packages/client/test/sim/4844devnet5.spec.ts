@@ -76,7 +76,7 @@ describe(`running txes on ${rpcUrl}`, async () => {
       {
         to: bytesToHex(randomBytes(20)),
         chainId,
-        maxFeePerDataGas: BigInt(process.env.MAX_DATAFEE ?? 100000000n),
+        maxFeePerblobGas: BigInt(process.env.MAX_DATAFEE ?? 100000000n),
         maxPriorityFeePerGas: BigInt(process.env.MAX_PRIORITY ?? 100000000n),
         maxFeePerGas: BigInt(process.env.MAX_FEE ?? 1000000000n),
         gasLimit: BigInt(process.env.GAS_LIMIT ?? 0xffffffn),
