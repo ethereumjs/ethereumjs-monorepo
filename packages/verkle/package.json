@@ -1,0 +1,75 @@
+{
+  "name": "@ethereumjs/verkle",
+  "version": "1.0.0-rc.1",
+  "description": "Implementation of verkle tries as used in Ethereum.",
+  "keywords": [
+    "verkle",
+    "trie",
+    "ethereum"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/verkle#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+verkle%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "EthereumJS Team",
+  "contributors": [
+    {
+      "name": "Gabriel Rocheleau",
+      "url": "https://github.com/gabrocheleau"
+    }
+  ],
+  "main": "dist/cjs/index.js",
+  "type": "commonjs",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- trie",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "npx vitest run",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/rlp": "5.0.0-rc.1",
+    "@ethereumjs/util": "9.0.0-rc.1",
+    "@types/readable-stream": "^2.3.13",
+    "lru-cache": "^10.0.0",
+    "ethereum-cryptography": "^2.1.2",
+    "readable-stream": "^3.6.0"
+  },
+  "devDependencies": {
+    "@ethereumjs/genesis": "0.1.0-rc.1",
+    "@types/benchmark": "^1.0.33",
+    "abstract-level": "^1.0.3",
+    "level": "^8.0.0",
+    "level-legacy": "npm:level@^7.0.0",
+    "level-mem": "^6.0.1",
+    "levelup": "^5.1.1",
+    "lmdb": "^2.5.3",
+    "memory-level": "^1.0.0",
+    "micro-bmark": "0.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
