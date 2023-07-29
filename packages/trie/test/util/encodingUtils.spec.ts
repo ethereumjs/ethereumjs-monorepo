@@ -7,6 +7,7 @@ import {
   compactBytesToNibbles,
   nibbleTypeToByteType,
   nibbleTypeToPackedBytes,
+  mergeAndFormatKeyPaths,
   nibblesToCompactBytes,
   pathToHexKey,
 } from '../../src/util/encoding.js'
@@ -111,5 +112,27 @@ describe('encoding', () => {
       Error,
       'retType must be either "keybyte" or "hex"'
     )
+
+  it('should merge and format pathStrings into paths', () => {
+    // should merge all syncPaths that have the same base account path
+    const pathStrings = ['0x0a', '0x0a/0x0b', '0x0a/0x0c', '0x0a/0x0d', '0x0e', '0x0e/0x0a', '0x0f']
+    const paths = mergeAndFormatKeyPaths(pathStrings)
+
+    assert.equal(
+      paths.reduce((count, subArray) => count + subArray.length, 0),
+      pathStrings.length,
+      'should have correct number of paths'
+    )
+    assert.deepEqual(
+      paths[0],
+      [Uint8Array.of(26), Uint8Array.of(27), Uint8Array.of(28), Uint8Array.of(29)],
+      'should merge paths correctly'
+    )
+    assert.deepEqual(
+      paths[1],
+      [Uint8Array.of(30), Uint8Array.of(26)],
+      'should merge paths correctly'
+    )
+    assert.deepEqual(paths[2], [Uint8Array.of(31)], 'should merge paths correctly')
   })
 })

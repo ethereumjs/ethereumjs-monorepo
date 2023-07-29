@@ -171,3 +171,53 @@ export const pathToHexKey = (path: string, extension: Nibbles, retType: string):
   }
   throw Error('retType must be either "keybyte" or "hex"')
 }
+
+export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
+  const ret: string[][] = []
+  let paths: string[] = []
+  let i = 0
+  while (i < pathStrings.length) {
+    const outterPathString = pathStrings[i]!.split('/')
+    const outterAccountPath = outterPathString[0]
+    const outterStoragePath = outterPathString[1]
+
+    paths.push(outterAccountPath)
+    if (outterStoragePath !== undefined) {
+      paths.push(outterStoragePath)
+    }
+
+    let j = ++i
+    while (j < pathStrings.length) {
+      const innerPathString = pathStrings[j]!.split('/')
+      const innerAccountPath = innerPathString[0]
+      const innerStoragePath = innerPathString[1]
+
+      if (innerAccountPath === outterAccountPath) {
+        paths.push(innerStoragePath)
+      } else {
+        ret.push(paths)
+        paths = []
+        i = j
+        break
+      }
+      j++
+    }
+    if (paths.length > 0) {
+      ret.push(paths)
+      paths = []
+    }
+  }
+  if (paths.length > 0) ret.push(paths)
+
+  return ret.map((pathStrings) =>
+    pathStrings.map((s) => {
+      if (s.length < 64) {
+        // partial path is compact encoded
+        return nibblesToCompactBytes(hexToBytes(s))
+      } else {
+        // full path is keybyte encoded
+        return hexToKeybytes(hexToBytes(s))
+      }
+    })
+  )
+}
