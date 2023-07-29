@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690563615557,
+  "lastUpdate": 1690656016761,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d2e8926cfd4f34362a18c0e45e20f44010da1351",
-          "message": "Use ethereum-cryptography version 2.1.1 (#2879)\n\nCo-authored-by: acolytec3 <konjou@gmail.com>",
-          "timestamp": "2023-07-12T11:50:22-04:00",
-          "tree_id": "062bbd1c752fae726c2c8feb1346c7832ba507cc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d2e8926cfd4f34362a18c0e45e20f44010da1351"
-        },
-        "date": 1689177287841,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 27263,
-            "range": "±5.07%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 27404,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26864,
-            "range": "±3.36%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26647,
-            "range": "±3.57%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 21609,
-            "range": "±11.79%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.46%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "654c67aa411d41b7a7a31bb5b9131f59e7da857f",
+          "message": "Handle SIGTERM in client (#2921)\n\n* Add listener for SIGTERM signal\r\n\r\n* Update docs\r\n\r\n* Send SIGINT in tests",
+          "timestamp": "2023-07-29T14:36:31-04:00",
+          "tree_id": "a6cf88a6bfef275f93c17e94be3ea400c8eb0c7d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/654c67aa411d41b7a7a31bb5b9131f59e7da857f"
+        },
+        "date": 1690656015721,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25151,
+            "range": "±4.90%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25492,
+            "range": "±2.98%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26355,
+            "range": "±2.87%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26402,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 21859,
+            "range": "±10.17%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
