@@ -1,4 +1,5 @@
 import { spawn } from 'child_process'
+import * as fs from 'fs'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
@@ -849,6 +850,154 @@ describe('[CLI]', () => {
             message.includes('Client started successfully'),
             'Client starts with custom sync options'
           )
+          const client = Client.http({ port: 8545 })
+          const res = await client.request('web3_clientVersion', [], 2.0)
+          assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 18000)
+  // Client file and directory path options tests
+  it('should start client with custom file path parameters', async () => {
+    const customGenesisJson = `{
+      "0xa2A6d93439144FFE4D27c9E088dCD8b783946263": "0xD3C21BCECCEDA1000000",
+      "0xBc11295936Aa79d594139de1B2e12629414F3BDB": "0xD3C21BCECCEDA1000000",
+      "0x7cF5b79bfe291A67AB02b393E456cCc4c266F753": "0xD3C21BCECCEDA1000000",
+      "0xaaec86394441f915bce3e6ab399977e9906f3b69": "0xD3C21BCECCEDA1000000",
+      "0xF47CaE1CF79ca6758Bfc787dbD21E6bdBe7112B8": "0xD3C21BCECCEDA1000000",
+      "0xd7eDDB78ED295B3C9629240E8924fb8D8874ddD8": "0xD3C21BCECCEDA1000000",
+      "0x8b7F0977Bb4f0fBE7076FA22bC24acA043583F5e": "0xD3C21BCECCEDA1000000",
+      "0xe2e2659028143784d557bcec6ff3a0721048880a": "0xD3C21BCECCEDA1000000",
+      "0xd9a5179f091d85051d3c982785efd1455cec8699": "0xD3C21BCECCEDA1000000",
+      "0xbeef32ca5b9a198d27B4e02F4c70439fE60356Cf": "0xD3C21BCECCEDA1000000",
+      "0x0000006916a87b82333f4245046623b23794c65c": "0x84595161401484A000000",
+      "0xb21c33de1fab3fa15499c62b59fe0cc3250020d1": "0x52B7D2DCC80CD2E4000000",
+      "0x10F5d45854e038071485AC9e402308cF80D2d2fE": "0x52B7D2DCC80CD2E4000000",
+      "0xd7d76c58b3a519e9fA6Cc4D22dC017259BC49F1E": "0x52B7D2DCC80CD2E4000000",
+      "0x799D329e5f583419167cD722962485926E338F4a": "0xDE0B6B3A7640000"
+    }`
+    const customChainJson = `{
+      "name": "customChain",
+      "chainId": 11155111,
+      "networkId": 11155111,
+      "defaultHardfork": "shanghai",
+      "consensus": {
+        "type": "pow",
+        "algorithm": "ethash",
+        "ethash": {}
+      },
+      "comment": "PoW test network to replace Ropsten",
+      "url": "https://github.com/ethereum/go-ethereum/pull/23730",
+      "genesis": {
+        "timestamp": "0x6159af19",
+        "gasLimit": 30000000,
+        "difficulty": 131072,
+        "nonce": "0x0000000000000000",
+        "extraData": "0x5365706f6c69612c20417468656e732c204174746963612c2047726565636521"
+      },
+      "hardforks": [
+        {
+          "name": "chainstart",
+          "block": 0,
+          "forkHash": "0xfe3366e7"
+        },
+        {
+          "name": "homestead",
+          "block": 0,
+          "forkHash": "0xfe3366e7"
+        }
+      ],
+      "bootstrapNodes": [
+        {
+          "ip": "18.168.182.86",
+          "port": 30303,
+          "id": "9246d00bc8fd1742e5ad2428b80fc4dc45d786283e05ef6edbd9002cbc335d40998444732fbe921cb88e1d2c73d1b1de53bae6a2237996e9bfe14f871baf7066",
+          "location": "",
+          "comment": "geth"
+        }
+      ],
+      "dnsNetworks": [
+        "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.sepolia.ethdisco.net"
+      ]
+    }`
+    fs.open('./customChain.json', 'w', (err, fd) => {
+      if (err) throw err
+      fs.write(fd, customChainJson, (writeErr) => {
+        if (writeErr) {
+          console.error('Error writing the file:', writeErr)
+        } else {
+          console.log('File created and data written successfully!')
+        }
+
+        fs.close(fd, (closeErr) => {
+          if (closeErr) {
+            console.error('Error closing the file:', closeErr)
+          }
+        })
+      })
+    })
+    fs.open('./customGenesis.json', 'w', (err, fd) => {
+      if (err) throw err
+      fs.write(fd, customGenesisJson, (writeErr) => {
+        if (writeErr) {
+          console.error('Error writing the file:', writeErr)
+        } else {
+          console.log('File created and data written successfully!')
+        }
+
+        fs.close(fd, (closeErr) => {
+          if (closeErr) {
+            console.error('Error closing the file:', closeErr)
+          }
+        })
+      })
+    })
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = [
+      '--rpc',
+      '--port=30304',
+      '--dataDir="./"',
+      '--customChain="./customChain.json"',
+      '--customGenesisState="./customGenesis.json"',
+      '--gethGenesis=""',
+      '--trustedSetup=""',
+      '--jwtSecret=""',
+    ]
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('Reading custom genesis state')) {
+          assert.ok(
+            message.includes('Reading custom genesis state'),
+            'client respects custom genesis state file option'
+          )
+        }
+        if (message.includes('Data directory')) {
+          assert.ok(message.includes('./'), 'client respects custom data directory option')
+        }
+        if (message.includes('Initializing Ethereumjs client')) {
+          assert.ok(
+            message.includes('network=customChain'),
+            'Client respects custom chain parameters json file option'
+          )
+        }
+        if (message.includes('Client started successfully')) {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
