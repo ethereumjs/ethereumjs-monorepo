@@ -742,11 +742,16 @@ describe('[CLI]', () => {
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
+        if (message.includes('Server listener up transport=rlpx')) {
+          const [ip, port] = message
+            .split('@')
+            .at(-1)
+            ?.split(':')
+            .map((e) => e.trim()) as string[]
+          assert.ok(ip === '0.0.0.0', 'custom input for address is being used')
+          assert.ok(port === '2100', 'custom input for port is being used')
+        }
         if (message.includes('Client started successfully')) {
-          assert.ok(
-            message.includes('Client started successfully'),
-            'Clients starts with custom network options'
-          )
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
