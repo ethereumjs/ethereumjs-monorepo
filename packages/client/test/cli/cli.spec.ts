@@ -41,6 +41,7 @@ describe('[CLI]', () => {
     const cliArgs = [
       '--rpc',
       '--dev=pow',
+      '--port=30306',
       '--minerCoinbase="abc"',
       '--saveReceipts=false',
       '--execution=false',
@@ -161,7 +162,13 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start engine rpc on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpcEngine', '--rpcEnginePort=8552', '--rpcEngineAuth=false', '--dev=poa']
+    const cliArgs = [
+      '--rpcEngine',
+      '--rpcEnginePort=8552',
+      '--port=30307',
+      '--rpcEngineAuth=false',
+      '--dev=poa',
+    ]
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -240,6 +247,7 @@ describe('[CLI]', () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
       '--ws',
+      '--port=30308',
       '--rpcEngine',
       '--wsEnginePort=8552',
       '--wsEngineAddr="0.0.0.0"',
@@ -414,7 +422,7 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start HTTP RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--rpcPort=8546', '--dev=poa']
+    const cliArgs = ['--rpc', '--rpcPort=8546', '--port=30309', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
