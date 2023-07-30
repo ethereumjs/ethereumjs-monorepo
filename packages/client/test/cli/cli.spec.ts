@@ -287,11 +287,11 @@ describe('[CLI]', () => {
           ;(client as any).ws.on('open', async function () {
             const res = await client.request('web3_clientVersion', [], 2.0)
             assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
-            child.kill()
+            child.kill(9)
             resolve(undefined)
           })
           if (message.toLowerCase().includes('error')) {
-            child.kill()
+            child.kill(9)
             assert.fail(`client encountered error: ${message}`)
           }
         }
@@ -474,11 +474,11 @@ describe('[CLI]', () => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('address=http://')) {
-          child.kill()
+          child.kill(9)
           assert.fail('http endpoint should not be enabled')
         }
         if (message.includes('address=ws://')) {
-          child.kill()
+          child.kill(9)
           assert.fail('ws endpoint should not be enabled')
         }
         if (message.includes('Miner: Assembling block')) {

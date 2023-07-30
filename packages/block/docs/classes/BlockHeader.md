@@ -319,7 +319,7 @@ EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
 
 ▸ **calcDataFee**(`numBlobs`): `bigint`
 
-Returns the total fee for data gas spent for including blobs in block.
+Returns the total fee for blob gas spent for including blobs in block.
 
 #### Parameters
 
@@ -331,7 +331,7 @@ Returns the total fee for data gas spent for including blobs in block.
 
 `bigint`
 
-the total data gas fee for numBlobs blobs
+the total blob gas fee for numBlobs blobs
 
 #### Defined in
 
@@ -359,7 +359,7 @@ ___
 
 ▸ **calcNextExcessDataGas**(): `bigint`
 
-Calculates the excess data gas for next (hopefully) post EIP 4844 block.
+Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
 
 #### Returns
 
@@ -542,13 +542,13 @@ ___
 
 ▸ **getDataGasPrice**(): `bigint`
 
-Returns the price per unit of data gas for a blob transaction in the current/pending block
+Returns the price per unit of blob gas for a blob transaction in the current/pending block
 
 #### Returns
 
 `bigint`
 
-the price in gwei per unit of data gas spent
+the price in gwei per unit of blob gas spent
 
 #### Defined in
 

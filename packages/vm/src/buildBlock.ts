@@ -42,9 +42,9 @@ export class BlockBuilder {
    */
   gasUsed = BigInt(0)
   /**
-   *  The cumulative data gas used by the blobs in a block
+   *  The cumulative blob gas used by the blobs in a block
    */
-  dataGasUsed = BigInt(0)
+  blobGasUsed = BigInt(0)
   /**
    * Value of the block, represented by the final transaction fees
    * acruing to the miner.
@@ -90,9 +90,9 @@ export class BlockBuilder {
 
     if (
       this.vm.common.isActivatedEIP(4844) === true &&
-      typeof this.headerData.excessDataGas === 'undefined'
+      typeof this.headerData.excessBlobGas === 'undefined'
     ) {
-      this.headerData.excessDataGas = opts.parentBlock.header.calcNextExcessDataGas()
+      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
     }
   }
 
@@ -195,14 +195,14 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const dataGasLimit = this.vm.common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this.vm.common.param('gasConfig', 'dataGasPerBlob')
+    const blobGasLimit = this.vm.common.param('gasConfig', 'maxblobGasPerBlock')
+    const blobGasPerBlob = this.vm.common.param('gasConfig', 'blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
       throw new Error('tx has a higher gas limit than the remaining gas in the block')
     }
-    let dataGasUsed = undefined
+    let blobGasUsed = undefined
     if (tx instanceof BlobEIP4844Transaction) {
       if (this.blockOpts.common?.isActivatedEIP(4844) !== true) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
@@ -214,17 +214,17 @@ export class BlockBuilder {
         throw new Error('blobs missing for 4844 transaction')
       }
 
-      if (this.dataGasUsed + BigInt(blobTx.numBlobs()) * dataGasPerBlob > dataGasLimit) {
-        throw new Error('block data gas limit reached')
+      if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
+        throw new Error('block blob gas limit reached')
       }
 
-      dataGasUsed = this.dataGasUsed
+      blobGasUsed = this.blobGasUsed
     }
     const header = {
       ...this.headerData,
       gasUsed: this.gasUsed,
-      // correct excessDataGas should already part of headerData used above
-      dataGasUsed,
+      // correct excessBlobGas should already part of headerData used above
+      blobGasUsed,
     }
 
     const blockData = { header, transactions: this.transactions }
@@ -235,7 +235,7 @@ export class BlockBuilder {
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {
       const txData = tx as BlobEIP4844Transaction
-      this.dataGasUsed += BigInt(txData.versionedHashes.length) * dataGasPerBlob
+      this.blobGasUsed += BigInt(txData.versionedHashes.length) * blobGasPerBlob
       tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
       })
@@ -291,9 +291,9 @@ export class BlockBuilder {
     // timestamp should already be set in constructor
     const timestamp = this.headerData.timestamp ?? BigInt(0)
 
-    let dataGasUsed = undefined
+    let blobGasUsed = undefined
     if (this.vm.common.isActivatedEIP(4844) === true) {
-      dataGasUsed = this.dataGasUsed
+      blobGasUsed = this.blobGasUsed
     }
 
     const headerData = {
@@ -305,8 +305,8 @@ export class BlockBuilder {
       logsBloom,
       gasUsed,
       timestamp,
-      // correct excessDataGas should already be part of headerData used above
-      dataGasUsed,
+      // correct excessBlobGas should already be part of headerData used above
+      blobGasUsed,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -353,7 +353,6 @@ export class BlockBuilder {
 }
 
 export async function buildBlock(this: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
-  // let opts override excessDataGas if there is some value passed there
   const blockBuilder = new BlockBuilder(this, opts)
   await blockBuilder.initState()
   return blockBuilder

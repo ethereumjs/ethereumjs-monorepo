@@ -27,8 +27,8 @@ export type BeaconPayloadJson = {
   block_hash: string
   transactions: string[]
   withdrawals?: BeaconWithdrawal[]
-  data_gas_used?: string
-  excess_data_gas?: string
+  blob_gas_used?: string
+  excess_blob_gas?: string
   parent_beacon_block_root?: string
 }
 
@@ -63,11 +63,11 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     }))
   }
 
-  if (payload.data_gas_used !== undefined && payload.data_gas_used !== null) {
-    executionPayload.dataGasUsed = bigIntToHex(BigInt(payload.data_gas_used))
+  if (payload.blob_gas_used !== undefined && payload.blob_gas_used !== null) {
+    executionPayload.blobGasUsed = bigIntToHex(BigInt(payload.blob_gas_used))
   }
-  if (payload.excess_data_gas !== undefined && payload.excess_data_gas !== null) {
-    executionPayload.excessDataGas = bigIntToHex(BigInt(payload.excess_data_gas))
+  if (payload.excess_blob_gas !== undefined && payload.excess_blob_gas !== null) {
+    executionPayload.excessBlobGas = bigIntToHex(BigInt(payload.excess_blob_gas))
   }
   if (payload.parent_beacon_block_root !== undefined && payload.parent_beacon_block_root !== null) {
     executionPayload.parentBeaconBlockRoot = payload.parent_beacon_block_root

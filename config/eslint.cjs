@@ -14,6 +14,7 @@ module.exports = {
     node: true,
   },
   ignorePatterns: [
+    '.eslintrc.cjs',
     '.eslintrc.js',
     'benchmarks',
     'coverage',

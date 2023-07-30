@@ -3,8 +3,8 @@ import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/evm.js'
 
-import type { ExecResult } from '../src/evm.js'
 import type { PrecompileInput } from '../src/index.js'
+import type { ExecResult } from '../src/types.js'
 
 const sender = new Address(hexToBytes('0x' + '44'.repeat(20)))
 const newPrecompile = new Address(hexToBytes('0x' + 'ff'.repeat(20)))
