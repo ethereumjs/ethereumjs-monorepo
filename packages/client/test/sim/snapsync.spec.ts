@@ -99,7 +99,7 @@ describe('simple mainnet test run', async () => {
     )
   })
 
-  it.skipIf(process.env.ADD_EOA_STATE === undefined)('setup snap sync', async () => {
+  it.skipIf(process.env.SNAP_SYNC === undefined)('setup snap sync', async () => {
     // start client inline here for snap sync, no need for beacon
     const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -127,30 +127,34 @@ describe('simple mainnet test run', async () => {
     }
   })
 
-  it('should snap sync and finish', async () => {
-    try {
-      if (ejsClient !== null && snapCompleted !== undefined) {
-        // call sync if not has been called yet
-        void ejsClient.services[0].synchronizer?.sync()
-        // wait on the sync promise to complete if it has been called independently
-        const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
-        try {
-          await Promise.race([snapCompleted, snapSyncTimeout])
-          assert.ok(true, 'completed snap sync')
-        } catch (e) {
-          assert.fail('could not complete snap sync in 40 seconds')
+  it(
+    'should snap sync and finish',
+    async () => {
+      try {
+        if (ejsClient !== null && snapCompleted !== undefined) {
+          // call sync if not has been called yet
+          void ejsClient.services[0].synchronizer?.sync()
+          // wait on the sync promise to complete if it has been called independently
+          const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
+          try {
+            await Promise.race([snapCompleted, snapSyncTimeout])
+            assert.ok(true, 'completed snap sync')
+          } catch (e) {
+            assert.fail('could not complete snap sync in 40 seconds')
+          }
+          await ejsClient.stop()
+        } else {
+          assert.fail('ethereumjs client not setup properly for snap sync')
         }
-        await ejsClient.stop()
-      } else {
-        assert.fail('ethereumjs client not setup properly for snap sync')
-      }
 
-      await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
-      assert.fail('network not cleaned properly')
-    }
-  })
+        await teardownCallBack()
+        assert.ok(true, 'network cleaned')
+      } catch (e) {
+        assert.fail('network not cleaned properly')
+      }
+    },
+    10 * 60_000
+  )
 })
 
 async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {

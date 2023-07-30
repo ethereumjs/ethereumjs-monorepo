@@ -1,4 +1,4 @@
-import { hexToBytes, toBytes } from '@ethereumjs/util'
+import { hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import type { Nibbles } from '../types.js'
 
@@ -213,10 +213,10 @@ export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
     pathStrings.map((s) => {
       if (s.length < 64) {
         // partial path is compact encoded
-        return nibblesToCompactBytes(hexToBytes(s))
+        return nibblesToCompactBytes(unprefixedHexToBytes(s))
       } else {
         // full path is keybyte encoded
-        return hexToKeybytes(hexToBytes(s))
+        return hexToKeybytes(unprefixedHexToBytes(s))
       }
     })
   )

@@ -4,8 +4,6 @@ import {
   LeafNode,
   Trie,
   decodeNode,
-  hexToKeybytes,
-  nibblesToCompactBytes,
   mergeAndFormatKeyPaths,
   pathToHexKey,
 } from '@ethereumjs/trie'
