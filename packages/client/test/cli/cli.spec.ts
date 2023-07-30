@@ -50,7 +50,7 @@ describe('[CLI]', () => {
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
-        //// eth_coinbase rpc endpoint is not yet implemented
+        // // TODO eth_coinbase rpc endpoint is not yet implemented
         // if (message.includes('http://')) {
         //   const client = Client.http({ port: 8545 })
         //   const res = await client.request('eth_coinbase', [], 2.0)
@@ -82,7 +82,7 @@ describe('[CLI]', () => {
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpcEngine', '--dev=poa']
+    const cliArgs = ['--rpcEngine', '--port=30310', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -453,7 +453,7 @@ describe('[CLI]', () => {
   }, 22000)
   it('should start HTTP RPC on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--rpcAddr="0.0.0.0"', '--dev=poa']
+    const cliArgs = ['--rpc', '--rpcAddr="0.0.0.0"', '--port=30311', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -586,7 +586,7 @@ describe('[CLI]', () => {
   // caching tests
   it('should start client with custom input for account cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--accountCache=2000']
+    const cliArgs = ['--accountCache=2000', '--port=30314']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -614,7 +614,7 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start client with custom input for storage cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--storageCache=2000']
+    const cliArgs = ['--storageCache=2000', '--port=30313']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -642,7 +642,7 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start client with custom input for trie cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--trieCache=2000']
+    const cliArgs = ['--trieCache=2000', '--port=30312']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
