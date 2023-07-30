@@ -120,7 +120,13 @@ describe('[CLI]', () => {
   }, 18000)
   it('should start engine rpc and provide endpoint with auth disabled', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpcEngine', '--rpcEngineAuth=false', '--dev=poa']
+    const cliArgs = [
+      '--rpcEngine',
+      '--rpcEngineAuth=false',
+      '--port=30305',
+      '--rpcEnginePort=8553',
+      '--dev=poa',
+    ]
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -131,7 +137,7 @@ describe('[CLI]', () => {
             message.includes('rpcEngineAuth=false'),
             'auth is disabled according to client logs'
           )
-          const client = Client.http({ port: 8551 })
+          const client = Client.http({ port: 8553 })
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
           child.kill()
