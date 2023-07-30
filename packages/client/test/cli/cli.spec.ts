@@ -819,7 +819,7 @@ describe('[CLI]', () => {
     })
   }, 18000)
   // Client sync options tests
-  it('should start client with custom network parameters', async () => {
+  it('should start client with custom sync parameters', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
       '--rpc',
