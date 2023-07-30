@@ -818,4 +818,57 @@ describe('[CLI]', () => {
       })
     })
   }, 18000)
+  // Client sync options tests
+  it('should start client with custom network parameters', async () => {
+    const file = require.resolve('../../dist/bin/cli.js')
+    const cliArgs = [
+      '--rpc',
+      '--port=30304',
+      '--dev=poa',
+      '--isSingleNode=true',
+      '--disableBeaconSync=true',
+      '--sync="none"',
+      '--lightServe=true',
+      '--mergeForkIdPostMerge=false',
+    ]
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async (data) => {
+        const message: string = data.toString()
+        if (message.includes('Serving light peer requests')) {
+          assert.ok(
+            message.includes('Serving light peer requests'),
+            'client respects custom light-mode option'
+          )
+        }
+        if (message.includes('Starting FullEthereumService')) {
+          assert.ok(message.includes('with no syncing'), 'client respects custom sync mode option')
+        }
+        if (message.includes('Client started successfully')) {
+          assert.ok(
+            message.includes('Client started successfully'),
+            'Client starts with custom sync options'
+          )
+          const client = Client.http({ port: 8545 })
+          const res = await client.request('web3_clientVersion', [], 2.0)
+          assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+          child.kill()
+          resolve(undefined)
+        }
+        if (message.toLowerCase().includes('error')) {
+          child.kill(9)
+          assert.fail(`client encountered error: ${message}`)
+        }
+      })
+      child.stderr.on('data', (data) => {
+        const message: string = data.toString()
+        assert.fail(`stderr: ${message}`)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+      })
+    })
+  }, 18000)
 })
