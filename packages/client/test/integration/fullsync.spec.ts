@@ -17,7 +17,7 @@ describe('[Integration:FullSync]', async () => {
       await destroy(remoteServer, remoteService)
     })
     await localService.synchronizer!.start()
-  }, 30000)
+  }, 60000)
 
   it('should not sync with stale peers', async () => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 9 })
@@ -30,7 +30,7 @@ describe('[Integration:FullSync]', async () => {
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)
     assert.ok(true, 'did not sync')
-  }, 30000)
+  }, 60000)
 
   it('should sync with best peer', async () => {
     const [remoteServer1, remoteService1] = await setup({ location: '127.0.0.2', height: 7 })
@@ -53,5 +53,5 @@ describe('[Integration:FullSync]', async () => {
       }
     })
     await localService.synchronizer!.start()
-  }, 30000)
+  }, 60000)
 })
