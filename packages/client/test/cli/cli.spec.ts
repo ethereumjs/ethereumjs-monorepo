@@ -17,7 +17,7 @@ describe('[CLI]', () => {
             message.includes('network=sepolia chainId=11155111'),
             'client is using custom inputs for network and network ID'
           )
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -55,12 +55,12 @@ describe('[CLI]', () => {
         //   const client = Client.http({ port: 8545 })
         //   const res = await client.request('eth_coinbase', [], 2.0)
         //   assert.ok(res.result === 'abc', 'engine api is responsive without need for auth header')
-        //   child.kill()
+        //   child.kill(9)
         //   resolve(undefined)
         // }
         if (message.includes('Client started successfully')) {
           assert.ok(message, 'Client started successfully with custom inputs for PoW network')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -93,14 +93,13 @@ describe('[CLI]', () => {
           try {
             const client = Client.http({ port: 8551 })
             await client.request('engine_exchangeCapabilities', [], 2.0)
-          } catch (e) {
+          } catch (e: any) {
             assert(
               e.message.includes('Unauthorized: Error: Missing auth header'),
               'authentication failure shows that auth is defaulting to active'
             )
           }
-          // assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -141,7 +140,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8553 })
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -183,7 +182,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8552 })
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -225,7 +224,7 @@ describe('[CLI]', () => {
           const client = Client.http({ hostname: '0.0.0.0', port: 8551 })
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
           assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -269,7 +268,7 @@ describe('[CLI]', () => {
           ;(client as any).ws.on('open', async function () {
             const res = await client.request('engine_exchangeCapabilities', [], 2.0)
             assert.ok(res.result.length > 0, 'read from WS RPC on custom address and port')
-            child.kill()
+            child.kill(9)
             resolve(undefined)
           })
         }
@@ -323,40 +322,7 @@ describe('[CLI]', () => {
       })
     })
   }, 30000)
-  it('should start WS RPC on custom port', async () => {
-    const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--port=30317', '--ws', '--wsPort=8546', '--dev=poa']
-    const child = spawn(process.execPath, [file, ...cliArgs])
-    return new Promise((resolve) => {
-      child.stdout.on('data', async (data) => {
-        const message: string = data.toString()
-        if (message.includes('ws://')) {
-          // if ws endpoint startup message detected, call ws endpoint with RPC method
-          const client = Client.websocket({ url: 'ws://localhost:8546' })
-          ;(client as any).ws.on('open', async function () {
-            const res = await client.request('web3_clientVersion', [], 2.0)
-            assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC on custom port')
-            child.kill()
-            resolve(undefined)
-          })
-          if (message.toLowerCase().includes('error')) {
-            child.kill()
-            assert.fail(`client encountered error: ${message}`)
-          }
-        }
-      })
-      child.stderr.on('data', (data) => {
-        const message: string = data.toString()
-        assert.fail(`stderr: ${message}`)
-      })
-      child.on('close', (code) => {
-        if (typeof code === 'number' && code > 0) {
-          assert.fail(`child process exited with code ${code}`)
-        }
-      })
-    })
-  }, 30000)
-  it('should start WS RPC on custom address', async () => {
+  it('should start WS RPC on custom port and custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
       '--rpc',
@@ -376,11 +342,11 @@ describe('[CLI]', () => {
           ;(client as any).ws.on('open', async function () {
             const res = await client.request('web3_clientVersion', [], 2.0)
             assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
-            child.kill()
+            child.kill(9)
             resolve(undefined)
           })
           if (message.toLowerCase().includes('error')) {
-            child.kill()
+            child.kill(9)
             assert.fail(`client encountered error: ${message}`)
           }
         }
@@ -409,7 +375,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -428,19 +394,24 @@ describe('[CLI]', () => {
       })
     })
   }, 30000)
+
   it('should start HTTP RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--rpcPort=8546', '--port=30309', '--dev=poa']
+
+    const cliArgs = ['--rpc', '--rpcPort=8549', '--port=30311', '--dev=poa']
+
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('http://')) {
           // if http endpoint startup message detected, call http endpoint with RPC method
-          const client = Client.http({ port: 8546 })
+          const client = Client.http({
+            port: 8549,
+          })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -458,38 +429,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 22000)
-  it('should start HTTP RPC on custom address', async () => {
-    const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--rpcAddr="0.0.0.0"', '--port=30311', '--dev=poa']
-    const child = spawn(process.execPath, [file, ...cliArgs])
-    return new Promise((resolve) => {
-      child.stdout.on('data', async (data) => {
-        const message: string = data.toString()
-        if (message.includes('http://')) {
-          // if http endpoint startup message detected, call http endpoint with RPC method
-          const client = Client.http({ port: 8545, localAddress: '0.0.0.0' })
-          const res = await client.request('web3_clientVersion', [], 2.0)
-          assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
-          resolve(undefined)
-        }
-        if (message.toLowerCase().includes('error')) {
-          child.kill(9)
-          assert.fail(`client encountered error: ${message}`)
-        }
-      })
-      child.stderr.on('data', (data) => {
-        const message: string = data.toString()
-        assert.fail(`stderr: ${message}`)
-      })
-      child.on('close', (code) => {
-        if (typeof code === 'number' && code > 0) {
-          assert.fail(`child process exited with code ${code}`)
-        }
-      })
-    })
-  }, 30000)
+  }, 5000)
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...['--dev=poa']])
@@ -533,7 +473,7 @@ describe('[CLI]', () => {
         const message: string = data.toString()
         if (message.includes('JSON-RPC: Supported Methods')) {
           assert.ok(message, 'logged out supported RPC methods')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -572,7 +512,7 @@ describe('[CLI]', () => {
         const message: string = data.toString()
         if (message.includes('DEBUG')) {
           assert.ok(message, 'debug logging is enabled')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -601,7 +541,7 @@ describe('[CLI]', () => {
         const message: string = data.toString()
         if (message.includes('account cache')) {
           assert.ok(message.includes('2000'), 'account cache option works')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -629,7 +569,7 @@ describe('[CLI]', () => {
         const message: string = data.toString()
         if (message.includes('storage cache')) {
           assert.ok(message.includes('2000'), 'storage cache option works')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -657,7 +597,7 @@ describe('[CLI]', () => {
         const message: string = data.toString()
         if (message.includes('trie cache')) {
           assert.ok(message.includes('2000'), 'trie cache option works')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -689,7 +629,7 @@ describe('[CLI]', () => {
             message.includes('Client started successfully'),
             'Clients started with experimental feature options'
           )
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -721,6 +661,7 @@ describe('[CLI]', () => {
       '--maxPeers=2',
       '--startBlock=0',
       '--dev=poa',
+      '--rpc=false',
     ]
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
@@ -731,7 +672,7 @@ describe('[CLI]', () => {
             message.includes('Client started successfully'),
             'Clients starts with custom network parameters'
           )
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -778,7 +719,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -822,7 +763,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -875,7 +816,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -958,33 +899,33 @@ describe('[CLI]', () => {
       ]
     }`
     fs.open('./customChain.json', 'w', (err, fd) => {
-      if (err) throw err
+      if (err !== null) throw err
       fs.write(fd, customChainJson, (writeErr) => {
-        if (writeErr) {
-          console.error('Error writing the file:', writeErr)
+        if (writeErr !== null) {
+          assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          console.log('File created and data written successfully!')
+          assert.ok(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
           if (closeErr) {
-            console.error('Error closing the file:', closeErr)
+            assert.fail(`Error closing the file:, ${closeErr.message}`)
           }
         })
       })
     })
     fs.open('./customGenesis.json', 'w', (err, fd) => {
-      if (err) throw err
+      if (err !== null) throw err
       fs.write(fd, customGenesisJson, (writeErr) => {
-        if (writeErr) {
-          console.error('Error writing the file:', writeErr)
+        if (writeErr !== null) {
+          assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          console.log('File created and data written successfully!')
+          assert.ok(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
           if (closeErr) {
-            console.error('Error closing the file:', closeErr)
+            assert.fail(`Error closing the file:, ${closeErr.message}`)
           }
         })
       })
@@ -1023,7 +964,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
