@@ -35,15 +35,27 @@ const method = 'debug_storageRangeAt'
           x = 0x43;
       }
   }
-  }
   ```
 */
-const contractBytecode: string =
+const storageBytecode: string =
   '0x608060405234801561001057600080fd5b5060426000819055506001808190555060028081905550610123806100366000396000f3fe6080604052348015600f57600080fd5b506004361060465760003560e01c80630c55699c14604b578063a2e62045146065578063a56dfe4a14606d578063c5d7802e146087575b600080fd5b605160a1565b604051605c919060d4565b60405180910390f35b606b60a7565b005b607360b1565b604051607e919060d4565b60405180910390f35b608d60b7565b6040516098919060d4565b60405180910390f35b60005481565b6043600081905550565b60015481565b60025481565b6000819050919050565b60ce8160bd565b82525050565b600060208201905060e7600083018460c7565b9291505056fea2646970667358221220702e3426f9487bc4c75cca28733223e1292e723c32bbea553973c1ebeaeeb87d64736f6c63430008120033'
 /*
   Function selector of the contract's update() function.
  */
 const updateBytecode: string = '0xa2e62045'
+/*
+  Contract used to test storageRangeAt(), compiled with solc 0.8.18+commit.87f61d96
+  ```sol
+  pragma solidity ^0.8.0;
+
+  contract Empty {
+      constructor() {
+      }
+  }
+  ```
+*/
+const noStorageBytecode: string =
+  '0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212202f85c21c604b5e0fde9dca0615b4dd49a586dd18ada5ad8b85aa950462e1e73664736f6c63430008120033'
 
 describe(method, () => {
   /**
@@ -62,11 +74,16 @@ describe(method, () => {
      * The address of the created dummy contract.
      */
     createdAddress: Address
+    /**
+     * The address of another created dummy contract that does not contain storage.
+     */
+    createdAddressNoStorage: Address
   }
 
   beforeEach<TestSetup>(async (context) => {
-    // Populate a chain with two transactions: the first one deploys a contract,
-    // the second one updates a value in that contract.
+    // Populate a chain with three transactions: the first one deploys a contract,
+    // the second one updates a value in that contract, and the third one deploys
+    // another contract that does not put anything in its storage.
 
     const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
       txLookupLimit: 0,
@@ -79,7 +96,7 @@ describe(method, () => {
         maxFeePerGas: 1000000000,
         maxPriorityFeePerGas: 1,
         value: 0,
-        data: contractBytecode,
+        data: storageBytecode,
       },
       { common, freeze: false }
     ).sign(dummy.privKey)
@@ -115,12 +132,28 @@ describe(method, () => {
 
     await blockBuilder.addTransaction(secondTx, { skipHardForkValidation: true })
 
+    const thirdTx = TransactionFactory.fromTxData(
+      {
+        type: 0x2,
+        gasLimit: 10000000,
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1,
+        value: 0,
+        nonce: 2,
+        data: noStorageBytecode,
+      },
+      { common, freeze: false }
+    ).sign(dummy.privKey)
+
+    const thirdResult = await blockBuilder.addTransaction(thirdTx, { skipHardForkValidation: true })
+
     const block = await blockBuilder.build()
     await chain.putBlocks([block], true)
 
     context.server = server
     context.block = await chain.getCanonicalHeadBlock()
     context.createdAddress = result.createdAddress!!
+    context.createdAddressNoStorage = thirdResult.createdAddress!!
   })
 
   it<TestSetup>('Should return the correct (number of) key value pairs.', async ({
@@ -210,6 +243,33 @@ describe(method, () => {
         2,
         'Call returned the correct number of key value pairs.'
       )
+    }
+
+    await baseRequest(server, req, 200, expectRes, true)
+  })
+
+  it<TestSetup>('Should return an empty result for accounts without storage.', async ({
+    server,
+    block,
+    createdAddressNoStorage,
+  }) => {
+    const req = params(method, [
+      bytesToHex(block.hash()),
+      2,
+      createdAddressNoStorage.toString(),
+      '0x00',
+      2,
+    ])
+    const expectRes = (res: any) => {
+      const storageRange: StorageRange = res.body.result
+
+      assert.equal(
+        Object.keys(storageRange.storage).length,
+        0,
+        'Call returned the correct number of key value pairs.'
+      )
+
+      assert.isNull(storageRange.nextKey, 'nextKey was correctly set to null.')
     }
 
     await baseRequest(server, req, 200, expectRes, true)
@@ -338,7 +398,7 @@ describe(method, () => {
 
     await baseRequest(server, req, 200, expectRes, false)
 
-    req = params(method, [bytesToHex(block.hash()), 2, createdAddress.toString(), '0x00', 100])
+    req = params(method, [bytesToHex(block.hash()), 3, createdAddress.toString(), '0x00', 100])
     expectRes = checkError(
       INTERNAL_ERROR,
       'txIndex cannot be larger than the number of transactions in the block.'
@@ -347,12 +407,29 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes, true)
   })
 
+  it<TestSetup>('Should throw an error if the address is not formatted correctly.', async ({
+    server,
+    block,
+  }) => {
+    const req = params(method, [bytesToHex(block.hash()), 0, '0xabcd'.toString(), '0x00', 100])
+    const expectRes = checkError(INVALID_PARAMS, 'invalid argument 2: invalid address')
+
+    await baseRequest(server, req, 200, expectRes, true)
+  })
+
   it<TestSetup>('Should throw an error if the address does not exist.', async ({
     server,
     block,
   }) => {
-    const req = params(method, [bytesToHex(block.hash()), 0, '0xabcdef'.toString(), '0x00', 100])
-    const expectRes = checkError(INVALID_PARAMS, 'Invalid address')
+    // The address is formatted correctly but is not associated with any account.
+    const req = params(method, [
+      bytesToHex(block.hash()),
+      0,
+      '0xabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd'.toString(),
+      '0x00',
+      100,
+    ])
+    const expectRes = checkError(INTERNAL_ERROR, 'Account does not exist.')
 
     await baseRequest(server, req, 200, expectRes, true)
   })
@@ -363,10 +440,7 @@ describe(method, () => {
     createdAddress,
   }) => {
     const req = params(method, [bytesToHex(block.hash()), 0, createdAddress.toString(), '0x00', -1])
-    const expectRes = checkError(
-      INTERNAL_ERROR,
-      'dumpStorageRange() can not be called with a negative limit.'
-    )
+    const expectRes = checkError(INTERNAL_ERROR, 'Limit is not a proper uint.')
 
     await baseRequest(server, req, 200, expectRes, true)
   })
@@ -394,12 +468,12 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    expectRes = checkError(INVALID_PARAMS, 'Invalid address')
+    expectRes = checkError(INVALID_PARAMS, 'invalid argument 2: missing 0x prefix')
 
     await baseRequest(server, req, 200, expectRes, false)
 
     req = params(method, [bytesToHex(block.hash()), 0, createdAddress.toString(), '00', -1])
-    expectRes = checkError(INVALID_PARAMS, 'prefixed hex input should start with 0x, got 00')
+    expectRes = checkError(INVALID_PARAMS, 'invalid argument 3: hex string without 0x prefix')
 
     await baseRequest(server, req, 200, expectRes, true)
   })

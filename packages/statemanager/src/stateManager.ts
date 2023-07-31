@@ -813,14 +813,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
-    if (limit < 0) {
-      throw new Error(`dumpStorageRange() can not be called with a negative limit.`)
+    if (!Number.isInteger(limit) || limit < 0) {
+      throw new Error(`Limit is not a proper uint.`)
     }
 
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`dumpStorageRange() can only be called for an existing account.`)
+      throw new Error(`Account does not exist.`)
     }
 
     return new Promise((resolve, reject) => {

@@ -101,7 +101,14 @@ export class Debug {
       [validators.transaction()],
       [validators.blockOption],
     ])
-    this.storageRangeAt = middleware(this.storageRangeAt.bind(this), 5, [[validators.hex]])
+    // TODO: txIndex and limit are currently not input validated.
+    this.storageRangeAt = middleware(this.storageRangeAt.bind(this), 5, [
+      [validators.blockHash],
+      [],
+      [validators.address],
+      [validators.uint256],
+      [],
+    ])
   }
 
   /**
@@ -292,16 +299,20 @@ export class Debug {
   /**
    * Returns a limited set of storage keys belonging to an account.
    * @param params An array of 5 parameters:
-   *    1. The hash of the block that contains the requested account storage.
-   *    2. The number index of the requested transaction within the block.
+   *    1. The hash of the block at which to get storage from the state.
+   *    2. The transaction index of the requested block post which to get the storage.
    *    3. The address of the account.
-   *    4. The smallest (hashed) storage key that will be returned. To include the entire range, pass '0x00'.
-   *    5. The maximum number of storage values that will be returned.
+   *    4. The starting (hashed) key from which storage will be returned. To include the entire range, pass '0x00'.
+   *    5. The maximum number of storage values that could be returned.
    * @returns A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
    * The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
   async storageRangeAt(params: [string, number, string, string, number]) {
     const [blockHash, txIndex, account, startKey, limit] = params
+
+    if (this.vm === undefined) {
+      throw new Error('Missing VM.')
+    }
 
     if (txIndex < 0) {
       throw {
@@ -310,23 +321,10 @@ export class Debug {
       }
     }
 
-    let address: Address
-    let blockHashBytes: Uint8Array
-    let startKeyBytes: Uint8Array
-    try {
-      address = Address.fromString(account)
-      blockHashBytes = hexToBytes(blockHash)
-      startKeyBytes = hexToBytes(startKey)
-    } catch (err: any) {
-      throw {
-        code: INVALID_PARAMS,
-        message: err.message.toString(),
-      }
-    }
-
     let block: Block
     try {
-      block = await this.service.chain.getBlock(blockHashBytes)
+      // Validator already verified that `blockHash` is properly formatted.
+      block = await this.chain.getBlock(hexToBytes(blockHash))
     } catch (err: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -334,7 +332,7 @@ export class Debug {
       }
     }
 
-    if (txIndex + 1 > block.transactions.length) {
+    if (txIndex >= block.transactions.length) {
       throw {
         code: INTERNAL_ERROR,
         message: 'txIndex cannot be larger than the number of transactions in the block.',
@@ -342,19 +340,18 @@ export class Debug {
     }
 
     try {
-      const block = await this.service.chain.getBlock(hexToBytes(blockHash))
-      const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
-
+      const parentBlock = await this.chain.getBlock(block.header.parentHash)
       // Copy the VM and run transactions including the relevant transaction.
-      const vmCopy = await this.service.execution.vm.shallowCopy()
+      const vmCopy = await this.vm.shallowCopy()
       await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
       for (let i = 0; i <= txIndex; i++) {
         await vmCopy.runTx({ tx: block.transactions[i], block })
       }
 
       return await vmCopy.stateManager.dumpStorageRange(
-        address,
-        bytesToBigInt(startKeyBytes),
+        // Validator already verified that `account` and `startKey` are properly formatted.
+        Address.fromString(account),
+        bytesToBigInt(hexToBytes(startKey)),
         limit
       )
     } catch (err: any) {
