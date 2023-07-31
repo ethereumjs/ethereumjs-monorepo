@@ -244,7 +244,7 @@ describe('[CLI]', () => {
     const cliArgs = [
       '--rpc',
       '--ws',
-      '--port=30318',
+      '--port=30322',
       '--wsPort=8546',
       '--wsAddr="0.0.0.0"',
       '--dev=poa',
