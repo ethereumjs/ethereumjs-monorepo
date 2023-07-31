@@ -35,7 +35,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should successfully start client with custom inputs for PoW network', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -78,7 +78,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -118,7 +118,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start engine rpc and provide endpoint with auth disabled', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -159,7 +159,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start engine rpc on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -201,10 +201,11 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start engine rpc on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
+      '--port=30315',
       '--rpcEngine',
       '--rpcEngineAddr="0.0.0.0"',
       '--rpcEngineAuth=false',
@@ -242,7 +243,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start engine websocket on custom address and port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -321,10 +322,10 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start WS RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--ws', '--wsPort=8546', '--dev=poa']
+    const cliArgs = ['--rpc', '--port=30317', '--ws', '--wsPort=8546', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -354,10 +355,17 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start WS RPC on custom address', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--ws', '--wsPort=8546', '--wsAddr="0.0.0.0"', '--dev=poa']
+    const cliArgs = [
+      '--rpc',
+      '--ws',
+      '--port=30318',
+      '--wsPort=8546',
+      '--wsAddr="0.0.0.0"',
+      '--dev=poa',
+    ]
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -387,11 +395,11 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // client rpc tests
   it('should start HTTP RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
-    const cliArgs = ['--rpc', '--dev=poa']
+    const cliArgs = ['--port=30316', '--rpc', '--dev=poa']
     const child = spawn(process.execPath, [file, ...cliArgs])
     return new Promise((resolve) => {
       child.stdout.on('data', async (data) => {
@@ -419,7 +427,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start HTTP RPC on custom port', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--rpc', '--rpcPort=8546', '--port=30309', '--dev=poa']
@@ -481,7 +489,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const child = spawn(process.execPath, [file, ...['--dev=poa']])
@@ -514,7 +522,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 20000)
+  }, 30000)
   // logging and documentation tests
   it('should log out available RPC methods', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -543,7 +551,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start client with custom options for logging', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -582,7 +590,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // caching tests
   it('should start client with custom input for account cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -611,7 +619,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start client with custom input for storage cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--storageCache=2000', '--port=30313']
@@ -639,7 +647,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start client with custom input for trie cache size', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = ['--trieCache=2000', '--port=30312']
@@ -667,7 +675,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // test experimental feature options
   it('should start client when passed options for experimental features', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -699,7 +707,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // client execution limits tests
   it('should start client when passed options for client execution limits', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -741,7 +749,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // Network protocol tests
   it('should start client with custom network parameters', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -788,7 +796,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   it('should start client with custom network parameters', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
@@ -832,13 +840,13 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // Client sync options tests
   it('should start client with custom sync parameters', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
       '--rpc',
-      '--port=30304',
+      '--port=30301',
       '--dev=poa',
       '--isSingleNode=true',
       '--disableBeaconSync=true',
@@ -885,7 +893,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
   // Client file and directory path options tests
   it('should start client with custom file path parameters', async () => {
     const customGenesisJson = `{
@@ -984,7 +992,7 @@ describe('[CLI]', () => {
     const file = require.resolve('../../dist/bin/cli.js')
     const cliArgs = [
       '--rpc',
-      '--port=30304',
+      '--port=30302',
       '--dataDir="./"',
       '--customChain="./customChain.json"',
       '--customGenesisState="./customGenesis.json"',
@@ -1033,5 +1041,5 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 18000)
+  }, 30000)
 })
