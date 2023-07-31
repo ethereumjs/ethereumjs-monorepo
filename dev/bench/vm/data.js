@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690828219254,
+  "lastUpdate": 1690836128772,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b37557104af4d0a8084e01d6d6b7caae98e6deff",
-          "message": "evm/vm: update TSTORE/TLOAD opcode byte (#2884)",
-          "timestamp": "2023-07-13T11:57:09+02:00",
-          "tree_id": "38c4a6534e112472b191f75e5520a41e1b18c20e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b37557104af4d0a8084e01d6d6b7caae98e6deff"
-        },
-        "date": 1689242526473,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32955,
-            "range": "±5.15%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32096,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31974,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27228,
-            "range": "±8.97%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30202,
-            "range": "±2.63%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.37%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40c23957c01c69f72e29a269a06a7b2078ba8697",
+          "message": "Add tests for client cli options (#2916)\n\n* Add tests for ws, engine api, and rpc\r\n\r\n* Add logging, documentation, and network tests\r\n\r\n* Add cache tests\r\n\r\n* Increase test timeouts\r\n\r\n* Add tests for experimental features and client execution limits options\r\n\r\n* Add tests for network protocol options\r\n\r\n* Update test client args and success assertions\r\n\r\n* Update engine api tests messages and assertions\r\n\r\n* Update test messages\r\n\r\n* Update test message\r\n\r\n* Add a test for rest of network options remaining\r\n\r\n* Add tests for client pow network\r\n\r\n* Validate custom address and port are being used\r\n\r\n* Add test for client sync options\r\n\r\n* Update test\r\n\r\n* Add test for file and directory options\r\n\r\n* Use different ports for client runs to reduce connect errors\r\n\r\n* Use different ports for client runs to reduce connect errors\r\n\r\n* Use different ports for client runs to reduce connect errors\r\n\r\n* Update timeouts and ports\r\n\r\n* Fix tests\r\n\r\n* Don't repeat yourself\r\n\r\n* Use different port to avoid connection issue\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-07-31T13:36:03-07:00",
+          "tree_id": "0f1f3b80de02b3811c9c705633a3e86d202cf98e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/40c23957c01c69f72e29a269a06a7b2078ba8697"
+        },
+        "date": 1690836127472,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28093,
+            "range": "±6.74%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28240,
+            "range": "±3.06%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 27987,
+            "range": "±3.31%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 24910,
+            "range": "±8.12%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23440,
+            "range": "±10.92%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
