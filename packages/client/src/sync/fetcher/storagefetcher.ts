@@ -398,7 +398,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const accountHash = result.requests[i].accountHash
         const storageTrie =
           this.accountToStorageTrie.get(bytesToUnprefixedHex(accountHash)) ??
-          new Trie({ useKeyHashing: false })
+          new Trie({ useKeyHashing: true })
         for (const slot of slotArray as any) {
           slotCount++
           void storageTrie.put(slot.hash, slot.body)
