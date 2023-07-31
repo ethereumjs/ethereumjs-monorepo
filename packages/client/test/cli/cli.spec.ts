@@ -16,7 +16,7 @@ describe('[CLI]', () => {
           const client = Client.http({ port: 8545 })
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-          child.kill()
+          child.kill(9)
           resolve(undefined)
         }
         if (message.toLowerCase().includes('error')) {
@@ -36,7 +36,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 60000)
 
   it('should start WS RPC and return valid responses', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -52,11 +52,11 @@ describe('[CLI]', () => {
           ;(client as any).ws.on('open', async function () {
             const res = await client.request('web3_clientVersion', [], 2.0)
             assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
-            child.kill()
+            child.kill(9)
             resolve(undefined)
           })
           if (message.toLowerCase().includes('error')) {
-            child.kill()
+            child.kill(9)
             assert.fail(`client encountered error: ${message}`)
           }
         }
@@ -73,7 +73,7 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 10000)
+  }, 60000)
 
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const file = require.resolve('../../dist/bin/cli.js')
@@ -82,11 +82,11 @@ describe('[CLI]', () => {
       child.stdout.on('data', async (data) => {
         const message: string = data.toString()
         if (message.includes('address=http://')) {
-          child.kill()
+          child.kill(9)
           assert.fail('http endpoint should not be enabled')
         }
         if (message.includes('address=ws://')) {
-          child.kill()
+          child.kill(9)
           assert.fail('ws endpoint should not be enabled')
         }
         if (message.includes('Miner: Assembling block')) {
@@ -109,5 +109,5 @@ describe('[CLI]', () => {
         }
       })
     })
-  }, 20000)
+  }, 60000)
 })

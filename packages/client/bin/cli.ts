@@ -653,6 +653,30 @@ function generateAccount(): Account {
 }
 
 /**
+ * Shuts down an actively running client gracefully
+ * @param config Client config object
+ * @param clientStartPromise promise that returns a client and server object
+ */
+const stopClient = async (config: Config, clientStartPromise: any) => {
+  config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
+  config.logger.info('(This might take a little longer if client not yet fully started)')
+  const clientHandle = await clientStartPromise
+  if (clientHandle !== null) {
+    config.logger.info('Shutting down the client and the servers...')
+    const { client, servers } = clientHandle
+    for (const s of servers) {
+      s.http().close()
+    }
+    await client.stop()
+    config.logger.info('Exiting.')
+  } else {
+    config.logger.info('Client did not start properly, exiting ...')
+  }
+
+  process.exit()
+}
+
+/**
  * Main entry point to start a client
  */
 async function run() {
@@ -821,22 +845,11 @@ async function run() {
     })
 
   process.on('SIGINT', async () => {
-    config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
-    config.logger.info('(This might take a little longer if client not yet fully started)')
-    const clientHandle = await clientStartPromise
-    if (clientHandle !== null) {
-      config.logger.info('Shutting down the client and the servers...')
-      const { client, servers } = clientHandle
-      for (const s of servers) {
-        s.http().close()
-      }
-      await client.stop()
-      config.logger.info('Exiting.')
-    } else {
-      config.logger.info('Client did not start properly, exiting ...')
-    }
+    await stopClient(config, clientStartPromise)
+  })
 
-    process.exit()
+  process.on('SIGTERM', async () => {
+    await stopClient(config, clientStartPromise)
   })
 }
 
