@@ -129,7 +129,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
               }
             : undefined,
       })
-      rpcHttpServer.listen(rpcPort)
+      rpcHttpServer.listen(rpcPort, rpcAddr)
       logger.info(
         `Started JSON RPC Server address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces}${
           withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
@@ -183,7 +183,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
           }
         : undefined,
     })
-    rpcHttpServer.listen(rpcEnginePort)
+    rpcHttpServer.listen(rpcEnginePort, rpcEngineAddr)
     logger.info(
       `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
     )
@@ -206,7 +206,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       }
 
       const rpcWsServer = createWsRPCServerListener(opts)
-      if (rpcWsServer) rpcWsServer.listen(wsEnginePort)
+      if (rpcWsServer) rpcWsServer.listen(wsEnginePort, wsEngineAddr)
       logger.info(
         `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
       )
