@@ -156,6 +156,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _checkpointCount: number
 
+  protected _proofTrie: Trie
+
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -176,6 +178,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
     this._debug = createDebugLogger('statemanager:statemanager')
+
+    this._proofTrie = new Trie({ useKeyHashing: true })
 
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 
@@ -667,7 +671,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await new Trie({ useKeyHashing: true }).verifyProof(rootHash, key, accountProof)
+    const value = await this._proofTrie.verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -713,11 +717,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
-        storageRoot,
-        storageKey,
-        storageProof
-      )
+      const proofValue = await this._proofTrie.verifyProof(storageRoot, storageKey, storageProof)
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
