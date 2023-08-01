@@ -656,7 +656,7 @@ describe('[CLI]', () => {
       '--rpc',
       '--rpcPort=8549',
       '--port=30302',
-      '--dataDir="./"',
+      `--dataDir="${dir}"`,
       `--customChain="${dir}/customChain.json"`,
       `--customGenesisState="${dir}/customGenesis.json"`,
       '--gethGenesis=""',
