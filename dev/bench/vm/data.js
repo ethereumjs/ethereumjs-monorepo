@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690898051310,
+  "lastUpdate": 1690922736967,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b039efead13d27fd5da95bf33b2b4f8ddd5e48eb",
-          "message": "Update ethereum-cryptography from v2.1.1 -> v2.1.2 (#2882)\n\n* Update ethereum-cryptography from v2.1.1 -> v2.1.2\r\n\r\n* Rebuild package-lock.json",
-          "timestamp": "2023-07-13T13:10:31+02:00",
-          "tree_id": "a7988113f3d7d6df20d4bb1cd386deba8d3afac8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b039efead13d27fd5da95bf33b2b4f8ddd5e48eb"
-        },
-        "date": 1689246886645,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31547,
-            "range": "±4.33%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30451,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30882,
-            "range": "±2.88%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25778,
-            "range": "±10.28%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29418,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.43%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "14e7bbacad603088feafff1d8be2c81cf193d0ab",
+          "message": "Fix rpc custom address bug (#2930)\n\n* Add custom address parameters to RPC server startup\r\n\r\n* Adjust port numbers in cli tests\r\n\r\n* custom dir fixes\r\n\r\n* clean up tempdir after test\r\n\r\n* Remove duplicate rpc tests with colliding ports\r\n\r\n* Update rpc custom address test\r\n\r\n* Fix custom address test\r\n\r\n* lint\r\n\r\n* Manual wait before connecting client\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>",
+          "timestamp": "2023-08-01T13:42:23-07:00",
+          "tree_id": "7b822bb7f5756cc5a2d0aef143e074a7463760b4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/14e7bbacad603088feafff1d8be2c81cf193d0ab"
+        },
+        "date": 1690922736209,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 33031,
+            "range": "±4.38%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32402,
+            "range": "±2.30%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31994,
+            "range": "±2.41%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27754,
+            "range": "±8.37%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30228,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
