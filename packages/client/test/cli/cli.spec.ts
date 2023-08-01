@@ -4,6 +4,8 @@ import * as fs from 'fs'
 import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
+import { wait } from '../integration/util'
+
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
 export function clientRunHelper(
@@ -87,6 +89,7 @@ describe('[CLI]', () => {
         // if http endpoint startup message detected, call http endpoint with RPC method
         assert.ok(message.includes('engine'), 'engine rpc started')
         try {
+          await wait(600)
           const client = Client.http({ port: 8551 })
           await client.request('engine_exchangeCapabilities', [], 2.0)
         } catch (e: any) {
@@ -120,6 +123,7 @@ describe('[CLI]', () => {
           message.includes('rpcEngineAuth=false'),
           'auth is disabled according to client logs'
         )
+        await wait(600)
         const client = Client.http({ port: 8553 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
@@ -149,6 +153,7 @@ describe('[CLI]', () => {
           message.includes('rpcEngineAuth=false'),
           'auth is disabled according to client logs'
         )
+        await wait(600)
         const client = Client.http({ port: 8552 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
@@ -178,6 +183,7 @@ describe('[CLI]', () => {
           message.includes('rpcEngineAuth=false'),
           'auth is disabled according to client logs'
         )
+        await wait(600)
         const client = Client.http({ hostname: '0.0.0.0', port: 8551 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
         assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
@@ -208,6 +214,7 @@ describe('[CLI]', () => {
           'client logs show correct custom address and port being used'
         )
         assert.ok(message.includes('engine'), 'engine ws started')
+        await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:8552' })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
@@ -236,6 +243,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('ws://')) {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
+        await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:8512' })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
@@ -257,6 +265,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
+        await wait(600)
         const client = Client.http({
           port: 8562,
           host: '0.0.0.0',
@@ -462,6 +471,7 @@ describe('[CLI]', () => {
         assert.ok(port === '2100', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
+        await wait(600)
         const client = Client.http({ port: 8573 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
@@ -494,6 +504,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Clients starts with custom network options'
         )
+        await wait(600)
         const client = Client.http({ port: 8593 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
@@ -535,6 +546,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Client starts with custom sync options'
         )
+        await wait(600)
         const client = Client.http({ port: 8548 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
@@ -656,6 +668,7 @@ describe('[CLI]', () => {
         )
       }
       if (message.includes('Client started successfully')) {
+        await wait(600)
         const client = Client.http({ port: 8549 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
