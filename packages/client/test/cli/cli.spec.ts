@@ -2,6 +2,7 @@ import { getGenesis } from '@ethereumjs/genesis'
 import { spawn } from 'child_process'
 import * as fs from 'fs'
 import { Client } from 'jayson/promise'
+import * as os from 'node:os'
 import { assert, describe, it } from 'vitest'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
@@ -248,8 +249,23 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   // client rpc tests
-  it('should start HTTP RPC on custom port', async () => {
-    const cliArgs = ['--rpc', '--rpcPort=8562', '--port=30311', '--dev=poa']
+  it('should start HTTP RPC on custom port and address', async () => {
+    // Find external IP for binding custom address
+    const faces = Object.entries(os.networkInterfaces())
+      .filter((el) => el[0].startsWith('w'))[0][1]
+      ?.filter((el) => el.family === 'IPv4')
+
+    let address = ''
+    if (faces !== undefined && faces?.length > 0) {
+      address = faces[0].address
+    }
+    const cliArgs = [
+      '--rpc',
+      '--rpcPort=8562',
+      '--port=30311',
+      '--dev=poa',
+      `--rpcAddr="${address}"`,
+    ]
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -259,11 +275,21 @@ describe('[CLI]', () => {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({
           port: 8562,
+          host: address,
         })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(9)
-        resolve(undefined)
+        const clientNoConnection = Client.http({
+          port: 8562,
+        })
+        try {
+          await clientNoConnection.request('web3_clientVersion', [], 2.0)
+          assert.fail('should have thrown on invalid client address')
+        } catch (e: any) {
+          assert.equal(e.code, 'ECONNREFUSED', 'failed to connect to RPC on invalid address')
+          child.kill(9)
+          resolve(undefined)
+        }
       }
     }
     await clientRunHelper(cliArgs, onData)
