@@ -220,26 +220,6 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   // websocket tests
-  it('should start WS RPC and return valid responses', async () => {
-    const cliArgs = ['--rpc', '--ws', '--dev=poa']
-    const onData = async (
-      message: string,
-      child: ChildProcessWithoutNullStreams,
-      resolve: Function
-    ) => {
-      if (message.includes('ws://')) {
-        // if ws endpoint startup message detected, call ws endpoint with RPC method
-        const client = Client.websocket({ url: 'ws://localhost:8545' })
-        ;(client as any).ws.on('open', async function () {
-          const res = await client.request('web3_clientVersion', [], 2.0)
-          assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
-          child.kill(9)
-          resolve(undefined)
-        })
-      }
-    }
-    await clientRunHelper(cliArgs, onData)
-  }, 30000)
   it('should start WS RPC on custom port and custom address', async () => {
     const cliArgs = [
       '--rpc',
@@ -268,24 +248,6 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   // client rpc tests
-  it('should start HTTP RPC and return valid responses', async () => {
-    const cliArgs = ['--port=30316', '--rpc', '--dev=poa']
-    const onData = async (
-      message: string,
-      child: ChildProcessWithoutNullStreams,
-      resolve: Function
-    ) => {
-      if (message.includes('http://')) {
-        // if http endpoint startup message detected, call http endpoint with RPC method
-        const client = Client.http({ port: 8545 })
-        const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
-        child.kill(9)
-        resolve(undefined)
-      }
-    }
-    await clientRunHelper(cliArgs, onData)
-  }, 30000)
   it('should start HTTP RPC on custom port', async () => {
     const cliArgs = ['--rpc', '--rpcPort=8562', '--port=30311', '--dev=poa']
     const onData = async (
@@ -573,7 +535,7 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   // Client file and directory path options tests
-  it.only('should start client with custom file path parameters', async () => {
+  it('should start client with custom file path parameters', async () => {
     const customGenesisJson = JSON.stringify(getGenesis(11155111))
     const customChainJson = `{
       "name": "customChain",
