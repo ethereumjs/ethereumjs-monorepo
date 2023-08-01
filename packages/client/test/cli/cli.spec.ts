@@ -245,7 +245,7 @@ describe('[CLI]', () => {
       '--rpc',
       '--ws',
       '--port=30322',
-      '--wsPort=8546',
+      '--wsPort=8552',
       '--wsAddr="0.0.0.0"',
       '--dev=poa',
     ]
@@ -256,7 +256,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('ws://')) {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
-        const client = Client.websocket({ url: 'ws://0.0.0.0:8546' })
+        const client = Client.websocket({ url: 'ws://0.0.0.0:8552' })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
@@ -287,7 +287,7 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should start HTTP RPC on custom port', async () => {
-    const cliArgs = ['--rpc', '--rpcPort=8549', '--port=30311', '--dev=poa']
+    const cliArgs = ['--rpc', '--rpcPort=8562', '--port=30311', '--dev=poa']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -296,7 +296,7 @@ describe('[CLI]', () => {
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({
-          port: 8549,
+          port: 8562,
         })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
@@ -473,6 +473,7 @@ describe('[CLI]', () => {
       '--rpcCors=https://foo.example',
       '--dnsAddr=8.8.8.8',
       '--dev=poa',
+      '--rpcPort=8546',
     ]
     const onData = async (
       message: string,
@@ -489,7 +490,7 @@ describe('[CLI]', () => {
         assert.ok(port === '2100', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
-        const client = Client.http({ port: 8545 })
+        const client = Client.http({ port: 8546 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
@@ -501,6 +502,7 @@ describe('[CLI]', () => {
   it('should start client with custom network parameters', async () => {
     const cliArgs = [
       '--rpc',
+      '--rpcPort=8547',
       '--port=30304',
       '--dev=poa',
       '--bootnodes=enode://abc@127.0.0.1:30303',
@@ -520,7 +522,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Clients starts with custom network options'
         )
-        const client = Client.http({ port: 8545 })
+        const client = Client.http({ port: 8547 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
@@ -533,6 +535,7 @@ describe('[CLI]', () => {
   it('should start client with custom sync parameters', async () => {
     const cliArgs = [
       '--rpc',
+      '--rpcPort=8548',
       '--port=30301',
       '--dev=poa',
       '--isSingleNode=true',
@@ -560,7 +563,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Client starts with custom sync options'
         )
-        const client = Client.http({ port: 8545 })
+        const client = Client.http({ port: 8548 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
@@ -650,6 +653,7 @@ describe('[CLI]', () => {
     })
     const cliArgs = [
       '--rpc',
+      '--rpcPort=8549',
       '--port=30302',
       '--dataDir="./"',
       '--customChain="./customChain.json"',
@@ -679,7 +683,7 @@ describe('[CLI]', () => {
         )
       }
       if (message.includes('Client started successfully')) {
-        const client = Client.http({ port: 8545 })
+        const client = Client.http({ port: 8549 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
