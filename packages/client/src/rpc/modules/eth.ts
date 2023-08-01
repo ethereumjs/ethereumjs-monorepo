@@ -131,6 +131,7 @@ const jsonRpcBlock = async (
     ...withdrawalsAttr,
     blobGasUsed: header.blobGasUsed,
     excessBlobGas: header.excessBlobGas,
+    parentBeaconBlockRoot: header.parentBeaconBlockRoot,
   }
 }
 

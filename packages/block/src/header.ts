@@ -665,24 +665,11 @@ export class BlockHeader {
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        if (!this.isGenesis()) {
-          this.cache.hash = keccak256(RLP.encode(this.raw()))
-        } else {
-          const raw = this.raw()
-          const arr = raw.slice(0, raw.length - 1)
-          this.cache.hash = keccak256(RLP.encode(arr))
-        }
+        this.cache.hash = keccak256(RLP.encode(this.raw()))
       }
       return this.cache.hash
     }
-
-    if (!this.isGenesis()) {
-      return keccak256(RLP.encode(this.raw()))
-    } else {
-      const raw = this.raw()
-      const arr = raw.slice(0, raw.length - 1)
-      return keccak256(RLP.encode(arr))
-    }
+    return keccak256(RLP.encode(this.raw()))
   }
 
   /**
