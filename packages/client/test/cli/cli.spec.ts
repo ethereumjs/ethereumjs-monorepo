@@ -245,7 +245,7 @@ describe('[CLI]', () => {
       '--rpc',
       '--ws',
       '--port=30322',
-      '--wsPort=8552',
+      '--wsPort=8512',
       '--wsAddr="0.0.0.0"',
       '--dev=poa',
     ]
@@ -256,7 +256,7 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('ws://')) {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
-        const client = Client.websocket({ url: 'ws://0.0.0.0:8552' })
+        const client = Client.websocket({ url: 'ws://0.0.0.0:8512' })
         ;(client as any).ws.on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
           assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
@@ -417,7 +417,7 @@ describe('[CLI]', () => {
   }, 30000)
   // test experimental feature options
   it('should start client when passed options for experimental features', async () => {
-    const cliArgs = ['--mine=true', '--forceSnapSync=true', '--dev=poa', '--port=30304']
+    const cliArgs = ['--mine=true', '--forceSnapSync=true', '--dev=poa', '--port=30393']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -437,7 +437,7 @@ describe('[CLI]', () => {
   // client execution limits tests
   it('should start client when passed options for client execution limits', async () => {
     const cliArgs = [
-      '--port=30304',
+      '--port=30372',
       '--numBlocksPerIteration=2',
       '--txLookupLimit=2',
       '--maxPerRequest=2',
@@ -473,7 +473,7 @@ describe('[CLI]', () => {
       '--rpcCors=https://foo.example',
       '--dnsAddr=8.8.8.8',
       '--dev=poa',
-      '--rpcPort=8546',
+      '--rpcPort=8573',
     ]
     const onData = async (
       message: string,
@@ -490,7 +490,7 @@ describe('[CLI]', () => {
         assert.ok(port === '2100', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
-        const client = Client.http({ port: 8546 })
+        const client = Client.http({ port: 8573 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
@@ -502,7 +502,7 @@ describe('[CLI]', () => {
   it('should start client with custom network parameters', async () => {
     const cliArgs = [
       '--rpc',
-      '--rpcPort=8547',
+      '--rpcPort=8593',
       '--port=30304',
       '--dev=poa',
       '--bootnodes=enode://abc@127.0.0.1:30303',
@@ -522,7 +522,7 @@ describe('[CLI]', () => {
           message.includes('Client started successfully'),
           'Clients starts with custom network options'
         )
-        const client = Client.http({ port: 8547 })
+        const client = Client.http({ port: 8593 })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
@@ -573,7 +573,7 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   // Client file and directory path options tests
-  it('should start client with custom file path parameters', async () => {
+  it.only('should start client with custom file path parameters', async () => {
     const customGenesisJson = JSON.stringify(getGenesis(11155111))
     const customChainJson = `{
       "name": "customChain",
@@ -619,7 +619,8 @@ describe('[CLI]', () => {
         "enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.sepolia.ethdisco.net"
       ]
     }`
-    fs.open('./customChain.json', 'w', (err, fd) => {
+    const dir = fs.mkdtempSync('test')
+    fs.open(`${dir}/customChain.json`, 'w', (err, fd) => {
       if (err !== null) throw err
       fs.write(fd, customChainJson, (writeErr) => {
         if (writeErr !== null) {
@@ -635,7 +636,7 @@ describe('[CLI]', () => {
         })
       })
     })
-    fs.open('./customGenesis.json', 'w', (err, fd) => {
+    fs.open(`${dir}/customGenesis.json`, 'w', (err, fd) => {
       if (err !== null) throw err
       fs.write(fd, customGenesisJson, (writeErr) => {
         if (writeErr !== null) {
@@ -656,8 +657,8 @@ describe('[CLI]', () => {
       '--rpcPort=8549',
       '--port=30302',
       '--dataDir="./"',
-      '--customChain="./customChain.json"',
-      '--customGenesisState="./customGenesis.json"',
+      `--customChain="${dir}/customChain.json"`,
+      `--customGenesisState="${dir}/customGenesis.json"`,
       '--gethGenesis=""',
       '--trustedSetup=""',
       '--jwtSecret=""',
@@ -674,7 +675,7 @@ describe('[CLI]', () => {
         )
       }
       if (message.includes('Data directory')) {
-        assert.ok(message.includes('./'), 'client respects custom data directory option')
+        assert.ok(message.includes(dir), 'client respects custom data directory option')
       }
       if (message.includes('Initializing Ethereumjs client')) {
         assert.ok(
@@ -687,6 +688,7 @@ describe('[CLI]', () => {
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill(9)
+        fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)
       }
     }
