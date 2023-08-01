@@ -250,22 +250,7 @@ describe('[CLI]', () => {
   }, 30000)
   // client rpc tests
   it('should start HTTP RPC on custom port and address', async () => {
-    // Find external IP for binding custom address
-    const faces = Object.entries(os.networkInterfaces())
-      .filter((el) => el[0].startsWith('w'))[0][1]
-      ?.filter((el) => el.family === 'IPv4')
-
-    let address = ''
-    if (faces !== undefined && faces?.length > 0) {
-      address = faces[0].address
-    }
-    const cliArgs = [
-      '--rpc',
-      '--rpcPort=8562',
-      '--port=30311',
-      '--dev=poa',
-      `--rpcAddr="${address}"`,
-    ]
+    const cliArgs = ['--rpc', '--rpcPort=8562', '--port=30311', '--dev=poa', `--rpcAddr="0.0.0.0"`]
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -275,7 +260,7 @@ describe('[CLI]', () => {
         // if http endpoint startup message detected, call http endpoint with RPC method
         const client = Client.http({
           port: 8562,
-          host: address,
+          host: '0.0.0.0',
         })
         const res = await client.request('web3_clientVersion', [], 2.0)
         assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
