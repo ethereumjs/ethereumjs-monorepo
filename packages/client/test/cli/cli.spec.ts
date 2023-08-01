@@ -2,7 +2,6 @@ import { getGenesis } from '@ethereumjs/genesis'
 import { spawn } from 'child_process'
 import * as fs from 'fs'
 import { Client } from 'jayson/promise'
-import * as os from 'node:os'
 import { assert, describe, it } from 'vitest'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
