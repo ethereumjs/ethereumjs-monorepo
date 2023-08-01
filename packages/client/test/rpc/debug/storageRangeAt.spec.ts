@@ -394,7 +394,7 @@ describe(method, () => {
     createdAddress,
   }) => {
     let req = params(method, [bytesToHex(block.hash()), -1, createdAddress.toString(), '0x00', 100])
-    let expectRes = checkError(INTERNAL_ERROR, 'txIndex cannot be smaller than 0.')
+    let expectRes = checkError(INVALID_PARAMS, 'invalid argument 1: argument must be larger than 0')
 
     await baseRequest(server, req, 200, expectRes, false)
 
@@ -440,7 +440,10 @@ describe(method, () => {
     createdAddress,
   }) => {
     const req = params(method, [bytesToHex(block.hash()), 0, createdAddress.toString(), '0x00', -1])
-    const expectRes = checkError(INTERNAL_ERROR, 'Limit is not a proper uint.')
+    const expectRes = checkError(
+      INVALID_PARAMS,
+      'invalid argument 4: argument must be larger than 0'
+    )
 
     await baseRequest(server, req, 200, expectRes, true)
   })

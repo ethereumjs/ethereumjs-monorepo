@@ -1,12 +1,4 @@
-import {
-  Address,
-  TypeOutput,
-  bigIntToHex,
-  bytesToBigInt,
-  bytesToHex,
-  hexToBytes,
-  toType,
-} from '@ethereumjs/util'
+import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
 import { getBlockByOption } from '../helpers'
@@ -101,13 +93,12 @@ export class Debug {
       [validators.transaction()],
       [validators.blockOption],
     ])
-    // TODO: txIndex and limit are currently not input validated.
     this.storageRangeAt = middleware(this.storageRangeAt.bind(this), 5, [
       [validators.blockHash],
-      [],
+      [validators.unsignedInteger],
       [validators.address],
       [validators.uint256],
-      [],
+      [validators.unsignedInteger],
     ])
   }
 
@@ -314,13 +305,6 @@ export class Debug {
       throw new Error('Missing VM.')
     }
 
-    if (txIndex < 0) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: 'txIndex cannot be smaller than 0.',
-      }
-    }
-
     let block: Block
     try {
       // Validator already verified that `blockHash` is properly formatted.
@@ -351,7 +335,7 @@ export class Debug {
       return await vmCopy.stateManager.dumpStorageRange(
         // Validator already verified that `account` and `startKey` are properly formatted.
         Address.fromString(account),
-        bytesToBigInt(hexToBytes(startKey)),
+        BigInt(startKey),
         limit
       )
     } catch (err: any) {

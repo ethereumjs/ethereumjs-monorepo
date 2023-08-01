@@ -813,7 +813,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
-    if (!Number.isInteger(limit) || limit < 0) {
+    if (!Number.isSafeInteger(limit) || limit < 0) {
       throw new Error(`Limit is not a proper uint.`)
     }
 
