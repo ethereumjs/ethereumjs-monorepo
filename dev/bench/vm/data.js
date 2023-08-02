@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690962888692,
+  "lastUpdate": 1691006214298,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5c8a34026c01160ea3556d532207dc945139a232",
-          "message": "client: improve new payload and fcu block executions (#2880)\n\n* client: improve new payload and fcu block executions\r\n\r\n* update comment\r\n\r\n* cleanup\r\n\r\n* further optimize the execution\r\n\r\n* new payload executed tracking\r\n\r\n* add vm pointer to client's chain and prune cached blocks\r\n\r\n* fix the getpayload exec",
-          "timestamp": "2023-07-14T12:32:45+02:00",
-          "tree_id": "de2d5f9fda932c2235a1015b2209066d74a974f1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5c8a34026c01160ea3556d532207dc945139a232"
-        },
-        "date": 1689330987835,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30796,
-            "range": "±5.14%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30810,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30834,
-            "range": "±3.17%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25614,
-            "range": "±9.79%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29174,
-            "range": "±3.40%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.66%",
             "unit": "ops/sec",
             "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6eb9532ddfe50acfcc1b4e35791d6b91c38b5a67",
+          "message": "client: test and update devnet 8 integration sims (#2934)\n\n* client: test and update devnet 8 integration sims\r\n\r\n* Client test import fix\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-08-02T21:49:20+02:00",
+          "tree_id": "adaa1286de978a66643f3329f4b3d106c332de8e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6eb9532ddfe50acfcc1b4e35791d6b91c38b5a67"
+        },
+        "date": 1691006212841,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19797,
+            "range": "±6.05%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20473,
+            "range": "±3.68%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20221,
+            "range": "±3.19%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20019,
+            "range": "±3.77%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19322,
+            "range": "±3.87%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
