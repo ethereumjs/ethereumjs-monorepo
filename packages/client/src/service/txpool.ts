@@ -246,9 +246,8 @@ export class TxPool {
 
     if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
       const minblobGasFee =
-        (existingTx.maxFeePerblobGas *
-          (existingTx.maxFeePerblobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
-        BigInt(100)
+        existingTx.maxFeePerblobGas +
+        (existingTx.maxFeePerblobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
       if (addedTx.maxFeePerblobGas < minblobGasFee) {
         throw new Error('replacement blob gas too low')
       }
