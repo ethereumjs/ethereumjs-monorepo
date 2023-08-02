@@ -20,7 +20,7 @@ const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3
 const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
-const network = 'sharding'
+const network = '4844-devnet'
 const shardingJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(shardingJson, { chain: network })
 
@@ -98,46 +98,61 @@ describe('sharding/eip4844 hardfork tests', async () => {
       bytesToHex(txResult.tx.kzgCommitments![0]),
       'found expected blob commitments on CL'
     )
-  })
+  }, 60_000)
 
-  it('blob gas fee market tests', async () => {
-    const txns = await createBlobTxs(
-      4,
-      4096,
-      pkey,
-      // Start with nonce of 1 since a tx previous has already been posted
-      1,
-      {
-        to: bytesToHex(randomBytes(20)),
-        chainId: 1,
-        maxFeePerblobGas: BigInt(1000) as any,
-        maxPriorityFeePerGas: BigInt(1) as any,
-        maxFeePerGas: '0xff' as any,
-        gasLimit: BigInt(1000000) as any,
-      },
-      { common }
-    )
-    const txHashes = []
-    for (const txn of txns) {
-      const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
-      txHashes.push(res.result)
-    }
-    let done = false
-    let txReceipt
-    while (!done) {
-      txReceipt = await client.request('eth_getTransactionReceipt', [txHashes[0]], 2.0)
-      if (txReceipt.result !== null) {
-        done = true
+  it(
+    'blob gas fee market tests',
+    async () => {
+      const txns = await createBlobTxs(
+        4,
+        pkey,
+        // Start with nonce of 1 since a tx previous has already been posted
+        1,
+        {
+          to: bytesToHex(randomBytes(20)),
+          chainId: 1,
+          maxFeePerblobGas: BigInt(1000) as any,
+          maxPriorityFeePerGas: BigInt(1) as any,
+          maxFeePerGas: '0xff' as any,
+          gasLimit: BigInt(1000000) as any,
+          blobSize: 4096,
+        },
+        { common }
+      )
+      const txHashes = []
+      for (const txn of txns) {
+        const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
+        txHashes.push(res.result)
       }
-      await sleep(2000)
-    }
-    const block1 = await client.request(
-      'eth_getBlockByHash',
-      [txReceipt.result.blockHash, false],
-      2.0
-    )
-    assert.ok(BigInt(block1.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
-  })
+      let done = false
+      let txReceipt
+      while (!done) {
+        txReceipt = await client.request('eth_getTransactionReceipt', [txHashes[0]], 2.0)
+        if (txReceipt.result !== null) {
+          done = true
+        }
+        await sleep(2000)
+      }
+      const block1 = await client.request(
+        'eth_getBlockByHash',
+        [txReceipt.result.blockHash, false],
+        2.0
+      )
+      // next block will have the excessBlobGas
+      done = false
+      let block2
+      while (!done) {
+        const nextBlockNumber = `0x${(Number(block1.result.number) + 1).toString('16')}`
+        block2 = await client.request('eth_getBlockByNumber', [nextBlockNumber, false], 2.0)
+        if (block2.result !== null && block2.result !== undefined) {
+          done = true
+        }
+        await sleep(2000)
+      }
+      assert.ok(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
+    },
+    10 * 60_000
+  )
 
   it('point precompile contract test', async () => {
     const nonce = await client.request(
@@ -186,7 +201,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       receipt.result.contractAddress !== undefined,
       'successfully deployed contract that calls precompile'
     )
-  })
+  }, 60_000)
   /*
   it('multipeer setup', async () => {
     const multiPeer = Client.http({ port: 8947 })
@@ -202,5 +217,5 @@ describe('sharding/eip4844 hardfork tests', async () => {
     } catch (e) {
       assert.fail('network not cleaned properly')
     }
-  })
+  }, 60_000)
 })
