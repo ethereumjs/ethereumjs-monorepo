@@ -39,8 +39,6 @@ export const SKIP_PERMANENT = [
  */
 export const SKIP_SLOW = [
   'Call50000_sha256',
-  'Call50000bytesContract50_1',
-  'Call50000bytesContract50_2',
   'static_Call50000',
   'static_Call50000_ecrec',
   'static_Call50000_identity',
@@ -50,19 +48,8 @@ export const SKIP_SLOW = [
   'Return50000',
   'Return50000_2',
   'static_Call50000_sha256',
-  'static_Callcode50000',
-  'static_Return50000',
   'CALLBlake2f_MaxRounds',
-  'randomStatetest94_Istanbul',
   // vmPerformance tests
-  'ackermann',
-  'fibonacci',
-  'loop-add-10M',
-  'loop-divadd-10M',
-  'loop-divadd-unr100-10M',
-  'loop-exp',
-  'loop-mul',
-  'manyFunctions100',
   'loopMul',
   'loopExp',
 ]
