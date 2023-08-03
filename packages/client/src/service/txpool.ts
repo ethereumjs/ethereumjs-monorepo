@@ -464,15 +464,16 @@ export class TxPool {
           peer.eth['versions'].includes(68)
         ) {
           // If peer supports eth/68, send eth/68 formatted message (tx_types[], tx_sizes[], hashes[])
-          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []] as any
+          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []]
           for (const hash of hashesToSend) {
             const index = txs[2].findIndex((el) => equalsBytes(el, hash))
             txsToSend[0].push(txs[0][index])
             txsToSend[1].push(txs[1][index])
             txsToSend[2].push(hash)
           }
+
           try {
-            await peer.eth?.request('NewPooledTransactionHashes', txsToSend)
+            await peer.eth?.request('NewPooledTransactionHashes', txsToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
           }
@@ -480,7 +481,7 @@ export class TxPool {
         // If peer doesn't support eth/68, just send tx hashes
         else
           try {
-            await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
+            await peer.eth?.request('NewPooledTransactionHashes', hashesToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
           }

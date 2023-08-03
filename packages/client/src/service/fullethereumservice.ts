@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { concatBytes } from '@ethereumjs/util'
+import { concatBytes, hexToBytes } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
 import { SyncMode } from '../config'
@@ -10,6 +10,7 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
+import { Event } from '../types'
 
 import { EthereumService } from './ethereumservice'
 import { TxPool } from './txpool'
@@ -143,6 +144,20 @@ export class FullEthereumService extends EthereumService {
     } else {
       this.config.logger.info('Starting FullEthereumService with no syncing.')
     }
+    // Broadcast pending txs to newly connected peer
+    this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
+      if (!this.txPool.open()) return
+      const txs: [number[], number[], Uint8Array[]] = [[], [], []]
+      for (const addr of this.txPool.pool) {
+        for (const tx of addr[1]) {
+          const rawTx = tx.tx
+          txs[0].push(rawTx.type)
+          txs[1].push(rawTx.serialize().byteLength)
+          txs[2].push(hexToBytes('0x' + tx.hash))
+        }
+      }
+      void this.txPool.sendNewTxHashes(txs, [peer])
+    })
     await super.open()
     await this.execution.open()
     this.txPool.open()

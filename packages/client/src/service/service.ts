@@ -1,9 +1,5 @@
-import { hexToBytes } from '@ethereumjs/util'
-
 import { PeerPool } from '../net/peerpool'
 import { Event } from '../types'
-
-import { FullEthereumService } from './fullethereumservice'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer/peer'
@@ -83,19 +79,6 @@ export class Service {
     )
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       this.config.logger.debug(`Peer added: ${peer}`)
-      // Broadcast pooled txs to new peer
-      if (this instanceof FullEthereumService) {
-        const txs: any = []
-        for (const addr of this.txPool.pool) {
-          for (const tx of addr[1]) {
-            const rawTx = tx.tx
-            txs[0].push(rawTx.type)
-            txs[1].push(rawTx.serialize().byteLength)
-            txs[2].push(hexToBytes('0x' + tx.hash))
-          }
-        }
-        void this.txPool.sendNewTxHashes(txs, [peer])
-      }
     })
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
       this.config.logger.debug(`Peer removed: ${peer}`)
