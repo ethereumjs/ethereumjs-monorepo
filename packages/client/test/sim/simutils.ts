@@ -350,7 +350,6 @@ export const runBlobTx = async (
 
 export const createBlobTxs = async (
   numTxs: number,
-  blobSize = 2 ** 17 - 1,
   pkey: Uint8Array,
   startNonce: number = 0,
   txMeta: {
@@ -361,10 +360,12 @@ export const createBlobTxs = async (
     maxPriorityFeePerGas: bigint
     maxFeePerGas: bigint
     gasLimit: bigint
+    blobSize: number
   },
   opts?: TxOptions
 ) => {
   const txHashes: string[] = []
+  const blobSize = txMeta.blobSize ?? 2 ** 17 - 1
 
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
