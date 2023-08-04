@@ -14,6 +14,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
+  hexToBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
@@ -223,16 +224,14 @@ export class EthProtocol extends Protocol {
           return encodedData
         }
       },
-      decode: (
-        params: Uint8Array[] | [types: Uint8Array[], sizes: Uint8Array[], hashes: Uint8Array[]]
-      ) => {
+      decode: (params: Uint8Array[] | [types: string, sizes: number[], hashes: Uint8Array[]]) => {
         if (params[0] instanceof Uint8Array) {
           return params
         } else {
-          const tupleParams = params as [Uint8Array[], Uint8Array[], Uint8Array[]]
+          const tupleParams = params as [string, number[], Uint8Array[]]
           const decodedData = [
-            tupleParams[0].map((type) => bytesToInt(type)),
-            tupleParams[1].map((size) => bytesToInt(size)),
+            hexToBytes(tupleParams[0]),
+            tupleParams[1].map((size) => BigInt(size)),
             tupleParams[2],
           ]
 
