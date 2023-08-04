@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691124508965,
+  "lastUpdate": 1691138035039,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0af73095b19c564791c5da107153edef2c787e4c",
-          "message": "Update devp2p API names and access specifiers (#2889)\n\n* Change access specifiers for RLPx _privateKey, _id, _debug, _timeout\r\n\r\n* Renaming accessed id property in client tests\r\n\r\n* Change access specifiers for RLPx _maxPeers, _clientId, _remoteClientIdFilter, and _capabilities\r\n\r\n* Ignore error message from reassigning readonly property in tests\r\n\r\n* Change access specifiers for _common, _listenPort, and _dpt\r\n\r\n* Change access specifiers for _peersLRU, _peersQueue, _server, _peers, _refillIntervalId, and _refillIntervalSelectionCounter\r\n\r\n* Ignore accessibility errors in examples\r\n\r\n* Update names and access specifiers of Peer fields\r\n\r\n* Ignore access errors for _eciesSession\r\n\r\n* Make common field public for Peer class\r\n\r\n* Update names and access specifiers of Peer fields\r\n\r\n* Make id public readonly\r\n\r\n* Update names and access specifiers of Mac class fields\r\n\r\n* Update names and access specifiers of ECIES class fields\r\n\r\n* Update names and access specifiers of Peer class fields\r\n\r\n* Ignore accessibility errors in examples\r\n\r\n* Update example\r\n\r\n* Update names and access specifiers of class fields in protocol subpackage\r\n\r\n* Update names and access specifiers of class fields in ext subpackage\r\n\r\n* Update names and access specifiers of class fields in dpt subpackage\r\n\r\n* Update names and access specifiers of class fields in dns subpackage\r\n\r\n* Fix name of accessed field\r\n\r\n* Update tests",
-          "timestamp": "2023-07-17T08:56:20+02:00",
-          "tree_id": "799b19d9ccb9182461e44b531b44c278d7f67ad7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0af73095b19c564791c5da107153edef2c787e4c"
-        },
-        "date": 1689577185295,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32686,
-            "range": "±4.65%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31925,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31851,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27626,
-            "range": "±8.64%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30215,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.59%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d13804dc381c00881686e47cb4e56e60a9f20133",
+          "message": "Update instructions for running snap sync sim tests (#2936)",
+          "timestamp": "2023-08-04T10:26:56+02:00",
+          "tree_id": "72ec1575baf49de103810314aae3a6901fc10dac",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d13804dc381c00881686e47cb4e56e60a9f20133"
+        },
+        "date": 1691138033990,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32739,
+            "range": "±4.25%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 32242,
+            "range": "±2.29%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31739,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27507,
+            "range": "±9.14%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30366,
+            "range": "±2.63%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
