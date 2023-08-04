@@ -146,7 +146,7 @@ export class FullEthereumService extends EthereumService {
     }
     // Broadcast pending txs to newly connected peer
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
-      if (!this.txPool.open()) return
+      // TODO: Should we do this if the txPool isn't started?
       const txs: [number[], number[], Uint8Array[]] = [[], [], []]
       for (const addr of this.txPool.pool) {
         for (const tx of addr[1]) {
@@ -156,7 +156,7 @@ export class FullEthereumService extends EthereumService {
           txs[2].push(hexToBytes('0x' + tx.hash))
         }
       }
-      void this.txPool.sendNewTxHashes(txs, [peer])
+      if (txs[0].length > 0) void this.txPool.sendNewTxHashes(txs, [peer])
     })
     await super.open()
     await this.execution.open()
