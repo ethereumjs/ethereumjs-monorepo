@@ -429,5 +429,66 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
   return result
 }
 
+/**
+ * @notice Read a 32-bit little-endian integer from a Uint8Array
+ * @param {Uint8Array} bytes The input Uint8Array from which to read the 32-bit integer.
+ * @return {number} The 32-bit little-endian integer read from the input Uint8Arrays.
+ */
+export function readInt32LE(bytes: Uint8Array): number {
+  return (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0
+}
+
+/**
+ * @notice Read a 64-bit little-endian bigint from a Uint8Array
+ * @param {Uint8Array} bytes The input Uint8Array from which to read the 64-bit bigint.
+ * @return {bigint} The 64-bit little-endian bigint read from the input Uint8Arrays.
+ */
+export function readBigInt64LE(bytes: Uint8Array): bigint {
+  const lo = BigInt((bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0)
+  const hi = BigInt((bytes[4] | (bytes[5] << 8) | (bytes[6] << 16) | (bytes[7] << 24)) >>> 0)
+
+  return (hi << BigInt(32)) | lo
+}
+
+/**
+ * @notice Write a 32-bit little-endian number to a Uint8Array.
+ * @param {number} number The number value to write to the Uint8Array.
+ * @return {Uint8Array} A Uint8Array of length 32 containing the 32-bit little-endian number.
+ */
+export function writeInt32LE(number: number): Uint8Array {
+  const bytes = new Uint8Array(32)
+
+  bytes[0] = number & 0xff
+  bytes[1] = (number >> 8) & 0xff
+  bytes[2] = (number >> 16) & 0xff
+  bytes[3] = (number >> 24) & 0xff
+
+  return bytes
+}
+
+/**
+ * @notice Write a 64-bit little-endian bigint to a Uint8Array.
+ * @param {bigint} bigint The bigint value to write to the Uint8Array.
+ * @return {Uint8Array} A Uint8Array of length 32 containing the 64-bit little-endian bigint.
+ */
+export function writeBigInt64LE(bigint: bigint): Uint8Array {
+  const bytes = new Uint8Array(32)
+
+  const lo = BigInt.asUintN(32, bigint)
+  const hi = BigInt.asUintN(32, bigint >> BigInt(32))
+
+  bytes[0] = Number(lo & BigInt(0xff))
+  bytes[1] = Number((lo >> BigInt(8)) & BigInt(0xff))
+  bytes[2] = Number((lo >> BigInt(16)) & BigInt(0xff))
+  bytes[3] = Number((lo >> BigInt(24)) & BigInt(0xff))
+
+  bytes[4] = Number(hi & BigInt(0xff))
+  bytes[5] = Number((hi >> BigInt(8)) & BigInt(0xff))
+  bytes[6] = Number((hi >> BigInt(16)) & BigInt(0xff))
+  bytes[7] = Number((hi >> BigInt(24)) & BigInt(0xff))
+
+  return bytes
+}
+
 // eslint-disable-next-line no-restricted-imports
 export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
