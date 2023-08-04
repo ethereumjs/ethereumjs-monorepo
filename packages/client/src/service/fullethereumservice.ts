@@ -19,6 +19,7 @@ import type { Peer } from '../net/peer/peer'
 import type { Protocol } from '../net/protocol'
 import type { EthereumServiceOptions } from './ethereumservice'
 import type { Block } from '@ethereumjs/block'
+import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
 interface FullEthereumServiceOptions extends EthereumServiceOptions {
   /** Serve LES requests (default: false) */
@@ -152,7 +153,11 @@ export class FullEthereumService extends EthereumService {
         for (const tx of addr[1]) {
           const rawTx = tx.tx
           txs[0].push(rawTx.type)
-          txs[1].push(rawTx.serialize().byteLength)
+          if (rawTx.type !== 3) {
+            txs[1].push(rawTx.serialize().byteLength)
+          } else {
+            txs[1].push((rawTx as BlobEIP4844Transaction).serializeNetworkWrapper().byteLength)
+          }
           txs[2].push(hexToBytes('0x' + tx.hash))
         }
       }
