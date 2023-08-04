@@ -472,7 +472,7 @@ export class TxPool {
           }
 
           try {
-            await peer.eth?.request('NewPooledTransactionHashes', txsToSend.slice(0, 4096))
+            peer.eth?.send('NewPooledTransactionHashes', txsToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
           }
@@ -480,7 +480,7 @@ export class TxPool {
         // If peer doesn't support eth/68, just send tx hashes
         else
           try {
-            await peer.eth?.request('NewPooledTransactionHashes', hashesToSend.slice(0, 4096))
+            peer.eth?.send('NewPooledTransactionHashes', hashesToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
           }
