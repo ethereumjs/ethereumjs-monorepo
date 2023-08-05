@@ -1,3 +1,5 @@
+import { Lock } from '@ethereumjs/util'
+
 import { Event } from '../../types'
 
 import type { Config } from '../../config'
@@ -161,26 +163,39 @@ export class BoundProtocol {
    */
   async request(name: string, args: any[]): Promise<any> {
     const message = this.send(name, args)
-    const resolver: any = {
-      timeout: null,
-      resolve: null,
-      reject: null,
-    }
+    let lock
     if (
       typeof message.response === 'number' &&
       this.resolvers.get(message.response) !== undefined
     ) {
-      throw new Error(`Only one active request allowed per message type (${name})`)
+      const res = this.resolvers.get(message.response)
+      lock = res.lock
+      await res.lock.acquire()
+    }
+    const resolver: any = {
+      timeout: null,
+      resolve: null,
+      reject: null,
+      lock: lock ?? new Lock(),
     }
     this.resolvers.set(message.response!, resolver)
+    if (lock === undefined) {
+      await resolver.lock.acquire()
+    }
     return new Promise((resolve, reject) => {
+      resolver.resolve = function (e: any) {
+        resolver.lock.release()
+        resolve(e)
+      }
+      resolver.reject = function (e: any) {
+        resolver.lock.release()
+        reject(e)
+      }
       resolver.timeout = setTimeout(() => {
         resolver.timeout = null
         this.resolvers.delete(message.response!)
-        reject(new Error(`Request timed out after ${this.timeout}ms`))
+        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`))
       }, this.timeout)
-      resolver.resolve = resolve
-      resolver.reject = reject
     })
   }
 
