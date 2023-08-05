@@ -480,6 +480,8 @@ export class TxPool {
         // If peer doesn't support eth/68, just send tx hashes
         else
           try {
+            // We `send` this directly instead of using devp2p's async `request` since NewPooledTransactionHashes has no response and is just sent to peers
+            // and this requires no tracking of a peer's response
             peer.eth?.send('NewPooledTransactionHashes', hashesToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
