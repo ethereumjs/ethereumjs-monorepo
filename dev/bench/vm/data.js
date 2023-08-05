@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691138035039,
+  "lastUpdate": 1691261555757,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "54e10a23c8095cc57ff9f0be5fa505fc48ed532b",
-          "message": "common: add Cancun CFI EIPs for devnet8 and fix eip-4788 block building issues (#2892)\n\n* common: add Cancun CFI EIPs for devnet8\r\n\r\n* fix the parentBeaconBlockRoot related issues\r\n\r\n* fix issues\r\n\r\n* fix execution payload to block conversion for 4788\r\n\r\n* fix client specs\r\n\r\n* fix spec\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-07-17T10:28:34+02:00",
-          "tree_id": "51e9e4a245596f83b4a99a012ee813e77e4b77b4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/54e10a23c8095cc57ff9f0be5fa505fc48ed532b"
-        },
-        "date": 1689582739478,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30704,
-            "range": "±5.43%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30641,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30421,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25132,
-            "range": "±11.32%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29181,
-            "range": "±3.49%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.63%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "845a26bb1adbaaa65cef4b3f222e0d6a0fc9620e",
+          "message": "client: add support for multiple same-type messages over devp2p (#2940)\n\n* client: add support for multiple same-type messages over devp2p\r\n\r\n* client/net/sync/boundprotocol: fix timeout deadlock",
+          "timestamp": "2023-08-05T20:48:44+02:00",
+          "tree_id": "162a97b7ba65c6324a43fe3a5b9c53cae1d22bc1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/845a26bb1adbaaa65cef4b3f222e0d6a0fc9620e"
+        },
+        "date": 1691261554451,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 27538,
+            "range": "±5.45%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26452,
+            "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26157,
+            "range": "±3.38%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26483,
+            "range": "±3.61%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 21496,
+            "range": "±11.27%",
+            "unit": "ops/sec",
+            "extra": "66 samples"
           }
         ]
       }
