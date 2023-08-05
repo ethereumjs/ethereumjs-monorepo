@@ -183,11 +183,6 @@ export class BoundProtocol {
       await resolver.lock.acquire()
     }
     return new Promise((resolve, reject) => {
-      resolver.timeout = setTimeout(() => {
-        resolver.timeout = null
-        this.resolvers.delete(message.response!)
-        reject(new Error(`Request timed out after ${this.timeout}ms`))
-      }, this.timeout)
       resolver.resolve = function (e: any) {
         resolver.lock.release()
         resolve(e)
@@ -196,6 +191,11 @@ export class BoundProtocol {
         resolver.lock.release()
         reject(e)
       }
+      resolver.timeout = setTimeout(() => {
+        resolver.timeout = null
+        this.resolvers.delete(message.response!)
+        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`))
+      }, this.timeout)
     })
   }
 
