@@ -161,7 +161,7 @@ export class FullEthereumService extends EthereumService {
           txs[2].push(hexToBytes('0x' + tx.hash))
         }
       }
-      if (txs[0].length > 0) void this.txPool.sendNewTxHashes(txs, [peer])
+      if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer])
     })
     await super.open()
     await this.execution.open()

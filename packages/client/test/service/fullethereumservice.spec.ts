@@ -348,7 +348,7 @@ describe('[FullEthereumService]', async () => {
     const service = new FullEthereumService({ config, chain })
     ;(service.txPool as any).validate = () => {}
 
-    await service.txPool.sendNewTxHashes(
+    service.txPool.sendNewTxHashes(
       [[1], [100], [txHash]],
       [
         {

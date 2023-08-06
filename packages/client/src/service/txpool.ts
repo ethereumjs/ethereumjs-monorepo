@@ -445,7 +445,7 @@ export class TxPool {
    * @param txHashes Array with transactions to send
    * @param peers
    */
-  async sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
+  sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
     const txHashes = txs[2]
     for (const peer of peers) {
       // Make sure data structure is initialized
@@ -558,7 +558,7 @@ export class TxPool {
     const numPeers = peers.length
     const sendFull = Math.max(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
     this.sendTransactions(txs, peers.slice(0, sendFull))
-    await this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
+    this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
   }
 
   /**
@@ -616,7 +616,7 @@ export class TxPool {
       newTxHashes[1].push(tx.serialize().length)
       newTxHashes[2].push(tx.hash())
     }
-    await this.sendNewTxHashes(newTxHashes, peerPool.peers)
+    this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }
 
   /**
