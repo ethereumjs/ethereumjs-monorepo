@@ -363,11 +363,7 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
       }
 
       const next = node.getBranch(key[pos])
-      node =
-        next &&
-        (await trie.lookupNode(
-          next instanceof Uint8Array ? next : (trie as any).hash(RLP.encode(next))
-        ))
+      node = next && (await trie.lookupNode(next))
       pos += 1
     } else if (node instanceof ExtensionNode) {
       if (
@@ -619,7 +615,6 @@ export async function verifyRangeProof(
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblestoBytes(keys[i]), values[i])
     }
-    // trie.root(rootHash)
     if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
     }
@@ -628,12 +623,12 @@ export async function verifyRangeProof(
 
   if (proof === null || firstKey === null || lastKey === null) {
     throw new Error(
-      `invalid all elements proof: proof, firstKey, lastKey must be null at the same time { proof: ${proof}, firstKey: ${firstKey}, lastKey: ${lastKey} }`
+      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
     )
   }
 
   // Zero element proof
-  if (proof !== null && keys.length === 0) {
+  if (keys.length === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
       nibblestoBytes(firstKey),
@@ -677,7 +672,7 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ useKeyHashingFunction })
+  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
   await trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
@@ -690,7 +685,7 @@ export async function verifyRangeProof(
   for (let i = 0; i < keys.length; i++) {
     await trie.put(nibblestoBytes(keys[i]), values[i])
   }
-  // trie.root(rootHash)
+
   // Compare rootHash
   if (!equalsBytes(trie.root(), rootHash)) {
     throw new Error('invalid two edge elements proof: root mismatch')
@@ -731,11 +726,8 @@ export async function createRangeProof(
   }
   const proofSet: Set<string> = new Set()
   const keyvals: Map<string, Uint8Array> = new Map()
-  // const keys: Uint8Array[] = []
-  // const values: Uint8Array[] = []
   startingKey = this.appliedKey(startingKey)
   limitKey = this.appliedKey(limitKey)
-
   let startingNode = (await this.findPath(startingKey)).node
   if (startingNode === null) {
     const rightNode = await returnRightNode.bind(this)(bytesToNibbles(startingKey))
@@ -798,14 +790,12 @@ export async function createRangeProof(
       return {
         values: [],
         keys: [],
-        // TODO: fix this
         proof: null as any,
       }
     }
     return {
       values: [startingNode!._value as Uint8Array],
       keys: [startingKey],
-      // TODO: fix this
       proof: [],
     }
   }
