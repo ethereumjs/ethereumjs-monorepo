@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { TransactionType } from '@ethereumjs/tx'
 import { concatBytes, hexToBytes } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
@@ -153,7 +154,7 @@ export class FullEthereumService extends EthereumService {
         for (const tx of addr[1]) {
           const rawTx = tx.tx
           txs[0].push(rawTx.type)
-          if (rawTx.type !== 3) {
+          if (rawTx.type !== TransactionType.BlobEIP4844) {
             txs[1].push(rawTx.serialize().byteLength)
           } else {
             txs[1].push((rawTx as BlobEIP4844Transaction).serializeNetworkWrapper().byteLength)
