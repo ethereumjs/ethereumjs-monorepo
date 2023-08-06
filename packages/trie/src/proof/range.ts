@@ -680,3 +680,14 @@ export async function verifyRangeProof(
 
   return hasRightElement(trie, keys[keys.length - 1])
 }
+
+export function getSharedNibbles(nibbles1: number[], nibbles2: number[]): number[] {
+  const sharedNibbles = []
+  for (let i = 0; i < Math.min(nibbles1.length, nibbles2.length); i++) {
+    if (nibbles1[i] !== nibbles2[i]) {
+      break
+    }
+    sharedNibbles.push(nibbles1[i])
+  }
+  return sharedNibbles
+}
