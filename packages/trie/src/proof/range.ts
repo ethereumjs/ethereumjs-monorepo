@@ -1,10 +1,12 @@
-import { equalsBytes } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 
 import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 import { Trie } from '../trie.js'
-import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
+import { bytesToNibbles, nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
 
-import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
+import type { Path } from '../trie.js'
+import type { EmbeddedNode, HashKeysFunction, Nibbles, TrieNode } from '../types.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -361,7 +363,11 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
       }
 
       const next = node.getBranch(key[pos])
-      node = next && (await trie.lookupNode(next))
+      node =
+        next &&
+        (await trie.lookupNode(
+          next instanceof Uint8Array ? next : (trie as any).hash(RLP.encode(next))
+        ))
       pos += 1
     } else if (node instanceof ExtensionNode) {
       if (
@@ -380,6 +386,160 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
     }
   }
   return false
+}
+
+export function isValueNode(node: TrieNode): boolean {
+  return (
+    node instanceof LeafNode ||
+    (node instanceof BranchNode && node.value() !== null && node.value()!.length > 0)
+  )
+}
+
+export function hasRightBranch(node: BranchNode, nibble: number): undefined | EmbeddedNode {
+  for (let i = nibble + 1; i < 16; i++) {
+    try {
+      const b = node.getBranch(i)
+      if (b !== null) {
+        return b
+      }
+    } catch (err) {
+      //
+    }
+  }
+  return undefined
+}
+
+export async function walkRight(this: Trie, key: Nibbles, hash: Uint8Array, childIdx: number) {
+  const rightWalk = this.walkTrieIterable(hash, [childIdx])
+  for await (const { node, currentKey } of rightWalk) {
+    if (nibblesCompare(key, [...currentKey, ...('_nibbles' in node ? node._nibbles : [])]) < 0) {
+      if (node instanceof LeafNode && node.value()!.length < 0) {
+        const cur = [...currentKey, ...('_nibbles' in node ? node._nibbles : [])]
+        return {
+          node,
+          currentKey: cur,
+        }
+      }
+    }
+  }
+  return null
+}
+
+export async function rightNode(this: Trie, key: Nibbles, path: Path) {
+  let par: TrieNode | undefined
+  let current = key
+  let childIdx: number
+  par = path.stack.pop()
+  const stack = path.stack
+
+  if (path.node instanceof LeafNode) {
+    current = current.slice(0, -path.node._nibbles.length)
+  } else {
+    current.pop()
+  }
+
+  while (stack.length > 0) {
+    // traverse back up the path looking for branch nodes with a node on a higher branch
+    par = stack.pop()
+    if (par instanceof ExtensionNode) {
+      current = current.slice(0, -(par as any)._nibbles.length)
+      continue
+    }
+    childIdx = current.pop()!
+    const rightBranch = hasRightBranch(par as BranchNode, childIdx)
+    if (rightBranch === undefined) {
+      current.pop()
+      continue
+    }
+    // if a node is found, walk trie from that node, and return the first value node found.
+    const hash =
+      rightBranch instanceof Uint8Array ? rightBranch : this.hash(RLP.encode(rightBranch))
+    const walkroot = await this.lookupNode(hash)
+    if (walkroot! instanceof LeafNode) {
+      return { node: walkroot!, currentKey: [] }
+    } else {
+      const walk = this.walkTrieIterable(hash, current)
+      for await (const { node } of walk) {
+        if (node instanceof LeafNode) {
+          return { node, currentKey: [] }
+        }
+      }
+    }
+  }
+  return null
+}
+
+export async function rightNodeFromNull(this: Trie, key: Nibbles, path: Path) {
+  let par: TrieNode | undefined
+  let current = key
+  let childIdx = -1
+  let rightBranch: EmbeddedNode | undefined
+  current = key.slice(0, -path.remaining.length)
+  childIdx = path.remaining[0]
+  while (rightBranch === undefined && path.stack.length > 0) {
+    par = path.stack.pop()!
+    if (par instanceof LeafNode) {
+      childIdx = current.slice(-1)[0]!
+      par = path.stack.pop()!
+    }
+    while (par instanceof ExtensionNode) {
+      current = current.slice(0, -par._nibbles.length)
+      if (path.stack.length === 0) {
+        return null
+      }
+      par = path.stack.pop()!
+    }
+    childIdx = path.remaining[0]
+    par = par as BranchNode
+    rightBranch = hasRightBranch(par, childIdx)
+    let branch: EmbeddedNode | null = null
+    let i = childIdx + 1
+    while (branch === null && i < 16) {
+      branch = (par as BranchNode).getBranch(i)
+      i++
+    }
+    current.pop()
+    if (rightBranch !== undefined) {
+      childIdx = i - 1
+      current.push(childIdx)
+    }
+  }
+  if (rightBranch !== undefined) {
+    const branch = rightBranch
+    if (branch.length > 0) {
+      const hash = branch instanceof Uint8Array ? branch : this.hash(RLP.encode(branch))
+      try {
+        const walkroot = await this.lookupNode(hash)
+        if (walkroot! instanceof LeafNode) {
+          return {
+            node: walkroot!,
+            currentKey: [childIdx, ...('_nibbles' in walkroot! ? walkroot._nibbles : [])],
+          }
+        }
+      } catch {
+        // Node not found
+      }
+      return walkRight.bind(this)(current, hash, childIdx)
+    }
+  }
+  return null
+}
+
+/**
+ *
+ * @param key key nibbles for starting node
+ * @returns the next node to the right of the key (or null if none exists)
+ */
+export async function returnRightNode(
+  this: Trie,
+  key: Nibbles
+): Promise<{ node: TrieNode; currentKey: number[] } | null> {
+  const path = await this.findPath(nibblestoBytes(key))
+  if (path.node) {
+    return rightNode.bind(this)(key, path)
+  } else {
+    return rightNodeFromNull.bind(this)(key, path)
+  }
 }
 
 /**
