@@ -3,16 +3,10 @@ import {
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
-  bytesToUnprefixedHex,
+  bytesToHex,
   bytesToUtf8,
-  compareBytes,
   equalsBytes,
-<<<<<<< HEAD
-  unprefixedHexToBytes,
-=======
-  setLengthRight,
-  zeros,
->>>>>>> ede0aafb2 (trie: implement createRangeProof [no ci])
+  hexToBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -25,16 +19,11 @@ import {
   decodeRawNode,
   isRawNode,
 } from './node/index.js'
-import { verifyRangeProof } from './proof/range.js'
+import { createRangeProof, returnRightNode, verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { Lock } from './util/lock.js'
-import {
-  bytesToNibbles,
-  doKeysMatch,
-  matchingNibbleLength,
-  nibblestoBytes,
-} from './util/nibbles.js'
+import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
@@ -43,7 +32,6 @@ import type {
   FoundNodeFunction,
   Nibbles,
   Proof,
-  RangeProofItem,
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
@@ -51,7 +39,7 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
-interface Path {
+export interface Path {
   node: TrieNode | null
   remaining: Nibbles
   stack: TrieNode[]
@@ -109,13 +97,13 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToUnprefixedHex(key), {
+        const rootHex = await opts?.db.get(bytesToHex(key), {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
-        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
+        opts.root = rootHex !== undefined ? hexToBytes(rootHex) : undefined
       } else {
-        await opts?.db.put(bytesToUnprefixedHex(key), bytesToUnprefixedHex(opts.root), {
+        await opts?.db.put(bytesToHex(key), bytesToHex(opts.root), {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
@@ -874,12 +862,9 @@ export class Trie {
   // (i.e. the Trie is not correctly pruned)
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
   async verifyPrunedIntegrity(): Promise<boolean> {
-    const roots = [
-      bytesToUnprefixedHex(this.root()),
-      bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
-    ]
+    const roots = [bytesToHex(this.root()), bytesToHex(this.appliedKey(ROOT_DB_KEY))]
     for (const dbkey of (<any>this)._db.db._database.keys()) {
-      if (roots.includes(dbkey)) {
+      if (roots.includes('0x' + dbkey)) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph
         continue
@@ -896,7 +881,7 @@ export class Trie {
           if (node instanceof BranchNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
-              if (item !== null && bytesToUnprefixedHex(item as Uint8Array) === dbkey) {
+              if (item !== null && bytesToHex(item as Uint8Array) === '0x' + dbkey) {
                 found = true
                 return
               }
@@ -906,7 +891,7 @@ export class Trie {
           }
           if (node instanceof ExtensionNode) {
             // If the value of the ExtensionNode points to the dbkey, then it is found
-            if (bytesToUnprefixedHex(node.value()) === dbkey) {
+            if (bytesToHex(node.value()) === '0x' + dbkey) {
               found = true
               return
             }
