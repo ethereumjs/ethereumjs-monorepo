@@ -791,10 +791,9 @@ export class Trie {
   /**
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
-   * @param ignoreAppliedKey If set to `true`, use the raw key, instead of applied key (which sometimes hashes the key). Defaults to `false`.
    */
-  async createProof(key: Uint8Array, ignoreAppliedKey = false): Promise<Proof> {
-    const { stack } = await this.findPath(ignoreAppliedKey ? key : this.appliedKey(key))
+  async createProof(key: Uint8Array): Promise<Proof> {
+    const { stack } = await this.findPath(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
