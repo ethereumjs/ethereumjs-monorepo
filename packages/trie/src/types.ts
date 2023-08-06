@@ -100,8 +100,3 @@ export type Checkpoint = {
 }
 
 export const ROOT_DB_KEY = utf8ToBytes('__root__')
-
-export type RangeProofItem = {
-  key: Uint8Array
-  value: Uint8Array
-}
