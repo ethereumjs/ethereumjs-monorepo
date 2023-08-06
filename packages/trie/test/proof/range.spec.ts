@@ -425,15 +425,12 @@ describe('simple merkle range proofs generation and verification', () => {
     }
   })
 
-  /**
-   * TODO: Analyze tests below.
-   * Should proof really fail for all of these reasons?
-  it.skip('create a bad range proof and verify it', async () => {
+  it('create a bad range proof and verify it', async () => {
     const runTest = async (
       cb: (trie: Trie, entries: [Uint8Array, Uint8Array][]) => Promise<void>
     ) => {
       const { trie, entries } = await randomTrie(new MapDB(), false)
- 
+
       let result = false
       try {
         await cb(trie, entries)
@@ -443,7 +440,7 @@ describe('simple merkle range proofs generation and verification', () => {
       }
       assert.isFalse(result)
     }
- 
+
     // Modified key
     await runTest(async (trie, entries) => {
       const start = getRandomIntInclusive(0, entries.length - 2)
@@ -452,7 +449,7 @@ describe('simple merkle range proofs generation and verification', () => {
       entries[targetIndex][0] = crypto.randomBytes(32)
       await verify(trie, entries, start, end)
     })
- 
+
     // Modified val
     await runTest(async (trie, entries) => {
       const start = getRandomIntInclusive(0, entries.length - 2)
@@ -461,7 +458,7 @@ describe('simple merkle range proofs generation and verification', () => {
       entries[targetIndex][1] = crypto.randomBytes(20)
       await verify(trie, entries, start, end)
     })
- 
+
     // Gapped entry slice
     await runTest(async (trie, entries) => {
       const start = getRandomIntInclusive(0, entries.length - 3)
@@ -470,7 +467,7 @@ describe('simple merkle range proofs generation and verification', () => {
       entries = entries.slice(0, targetIndex).concat(entries.slice(targetIndex + 1))
       await verify(trie, entries, start, end)
     })
- 
+
     // Out of order
     await runTest(async (trie, entries) => {
       const start = getRandomIntInclusive(0, entries.length - 2)
@@ -487,8 +484,8 @@ describe('simple merkle range proofs generation and verification', () => {
       await verify(trie, entries, start, end)
     })
   })
- 
-  it.skip('create a gapped range proof and verify it', async () => {
+
+  it('create a gapped range proof and verify it', async () => {
     const trie = new Trie()
     const entries: [Uint8Array, Uint8Array][] = []
     for (let i = 0; i < 10; i++) {
@@ -497,7 +494,7 @@ describe('simple merkle range proofs generation and verification', () => {
       await trie.put(key, val)
       entries.push([key, val])
     }
- 
+
     const start = 2
     const end = 8
     const targetRange: [Uint8Array, Uint8Array][] = []
@@ -507,7 +504,7 @@ describe('simple merkle range proofs generation and verification', () => {
       }
       targetRange.push(entries[i])
     }
- 
+
     let result = false
     try {
       await verify(
@@ -526,17 +523,17 @@ describe('simple merkle range proofs generation and verification', () => {
     }
     assert.isFalse(result)
   })
- 
-  it.skip('create a same side range proof and verify it', async () => {
+
+  it('create a same side range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
- 
+
     const start = 200
     const end = 200
     const startKey = entries[start][0]
     const endKey = entries[end][0]
     const decreasedStartKey = decreaseKey(decreaseKey(startKey)!)!
     const decreasedEndKey = decreaseKey(endKey)!
- 
+
     let result = false
     try {
       await verify(trie, entries, start, end, decreasedStartKey, decreasedEndKey)
@@ -545,10 +542,10 @@ describe('simple merkle range proofs generation and verification', () => {
       // ignore
     }
     assert.isFalse(result)
- 
+
     const increasedStartKey = increaseKey(startKey)!
     const increasedEndKey = increaseKey(increaseKey(endKey)!)!
- 
+
     result = false
     try {
       await verify(trie, entries, start, end, increasedStartKey, increasedEndKey)
@@ -558,7 +555,6 @@ describe('simple merkle range proofs generation and verification', () => {
     }
     assert.isFalse(result)
   })
-  */
 
   it('should hasRightElement succeed', async () => {
     const { trie, entries } = await randomTrie(new MapDB(), false)
