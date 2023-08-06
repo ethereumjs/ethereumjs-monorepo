@@ -425,15 +425,19 @@ export async function walkRight(this: Trie, key: Nibbles, hash: Uint8Array, chil
   return null
 }
 
-export async function rightNode(this: Trie, key: Nibbles, path: Path) {
+export async function rightNode(
+  this: Trie,
+  key: Nibbles,
+  path: Path
+): Promise<{ node: TrieNode; currentKey: Nibbles } | null> {
   let par: TrieNode | undefined
   let current = key
   let childIdx: number
-  par = path.stack.pop()
   const stack = path.stack
 
   if (path.node instanceof LeafNode) {
     current = current.slice(0, -path.node._nibbles.length)
+    stack.pop()
   } else {
     current.pop()
   }
@@ -444,23 +448,29 @@ export async function rightNode(this: Trie, key: Nibbles, path: Path) {
     if (par instanceof ExtensionNode) {
       current = current.slice(0, -(par as any)._nibbles.length)
       continue
+    } else {
+      childIdx = current.pop()!
     }
-    childIdx = current.pop()!
     const rightBranch = hasRightBranch(par as BranchNode, childIdx)
     if (rightBranch === undefined) {
       current.pop()
       continue
     }
+
     // if a node is found, walk trie from that node, and return the first value node found.
     const hash =
       rightBranch instanceof Uint8Array ? rightBranch : this.hash(RLP.encode(rightBranch))
-    const walkroot = await this.lookupNode(hash)
+    const walkroot = await this.lookupNode(rightBranch)
     if (walkroot! instanceof LeafNode) {
       return { node: walkroot!, currentKey: [] }
     } else {
       const walk = this.walkTrieIterable(hash, current)
-      for await (const { node } of walk) {
-        if (node instanceof LeafNode) {
+      for await (const { node, currentKey } of walk) {
+        if (
+          '_nibbles' in node &&
+          nibblesCompare(key, [...currentKey, ...node._nibbles]) < 0 &&
+          isValueNode(node)
+        ) {
           return { node, currentKey: [] }
         }
       }
@@ -473,16 +483,16 @@ export async function rightNodeFromNull(this: Trie, key: Nibbles, path: Path) {
   let par: TrieNode | undefined
   let current = key
   let childIdx = -1
-  let rightBranch: EmbeddedNode | undefined
+  let rightBranch: EmbeddedNode | null = null
   current = key.slice(0, -path.remaining.length)
   childIdx = path.remaining[0]
-  while (rightBranch === undefined && path.stack.length > 0) {
+  while (rightBranch === null && path.stack.length > 0) {
     par = path.stack.pop()!
     if (par instanceof LeafNode) {
       childIdx = current.slice(-1)[0]!
       par = path.stack.pop()!
     }
-    while (par instanceof ExtensionNode) {
+    while (!(par instanceof BranchNode)) {
       current = current.slice(0, -par._nibbles.length)
       if (path.stack.length === 0) {
         return null
@@ -490,21 +500,28 @@ export async function rightNodeFromNull(this: Trie, key: Nibbles, path: Path) {
       par = path.stack.pop()!
     }
     childIdx = path.remaining[0]
-    par = par as BranchNode
-    rightBranch = hasRightBranch(par, childIdx)
-    let branch: EmbeddedNode | null = null
+    rightBranch = hasRightBranch(par, childIdx) ?? null
+    if (rightBranch !== null) {
+      const rightNode = await this.lookupNode(rightBranch)
+      if (isValueNode(rightNode!)) {
+        return {
+          node: rightNode!,
+          currentKey: [...current],
+        }
+      }
+    }
     let i = childIdx + 1
-    while (branch === null && i < 16) {
-      branch = (par as BranchNode).getBranch(i)
+    while ((rightBranch === null || rightBranch.length <= 0) && i < 16) {
+      rightBranch = (par as BranchNode).getBranch(i)
       i++
     }
     current.pop()
-    if (rightBranch !== undefined) {
+    if (rightBranch !== null) {
       childIdx = i - 1
       current.push(childIdx)
     }
   }
-  if (rightBranch !== undefined) {
+  if (rightBranch !== null) {
     const branch = rightBranch
     if (branch.length > 0) {
       const hash = branch instanceof Uint8Array ? branch : this.hash(RLP.encode(branch))
@@ -517,7 +534,7 @@ export async function rightNodeFromNull(this: Trie, key: Nibbles, path: Path) {
           }
         }
       } catch {
-        // Node not found
+        return null
       }
       return walkRight.bind(this)(current, hash, childIdx)
     }
@@ -602,6 +619,7 @@ export async function verifyRangeProof(
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblestoBytes(keys[i]), values[i])
     }
+    // trie.root(rootHash)
     if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
     }
@@ -610,12 +628,12 @@ export async function verifyRangeProof(
 
   if (proof === null || firstKey === null || lastKey === null) {
     throw new Error(
-      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
+      `invalid all elements proof: proof, firstKey, lastKey must be null at the same time { proof: ${proof}, firstKey: ${firstKey}, lastKey: ${lastKey} }`
     )
   }
 
   // Zero element proof
-  if (keys.length === 0) {
+  if (proof !== null && keys.length === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
       nibblestoBytes(firstKey),
@@ -659,7 +677,7 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
+  const trie = new Trie({ useKeyHashingFunction })
   await trie.fromProof(proof)
 
   // Remove all nodes between two edge proofs
@@ -672,7 +690,7 @@ export async function verifyRangeProof(
   for (let i = 0; i < keys.length; i++) {
     await trie.put(nibblestoBytes(keys[i]), values[i])
   }
-
+  // trie.root(rootHash)
   // Compare rootHash
   if (!equalsBytes(trie.root(), rootHash)) {
     throw new Error('invalid two edge elements proof: root mismatch')
@@ -788,7 +806,7 @@ export async function createRangeProof(
       values: [startingNode!._value as Uint8Array],
       keys: [startingKey],
       // TODO: fix this
-      proof: null as any,
+      proof: [],
     }
   }
   const startingNibbles = bytesToNibbles(startingKey)
