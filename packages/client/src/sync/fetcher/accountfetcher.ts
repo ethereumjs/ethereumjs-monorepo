@@ -6,6 +6,7 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  compareBytes,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -122,6 +123,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   accountTrie: Trie
 
   accountToStorageTrie: Map<String, Trie>
+
+  highestKnownHash: Uint8Array | undefined
 
   /** Contains known bytecodes */
   codeTrie: Trie
@@ -281,6 +284,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 
+    if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
+      // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
+      console.log('dbg10')
+      return Object.assign([], [Object.create({ skipped: true })], { completed: true })
+    }
+
     const rangeResult = await peer!.snap!.getAccountRange({
       root: this.root,
       origin,
@@ -340,7 +349,21 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     result: AccountDataResponse
   ): AccountData[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
-    job.partialResult = undefined
+
+    // update highest known hash
+    const highestReceivedhash = result.at(-1)?.hash as Uint8Array
+    if (this.highestKnownHash) {
+      console.log('dbg11')
+
+      if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
+        console.log('dbg12')
+        this.highestKnownHash = highestReceivedhash
+      }
+    } else {
+      console.log('dbg13')
+      this.highestKnownHash = highestReceivedhash
+    }
+
     if (result.completed === true) {
       return fullResult
     } else {
@@ -356,8 +379,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   async store(result: AccountData[]): Promise<void> {
     this.debug(`Stored ${result.length} accounts in account trie`)
 
-    // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
+    if (JSON.stringify(result[0]) === JSON.stringify(Object.create({ skipped: true }))) {
+      // return without storing to skip this task
+      console.log('dbg14')
+      return
+    }
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
+      // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
       this.debug('Final range received with no elements remaining to the right')
 
       await this.accountTrie.persistRoot()
