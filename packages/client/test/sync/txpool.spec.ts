@@ -338,7 +338,7 @@ describe('[TxPool]', async () => {
       id: '2',
       eth: {
         versions: [66, 67],
-        request: (methodName: string) => {
+        send: (methodName: string) => {
           sentToPeer2++
           // throw the error on methodName so as to be handy
           throw Error(methodName)

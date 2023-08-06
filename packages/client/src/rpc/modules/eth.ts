@@ -131,6 +131,7 @@ const jsonRpcBlock = async (
     ...withdrawalsAttr,
     blobGasUsed: header.blobGasUsed,
     excessBlobGas: header.excessBlobGas,
+    parentBeaconBlockRoot: header.parentBeaconBlockRoot,
   }
 }
 
@@ -930,10 +931,7 @@ export class Eth {
 
     try {
       await txPool.add(tx, true)
-      await txPool.sendNewTxHashes(
-        [[tx.type], [tx.serialize().byteLength], [tx.hash()]],
-        pool.peers
-      )
+      txPool.sendNewTxHashes([[tx.type], [tx.serialize().byteLength], [tx.hash()]], pool.peers)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
