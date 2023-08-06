@@ -720,7 +720,7 @@ export async function createRangeProof(
 
   let startingNode = (await this.findPath(startingKey)).node
   if (startingNode === null) {
-    const rightNode = await this.returnRightNode(bytesToNibbles(startingKey))
+    const rightNode = await returnRightNode.bind(this)(bytesToNibbles(startingKey))
     if (rightNode !== null) {
       proofSet.add(bytesToHex(rightNode.node.serialize()))
       keyvals.set(bytesToHex(nibblestoBytes(rightNode.currentKey)), rightNode.node.value()!)
@@ -737,7 +737,7 @@ export async function createRangeProof(
     currentKey: number[]
   } | null = null
   if (limitNode === null) {
-    limitNodeRight = await this.returnRightNode(bytesToNibbles(limitKey))
+    limitNodeRight = await returnRightNode.bind(this)(bytesToNibbles(limitKey))
     if (limitNodeRight !== null) {
       limitNode = limitNodeRight.node
       limitNodeRight.node._value &&
