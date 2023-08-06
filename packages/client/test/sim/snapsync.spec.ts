@@ -146,6 +146,17 @@ describe('simple mainnet test run', async () => {
           const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
           try {
             await Promise.race([snapCompleted, snapSyncTimeout])
+
+            // @ts-ignore
+            const expectedAccountRoot = ejsClient.services[0].synchronizer!._fetcher!.root
+            const actualAccountRoot =
+              // @ts-ignore
+              ejsClient.services[0].synchronizer!._fetcher!.accountTrie.root()
+            assert.ok(
+              JSON.stringify(expectedAccountRoot) === JSON.stringify(actualAccountRoot),
+              'Roots match'
+            )
+
             assert.ok(true, 'completed snap sync')
           } catch (e) {
             assert.fail('could not complete snap sync in 40 seconds')
@@ -158,7 +169,7 @@ describe('simple mainnet test run', async () => {
         await teardownCallBack()
         assert.ok(true, 'network cleaned')
       } catch (e) {
-        assert.fail('network not cleaned properly')
+        assert.fail(`network not cleaned properly: ${e}`)
       }
     },
     10 * 60_000
