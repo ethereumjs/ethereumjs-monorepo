@@ -77,9 +77,9 @@ export class Service {
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
       this.config.logger.debug(`Peer banned: ${peer}`)
     )
-    this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
+    this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
       this.config.logger.debug(`Peer added: ${peer}`)
-    })
+    )
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
       this.config.logger.debug(`Peer removed: ${peer}`)
     )
