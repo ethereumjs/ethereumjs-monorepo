@@ -286,7 +286,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
-      console.log('dbg10')
       return Object.assign([], [Object.create({ skipped: true })], { completed: true })
     }
 
@@ -353,14 +352,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     // update highest known hash
     const highestReceivedhash = result.at(-1)?.hash as Uint8Array
     if (this.highestKnownHash) {
-      console.log('dbg11')
-
       if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
-        console.log('dbg12')
         this.highestKnownHash = highestReceivedhash
       }
     } else {
-      console.log('dbg13')
       this.highestKnownHash = highestReceivedhash
     }
 
@@ -381,7 +376,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create({ skipped: true }))) {
       // return without storing to skip this task
-      console.log('dbg14')
       return
     }
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
