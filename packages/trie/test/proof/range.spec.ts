@@ -287,9 +287,6 @@ describe('createRangeProof()', function () {
 
     const proof = await trie.createRangeProof(lKey, rKey)
 
-    console.log(bytesToNibbles((trie as any).appliedKey(hexToBytes('0x2000'))))
-    console.log(bytesToNibbles((trie as any).appliedKey(hexToBytes('0x2200'))))
-    console.log(bytesToNibbles((trie as any).appliedKey(hexToBytes('0x2220'))))
     assert.ok(proof.keys.length === 1)
     assert.ok(proof.values.length === 1)
 
@@ -400,11 +397,7 @@ describe('createRangeProof()', function () {
     assert.deepEqual(proof.proof, null)
     assert.equal(proof.values.length, 9)
     assert.equal(proof.keys.length, 9)
-    console.log({
-      keys: proof.keys,
-      values: proof.values,
-      proof: proof.proof,
-    })
+
     await proverTrie.verifyRangeProof(trie.root(), null, null, proof.keys, proof.values, null)
   })
 

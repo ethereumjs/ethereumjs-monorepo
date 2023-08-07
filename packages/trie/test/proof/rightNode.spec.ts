@@ -50,7 +50,7 @@ describe('hasRightBranch', async () => {
     }
   }
 })
-describe.only('returnRightNode', async () => {
+describe('returnRightNode', async () => {
   const trie = new Trie({})
   for (const i of Array.from({ length: 9 }, (_, i) => i)) {
     if (i === 6) continue
