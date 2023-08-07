@@ -847,9 +847,9 @@ export class Trie {
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
-      firstKey && bytesToNibbles(this.appliedKey(firstKey)),
-      lastKey && bytesToNibbles(this.appliedKey(lastKey)),
-      keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
+      firstKey ? bytesToNibbles(this.appliedKey(firstKey)) : null,
+      lastKey ? bytesToNibbles(this.appliedKey(lastKey)) : null,
+      keys.map((k) => this.appliedKey(k)).map((k) => bytesToNibbles(k)),
       values,
       proof,
       this._opts.useKeyHashingFunction

@@ -324,7 +324,7 @@ async function verifyProof(
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
+  const proofTrie = new Trie({ useKeyHashingFunction })
   try {
     await proofTrie.fromProof(proof)
   } catch (e) {
@@ -391,12 +391,15 @@ export function isValueNode(node: TrieNode): boolean {
   )
 }
 
-export function hasRightBranch(node: BranchNode, nibble: number): undefined | EmbeddedNode {
+export function hasRightBranch(
+  node: BranchNode,
+  nibble: number
+): undefined | [number, EmbeddedNode] {
   for (let i = nibble + 1; i < 16; i++) {
     try {
       const b = node.getBranch(i)
       if (b !== null) {
-        return b
+        return [i, b]
       }
     } catch (err) {
       //
@@ -455,8 +458,8 @@ export async function rightNode(
 
     // if a node is found, walk trie from that node, and return the first value node found.
     const hash =
-      rightBranch instanceof Uint8Array ? rightBranch : this.hash(RLP.encode(rightBranch))
-    const walkroot = await this.lookupNode(rightBranch)
+      rightBranch instanceof Uint8Array ? rightBranch : this.hash(RLP.encode(rightBranch[1]))
+    const walkroot = await this.lookupNode(rightBranch[1])
     if (walkroot! instanceof LeafNode) {
       return { node: walkroot!, currentKey: [] }
     } else {
@@ -479,7 +482,7 @@ export async function rightNodeFromNull(this: Trie, key: Nibbles, path: Path) {
   let par: TrieNode | undefined
   let current = key
   let childIdx = -1
-  let rightBranch: EmbeddedNode | null = null
+  let rightBranch: [number, EmbeddedNode] | null = null
   current = key.slice(0, -path.remaining.length)
   childIdx = path.remaining[0]
   while (rightBranch === null && path.stack.length > 0) {
@@ -498,17 +501,17 @@ export async function rightNodeFromNull(this: Trie, key: Nibbles, path: Path) {
     childIdx = path.remaining[0]
     rightBranch = hasRightBranch(par, childIdx) ?? null
     if (rightBranch !== null) {
-      const rightNode = await this.lookupNode(rightBranch)
+      const rightNode = await this.lookupNode(rightBranch[1])
       if (isValueNode(rightNode!)) {
         return {
           node: rightNode!,
-          currentKey: [...current],
+          currentKey: [...current, rightBranch[0]],
         }
       }
     }
     let i = childIdx + 1
     while ((rightBranch === null || rightBranch.length <= 0) && i < 16) {
-      rightBranch = (par as BranchNode).getBranch(i)
+      rightBranch = (par as BranchNode).getBranch(i) ? [i, (par as BranchNode).getBranch(i)!] : null
       i++
     }
     current.pop()
@@ -598,8 +601,16 @@ export async function verifyRangeProof(
 
   // Make sure the keys are in order
   for (let i = 0; i < keys.length - 1; i++) {
-    if (nibblesCompare(keys[i], keys[i + 1]) >= 0) {
-      throw new Error('invalid keys order')
+    if (nibblesCompare(keys[i], keys[i + 1]) > 0) {
+      console.log({
+        a: bytesToHex(nibblestoBytes(keys[i])),
+        b: bytesToHex(nibblestoBytes(keys[i + 1])),
+      })
+      throw new Error(
+        `invalid keys order [${i} - ${i + 1}]: ${bytesToHex(
+          nibblestoBytes(keys[i])
+        )} should be less than ${bytesToHex(nibblestoBytes(keys[i + 1]))}`
+      )
     }
   }
   // Make sure all values are present
@@ -615,6 +626,7 @@ export async function verifyRangeProof(
     for (let i = 0; i < keys.length; i++) {
       await trie.put(nibblestoBytes(keys[i]), values[i])
     }
+    trie.root(rootHash)
     if (!equalsBytes(rootHash, trie.root())) {
       throw new Error('invalid all elements proof: root mismatch')
     }
@@ -656,7 +668,11 @@ export async function verifyRangeProof(
       throw new Error('invalid one element proof: firstKey should be equal to keys[0]')
     }
     if (value === null || !equalsBytes(value, values[0])) {
-      throw new Error('invalid one element proof: value mismatch')
+      console.log({
+        value,
+        values0: values[0],
+      })
+      throw new Error(`'invalid one element proof: value mismatch': ${value} !== ${values[0]}`)
     }
 
     return hasRightElement(trie, firstKey)
@@ -704,6 +720,12 @@ export function getSharedNibbles(nibbles1: number[], nibbles2: number[]): number
   }
   return sharedNibbles
 }
+
+function shortArr(arr: Uint8Array) {
+  const nib = bytesToNibbles(arr)
+  return `[ ${nib.slice(0, 4)}...${nib.slice(-4)} ]`
+}
+
 /**
  * Return a range proof of trie items between startingHash and limitHash
  * This proof can be verified using `verifyRangeProof`.
@@ -724,11 +746,31 @@ export async function createRangeProof(
   if (nibblesCompare(bytesToNibbles(startingKey), bytesToNibbles(limitKey)) > 0) {
     throw new Error('invalid keys order')
   }
-  startingKey = this.appliedKey(startingKey)
-  limitKey = this.appliedKey(limitKey)
+  // console.log('startingKey', [...startingKey.values()])
+  // startingKey = this.appliedKey(startingKey)
+  // console.log('applied_startingKey', [...startingKey.values()])
+  // limitKey = this.appliedKey(limitKey)
 
   let startingNode = (await this.findPath(startingKey)).node
+  startingNode ?? console.log('startNode null', shortArr(startingKey))
   let limitNode = (await this.findPath(limitKey)).node
+  limitNode ?? console.log('limitNode null', shortArr(limitKey))
+
+  if (
+    startingNode === null &&
+    limitNode === null &&
+    equalsBytes(startingKey, hexToBytes('0x' + '00'.repeat(32))) &&
+    equalsBytes(limitKey, hexToBytes('0x' + 'ff'.repeat(32)))
+  ) {
+    const keys: Uint8Array[] = []
+    const values: Uint8Array[] = []
+    const proof = null
+    await this.walkAllValueNodes(async (node, key) => {
+      keys.push(nibblestoBytes([...key, ...(node as any)._nibbles]))
+      values.push(node.value()!)
+    })
+    return { keys, values, proof }
+  }
 
   const proofSet: Set<string> = new Set()
   const keyvals: Map<string, Uint8Array> = new Map()
@@ -738,8 +780,10 @@ export async function createRangeProof(
     const rightNode = await returnRightNode.bind(this)(bytesToNibbles(startingKey))
     if (rightNode !== null) {
       proofSet.add(bytesToHex(rightNode.node.serialize()))
-      keyvals.set(bytesToHex(nibblestoBytes(rightNode.currentKey)), rightNode.node.value()!)
-      startingKey = nibblestoBytes(rightNode.currentKey)
+      startingKey = nibblestoBytes([...rightNode.currentKey, ...(rightNode.node as any)._nibbles])
+      console.log('startKey(rightNode)', `${shortArr(startingKey)}`)
+
+      keyvals.set(bytesToHex(startingKey), rightNode.node.value()!)
       startingNode = rightNode.node
     } else {
       //
@@ -747,6 +791,7 @@ export async function createRangeProof(
   }
 
   if (limitNode !== null) {
+    console.log('limitNode is not null', limitKey)
     const startingNibbles = bytesToNibbles(startingKey)
     const limitNibbles = bytesToNibbles(limitKey)
     let root = this.root()
@@ -769,7 +814,7 @@ export async function createRangeProof(
     }
     const newWalk = this.walkTrieIterable(root, sharedNibbles)
     for await (const { node, currentKey } of newWalk) {
-      if (nibblesCompare(currentKey, limitNibbles) >= 0) {
+      if (nibblesCompare(currentKey, limitNibbles) <= 0) {
         break
       }
       if (node instanceof LeafNode) {
@@ -795,52 +840,79 @@ export async function createRangeProof(
       values: sortedValues,
     }
   } else {
-    {
-      // If the limit node does not exist, find the next value node to the right (if it exists)
-      const limitNodeRight = await returnRightNode.bind(this)(bytesToNibbles(limitKey))
-      if (limitNodeRight !== null) {
-        limitNode = limitNodeRight.node
-        limitNodeRight.node._value &&
-          keyvals.set(
-            bytesToHex(nibblestoBytes(limitNodeRight.currentKey)),
-            limitNodeRight.node.value()!
-          )
-        proofSet.add(bytesToHex(limitNodeRight.node.serialize()))
-        limitKey = nibblestoBytes(limitNodeRight.currentKey)
-      }
-      if (startingNode === null) {
-        if (equalsBytes(startingKey, hexToBytes('0x' + '00'.repeat(32)))) {
-          const unsortedKeys: Uint8Array[] = []
-          const keyvals: Map<string, Uint8Array> = new Map()
-          const walk = this.walkTrieIterable(this.root())
-          for await (const { node, currentKey } of walk) {
-            if (isValueNode(node)) {
-              const nodeKey = [...currentKey, ...(<any>node)._nibbles]
-              unsortedKeys.push(nibblestoBytes(nodeKey))
-              keyvals.set(bytesToHex(nibblestoBytes(nodeKey)), node._value!)
+    // If the limit node does not exist, find the next value node to the right (if it exists)
+    const limitNodeRight = await returnRightNode.bind(this)(bytesToNibbles(limitKey))
+    console.log('limitNodeRight', limitNodeRight)
+    if (startingNode !== null && limitNodeRight === null) {
+      const walk = this.walkTrieIterable(this.root())
+      console.log('starKey', startingKey.length, shortArr(startingKey))
+      for await (const { node, currentKey } of walk) {
+        if (isValueNode(node)) {
+          const nodeKey = [...currentKey, ...(<any>node)._nibbles]
+          console.log('nodeKey', nodeKey.length, `${nodeKey.slice(0, 4)}...${nodeKey.slice(-4)}`)
+          console.log('compare', nibblesCompare(nodeKey, bytesToNibbles(startingKey)))
+          if (nibblesCompare(nodeKey, bytesToNibbles(startingKey)) >= 0) {
+            keyvals.set(bytesToHex(nibblestoBytes(nodeKey)), node._value!)
+            const path = await this.findPath(nibblestoBytes(nodeKey))
+            for (const p of path.stack) {
+              proofSet.add(bytesToHex(p.serialize()))
             }
-          }
-          const keys = unsortedKeys.sort((a, b) =>
-            nibblesCompare(bytesToNibbles(a), bytesToNibbles(b))
-          )
-          const values = keys.map((k) => keyvals.get(bytesToHex(k))!)
-          return {
-            values,
-            keys,
-            proof: null,
+            proofSet.add(bytesToHex(node.serialize()))
           }
         }
-        return {
-          values: [],
-          keys: [],
-          proof: null,
-        }
+      }
+      const keys = [...keyvals.keys()].sort((a, b) => {
+        return nibblesCompare(bytesToNibbles(hexToBytes(a)), bytesToNibbles(hexToBytes(b)))
+      })
+      const values = keys.map((k) => keyvals.get(k)!)
+      const proof: Uint8Array[] = []
+      for (const p of proofSet.values()) {
+        proof.push(hexToBytes(p))
       }
       return {
-        values: [startingNode!._value as Uint8Array],
-        keys: [startingKey],
-        proof: [],
+        proof,
+        keys: keys.map((k) => hexToBytes(k)),
+        values,
       }
+    }
+    if (limitNodeRight !== null) {
+      limitNode = limitNodeRight.node
+      limitKey = nibblestoBytes([
+        ...limitNodeRight.currentKey,
+        ...(limitNodeRight.node as any)._nibbles,
+      ])
+      console.log('limitKey(rightNode)', shortArr(limitKey))
+      limitNodeRight.node._value &&
+        keyvals.set(
+          bytesToHex(
+            nibblestoBytes([...limitNodeRight.currentKey, ...(limitNodeRight.node as any)._nibbles])
+          ),
+          limitNodeRight.node.value()!
+        )
+      proofSet.add(bytesToHex(limitNodeRight.node.serialize()))
+    }
+    if (startingNode !== null) {
+      if (nibblesCompare(bytesToNibbles(startingKey), bytesToNibbles(limitKey)) === 0) {
+        const path = await this.findPath(startingKey)
+        console.log({
+          one_el_values: [startingNode!._value as Uint8Array],
+          one_el_keys: [shortArr(startingKey)],
+          one_el_proof: [
+            ...path.stack.map((p) => shortArr(p.serialize())),
+            shortArr(startingNode.serialize()),
+          ],
+        })
+        return {
+          values: [startingNode!._value as Uint8Array],
+          keys: [startingKey],
+          proof: [...path.stack.map((p) => p.serialize()), startingNode.serialize()],
+        }
+      }
+    }
+    return {
+      values: [],
+      keys: [],
+      proof: await this.createProof(startingKey),
     }
   }
 }

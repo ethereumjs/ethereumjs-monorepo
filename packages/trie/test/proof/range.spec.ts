@@ -4,15 +4,15 @@ import {
   compareBytes,
   concatBytes,
   hexToBytes,
+  randomBytes,
   setLengthLeft,
   toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import * as crypto from 'crypto'
-import { randomBytes } from 'crypto'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { Trie } from '../../src/index.js'
+import { bytesToNibbles } from '../../src/util/nibbles.js'
 
 import type { DB } from '@ethereumjs/util'
 
@@ -39,8 +39,8 @@ async function randomTrie(db: DB<string, string>, addKey: boolean = true) {
   }
 
   for (let i = 0; i < TRIE_SIZE; i++) {
-    const key = crypto.randomBytes(32)
-    const val = crypto.randomBytes(20)
+    const key = randomBytes(32)
+    const val = randomBytes(20)
     if ((await trie.get(key)) === null) {
       await trie.put(key, val)
       entries.push([key, val])
@@ -260,6 +260,209 @@ describe('createRangeProof()', function () {
       assert.ok('succesfully threw')
     }
   })
+
+  it('creates one key/value proof', async () => {
+    // In this case, there are no key/values between the left and the right key
+    // However, the first value on the right of the rKey key should be reported
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie({
+      // useKeyHashing: true,
+    })
+
+    await trie.put(hexToBytes('0x1000'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1100'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1110'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x2000'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2200'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2220'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x3000'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3300'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3330'), hexToBytes('0xc'))
+
+    const lKey = hexToBytes('0x' + '00'.repeat(32))
+    const rKey = hexToBytes('0x' + '00'.repeat(32))
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    console.log(bytesToNibbles((trie as any).appliedKey(hexToBytes('0x2000'))))
+    console.log(bytesToNibbles((trie as any).appliedKey(hexToBytes('0x2200'))))
+    console.log(bytesToNibbles((trie as any).appliedKey(hexToBytes('0x2220'))))
+    assert.ok(proof.keys.length === 1)
+    assert.ok(proof.values.length === 1)
+
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      proof.keys[0],
+      proof.keys[proof.keys.length - 1],
+      proof.keys,
+      proof.values,
+      proof.proof
+    )
+  })
+
+  it('creates multiple key/value proof', async () => {
+    // In this case, report a part of the key/value pairs, together with the double proof of
+    // lKey and rKey
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie({})
+
+    await trie.put(hexToBytes('0x1000'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1100'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1110'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x2000'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2200'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2220'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x3000'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3300'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3330'), hexToBytes('0xc'))
+
+    const lKey = hexToBytes('0x' + '00'.repeat(32))
+    const rKey = hexToBytes('0x' + '9999' + '00'.repeat(30))
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    // This should report a part of the trie, somewhere between 1 and 9 elements
+
+    assert.equal(proof.values.length, proof.keys.length)
+    expect(proof.values.length).toEqual(9)
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      lKey,
+      rKey,
+      proof.keys,
+      proof.values,
+      proof.proof
+    )
+  })
+
+  it('creates zero key/value proof', async () => {
+    // In this case, there are no key/values between the left and the right key
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie()
+
+    await trie.put(hexToBytes('0x1000'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1100'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1110'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x2000'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2200'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2220'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x3000'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3300'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3330'), hexToBytes('0xc'))
+
+    const lKey = hexToBytes('0xEF'.repeat(32))
+    const rKey = hexToBytes('0xFF'.repeat(32))
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    await proverTrie.verifyRangeProof(
+      trie.root(),
+      proof.keys[0],
+      proof.keys[proof.keys.length - 1],
+      proof.keys,
+      proof.values,
+      null
+    )
+  })
+
+  it('creates all elements proof', async () => {
+    // In this case, report all values of the trie
+    const trie = new Trie({
+      useKeyHashing: true,
+    })
+
+    const proverTrie = new Trie({})
+
+    await trie.put(hexToBytes('0x1000'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1100'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x1110'), hexToBytes('0xa'))
+    await trie.put(hexToBytes('0x2000'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2200'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x2220'), hexToBytes('0xb'))
+    await trie.put(hexToBytes('0x3000'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3300'), hexToBytes('0xc'))
+    await trie.put(hexToBytes('0x3330'), hexToBytes('0xc'))
+
+    const lKey = hexToBytes('0x' + '00'.repeat(32))
+    const rKey = hexToBytes('0x' + 'FF'.repeat(32))
+
+    const proof = await trie.createRangeProof(lKey, rKey)
+
+    assert.deepEqual(proof.proof, null)
+    assert.equal(proof.values.length, 9)
+    assert.equal(proof.keys.length, 9)
+    console.log({
+      keys: proof.keys,
+      values: proof.values,
+      proof: proof.proof,
+    })
+    await proverTrie.verifyRangeProof(trie.root(), null, null, proof.keys, proof.values, null)
+  })
+
+  it('passes randomly created tries with randomly selected ranges', async () => {
+    for (let i = 0; i < 1; i++) {
+      const trie = new Trie({
+        useKeyHashing: true,
+      })
+      // Generate [100, 1000) key/value pairs
+      const keyCount = 100 + Math.floor(Math.random() * 900)
+      for (let j = 0; j < keyCount; j++) {
+        await trie.put(randomBytes(32), randomBytes(32))
+      }
+
+      // 1000 verified requests
+      for (let j = 0; j < 1; j++) {
+        const lKey = randomBytes(32)
+        let rKey = randomBytes(32)
+        while (compareBytes(lKey, rKey) > 0) {
+          rKey = randomBytes(32)
+        }
+        const proof = await trie.createRangeProof(lKey, rKey)
+        const proverTrie = new Trie()
+        if (proof.values.length === 1) {
+          const reportedLKey = proof.keys[0]
+          if (compareBytes(reportedLKey, rKey) > 0) {
+            try {
+              await proverTrie.verifyRangeProof(
+                trie.root(),
+                reportedLKey,
+                reportedLKey,
+                proof.keys,
+                proof.values,
+                proof.proof
+              )
+              assert.ok('succesfully verified')
+            } catch (e: any) {
+              assert.fail('could not verify')
+            }
+          } else {
+            try {
+              await proverTrie.verifyRangeProof(
+                trie.root(),
+                lKey,
+                rKey,
+                proof.keys,
+                proof.values,
+                proof.proof
+              )
+              assert.ok('succesfully verified')
+            } catch (e: any) {
+              assert.fail('could not verify')
+            }
+          }
+        }
+      }
+    }
+  })
 })
 
 describe('simple merkle range proofs generation and verification', () => {
@@ -364,9 +567,7 @@ describe('simple merkle range proofs generation and verification', () => {
 
     // Test the mini trie with only a single element.
     const tinyTrie = new Trie()
-    const tinyEntries: [Uint8Array, Uint8Array][] = [
-      [crypto.randomBytes(32), crypto.randomBytes(20)],
-    ]
+    const tinyEntries: [Uint8Array, Uint8Array][] = [[randomBytes(32), randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
     const tinyStartKey = hexToBytes('0x' + '00'.repeat(32))
@@ -446,7 +647,7 @@ describe('simple merkle range proofs generation and verification', () => {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       const targetIndex = getRandomIntInclusive(start, end)
-      entries[targetIndex][0] = crypto.randomBytes(32)
+      entries[targetIndex][0] = randomBytes(32)
       await verify(trie, entries, start, end)
     })
 
@@ -455,7 +656,7 @@ describe('simple merkle range proofs generation and verification', () => {
       const start = getRandomIntInclusive(0, entries.length - 2)
       const end = getRandomIntInclusive(start + 1, entries.length - 1)
       const targetIndex = getRandomIntInclusive(start, end)
-      entries[targetIndex][1] = crypto.randomBytes(20)
+      entries[targetIndex][1] = randomBytes(20)
       await verify(trie, entries, start, end)
     })
 
