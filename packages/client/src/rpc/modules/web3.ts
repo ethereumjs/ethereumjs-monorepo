@@ -6,7 +6,7 @@ import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
-import type { EthereumService } from '../../service'
+import type { Service } from '../../service'
 
 /**
  * web3_* RPC module
@@ -20,7 +20,7 @@ export class Web3 {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
-    const service = client.services.find((s) => s.name === 'eth') as EthereumService
+    const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
 
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])

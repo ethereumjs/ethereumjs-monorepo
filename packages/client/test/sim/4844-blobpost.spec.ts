@@ -59,43 +59,47 @@ describe(`running txes on ${rpcUrl}`, async () => {
     throw e
   }
 
-  it('run blob transactions', async () => {
-    const nonceFetch = await client.request(
-      'eth_getTransactionCount',
-      [sender.toString(), 'latest'],
-      2.0
-    )
-    const nonce = Number(nonceFetch.result)
-    assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
+  it(
+    'run blob transactions',
+    async () => {
+      const nonceFetch = await client.request(
+        'eth_getTransactionCount',
+        [sender.toString(), 'latest'],
+        2.0
+      )
+      const nonce = Number(nonceFetch.result)
+      assert.ok(true, `fetched ${sender}'s  nonce=${nonce} for blob txs`)
 
-    const txns = await createBlobTxs(
-      numTxs - 1,
-      4096,
-      pkey,
-      nonce,
-      {
-        to: bytesToHex(randomBytes(20)),
-        chainId,
-        maxFeePerblobGas: BigInt(process.env.MAX_DATAFEE ?? 100000000n),
-        maxPriorityFeePerGas: BigInt(process.env.MAX_PRIORITY ?? 100000000n),
-        maxFeePerGas: BigInt(process.env.MAX_FEE ?? 1000000000n),
-        gasLimit: BigInt(process.env.GAS_LIMIT ?? 0xffffffn),
-      },
-      { common }
-    )
-    const txHashes = []
-    for (const txn of txns) {
-      const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
-      if (res.result === undefined) {
-        console.log('eth_sendRawTransaction returned invalid response', res)
-        assert.fail(`Unable to post all txs`)
-        break
+      const txns = await createBlobTxs(
+        numTxs - 1,
+        pkey,
+        nonce,
+        {
+          to: bytesToHex(randomBytes(20)),
+          chainId,
+          maxFeePerblobGas: BigInt(process.env.MAX_DATAFEE ?? 100000000n),
+          maxPriorityFeePerGas: BigInt(process.env.MAX_PRIORITY ?? 100000000n),
+          maxFeePerGas: BigInt(process.env.MAX_FEE ?? 1000000000n),
+          gasLimit: BigInt(process.env.GAS_LIMIT ?? 0xffffffn),
+          blobSize: Number(process.env.BLOB_SIZE ?? 4096),
+        },
+        { common }
+      )
+      const txHashes = []
+      for (const txn of txns) {
+        const res = await client.request('eth_sendRawTransaction', [txn], 2.0)
+        if (res.result === undefined) {
+          console.log('eth_sendRawTransaction returned invalid response', res)
+          assert.fail(`Unable to post all txs`)
+          break
+        }
+        assert.ok(true, `posted tx with hash=${res.result}`)
+        txHashes.push(res.result)
       }
-      assert.ok(true, `posted tx with hash=${res.result}`)
-      txHashes.push(res.result)
-    }
-    assert.ok(true, `posted txs=${txHashes.length}`)
-  })
+      assert.ok(true, `posted txs=${txHashes.length}`)
+    },
+    10 * 60_000
+  )
 
   it('cleanup', async () => {
     try {
@@ -104,5 +108,5 @@ describe(`running txes on ${rpcUrl}`, async () => {
     } catch (e) {
       assert.fail('could not terminate properly')
     }
-  })
+  }, 60_000)
 })
