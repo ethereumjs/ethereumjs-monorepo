@@ -1,6 +1,15 @@
+### Blob tx(s) post utility
+
 A blob tx gen utility for seeding devnet5 (or subsequent devnets/testnests with blobs)
 
-how to run:
+## Prerequisites
+
+1. Bash terminal
+2. `ethereumjs-monorepo` codebase build via `npm i` (for e.g. at `/usr/app/ethereumjs`)
+
+Note: All commands should be run from the `client` package directory root (so something like `/usr/app/ethereumjs/packages/client`)
+
+## How to run
 
 1. Clone the repo set to branch `develop-v7` and run `npm i` with nodejs `18` installed and latest npm version
 2. Run the blob gen utility (replace PRIVATE_KEY with a funded account private key and RPC_URL with an authenticated rpc url):

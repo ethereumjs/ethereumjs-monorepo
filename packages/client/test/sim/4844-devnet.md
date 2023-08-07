@@ -1,5 +1,14 @@
 # EIP 4844 Testing
 
+## Prerequisites
+
+1. Bash terminal
+2. Docker (without sudo)
+3. `jq` & `curl` installed
+4. `ethereumjs-monorepo` codebase build via `npm i` (for e.g. at `ethjs/`)
+
+You may pre-download docker images for lodestar (`docker pull g11tech/lodestar:36-7b0e9f`) to avoid any test timeout issues.
+
 Note: All commands should be run from the `client` package directory root (so something like `ethjs/packages/client`)
 
 ## Running a local devnet
