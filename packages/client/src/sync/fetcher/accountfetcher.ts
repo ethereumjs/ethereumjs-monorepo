@@ -286,7 +286,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
-      return Object.assign([], [Object.create({ skipped: true })], { completed: true })
+      return Object.assign([], [{ skipped: true }], { completed: true })
     }
 
     const rangeResult = await peer!.snap!.getAccountRange({
@@ -374,7 +374,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   async store(result: AccountData[]): Promise<void> {
     this.debug(`Stored ${result.length} accounts in account trie`)
 
-    if (JSON.stringify(result[0]) === JSON.stringify(Object.create({ skipped: true }))) {
+    if (JSON.stringify(result[0]) === JSON.stringify({ skipped: true })) {
       // return without storing to skip this task
       return
     }
