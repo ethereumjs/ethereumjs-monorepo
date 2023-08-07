@@ -12,7 +12,6 @@ import {
 import { assert, describe, expect, it } from 'vitest'
 
 import { Trie } from '../../src/index.js'
-import { bytesToNibbles } from '../../src/util/nibbles.js'
 
 import type { DB } from '@ethereumjs/util'
 
