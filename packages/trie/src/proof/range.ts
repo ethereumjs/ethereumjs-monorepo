@@ -769,115 +769,64 @@ export async function createRangeProof(
     }
   }
 
-  if (limitNode !== null) {
-    const startingNibbles = bytesToNibbles(startingKey)
-    const limitNibbles = bytesToNibbles(limitKey)
-    let root = this.root()
-    let sharedNibbles: number[] = []
-    const rootNode = await this.lookupNode(root)
-    proofSet.add(bytesToHex(rootNode!.serialize()))
-    if (nibblesCompare(startingNibbles, limitNibbles) === 0) {
-      root = this.hash(limitNode.serialize())
-      sharedNibbles = [...startingNibbles]
-    } else {
-      sharedNibbles = getSharedNibbles(startingNibbles, limitNibbles)
-
-      if (sharedNibbles.length > 0) {
-        const pathToParent = await this.findPath(nibblestoBytes(sharedNibbles))
-        for (const p of pathToParent.stack) {
-          proofSet.add(bytesToHex(p.serialize()))
+  const limitNodeRight = await returnRightNode.bind(this)(bytesToNibbles(limitKey))
+  if (startingNode !== null && limitNodeRight === null) {
+    const walk = this.walkTrieIterable(this.root())
+    for await (const { node, currentKey } of walk) {
+      if (isValueNode(node)) {
+        const nodeKey = [...currentKey, ...(<any>node)._nibbles]
+        if (nibblesCompare(nodeKey, bytesToNibbles(startingKey)) >= 0) {
+          keyvals.set(bytesToHex(nibblestoBytes(nodeKey)), node._value!)
+          const path = await this.findPath(nibblestoBytes(nodeKey))
+          for (const p of path.stack) {
+            proofSet.add(bytesToHex(p.serialize()))
+          }
+          proofSet.add(bytesToHex(node.serialize()))
         }
-        root = this.hash(pathToParent.node!.serialize())
       }
     }
-    const newWalk = this.walkTrieIterable(root, sharedNibbles)
-    for await (const { node, currentKey } of newWalk) {
-      if (nibblesCompare(currentKey, limitNibbles) <= 0) {
-        break
-      }
-      if (node instanceof LeafNode) {
-        keyvals.set(
-          bytesToHex(nibblestoBytes([...currentKey, ...(node._nibbles ?? [])])),
-          node.value()!
-        )
-      }
-      proofSet.add(bytesToHex(node.serialize()))
-    }
+    const keys = [...keyvals.keys()].sort((a, b) => {
+      return nibblesCompare(bytesToNibbles(hexToBytes(a)), bytesToNibbles(hexToBytes(b)))
+    })
+    const values = keys.map((k) => keyvals.get(k)!)
     const proof: Uint8Array[] = []
-    const sortedKeys = [...keyvals.keys()].sort((a, b) =>
-      nibblesCompare(bytesToNibbles(hexToBytes(a)), bytesToNibbles(hexToBytes(b)))
-    )
-
-    const sortedValues = sortedKeys.map((k) => keyvals.get(k)!)
     for (const p of proofSet.values()) {
       proof.push(hexToBytes(p))
     }
     return {
       proof,
-      keys: sortedKeys.map((k) => hexToBytes(k)),
-      values: sortedValues,
+      keys: keys.map((k) => hexToBytes(k)),
+      values,
     }
-  } else {
-    // If the limit node does not exist, find the next value node to the right (if it exists)
-    const limitNodeRight = await returnRightNode.bind(this)(bytesToNibbles(limitKey))
-    if (startingNode !== null && limitNodeRight === null) {
-      const walk = this.walkTrieIterable(this.root())
-      for await (const { node, currentKey } of walk) {
-        if (isValueNode(node)) {
-          const nodeKey = [...currentKey, ...(<any>node)._nibbles]
-          if (nibblesCompare(nodeKey, bytesToNibbles(startingKey)) >= 0) {
-            keyvals.set(bytesToHex(nibblestoBytes(nodeKey)), node._value!)
-            const path = await this.findPath(nibblestoBytes(nodeKey))
-            for (const p of path.stack) {
-              proofSet.add(bytesToHex(p.serialize()))
-            }
-            proofSet.add(bytesToHex(node.serialize()))
-          }
-        }
-      }
-      const keys = [...keyvals.keys()].sort((a, b) => {
-        return nibblesCompare(bytesToNibbles(hexToBytes(a)), bytesToNibbles(hexToBytes(b)))
-      })
-      const values = keys.map((k) => keyvals.get(k)!)
-      const proof: Uint8Array[] = []
-      for (const p of proofSet.values()) {
-        proof.push(hexToBytes(p))
-      }
+  }
+  if (limitNodeRight !== null) {
+    limitNode = limitNodeRight.node
+    limitKey = nibblestoBytes([
+      ...limitNodeRight.currentKey,
+      ...(limitNodeRight.node as any)._nibbles,
+    ])
+    limitNodeRight.node._value &&
+      keyvals.set(
+        bytesToHex(
+          nibblestoBytes([...limitNodeRight.currentKey, ...(limitNodeRight.node as any)._nibbles])
+        ),
+        limitNodeRight.node.value()!
+      )
+    proofSet.add(bytesToHex(limitNodeRight.node.serialize()))
+  }
+  if (startingNode !== null) {
+    if (nibblesCompare(bytesToNibbles(startingKey), bytesToNibbles(limitKey)) === 0) {
+      const path = await this.findPath(startingKey)
       return {
-        proof,
-        keys: keys.map((k) => hexToBytes(k)),
-        values,
+        values: [startingNode!._value as Uint8Array],
+        keys: [startingKey],
+        proof: [...path.stack.map((p) => p.serialize()), startingNode.serialize()],
       }
     }
-    if (limitNodeRight !== null) {
-      limitNode = limitNodeRight.node
-      limitKey = nibblestoBytes([
-        ...limitNodeRight.currentKey,
-        ...(limitNodeRight.node as any)._nibbles,
-      ])
-      limitNodeRight.node._value &&
-        keyvals.set(
-          bytesToHex(
-            nibblestoBytes([...limitNodeRight.currentKey, ...(limitNodeRight.node as any)._nibbles])
-          ),
-          limitNodeRight.node.value()!
-        )
-      proofSet.add(bytesToHex(limitNodeRight.node.serialize()))
-    }
-    if (startingNode !== null) {
-      if (nibblesCompare(bytesToNibbles(startingKey), bytesToNibbles(limitKey)) === 0) {
-        const path = await this.findPath(startingKey)
-        return {
-          values: [startingNode!._value as Uint8Array],
-          keys: [startingKey],
-          proof: [...path.stack.map((p) => p.serialize()), startingNode.serialize()],
-        }
-      }
-    }
-    return {
-      values: [],
-      keys: [],
-      proof: await this.createProof(startingKey),
-    }
+  }
+  return {
+    values: [],
+    keys: [],
+    proof: await this.createProof(startingKey),
   }
 }
