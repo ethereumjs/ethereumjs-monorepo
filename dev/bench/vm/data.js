@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691411706944,
+  "lastUpdate": 1691440218199,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "66c98f386e4a7807978e3e8f0c19608d10849896",
-          "message": "RC1 Releases (#2876)\n\n* Bump version, updated upstream dependency versions, updated README (RLP)\r\n\r\n* Update release date to 2023-07-13\r\n\r\n* Add generic Buffer -> Uint8Array README section\r\n\r\n* Add generic README unreleased note\r\n\r\n* Add generic ESM sections\r\n\r\n* Add a first browser example section to README (EVM)\r\n\r\n* Small updates\r\n\r\n* Renamed blobHelpers.ts -> blobs.ts (Util), moved Util encoding to Trie\r\n\r\n* Version bump, update upstream dependency versions, update README (Util)\r\n\r\n* Move encoding tests from Util to Trie\r\n\r\n* Version bump, update upstream dependency versions, update README (Common)\r\n\r\n* Rebuild docs\r\n\r\n* Version bump, update upstream dependency versions, update README (Trie)\r\n\r\n* Version bump, update upstream dependency versions, update README (devp2p)\r\n\r\n* Rebuild docs (Tx)\r\n\r\n* Version bump, update upstream dependency versions, update README (Tx)\r\n\r\n* Version bump, update upstream dependency versions, update README (Block)\r\n\r\n* Rebuild docs (Block)\r\n\r\n* Version bump, update upstream dependency versions, update README (Blockchain)\r\n\r\n* Rebuild docs (Blockchain)\r\n\r\n* Version bump, update upstream dependency versions, update README, added LICENSE file (Genesis)\r\n\r\n* Version bump, update upstream dependency versions, update README (StateManager)\r\n\r\n* Rebuild docs (StateManager)\r\n\r\n* Version bump, update upstream dependency versions, update README (Ethash)\r\n\r\n* Version bump, update upstream dependency versions, update README (EVM)\r\n\r\n* First part of VM README additions\r\n\r\n* Blockchain: remove level dependency, other changes\r\n\r\n* Dependency clean-up\r\n\r\n* Bump client version to v0.8.0\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Small updates\r\n\r\n* Add CHANGELOG introduction sections\r\n\r\n* Adjust Cancun HF CHANGELOG note (all EIPs included)\r\n\r\n* Bring release notes up to date\r\n\r\n* Rebuild Block, Common docs\r\n\r\n* Rebuild Ethash docs\r\n\r\n* Small updates and corrections\r\n\r\n* More small corrections",
-          "timestamp": "2023-07-17T15:51:34+02:00",
-          "tree_id": "680b78f0dc42a6f7fc8257ba4e8179857964af42",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/66c98f386e4a7807978e3e8f0c19608d10849896"
-        },
-        "date": 1689602157424,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 24695,
-            "range": "±6.32%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25315,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 24673,
-            "range": "±3.36%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24062,
-            "range": "±3.55%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18866,
-            "range": "±11.52%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.26%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "konjou@gmail.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0a612d0c37a2ecbe037569ce31fda8094eee6ed7",
+          "message": "Collapse `EthereumService` abstraction service (#2943)\n\n* Collapse ethereumservice into service\r\n\r\n* Clean up ethereumservice references",
+          "timestamp": "2023-08-07T22:24:51+02:00",
+          "tree_id": "1f2e9ec43b6096ae74733495ad63e40f93bd0649",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0a612d0c37a2ecbe037569ce31fda8094eee6ed7"
+        },
+        "date": 1691440216845,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20761,
+            "range": "±5.42%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21730,
+            "range": "±3.13%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20508,
+            "range": "±3.40%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20647,
+            "range": "±3.34%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19904,
+            "range": "±3.76%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
