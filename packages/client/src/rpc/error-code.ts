@@ -6,3 +6,4 @@ export const METHOD_NOT_FOUND = -32601
 export const INVALID_PARAMS = -32602
 export const INTERNAL_ERROR = -32603
 export const TOO_LARGE_REQUEST = -38004
+export const UNSUPPORTED_FORK = -38005

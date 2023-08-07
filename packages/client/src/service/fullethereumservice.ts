@@ -1,5 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
-import { concatBytes } from '@ethereumjs/util'
+import { TransactionType } from '@ethereumjs/tx'
+import { concatBytes, hexToBytes } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
 import { SyncMode } from '../config'
@@ -10,6 +11,7 @@ import { LesProtocol } from '../net/protocol/lesprotocol'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
+import { Event } from '../types'
 
 import { Service, type ServiceOptions } from './service'
 import { TxPool } from './txpool'
@@ -17,6 +19,7 @@ import { TxPool } from './txpool'
 import type { Peer } from '../net/peer/peer'
 import type { Protocol } from '../net/protocol'
 import type { Block } from '@ethereumjs/block'
+import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
 interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
@@ -142,6 +145,24 @@ export class FullEthereumService extends Service {
     } else {
       this.config.logger.info('Starting FullEthereumService with no syncing.')
     }
+    // Broadcast pending txs to newly connected peer
+    this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
+      // TODO: Should we do this if the txPool isn't started?
+      const txs: [number[], number[], Uint8Array[]] = [[], [], []]
+      for (const addr of this.txPool.pool) {
+        for (const tx of addr[1]) {
+          const rawTx = tx.tx
+          txs[0].push(rawTx.type)
+          if (rawTx.type !== TransactionType.BlobEIP4844) {
+            txs[1].push(rawTx.serialize().byteLength)
+          } else {
+            txs[1].push((rawTx as BlobEIP4844Transaction).serializeNetworkWrapper().byteLength)
+          }
+          txs[2].push(hexToBytes('0x' + tx.hash))
+        }
+      }
+      if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer])
+    })
     await super.open()
     await this.execution.open()
     this.txPool.open()

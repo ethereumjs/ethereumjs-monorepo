@@ -1,5 +1,18 @@
 ### Snapsync sim setup
 
+## Prerequisites
+
+1. Bash terminal
+2. Docker (without sudo)
+3. `jq` & `curl` installed
+4. `ethereumjs-monorepo` codebase build via `npm i` (for e.g. at `/usr/app/ethereumjs`)
+
+You may pre-download docker images for lodestar (`docker pull chainsafe/lodestar:latest`) and geth (`docker pull ethereum/client-go:v1.11.6`) to avoid any test timeout issues.
+
+Note: All commands should be run from the `client` package directory root (so something like `/usr/app/ethereumjs/packages/client`)
+
+## How to run
+
 1. Start external geth client:
 
 ```bash

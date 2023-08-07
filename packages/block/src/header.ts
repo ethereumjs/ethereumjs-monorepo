@@ -669,7 +669,6 @@ export class BlockHeader {
       }
       return this.cache.hash
     }
-
     return keccak256(RLP.encode(this.raw()))
   }
 
