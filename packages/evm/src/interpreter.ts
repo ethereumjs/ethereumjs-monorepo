@@ -1040,18 +1040,21 @@ export class Interpreter {
 
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
 
-    // Add to beneficiary balance
-    let toAccount = await this._stateManager.getAccount(toAddress)
-    if (!toAccount) {
-      toAccount = new Account()
-    }
-    toAccount.balance += this._env.contract.balance
-    await this.journal.putAccount(toAddress, toAccount)
+    const balance = this._env.contract.balance
 
     // Subtract from contract balance
     await this._stateManager.modifyAccountFields(this._env.address, {
       balance: BigInt(0),
     })
+
+    // Add to beneficiary balance
+    let toAccount = await this._stateManager.getAccount(toAddress)
+    if (!toAccount) {
+      toAccount = new Account()
+    }
+
+    toAccount.balance += balance
+    await this.journal.putAccount(toAddress, toAccount)
 
     trap(ERROR.STOP)
   }
