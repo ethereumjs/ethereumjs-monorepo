@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691261555757,
+  "lastUpdate": 1691411706944,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e33b0f8bb60348000cdaefd4ff72b6bc81de19d0",
-          "message": "client: add shouldOverrideBuilder flag for getPayloadV3 (#2891)",
-          "timestamp": "2023-07-17T11:08:31+02:00",
-          "tree_id": "2b4826136e275eb34a2e0bdce7ddf26ee663fb12",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e33b0f8bb60348000cdaefd4ff72b6bc81de19d0"
-        },
-        "date": 1689585509352,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 33164,
-            "range": "±4.46%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32410,
-            "range": "±2.42%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32067,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28270,
-            "range": "±8.15%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30674,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.27%",
             "unit": "ops/sec",
             "extra": "66 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f28ddcd586237135a9c2c25359ca0218037dd00b",
+          "message": "client: update prerequisites to run sim tests (#2942)",
+          "timestamp": "2023-08-07T18:01:36+05:30",
+          "tree_id": "48fb322d4374aa58d2e24f6d9cb2e256df56594b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f28ddcd586237135a9c2c25359ca0218037dd00b"
+        },
+        "date": 1691411706231,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31551,
+            "range": "±4.83%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30998,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31073,
+            "range": "±2.94%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25907,
+            "range": "±10.13%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29591,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
