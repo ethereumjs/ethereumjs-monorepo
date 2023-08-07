@@ -77,8 +77,9 @@ describe('[AccountFetcher]', async () => {
       },
     ]
     accountDataResponse.completed = true
+
     assert.deepEqual(fetcher.process({} as any, accountDataResponse), fullResult, 'got results')
-    assert.notOk(fetcher.process({} as any, { accountDataResponse: [] } as any), 'bad results')
+    assert.notOk(fetcher.process({} as any, []), 'bad results')
   })
 
   it('should adopt correctly', () => {
