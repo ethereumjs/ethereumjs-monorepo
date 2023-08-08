@@ -531,6 +531,7 @@ export class EVM implements EVMInterface {
     if (!contract) {
       contract = new Account()
     }
+    message.createdAddresses
     const env = {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
@@ -547,6 +548,7 @@ export class EVM implements EVMInterface {
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
       versionedHashes: message.versionedHashes ?? [],
+      createdAddresses: message.createdAddresses,
     }
 
     const interpreter = new Interpreter(
