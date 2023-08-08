@@ -93,12 +93,14 @@ describe('[CLI]', () => {
             true,
             'client correctly throws error when "dev" option is passed in without a value'
           )
+        child.kill(9)
         resolve(undefined)
       })
       child.on('close', (code) => {
         if (typeof code === 'number' && code > 0) {
           assert.fail(`child process exited with code ${code}`)
         }
+        child.kill(9)
         resolve(undefined)
       })
     })
