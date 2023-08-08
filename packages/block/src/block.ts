@@ -570,9 +570,18 @@ export class Block {
       const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
       let blobGasUsed = BigInt(0)
 
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      if (this.header.excessBlobGas !== expectedExcessBlobGas) {
+        throw new Error(
+          `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`
+        )
+      }
+
+      let blobGasPrice
+
       for (const tx of this.transactions) {
         if (tx instanceof BlobEIP4844Transaction) {
-          const blobGasPrice = this.header.getBlobGasPrice()
+          blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerblobGas < blobGasPrice) {
             throw new Error(
               `blob transaction maxFeePerblobGas ${
@@ -594,13 +603,6 @@ export class Block {
       if (this.header.blobGasUsed !== blobGasUsed) {
         throw new Error(
           `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`
-        )
-      }
-
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
-      if (this.header.excessBlobGas !== expectedExcessBlobGas) {
-        throw new Error(
-          `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`
         )
       }
     }
