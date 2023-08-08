@@ -107,7 +107,7 @@ async function run(data: any) {
     blobs,
     kzgCommitments: commitments,
     versionedHashes: hashes,
-    maxFeePerblobGas: undefined,
+    maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
     nonce: undefined,
@@ -116,7 +116,7 @@ async function run(data: any) {
 
   txData.maxFeePerGas = BigInt(1000000000)
   txData.maxPriorityFeePerGas = BigInt(100000000)
-  txData.maxFeePerblobGas = BigInt(1000)
+  txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
