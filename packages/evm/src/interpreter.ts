@@ -1,5 +1,12 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { Account, MAX_UINT64, bigIntToHex, bytesToBigInt, bytesToHex } from '@ethereumjs/util'
+import {
+  Account,
+  MAX_UINT64,
+  bigIntToHex,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import { EOF } from './eof.js'
@@ -56,6 +63,7 @@ export interface Env {
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   containerCode?: Uint8Array /** Full container code for EOF1 contracts */
   versionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
+  createdAddresses?: Set<string>
 }
 
 export interface RunState {
@@ -1040,21 +1048,39 @@ export class Interpreter {
 
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
 
-    const balance = this._env.contract.balance
-
-    // Subtract from contract balance
-    await this._stateManager.modifyAccountFields(this._env.address, {
-      balance: BigInt(0),
-    })
+    const toSelf = equalsBytes(toAddress.bytes, this._env.address.bytes)
 
     // Add to beneficiary balance
-    let toAccount = await this._stateManager.getAccount(toAddress)
-    if (!toAccount) {
-      toAccount = new Account()
+    if (!toSelf) {
+      let toAccount = await this._stateManager.getAccount(toAddress)
+      if (!toAccount) {
+        toAccount = new Account()
+      }
+      toAccount.balance += this._env.contract.balance
+      await this.journal.putAccount(toAddress, toAccount)
     }
 
-    toAccount.balance += balance
-    await this.journal.putAccount(toAddress, toAccount)
+    // Modify the account (set balance to 0) flag
+    let doModify = !this.common.isActivatedEIP(6780) // Always do this if 6780 is not active
+
+    if (!doModify) {
+      // If 6780 is active, check if current address is being created. If so
+      // old behavior of SELFDESTRUCT exists and balance should be set to 0 of this account
+      // (i.e. burn the ETH in current account)
+      doModify = this._env.createdAddresses!.has(this._env.address.toString())
+      // If contract is not being created in this tx...
+      if (!doModify) {
+        // Check if ETH being sent to another account (thus set balance to 0)
+        doModify = !toSelf
+      }
+    }
+
+    // Set contract balance to 0
+    if (doModify) {
+      await this._stateManager.modifyAccountFields(this._env.address, {
+        balance: BigInt(0),
+      })
+    }
 
     trap(ERROR.STOP)
   }
