@@ -6,8 +6,6 @@
 [![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 | Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
