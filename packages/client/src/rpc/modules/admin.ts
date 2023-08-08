@@ -6,7 +6,7 @@ import { middleware } from '../validation'
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../../client'
 import type { RlpxServer } from '../../net/server'
-import type { EthereumService } from '../../service'
+import type { Service } from '../../service'
 
 /**
  * admin_* RPC module
@@ -21,7 +21,7 @@ export class Admin {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient) {
-    const service = client.services.find((s) => s.name === 'eth') as EthereumService
+    const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
     this._client = client
 
