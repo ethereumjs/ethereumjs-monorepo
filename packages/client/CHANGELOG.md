@@ -8,7 +8,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 0.8.1 - 2023-08-09
 
-TODO
+Note: this release is not yet fully ready for `4844-devnet-8` (launch in August 2023).
+
+### EIP-4844 / devnet-8 Updates
+
+- 4844: Rename `dataGas` to `blobGas` (see EIP-4844 PR [#7354](https://github.com/ethereum/EIPs/pull/7354)), PR [#2919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2919)
+- Engine api changes for devnet 8, PR [#2896](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2896)
+  - forkChoiceUpdated v3
+  - change validations of newPayload v3, make them 1-1
+
+### Features
+
+- Add `debug_traceCall` RPC method, PR [#2913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2913)
+- Handle SIGTERM kernel signal, PR [#2921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2921)
+
+### Bugfixes / Maintenance
+
+- Broadcast the contents of the transaction pool to newly connected peers, PR [#2935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2935)
+- Add support for multiple same-type messages over devp2p, PR [#2940](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2940)
+- Fix RPC server custom address/port bugs, PR [#2924](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2924)
+- Address security vulnerabilities, PR [#2912](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2912)
 
 ## 0.8.0 - 2023-07-11
 

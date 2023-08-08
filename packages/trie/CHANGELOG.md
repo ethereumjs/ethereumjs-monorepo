@@ -14,7 +14,22 @@ See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releas
 
 Following additional changes since RC1:
 
--
+## New API for walking a (sparse) Trie
+
+Starting with this release there is a new API for walking and iterating a trie by using an async walk generator, which now enables to walk tries without altering the walk controller and also now enables to walk a sparse (not completely filled) trie, see PR [#2904](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2904).
+
+The new walk functionality can be used like the following:
+
+```typescript
+import { Trie } from '@ethereumjs/trie'
+
+const trie = await Trie.create()
+const walk = trie.walkTrieIterable(trie.root())
+
+for await (const { node, currentKey } of walk) {
+  // ... do something i.e. console.log( { node, currentKey } )
+}
+```
 
 ## 6.0.0-rc.1 - 2023-07-18
 

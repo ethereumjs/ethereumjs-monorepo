@@ -14,7 +14,19 @@ See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releas
 
 Following additional changes since RC1:
 
--
+### JSON -> JS for Hardfork, EIP and Chain Configs
+
+We have switched hardfork, EIP and chain configurations in the `Common` library from `JSON` to `JavaScript` (`TypeScript`). This leads to better typing (and therefore less configuration errors) for (custom) configuration files and avoids `JSON` type assertion related problems for ESM builds, see PR [#2911](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2911).
+
+Following changes:
+
+- `src/chains/[CHAIN_FILE].json` -> `src/chains.ts`
+- `src/eips/[EIP_FILE].json` -> `src/eips.ts`
+- `src/hardforks/[HARDFORK_FILE].json` -> `src/hardforks.ts`
+
+### Other Changes
+
+- 4844: Rename `dataGas` to `blobGas` (see EIP-4844 PR [#7354](https://github.com/ethereum/EIPs/pull/7354)), PR [#2919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2919)
 
 ## 4.0.0-rc.1 - 2023-07-18
 

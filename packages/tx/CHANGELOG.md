@@ -14,7 +14,7 @@ See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releas
 
 Following additional changes since RC1:
 
--
+- 4844: Rename `dataGas` to `blobGas` (see EIP-4844 PR [#7354](https://github.com/ethereum/EIPs/pull/7354)), PR [#2919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2919)
 
 ## 5.0.0-rc.1 - 2023-07-18
 

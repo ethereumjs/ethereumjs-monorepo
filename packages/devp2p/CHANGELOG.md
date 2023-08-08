@@ -14,7 +14,33 @@ See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releas
 
 Following additional changes since RC1:
 
--
+### Event Emitter Refactor
+
+We have reworked the `EventEmitter` integration for the library and switched away from the structure that all central classes (like e.g. `RLPx`) directly inherit from `EventEmitter` to now have the `EventEmitter` in a dedicated `events` properties associated with the respective class, see PR [#2893](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2893). This aligns with how we have event emitters integrated in other libraries (e.g. the VM or the client) and leads to a cleaner API usage (autocomplete in an IDE now only shows the relevant methods) and allows for an easier customization of the library.
+
+Event usage has to be adopted as follows:
+
+```typescript
+rlpx.on('peer:added', (peer) => { // old
+  // Do something
+}
+
+rlpx.events.on('peer:added', (peer) => { // new
+  // Do something
+}
+```
+
+Event emitter logic in the following components from the public API has been reworked:
+
+- `DPT`
+- `RLPx`
+- `ETH`
+- `LES`
+- `SNAP` (in development)
+
+### Other Changes
+
+- Address security vulnerabilities, PR [#2912](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2912)
 
 ## 6.0.0-rc.1 - 2023-07-18
 
