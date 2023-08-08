@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/trie",
-  "version": "6.0.0-rc.1",
+  "version": "6.0.0",
   "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": [
     "merkle",
