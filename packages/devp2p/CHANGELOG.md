@@ -16,7 +16,7 @@ Following additional changes since RC1:
 
 ### Event Emitter Refactor
 
-We have reworked the `EventEmitter` integration for the library and switched away from the structure that all central classes (like e.g. `RLPx`) directly inherit from `EventEmitter` to now have the `EventEmitter` in a dedicated `events` properties associated with the respective class, see PR [#2893](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2893). This aligns with how we have event emitters integrated in other libraries (e.g. the VM or the client) and leads to a cleaner API usage (autocomplete in an IDE now only shows the relevant methods) and allows for an easier customization of the library.
+We have reworked the `EventEmitter` integration for the library and switched away from the structure where all central classes (like e.g. `RLPx`) directly inherit from `EventEmitter`. Instead, we now have the `EventEmitter` in a dedicated `events` properties associated with the respective class, see PR [#2893](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2893). This aligns with how event emitters are implemented in other libraries (e.g. the VM or the client), leads to a cleaner API usage (autocomplete in an IDE now only shows the relevant methods) and allows for an easier customization of the library.
 
 Event usage has to be adopted as follows:
 
