@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^4.0.0",
-    "@ethereumjs/rlp": "5.0.0-rc.1",
+    "@ethereumjs/rlp": "^5.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "ethers": "^6.4.0",
