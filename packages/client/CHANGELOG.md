@@ -26,7 +26,7 @@ Note: this release is not yet fully ready for `4844-devnet-8` (launch in August 
 
 - Broadcast the contents of the transaction pool to newly connected peers, PR [#2935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2935)
 - Add support for multiple same-type messages over devp2p, PR [#2940](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2940)
-- Fix RPC server custom address/port bugs, PR [#2924](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2924)
+- Fix RPC server custom address/port bugs, PR [#2930](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2930)
 - Address security vulnerabilities, PR [#2912](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2912)
 
 ## 0.8.0 - 2023-07-11
