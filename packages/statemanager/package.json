@@ -57,7 +57,7 @@
     "lru-cache": "^10.0.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "5.0.0-rc.1",
+    "@ethereumjs/block": "5.0.0",
     "@ethereumjs/genesis": "0.1.0-rc.1",
     "@ethereumjs/trie": "6.0.0-rc.1",
     "@ethereumjs/util": "9.0.0-rc.1",

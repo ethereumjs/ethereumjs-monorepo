@@ -45,7 +45,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "5.0.0-rc.1",
+    "@ethereumjs/block": "5.0.0",
     "@ethereumjs/common": "4.0.0-rc.1",
     "@ethereumjs/ethash": "3.0.0-rc.1",
     "@ethereumjs/rlp": "5.0.0-rc.1",

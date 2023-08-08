@@ -68,7 +68,7 @@
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
-    "@ethereumjs/block": "5.0.0-rc.1",
+    "@ethereumjs/block": "5.0.0",
     "@ethereumjs/tx": "5.0.0-rc.1",
     "@types/debug": "^4.1.4",
     "@types/k-bucket": "^5.0.0",
