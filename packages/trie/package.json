@@ -60,7 +60,7 @@
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
-    "@ethereumjs/genesis": "0.1.0-rc.1",
+    "@ethereumjs/genesis": "^0.1.0",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",
     "level": "^8.0.0",

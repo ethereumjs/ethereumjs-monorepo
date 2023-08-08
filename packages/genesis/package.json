@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/genesis",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0",
   "description": "A module to provide genesis states of well known networks",
   "keywords": [
     "ethereum",

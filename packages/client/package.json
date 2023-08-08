@@ -62,7 +62,7 @@
     "@ethereumjs/devp2p": "6.0.0",
     "@ethereumjs/ethash": "3.0.0",
     "@ethereumjs/evm": "2.0.0",
-    "@ethereumjs/genesis": "0.1.0-rc.1",
+    "@ethereumjs/genesis": "0.1.0",
     "@ethereumjs/rlp": "5.0.0-rc.1",
     "@ethereumjs/statemanager": "2.0.0-rc.1",
     "@ethereumjs/trie": "6.0.0-rc.1",
