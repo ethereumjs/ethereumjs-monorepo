@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "EthereumJS client implementation",
   "keywords": [
     "ethereum",
