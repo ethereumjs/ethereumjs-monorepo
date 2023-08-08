@@ -12,10 +12,6 @@ Final release version from the breaking release round from Summer 2023 on the Et
 
 See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fwallet%402.0.0-rc.1) for the main change description.
 
-Following additional changes since RC1:
-
--
-
 ## 2.0.0-rc.1 - 2023-07-18
 
 ### New Package Name and General Library Update
