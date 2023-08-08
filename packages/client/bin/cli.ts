@@ -707,8 +707,6 @@ async function run() {
   let customGenesisState: GenesisState | undefined
   let common = new Common({ chain, hardfork: Hardfork.Chainstart })
 
-  console.log('dbg0')
-  console.log(args.dev)
   if (args.dev === true || typeof args.dev === 'string') {
     args.discDns = false
     if (accounts.length === 0) {
