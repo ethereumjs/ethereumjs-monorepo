@@ -2,34 +2,21 @@
 
 # Interface: EVMInterface
 
-API of the EVM
-
 ## Table of contents
 
 ### Properties
 
-- [eei](EVMInterface.md#eei)
 - [events](EVMInterface.md#events)
+- [journal](EVMInterface.md#journal)
 - [precompiles](EVMInterface.md#precompiles)
+- [stateManager](EVMInterface.md#statemanager)
 
 ### Methods
 
-- [copy](EVMInterface.md#copy)
-- [getActiveOpcodes](EVMInterface.md#getactiveopcodes)
 - [runCall](EVMInterface.md#runcall)
 - [runCode](EVMInterface.md#runcode)
 
 ## Properties
-
-### eei
-
-• **eei**: [`EEIInterface`](EEIInterface.md)
-
-#### Defined in
-
-[types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L17)
-
-___
 
 ### events
 
@@ -37,47 +24,55 @@ ___
 
 #### Defined in
 
-[types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L18)
+[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L158)
+
+___
+
+### journal
+
+• **journal**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `accessList?` | `Map`<`string`, `Set`<`string`\>\> |
+| `addAlwaysWarmAddress` | (`address`: `string`, `addToAccessList?`: `boolean`) => `void` |
+| `addAlwaysWarmSlot` | (`address`: `string`, `slot`: `string`, `addToAccessList?`: `boolean`) => `void` |
+| `checkpoint` | () => `Promise`<`void`\> |
+| `cleanJournal` | () => `void` |
+| `cleanup` | () => `Promise`<`void`\> |
+| `commit` | () => `Promise`<`void`\> |
+| `deleteAccount` | (`address`: `Address`) => `Promise`<`void`\> |
+| `putAccount` | (`address`: `Address`, `account`: `Account`) => `Promise`<`void`\> |
+| `revert` | () => `Promise`<`void`\> |
+| `startReportingAccessList` | () => `void` |
+
+#### Defined in
+
+[types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L141)
 
 ___
 
 ### precompiles
 
-• **precompiles**: `Map`<`string`, `any`\>
+• **precompiles**: `Map`<`string`, `PrecompileFunc`\>
 
 #### Defined in
 
-[types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L15)
+[types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L155)
+
+___
+
+### stateManager
+
+• **stateManager**: `EVMStateManagerInterface`
+
+#### Defined in
+
+[types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L154)
 
 ## Methods
-
-### shallowCopy
-
-▸ **shallowCopy**(): [`EVMInterface`](EVMInterface.md)
-
-#### Returns
-
-[`EVMInterface`](EVMInterface.md)
-
-#### Defined in
-
-[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L16)
-
-___
-
-### getActiveOpcodes
-
-▸ `Optional` **getActiveOpcodes**(): `OpcodeList`
-
-#### Returns
-
-`OpcodeList`
-
-#### Defined in
-
-[types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L14)
-
-___
 
 ### runCall
 
@@ -95,13 +90,13 @@ ___
 
 #### Defined in
 
-[types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L12)
+[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L156)
 
 ___
 
 ### runCode
 
-▸ `Optional` **runCode**(`opts`): `Promise`<[`ExecResult`](ExecResult.md)\>
+▸ **runCode**(`opts`): `Promise`<[`ExecResult`](ExecResult.md)\>
 
 #### Parameters
 
@@ -115,4 +110,4 @@ ___
 
 #### Defined in
 
-[types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L13)
+[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L157)
