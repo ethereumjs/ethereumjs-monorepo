@@ -51,7 +51,7 @@
     "@ethereumjs/rlp": "^5.0.0",
     "@ethereumjs/trie": "^6.0.0",
     "@ethereumjs/tx": "^5.0.0",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/util": "^9.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "lru-cache": "^10.0.0"

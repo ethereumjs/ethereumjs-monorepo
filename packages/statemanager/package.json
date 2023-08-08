@@ -60,7 +60,7 @@
     "@ethereumjs/block": "^5.0.0",
     "@ethereumjs/genesis": "^0.1.0",
     "@ethereumjs/trie": "^6.0.0",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/util": "^9.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2"
   }

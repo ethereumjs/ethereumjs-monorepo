@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^5.0.0",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/util": "^9.0.0",
     "@types/readable-stream": "^2.3.13",
     "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.1.2",
