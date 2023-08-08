@@ -38,7 +38,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       const txData = {
         type: 0x03,
         versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
-        maxFeePerblobGas: 1n,
+        maxFeePerBlobGas: 1n,
       }
       const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
       assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
@@ -80,7 +80,7 @@ describe('fromTxData using from a json', () => {
         to: '0xffb38a7a99e3e2335be83fc74b7faa19d5531243',
         chainId: '0x28757b3',
         accessList: null,
-        maxFeePerblobGas: '0xb2d05e00',
+        maxFeePerBlobGas: '0xb2d05e00',
         versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
       }
       const txMeta = {
@@ -97,7 +97,7 @@ describe('fromTxData using from a json', () => {
         const tx = BlobEIP4844Transaction.fromTxData(txData, { common: c })
         assert.ok(true, 'Should be able to parse a json data and hash it')
 
-        assert.equal(typeof tx.maxFeePerblobGas, 'bigint', 'should be able to parse correctly')
+        assert.equal(typeof tx.maxFeePerBlobGas, 'bigint', 'should be able to parse correctly')
         assert.equal(bytesToHex(tx.serialize()), txMeta.serialized, 'serialization should match')
         // TODO: fix the hash
         assert.equal(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
@@ -131,7 +131,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
     if (isBrowser() === false) {
       const baseTxData = {
         type: 0x03,
-        maxFeePerblobGas: 1n,
+        maxFeePerBlobGas: 1n,
       }
       const shortVersionHash = {
         versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
@@ -187,7 +187,7 @@ describe('Network wrapper tests', () => {
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -226,7 +226,7 @@ describe('Network wrapper tests', () => {
       const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
         {
           blobsData: ['hello world'],
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -245,7 +245,7 @@ describe('Network wrapper tests', () => {
             {
               blobsData: ['hello world'],
               blobs: ['hello world'],
-              maxFeePerblobGas: 100000000n,
+              maxFeePerBlobGas: 100000000n,
               gasLimit: 0xffffffn,
               to: randomBytes(20),
             },
@@ -262,7 +262,7 @@ describe('Network wrapper tests', () => {
             {
               blobsData: ['hello world'],
               kzgCommitments: ['0xabcd'],
-              maxFeePerblobGas: 100000000n,
+              maxFeePerBlobGas: 100000000n,
               gasLimit: 0xffffffn,
               to: randomBytes(20),
             },
@@ -279,7 +279,7 @@ describe('Network wrapper tests', () => {
             {
               blobsData: ['hello world'],
               versionedHashes: ['0x01cd'],
-              maxFeePerblobGas: 100000000n,
+              maxFeePerBlobGas: 100000000n,
               gasLimit: 0xffffffn,
               to: randomBytes(20),
             },
@@ -296,7 +296,7 @@ describe('Network wrapper tests', () => {
             {
               blobsData: ['hello world'],
               kzgProofs: ['0x01cd'],
-              maxFeePerblobGas: 100000000n,
+              maxFeePerBlobGas: 100000000n,
               gasLimit: 0xffffffn,
               to: randomBytes(20),
             },
@@ -313,7 +313,7 @@ describe('Network wrapper tests', () => {
           blobs: [],
           kzgCommitments: [],
           kzgProofs: [],
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -337,7 +337,7 @@ describe('Network wrapper tests', () => {
           blobs: blobs.slice(1),
           kzgCommitments: commitments,
           kzgProofs: proofs,
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -364,7 +364,7 @@ describe('Network wrapper tests', () => {
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -394,7 +394,7 @@ describe('Network wrapper tests', () => {
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -429,7 +429,7 @@ describe('hash() and signature verification', () => {
           versionedHashes: [
             hexToBytes('0x01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
           ],
-          maxFeePerblobGas: 10000000n,
+          maxFeePerBlobGas: 10000000n,
           gasLimit: 123457n,
           maxFeePerGas: 42n,
           maxPriorityFeePerGas: 10n,
@@ -478,7 +478,7 @@ describe('Network wrapper deserialization test', () => {
         to: '0x1f738d535998ba73b31f38f1ecf6a6ad013eaa20',
         chainId: '0x1',
         accessList: [],
-        maxFeePerblobGas: '0x5f5e100',
+        maxFeePerBlobGas: '0x5f5e100',
         versionedHashes: ['0x0172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb9520'],
       }
       const txMeta = {
