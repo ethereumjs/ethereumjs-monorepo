@@ -322,12 +322,7 @@ async function verifyProof(
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
-  try {
-    await proofTrie.fromProof(proof)
-  } catch (e) {
-    throw new Error('Invalid proof nodes given')
-  }
+  const proofTrie = await Trie.fromProof(proof, { root: rootHash, useKeyHashingFunction })
   try {
     const value = await proofTrie.get(key, true)
     return {
@@ -499,8 +494,10 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
-  await trie.fromProof(proof)
+  const trie = await Trie.fromProof(proof, {
+    useKeyHashingFunction,
+    root: rootHash,
+  })
 
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)
