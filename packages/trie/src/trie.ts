@@ -129,6 +129,34 @@ export class Trie {
     await trie.persistRoot()
     return trie
   }
+
+  /**
+   * Verifies a proof.
+   * @param rootHash
+   * @param key
+   * @param proof
+   * @param opts Trie options
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key, or null if valid proof of non-existence.
+   */
+  static async verifyProof(
+    rootHash: Uint8Array,
+    key: Uint8Array,
+    proof: Proof,
+    opts?: TrieOpts
+  ): Promise<Uint8Array | null> {
+    try {
+      const proofTrie = await Trie.fromProof(proof, {
+        ...opts,
+        root: rootHash,
+      })
+      const value = await proofTrie.get(key, true)
+      return value
+    } catch (err: any) {
+      throw new Error('Invalid proof provided')
+    }
+  }
+
   database(db?: DB<string, string>) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
