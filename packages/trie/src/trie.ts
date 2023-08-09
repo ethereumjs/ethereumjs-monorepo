@@ -113,6 +113,22 @@ export class Trie {
     return new Trie(opts)
   }
 
+  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
+    const trie = await Trie.create(opts)
+    if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
+      throw new Error('Invalid proof provided')
+    }
+    const opStack = proof.map((nodeValue) => {
+      return {
+        type: 'put',
+        key: Uint8Array.from(trie.hash(nodeValue)),
+        value: nodeValue,
+      } as PutBatch
+    })
+    await trie._db.batch(opStack)
+    await trie.persistRoot()
+    return trie
+  }
   database(db?: DB<string, string>) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
