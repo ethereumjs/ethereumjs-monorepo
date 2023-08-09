@@ -18,8 +18,8 @@ and not all the values are present on all tx types
 - [data](JsonTx.md#data)
 - [gasLimit](JsonTx.md#gaslimit)
 - [gasPrice](JsonTx.md#gasprice)
-- [maxFeePerDataGas](JsonTx.md#maxfeeperdatagas)
 - [maxFeePerGas](JsonTx.md#maxfeepergas)
+- [maxFeePerblobGas](JsonTx.md#maxfeeperblobgas)
 - [maxPriorityFeePerGas](JsonTx.md#maxpriorityfeepergas)
 - [nonce](JsonTx.md#nonce)
 - [r](JsonTx.md#r)
@@ -82,16 +82,6 @@ ___
 
 ___
 
-### maxFeePerDataGas
-
-• `Optional` **maxFeePerDataGas**: `string`
-
-#### Defined in
-
-[tx/src/types.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L403)
-
-___
-
 ### maxFeePerGas
 
 • `Optional` **maxFeePerGas**: `string`
@@ -99,6 +89,16 @@ ___
 #### Defined in
 
 [tx/src/types.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L402)
+
+___
+
+### maxFeePerblobGas
+
+• `Optional` **maxFeePerblobGas**: `string`
+
+#### Defined in
+
+[tx/src/types.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L403)
 
 ___
 

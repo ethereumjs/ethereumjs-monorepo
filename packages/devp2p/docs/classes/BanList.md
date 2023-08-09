@@ -21,7 +21,7 @@
 
 #### Defined in
 
-[packages/devp2p/src/dpt/ban-list.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L15)
+[packages/devp2p/src/dpt/ban-list.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L18)
 
 ## Methods
 
@@ -33,7 +33,7 @@
 
 | Name | Type |
 | :------ | :------ |
-| `obj` | `string` \| `Buffer` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
 | `maxAge?` | `number` |
 
 #### Returns
@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[packages/devp2p/src/dpt/ban-list.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L19)
+[packages/devp2p/src/dpt/ban-list.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L22)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `obj` | `string` \| `Buffer` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
 
 #### Returns
 
@@ -62,4 +62,4 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/ban-list.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L26)
+[packages/devp2p/src/dpt/ban-list.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L29)

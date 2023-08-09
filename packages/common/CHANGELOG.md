@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.0.0 - 2023-08-09
+
+Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
+
+See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fcommon%404.0.0-rc.1) for the main change description.
+
+Following additional changes since RC1:
+
+### JSON -> JS for Hardfork, EIP and Chain Configs
+
+We have switched hardfork, EIP and chain configurations in the `Common` library from `JSON` to `JavaScript` (`TypeScript`). This leads to better typing (and therefore less configuration errors) for (custom) configuration files and avoids `JSON` type assertion related problems for ESM builds, see PR [#2911](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2911).
+
+Following changes:
+
+- `src/chains/[CHAIN_FILE].json` -> `src/chains.ts`
+- `src/eips/[EIP_FILE].json` -> `src/eips.ts`
+- `src/hardforks/[HARDFORK_FILE].json` -> `src/hardforks.ts`
+
+### Other Changes
+
+- 4844: Rename `dataGas` to `blobGas` (see EIP-4844 PR [#7354](https://github.com/ethereum/EIPs/pull/7354)), PR [#2919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2919)
+
 ## 4.0.0-rc.1 - 2023-07-18
 
 This is the release candidate (RC1) for the upcoming breaking releases on the various EthereumJS libraries. The associated release notes below are the main source of information on the changeset, also for the upcoming final releases, where we'll just provide change addition summaries + references to these RC1 notes.

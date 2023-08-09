@@ -111,7 +111,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
         {
           to: bytesToHex(randomBytes(20)),
           chainId: 1,
-          maxFeePerblobGas: BigInt(1000) as any,
+          maxFeePerBlobGas: BigInt(1000) as any,
           maxPriorityFeePerGas: BigInt(1) as any,
           maxFeePerGas: '0xff' as any,
           gasLimit: BigInt(1000000) as any,

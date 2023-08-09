@@ -109,7 +109,7 @@ describe(method, () => {
         blobs: txBlobs,
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
-        maxFeePerblobGas: 1n,
+        maxFeePerBlobGas: 1n,
         maxFeePerGas: 10000000000n,
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,

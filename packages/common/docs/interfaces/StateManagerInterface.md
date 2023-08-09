@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[interfaces.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L51)
+[interfaces.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L55)
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L50)
+[interfaces.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L54)
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L52)
+[interfaces.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L56)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L44)
+[interfaces.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L48)
 
 ___
 
@@ -116,7 +116,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L42)
+[interfaces.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L46)
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L47)
+[interfaces.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L51)
 
 ___
 
@@ -157,7 +157,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L48)
+[interfaces.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L52)
 
 ___
 
@@ -178,7 +178,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L56)
+[interfaces.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L60)
 
 ___
 
@@ -192,7 +192,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L54)
+[interfaces.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L58)
 
 ___
 
@@ -212,7 +212,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L57)
+[interfaces.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L61)
 
 ___
 
@@ -233,7 +233,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L45)
+[interfaces.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L49)
 
 ___
 
@@ -254,7 +254,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L43)
+[interfaces.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L47)
 
 ___
 
@@ -275,7 +275,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L46)
+[interfaces.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L50)
 
 ___
 
@@ -297,7 +297,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L49)
+[interfaces.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L53)
 
 ___
 
@@ -311,7 +311,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L53)
+[interfaces.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L57)
 
 ___
 
@@ -332,7 +332,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L55)
+[interfaces.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L59)
 
 ___
 
@@ -346,4 +346,4 @@ ___
 
 #### Defined in
 
-[interfaces.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L58)
+[interfaces.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L62)

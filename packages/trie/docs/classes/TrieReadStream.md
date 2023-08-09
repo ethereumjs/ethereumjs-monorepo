@@ -277,7 +277,7 @@ node_modules/@types/readable-stream/index.d.ts:296
 
 #### Inherited from
 
-Readable.\_\_@asyncIterator@21534
+Readable.\_\_@asyncIterator@21529
 
 #### Defined in
 
