@@ -814,7 +814,11 @@ export class Trie {
    * Saves the nodes from a proof into the trie.
    * @param proof
    */
-  async fromProof(proof: Proof): Promise<void> {
+
+  async updateFromProof(proof: Proof): Promise<void> {
+    if (!equalsBytes(this.root(), this.hash(proof.shift()!))) {
+      throw new Error('Invalid proof')
+    }
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
@@ -822,14 +826,7 @@ export class Trie {
         value: nodeValue,
       } as PutBatch
     })
-
-    if (this.root() === this.EMPTY_TRIE_ROOT && opStack[0] !== undefined && opStack[0] !== null) {
-      this.root(opStack[0].key)
-    }
-
     await this._db.batch(opStack)
-    await this.persistRoot()
-    return
   }
 
   /**
@@ -842,40 +839,6 @@ export class Trie {
       return stackElem.serialize()
     })
     return p
-  }
-
-  /**
-   * Verifies a proof.
-   * @param rootHash
-   * @param key
-   * @param proof
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  async verifyProof(
-    rootHash: Uint8Array,
-    key: Uint8Array,
-    proof: Proof
-  ): Promise<Uint8Array | null> {
-    const proofTrie = new Trie({
-      root: rootHash,
-      useKeyHashingFunction: this._opts.useKeyHashingFunction,
-    })
-    try {
-      await proofTrie.fromProof(proof)
-    } catch (e: any) {
-      throw new Error('Invalid proof nodes given')
-    }
-    try {
-      const value = await proofTrie.get(this.appliedKey(key), true)
-      return value
-    } catch (err: any) {
-      if (err.message === 'Missing node in DB') {
-        throw new Error('Invalid proof provided')
-      } else {
-        throw err
-      }
-    }
   }
 
   /**
