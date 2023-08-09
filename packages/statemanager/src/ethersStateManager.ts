@@ -209,8 +209,9 @@ export class EthersStateManager implements EVMStateManagerInterface {
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
-    const trie = new Trie({ useKeyHashing: true })
-    const verified = await trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf)
+    const verified = await Trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf, {
+      useKeyHashing: true,
+    })
     // if not verified (i.e. verifyProof returns null), account does not exist
     return verified === null ? false : true
   }

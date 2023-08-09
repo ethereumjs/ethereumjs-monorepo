@@ -671,7 +671,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await this._proofTrie.verifyProof(rootHash, key, accountProof)
+    const value = await Trie.verifyProof(rootHash, key, accountProof, {
+      useKeyHashing: true,
+    })
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -717,7 +719,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await this._proofTrie.verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof, {
+        useKeyHashing: true,
+        root: this._proofTrie.root(),
+      })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
