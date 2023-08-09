@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691525704400,
+  "lastUpdate": 1691573731792,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9fec1f405a36e94d176e6cc4b497fc0afbdaea71",
-          "message": "Resolve access errors from doc build process (#2898)",
-          "timestamp": "2023-07-18T15:15:19-04:00",
-          "tree_id": "098a5c4e7228c43b38bfe19d99faf38a5efc12e7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9fec1f405a36e94d176e6cc4b497fc0afbdaea71"
-        },
-        "date": 1689708706126,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30403,
-            "range": "±5.81%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30938,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29941,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25142,
-            "range": "±10.80%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29211,
-            "range": "±3.46%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.68%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f704378efa913f793ab01f1a2ab2acb1f02ed3b8",
+          "message": "Client: If \"dev\" option is used, it should have a value and not be defaulted to mainnet (#2948)\n\n* Throw error if \"dev\" option is passed in without a value\r\n\r\n* Remove log statements\r\n\r\n* Add test for \"dev\" option being passed in without a value\r\n\r\n* Update test",
+          "timestamp": "2023-08-09T11:30:55+02:00",
+          "tree_id": "91424e153ed1dd5d8e6b41f8a51ef0e215e7de62",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f704378efa913f793ab01f1a2ab2acb1f02ed3b8"
+        },
+        "date": 1691573730387,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19830,
+            "range": "±7.17%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19769,
+            "range": "±3.71%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20568,
+            "range": "±3.53%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19819,
+            "range": "±3.65%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19594,
+            "range": "±3.67%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
           }
         ]
       }
