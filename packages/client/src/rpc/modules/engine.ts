@@ -806,6 +806,21 @@ export class Engine {
           message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',
         }
       }
+      const payloadAsV3 = params[0] as ExecutionPayloadV3
+      const { excessBlobGas, blobGasUsed } = payloadAsV3
+
+      if (excessBlobGas !== undefined && excessBlobGas !== null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Invalid PayloadV2: excessBlobGas is defined',
+        }
+      }
+      if (blobGasUsed !== undefined && excessBlobGas !== null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Invalid PayloadV2: blobGasUsed is defined',
+        }
+      }
     }
     const newPayloadRes = await this.newPayload(params)
     if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
