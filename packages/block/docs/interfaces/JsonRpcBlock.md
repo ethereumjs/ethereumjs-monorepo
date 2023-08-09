@@ -7,9 +7,9 @@
 ### Properties
 
 - [baseFeePerGas](JsonRpcBlock.md#basefeepergas)
-- [dataGasUsed](JsonRpcBlock.md#datagasused)
+- [blobGasUsed](JsonRpcBlock.md#blobgasused)
 - [difficulty](JsonRpcBlock.md#difficulty)
-- [excessDataGas](JsonRpcBlock.md#excessdatagas)
+- [excessBlobGas](JsonRpcBlock.md#excessblobgas)
 - [extraData](JsonRpcBlock.md#extradata)
 - [gasLimit](JsonRpcBlock.md#gaslimit)
 - [gasUsed](JsonRpcBlock.md#gasused)
@@ -45,9 +45,9 @@
 
 ___
 
-### dataGasUsed
+### blobGasUsed
 
-• `Optional` **dataGasUsed**: `string`
+• `Optional` **blobGasUsed**: `string`
 
 #### Defined in
 
@@ -65,9 +65,9 @@ ___
 
 ___
 
-### excessDataGas
+### excessBlobGas
 
-• `Optional` **excessDataGas**: `string`
+• `Optional` **excessBlobGas**: `string`
 
 #### Defined in
 

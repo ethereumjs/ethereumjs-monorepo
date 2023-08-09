@@ -6,8 +6,6 @@
 [![Code Coverage][evm-coverage-badge]][evm-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 

@@ -62,7 +62,7 @@
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:26
+common/dist/cjs/interfaces.d.ts:29
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:25
+common/dist/cjs/interfaces.d.ts:28
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:24
+common/dist/cjs/interfaces.d.ts:27
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:20
+common/dist/cjs/interfaces.d.ts:23
 
 ___
 

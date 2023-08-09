@@ -23,8 +23,8 @@
 - [gasPrice](BlobEIP4844TxData.md#gasprice)
 - [kzgCommitments](BlobEIP4844TxData.md#kzgcommitments)
 - [kzgProofs](BlobEIP4844TxData.md#kzgproofs)
-- [maxFeePerDataGas](BlobEIP4844TxData.md#maxfeeperdatagas)
 - [maxFeePerGas](BlobEIP4844TxData.md#maxfeepergas)
+- [maxFeePerblobGas](BlobEIP4844TxData.md#maxfeeperblobgas)
 - [maxPriorityFeePerGas](BlobEIP4844TxData.md#maxpriorityfeepergas)
 - [nonce](BlobEIP4844TxData.md#nonce)
 - [r](BlobEIP4844TxData.md#r)
@@ -166,18 +166,6 @@ The KZG proofs associated with the transaction
 
 ___
 
-### maxFeePerDataGas
-
-• `Optional` **maxFeePerDataGas**: `BigIntLike`
-
-The maximum fee per blob gas paid for the transaction
-
-#### Defined in
-
-[tx/src/types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L285)
-
-___
-
 ### maxFeePerGas
 
 • `Optional` **maxFeePerGas**: `BigIntLike`
@@ -191,6 +179,18 @@ The maximum total fee
 #### Defined in
 
 [tx/src/types.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L271)
+
+___
+
+### maxFeePerblobGas
+
+• `Optional` **maxFeePerblobGas**: `BigIntLike`
+
+The maximum fee per blob gas paid for the transaction
+
+#### Defined in
+
+[tx/src/types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L285)
 
 ___
 

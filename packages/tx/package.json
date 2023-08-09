@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "5.0.0-rc.1",
+  "version": "5.0.0",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": [
     "ethereum",
@@ -56,9 +56,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "4.0.0-rc.1",
-    "@ethereumjs/rlp": "5.0.0-rc.1",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/common": "^4.0.0",
+    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
     "ethereum-cryptography": "^2.1.2"
   },
   "peerDependencies": {

@@ -6,8 +6,6 @@
 [![Code Coverage][common-coverage-badge]][common-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 | Resources common to all EthereumJS implementations. |
 | --------------------------------------------------- |
 
@@ -156,8 +154,8 @@ The following chain-specific parameters are provided:
 - `bootstrapNodes` list
 - `dnsNetworks` list ([EIP-1459](https://eips.ethereum.org/EIPS/eip-1459)-compliant list of DNS networks for peer discovery)
 
-To get an overview of the different parameters have a look at one of the chain-specific
-files like `mainnet.json` in the `chains` directory, or to the `Chain` type in [./src/types.ts](./src/types.ts).
+To get an overview of the different parameters have a look at one of the chain configurations in the `chains.ts` configuration
+file, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
 ### Working with private/custom chains
 
@@ -195,7 +193,7 @@ you can pass a dictionary - conforming to the parameter format described above -
 values to the constructor using the `chain` parameter or the `setChain()` method, here is some example:
 
 ```typescript
-import myCustomChain from './[PATH]/myCustomChain.json'
+import myCustomChain from './[PATH]/myCustomChain.js'
 const common = new Common({ chain: myCustomChain })
 ```
 
@@ -209,8 +207,8 @@ use the `chain` option to activate one of the custom chains passed or activate a
 (e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
 
 ```typescript
-import myCustomChain1 from './[PATH]/myCustomChain1.json'
-import myCustomChain2 from './[PATH]/myCustomChain2.json'
+import myCustomChain1 from './[PATH]/myCustomChain1.js'
+import myCustomChain2 from './[PATH]/myCustomChain2.js'
 // Add two custom chains, initial mainnet activation
 const common1 = new Common({ chain: 'mainnet', customChains: [myCustomChain1, myCustomChain2] })
 // Somewhat later down the road...
@@ -286,11 +284,11 @@ you can use the following `topics`:
 - `pow`
 - `sharding`
 
-See one of the hardfork files like `byzantium.json` in the `hardforks` directory
+See one of the hardfork configurations in the `hardforks.ts` file
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
 hardfork.
 
-The hardfork-specific json files only contain the deltas from `chainstart` and
+The hardfork configurations above `chainstart` only contain the deltas from `chainstart` and
 shouldn't be accessed directly until you have a specific reason for it.
 
 ### EIPs
