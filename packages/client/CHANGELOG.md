@@ -20,6 +20,7 @@ Note: this release is not yet fully ready for `4844-devnet-8` (launch in August 
 ### Features
 
 - Add `debug_traceCall` RPC method, PR [#2913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2913)
+- Add `debug_storageRangeAt` RPC method, PR [#2922](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2922)
 - Handle SIGTERM kernel signal, PR [#2921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2921)
 
 ### Bugfixes / Maintenance
