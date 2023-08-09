@@ -2,16 +2,16 @@ import {
   KeyEncoding,
   MapDB,
   ValueEncoding,
-  bytesToUnprefixedHex,
-  bytesToUtf8,
+  bytesToHex,
   equalsBytes,
-  unprefixedHexToBytes,
+  hexToBytes,
+  zeros,
 } from '@ethereumjs/util'
 
 import { CheckpointDB } from './db/checkpoint.js'
+import { decodeNode, decodeRawNode, isRawNode } from './node/util.js'
 import {
   type EmbeddedNode,
-  type FoundNodeFunction,
   type Nibbles,
   type Proof,
   ROOT_DB_KEY,
@@ -20,8 +20,9 @@ import {
 } from './types.js'
 import { Lock } from './util/lock.js'
 
-import type { VerkleNode } from './node/verkleNode.js'
-import type { BatchDBOp, DB } from '@ethereumjs/util'
+import type { LeafNode } from './node/leafNode.js'
+import type { VerkleNode } from './node/types.js'
+import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
   node: VerkleNode | null
@@ -35,7 +36,6 @@ interface Path {
 export class VerkleTrie {
   protected readonly _opts: VerkleTrieOptsWithDefaults = {
     useRootPersistence: false,
-    useNodePruning: false,
     cacheSize: 0,
   }
 
@@ -61,7 +61,7 @@ export class VerkleTrie {
 
     this.database(opts?.db ?? new MapDB<string, string>())
 
-    this.EMPTY_TRIE_ROOT = new Uint8Array() // TODO
+    this.EMPTY_TRIE_ROOT = zeros(32)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
     this._root = this.EMPTY_TRIE_ROOT
 
@@ -75,13 +75,13 @@ export class VerkleTrie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToUnprefixedHex(key), {
+        const rootHex = await opts?.db.get(bytesToHex(key), {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
-        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
+        opts.root = rootHex !== undefined ? hexToBytes(rootHex) : undefined
       } else {
-        await opts?.db.put(bytesToUnprefixedHex(key), bytesToUnprefixedHex(opts.root), {
+        await opts?.db.put(bytesToHex(key), bytesToHex(opts.root), {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
@@ -144,8 +144,17 @@ export class VerkleTrie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
-  async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array[] | null> {
-    throw new Error('Not implemented')
+  async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
+    const node = await this.findLeafNode(key, throwIfMissing)
+    if (node !== null) {
+      const keyLastByte = key[key.length - 1]
+
+      // The retrieved leaf node contains an array of 256 possible values.
+      // The index of the value we want is at the key's last byte
+      return node.values[keyLastByte]
+    }
+
+    return null
   }
 
   /**
@@ -160,22 +169,21 @@ export class VerkleTrie {
   }
 
   /**
-   * Deletes a value given a `key` from the trie
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @returns A Promise that resolves once value is deleted.
-   */
-  async del(key: Uint8Array): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
    * Tries to find a path to the node for the given key.
    * It returns a `stack` of nodes to the closest node.
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
+    throw new Error('Not implemented')
+  }
+
+  /**
+   * Tries to find the leaf node leading up to the given key, or null if not found.
+   * @param key - the search key
+   * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
+   */
+  async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | null> {
     throw new Error('Not implemented')
   }
 
@@ -191,7 +199,16 @@ export class VerkleTrie {
    * Retrieves a node from db by hash.
    */
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
-    throw new Error('Not implemented')
+    if (isRawNode(node)) {
+      return decodeRawNode(node)
+    }
+    const value = await this._db.get(node)
+    if (value !== undefined) {
+      return decodeNode(value)
+    } else {
+      // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
+      throw new Error('Missing node in DB')
+    }
   }
 
   /**
@@ -226,7 +243,11 @@ export class VerkleTrie {
    * @param stack - a stack of nodes to the value given by the key
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
-  async saveStack(key: Nibbles, stack: VerkleNode[], opStack: BatchDBOp[]): Promise<void> {
+  async saveStack(
+    key: Nibbles,
+    stack: VerkleNode[],
+    opStack: PutBatch<Uint8Array, Uint8Array>[]
+  ): Promise<void> {
     throw new Error('Not implemented')
   }
 
@@ -242,7 +263,7 @@ export class VerkleTrie {
   _formatNode(
     node: VerkleNode,
     topLevel: boolean,
-    opStack: BatchDBOp[],
+    opStack: PutBatch<Uint8Array, Uint8Array>,
     remove: boolean = false
   ): Uint8Array | (EmbeddedNode | null)[] {
     throw new Error('Not implemented')
@@ -336,7 +357,7 @@ export class VerkleTrie {
    */
   async persistRoot() {
     if (this._opts.useRootPersistence) {
-      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
+      await this._db.put(ROOT_DB_KEY, this.root())
     }
   }
 
@@ -347,19 +368,6 @@ export class VerkleTrie {
    * @private
    */
   protected async _findDbNodes(onFound: () => void): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
-   * Returns the key practically applied for trie construction
-   * depending on the `useKeyHashing` option being set or not.
-   * @param key
-   */
-  protected appliedKey(key: Uint8Array): Uint8Array {
-    throw new Error('Not implemented')
-  }
-
-  protected hash(msg: Uint8Array): Uint8Array {
     throw new Error('Not implemented')
   }
 
