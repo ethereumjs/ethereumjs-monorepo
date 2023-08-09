@@ -138,31 +138,41 @@ describe('simple mainnet test run', async () => {
   it(
     'should snap sync and finish',
     async () => {
-      try {
-        if (ejsClient !== null && snapCompleted !== undefined) {
+      if (ejsClient !== null && snapCompleted !== undefined) {
+        // wait on the sync promise to complete if it has been called independently
+        const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 8 * 60_000))
+        let snapRoot
+        try {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
-          // wait on the sync promise to complete if it has been called independently
-          const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
-          try {
-            await Promise.race([snapCompleted, snapSyncTimeout])
-            assert.ok(true, 'completed snap sync')
-          } catch (e) {
-            assert.fail('could not complete snap sync in 40 seconds')
-          }
+          snapRoot = await Promise.race([snapCompleted, snapSyncTimeout])
           await ejsClient.stop()
-        } else {
-          assert.fail('ethereumjs client not setup properly for snap sync')
+          assert.ok(true, 'completed snap sync')
+        } catch (e) {
+          assert.fail('could not complete snap sync in 8 minutes')
         }
 
-        await teardownCallBack()
-        assert.ok(true, 'network cleaned')
-      } catch (e) {
-        assert.fail('network not cleaned properly')
+        const peerLatest = (await client.request('eth_getBlockByNumber', ['latest', false])).result
+        assert.equal(
+          bytesToHex(snapRoot),
+          peerLatest.stateRoot,
+          'synced stateRoot should match with peer'
+        )
+      } else {
+        assert.fail('ethereumjs client not setup properly for snap sync')
       }
     },
     10 * 60_000
   )
+
+  it('network cleanup', async () => {
+    try {
+      await teardownCallBack()
+      assert.ok(true, 'network cleaned')
+    } catch (e) {
+      assert.fail('network not cleaned properly')
+    }
+  }, 60_000)
 })
 
 async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {

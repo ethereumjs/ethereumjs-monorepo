@@ -394,6 +394,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         return
       }
       let slotCount = 0
+      const storagePromises = []
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
         const storageTrie =
@@ -401,10 +402,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           new Trie({ useKeyHashing: true })
         for (const slot of slotArray as any) {
           slotCount++
-          void storageTrie.put(slot.hash, slot.body)
+          // what we have is hashed account and not its pre-image, so we skipKeyTransform
+          storagePromises.push(storageTrie.put(slot.hash, slot.body, true))
         }
         this.accountToStorageTrie.set(bytesToUnprefixedHex(accountHash), storageTrie)
       })
+      await Promise.all(storagePromises)
       this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {
       this.debug(err)

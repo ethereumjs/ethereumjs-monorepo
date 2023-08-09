@@ -376,7 +376,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const storageFetchRequests = new Set()
     const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
-      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
+      // what we have is hashed account and not its pre-image, so we skipKeyTransform
+      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body), true)
 
       // build record of accounts that need storage slots to be fetched
       const storageRoot: Uint8Array = account.body[2]
