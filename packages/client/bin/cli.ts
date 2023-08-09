@@ -301,6 +301,13 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
     choices: [undefined, false, true, 'poa', 'pow'],
   })
+  .check((argv) => {
+    if ('dev' in argv && argv['dev'] === undefined) {
+      throw Error('If the "dev" option is used it must be assigned a value')
+    } else {
+      return true
+    }
+  })
   .option('minerCoinbase', {
     describe:
       'Address for mining rewards (etherbase). If not provided, defaults to the primary account',

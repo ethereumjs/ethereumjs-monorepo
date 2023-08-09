@@ -296,7 +296,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
     totalblobGas = castTx.common.param('gasConfig', 'blobGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalblobGas * castTx.maxFeePerblobGas
+    maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
     if (opts.block === undefined) {
@@ -309,9 +309,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
     blobGasPrice = opts.block.header.getBlobGasPrice()
-    if (castTx.maxFeePerblobGas < blobGasPrice) {
+    if (castTx.maxFeePerBlobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerblobGas ${castTx.maxFeePerblobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
+        `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         this,
         block,
         tx

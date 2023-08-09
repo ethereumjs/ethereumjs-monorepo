@@ -206,6 +206,31 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.bytes256([bytesToUnprefixedHex(randomBytes(256))], 0)))
   })
 
+  it('unsignedInteger', () => {
+    assert.ok(validatorResult(validators.unsignedInteger([0], 0)))
+    assert.ok(validatorResult(validators.unsignedInteger([0.0], 0)))
+    assert.ok(validatorResult(validators.unsignedInteger([1], 0)))
+    assert.ok(validatorResult(validators.unsignedInteger([0x01], 0)))
+    assert.ok(validatorResult(validators.unsignedInteger([Number.MAX_SAFE_INTEGER], 0)))
+
+    assert.notOk(validatorResult(validators.unsignedInteger([-1], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.MAX_SAFE_INTEGER + 1], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.MIN_VALUE], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.MAX_VALUE], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.NEGATIVE_INFINITY], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.POSITIVE_INFINITY], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.NaN], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([Number.EPSILON], 0)))
+
+    assert.notOk(validatorResult(validators.unsignedInteger(['1'], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([0.1], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([BigInt(1)], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([{ number: 1 }], 0)))
+
+    assert.notOk(validatorResult(validators.unsignedInteger([null], 0)))
+    assert.notOk(validatorResult(validators.unsignedInteger([undefined], 0)))
+  })
+
   it('blockHash', () => {
     // valid
     assert.ok(
