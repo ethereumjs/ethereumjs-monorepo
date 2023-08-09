@@ -8,6 +8,7 @@ import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { FullEthereumService } from '../../service'
 import type { RpcTx } from '../types'
+import type { Block } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
 
 export interface tracerOpts {
@@ -91,6 +92,13 @@ export class Debug {
     this.traceCall = middleware(this.traceCall.bind(this), 2, [
       [validators.transaction()],
       [validators.blockOption],
+    ])
+    this.storageRangeAt = middleware(this.storageRangeAt.bind(this), 5, [
+      [validators.blockHash],
+      [validators.unsignedInteger],
+      [validators.address],
+      [validators.uint256],
+      [validators.unsignedInteger],
     ])
   }
 
@@ -276,6 +284,65 @@ export class Debug {
     throw {
       code: INTERNAL_ERROR,
       message: err.message.toString(),
+    }
+  }
+
+  /**
+   * Returns a limited set of storage keys belonging to an account.
+   * @param params An array of 5 parameters:
+   *    1. The hash of the block at which to get storage from the state.
+   *    2. The transaction index of the requested block post which to get the storage.
+   *    3. The address of the account.
+   *    4. The starting (hashed) key from which storage will be returned. To include the entire range, pass '0x00'.
+   *    5. The maximum number of storage values that could be returned.
+   * @returns A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
+   * The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
+   */
+  async storageRangeAt(params: [string, number, string, string, number]) {
+    const [blockHash, txIndex, account, startKey, limit] = params
+
+    if (this.vm === undefined) {
+      throw new Error('Missing VM.')
+    }
+
+    let block: Block
+    try {
+      // Validator already verified that `blockHash` is properly formatted.
+      block = await this.chain.getBlock(hexToBytes(blockHash))
+    } catch (err: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'Could not get requested block hash.',
+      }
+    }
+
+    if (txIndex >= block.transactions.length) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'txIndex cannot be larger than the number of transactions in the block.',
+      }
+    }
+
+    try {
+      const parentBlock = await this.chain.getBlock(block.header.parentHash)
+      // Copy the VM and run transactions including the relevant transaction.
+      const vmCopy = await this.vm.shallowCopy()
+      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      for (let i = 0; i <= txIndex; i++) {
+        await vmCopy.runTx({ tx: block.transactions[i], block })
+      }
+
+      return vmCopy.stateManager.dumpStorageRange(
+        // Validator already verified that `account` and `startKey` are properly formatted.
+        Address.fromString(account),
+        BigInt(startKey),
+        limit
+      )
+    } catch (err: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: err.message.toString(),
+      }
     }
   }
 }
