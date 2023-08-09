@@ -1,8 +1,7 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks from '../../testdata/blocks/beacon.json'
@@ -137,8 +136,8 @@ describe(method, () => {
       },
     }
 
-    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-    td.replace<any>('@ethereumjs/block', { BlockHeader })
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+    vi.doMock('@ethereumjs/block', () => BlockHeader)
 
     const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
       engine: true,
@@ -301,10 +300,5 @@ describe(method, () => {
     }
 
     await baseRequest(server, req, 200, expectRes)
-  })
-
-  it('reset TD', () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
   })
 })
