@@ -181,23 +181,26 @@ describe('simple mainnet test run', async () => {
   )
 
   it.skipIf(syncedTrie !== undefined)('should match entire state', async () => {
-    // inspect the keys from genesis
+    // update customGenesisState to reflect latest changes and match entire customGenesisState
+    customGenesisState[EOATransferToAccount] = [
+      `0x${EOATransferToBalance.toString(16)}`,
+      undefined,
+      undefined,
+      BigInt(0),
+    ]
+    customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+
     const stateManager = new DefaultStateManager({ trie: syncedTrie })
-    let address = Address.fromString(EOATransferToAccount)
-    let account = await stateManager.getAccount(address)
-    assert.equal(EOATransferToBalance, account.balance, 'balance for sample eoa should match')
 
-    address = Address.fromString(sender)
-    account = await stateManager.getAccount(address)
-    assert.equal(
-      senderBalance,
-      account.balance,
-      'balance for eoa transfered from account should match'
-    )
-
-    // const accountTrie =
-    // for(const account of Object.keys(customGenesisState)){
-    // }
+    for (const addressString of Object.keys(customGenesisState)) {
+      const address = Address.fromString(addressString)
+      const account = await stateManager.getAccount(address)
+      assert.equal(
+        account.balance,
+        BigInt(customGenesisState[addressString][0]),
+        `${addressString} balance should match`
+      )
+    }
   })
 
   it('network cleanup', async () => {
