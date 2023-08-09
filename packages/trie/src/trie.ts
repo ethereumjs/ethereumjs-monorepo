@@ -403,15 +403,16 @@ export class Trie {
     if (isRawNode(node)) {
       return decodeRawNode(node)
     }
-
-    const value = (await this._db.get(node)) ?? null
-
-    if (value === null) {
+    let value = null
+    let foundNode = null
+    value = await this._db.get(node)
+    if (value) {
+      foundNode = decodeNode(value)
+    } else {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
-
-    return decodeNode(value) ?? null
+    return foundNode
   }
 
   /**
