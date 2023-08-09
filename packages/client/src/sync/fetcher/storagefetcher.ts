@@ -394,7 +394,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         return
       }
       let slotCount = 0
-      const storagePromises = []
+      const storagePromises: Promise<unknown>[] = []
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
         const storageTrie =
