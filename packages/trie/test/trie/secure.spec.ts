@@ -37,7 +37,7 @@ describe('SecureTrie proof', () => {
 
     const proof = await trie.createProof(utf8ToBytes('key1aa'))
     const val = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
-    assert.equal(bytesToUtf8(val!), '01234')
+    assert.deepEqual(val, utf8ToBytes('01234'))
   })
 })
 
