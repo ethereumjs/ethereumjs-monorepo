@@ -311,7 +311,7 @@ export const runBlobTx = async (
     kzgCommitments: commitments,
     kzgProofs: proofs,
     versionedHashes: hashes,
-    maxFeePerblobGas: undefined,
+    maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
     nonce: undefined,
@@ -321,7 +321,7 @@ export const runBlobTx = async (
 
   txData.maxFeePerGas = '0xff'
   txData.maxPriorityFeePerGas = BigInt(1)
-  txData.maxFeePerblobGas = BigInt(1000)
+  txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
   txData.nonce = BigInt(nonce.result)
@@ -350,21 +350,22 @@ export const runBlobTx = async (
 
 export const createBlobTxs = async (
   numTxs: number,
-  blobSize = 2 ** 17 - 1,
   pkey: Uint8Array,
   startNonce: number = 0,
   txMeta: {
     to?: string
     value?: bigint
     chainId?: number
-    maxFeePerblobGas: bigint
+    maxFeePerBlobGas: bigint
     maxPriorityFeePerGas: bigint
     maxFeePerGas: bigint
     gasLimit: bigint
+    blobSize: number
   },
   opts?: TxOptions
 ) => {
   const txHashes: string[] = []
+  const blobSize = txMeta.blobSize ?? 2 ** 17 - 1
 
   const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)

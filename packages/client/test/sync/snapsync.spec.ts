@@ -94,7 +94,6 @@ describe('[SnapSynchronizer]', async () => {
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    assert.equal(await sync.best(), peers[1] as any, 'found best')
-    await sync.start()
+    assert.equal(await sync.best(), peers[1], 'found best')
   })
 })

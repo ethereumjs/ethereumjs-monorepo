@@ -12,7 +12,9 @@ import {
 import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToHex,
   bytesToInt,
+  hexToBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
@@ -215,23 +217,21 @@ export class EthProtocol extends Protocol {
         } else {
           const tupleParams = params as [number[], number[], Uint8Array[]]
           const encodedData = [
-            tupleParams[0].map((type) => intToUnpaddedBytes(type)),
-            tupleParams[1].map((size) => intToUnpaddedBytes(size)),
+            bytesToHex(new Uint8Array(tupleParams[0])), // This matches the Geth implementation of this parameter (which is currently different than the spec)
+            tupleParams[1],
             tupleParams[2],
           ]
           return encodedData
         }
       },
-      decode: (
-        params: Uint8Array[] | [types: Uint8Array[], sizes: Uint8Array[], hashes: Uint8Array[]]
-      ) => {
+      decode: (params: Uint8Array[] | [types: string, sizes: number[], hashes: Uint8Array[]]) => {
         if (params[0] instanceof Uint8Array) {
           return params
         } else {
-          const tupleParams = params as [Uint8Array[], Uint8Array[], Uint8Array[]]
+          const tupleParams = params as [string, number[], Uint8Array[]]
           const decodedData = [
-            tupleParams[0].map((type) => bytesToInt(type)),
-            tupleParams[1].map((size) => bytesToInt(size)),
+            hexToBytes(tupleParams[0]),
+            tupleParams[1].map((size) => BigInt(size)),
             tupleParams[2],
           ]
 

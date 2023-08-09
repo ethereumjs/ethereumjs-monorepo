@@ -79,7 +79,7 @@ describe('EIP4844 tests', () => {
         kzgCommitments: commitments,
         kzgProofs: proofs,
         maxFeePerGas: 10000000000n,
-        maxFeePerblobGas: 100000000n,
+        maxFeePerBlobGas: 100000000n,
         gasLimit: 0xffffn,
         to: hexToBytes('0xffb38a7a99e3e2335be83fc74b7faa19d5531243'),
       },

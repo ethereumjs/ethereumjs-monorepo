@@ -6,6 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
 import { SnapProtocol } from '../../../src/net/protocol'
+import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
@@ -221,6 +222,7 @@ describe('[AccountFetcher]', async () => {
     })
     // test snapfetcher complete, since the storage fetcher is already empty it should anyway lead
     // call to snapFetchersCompleted with storageFetcher
+    snapFetchersCompleted(fetcherDoneFlags, TrieNodeFetcher)
     snapFetchersCompleted(
       fetcherDoneFlags,
       AccountFetcher,

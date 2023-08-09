@@ -13,7 +13,7 @@ import {
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST } from '../error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST, UNSUPPORTED_FORK } from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -819,7 +819,7 @@ export class Engine {
     const ts = parseInt(params[0].timestamp)
     if (eip4844Timestamp === null || ts < eip4844Timestamp) {
       throw {
-        code: INVALID_PARAMS,
+        code: UNSUPPORTED_FORK,
         message: 'NewPayloadV{1|2} MUST be used before Cancun is activated',
       }
     }

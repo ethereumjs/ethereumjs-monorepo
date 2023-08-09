@@ -238,11 +238,11 @@ export class BlockHeader {
     }
 
     if (!this.common.isActivatedEIP(4844)) {
-      if (headerData.blobGasUsed !== undefined) {
+      if (blobGasUsed !== undefined) {
         throw new Error('blob gas used can only be provided with EIP4844 activated')
       }
 
-      if (headerData.excessBlobGas !== undefined) {
+      if (excessBlobGas !== undefined) {
         throw new Error('excess blob gas can only be provided with EIP4844 activated')
       }
     }
@@ -669,7 +669,6 @@ export class BlockHeader {
       }
       return this.cache.hash
     }
-
     return keccak256(RLP.encode(this.raw()))
   }
 
