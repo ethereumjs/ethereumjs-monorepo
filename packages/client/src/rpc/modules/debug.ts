@@ -332,7 +332,8 @@ export class Debug {
         await vmCopy.runTx({ tx: block.transactions[i], block })
       }
 
-      return vmCopy.stateManager.dumpStorageRange(
+      // await here so that any error can be handled in the catch below for proper response
+      return await vmCopy.stateManager.dumpStorageRange(
         // Validator already verified that `account` and `startKey` are properly formatted.
         Address.fromString(account),
         BigInt(startKey),
