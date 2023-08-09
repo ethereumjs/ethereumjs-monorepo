@@ -145,7 +145,7 @@ describe('walk a sparse trie', async () => {
   // Generate a proof for inputs[0]
   const proofKey = inputs[0][0]
   const proof = await trie.createProof(proofKey)
-  assert.ok(await trie.verifyProof(trie.root(), proofKey, proof))
+  assert.ok(await Trie.verifyProof(trie.root(), proofKey, proof))
 
   // Build a sparse trie from the proof
   const fromProof = await Trie.fromProof(proof, { root: trie.root() })
