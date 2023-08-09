@@ -2,8 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -839,8 +838,8 @@ describe('[Skeleton] / setHead', async () => {
     }
 
     const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-    td.replace<any>('@ethereumjs/block', { BlockHeader })
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+    vi.doMock('@ethereumjs/block', () => BlockHeader)
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
@@ -895,6 +894,5 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
   })
 })
