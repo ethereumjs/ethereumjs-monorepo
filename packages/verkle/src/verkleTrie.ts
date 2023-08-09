@@ -151,7 +151,7 @@ export class VerkleTrie {
 
       // The retrieved leaf node contains an array of 256 possible values.
       // The index of the value we want is at the key's last byte
-      return node.values[keyLastByte]
+      return node.values?.[keyLastByte] ?? null
     }
 
     return null
