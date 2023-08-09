@@ -1,25 +1,11 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-// import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
-// import type { WalkController } from './util/walkController.js'
 import type { DB } from '@ethereumjs/util'
 
-export type VerkleTrieNode = any
-
-export type Nibbles = number[]
-
-// Branch and extension nodes might store
-// hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Uint8Array | Uint8Array[]
+// Curve point of a commitment
+export type CommitmentPoint = Uint8Array
 
 export type Proof = Uint8Array[]
-
-export type FoundNodeFunction = (
-  nodeRef: Uint8Array,
-  node: VerkleTrieNode | null,
-  key: Nibbles,
-  walkController: any
-) => void
 
 export interface VerkleTrieOpts {
   /**
@@ -38,12 +24,6 @@ export interface VerkleTrieOpts {
   useRootPersistence?: boolean
 
   /**
-   * Flag to prune the trie. When set to `true`, each time a value is overridden,
-   * unreachable nodes will be pruned (deleted) from the trie
-   */
-  useNodePruning?: boolean
-
-  /**
    * LRU cache for trie nodes to allow for faster node retrieval.
    *
    * Default: 0 (deactivated)
@@ -53,7 +33,6 @@ export interface VerkleTrieOpts {
 
 export type VerkleTrieOptsWithDefaults = VerkleTrieOpts & {
   useRootPersistence: boolean
-  useNodePruning: boolean
   cacheSize: number
 }
 
