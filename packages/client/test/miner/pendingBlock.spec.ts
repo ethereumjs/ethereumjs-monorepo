@@ -21,8 +21,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import * as kzg from 'c-kzg'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
 import { Config } from '../../src/config'
@@ -91,11 +90,15 @@ const setup = () => {
 
 describe('[PendingBlock]', async () => {
   const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-  td.replace<any>('@ethereumjs/block', { BlockHeader })
+  BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+  vi.doMock('@ethereumjs/block', () => {
+    {
+      BlockHeader
+    }
+  })
 
-  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
+  // const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
+  DefaultStateManager.prototype.setStateRoot = vi.fn()
 
   const createTx = (
     from = A,
@@ -472,14 +475,5 @@ describe('[PendingBlock]', async () => {
 
     assert.ok(block !== undefined && blobsBundles !== undefined)
     assert.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
-  })
-
-  it('should reset td', () => {
-    td.reset()
-    // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
-    // mocking indirect dependencies is not properly supported, but it works for us in this file,
-    // so we will replace the original functions to avoid issues in other tests that come after
-    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 })
