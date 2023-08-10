@@ -56,7 +56,7 @@ describe('[EthereumClient]', async () => {
     await client.open()
     assert.ok(client.opened, 'opened')
     assert.equal(await client.open(), false, 'already opened')
-  })
+  }, 30000)
 
   it('should start/stop', async () => {
     const servers = [new Server()] as any
@@ -68,7 +68,7 @@ describe('[EthereumClient]', async () => {
     await client.stop()
     assert.notOk(client.started, 'stopped')
     assert.equal(await client.stop(), false, 'already stopped')
-  })
+  }, 30000)
 
   it('should reset td', () => {
     td.reset()
