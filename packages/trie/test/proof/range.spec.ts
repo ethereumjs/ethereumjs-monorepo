@@ -839,63 +839,59 @@ describe('simple merkle range proofs generation and verification', () => {
     assert.equal(await verify(trie, entries, 0, entries.length - 1), false)
   })
 
-  it(
-    'passes randomly created tries with randomly selected ranges',
-    async () => {
-      for (let i = 0; i < 1; i++) {
-        const trie = new Trie({
-          useKeyHashing: true,
-        })
-        // Generate [100, 1000) key/value pairs
-        const keyCount = 100 + Math.floor(Math.random() * 900)
-        for (let j = 0; j < keyCount; j++) {
-          await trie.put(randomBytes(32), randomBytes(32))
-        }
+  it('passes randomly created tries with randomly selected ranges', async () => {
+    for (let i = 0; i < 1; i++) {
+      const trie = new Trie({
+        useKeyHashing: true,
+      })
+      // Generate [100, 1000) key/value pairs
+      const keyCount = 100 + Math.floor(Math.random() * 900)
+      for (let j = 0; j < keyCount; j++) {
+        await trie.put(randomBytes(32), randomBytes(32))
+      }
 
-        // 1000 verified requests
-        for (let j = 0; j < 1; j++) {
-          const lKey = randomBytes(32)
-          let rKey = randomBytes(32)
-          while (compareBytes(lKey, rKey) > 0) {
-            rKey = randomBytes(32)
-          }
-          const proof = await trie.createRangeProof(lKey, rKey)
-          const proverTrie = new Trie()
-          if (proof.values.length === 1) {
-            const reportedLKey = proof.keys[0]
-            if (compareBytes(reportedLKey, rKey) > 0) {
-              try {
-                await proverTrie.verifyRangeProof(
-                  trie.root(),
-                  reportedLKey,
-                  reportedLKey,
-                  proof.keys,
-                  proof.values,
-                  proof.proof
-                )
-                assert.ok('succesfully verified')
-              } catch (e: any) {
-                assert.fail('could not verify')
-              }
-            } else {
-              try {
-                await proverTrie.verifyRangeProof(
-                  trie.root(),
-                  lKey,
-                  rKey,
-                  proof.keys,
-                  proof.values,
-                  proof.proof
-                )
-                assert.ok('succesfully verified')
-              } catch (e: any) {
-                assert.fail('could not verify')
-              }
+      // 1000 verified requests
+      for (let j = 0; j < 1; j++) {
+        const lKey = randomBytes(32)
+        let rKey = randomBytes(32)
+        while (compareBytes(lKey, rKey) > 0) {
+          rKey = randomBytes(32)
+        }
+        const proof = await trie.createRangeProof(lKey, rKey)
+        const proverTrie = new Trie()
+        if (proof.values.length === 1) {
+          const reportedLKey = proof.keys[0]
+          if (compareBytes(reportedLKey, rKey) > 0) {
+            try {
+              await proverTrie.verifyRangeProof(
+                trie.root(),
+                reportedLKey,
+                reportedLKey,
+                proof.keys,
+                proof.values,
+                proof.proof
+              )
+              assert.ok('succesfully verified')
+            } catch (e: any) {
+              assert.fail('could not verify')
+            }
+          } else {
+            try {
+              await proverTrie.verifyRangeProof(
+                trie.root(),
+                lKey,
+                rKey,
+                proof.keys,
+                proof.values,
+                proof.proof
+              )
+              assert.ok('succesfully verified')
+            } catch (e: any) {
+              assert.fail('could not verify')
             }
           }
         }
       }
-    },
-    { retry: 3 }
-  )
+    }
+  })
 })

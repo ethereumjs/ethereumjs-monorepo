@@ -97,13 +97,14 @@ for (const { constructor, defaults, title } of [
         root: KECCAK256_RLP,
         useRootPersistence: true,
       })
-      assert.equal(await (<any>trie)._db.db.get(bytesToHex(ROOT_DB_KEY)), bytesToHex(KECCAK256_RLP))
+
+      // @ts-expect-error
+      assert.ok(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
 
       await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))
 
-      assert.isFalse(
-        equalsBytes((await (<any>trie)._db.db.get(bytesToHex(ROOT_DB_KEY)))!, KECCAK256_RLP)
-      )
+      // @ts-expect-error
+      assert.isFalse(equalsBytes((await trie._db.get(ROOT_DB_KEY))!, KECCAK256_RLP))
     })
 
     it('does not persist the root if the `useRootPersistence` option is `false`', async () => {
