@@ -113,7 +113,7 @@ export class Trie {
     return new Trie(opts)
   }
 
-  static async createFromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
+  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
     const trie = await Trie.create(opts)
     if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
       throw new Error('Invalid proof provided')
@@ -146,7 +146,7 @@ export class Trie {
     opts?: TrieOpts
   ): Promise<Uint8Array | null> {
     try {
-      const proofTrie = await Trie.createFromProof(proof, {
+      const proofTrie = await Trie.fromProof(proof, {
         ...opts,
       })
       const value = await proofTrie.get(key, true)

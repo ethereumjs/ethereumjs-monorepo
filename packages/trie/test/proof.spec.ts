@@ -67,7 +67,7 @@ describe('simple merkle proofs generation and verification', () => {
     // now make the key non-null so the exclusion proof becomes invalid
     await trie.put(myKey, utf8ToBytes('thisisavalue'))
     try {
-      await Trie.createFromProof(proof, { root: trie.root() })
+      await Trie.fromProof(proof, { root: trie.root() })
       assert.fail(`expected error: Invalid proof provided`)
     } catch (e: any) {
       assert.equal(e.message, 'Invalid proof provided')
