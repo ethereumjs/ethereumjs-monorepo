@@ -12,8 +12,8 @@
 
 ### Enumerations
 
-- [DISCONNECT\_REASONS](enums/DISCONNECT_REASONS.md)
-- [PREFIXES](enums/PREFIXES.md)
+- [DISCONNECT\_REASON](enums/DISCONNECT_REASON.md)
+- [ProtocolType](enums/ProtocolType.md)
 
 ### Classes
 
@@ -35,32 +35,26 @@
 ### Interfaces
 
 - [Capabilities](interfaces/Capabilities.md)
-- [CustomContact](interfaces/CustomContact.md)
+- [Contact](interfaces/Contact.md)
 - [DPTOptions](interfaces/DPTOptions.md)
 - [DPTServerOptions](interfaces/DPTServerOptions.md)
-- [Hello](interfaces/Hello.md)
+- [KBucketOptions](interfaces/KBucketOptions.md)
 - [PeerInfo](interfaces/PeerInfo.md)
-- [ProtocolConstructor](interfaces/ProtocolConstructor.md)
-- [ProtocolDescriptor](interfaces/ProtocolDescriptor.md)
+- [PeerOptions](interfaces/PeerOptions.md)
 - [RLPxOptions](interfaces/RLPxOptions.md)
 
 ### Type Aliases
 
 - [DNSOptions](README.md#dnsoptions)
-- [Hash](README.md#hash)
-- [HelloMsg](README.md#hellomsg)
+- [SendMethod](README.md#sendmethod)
 
 ### Variables
 
-- [BASE\_PROTOCOL\_LENGTH](README.md#base_protocol_length)
-- [BASE\_PROTOCOL\_VERSION](README.md#base_protocol_version)
 - [DEFAULT\_ANNOUNCE\_TYPE](README.md#default_announce_type)
-- [PING\_INTERVAL](README.md#ping_interval)
 
 ### Functions
 
 - [assertEq](README.md#asserteq)
-- [buffer2int](README.md#buffer2int)
 - [createDeferred](README.md#createdeferred)
 - [decode](README.md#decode)
 - [devp2pDebug](README.md#devp2pdebug)
@@ -69,7 +63,10 @@
 - [formatLogId](README.md#formatlogid)
 - [genPrivateKey](README.md#genprivatekey)
 - [id2pk](README.md#id2pk)
-- [int2buffer](README.md#int2buffer)
+- [ipToBytes](README.md#iptobytes)
+- [ipToString](README.md#iptostring)
+- [isV4Format](README.md#isv4format)
+- [isV6Format](README.md#isv6format)
 - [keccak256](README.md#keccak256)
 - [pk2id](README.md#pk2id)
 - [toNewUint8Array](README.md#tonewuint8array)
@@ -91,60 +88,34 @@
 
 #### Defined in
 
-[packages/devp2p/src/dns/dns.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L22)
+[packages/devp2p/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L32)
 
 ___
 
-### Hash
+### SendMethod
 
-Ƭ **Hash**: `ReturnType`<typeof `keccak256.create`\>
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/mac.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L6)
-
-___
-
-### HelloMsg
-
-Ƭ **HelloMsg**: `Object`
+Ƭ **SendMethod**: (`code`: `number`, `data`: `Uint8Array`) => `any`
 
 #### Type declaration
 
+▸ (`code`, `data`): `any`
+
+##### Parameters
+
 | Name | Type |
 | :------ | :------ |
-| `0` | `Buffer` |
-| `1` | `Buffer` |
-| `2` | `Buffer`[][] |
-| `3` | `Buffer` |
-| `4` | `Buffer` |
-| `length` | ``5`` |
+| `code` | `number` |
+| `data` | `Uint8Array` |
+
+##### Returns
+
+`any`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/peer.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L49)
+[packages/devp2p/src/types.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L212)
 
 ## Variables
-
-### BASE\_PROTOCOL\_LENGTH
-
-• `Const` **BASE\_PROTOCOL\_LENGTH**: ``16``
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/peer.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L22)
-
-___
-
-### BASE\_PROTOCOL\_VERSION
-
-• `Const` **BASE\_PROTOCOL\_VERSION**: ``5``
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/peer.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L21)
-
-___
 
 ### DEFAULT\_ANNOUNCE\_TYPE
 
@@ -152,17 +123,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L14)
-
-___
-
-### PING\_INTERVAL
-
-• `Const` **PING\_INTERVAL**: `number`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/peer.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L24)
+[packages/devp2p/src/protocol/les.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L21)
 
 ## Functions
 
@@ -186,27 +147,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L67)
-
-___
-
-### buffer2int
-
-▸ **buffer2int**(`buffer`): `number`
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `buffer` | `Buffer` |
-
-#### Returns
-
-`number`
-
-#### Defined in
-
-[packages/devp2p/src/util.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L43)
+[packages/devp2p/src/util.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L51)
 
 ___
 
@@ -226,19 +167,19 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L127)
+[packages/devp2p/src/util.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L112)
 
 ___
 
 ### decode
 
-▸ **decode**(`buffer`): `Object`
+▸ **decode**(`bytes`): `Object`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `buffer` | `Buffer` |
+| `bytes` | `Uint8Array` |
 
 #### Returns
 
@@ -247,12 +188,12 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `data` | `any` |
-| `publicKey` | `Buffer` |
+| `publicKey` | `Uint8Array` |
 | `typename` | `string` \| `number` |
 
 #### Defined in
 
-[packages/devp2p/src/dpt/message.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L187)
+[packages/devp2p/src/dpt/message.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L190)
 
 ___
 
@@ -273,13 +214,13 @@ ___
 
 #### Defined in
 
-node_modules/@types/debug/index.d.ts:44
+node_modules/@types/debug/index.d.ts:51
 
 ___
 
 ### encode
 
-▸ **encode**<`T`\>(`typename`, `data`, `privateKey`): `Buffer`
+▸ **encode**<`T`\>(`typename`, `data`, `privateKey`): `Uint8Array`
 
 #### Type parameters
 
@@ -293,15 +234,15 @@ ___
 | :------ | :------ |
 | `typename` | `string` |
 | `data` | `T` |
-| `privateKey` | `Buffer` |
+| `privateKey` | `Uint8Array` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/dpt/message.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L171)
+[packages/devp2p/src/dpt/message.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L177)
 
 ___
 
@@ -322,7 +263,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L106)
+[packages/devp2p/src/util.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L91)
 
 ___
 
@@ -343,101 +284,167 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L97)
+[packages/devp2p/src/util.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L82)
 
 ___
 
 ### genPrivateKey
 
-▸ **genPrivateKey**(): `Buffer`
+▸ **genPrivateKey**(): `Uint8Array`
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L18)
+[packages/devp2p/src/util.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L19)
 
 ___
 
 ### id2pk
 
-▸ **id2pk**(`id`): `Buffer`
+▸ **id2pk**(`id`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `id` | `Buffer` |
+| `id` | `Uint8Array` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L30)
+[packages/devp2p/src/util.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L31)
 
 ___
 
-### int2buffer
+### ipToBytes
 
-▸ **int2buffer**(`v`): `Buffer`
+▸ **ipToBytes**(`ip`, `bytes?`, `offset?`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `ip` | `string` | `undefined` |
+| `bytes?` | `Uint8Array` | `undefined` |
+| `offset` | `number` | `0` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/devp2p/src/util.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L167)
+
+___
+
+### ipToString
+
+▸ **ipToString**(`bytes`, `offset?`, `length?`): `string`
+
+************************* ***********************************************************
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `v` | ``null`` \| `number` |
+| `bytes` | `Uint8Array` |
+| `offset?` | `number` |
+| `length?` | `number` |
 
 #### Returns
 
-`Buffer`
+`string`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L34)
+[packages/devp2p/src/util.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L131)
+
+___
+
+### isV4Format
+
+▸ **isV4Format**(`ip`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `ip` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[packages/devp2p/src/util.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L159)
+
+___
+
+### isV6Format
+
+▸ **isV6Format**(`ip`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `ip` | `string` |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[packages/devp2p/src/util.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L163)
 
 ___
 
 ### keccak256
 
-▸ **keccak256**(...`buffers`): `Buffer`
+▸ **keccak256**(...`bytes`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `...buffers` | `Buffer`[] |
+| `...bytes` | `Uint8Array`[] |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L13)
+[packages/devp2p/src/util.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L14)
 
 ___
 
 ### pk2id
 
-▸ **pk2id**(`pk`): `Buffer`
+▸ **pk2id**(`pk`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `pk` | `Buffer` |
+| `pk` | `Uint8Array` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L23)
+[packages/devp2p/src/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L24)
 
 ___
 
@@ -457,67 +464,67 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L138)
+[packages/devp2p/src/util.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L123)
 
 ___
 
 ### unstrictDecode
 
-▸ **unstrictDecode**(`value`): `Buffer` \| `NestedBufferArray`
+▸ **unstrictDecode**(`value`): `Uint8Array` \| `NestedUint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `value` | `Buffer` |
+| `value` | `Uint8Array` |
 
 #### Returns
 
-`Buffer` \| `NestedBufferArray`
+`Uint8Array` \| `NestedUint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L131)
+[packages/devp2p/src/util.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L116)
 
 ___
 
 ### xor
 
-▸ **xor**(`a`, `b`): `Buffer`
+▸ **xor**(`a`, `b`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `a` | `Buffer` |
+| `a` | `Uint8Array` |
 | `b` | `any` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L58)
+[packages/devp2p/src/util.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L42)
 
 ___
 
 ### zfill
 
-▸ **zfill**(`buffer`, `size`, `leftpad?`): `Buffer`
+▸ **zfill**(`bytes`, `size`, `leftpad?`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `buffer` | `Buffer` | `undefined` |
+| `bytes` | `Uint8Array` | `undefined` |
 | `size` | `number` | `undefined` |
 | `leftpad` | `boolean` | `true` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/util.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L51)
+[packages/devp2p/src/util.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L35)

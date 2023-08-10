@@ -24,7 +24,7 @@ Representation of EIP-4895 withdrawal data
 - [toValue](Withdrawal.md#tovalue)
 - [fromValuesArray](Withdrawal.md#fromvaluesarray)
 - [fromWithdrawalData](Withdrawal.md#fromwithdrawaldata)
-- [toBufferArray](Withdrawal.md#tobufferarray)
+- [toBytesArray](Withdrawal.md#tobytesarray)
 
 ## Constructors
 
@@ -95,15 +95,15 @@ ___
 
 ### raw
 
-▸ **raw**(): [`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+▸ **raw**(): [`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 #### Returns
 
-[`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+[`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L102)
+[packages/util/src/withdrawal.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L99)
 
 ___
 
@@ -124,7 +124,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L115)
+[packages/util/src/withdrawal.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L112)
 
 ___
 
@@ -138,14 +138,14 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `address` | `Buffer` |
+| `address` | `Uint8Array` |
 | `amount` | `bigint` |
 | `index` | `bigint` |
 | `validatorIndex` | `bigint` |
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L106)
+[packages/util/src/withdrawal.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L103)
 
 ___
 
@@ -157,7 +157,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `withdrawalArray` | [`WithdrawalBuffer`](../README.md#withdrawalbuffer) |
+| `withdrawalArray` | [`WithdrawalBytes`](../README.md#withdrawalbytes) |
 
 #### Returns
 
@@ -189,9 +189,9 @@ ___
 
 ___
 
-### toBufferArray
+### toBytesArray
 
-▸ `Static` **toBufferArray**(`withdrawal`): [`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+▸ `Static` **toBytesArray**(`withdrawal`): [`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 Convert a withdrawal to a buffer array
 
@@ -203,7 +203,7 @@ Convert a withdrawal to a buffer array
 
 #### Returns
 
-[`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+[`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 buffer array of the withdrawal
 

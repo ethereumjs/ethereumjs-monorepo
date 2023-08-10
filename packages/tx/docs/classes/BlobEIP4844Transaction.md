@@ -30,8 +30,8 @@ Typed transaction with a new gas fee market mechanism for transactions that incl
 - [gasLimit](BlobEIP4844Transaction.md#gaslimit)
 - [kzgCommitments](BlobEIP4844Transaction.md#kzgcommitments)
 - [kzgProofs](BlobEIP4844Transaction.md#kzgproofs)
-- [maxFeePerDataGas](BlobEIP4844Transaction.md#maxfeeperdatagas)
 - [maxFeePerGas](BlobEIP4844Transaction.md#maxfeepergas)
+- [maxFeePerblobGas](BlobEIP4844Transaction.md#maxfeeperblobgas)
 - [maxPriorityFeePerGas](BlobEIP4844Transaction.md#maxpriorityfeepergas)
 - [nonce](BlobEIP4844Transaction.md#nonce)
 - [r](BlobEIP4844Transaction.md#r)
@@ -206,16 +206,6 @@ ___
 
 ___
 
-### maxFeePerDataGas
-
-• `Readonly` **maxFeePerDataGas**: `bigint`
-
-#### Defined in
-
-[tx/src/eip4844Transaction.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip4844Transaction.ts#L90)
-
-___
-
 ### maxFeePerGas
 
 • `Readonly` **maxFeePerGas**: `bigint`
@@ -223,6 +213,16 @@ ___
 #### Defined in
 
 [tx/src/eip4844Transaction.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip4844Transaction.ts#L89)
+
+___
+
+### maxFeePerblobGas
+
+• `Readonly` **maxFeePerblobGas**: `bigint`
+
+#### Defined in
+
+[tx/src/eip4844Transaction.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip4844Transaction.ts#L90)
 
 ___
 

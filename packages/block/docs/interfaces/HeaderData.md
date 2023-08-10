@@ -9,10 +9,10 @@ A block header's data.
 ### Properties
 
 - [baseFeePerGas](HeaderData.md#basefeepergas)
+- [blobGasUsed](HeaderData.md#blobgasused)
 - [coinbase](HeaderData.md#coinbase)
-- [dataGasUsed](HeaderData.md#datagasused)
 - [difficulty](HeaderData.md#difficulty)
-- [excessDataGas](HeaderData.md#excessdatagas)
+- [excessBlobGas](HeaderData.md#excessblobgas)
 - [extraData](HeaderData.md#extradata)
 - [gasLimit](HeaderData.md#gaslimit)
 - [gasUsed](HeaderData.md#gasused)
@@ -41,6 +41,16 @@ A block header's data.
 
 ___
 
+### blobGasUsed
+
+• `Optional` **blobGasUsed**: `BigIntLike`
+
+#### Defined in
+
+[types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)
+
+___
+
 ### coinbase
 
 • `Optional` **coinbase**: `AddressLike`
@@ -48,16 +58,6 @@ ___
 #### Defined in
 
 [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L80)
-
-___
-
-### dataGasUsed
-
-• `Optional` **dataGasUsed**: `BigIntLike`
-
-#### Defined in
-
-[types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)
 
 ___
 
@@ -71,9 +71,9 @@ ___
 
 ___
 
-### excessDataGas
+### excessBlobGas
 
-• `Optional` **excessDataGas**: `BigIntLike`
+• `Optional` **excessBlobGas**: `BigIntLike`
 
 #### Defined in
 

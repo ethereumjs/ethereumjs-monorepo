@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0 - 2023-08-09
+
+Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
+
+See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Ftrie%406.0.0-rc.1) for the main change description.
+
+Following additional changes since RC1:
+
+## New API for walking a (sparse) Trie
+
+Starting with this release there is a new API for walking and iterating a trie by using an async walk generator, which now enables to walk tries without altering the walk controller and also now enables to walk a sparse (not completely filled) trie, see PR [#2904](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2904).
+
+The new walk functionality can be used like the following:
+
+```typescript
+import { Trie } from '@ethereumjs/trie'
+
+const trie = await Trie.create()
+const walk = trie.walkTrieIterable(trie.root())
+
+for await (const { node, currentKey } of walk) {
+  // ... do something i.e. console.log( { node, currentKey } )
+}
+```
+
 ## 6.0.0-rc.1 - 2023-07-18
 
 This is the release candidate (RC1) for the upcoming breaking releases on the various EthereumJS libraries. The associated release notes below are the main source of information on the changeset, also for the upcoming final releases, where we'll just provide change addition summaries + references to these RC1 notes.

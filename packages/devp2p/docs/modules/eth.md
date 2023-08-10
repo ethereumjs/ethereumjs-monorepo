@@ -26,11 +26,11 @@
 
 | Name | Type |
 | :------ | :------ |
-| `bestHash` | `Buffer` |
-| `genesisHash` | `Buffer` |
-| `latestBlock?` | `Buffer` |
-| `td` | `Buffer` |
+| `bestHash` | `Uint8Array` |
+| `genesisHash` | `Uint8Array` |
+| `latestBlock?` | `Uint8Array` |
+| `td` | `Uint8Array` |
 
 #### Defined in
 
-[packages/devp2p/src/protocol/eth.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L355)
+[packages/devp2p/src/protocol/eth.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L378)

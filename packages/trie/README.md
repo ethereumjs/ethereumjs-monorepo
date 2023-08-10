@@ -6,8 +6,6 @@
 [![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 | Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
@@ -64,6 +62,23 @@ test()
 ```
 
 When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Etheruem production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+
+### Walking a Trie
+
+Starting with the v6 release there is a new API for walking and iterating a trie by using an async walk generator, which now enables to walk tries without altering the walk controller and also now enables to walk a sparse (not completely filled) trie.
+
+The new walk functionality can be used like the following:
+
+```typescript
+import { Trie } from '@ethereumjs/trie'
+
+const trie = await Trie.create()
+const walk = trie.walkTrieIterable(trie.root())
+
+for await (const { node, currentKey } of walk) {
+  // ... do something i.e. console.log( { node, currentKey } )
+}
+```
 
 ### `Trie` Configuration Options
 

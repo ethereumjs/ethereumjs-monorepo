@@ -1,42 +1,44 @@
-[@ethereumjs/evm](../README.md) / EvmErrorMessage
+[@ethereumjs/evm](../README.md) / EVMErrorMessage
 
-# Enumeration: EvmErrorMessage
+# Enumeration: EVMErrorMessage
 
 ## Table of contents
 
 ### Enumeration Members
 
-- [AUTHCALL\_NONZERO\_VALUEEXT](EvmErrorMessage.md#authcall_nonzero_valueext)
-- [AUTHCALL\_UNSET](EvmErrorMessage.md#authcall_unset)
-- [AUTH\_INVALID\_S](EvmErrorMessage.md#auth_invalid_s)
-- [BLS\_12\_381\_FP\_NOT\_IN\_FIELD](EvmErrorMessage.md#bls_12_381_fp_not_in_field)
-- [BLS\_12\_381\_INPUT\_EMPTY](EvmErrorMessage.md#bls_12_381_input_empty)
-- [BLS\_12\_381\_INVALID\_INPUT\_LENGTH](EvmErrorMessage.md#bls_12_381_invalid_input_length)
-- [BLS\_12\_381\_POINT\_NOT\_ON\_CURVE](EvmErrorMessage.md#bls_12_381_point_not_on_curve)
-- [CODESIZE\_EXCEEDS\_MAXIMUM](EvmErrorMessage.md#codesize_exceeds_maximum)
-- [CODESTORE\_OUT\_OF\_GAS](EvmErrorMessage.md#codestore_out_of_gas)
-- [CREATE\_COLLISION](EvmErrorMessage.md#create_collision)
-- [INITCODE\_SIZE\_VIOLATION](EvmErrorMessage.md#initcode_size_violation)
-- [INSUFFICIENT\_BALANCE](EvmErrorMessage.md#insufficient_balance)
-- [INTERNAL\_ERROR](EvmErrorMessage.md#internal_error)
-- [INVALID\_BEGINSUB](EvmErrorMessage.md#invalid_beginsub)
-- [INVALID\_BYTECODE\_RESULT](EvmErrorMessage.md#invalid_bytecode_result)
-- [INVALID\_COMMITMENT](EvmErrorMessage.md#invalid_commitment)
-- [INVALID\_EOF\_FORMAT](EvmErrorMessage.md#invalid_eof_format)
-- [INVALID\_JUMP](EvmErrorMessage.md#invalid_jump)
-- [INVALID\_JUMPSUB](EvmErrorMessage.md#invalid_jumpsub)
-- [INVALID\_OPCODE](EvmErrorMessage.md#invalid_opcode)
-- [INVALID\_RETURNSUB](EvmErrorMessage.md#invalid_returnsub)
-- [OUT\_OF\_GAS](EvmErrorMessage.md#out_of_gas)
-- [OUT\_OF\_RANGE](EvmErrorMessage.md#out_of_range)
-- [POINT\_GREATER\_THAN\_BLS\_MODULUS](EvmErrorMessage.md#point_greater_than_bls_modulus)
-- [REFUND\_EXHAUSTED](EvmErrorMessage.md#refund_exhausted)
-- [REVERT](EvmErrorMessage.md#revert)
-- [STACK\_OVERFLOW](EvmErrorMessage.md#stack_overflow)
-- [STACK\_UNDERFLOW](EvmErrorMessage.md#stack_underflow)
-- [STATIC\_STATE\_CHANGE](EvmErrorMessage.md#static_state_change)
-- [STOP](EvmErrorMessage.md#stop)
-- [VALUE\_OVERFLOW](EvmErrorMessage.md#value_overflow)
+- [AUTHCALL\_NONZERO\_VALUEEXT](EVMErrorMessage.md#authcall_nonzero_valueext)
+- [AUTHCALL\_UNSET](EVMErrorMessage.md#authcall_unset)
+- [AUTH\_INVALID\_S](EVMErrorMessage.md#auth_invalid_s)
+- [BLS\_12\_381\_FP\_NOT\_IN\_FIELD](EVMErrorMessage.md#bls_12_381_fp_not_in_field)
+- [BLS\_12\_381\_INPUT\_EMPTY](EVMErrorMessage.md#bls_12_381_input_empty)
+- [BLS\_12\_381\_INVALID\_INPUT\_LENGTH](EVMErrorMessage.md#bls_12_381_invalid_input_length)
+- [BLS\_12\_381\_POINT\_NOT\_ON\_CURVE](EVMErrorMessage.md#bls_12_381_point_not_on_curve)
+- [CODESIZE\_EXCEEDS\_MAXIMUM](EVMErrorMessage.md#codesize_exceeds_maximum)
+- [CODESTORE\_OUT\_OF\_GAS](EVMErrorMessage.md#codestore_out_of_gas)
+- [CREATE\_COLLISION](EVMErrorMessage.md#create_collision)
+- [INITCODE\_SIZE\_VIOLATION](EVMErrorMessage.md#initcode_size_violation)
+- [INSUFFICIENT\_BALANCE](EVMErrorMessage.md#insufficient_balance)
+- [INTERNAL\_ERROR](EVMErrorMessage.md#internal_error)
+- [INVALID\_BEGINSUB](EVMErrorMessage.md#invalid_beginsub)
+- [INVALID\_BYTECODE\_RESULT](EVMErrorMessage.md#invalid_bytecode_result)
+- [INVALID\_COMMITMENT](EVMErrorMessage.md#invalid_commitment)
+- [INVALID\_EOF\_FORMAT](EVMErrorMessage.md#invalid_eof_format)
+- [INVALID\_INPUTS](EVMErrorMessage.md#invalid_inputs)
+- [INVALID\_INPUT\_LENGTH](EVMErrorMessage.md#invalid_input_length)
+- [INVALID\_JUMP](EVMErrorMessage.md#invalid_jump)
+- [INVALID\_JUMPSUB](EVMErrorMessage.md#invalid_jumpsub)
+- [INVALID\_OPCODE](EVMErrorMessage.md#invalid_opcode)
+- [INVALID\_PROOF](EVMErrorMessage.md#invalid_proof)
+- [INVALID\_RETURNSUB](EVMErrorMessage.md#invalid_returnsub)
+- [OUT\_OF\_GAS](EVMErrorMessage.md#out_of_gas)
+- [OUT\_OF\_RANGE](EVMErrorMessage.md#out_of_range)
+- [REFUND\_EXHAUSTED](EVMErrorMessage.md#refund_exhausted)
+- [REVERT](EVMErrorMessage.md#revert)
+- [STACK\_OVERFLOW](EVMErrorMessage.md#stack_overflow)
+- [STACK\_UNDERFLOW](EVMErrorMessage.md#stack_underflow)
+- [STATIC\_STATE\_CHANGE](EVMErrorMessage.md#static_state_change)
+- [STOP](EVMErrorMessage.md#stop)
+- [VALUE\_OVERFLOW](EVMErrorMessage.md#value_overflow)
 
 ## Enumeration Members
 
@@ -46,7 +48,7 @@
 
 #### Defined in
 
-[exceptions.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L26)
+[exceptions.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L27)
 
 ___
 
@@ -56,7 +58,7 @@ ___
 
 #### Defined in
 
-[exceptions.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L25)
+[exceptions.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L26)
 
 ___
 
@@ -66,7 +68,7 @@ ___
 
 #### Defined in
 
-[exceptions.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L27)
+[exceptions.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L28)
 
 ___
 
@@ -76,7 +78,7 @@ ___
 
 #### Defined in
 
-[exceptions.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L33)
+[exceptions.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L34)
 
 ___
 
@@ -86,7 +88,7 @@ ___
 
 #### Defined in
 
-[exceptions.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L32)
+[exceptions.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L33)
 
 ___
 
@@ -96,7 +98,7 @@ ___
 
 #### Defined in
 
-[exceptions.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L30)
+[exceptions.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L31)
 
 ___
 
@@ -106,7 +108,7 @@ ___
 
 #### Defined in
 
-[exceptions.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L31)
+[exceptions.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L32)
 
 ___
 
@@ -210,6 +212,26 @@ ___
 
 ___
 
+### INVALID\_INPUTS
+
+• **INVALID\_INPUTS** = ``"kzg inputs invalid"``
+
+#### Defined in
+
+[exceptions.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L38)
+
+___
+
+### INVALID\_INPUT\_LENGTH
+
+• **INVALID\_INPUT\_LENGTH** = ``"invalid input length"``
+
+#### Defined in
+
+[exceptions.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L24)
+
+___
+
 ### INVALID\_JUMP
 
 • **INVALID\_JUMP** = ``"invalid JUMP"``
@@ -240,6 +262,16 @@ ___
 
 ___
 
+### INVALID\_PROOF
+
+• **INVALID\_PROOF** = ``"kzg proof invalid"``
+
+#### Defined in
+
+[exceptions.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L39)
+
+___
+
 ### INVALID\_RETURNSUB
 
 • **INVALID\_RETURNSUB** = ``"invalid RETURNSUB"``
@@ -267,16 +299,6 @@ ___
 #### Defined in
 
 [exceptions.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L9)
-
-___
-
-### POINT\_GREATER\_THAN\_BLS\_MODULUS
-
-• **POINT\_GREATER\_THAN\_BLS\_MODULUS** = ``"point greater than BLS modulus"``
-
-#### Defined in
-
-[exceptions.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L36)
 
 ___
 
