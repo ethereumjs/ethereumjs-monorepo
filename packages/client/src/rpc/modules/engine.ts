@@ -815,7 +815,7 @@ export class Engine {
           message: 'Invalid PayloadV2: excessBlobGas is defined',
         }
       }
-      if (blobGasUsed !== undefined && excessBlobGas !== null) {
+      if (blobGasUsed !== undefined && blobGasUsed !== null) {
         throw {
           code: INVALID_PARAMS,
           message: 'Invalid PayloadV2: blobGasUsed is defined',
