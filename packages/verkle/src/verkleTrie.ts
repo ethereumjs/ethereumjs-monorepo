@@ -9,6 +9,7 @@ import {
 } from '@ethereumjs/util'
 
 import { CheckpointDB } from './db/checkpoint.js'
+import { LeafNode } from './node/leafNode.js'
 import { decodeNode, decodeRawNode, isRawNode } from './node/util.js'
 import {
   type EmbeddedNode,
@@ -20,8 +21,8 @@ import {
 } from './types.js'
 import { Lock } from './util/lock.js'
 
-import type { LeafNode } from './node/leafNode.js'
 import type { VerkleNode } from './node/types.js'
+import type { FoundNodeFunction } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
@@ -175,7 +176,67 @@ export class VerkleTrie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    throw new Error('Not implemented')
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      const stack: VerkleNode[] = []
+
+      const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
+        if (node === null) {
+          return reject(new Error('Path not found'))
+        }
+        const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
+        stack.push(node)
+
+        if (node instanceof BranchNode) {
+          if (keyRemainder.length === 0) {
+            // we exhausted the key without finding a node
+            resolve({ node, remaining: [], stack })
+          } else {
+            const branchIndex = keyRemainder[0]
+            const branchNode = node.getBranch(branchIndex)
+            if (!branchNode) {
+              // there are no more nodes to find and we didn't find the key
+              resolve({ node: null, remaining: keyRemainder, stack })
+            } else {
+              // node found, continuing search
+              // this can be optimized as this calls getBranch again.
+              walkController.onlyBranchIndex(node, keyProgress, branchIndex)
+            }
+          }
+        } else if (node instanceof LeafNode) {
+          if (doKeysMatch(keyRemainder, node.key())) {
+            // keys match, return node with empty key
+            resolve({ node, remaining: [], stack })
+          } else {
+            // reached leaf but keys dont match
+            resolve({ node: null, remaining: keyRemainder, stack })
+          }
+        } else if (node instanceof ExtensionNode) {
+          const matchingLen = matchingNibbleLength(keyRemainder, node.key())
+          if (matchingLen !== node.key().length) {
+            // keys don't match, fail
+            resolve({ node: null, remaining: keyRemainder, stack })
+          } else {
+            // keys match, continue search
+            walkController.allChildren(node, keyProgress)
+          }
+        }
+      }
+
+      // walk trie and process nodes
+      try {
+        await this.walkTrie(this.root(), onFound)
+      } catch (error: any) {
+        if (error.message === 'Missing node in DB' && !throwIfMissing) {
+          // pass
+        } else {
+          reject(error)
+        }
+      }
+
+      // Resolve if walkTrie finishes without finding any nodes
+      resolve({ node: null, remaining: [], stack })
+    })
   }
 
   /**
