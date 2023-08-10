@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { BranchNode, Trie } from '../../src/index.js'
 import { hasRightBranch, isValueNode, returnRightNode } from '../../src/proof/range.js'
 import { bytesToNibbles, nibblesCompare, nibblestoBytes } from '../../src/util/nibbles.js'
-describe('returns RightNode', async () => {
+describe('isValueNode', async () => {
   const trie = new Trie()
   const entries = Array.from({ length: 20 }, (_, i) => {
     return {
@@ -20,7 +20,7 @@ describe('returns RightNode', async () => {
     nibblesCompare(bytesToNibbles(a.key), bytesToNibbles(b.key))
   )
   for (const { key, value } of sortedByKey) {
-    it(`returns RightNode for key ${key} (${value})`, async () => {
+    it(`key should lead to value node`, async () => {
       const val = await trie.get(key)
       const node = (await trie.findPath(key)).node
       expect(val).toEqual(value)
