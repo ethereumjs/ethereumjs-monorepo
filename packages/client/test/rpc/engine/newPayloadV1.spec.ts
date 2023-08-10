@@ -15,8 +15,6 @@ const method = 'engine_newPayloadV1'
 
 const [blockData] = blocks
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-
 /**
  *
  * @param t Test suite
