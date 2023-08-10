@@ -322,7 +322,7 @@ async function verifyProof(
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = await Trie.fromProof(proof, { root: rootHash, useKeyHashingFunction })
+  const proofTrie = await Trie.createFromProof(proof, { root: rootHash, useKeyHashingFunction })
   try {
     const value = await proofTrie.get(key, true)
     return {
@@ -494,7 +494,7 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = await Trie.fromProof(proof, {
+  const trie = await Trie.createFromProof(proof, {
     useKeyHashingFunction,
     root: rootHash,
   })

@@ -1,7 +1,6 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
@@ -209,7 +208,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
-    const verified = await Trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf, {
+    const verified = await Trie.verifyProof(address.bytes, proofBuf, {
       useKeyHashing: true,
     })
     // if not verified (i.e. verifyProof returns null), account does not exist

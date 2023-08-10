@@ -663,7 +663,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(hexToBytes(proof.accountProof[0]))
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       hexToBytes(rlpString)
@@ -671,7 +670,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await Trie.verifyProof(rootHash, key, accountProof, {
+    const value = await Trie.verifyProof(key, accountProof, {
       useKeyHashing: true,
     })
 
@@ -713,15 +712,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageRoot = hexToBytes(proof.storageHash)
-
     for (const stProof of proof.storageProof) {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await Trie.verifyProof(storageRoot, storageKey, storageProof, {
+      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
         useKeyHashing: true,
-        root: this._proofTrie.root(),
       })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,

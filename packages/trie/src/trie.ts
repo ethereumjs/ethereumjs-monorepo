@@ -113,7 +113,7 @@ export class Trie {
     return new Trie(opts)
   }
 
-  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
+  static async createFromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
     const trie = await Trie.create(opts)
     if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
       throw new Error('Invalid proof provided')
@@ -126,6 +126,7 @@ export class Trie {
       } as PutBatch
     })
     await trie._db.batch(opStack)
+    trie.root(trie.hash(proof[0]))
     await trie.persistRoot()
     return trie
   }
@@ -140,15 +141,13 @@ export class Trie {
    * @returns The value from the key, or null if valid proof of non-existence.
    */
   static async verifyProof(
-    rootHash: Uint8Array,
     key: Uint8Array,
     proof: Proof,
     opts?: TrieOpts
   ): Promise<Uint8Array | null> {
     try {
-      const proofTrie = await Trie.fromProof(proof, {
+      const proofTrie = await Trie.createFromProof(proof, {
         ...opts,
-        root: rootHash,
       })
       const value = await proofTrie.get(key, true)
       return value
@@ -814,11 +813,7 @@ export class Trie {
    * Saves the nodes from a proof into the trie.
    * @param proof
    */
-
-  async updateFromProof(proof: Proof): Promise<void> {
-    if (!equalsBytes(this.root(), this.hash(proof.shift()!))) {
-      throw new Error('Invalid proof')
-    }
+  async fromProof(proof: Proof): Promise<void> {
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
@@ -826,7 +821,16 @@ export class Trie {
         value: nodeValue,
       } as PutBatch
     })
+
+    if (this.root() === this.EMPTY_TRIE_ROOT && opStack[0] !== undefined && opStack[0] !== null) {
+      this.root(opStack[0].key)
+    } else if (!equalsBytes(this.root(), this.hash(proof.shift()!))) {
+      throw new Error('Invalid proof')
+    }
+
     await this._db.batch(opStack)
+    await this.persistRoot()
+    return
   }
 
   /**
@@ -839,6 +843,40 @@ export class Trie {
       return stackElem.serialize()
     })
     return p
+  }
+
+  /**
+   * Verifies a proof.
+   * @param rootHash
+   * @param key
+   * @param proof
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key, or null if valid proof of non-existence.
+   */
+  async verifyProof(
+    rootHash: Uint8Array,
+    key: Uint8Array,
+    proof: Proof
+  ): Promise<Uint8Array | null> {
+    const proofTrie = new Trie({
+      root: rootHash,
+      useKeyHashingFunction: this._opts.useKeyHashingFunction,
+    })
+    try {
+      await proofTrie.fromProof(proof)
+    } catch (e: any) {
+      throw new Error('Invalid proof nodes given')
+    }
+    try {
+      const value = await proofTrie.get(this.appliedKey(key), true)
+      return value
+    } catch (err: any) {
+      if (err.message === 'Missing node in DB') {
+        throw new Error('Invalid proof provided')
+      } else {
+        throw err
+      }
+    }
   }
 
   /**
