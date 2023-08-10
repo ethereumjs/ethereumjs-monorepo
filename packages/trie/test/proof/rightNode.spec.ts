@@ -31,11 +31,11 @@ describe('isValueNode', async () => {
 
 describe('hasRightBranch', async () => {
   const branchNode = new BranchNode()
-  for (const i of Array.from({ length: 7 }, (_, i) => i)) {
+  for (let i = 0; i < 7; i++) {
     branchNode.setBranch(i, Uint8Array.from([i]))
   }
   branchNode.setBranch(8, Uint8Array.from([8]))
-  for (const i of Array.from({ length: 16 }, (_, i) => i)) {
+  for (let i = 0; i < 16; i++) {
     if (i < 8) {
       it(`hasRightBranch for ${i}`, async () => {
         expect(hasRightBranch(branchNode, i)).toBeDefined()
@@ -49,11 +49,11 @@ describe('hasRightBranch', async () => {
 })
 describe('returnRightNode', async () => {
   const trie = new Trie({})
-  for (const i of Array.from({ length: 9 }, (_, i) => i)) {
+  for (let i = 0; i < 9; i++) {
     if (i === 6) continue
     await trie.put(nibblestoBytes([0, i, i, i]), Uint8Array.from([i]))
   }
-  for (const i of Array.from({ length: 10 }, (_, idx) => idx)) {
+  for (let i = 0; i < 10; i++) {
     if (i > 7) {
       it(`returnRightNode (null) for ${i}`, async () => {
         const rightNode = await returnRightNode.bind(trie)(
