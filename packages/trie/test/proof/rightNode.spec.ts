@@ -19,9 +19,6 @@ describe('returns RightNode', async () => {
   const sortedByKey = entries.sort((a, b) =>
     nibblesCompare(bytesToNibbles(a.key), bytesToNibbles(b.key))
   )
-  it('passes', () => {
-    expect(true).toBe(true)
-  })
   for (const { key, value } of sortedByKey) {
     it(`returns RightNode for key ${key} (${value})`, async () => {
       const val = await trie.get(key)
