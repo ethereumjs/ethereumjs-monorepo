@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691679571511,
+  "lastUpdate": 1691778448162,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "532eff80e57c4d7780df43de891323ead2962d97",
-          "message": "Monorepo: JSON -> JS Transition (#2911)\n\n* Common: move EIP configs to single eips.ts file\r\n\r\n* Common: delete all separate EIP JSON files\r\n\r\n* Common: remove EIP config name and number properties\r\n\r\n* Common: EIPs typing, parameter cleanup, test adjustments\r\n\r\n* Add missing 3651 WARM COINBASE EIP config\r\n\r\n* Minor\r\n\r\n* Fix EIP number typo, other small fixes\r\n\r\n* Common: rename HardforkConfig -> HardforkTransitionConfig\r\n\r\n* Add missing EIP\r\n\r\n* Common: moved hardfork JSON file configurations to single hardforks.ts file\r\n\r\n* Common: delete HF files\r\n\r\n* Common: replace chain JSON file configs with single chains.ts file\r\n\r\n* Common: delete chain JSON files\r\n\r\n* VM: internalize DAO configuration (account list and refund contract)\r\n\r\n* Common type improvements",
-          "timestamp": "2023-07-22T21:12:08-04:00",
-          "tree_id": "26a170c0cbb898aa67f73dfe19902b6945e7a8f0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/532eff80e57c4d7780df43de891323ead2962d97"
-        },
-        "date": 1690074983370,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22865,
-            "range": "±4.87%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21936,
-            "range": "±3.40%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22628,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21719,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18200,
-            "range": "±10.08%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.41%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "466b6f2c0a600ea9fad87b78707dd3822e12f31a",
+          "message": "trie: improve util types and handling (#2951)\n\n* trie: improve util types and handling\r\n\r\n* trie: undo some trie modifications\r\n\r\n* trie: redo trie simplifications\r\n\r\n* trie: remove null return from lookup node",
+          "timestamp": "2023-08-11T14:22:46-04:00",
+          "tree_id": "d61aa17b86269d97e20fc9e34f6ce5d25f4c8ee5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/466b6f2c0a600ea9fad87b78707dd3822e12f31a"
+        },
+        "date": 1691778446726,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20161,
+            "range": "±6.39%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20157,
+            "range": "±3.50%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20385,
+            "range": "±3.37%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20000,
+            "range": "±3.81%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19755,
+            "range": "±3.62%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
