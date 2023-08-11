@@ -80,7 +80,7 @@ async function unset(
       return pos - 1
     } else {
       const _child = await trie.lookupNode(child.value())
-      if (_child && _child instanceof LeafNode) {
+      if (_child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
         ;(parent as BranchNode).setBranch(key[pos - 1], null)
         return pos - 1
@@ -249,7 +249,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      if (child instanceof LeafNode) {
         return removeSelfFromParentAndSaveStack(left)
       }
 
@@ -266,7 +266,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      if (child instanceof LeafNode) {
         return removeSelfFromParentAndSaveStack(right)
       }
 
@@ -353,7 +353,7 @@ async function verifyProof(
  */
 async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
   let pos = 0
-  let node = await trie.lookupNode(trie.root())
+  let node: TrieNode | null = await trie.lookupNode(trie.root())
   while (node !== null) {
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {

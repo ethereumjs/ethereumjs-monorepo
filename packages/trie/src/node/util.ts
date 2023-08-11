@@ -7,6 +7,8 @@ import { BranchNode } from './branch.js'
 import { ExtensionNode } from './extension.js'
 import { LeafNode } from './leaf.js'
 
+import type { NestedUint8Array } from '@ethereumjs/util'
+
 export function decodeRawNode(raw: Uint8Array[]) {
   if (raw.length === 17) {
     return BranchNode.fromArray(raw)
@@ -21,14 +23,14 @@ export function decodeRawNode(raw: Uint8Array[]) {
   }
 }
 
-export function decodeNode(raw: Uint8Array) {
-  const des = RLP.decode(Uint8Array.from(raw)) as Uint8Array[]
-  if (!Array.isArray(des)) {
-    throw new Error('Invalid node')
-  }
-  return decodeRawNode(des)
+export function isRawNode(n: Uint8Array | NestedUint8Array): n is Uint8Array[] {
+  return Array.isArray(n) && !(n instanceof Uint8Array)
 }
 
-export function isRawNode(n: any) {
-  return Array.isArray(n) && !(n instanceof Uint8Array)
+export function decodeNode(node: Uint8Array) {
+  const decodedNode = RLP.decode(Uint8Array.from(node))
+  if (!isRawNode(decodedNode)) {
+    throw new Error('Invalid node')
+  }
+  return decodeRawNode(decodedNode)
 }
