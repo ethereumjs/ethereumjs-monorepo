@@ -1,21 +1,19 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { VerkleNode } from './types'
+import { InternalNode } from './internalNode.js'
+import { LeafNode } from './leafNode.js'
+import { type VerkleNode, VerkleNodeType } from './types.js'
 
 export function decodeRawNode(raw: Uint8Array[]): VerkleNode {
-  // TODO: Differentiate between LeafNode and InternalNode and build accordingly
-  throw new Error('Not implemented')
-  // if (raw.length === 17) {
-  //   return BranchNode.fromArray(raw)
-  // } else if (raw.length === 2) {
-  //   const nibbles = bytesToNibbles(raw[0])
-  //   if (isTerminator(nibbles)) {
-  //     return new LeafNode(LeafNode.decodeKey(nibbles), raw[1])
-  //   }
-  //   return new ExtensionNode(ExtensionNode.decodeKey(nibbles), raw[1])
-  // } else {
-  //   throw new Error('Invalid node')
-  // }
+  const nodeType = raw[0][0]
+  switch (nodeType) {
+    case VerkleNodeType.Internal:
+      return InternalNode.fromRawNode(raw)
+    case VerkleNodeType.Leaf:
+      return LeafNode.fromRawNode(raw)
+    default:
+      throw new Error('Invalid node type')
+  }
 }
 
 export function decodeNode(raw: Uint8Array) {

@@ -1,4 +1,4 @@
-import type { CommitmentPoint } from '../types'
+import type { CommitmentPoint } from '../types.js'
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
 

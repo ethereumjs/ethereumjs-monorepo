@@ -22,7 +22,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     // this.commit = commit
   }
 
-  fromValuesArray(rawNode: Uint8Array[]): InternalNode {
+  static fromRawNode(rawNode: Uint8Array[]): InternalNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Internal) {
       throw new Error('Invalid node type')

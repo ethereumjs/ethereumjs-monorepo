@@ -1,12 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 
-import type { CommitmentPoint } from '../types'
-import type {
-  TypedVerkleNode,
-  VerkleNodeInterface,
-  VerkleNodeOptions,
-  VerkleNodeType,
-} from './types'
+import type { CommitmentPoint } from '../types.js'
+import type { VerkleNodeInterface, VerkleNodeOptions, VerkleNodeType } from './types.js'
 
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
   public commitment: CommitmentPoint
@@ -16,8 +11,6 @@ export abstract class BaseVerkleNode<T extends VerkleNodeType> implements Verkle
   }
 
   abstract commit(): CommitmentPoint
-
-  abstract fromValuesArray(rawNode: Uint8Array[]): TypedVerkleNode[T]
 
   // Hash returns the field representation of the commitment.
   hash(): any {

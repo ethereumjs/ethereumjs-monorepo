@@ -1,8 +1,8 @@
 import { BaseVerkleNode } from './baseVerkleNode.js'
-import { NODE_WIDTH, VerkleNodeType } from './types'
+import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { CommitmentPoint } from '../types'
-import type { VerkleNodeOptions } from './types'
+import type { CommitmentPoint } from '../types.js'
+import type { VerkleNodeOptions } from './types.js'
 
 export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   public stem: Uint8Array
@@ -26,7 +26,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     // this.commit = commit
   }
 
-  fromValuesArray(rawNode: Uint8Array[]): LeafNode {
+  static fromRawNode(rawNode: Uint8Array[]): LeafNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
       throw new Error('Invalid node type')
