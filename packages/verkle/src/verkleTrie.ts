@@ -9,25 +9,25 @@ import {
 } from '@ethereumjs/util'
 
 import { CheckpointDB } from './db/checkpoint.js'
+import { InternalNode } from './node/internalNode.js'
 import { LeafNode } from './node/leafNode.js'
 import { decodeNode, decodeRawNode, isRawNode } from './node/util.js'
 import {
-  type EmbeddedNode,
-  type Nibbles,
   type Proof,
   ROOT_DB_KEY,
   type VerkleTrieOpts,
   type VerkleTrieOptsWithDefaults,
 } from './types.js'
+import { WalkController, matchingBytesLength } from './util/index.js'
 import { Lock } from './util/lock.js'
 
 import type { VerkleNode } from './node/types.js'
-import type { FoundNodeFunction } from './types.js'
+import type { CommitmentPoint, FoundNodeFunction } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
   node: VerkleNode | null
-  remaining: Nibbles
+  remaining: Uint8Array
   stack: VerkleNode[]
 }
 
@@ -161,8 +161,8 @@ export class VerkleTrie {
   /**
    * Stores a given `value` at the given `key` or do a delete if `value` is empty
    * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @param value
+   * @param key - the key to store the value at
+   * @param value - the value to store
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
@@ -184,41 +184,33 @@ export class VerkleTrie {
         if (node === null) {
           return reject(new Error('Path not found'))
         }
-        const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
+        const keyRemainder = key.slice(matchingBytesLength(keyProgress, key))
         stack.push(node)
 
-        if (node instanceof BranchNode) {
+        if (node instanceof InternalNode) {
           if (keyRemainder.length === 0) {
             // we exhausted the key without finding a node
-            resolve({ node, remaining: [], stack })
+            resolve({ node, remaining: new Uint8Array(0), stack })
           } else {
-            const branchIndex = keyRemainder[0]
-            const branchNode = node.getBranch(branchIndex)
-            if (!branchNode) {
-              // there are no more nodes to find and we didn't find the key
+            const childrenIndex = keyRemainder[0]
+            const childNode = node.getChildren(childrenIndex)
+            if (childNode === null) {
+              // There are no more nodes to find and we didn't find the key
               resolve({ node: null, remaining: keyRemainder, stack })
             } else {
-              // node found, continuing search
-              // this can be optimized as this calls getBranch again.
-              walkController.onlyBranchIndex(node, keyProgress, branchIndex)
+              // node found, continue search from children
+              walkController.pushChildrenAtIndex(node, keyProgress, childrenIndex)
             }
           }
         } else if (node instanceof LeafNode) {
-          if (doKeysMatch(keyRemainder, node.key())) {
+          // The stem of the leaf node should be the full key minus the last byte
+          const stem = key.slice(0, key.length - 1)
+          if (equalsBytes(stem, node.stem)) {
             // keys match, return node with empty key
-            resolve({ node, remaining: [], stack })
+            resolve({ node, remaining: new Uint8Array(0), stack })
           } else {
-            // reached leaf but keys dont match
+            // reached leaf but keys don't match
             resolve({ node: null, remaining: keyRemainder, stack })
-          }
-        } else if (node instanceof ExtensionNode) {
-          const matchingLen = matchingNibbleLength(keyRemainder, node.key())
-          if (matchingLen !== node.key().length) {
-            // keys don't match, fail
-            resolve({ node: null, remaining: keyRemainder, stack })
-          } else {
-            // keys match, continue search
-            walkController.allChildren(node, keyProgress)
           }
         }
       }
@@ -235,8 +227,18 @@ export class VerkleTrie {
       }
 
       // Resolve if walkTrie finishes without finding any nodes
-      resolve({ node: null, remaining: [], stack })
+      resolve({ node: null, remaining: new Uint8Array(0), stack })
     })
+  }
+
+  /**
+   * Walks a trie until finished.
+   * @param root
+   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
+   * @returns Resolves when finished walking trie.
+   */
+  async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
+    await WalkController.newWalk(onFound, this, root)
   }
 
   /**
@@ -245,7 +247,14 @@ export class VerkleTrie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findLeafNode(key: Uint8Array, throwIfMissing = false): Promise<LeafNode | null> {
-    throw new Error('Not implemented')
+    const { node } = await this.findPath(key, throwIfMissing)
+    if (!(node instanceof LeafNode)) {
+      if (throwIfMissing) {
+        throw new Error('findLeafNode: leaf node not found')
+      }
+      return null
+    }
+    return node
   }
 
   /**
@@ -259,7 +268,7 @@ export class VerkleTrie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
+  async lookupNode(node: CommitmentPoint | Uint8Array[]): Promise<VerkleNode | null> {
     if (isRawNode(node)) {
       return decodeRawNode(node)
     }
@@ -283,17 +292,9 @@ export class VerkleTrie {
   protected async _updateNode(
     k: Uint8Array,
     value: Uint8Array,
-    keyRemainder: Nibbles,
+    keyRemainder: Uint8Array,
     stack: VerkleNode[]
   ): Promise<void> {
-    throw new Error('Not implemented')
-  }
-
-  /**
-   * Deletes a node from the trie.
-   * @private
-   */
-  protected async _deleteNode(k: Uint8Array, stack: VerkleNode[]): Promise<void> {
     throw new Error('Not implemented')
   }
 

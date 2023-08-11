@@ -1,6 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
 import type { VerkleNode } from './node'
+import type { WalkController } from './util/walkController'
 import type { DB } from '@ethereumjs/util'
 
 // Curve point of a commitment
@@ -57,10 +58,10 @@ export type Checkpoint = {
 }
 
 export type FoundNodeFunction = (
-  nodeRef: Uint8Array,
+  nodeRef: CommitmentPoint,
   node: VerkleNode | null,
   key: Uint8Array,
-  walkController: any // todo
+  walkController: WalkController
 ) => void
 
 export const ROOT_DB_KEY = utf8ToBytes('__root__')
