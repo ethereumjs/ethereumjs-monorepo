@@ -442,20 +442,18 @@ export class Trie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode | null> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
     if (isRawNode(node)) {
-      return decodeRawNode(node as Uint8Array[])
+      return decodeRawNode(node)
     }
-    let value = null
-    let foundNode = null
-    value = await this._db.get(node as Uint8Array)
-    if (value) {
-      foundNode = decodeNode(value)
-    } else {
+    const value = (await this._db.get(node)) ?? null
+
+    if (value === null) {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
-    return foundNode
+
+    return decodeNode(value)
   }
 
   /**
@@ -682,16 +680,10 @@ export class Trie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      if (foundNode) {
-        key = processBranchNode(
-          key,
-          branchNodeKey,
-          foundNode as TrieNode,
-          parentNode as TrieNode,
-          stack
-        )
-        await this.saveStack(key, stack, opStack)
-      }
+      // if (foundNode) {
+      key = processBranchNode(key, branchNodeKey, foundNode, parentNode as TrieNode, stack)
+      await this.saveStack(key, stack, opStack)
+      // }
     } else {
       // simple removing a leaf and recalculation the stack
       if (parentNode) {
