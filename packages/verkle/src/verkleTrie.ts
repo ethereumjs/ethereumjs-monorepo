@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   KeyEncoding,
   MapDB,
@@ -250,7 +251,7 @@ export class VerkleTrie {
     const { node } = await this.findPath(key, throwIfMissing)
     if (!(node instanceof LeafNode)) {
       if (throwIfMissing) {
-        throw new Error('findLeafNode: leaf node not found')
+        throw new Error('leaf node not found')
       }
       return null
     }
@@ -306,7 +307,7 @@ export class VerkleTrie {
    * @param opStack - a stack of levelup operations to commit at the end of this function
    */
   async saveStack(
-    key: Nibbles,
+    key: Uint8Array,
     stack: VerkleNode[],
     opStack: PutBatch<Uint8Array, Uint8Array>[]
   ): Promise<void> {
@@ -327,7 +328,7 @@ export class VerkleTrie {
     topLevel: boolean,
     opStack: PutBatch<Uint8Array, Uint8Array>,
     remove: boolean = false
-  ): Uint8Array | (EmbeddedNode | null)[] {
+  ): Uint8Array {
     throw new Error('Not implemented')
   }
 
