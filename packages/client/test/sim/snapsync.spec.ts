@@ -182,13 +182,15 @@ describe('simple mainnet test run', async () => {
 
   it.skipIf(syncedTrie !== undefined)('should match entire state', async () => {
     // update customGenesisState to reflect latest changes and match entire customGenesisState
-    customGenesisState[EOATransferToAccount] = [
-      `0x${EOATransferToBalance.toString(16)}`,
-      undefined,
-      undefined,
-      BigInt(0),
-    ]
-    customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+    if (process.env.ADD_EOA_STATE !== undefined) {
+      customGenesisState[EOATransferToAccount] = [
+        `0x${EOATransferToBalance.toString(16)}`,
+        undefined,
+        undefined,
+        BigInt(0),
+      ]
+      customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+    }
 
     const stateManager = new DefaultStateManager({ trie: syncedTrie })
 
