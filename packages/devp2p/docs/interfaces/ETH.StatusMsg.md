@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-- `Array`<`Buffer` \| `Buffer`[]\>
+- `Array`<`Uint8Array` \| `Uint8Array`[]\>
 
   ↳ **`StatusMsg`**
 
@@ -73,17 +73,17 @@ node_modules/typescript/lib/lib.es5.d.ts:1279
 
 ### [iterator]
 
-▸ **[iterator]**(): `IterableIterator`<`Buffer` \| `Buffer`[]\>
+▸ **[iterator]**(): `IterableIterator`<`Uint8Array` \| `Uint8Array`[]\>
 
 Iterator
 
 #### Returns
 
-`IterableIterator`<`Buffer` \| `Buffer`[]\>
+`IterableIterator`<`Uint8Array` \| `Uint8Array`[]\>
 
 #### Inherited from
 
-Array.\_\_@iterator@89
+Array.\_\_@iterator@111
 
 #### Defined in
 
@@ -114,7 +114,7 @@ when they will be absent when used in a 'with' statement.
 
 #### Inherited from
 
-Array.\_\_@unscopables@91
+Array.\_\_@unscopables@113
 
 #### Defined in
 
@@ -124,7 +124,7 @@ ___
 
 ### at
 
-▸ **at**(`index`): `undefined` \| `Buffer` \| `Buffer`[]
+▸ **at**(`index`): `undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 Takes an integer value and returns the item at that index,
 allowing for positive and negative integers.
@@ -138,7 +138,7 @@ Negative integers count back from the last item in the array.
 
 #### Returns
 
-`undefined` \| `Buffer` \| `Buffer`[]
+`undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -146,13 +146,13 @@ Array.at
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:86
+node_modules/@types/node/ts4.8/globals.d.ts:86
 
 ___
 
 ### concat
 
-▸ **concat**(...`items`): (`Buffer` \| `Buffer`[])[]
+▸ **concat**(...`items`): (`Uint8Array` \| `Uint8Array`[])[]
 
 Combines two or more arrays.
 This method returns a new array without modifying any existing arrays.
@@ -161,11 +161,11 @@ This method returns a new array without modifying any existing arrays.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `...items` | `ConcatArray`<`Buffer` \| `Buffer`[]\>[] | Additional arrays and/or items to add to the end of the array. |
+| `...items` | `ConcatArray`<`Uint8Array` \| `Uint8Array`[]\>[] | Additional arrays and/or items to add to the end of the array. |
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 #### Inherited from
 
@@ -175,7 +175,7 @@ Array.concat
 
 node_modules/typescript/lib/lib.es5.d.ts:1303
 
-▸ **concat**(...`items`): (`Buffer` \| `Buffer`[])[]
+▸ **concat**(...`items`): (`Uint8Array` \| `Uint8Array`[])[]
 
 Combines two or more arrays.
 This method returns a new array without modifying any existing arrays.
@@ -184,11 +184,11 @@ This method returns a new array without modifying any existing arrays.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `...items` | (`Buffer` \| `Buffer`[] \| `ConcatArray`<`Buffer` \| `Buffer`[]\>)[] | Additional arrays and/or items to add to the end of the array. |
+| `...items` | (`Uint8Array` \| `Uint8Array`[] \| `ConcatArray`<`Uint8Array` \| `Uint8Array`[]\>)[] | Additional arrays and/or items to add to the end of the array. |
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 #### Inherited from
 
@@ -231,13 +231,13 @@ ___
 
 ### entries
 
-▸ **entries**(): `IterableIterator`<[`number`, `Buffer` \| `Buffer`[]]\>
+▸ **entries**(): `IterableIterator`<[`number`, `Uint8Array` \| `Uint8Array`[]]\>
 
 Returns an iterable of key, value pairs for every entry in the array
 
 #### Returns
 
-`IterableIterator`<[`number`, `Buffer` \| `Buffer`[]]\>
+`IterableIterator`<[`number`, `Uint8Array` \| `Uint8Array`[]]\>
 
 #### Inherited from
 
@@ -259,13 +259,13 @@ Determines whether all the members of an array satisfy the specified test.
 
 | Name | Type |
 | :------ | :------ |
-| `S` | extends `Buffer` \| `Buffer`[] |
+| `S` | extends `Uint8Array` \| `Uint8Array`[] |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => value is S | A function that accepts up to three arguments. The every method calls  the predicate function for each element in the array until the predicate returns a value  which is coercible to the Boolean value false, or until the end of the array. |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => value is S | A function that accepts up to three arguments. The every method calls  the predicate function for each element in the array until the predicate returns a value  which is coercible to the Boolean value false, or until the end of the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function.  If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -288,7 +288,7 @@ Determines whether all the members of an array satisfy the specified test.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `unknown` | A function that accepts up to three arguments. The every method calls  the predicate function for each element in the array until the predicate returns a value  which is coercible to the Boolean value false, or until the end of the array. |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `unknown` | A function that accepts up to three arguments. The every method calls  the predicate function for each element in the array until the predicate returns a value  which is coercible to the Boolean value false, or until the end of the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function.  If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -315,7 +315,7 @@ Changes all array elements from `start` to `end` index to a static `value` and r
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `value` | `Buffer` \| `Buffer`[] | value to fill array section with |
+| `value` | `Uint8Array` \| `Uint8Array`[] | value to fill array section with |
 | `start?` | `number` | index to start filling the array at. If start is negative, it is treated as  length+start where length is the length of the array. |
 | `end?` | `number` | index to stop filling the array at. If end is negative, it is treated as  length+end. |
 
@@ -343,13 +343,13 @@ Returns the elements of an array that meet the condition specified in a callback
 
 | Name | Type |
 | :------ | :------ |
-| `S` | extends `Buffer` \| `Buffer`[] |
+| `S` | extends `Uint8Array` \| `Uint8Array`[] |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => value is S | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => value is S | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -364,7 +364,7 @@ Array.filter
 
 node_modules/typescript/lib/lib.es5.d.ts:1422
 
-▸ **filter**(`predicate`, `thisArg?`): (`Buffer` \| `Buffer`[])[]
+▸ **filter**(`predicate`, `thisArg?`): (`Uint8Array` \| `Uint8Array`[])[]
 
 Returns the elements of an array that meet the condition specified in a callback function.
 
@@ -372,12 +372,12 @@ Returns the elements of an array that meet the condition specified in a callback
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `unknown` | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `unknown` | A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 #### Inherited from
 
@@ -400,13 +400,13 @@ otherwise.
 
 | Name | Type |
 | :------ | :------ |
-| `S` | extends `Buffer` \| `Buffer`[] |
+| `S` | extends `Uint8Array` \| `Uint8Array`[] |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`this`: `void`, `value`: `Buffer` \| `Buffer`[], `index`: `number`, `obj`: (`Buffer` \| `Buffer`[])[]) => value is S | find calls predicate once for each element of the array, in ascending  order, until it finds one where predicate returns true. If such an element is found, find  immediately returns that element value. Otherwise, find returns undefined. |
+| `predicate` | (`this`: `void`, `value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `obj`: (`Uint8Array` \| `Uint8Array`[])[]) => value is S | find calls predicate once for each element of the array, in ascending  order, until it finds one where predicate returns true. If such an element is found, find  immediately returns that element value. Otherwise, find returns undefined. |
 | `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of  predicate. If it is not provided, undefined is used instead. |
 
 #### Returns
@@ -421,18 +421,18 @@ Array.find
 
 node_modules/typescript/lib/lib.es2015.core.d.ts:31
 
-▸ **find**(`predicate`, `thisArg?`): `undefined` \| `Buffer` \| `Buffer`[]
+▸ **find**(`predicate`, `thisArg?`): `undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `obj`: (`Buffer` \| `Buffer`[])[]) => `unknown` |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `obj`: (`Uint8Array` \| `Uint8Array`[])[]) => `unknown` |
 | `thisArg?` | `any` |
 
 #### Returns
 
-`undefined` \| `Buffer` \| `Buffer`[]
+`undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -455,7 +455,7 @@ otherwise.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `obj`: (`Buffer` \| `Buffer`[])[]) => `unknown` | find calls predicate once for each element of the array, in ascending  order, until it finds one where predicate returns true. If such an element is found,  findIndex immediately returns that element index. Otherwise, findIndex returns -1. |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `obj`: (`Uint8Array` \| `Uint8Array`[])[]) => `unknown` | find calls predicate once for each element of the array, in ascending  order, until it finds one where predicate returns true. If such an element is found,  findIndex immediately returns that element index. Otherwise, findIndex returns -1. |
 | `thisArg?` | `any` | If provided, it will be used as the this value for each invocation of  predicate. If it is not provided, undefined is used instead. |
 
 #### Returns
@@ -526,7 +526,7 @@ This is identical to a map followed by flat with depth 1.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callback` | (`this`: `This`, `value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the  callback function one time for each element in the array. |
+| `callback` | (`this`: `This`, `value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `U` \| readonly `U`[] | A function that accepts up to three arguments. The flatMap method calls the  callback function one time for each element in the array. |
 | `thisArg?` | `This` | An object to which the this keyword can refer in the callback function. If  thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -553,7 +553,7 @@ Performs the specified action for each element in an array.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `void` | A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `void` | A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -580,7 +580,7 @@ Determines whether an array includes a certain element, returning true or false 
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `searchElement` | `Buffer` \| `Buffer`[] | The element to search for. |
+| `searchElement` | `Uint8Array` \| `Uint8Array`[] | The element to search for. |
 | `fromIndex?` | `number` | The position in this array at which to begin searching for searchElement. |
 
 #### Returns
@@ -607,7 +607,7 @@ Returns the index of the first occurrence of a value in an array, or -1 if it is
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `searchElement` | `Buffer` \| `Buffer`[] | The value to locate in the array. |
+| `searchElement` | `Uint8Array` \| `Uint8Array`[] | The value to locate in the array. |
 | `fromIndex?` | `number` | The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0. |
 
 #### Returns
@@ -680,7 +680,7 @@ Returns the index of the last occurrence of a specified value in an array, or -1
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `searchElement` | `Buffer` \| `Buffer`[] | The value to locate in the array. |
+| `searchElement` | `Uint8Array` \| `Uint8Array`[] | The value to locate in the array. |
 | `fromIndex?` | `number` | The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array. |
 
 #### Returns
@@ -713,7 +713,7 @@ Calls a defined callback function on each element of an array, and returns an ar
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `U` | A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -732,14 +732,14 @@ ___
 
 ### pop
 
-▸ **pop**(): `undefined` \| `Buffer` \| `Buffer`[]
+▸ **pop**(): `undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 Removes the last element from an array and returns it.
 If the array is empty, undefined is returned and the array is not modified.
 
 #### Returns
 
-`undefined` \| `Buffer` \| `Buffer`[]
+`undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -761,7 +761,7 @@ Appends new elements to the end of an array, and returns the new length of the a
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `...items` | (`Buffer` \| `Buffer`[])[] | New elements to add to the array. |
+| `...items` | (`Uint8Array` \| `Uint8Array`[])[] | New elements to add to the array. |
 
 #### Returns
 
@@ -779,7 +779,7 @@ ___
 
 ### reduce
 
-▸ **reduce**(`callbackfn`): `Buffer` \| `Buffer`[]
+▸ **reduce**(`callbackfn`): `Uint8Array` \| `Uint8Array`[]
 
 Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -787,11 +787,11 @@ Calls the specified callback function for all the elements in an array. The retu
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: `Uint8Array` \| `Uint8Array`[], `currentValue`: `Uint8Array` \| `Uint8Array`[], `currentIndex`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `Uint8Array` \| `Uint8Array`[] | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
 
 #### Returns
 
-`Buffer` \| `Buffer`[]
+`Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -801,18 +801,18 @@ Array.reduce
 
 node_modules/typescript/lib/lib.es5.d.ts:1434
 
-▸ **reduce**(`callbackfn`, `initialValue`): `Buffer` \| `Buffer`[]
+▸ **reduce**(`callbackfn`, `initialValue`): `Uint8Array` \| `Uint8Array`[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] |
-| `initialValue` | `Buffer` \| `Buffer`[] |
+| `callbackfn` | (`previousValue`: `Uint8Array` \| `Uint8Array`[], `currentValue`: `Uint8Array` \| `Uint8Array`[], `currentIndex`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `Uint8Array` \| `Uint8Array`[] |
+| `initialValue` | `Uint8Array` \| `Uint8Array`[] |
 
 #### Returns
 
-`Buffer` \| `Buffer`[]
+`Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -836,7 +836,7 @@ Calls the specified callback function for all the elements in an array. The retu
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Uint8Array` \| `Uint8Array`[], `currentIndex`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `U` | A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array. |
 | `initialValue` | `U` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
 
 #### Returns
@@ -855,7 +855,7 @@ ___
 
 ### reduceRight
 
-▸ **reduceRight**(`callbackfn`): `Buffer` \| `Buffer`[]
+▸ **reduceRight**(`callbackfn`): `Uint8Array` \| `Uint8Array`[]
 
 Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -863,11 +863,11 @@ Calls the specified callback function for all the elements in an array, in desce
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: `Uint8Array` \| `Uint8Array`[], `currentValue`: `Uint8Array` \| `Uint8Array`[], `currentIndex`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `Uint8Array` \| `Uint8Array`[] | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
 
 #### Returns
 
-`Buffer` \| `Buffer`[]
+`Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -877,18 +877,18 @@ Array.reduceRight
 
 node_modules/typescript/lib/lib.es5.d.ts:1447
 
-▸ **reduceRight**(`callbackfn`, `initialValue`): `Buffer` \| `Buffer`[]
+▸ **reduceRight**(`callbackfn`, `initialValue`): `Uint8Array` \| `Uint8Array`[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `callbackfn` | (`previousValue`: `Buffer` \| `Buffer`[], `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `Buffer` \| `Buffer`[] |
-| `initialValue` | `Buffer` \| `Buffer`[] |
+| `callbackfn` | (`previousValue`: `Uint8Array` \| `Uint8Array`[], `currentValue`: `Uint8Array` \| `Uint8Array`[], `currentIndex`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `Uint8Array` \| `Uint8Array`[] |
+| `initialValue` | `Uint8Array` \| `Uint8Array`[] |
 
 #### Returns
 
-`Buffer` \| `Buffer`[]
+`Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -912,7 +912,7 @@ Calls the specified callback function for all the elements in an array, in desce
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Buffer` \| `Buffer`[], `currentIndex`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `U` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
+| `callbackfn` | (`previousValue`: `U`, `currentValue`: `Uint8Array` \| `Uint8Array`[], `currentIndex`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `U` | A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. |
 | `initialValue` | `U` | If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value. |
 
 #### Returns
@@ -931,14 +931,14 @@ ___
 
 ### reverse
 
-▸ **reverse**(): (`Buffer` \| `Buffer`[])[]
+▸ **reverse**(): (`Uint8Array` \| `Uint8Array`[])[]
 
 Reverses the elements in an array in place.
 This method mutates the array and returns a reference to the same array.
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 #### Inherited from
 
@@ -952,14 +952,14 @@ ___
 
 ### shift
 
-▸ **shift**(): `undefined` \| `Buffer` \| `Buffer`[]
+▸ **shift**(): `undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 Removes the first element from an array and returns it.
 If the array is empty, undefined is returned and the array is not modified.
 
 #### Returns
 
-`undefined` \| `Buffer` \| `Buffer`[]
+`undefined` \| `Uint8Array` \| `Uint8Array`[]
 
 #### Inherited from
 
@@ -973,7 +973,7 @@ ___
 
 ### slice
 
-▸ **slice**(`start?`, `end?`): (`Buffer` \| `Buffer`[])[]
+▸ **slice**(`start?`, `end?`): (`Uint8Array` \| `Uint8Array`[])[]
 
 Returns a copy of a section of an array.
 For both start and end, a negative index can be used to indicate an offset from the end of the array.
@@ -988,7 +988,7 @@ For example, -2 refers to the second to last element of the array.
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 #### Inherited from
 
@@ -1010,7 +1010,7 @@ Determines whether the specified callback function returns true for any element 
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `predicate` | (`value`: `Buffer` \| `Buffer`[], `index`: `number`, `array`: (`Buffer` \| `Buffer`[])[]) => `unknown` | A function that accepts up to three arguments. The some method calls  the predicate function for each element in the array until the predicate returns a value  which is coercible to the Boolean value true, or until the end of the array. |
+| `predicate` | (`value`: `Uint8Array` \| `Uint8Array`[], `index`: `number`, `array`: (`Uint8Array` \| `Uint8Array`[])[]) => `unknown` | A function that accepts up to three arguments. The some method calls  the predicate function for each element in the array until the predicate returns a value  which is coercible to the Boolean value true, or until the end of the array. |
 | `thisArg?` | `any` | An object to which the this keyword can refer in the predicate function.  If thisArg is omitted, undefined is used as the this value. |
 
 #### Returns
@@ -1038,7 +1038,7 @@ This method mutates the array and returns a reference to the same array.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `compareFn?` | (`a`: `Buffer` \| `Buffer`[], `b`: `Buffer` \| `Buffer`[]) => `number` | Function used to determine the order of the elements. It is expected to return  a negative value if the first argument is less than the second argument, zero if they're equal, and a positive  value otherwise. If omitted, the elements are sorted in ascending, ASCII character order.  ```ts  [11,2,22,1].sort((a, b) => a - b)  ``` |
+| `compareFn?` | (`a`: `Uint8Array` \| `Uint8Array`[], `b`: `Uint8Array` \| `Uint8Array`[]) => `number` | Function used to determine the order of the elements. It is expected to return  a negative value if the first argument is less than the second argument, zero if they're equal, and a positive  value otherwise. If omitted, the elements are sorted in ascending, ASCII character order.  ```ts  [11,2,22,1].sort((a, b) => a - b)  ``` |
 
 #### Returns
 
@@ -1056,7 +1056,7 @@ ___
 
 ### splice
 
-▸ **splice**(`start`, `deleteCount?`): (`Buffer` \| `Buffer`[])[]
+▸ **splice**(`start`, `deleteCount?`): (`Uint8Array` \| `Uint8Array`[])[]
 
 Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
 
@@ -1069,7 +1069,7 @@ Removes elements from an array and, if necessary, inserts new elements in their 
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 An array containing the elements that were deleted.
 
@@ -1081,7 +1081,7 @@ Array.splice
 
 node_modules/typescript/lib/lib.es5.d.ts:1352
 
-▸ **splice**(`start`, `deleteCount`, ...`items`): (`Buffer` \| `Buffer`[])[]
+▸ **splice**(`start`, `deleteCount`, ...`items`): (`Uint8Array` \| `Uint8Array`[])[]
 
 Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
 
@@ -1091,11 +1091,11 @@ Removes elements from an array and, if necessary, inserts new elements in their 
 | :------ | :------ | :------ |
 | `start` | `number` | The zero-based location in the array from which to start removing elements. |
 | `deleteCount` | `number` | The number of elements to remove. |
-| `...items` | (`Buffer` \| `Buffer`[])[] | Elements to insert into the array in place of the deleted elements. |
+| `...items` | (`Uint8Array` \| `Uint8Array`[])[] | Elements to insert into the array in place of the deleted elements. |
 
 #### Returns
 
-(`Buffer` \| `Buffer`[])[]
+(`Uint8Array` \| `Uint8Array`[])[]
 
 An array containing the elements that were deleted.
 
@@ -1159,7 +1159,7 @@ Inserts new elements at the start of an array, and returns the new length of the
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `...items` | (`Buffer` \| `Buffer`[])[] | Elements to insert at the start of the array. |
+| `...items` | (`Uint8Array` \| `Uint8Array`[])[] | Elements to insert at the start of the array. |
 
 #### Returns
 
@@ -1177,13 +1177,13 @@ ___
 
 ### values
 
-▸ **values**(): `IterableIterator`<`Buffer` \| `Buffer`[]\>
+▸ **values**(): `IterableIterator`<`Uint8Array` \| `Uint8Array`[]\>
 
 Returns an iterable of values in the array
 
 #### Returns
 
-`IterableIterator`<`Buffer` \| `Buffer`[]\>
+`IterableIterator`<`Uint8Array` \| `Uint8Array`[]\>
 
 #### Inherited from
 

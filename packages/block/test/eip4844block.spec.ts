@@ -165,7 +165,7 @@ describe('transaction validation tests', () => {
           versionedHashes,
           blobs,
           kzgCommitments: commitments,
-          maxFeePerblobGas: 100000000n,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -176,7 +176,7 @@ describe('transaction validation tests', () => {
           versionedHashes,
           blobs,
           kzgCommitments: commitments,
-          maxFeePerblobGas: 1n,
+          maxFeePerBlobGas: 1n,
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
@@ -217,7 +217,7 @@ describe('transaction validation tests', () => {
 
       assert.doesNotThrow(
         () => blockWithValidTx.validateBlobTransactions(parentHeader),
-        'does not throw when all tx maxFeePerblobGas are >= to block blob gas fee'
+        'does not throw when all tx maxFeePerBlobGas are >= to block blob gas fee'
       )
       const blockJson = blockWithValidTx.toJSON()
       blockJson.header!.blobGasUsed = '0x0'
@@ -226,26 +226,26 @@ describe('transaction validation tests', () => {
         () => blockWithInvalidHeader.validateBlobTransactions(parentHeader),
         'block blobGasUsed mismatch',
         undefined,
-        'throws with correct error message when tx maxFeePerblobGas less than block blob gas fee'
+        'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee'
       )
 
       assert.throws(
         () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
         'than block blob gas price',
         undefined,
-        'throws with correct error message when tx maxFeePerblobGas less than block blob gas fee'
+        'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee'
       )
       assert.throws(
         () => blockWithInvalidTx.validateBlobTransactions(parentHeader),
         'than block blob gas price',
         undefined,
-        'throws with correct error message when tx maxFeePerblobGas less than block blob gas fee'
+        'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee'
       )
       assert.throws(
         () => blockWithTooManyBlobs.validateBlobTransactions(parentHeader),
         'exceed maximum blob gas per block',
         undefined,
-        'throws with correct error message when tx maxFeePerblobGas less than block blob gas fee'
+        'throws with correct error message when tx maxFeePerBlobGas less than block blob gas fee'
       )
 
       assert.ok(

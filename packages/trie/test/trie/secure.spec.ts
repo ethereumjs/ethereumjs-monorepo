@@ -7,6 +7,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { createHash } from 'crypto'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie } from '../../src/index.js'
@@ -38,6 +39,20 @@ describe('SecureTrie proof', () => {
     const proof = await trie.createProof(utf8ToBytes('key1aa'))
     const val = await trie.verifyProof(trie.root(), utf8ToBytes('key1aa'), proof)
     assert.equal(bytesToUtf8(val!), '01234')
+  })
+
+  it('read back data written with hashed key', async () => {
+    const trie = new Trie({ useKeyHashing: true, db: new MapDB() })
+    // skip key transformation if the key is already hashed like data recieved in snapsync
+    await trie.put(keccak256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
+
+    const val = await trie.get(utf8ToBytes('key1aa'))
+    assert.equal(bytesToUtf8(val!), '01234')
+
+    // check roots match if written in normal fashion
+    const trie2 = new Trie({ useKeyHashing: true, db: new MapDB() })
+    await trie2.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
+    assert.equal(bytesToUtf8(trie.root()), bytesToUtf8(trie2.root()))
   })
 })
 

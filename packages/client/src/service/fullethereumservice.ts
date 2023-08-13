@@ -13,16 +13,15 @@ import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
 import { Skeleton } from '../sync/skeleton'
 import { Event } from '../types'
 
-import { EthereumService } from './ethereumservice'
+import { Service, type ServiceOptions } from './service'
 import { TxPool } from './txpool'
 
 import type { Peer } from '../net/peer/peer'
 import type { Protocol } from '../net/protocol'
-import type { EthereumServiceOptions } from './ethereumservice'
 import type { Block } from '@ethereumjs/block'
 import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
-interface FullEthereumServiceOptions extends EthereumServiceOptions {
+interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
   lightserv?: boolean
 }
@@ -31,7 +30,7 @@ interface FullEthereumServiceOptions extends EthereumServiceOptions {
  * Full Ethereum service
  * @memberof module:service
  */
-export class FullEthereumService extends EthereumService {
+export class FullEthereumService extends Service {
   public synchronizer?: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
   public lightserv: boolean
   public miner: Miner | undefined

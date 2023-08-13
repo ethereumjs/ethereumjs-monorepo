@@ -26,7 +26,7 @@
 
 #### Defined in
 
-[types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L28)
+[types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L37)
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 #### Defined in
 
-[types.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L21)
+[types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L30)
 
 ___
 
@@ -46,27 +46,17 @@ ___
 
 #### Defined in
 
-[types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L24)
+[types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L33)
 
 ___
 
 ### consensus
 
-• **consensus**: `Object`
-
-#### Type declaration
-
-| Name | Type |
-| :------ | :------ |
-| `algorithm` | `string` |
-| `casper?` | [`CasperConfig`](../README.md#casperconfig) |
-| `clique?` | [`CliqueConfig`](../README.md#cliqueconfig) |
-| `ethash?` | [`EthashConfig`](../README.md#ethashconfig) |
-| `type` | `string` |
+• **consensus**: `ConsensusConfig`
 
 #### Defined in
 
-[types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L30)
+[types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L39)
 
 ___
 
@@ -76,7 +66,7 @@ ___
 
 #### Defined in
 
-[types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L23)
+[types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L32)
 
 ___
 
@@ -86,7 +76,7 @@ ___
 
 #### Defined in
 
-[types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L29)
+[types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L38)
 
 ___
 
@@ -96,17 +86,17 @@ ___
 
 #### Defined in
 
-[types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L26)
+[types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L35)
 
 ___
 
 ### hardforks
 
-• **hardforks**: [`HardforkConfig`](HardforkConfig.md)[]
+• **hardforks**: [`HardforkTransitionConfig`](HardforkTransitionConfig.md)[]
 
 #### Defined in
 
-[types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L27)
+[types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L36)
 
 ___
 
@@ -116,7 +106,7 @@ ___
 
 #### Defined in
 
-[types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L20)
+[types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L29)
 
 ___
 
@@ -126,7 +116,7 @@ ___
 
 #### Defined in
 
-[types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L22)
+[types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L31)
 
 ___
 
@@ -136,4 +126,4 @@ ___
 
 #### Defined in
 
-[types.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L25)
+[types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L34)

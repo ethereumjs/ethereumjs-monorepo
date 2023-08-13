@@ -64,12 +64,14 @@ export type FetcherDoneFlags = {
   trieNodeFetcherDone: boolean
   eventBus?: EventBusType | undefined
   stateRoot?: Uint8Array | undefined
+  stateTrie?: Trie | undefined
 }
 
 export function snapFetchersCompleted(
   fetcherDoneFlags: FetcherDoneFlags,
   fetcherType: Object,
   root?: Uint8Array,
+  trie?: Trie,
   eventBus?: EventBusType
 ) {
   switch (fetcherType) {
@@ -77,6 +79,7 @@ export function snapFetchersCompleted(
     case AccountFetcher:
       fetcherDoneFlags.accountFetcherDone = true
       fetcherDoneFlags.stateRoot = root
+      fetcherDoneFlags.stateTrie = trie
       fetcherDoneFlags.eventBus = eventBus
       break
     case StorageFetcher:
@@ -95,7 +98,11 @@ export function snapFetchersCompleted(
     fetcherDoneFlags.byteCodeFetcherDone &&
     fetcherDoneFlags.trieNodeFetcherDone
   ) {
-    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot!)
+    fetcherDoneFlags.eventBus!.emit(
+      Event.SYNC_SNAPSYNC_COMPLETE,
+      fetcherDoneFlags.stateRoot!,
+      fetcherDoneFlags.stateTrie!
+    )
   }
 }
 
@@ -387,6 +394,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         this.fetcherDoneFlags,
         AccountFetcher,
         this.accountTrie.root(),
+        this.accountTrie,
         this.config.events
       )
 
@@ -399,7 +407,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const storageFetchRequests = new Set()
     const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
-      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
+      // what we have is hashed account and not its pre-image, so we skipKeyTransform
+      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body), true)
 
       // build record of accounts that need storage slots to be fetched
       const storageRoot: Uint8Array = account.body[2]

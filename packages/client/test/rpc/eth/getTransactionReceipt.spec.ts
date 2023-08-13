@@ -122,7 +122,7 @@ describe(method, () => {
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
-          maxFeePerblobGas: 1000000n,
+          maxFeePerBlobGas: 1000000n,
           gasLimit: 0xffffn,
           maxFeePerGas: 10000000n,
           maxPriorityFeePerGas: 1000000n,

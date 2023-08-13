@@ -77,6 +77,34 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it('should throw error if "dev" option is passed in without a value', async () => {
+    const cliArgs = ['--dev']
+    const file = require.resolve('../../dist/bin/cli.js')
+    const child = spawn(process.execPath, [file, ...cliArgs])
+    return new Promise((resolve) => {
+      child.stdout.on('data', async () => {
+        child.kill(9)
+        assert.fail('client should throw error when "dev" option is passed in without a value')
+      })
+      child.stderr.on('data', (data) => {
+        const message = data.toString()
+        if (message.includes('If the "dev" option is used it must be assigned a value') === true)
+          assert.ok(
+            true,
+            'client correctly throws error when "dev" option is passed in without a value'
+          )
+        child.kill(9)
+        resolve(undefined)
+      })
+      child.on('close', (code) => {
+        if (typeof code === 'number' && code > 0) {
+          assert.fail(`child process exited with code ${code}`)
+        }
+        child.kill(9)
+        resolve(undefined)
+      })
+    })
+  }, 30000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const cliArgs = ['--rpcEngine', '--port=30310', '--dev=poa']

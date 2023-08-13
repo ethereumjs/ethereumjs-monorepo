@@ -182,7 +182,7 @@ export class Trie {
    * @param value
    * @returns A Promise that resolves once value is stored.
    */
-  async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+  async put(key: Uint8Array, value: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
@@ -193,7 +193,7 @@ export class Trie {
     }
 
     await this._lock.acquire()
-    const appliedKey = this.appliedKey(key)
+    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) === true) {
       // If no root, initialize this trie
       await this._createInitialNode(appliedKey, value)
@@ -239,9 +239,9 @@ export class Trie {
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
-  async del(key: Uint8Array): Promise<void> {
+  async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     await this._lock.acquire()
-    const appliedKey = this.appliedKey(key)
+    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
 
     let ops: BatchDBOp[] = []
@@ -399,20 +399,18 @@ export class Trie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode | null> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
     if (isRawNode(node)) {
-      return decodeRawNode(node as Uint8Array[])
+      return decodeRawNode(node)
     }
-    let value = null
-    let foundNode = null
-    value = await this._db.get(node as Uint8Array)
-    if (value) {
-      foundNode = decodeNode(value)
-    } else {
+    const value = (await this._db.get(node)) ?? null
+
+    if (value === null) {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
       throw new Error('Missing node in DB')
     }
-    return foundNode
+
+    return decodeNode(value)
   }
 
   /**
@@ -639,16 +637,10 @@ export class Trie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      if (foundNode) {
-        key = processBranchNode(
-          key,
-          branchNodeKey,
-          foundNode as TrieNode,
-          parentNode as TrieNode,
-          stack
-        )
-        await this.saveStack(key, stack, opStack)
-      }
+      // if (foundNode) {
+      key = processBranchNode(key, branchNodeKey, foundNode, parentNode as TrieNode, stack)
+      await this.saveStack(key, stack, opStack)
+      // }
     } else {
       // simple removing a leaf and recalculation the stack
       if (parentNode) {
@@ -752,15 +744,15 @@ export class Trie {
    * await trie.batch(ops)
    * @param ops
    */
-  async batch(ops: BatchDBOp[]): Promise<void> {
+  async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
     for (const op of ops) {
       if (op.type === 'put') {
         if (op.value === null || op.value === undefined) {
           throw new Error('Invalid batch db operation')
         }
-        await this.put(op.key, op.value)
+        await this.put(op.key, op.value, skipKeyTransform)
       } else if (op.type === 'del') {
-        await this.del(op.key)
+        await this.del(op.key, skipKeyTransform)
       }
     }
     await this.persistRoot()

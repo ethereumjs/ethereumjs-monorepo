@@ -19,7 +19,7 @@ import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { ReceiptsManager } from '../../execution/receipt'
 import type { EthProtocol } from '../../net/protocol'
-import type { EthereumService, FullEthereumService } from '../../service'
+import type { FullEthereumService, Service } from '../../service'
 import type { RpcTx } from '../types'
 import type { Block, JsonRpcBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
@@ -203,7 +203,7 @@ const jsonRpcReceipt = async (
  */
 export class Eth {
   private client: EthereumClient
-  private service: EthereumService
+  private service: Service
   private receiptsManager: ReceiptsManager | undefined
   private _chain: Chain
   private _vm: VM | undefined
@@ -215,7 +215,7 @@ export class Eth {
    */
   constructor(client: EthereumClient) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as EthereumService
+    this.service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager

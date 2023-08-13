@@ -6,7 +6,7 @@
 
 ### Enumerations
 
-- [EvmErrorMessage](enums/EvmErrorMessage.md)
+- [EVMErrorMessage](enums/EVMErrorMessage.md)
 
 ### Classes
 
@@ -15,16 +15,19 @@
 
 ### Interfaces
 
-- [EEIInterface](interfaces/EEIInterface.md)
 - [EVMInterface](interfaces/EVMInterface.md)
 - [EVMResult](interfaces/EVMResult.md)
-- [EVMStateAccess](interfaces/EVMStateAccess.md)
 - [ExecResult](interfaces/ExecResult.md)
 - [InterpreterStep](interfaces/InterpreterStep.md)
+- [PrecompileInput](interfaces/PrecompileInput.md)
 
 ### Type Aliases
 
 - [Log](README.md#log)
+
+### Variables
+
+- [EOF](README.md#eof)
 
 ### Functions
 
@@ -34,13 +37,33 @@
 
 ### Log
 
-Ƭ **Log**: [address: Buffer, topics: Buffer[], data: Buffer]
+Ƭ **Log**: [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
 Log that the contract emits.
 
 #### Defined in
 
-[types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L234)
+[types.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L319)
+
+## Variables
+
+### EOF
+
+• `Const` **EOF**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `FORMAT` | `number` |
+| `MAGIC` | `number` |
+| `VERSION` | `number` |
+| `codeAnalysis` | (`container`: `Uint8Array`) => `undefined` \| { `code`: `number` = 0; `data`: `number` = 0 } |
+| `validOpcodes` | (`code`: `Uint8Array`) => `boolean` |
+
+#### Defined in
+
+[eof.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof.ts#L105)
 
 ## Functions
 
@@ -61,4 +84,4 @@ Log that the contract emits.
 
 #### Defined in
 
-[precompiles/index.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L183)
+[precompiles/index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L166)

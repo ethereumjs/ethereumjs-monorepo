@@ -41,28 +41,28 @@
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `privateKey?` | `Buffer` | `undefined` |
-| `publicKey` | `undefined` \| `Buffer` | `undefined` |
+| `privateKey?` | `Uint8Array` | `undefined` |
+| `publicKey` | `undefined` \| `Uint8Array` | `undefined` |
 
 #### Defined in
 
-[index.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L272)
+[wallet.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L266)
 
 ## Methods
 
 ### getAddress
 
-▸ **getAddress**(): `Buffer`
+▸ **getAddress**(): `Uint8Array`
 
 Returns the wallet's address.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[index.ts:556](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L556)
+[wallet.ts:548](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L548)
 
 ___
 
@@ -78,7 +78,7 @@ Returns the wallet's address as a "0x" prefixed hex string
 
 #### Defined in
 
-[index.ts:563](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L563)
+[wallet.ts:555](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L555)
 
 ___
 
@@ -95,23 +95,23 @@ according to [EIP 55](https://github.com/ethereum/EIPs/issues/55).
 
 #### Defined in
 
-[index.ts:571](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L571)
+[wallet.ts:563](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L563)
 
 ___
 
 ### getPrivateKey
 
-▸ **getPrivateKey**(): `Buffer`
+▸ **getPrivateKey**(): `Uint8Array`
 
 Returns the wallet's private key.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[index.ts:530](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L530)
+[wallet.ts:523](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L523)
 
 ___
 
@@ -125,23 +125,23 @@ ___
 
 #### Defined in
 
-[index.ts:534](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L534)
+[wallet.ts:527](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L527)
 
 ___
 
 ### getPublicKey
 
-▸ **getPublicKey**(): `Buffer`
+▸ **getPublicKey**(): `Uint8Array`
 
 Returns the wallet's public key.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[index.ts:542](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L542)
+[wallet.ts:534](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L534)
 
 ___
 
@@ -157,7 +157,7 @@ Returns the wallet's public key as a "0x" prefixed hex string
 
 #### Defined in
 
-[index.ts:549](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L549)
+[wallet.ts:541](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L541)
 
 ___
 
@@ -179,7 +179,7 @@ Return the suggested filename for V3 keystores.
 
 #### Defined in
 
-[index.ts:643](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L643)
+[wallet.ts:633](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L633)
 
 ___
 
@@ -202,7 +202,7 @@ Returns an Etherem Version 3 Keystore Format object representing the wallet
 
 #### Defined in
 
-[index.ts:581](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L581)
+[wallet.ts:573](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L573)
 
 ___
 
@@ -223,7 +223,7 @@ ___
 
 #### Defined in
 
-[index.ts:661](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L661)
+[wallet.ts:654](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L654)
 
 ___
 
@@ -237,7 +237,7 @@ Verify the publicKey, privateKey pair
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `publicKey` | `Buffer` | the public key to verify against the private key of the wallet |
+| `publicKey` | `Uint8Array` | the public key to verify against the private key of the wallet |
 
 #### Returns
 
@@ -245,7 +245,7 @@ Verify the publicKey, privateKey pair
 
 #### Defined in
 
-[index.ts:670](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L670)
+[wallet.ts:663](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L663)
 
 ___
 
@@ -266,7 +266,7 @@ ___
 
 #### Defined in
 
-[index.ts:471](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L471)
+[wallet.ts:465](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L465)
 
 ___
 
@@ -288,7 +288,7 @@ Create an instance based on a BIP32 extended private key (xprv)
 
 #### Defined in
 
-[index.ts:363](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L363)
+[wallet.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L357)
 
 ___
 
@@ -310,7 +310,7 @@ Create an instance based on a BIP32 extended public key (xpub)
 
 #### Defined in
 
-[index.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L344)
+[wallet.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L338)
 
 ___
 
@@ -324,7 +324,7 @@ Create an instance based on a raw private key
 
 | Name | Type |
 | :------ | :------ |
-| `privateKey` | `Buffer` |
+| `privateKey` | `Uint8Array` |
 
 #### Returns
 
@@ -332,7 +332,7 @@ Create an instance based on a raw private key
 
 #### Defined in
 
-[index.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L356)
+[wallet.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L350)
 
 ___
 
@@ -349,7 +349,7 @@ the `nonStrict` flag is set to true.
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `publicKey` | `Buffer` | `undefined` |
+| `publicKey` | `Uint8Array` | `undefined` |
 | `nonStrict` | `boolean` | `false` |
 
 #### Returns
@@ -358,7 +358,7 @@ the `nonStrict` flag is set to true.
 
 #### Defined in
 
-[index.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L334)
+[wallet.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L328)
 
 ___
 
@@ -381,7 +381,7 @@ Import a wallet (Version 1 of the Ethereum wallet format).
 
 #### Defined in
 
-[index.ts:380](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L380)
+[wallet.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L374)
 
 ___
 
@@ -405,7 +405,7 @@ Import a wallet (Version 3 of the Ethereum wallet format). Set `nonStrict` true 
 
 #### Defined in
 
-[index.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L413)
+[wallet.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L407)
 
 ___
 
@@ -427,7 +427,7 @@ Create an instance based on a new random key.
 
 #### Defined in
 
-[index.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L296)
+[wallet.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L290)
 
 ___
 
@@ -449,4 +449,4 @@ Create an instance where the address is valid against the supplied pattern (**th
 
 #### Defined in
 
-[index.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/index.ts#L314)
+[wallet.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L308)

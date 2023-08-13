@@ -9,6 +9,7 @@ import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { Proof } from './index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { StorageRange } from '@ethereumjs/common/src'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -189,6 +190,11 @@ export class EthersStateManager implements EVMStateManagerInterface {
       }
     }
     return Promise.resolve(dump)
+  }
+
+  dumpStorageRange(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
+    // TODO: Implement.
+    return Promise.reject()
   }
 
   /**
