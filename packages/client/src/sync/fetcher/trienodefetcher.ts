@@ -337,23 +337,23 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
                   })
                 }
               }
-              await storageTrie.batch(storageTrieOps)
+              await storageTrie.batch(storageTrieOps, true)
               await storageTrie.persistRoot()
               const a = Account.fromRlpSerializedAccount(node.value())
               this.debug(
-                `calculated and actual storage roots bellow\nactual ${bytesToHex(
+                `Stored storageTrie with root actual=${bytesToHex(
                   storageTrie.root()
-                )} - expected ${bytesToHex(a.storageRoot)}`
+                )} expected=${bytesToHex(a.storageRoot)}`
               )
             }
           }
         }
-        await this.accountTrie.batch(ops)
+        await this.accountTrie.batch(ops, true)
         await this.accountTrie.persistRoot()
         this.debug(
-          `calculated and actual account roots bellow\nactual ${bytesToHex(
+          `Stored accountTrie with root actual=${bytesToHex(
             this.accountTrie.root()
-          )} - expected ${bytesToHex(this.root)}`
+          )} expected=${bytesToHex(this.root)}`
         )
       }
     } catch (e) {

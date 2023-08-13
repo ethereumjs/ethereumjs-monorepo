@@ -227,6 +227,7 @@ describe('[AccountFetcher]', async () => {
       fetcherDoneFlags,
       AccountFetcher,
       fetcher.accountTrie.root(),
+      fetcher.accountTrie,
       config.events
     )
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
