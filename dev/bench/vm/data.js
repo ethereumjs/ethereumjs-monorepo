@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691911672215,
+  "lastUpdate": 1691950322202,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d971c39ce0c108e3391d977b2af928fe1442fec9",
-          "message": "Address security vulnerabilities (#2912)\n\n* devp2p: remove deprecated: @types/chalk\n\n* devp2p:  update dependency for 'multaddr'\n\n* client: update dependencies for 'multiaddr' and 'peer-id'\n\n* Fix devp2p imports\n\n* client: update peer-id dependency\n\n* trie: update 0x dependency\n\n* commit package-lock\n\n* trie: use recommended 0x version\n\n* trie: remove 0x dependency completely\n\n* clean up package-lock\n\n* client: update import and fix parse.spec.ts\n\n* client: update import / fix rlpxserver.spec.ts\n\n* devp2p: revert back to multiaddr v10.0.1\n\n* Fix import for Convert\n\n* client: revert back to multiaddr v10.0.1\n\n* commit package-lock\n\n* lint fix\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-07-25T06:29:10-04:00",
-          "tree_id": "a84f131da7544c85b1c9d60f7f05317733ac51a2",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d971c39ce0c108e3391d977b2af928fe1442fec9"
-        },
-        "date": 1690281180321,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25056,
-            "range": "±3.96%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25173,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 23091,
-            "range": "±8.18%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25053,
-            "range": "±2.81%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24158,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.59%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "125a6964080e184eaf63fca5260a14bee96bda83",
+          "message": "trie: allow trie put/del ops to skip transforming key for snapsync (#2950)\n\n* trie: allow trie put/del ops to skip transforming key\r\n\r\n* add ability to test against the synced snap trie\r\n\r\n* fix spec\r\n\r\n* match entire state\r\n\r\n* add spec to trie test\r\n\r\n* fix and edge case\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
+          "timestamp": "2023-08-13T11:08:31-07:00",
+          "tree_id": "dc6952f1379fee72b440c1797b883cf9cca0c214",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/125a6964080e184eaf63fca5260a14bee96bda83"
+        },
+        "date": 1691950321548,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31917,
+            "range": "±4.26%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31096,
+            "range": "±3.07%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30955,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25904,
+            "range": "±10.92%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29748,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
