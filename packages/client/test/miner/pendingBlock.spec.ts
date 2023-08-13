@@ -96,7 +96,6 @@ describe('[PendingBlock]', async () => {
     }
   })
 
-  // const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = vi.fn()
 
   const createTx = (
