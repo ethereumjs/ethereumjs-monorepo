@@ -151,10 +151,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
-    this.codeTrie = new Trie({ useKeyHashing: false })
-    this.accountTrie = new Trie({ useKeyHashing: false })
+    this.codeTrie = new Trie({ useKeyHashing: true })
+    this.accountTrie = new Trie({ useKeyHashing: true })
     this.accountToStorageTrie = new Map()
-
     this.debug = createDebugLogger('client:AccountFetcher')
     this.storageFetcher = new StorageFetcher({
       config: this.config,

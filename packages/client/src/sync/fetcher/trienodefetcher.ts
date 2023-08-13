@@ -89,8 +89,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
     this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
-    this.accountTrie = options.accountTrie ?? new Trie({ useKeyHashing: false })
-    this.codeTrie = options.codeTrie ?? new Trie({ useKeyHashing: false })
+    this.accountTrie = options.accountTrie ?? new Trie({ useKeyHashing: true })
+    this.codeTrie = options.codeTrie ?? new Trie({ useKeyHashing: true })
     this.accountToStorageTrie = options.accountToStorageTrie ?? new Map<String, Trie>()
     this.nodeCount = 0
     this.debug = createDebugLogger('client:TrieNodeFetcher')
@@ -323,7 +323,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
             // add storage data for account if it has fetched nodes
             // TODO figure out what the key should be for mapping accounts to storage tries
-            const storageTrie = new Trie({ useKeyHashing: false })
+            const storageTrie = new Trie({ useKeyHashing: true })
             const storageTrieOps: BatchDBOp[] = []
             if (pathToStorageNode !== undefined && pathToStorageNode.size > 0) {
               for (const [path, data] of pathToStorageNode) {
