@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
-import { assert, describe, expect, it, vi } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { EthersStateManager } from '../src/ethersStateManager.js'
 
