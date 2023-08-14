@@ -149,7 +149,7 @@ export class KBucket {
     }
 
     // the bucket is full
-    if (node.dontSplit !== undefined) {
+    if (node.dontSplit) {
       // we are not allowed to split the bucket
       // we need to ping the first this._numberOfNodesToPing
       // in order to determine if they are alive
