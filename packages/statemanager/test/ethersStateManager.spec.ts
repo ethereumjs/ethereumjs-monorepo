@@ -84,10 +84,9 @@ describe('Ethers State Manager API tests', () => {
       )
 
       assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-      const doesThisAccountExist =
-        (await state.getAccount(
-          Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
-        )) === undefined
+      const doesThisAccountExist = await state.accountExists(
+        Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
+      )
       assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
       assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
