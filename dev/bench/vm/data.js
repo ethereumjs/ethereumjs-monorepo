@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691950322202,
+  "lastUpdate": 1692018913831,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "38de29b9402e86f185522d38e29258b765f4b24d",
-          "message": "Remove remaining karma detritus (#2915)",
-          "timestamp": "2023-07-25T11:45:47-07:00",
-          "tree_id": "fde3da9d9250e1d7beed667cd8ec6aa0bcbfbc08",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/38de29b9402e86f185522d38e29258b765f4b24d"
-        },
-        "date": 1690311597935,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31353,
-            "range": "±5.15%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31242,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31010,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26176,
-            "range": "±9.60%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29912,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 29748,
             "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "simon@klein-homepage.de",
+            "name": "box25",
+            "username": "simone1999"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b54a05cba582f0c1530f52f6c95b3535db571470",
+          "message": "fixed kademlia kbucket add (#2957)\n\nin the kbucket implementation the dontSplit attribute of KBucketNode is typed as bool, but was checked wit \"!== undefined\" which always was true. This caused KBucket.add to never split the leaf node and therefore kept the kbucket as a single level tree with a maximum of _numberOfNodesPerKBucket entrys in total.",
+          "timestamp": "2023-08-14T15:08:58+02:00",
+          "tree_id": "0ee53854d75d78c246798369682c552dc62f02e7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b54a05cba582f0c1530f52f6c95b3535db571470"
+        },
+        "date": 1692018913076,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32790,
+            "range": "±3.81%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31848,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 32222,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27696,
+            "range": "±9.45%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30296,
+            "range": "±2.72%",
             "unit": "ops/sec",
             "extra": "86 samples"
           }
