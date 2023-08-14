@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { EthersStateManager } from '../src/ethersStateManager.js'
 
@@ -110,6 +110,13 @@ describe('Ethers State Manager API tests', () => {
         setLengthLeft(bigIntToBytes(1n), 32)
       )
       assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+
+      await expect(async () => {
+        await state.getContractStorage(
+          UNIerc20ContractAddress,
+          setLengthLeft(bigIntToBytes(1n), 31)
+        )
+      }).rejects.toThrowError('Storage key must be 32 bytes long')
 
       await state.putContractStorage(
         UNIerc20ContractAddress,
