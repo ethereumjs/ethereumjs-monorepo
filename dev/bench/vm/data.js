@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692083649173,
+  "lastUpdate": 1692086481385,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5fc7d41d45ead7a8949bd1aa7b9e279b686ee41",
-          "message": "evm: fix import path (#2918)",
-          "timestamp": "2023-07-27T17:46:31-07:00",
-          "tree_id": "24a0db1e941a6962a22fec837cde9d6d74ca6ef3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5fc7d41d45ead7a8949bd1aa7b9e279b686ee41"
-        },
-        "date": 1690505391974,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32184,
-            "range": "±4.54%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31864,
-            "range": "±2.44%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31594,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27478,
-            "range": "±8.76%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30216,
-            "range": "±2.76%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.48%",
             "unit": "ops/sec",
             "extra": "67 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e6dc9dba6bc76e3476da65ace0d503db84190ede",
+          "message": "Snap Sync Fetchers: Highest-Known-Hash Optimization (#2941)\n\n* Add assert to check if account trie root matches expected\r\n\r\n* Use hashed tries\r\n\r\n* Skip tasks with limit lower than the highest known account key hash\r\n\r\n* Remove log statements\r\n\r\n* Update test\r\n\r\n* Use a object that is different from null object for termination check\r\n\r\n* Add tests for highestKnownHash optimization for account fetcher\r\n\r\n* Revert \"Use hashed tries\"\r\n\r\nThis reverts commit d026655f192823010cc2effd22d6aa9331e0b7bf.\r\n\r\n---------\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>",
+          "timestamp": "2023-08-15T13:27:57+05:30",
+          "tree_id": "fa637f189957117a534e3500b3685e41ac874531",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e6dc9dba6bc76e3476da65ace0d503db84190ede"
+        },
+        "date": 1692086480647,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31631,
+            "range": "±5.09%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31196,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31237,
+            "range": "±3.12%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26290,
+            "range": "±10.78%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29656,
+            "range": "±3.39%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
