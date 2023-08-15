@@ -153,7 +153,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
   for (const hf of params.hardforks) {
-    if (hf.timestamp !== undefined && hf.timestamp === genesisTimestamp) {
+    if (hf.timestamp === genesisTimestamp) {
       hf.timestamp = 0
     }
   }
