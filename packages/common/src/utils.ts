@@ -204,8 +204,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  */
 export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
   try {
-    if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
-      throw new Error('Invalid format, expected geth genesis fields missing')
+    const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
+    if (required.some((field) => !(field in json))) {
+      const missingField = required.filter((field) => !(field in json))
+      throw new Error(`Invalid format, expected geth genesis field "${missingField}" missing`)
     }
     if (name !== undefined) {
       json.name = name
