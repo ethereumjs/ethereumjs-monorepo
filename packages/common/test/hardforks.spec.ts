@@ -1,4 +1,4 @@
-import { hexToBytes } from '@ethereumjs/util'
+import { hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '../src/index.js'
@@ -268,6 +268,62 @@ describe('[Common]: Hardfork logic', () => {
     }
     msg = 'should throw when called with a HF that does not exist on chain'
     assert.throws(f, /No fork hash calculation possible/, undefined, msg)
+  })
+
+  it('forkHash(): should not change forkHash if timestamp is at genesis timestamp', () => {
+    // Setup default config
+    const defaultConfig = {
+      timestamp: '10',
+      config: {
+        ethash: {},
+        chainId: 7,
+        homesteadBlock: 0,
+        eip150Block: 0,
+        eip155Block: 0,
+        eip158Block: 0,
+        byzantiumBlock: 0,
+        constantinopleBlock: 0,
+        petersburgBlock: 0,
+        istanbulBlock: 0,
+        muirGlacierBlock: 0,
+        berlinBlock: 0,
+        yolov2Block: 0,
+        yolov3Block: 0,
+        londonBlock: 0,
+        mergeForkBlock: 0,
+        terminalTotalDifficulty: 0,
+        shanghaiTime: 0,
+        cancunTime: 0,
+      },
+      difficulty: '100',
+      alloc: {},
+      gasLimit: '5000',
+      nonce: '',
+    }
+    const gethConfig = {
+      chain: 'testnet',
+      eips: [],
+      hardfork: Hardfork.Cancun,
+      mergeForkIdPostMerge: true,
+    }
+    const genesisHash = zeros(32)
+    const zeroCommon = Common.fromGethGenesis(defaultConfig, gethConfig)
+
+    const zeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
+    const zeroCommonCancunFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
+
+    // Ensure that Shangai fork + Cancun fork have equal forkhash
+    assert.equal(zeroCommonShanghaiFork, zeroCommonCancunFork)
+
+    // Set the cancun time to the genesis block time (this should not change the forkHash)
+    defaultConfig.config.cancunTime = Number(defaultConfig.timestamp)
+
+    const nonzeroCommonShanghaiFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
+    const nonzeroCommonCancunFork = zeroCommon.forkHash(Hardfork.Shanghai, genesisHash)
+
+    // Ensure that the fork hashes have not changed
+    assert.equal(zeroCommonShanghaiFork, nonzeroCommonShanghaiFork)
+    assert.equal(nonzeroCommonShanghaiFork, nonzeroCommonCancunFork)
   })
 
   it('hardforkForForkHash()', () => {
