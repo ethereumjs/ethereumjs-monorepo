@@ -152,6 +152,12 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
+  for (const hf of params.hardforks) {
+    if (hf.timestamp === genesisTimestamp) {
+      hf.timestamp = 0
+    }
+  }
+
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
