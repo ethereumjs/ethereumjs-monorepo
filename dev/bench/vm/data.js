@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692081659217,
+  "lastUpdate": 1692083649173,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e984704190f520f20e06ec3b348b2674b3bff786",
-          "message": "Trie - async walk generator (#2904)\n\n* Trie:  async iterator _walkTrie function\r\n\r\n* write test/demo script\r\n\r\n* Trie: internalize walkTrieIterable into Trie class\r\n\r\n* Trie: include helper methods for all nodes / value nodes\r\n\r\n* remove null conditional\r\n\r\n* update test with sparse trie example\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-07-25T23:05:27-06:00",
-          "tree_id": "9e0fa927c4bb0414e23baa2557f787d0b22c0ff7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e984704190f520f20e06ec3b348b2674b3bff786"
-        },
-        "date": 1690348238558,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25922,
-            "range": "±5.85%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 26371,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26199,
-            "range": "±3.56%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25944,
-            "range": "±3.79%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20488,
-            "range": "±10.71%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.23%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6d283b19d98ae4daa6d85e8af7f9192d6280c4b3",
+          "message": "common: handle forkHash on timestamp == genesis timestamp (#2959)\n\n* common: handle forkHash on timestamp == genesis timestamp\r\n\r\n* Update packages/common/src/utils.ts\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>\r\n\r\n---------\r\n\r\nCo-authored-by: g11tech <gajinder@g11.in>",
+          "timestamp": "2023-08-15T09:10:09+02:00",
+          "tree_id": "66fa70aec95cf0936e9c4914b67868b6b520759f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6d283b19d98ae4daa6d85e8af7f9192d6280c4b3"
+        },
+        "date": 1692083647758,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 26422,
+            "range": "±6.01%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25788,
+            "range": "±3.39%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26322,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25568,
+            "range": "±3.67%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20611,
+            "range": "±11.48%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
           }
         ]
       }
