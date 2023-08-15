@@ -258,12 +258,12 @@ describe('[RlpxServer]', async () => {
       destroy: vi.fn(),
       getDnsPeers: vi.fn(),
       bootstrap: vi.fn(),
-      banPeer: vi.fn((input) => {
-        if (!(input[0] === '112233' && input[1] === 1234))
-          throw new Error('expected input check has failed')
+      banPeer: vi.fn((peerId, maxAge) => {
+        assert.equal(peerId, '112233', 'banned correct peer')
+        assert.equal(maxAge, 1234, 'got correct maxAge')
       }),
-    }
-    ;(server as any).rlpx = { destroy: vi.fn() }
+    } as any
+    ;(server as any).rlpx = { destroy: vi.fn(), disconnect: vi.fn() }
     server.ban('112233', 1234)
   })
 
