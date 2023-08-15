@@ -5,6 +5,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
+  compareBytes,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -76,6 +77,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
   accountToStorageTrie: Map<String, Trie>
 
+  accountToHighestKnownHash: Map<String, Uint8Array>
+
   /**
    * Create new storage fetcher
    */
@@ -85,6 +88,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.root = options.root
     this.storageRequests = options.storageRequests ?? []
     this.accountToStorageTrie = options.accountToStorageTrie ?? new Map()
+    this.accountToHighestKnownHash = new Map<String, Uint8Array>()
     this.debug = createDebugLogger('client:StorageFetcher')
     if (this.storageRequests.length > 0) {
       const fullJob = {
@@ -222,6 +226,17 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     }
   }
 
+  updateHighestKnownHash(accountHash: Uint8Array, storageHash?: Uint8Array, deleteMapping = false) {
+    this.debug('dbg0')
+    this.debug(`${accountHash} - ${storageHash} - ${deleteMapping}`)
+    const accountHashString = bytesToHex(accountHash)
+    if (deleteMapping) {
+      this.accountToHighestKnownHash.delete(accountHashString)
+    } else {
+      this.accountToHighestKnownHash.set(accountHashString, storageHash as any)
+    }
+  }
+
   /**
    * Request results from peer for the given job.
    * Resolves with the raw result
@@ -242,6 +257,19 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.debug(
       `requested account hashes: ${task.storageRequests.map((req) => bytesToHex(req.accountHash))}`
     )
+
+    // only single account requests need their highest known hash tracked since multiaccount requests
+    // are guaranteed to not have any known hashes until they have been filled and switched over to a
+    // fragmented request
+    if (task.storageRequests.length === 1) {
+      const highestKnownHash = this.accountToHighestKnownHash.get(
+        bytesToHex(task.storageRequests[0].accountHash)
+      )
+      if (highestKnownHash && compareBytes(limit, highestKnownHash) < 0) {
+        // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
+        return Object.assign([], [{ skipped: true }], { completed: true })
+      }
+    }
 
     const rangeResult = await peer!.snap!.getStorageRanges({
       root: this.root,
@@ -289,14 +317,18 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       for (let i = 0; i < rangeResult.slots.length; i++) {
         const accountSlots = rangeResult.slots[i]
         const root = task.storageRequests[i].storageRoot
+        const highestReceivedhash = accountSlots[accountSlots.length - 1].hash
 
         // all but the last returned slot array must include all slots for the requested account
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
           const valid = await this.verifySlots(accountSlots, root)
           if (!valid) return undefined
-          if (proof?.length === 0)
+          if (proof?.length === 0) {
+            this.updateHighestKnownHash(task.storageRequests[i].accountHash, undefined, true)
+
             return Object.assign([], [rangeResult.slots], { completed: true })
+          }
         } else {
           // last returned slot array is for fragmented account that must be
           // verified and requeued to be fetched as single account request
@@ -311,6 +343,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             if (!hasRightElement) {
               // all data has been fetched for account storage trie
               completed = true
+              this.updateHighestKnownHash(task.storageRequests[i].accountHash, undefined, true)
             } else {
               if (this.isMissingRightRange(limit, rangeResult)) {
                 this.debug(
@@ -319,23 +352,34 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
                   )} limit=${bytesToHex(limit)}`
                 )
                 completed = false
+
+                // record highest known hash
+                this.updateHighestKnownHash(
+                  task.storageRequests[i].accountHash,
+                  highestReceivedhash
+                )
               } else {
                 completed = true
+                this.updateHighestKnownHash(task.storageRequests[i].accountHash, undefined, true)
               }
             }
             return Object.assign([], [rangeResult.slots], { completed })
           }
           if (hasRightElement) {
-            const startingHash = accountSlots[accountSlots.length - 1].hash
             this.debug(
-              `Account fragmented at ${bytesToHex(startingHash)} as part of multiaccount fetch`
+              `Account fragmented at ${bytesToHex(
+                highestReceivedhash
+              )} as part of multiaccount fetch`
             )
             this.fragmentedRequests.unshift({
               ...task.storageRequests[i],
               // start fetching from next hash after last slot hash of last account received
-              first: bytesToBigInt(startingHash),
-              count: TOTAL_RANGE_END - bytesToBigInt(startingHash),
+              first: bytesToBigInt(highestReceivedhash),
+              count: TOTAL_RANGE_END - bytesToBigInt(highestReceivedhash),
             } as StorageRequest)
+
+            // record highest known hash
+            this.updateHighestKnownHash(task.storageRequests[i].accountHash, highestReceivedhash)
           }
           // finally, we have to requeue account requests after fragmented account that were ignored
           // due to response limit
@@ -365,6 +409,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     job: Job<JobTask, StorageData[][], StorageData[]>,
     result: StorageDataResponse
   ): StorageData[][] | undefined {
+    this.debug(
+      `number of items in accountToHighestKnownHash: ${this.accountToHighestKnownHash.size}`
+    )
+
     let fullResult: StorageData[][] | undefined = undefined
     if (job.partialResult) {
       fullResult = [job.partialResult[0].concat(result[0])]
@@ -386,6 +434,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   async store(result: StorageData[][] & { requests: StorageRequest[] }): Promise<void> {
     try {
+      if (JSON.stringify(result[0]) === JSON.stringify({ skipped: true })) {
+        // return without storing to skip this task
+        return
+      }
       if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
         this.debug(
           'Empty result detected - Associated range requested was empty with no elements remaining to the right'
