@@ -131,12 +131,12 @@ describe('[FullSynchronizer]', async () => {
     })
     sync.best = vi.fn().mockResolvedValue('peer')
     sync.latest = vi.fn((input) => {
-      if (input === 'peer')
+      if (input === ('peer' as any))
         return {
           number: BigInt(2),
           hash: () => new Uint8Array(0),
         }
-    })
+    }) as any
     let count = 0
     BlockFetcher.prototype.fetch = vi.fn(async () => {
       if (count < 2) {
@@ -241,7 +241,7 @@ describe('[FullSynchronizer]', async () => {
         JSON.stringify(input) === JSON.stringify([newBlock]),
         'putBlocks is called as expected'
       )
-    })
+    }) as any
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
 
