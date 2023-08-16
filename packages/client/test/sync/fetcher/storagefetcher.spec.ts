@@ -118,7 +118,7 @@ describe('[StorageFetcher]', async () => {
       fullResult[0],
       'got results'
     )
-    assert.notOk(fetcher.process({} as any, { StorageDataResponse: [] } as any), 'bad results')
+    assert.throws(() => fetcher.process({} as any, { StorageDataResponse: [] } as any))
   })
 
   it('should update account highest known slot hash correctly', async () => {
