@@ -5,7 +5,6 @@ import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
@@ -37,7 +36,6 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 
 describe('[Miner]', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
-  td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
