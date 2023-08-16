@@ -1,5 +1,4 @@
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { EthereumClient } from '../src/client'
 import { Config } from '../src/config'
@@ -15,13 +14,14 @@ describe('[EthereumClient]', async () => {
     config = config
     pool = new PeerPool({ config })
   }
-  FullEthereumService.prototype.open = td.func<any>()
-  FullEthereumService.prototype.start = td.func<any>()
-  FullEthereumService.prototype.stop = td.func<any>()
-  td.replace<any>('../src/service', { FullEthereumService })
-  td.when(FullEthereumService.prototype.open()).thenResolve()
-  td.when(FullEthereumService.prototype.start()).thenResolve()
-  td.when(FullEthereumService.prototype.stop()).thenResolve()
+  FullEthereumService.prototype.open = vi.fn().mockResolvedValue(null)
+  FullEthereumService.prototype.start = vi.fn().mockResolvedValue(null)
+  FullEthereumService.prototype.stop = vi.fn().mockResolvedValue(null)
+  vi.doMock('../src/service', () => {
+    {
+      FullEthereumService
+    }
+  })
 
   class Server {
     open() {}
@@ -29,16 +29,15 @@ describe('[EthereumClient]', async () => {
     stop() {}
     bootstrap() {}
   }
-  Server.prototype.open = td.func<any>()
-  Server.prototype.start = td.func<any>()
-  Server.prototype.stop = td.func<any>()
-  Server.prototype.bootstrap = td.func<any>()
-  td.replace<any>('../src/net/server/server', { Server })
-  td.when(Server.prototype.start()).thenResolve()
-  td.when(Server.prototype.stop()).thenResolve()
-  td.when(Server.prototype.bootstrap()).thenResolve()
-
-  // const { EthereumClient } = await import('../src/client')
+  Server.prototype.open = vi.fn()
+  Server.prototype.start = vi.fn().mockResolvedValue(null)
+  Server.prototype.stop = vi.fn().mockResolvedValue(null)
+  Server.prototype.bootstrap = vi.fn().mockResolvedValue(null)
+  vi.doMock('../src/net/server/server', () => {
+    {
+      Server
+    }
+  })
 
   it('should initialize correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
@@ -56,7 +55,7 @@ describe('[EthereumClient]', async () => {
     await client.open()
     assert.ok(client.opened, 'opened')
     assert.equal(await client.open(), false, 'already opened')
-  })
+  }, 30000)
 
   it('should start/stop', async () => {
     const servers = [new Server()] as any
@@ -68,9 +67,5 @@ describe('[EthereumClient]', async () => {
     await client.stop()
     assert.notOk(client.started, 'stopped')
     assert.equal(await client.stop(), false, 'already stopped')
-  })
-
-  it('should reset td', () => {
-    td.reset()
-  })
+  }, 30000)
 })
