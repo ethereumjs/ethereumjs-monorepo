@@ -36,13 +36,11 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 describe('[Miner]', async () => {
-  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
   td.replace<any>('@ethereumjs/block', { BlockHeader })
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
-  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
   DefaultStateManager.prototype.setStateRoot = vi.fn()
 
   class FakeChain {
