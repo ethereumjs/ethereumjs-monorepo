@@ -121,6 +121,71 @@ describe('[StorageFetcher]', async () => {
     assert.notOk(fetcher.process({} as any, { StorageDataResponse: [] } as any), 'bad results')
   })
 
+  it('should update account highest known slot hash correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new StorageFetcher({
+      config,
+      pool,
+      root: utf8ToBytes(''),
+      first: BigInt(1),
+      count: BigInt(10),
+    })
+
+    const accountHashString = '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+    const highestReceivedhash = '10'
+
+    const StorageDataResponse: any = [
+      [
+        [
+          { hash: utf8ToBytes('1'), body: utf8ToBytes('') },
+          { hash: utf8ToBytes('2'), body: utf8ToBytes('') },
+          { hash: utf8ToBytes(highestReceivedhash), body: utf8ToBytes('') },
+        ],
+      ],
+    ]
+    StorageDataResponse.completed = false
+    const task = {
+      storageRequests: [
+        {
+          accountHash: hexToBytes(accountHashString),
+          storageRoot: hexToBytes(
+            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+          ),
+          first: BigInt(10),
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        },
+      ],
+    }
+    ;(fetcher as any).running = true
+    fetcher.enqueueTask(task)
+    const job = (fetcher as any).in.peek()
+
+    fetcher.process(job, StorageDataResponse)
+    assert.equal(
+      JSON.stringify(fetcher.accountToHighestKnownHash.get(accountHashString)),
+      JSON.stringify(utf8ToBytes(highestReceivedhash)),
+      'should set new highest known hash'
+    )
+
+    // @ts-ignore
+    ;(job.task.storageRequests[0] as any).first = BigInt(3)
+    ;(job.task.storageRequests[0] as any).count = BigInt(4)
+    const result = (await fetcher.request(job as any)) as any
+    assert.ok(
+      JSON.stringify(result[0]) === JSON.stringify({ skipped: true }),
+      'should skip fetching task with limit lower than highest known key hash'
+    )
+
+    StorageDataResponse.completed = true
+    fetcher.process(job, StorageDataResponse)
+    assert.equal(
+      fetcher.accountToHighestKnownHash.get(accountHashString),
+      undefined,
+      'should delete highest known hash for completed job'
+    )
+  })
+
   it('should adopt correctly', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
