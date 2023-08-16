@@ -226,17 +226,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     }
   }
 
-  updateHighestKnownHash(accountHash: Uint8Array, storageHash?: Uint8Array, deleteMapping = false) {
-    this.debug('dbg0')
-    this.debug(`${accountHash} - ${storageHash} - ${deleteMapping}`)
-    const accountHashString = bytesToHex(accountHash)
-    if (deleteMapping) {
-      this.accountToHighestKnownHash.delete(accountHashString)
-    } else {
-      this.accountToHighestKnownHash.set(accountHashString, storageHash as any)
-    }
-  }
-
   /**
    * Request results from peer for the given job.
    * Resolves with the raw result
@@ -325,8 +314,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           const valid = await this.verifySlots(accountSlots, root)
           if (!valid) return undefined
           if (proof?.length === 0) {
-            this.updateHighestKnownHash(task.storageRequests[i].accountHash, undefined, true)
-
             return Object.assign([], [rangeResult.slots], { completed: true })
           }
         } else {
@@ -343,7 +330,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             if (!hasRightElement) {
               // all data has been fetched for account storage trie
               completed = true
-              this.updateHighestKnownHash(task.storageRequests[i].accountHash, undefined, true)
             } else {
               if (this.isMissingRightRange(limit, rangeResult)) {
                 this.debug(
@@ -352,15 +338,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
                   )} limit=${bytesToHex(limit)}`
                 )
                 completed = false
-
-                // record highest known hash
-                this.updateHighestKnownHash(
-                  task.storageRequests[i].accountHash,
-                  highestReceivedhash
-                )
               } else {
                 completed = true
-                this.updateHighestKnownHash(task.storageRequests[i].accountHash, undefined, true)
               }
             }
             return Object.assign([], [rangeResult.slots], { completed })
@@ -377,9 +356,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
               first: bytesToBigInt(highestReceivedhash),
               count: TOTAL_RANGE_END - bytesToBigInt(highestReceivedhash),
             } as StorageRequest)
-
-            // record highest known hash
-            this.updateHighestKnownHash(task.storageRequests[i].accountHash, highestReceivedhash)
           }
           // finally, we have to requeue account requests after fragmented account that were ignored
           // due to response limit
@@ -409,9 +385,14 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     job: Job<JobTask, StorageData[][], StorageData[]>,
     result: StorageDataResponse
   ): StorageData[][] | undefined {
-    this.debug(
-      `number of items in accountToHighestKnownHash: ${this.accountToHighestKnownHash.size}`
-    )
+    console.log(result)
+    const accountSlots = (result[0] as any)[0]
+    const highestReceivedhash = accountSlots[accountSlots.length - 1].hash
+    let updateHighestReceivedHash = false
+    const request = job.task.storageRequests[0]
+    if (request.first > BigInt(0)) {
+      updateHighestReceivedHash = true
+    }
 
     let fullResult: StorageData[][] | undefined = undefined
     if (job.partialResult) {
@@ -420,9 +401,18 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       fullResult = [result[0]]
     }
     job.partialResult = undefined
+
     if (result.completed === true) {
+      if (updateHighestReceivedHash) {
+        this.accountToHighestKnownHash.delete(bytesToHex(request.accountHash))
+      }
+
       return Object.assign([], fullResult, { requests: job.task.storageRequests })
     } else {
+      if (updateHighestReceivedHash && highestReceivedhash !== undefined) {
+        this.accountToHighestKnownHash.set(bytesToHex(request.accountHash), highestReceivedhash)
+      }
+
       // Save partial result to re-request missing items.
       job.partialResult = fullResult
     }
