@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
@@ -9,9 +8,10 @@ import { MockPeer } from '../integration/mocks/mockpeer'
 import type { RlpxServer } from '../../src/net/server'
 
 describe('[PeerPool]', async () => {
-  const Peer = td.replace<any>('../../src/net/peer/peer', function (this: any, id: string) {
+  const Peer = function (this: any, id: string) {
     this.id = id // eslint-disable-line no-invalid-this
-  })
+  }
+  vi.doMock('../../src/net/peer/peer', () => Peer)
   const { PeerPool } = await import('../../src/net/peerpool')
 
   it('should initialize', () => {
@@ -55,7 +55,7 @@ describe('[PeerPool]', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     ;(peer as any).id = 'abc'
-    ;(peer as any).handleMessageQueue = td.func()
+    ;(peer as any).handleMessageQueue = vi.fn()
     ;(pool as any).connected(peer)
     pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
       assert.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
@@ -91,7 +91,7 @@ describe('[PeerPool]', async () => {
   })
 
   it('should ban peer', () => {
-    const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
+    const peers = [{ id: 1 }, { id: 2, server: { ban: vi.fn() } }]
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     for (const p of peers as any) {
@@ -105,9 +105,5 @@ describe('[PeerPool]', async () => {
       assert.equal(peer, peers[1] as any, 'removed peer')
     )
     assert.equal(pool.peers[0], peers[0] as any, 'outbound peer not banned')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

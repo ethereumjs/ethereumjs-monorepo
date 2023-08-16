@@ -1,10 +1,10 @@
 import { Block } from '@ethereumjs/block'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
+import { wait } from '../integration/util'
 
 describe('[FullSynchronizer]', async () => {
   const txPool: any = { removeNewBlockTxs: () => {}, checkRunState: () => {} }
@@ -15,18 +15,22 @@ describe('[FullSynchronizer]', async () => {
     idle() {}
     ban(_peer: any) {}
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  PeerPool.prototype.idle = td.func<any>()
+  PeerPool.prototype.open = vi.fn()
+  PeerPool.prototype.close = vi.fn()
+  PeerPool.prototype.idle = vi.fn()
   class BlockFetcher {
     fetch() {}
     clear() {}
     destroy() {}
   }
-  BlockFetcher.prototype.fetch = td.func<any>()
-  BlockFetcher.prototype.clear = td.func<any>()
-  BlockFetcher.prototype.destroy = td.func<any>()
-  td.replace<any>('../../src/sync/fetcher', { BlockFetcher })
+  BlockFetcher.prototype.fetch = vi.fn()
+  BlockFetcher.prototype.clear = vi.fn()
+  BlockFetcher.prototype.destroy = vi.fn()
+  vi.doMock('../../src/sync/fetcher', () => {
+    return {
+      default: () => ({ BlockFetcher }),
+    }
+  })
 
   const { FullSynchronizer } = await import('../../src/sync/fullsync')
 
@@ -49,9 +53,8 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    ;(sync as any).pool.open = td.func<PeerPool['open']>()
+    ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
-    td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     assert.ok(true, 'opened')
     await sync.close()
@@ -62,9 +65,16 @@ describe('[FullSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({ config, pool, chain, txPool, execution })
-    const peer = { eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } } }
-    const headers = [{ number: BigInt(5) }]
-    td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([BigInt(1), headers])
+    const peer = {
+      eth: {
+        getBlockHeaders: vi.fn((input) => {
+          const headers = [{ number: BigInt(5) }]
+          if (JSON.stringify(input) === JSON.stringify({ block: 'hash', max: 1 }))
+            return [BigInt(1), headers]
+        }),
+        status: { bestHash: 'hash' },
+      },
+    }
     const latest = await sync.latest(peer as any)
     assert.equal(latest!.number, BigInt(5), 'got height')
     await sync.stop()
@@ -84,20 +94,19 @@ describe('[FullSynchronizer]', async () => {
       execution,
     })
     ;(sync as any).running = true
-    ;(sync as any).height = td.func()
-    ;(sync as any).chain = { blocks: { td: BigInt(1) } }
     const peers = [
       { eth: { status: { td: BigInt(1) } }, inbound: false },
       { eth: { status: { td: BigInt(2) } }, inbound: false },
     ]
+    ;(sync as any).height = vi.fn((input) => {
+      if (JSON.stringify(input) === JSON.stringify(peers[0]))
+        return Promise.resolve(peers[0].eth.status.td)
+      if (JSON.stringify(input) === JSON.stringify(peers[1]))
+        return Promise.resolve(peers[1].eth.status.td)
+    })
+    ;(sync as any).chain = { blocks: { td: BigInt(1) } }
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    td.when((sync as any).height(peers[0])).thenDo((peer: any) =>
-      Promise.resolve(peer.eth.status.td)
-    )
-    td.when((sync as any).height(peers[1])).thenDo((peer: any) =>
-      Promise.resolve(peer.eth.status.td)
-    )
     assert.equal(await sync.best(), <any>peers[1], 'found best')
     await sync.stop()
     await sync.close()
@@ -120,14 +129,24 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    sync.best = td.func<typeof sync['best']>()
-    sync.latest = td.func<typeof sync['latest']>()
-    td.when(sync.best()).thenResolve('peer')
-    td.when(sync.latest('peer' as any)).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
+    sync.best = vi.fn().mockResolvedValue('peer')
+    sync.latest = vi.fn((input) => {
+      if (input === ('peer' as any))
+        return {
+          number: BigInt(2),
+          hash: () => new Uint8Array(0),
+        }
+    }) as any
+    let count = 0
+    BlockFetcher.prototype.fetch = vi.fn(async () => {
+      if (count < 2) {
+        count--
+        await wait(2000)
+        return undefined
+      } else {
+        throw new Error('stubbed function called more than twice')
+      }
     })
-    td.when(BlockFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { blocks: { height: BigInt(3) } }
     assert.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = {
@@ -137,7 +156,7 @@ describe('[FullSynchronizer]', async () => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
     assert.ok(await sync.sync(), 'local height < remote height')
-    td.when(BlockFetcher.prototype.fetch()).thenReject(new Error('err0'))
+    BlockFetcher.prototype.fetch = vi.fn().mockRejectedValue(new Error('err0'))
     try {
       await sync.sync()
     } catch (err: any) {
@@ -216,8 +235,13 @@ describe('[FullSynchronizer]', async () => {
         parentHash: chainTip.hash(),
       },
     })
-    chain.getCanonicalHeadBlock = td.func<any>()
-    chain.putBlocks = td.func<any>()
+    chain.getCanonicalHeadBlock = vi.fn()
+    chain.putBlocks = vi.fn((input) => {
+      assert.ok(
+        JSON.stringify(input) === JSON.stringify([newBlock]),
+        'putBlocks is called as expected'
+      )
+    }) as any
     // NewBlock message from Peer 3
     await sync.handleNewBlock(newBlock, peers[2] as any)
 
@@ -230,7 +254,6 @@ describe('[FullSynchronizer]', async () => {
     }
     ;(sync as any).newBlocksKnownByPeer.delete(peers[0].id)
     await sync.handleNewBlock(newBlock, peers[2] as any)
-    td.verify(chain.putBlocks([newBlock]))
   })
 
   it('should process blocks', async () => {
@@ -257,9 +280,5 @@ describe('[FullSynchronizer]', async () => {
 
     sync.running = true
     assert.ok(await sync.processBlocks([newBlock]), 'should successfully process blocks')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })
