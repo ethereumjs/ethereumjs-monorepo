@@ -1,3 +1,4 @@
+import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as tape from 'tape'
@@ -89,7 +90,13 @@ tape(`${method}: should return 12.5% decreased base fee if the block is empty`, 
 tape(
   `${method}: should return initial base fee if the block number is london hard fork`,
   async (t) => {
-    const initialBaseFee = 1000000000n
+    const common = new Common({
+      eips: [1559],
+      chain: CommonChain.Mainnet,
+      hardfork: Hardfork.London,
+    })
+
+    const initialBaseFee = common.param('gasConfig', 'initialBaseFee')
     const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
     const req = params(method, ['0x1', 'latest', []])
