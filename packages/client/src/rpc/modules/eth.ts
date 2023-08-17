@@ -240,7 +240,7 @@ const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 const calculateRewards = async (
   block: Block,
   receiptsManager: ReceiptsManager,
-  priorityFeePercentiles: number[]
+  priorityFeePercentiles: bigint[]
 ) => {
   const blockRewards: bigint[] = []
   const txGasUsed: bigint[] = []
@@ -1205,7 +1205,7 @@ export class Eth {
     return bigIntToHex(gasPrice)
   }
 
-  async feeHistory(params: [string | number | bigint, string, Array<number>?]) {
+  async feeHistory(params: [string | number | bigint, string, [bigint]?]) {
     let [blockCount] = params
     const [, lastBlockRequested, priorityFeePercentiles] = params
 
