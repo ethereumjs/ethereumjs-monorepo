@@ -1,8 +1,8 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB } from '../../src/types.js'
 import type { AbstractLevel } from 'abstract-level'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 
 export const ENCODING_OPTS = { keyEncoding: 'view', valueEncoding: 'view' }
 
@@ -27,8 +27,8 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  async get(key: Uint8Array): Promise<Uint8Array | null> {
-    let value: Uint8Array | null = null
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
+    let value: Uint8Array | undefined = undefined
     try {
       value = await this._leveldb.get(key, ENCODING_OPTS)
     } catch (error: any) {
@@ -69,4 +69,6 @@ export class LevelDB implements DB {
   shallowCopy(): DB {
     return new LevelDB(this._leveldb)
   }
+
+  async open() {}
 }
