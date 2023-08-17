@@ -313,9 +313,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         if (proof === undefined || proof.length === 0) {
           const valid = await this.verifySlots(accountSlots, root)
           if (!valid) return undefined
-          if (proof?.length === 0) {
+          if (proof?.length === 0)
             return Object.assign([], [rangeResult.slots], { completed: true })
-          }
         } else {
           // last returned slot array is for fragmented account that must be
           // verified and requeued to be fetched as single account request
@@ -385,7 +384,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     job: Job<JobTask, StorageData[][], StorageData[]>,
     result: StorageDataResponse
   ): StorageData[][] | undefined {
-    console.log(result)
     const accountSlots = (result[0] as any)[0]
     const highestReceivedhash = accountSlots[accountSlots.length - 1].hash
     let updateHighestReceivedHash = false
