@@ -380,12 +380,6 @@ export const bigIntToHex = (num: bigint) => {
 }
 
 /**
- * Calculates max bigint from an array of bigints
- * @param args array of bigints
- */
-export const bigIntMax = (...args: bigint[]) => args.reduce((m, e) => (e > m ? e : m))
-
-/**
  * Calculates min BigInt from an array of BigInts
  * @param args array of bigints
  */
