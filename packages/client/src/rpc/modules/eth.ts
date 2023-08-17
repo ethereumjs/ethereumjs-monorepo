@@ -284,34 +284,34 @@ const calculateRewards = async (
   return blockRewards
 }
 
-const calculateNextBaseFee = (parentBlock: Block, londonHardforkNumber: bigint | null) => {
-  const { header: parentBlockHeader } = parentBlock
-  const {
-    gasUsed: parentBlockGasUsed,
-    gasLimit: parentBlockGasLimit,
-    baseFeePerGas: parentBlockBaseFee,
-  } = parentBlockHeader
+// const calculateNextBaseFee = (parentBlock: Block, londonHardforkNumber: bigint | null) => {
+//   const { header: parentBlockHeader } = parentBlock
+//   const {
+//     gasUsed: parentBlockGasUsed,
+//     gasLimit: parentBlockGasLimit,
+//     baseFeePerGas: parentBlockBaseFee,
+//   } = parentBlockHeader
 
-  const nextBlockNumber = parentBlockHeader.number + 1n
-  if (nextBlockNumber === londonHardforkNumber) {
-    return BigInt(1000000000)
-  }
+//   const nextBlockNumber = parentBlockHeader.number + 1n
+//   if (nextBlockNumber === londonHardforkNumber) {
+//     return BigInt(1000000000)
+//   }
 
-  const targetGasUsed = parentBlockGasLimit / 2n
+//   const targetGasUsed = parentBlockGasLimit / 2n
 
-  if (targetGasUsed === parentBlockGasUsed) {
-    return parentBlockBaseFee!
-  } else if (parentBlockGasUsed > targetGasUsed) {
-    const gasDelta = parentBlockGasUsed - targetGasUsed
-    return bigIntMax(
-      parentBlockBaseFee! + (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n),
-      1n
-    )
-  } else {
-    const gasDelta = targetGasUsed - parentBlockGasUsed
-    return parentBlockBaseFee! - (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n)
-  }
-}
+//   if (targetGasUsed === parentBlockGasUsed) {
+//     return parentBlockBaseFee!
+//   } else if (parentBlockGasUsed > targetGasUsed) {
+//     const gasDelta = parentBlockGasUsed - targetGasUsed
+//     return bigIntMax(
+//       parentBlockBaseFee! + (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n),
+//       1n
+//     )
+//   } else {
+//     const gasDelta = targetGasUsed - parentBlockGasUsed
+//     return parentBlockBaseFee! - (gasDelta * parentBlockBaseFee!) / (targetGasUsed * 8n)
+//   }
+// }
 
 /**
  * eth_* RPC module
@@ -1249,10 +1249,7 @@ export class Eth {
     const londonHardforkBlockNumber = this._chain.blockchain._common.hardforkBlock(Hardfork.London)!
     const nextBaseFee =
       lastRequestedBlockNumber - londonHardforkBlockNumber >= -1n
-        ? calculateNextBaseFee(
-            requestedBlocks[requestedBlocks.length - 1],
-            londonHardforkBlockNumber
-          )
+        ? requestedBlocks[requestedBlocks.length - 1].header.calcNextBaseFee()
         : BigInt(0)
     baseFees.push(nextBaseFee)
 
