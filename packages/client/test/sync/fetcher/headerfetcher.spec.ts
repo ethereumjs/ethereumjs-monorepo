@@ -1,5 +1,4 @@
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -10,16 +9,18 @@ describe('[HeaderFetcher]', async () => {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
-  td.replace<any>('../../src/net/peerpool', { PeerPool })
+  PeerPool.prototype.idle = vi.fn()
+  PeerPool.prototype.ban = vi.fn()
+  vi.mock('../../src/net/peerpool', () => {
+    return PeerPool
+  })
 
   const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
 
   it('should process', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
-    const flow = td.object()
+    const flow = { handleReply: vi.fn() }
     const fetcher = new HeaderFetcher({ config, pool, flow })
     const headers = [{ number: 1 }, { number: 2 }]
     assert.deepEqual(
@@ -33,13 +34,13 @@ describe('[HeaderFetcher]', async () => {
       fetcher.process({ task: { count: 2 } } as any, { headers: [], bv: BigInt(1) } as any),
       'bad results'
     )
-    td.verify((fetcher as any).flow.handleReply('peer0', 1))
+    expect((fetcher as any).flow.handleReply).toHaveBeenCalledWith('peer0', 1)
   })
 
   it('should adopt correctly', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
-    const flow = td.object()
+    const flow = { handleReply: vi.fn() }
     const fetcher = new HeaderFetcher({
       config,
       pool,
@@ -65,14 +66,14 @@ describe('[HeaderFetcher]', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
+    ;(fetcher as any).pool.idle.mockReturnValueOnce('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
-    const flow = td.object()
+    const flow = { handleReply: vi.fn(), maxRequestCount: vi.fn() }
     const fetcher = new HeaderFetcher({
       config,
       pool,
@@ -81,26 +82,23 @@ describe('[HeaderFetcher]', async () => {
     const partialResult = [{ number: 1 }, { number: 2 }]
     const task = { count: 3, first: BigInt(1) }
     const peer = {
-      les: { getBlockHeaders: td.func<any>() },
+      les: { getBlockHeaders: vi.fn() },
       id: 'random',
       address: 'random',
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
-    td.verify(
-      job.peer.les.getBlockHeaders({
-        block: job.task.first + BigInt(partialResult.length),
-        max: job.task.count - partialResult.length,
-        reverse: false,
-      })
-    )
+    expect(job.peer.les.getBlockHeaders).toHaveBeenCalledWith({
+      block: job.task.first + BigInt(partialResult.length),
+      max: job.task.count - partialResult.length,
+      reverse: false,
+    })
   })
 
   it('store()', async () => {
     const config = new Config({ maxPerRequest: 5, transports: [] })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
-    chain.putHeaders = td.func<any>()
     const fetcher = new HeaderFetcher({
       config,
       pool,
@@ -109,20 +107,22 @@ describe('[HeaderFetcher]', async () => {
       count: BigInt(10),
       timeout: 5,
     })
-    td.when(chain.putHeaders([0 as any])).thenReject(new Error('err0'))
+
+    chain.putHeaders = vi.fn((input) => {
+      if (input[0] === 0) throw new Error('err0')
+    }) as any
     try {
       await fetcher.store([0 as any])
     } catch (err: any) {
       assert.equal(err.message, 'err0', 'store() threw on invalid header')
     }
-    td.when(chain.putHeaders([1 as any])).thenResolve(1)
+
+    chain.putHeaders = vi.fn((input) => {
+      if (input[0] === 1) return 1
+    }) as any
     config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
       assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
     )
     await fetcher.store([1 as any])
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

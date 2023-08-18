@@ -1,4 +1,4 @@
-import { createSuite } from './suite.js'
+import { createSuite } from './suite'
 import { LevelDB } from './engines/level.js'
 import { MapDB } from '@ethereumjs/util'
 
