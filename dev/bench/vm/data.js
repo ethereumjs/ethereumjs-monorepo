@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692326871151,
+  "lastUpdate": 1692375361622,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "40c23957c01c69f72e29a269a06a7b2078ba8697",
-          "message": "Add tests for client cli options (#2916)\n\n* Add tests for ws, engine api, and rpc\r\n\r\n* Add logging, documentation, and network tests\r\n\r\n* Add cache tests\r\n\r\n* Increase test timeouts\r\n\r\n* Add tests for experimental features and client execution limits options\r\n\r\n* Add tests for network protocol options\r\n\r\n* Update test client args and success assertions\r\n\r\n* Update engine api tests messages and assertions\r\n\r\n* Update test messages\r\n\r\n* Update test message\r\n\r\n* Add a test for rest of network options remaining\r\n\r\n* Add tests for client pow network\r\n\r\n* Validate custom address and port are being used\r\n\r\n* Add test for client sync options\r\n\r\n* Update test\r\n\r\n* Add test for file and directory options\r\n\r\n* Use different ports for client runs to reduce connect errors\r\n\r\n* Use different ports for client runs to reduce connect errors\r\n\r\n* Use different ports for client runs to reduce connect errors\r\n\r\n* Update timeouts and ports\r\n\r\n* Fix tests\r\n\r\n* Don't repeat yourself\r\n\r\n* Use different port to avoid connection issue\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-07-31T13:36:03-07:00",
-          "tree_id": "0f1f3b80de02b3811c9c705633a3e86d202cf98e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/40c23957c01c69f72e29a269a06a7b2078ba8697"
-        },
-        "date": 1690836127472,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28093,
-            "range": "±6.74%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28240,
-            "range": "±3.06%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 27987,
-            "range": "±3.31%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24910,
-            "range": "±8.12%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23440,
-            "range": "±10.92%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.25%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "85b8aa430d8bc97ad01b6f0ac3140e287076ee01",
+          "message": "Trie: decouple walk test from demo (#2966)\n\n* trie: remove console logs from test\r\n\r\n* add debug package\r\n\r\n* walk log helper functions\r\n\r\n* add walk demo\r\n\r\n* commit lock\r\n\r\n* Clean up demo and turn on debug logs during run\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-08-18T12:11:23-04:00",
+          "tree_id": "e5d1bf94f389254cefd64feb909b5a2e145d19c7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/85b8aa430d8bc97ad01b6f0ac3140e287076ee01"
+        },
+        "date": 1692375359749,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 21359,
+            "range": "±5.71%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 21390,
+            "range": "±3.34%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21132,
+            "range": "±3.36%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 21278,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20472,
+            "range": "±3.75%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
