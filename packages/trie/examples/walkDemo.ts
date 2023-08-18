@@ -1,13 +1,15 @@
-import * as trieTests from '../test/fixtures/trietest.json'
 import { view } from '../dist/cjs/util/view.js'
+import { debug } from 'debug'
 
+debug.enable('*')
+const trieTests = require('../test/fixtures/trietest.json')
 const testNames = Object.keys(trieTests.tests) as Array<keyof typeof trieTests.tests>
-
+process.env.DEBUG = '*'
 const run = async () => {
   for (const testName of testNames) {
     const test: any = trieTests.tests[testName]
-    await view(testName, test.in, test.root)
+    await view(testName as string, test.in, test.root)
   }
 }
 
-run()
+run().then(() => debug.disable())
