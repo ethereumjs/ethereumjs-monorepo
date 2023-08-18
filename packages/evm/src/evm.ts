@@ -702,7 +702,7 @@ export class EVM implements EVMInterface {
       debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
+        } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
       )
     }
     const err = result.execResult.exceptionError
