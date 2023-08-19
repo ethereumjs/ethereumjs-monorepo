@@ -39,6 +39,9 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
+import { ethers } from 'ethers'
+import { bytesToHex } from 'ethereum-cryptography/utils.js'
+
 interface Path {
   node: TrieNode | null
   remaining: Nibbles
@@ -65,6 +68,8 @@ export class Trie {
   protected _hashLen: number
   protected _lock = new Lock()
   protected _root: Uint8Array
+
+  public _provider?: ethers.JsonRpcProvider
 
   /**
    * Creates a new trie.
@@ -403,10 +408,19 @@ export class Trie {
     if (isRawNode(node)) {
       return decodeRawNode(node)
     }
-    const value = (await this._db.get(node)) ?? null
+    const value = (await this._db.get(node, this._provider)) ?? null
 
     if (value === null) {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
+      try {
+        const b = bytesToHex(node)
+        const res = (await this._provider!.send('debug_dbGet', ['0x' + b])).slice(2)
+        await this._db.db.put(b, res, {
+          keyEncoding: KeyEncoding.String,
+          valueEncoding: ValueEncoding.String,
+        })
+        return decodeNode(unprefixedHexToBytes(res))
+      } catch (e) {}
       throw new Error('Missing node in DB')
     }
 
@@ -430,6 +444,7 @@ export class Trie {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
+      console.trace()
       throw new Error('Stack underflow')
     }
 

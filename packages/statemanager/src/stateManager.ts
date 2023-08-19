@@ -144,6 +144,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _accountCache?: AccountCache
   protected _storageCache?: StorageCache
 
+  public _blockTag?: string
+
   originalStorageCache: OriginalStorageCache
 
   protected _trie: Trie
@@ -362,7 +364,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
-      const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
+      let code = (await this._trie.database().get(key, undefined)) ?? new Uint8Array(0)
+      if (code.length === 0) {
+        let codeStr = await this._trie._provider!.getCode(address.toString(), this._blockTag)
+        code = hexToBytes(codeStr)
+        let key2 = this._prefixCodeHashes
+          ? concatBytes(CODEHASH_PREFIX, account.codeHash)
+          : account.codeHash
+        await this._trie.database().put(key2, code)
+      }
       this._codeCache[keyHex] = code
       return code
     }
@@ -590,7 +600,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
         const account = await this.getAccount(address)
         if (account) {
-          await this._writeContractStorage(address, account, keyBytes, decoded)
+          //await this._writeContractStorage(address, account, keyBytes, decoded)
         }
       }
     }

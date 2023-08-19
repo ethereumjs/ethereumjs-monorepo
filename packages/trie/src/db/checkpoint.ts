@@ -134,7 +134,7 @@ export class CheckpointDB implements DB {
   /**
    * @inheritDoc
    */
-  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
+  async get(key: Uint8Array, provider: any): Promise<Uint8Array | undefined> {
     const keyHex = bytesToUnprefixedHex(key)
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)
@@ -166,6 +166,18 @@ export class CheckpointDB implements DB {
       // Since we are a checkpoint, put this value in diff cache,
       // so future `get` calls will not look the key up again from disk.
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
+    }
+
+    if (value === undefined && provider !== undefined) {
+      const b = bytesToUnprefixedHex(key)
+      //console.log("dbget", b)
+      const res = (await provider!.send('debug_dbGet', ['0x' + b])).slice(2)
+      //console.log("res", res)
+      await this.db.put(b, res, {
+        keyEncoding: KeyEncoding.String,
+        valueEncoding: ValueEncoding.String,
+      })
+      return unprefixedHexToBytes(res)
     }
 
     return value
