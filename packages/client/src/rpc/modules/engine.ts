@@ -1147,7 +1147,10 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
-      if (Object.keys(payloadAttributes).length > 4) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 4
+      ) {
         throw {
           code: INVALID_PARAMS,
           message: 'PayloadAttributesV{1|2} MUST be used for forkchoiceUpdatedV2',
@@ -1198,14 +1201,24 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
-      const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
-      const ts = BigInt(payloadAttributes.timestamp)
-      if (ts < cancunTimestamp!) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 5
+      ) {
         throw {
-          code: UNSUPPORTED_FORK,
-          message: 'PayloadAttributesV{1|2} MUST be used before Cancun is activated',
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV3 MUST be used for forkchoiceUpdatedV3',
         }
       }
+
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        3,
+        Hardfork.Cancun,
+        // this could be valid post cancun as well, if not then update the valid till hf here
+        null,
+        BigInt(payloadAttributes.timestamp)
+      )
     }
 
     return this.forkchoiceUpdated(params)
