@@ -13,7 +13,13 @@ import {
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST, UNSUPPORTED_FORK } from '../error-code'
+import {
+  INTERNAL_ERROR,
+  INVALID_PARAMS,
+  TOO_LARGE_REQUEST,
+  UNSUPPORTED_FORK,
+  validEngineCodes,
+} from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -1285,7 +1291,7 @@ export class Engine {
       )
       return executionPayload
     } catch (error: any) {
-      if (error === EngineError.UnknownPayload) throw error
+      if (validEngineCodes.includes(error.code)) throw error
       throw {
         code: INTERNAL_ERROR,
         message: error.message ?? error,
