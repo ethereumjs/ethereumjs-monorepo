@@ -225,7 +225,12 @@ export class PendingBlock {
     }
     const blockStatus = builder.getStatus()
     if (blockStatus.status === BuildStatus.Build) {
-      return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
+      return [
+        blockStatus.block,
+        builder.transactionReceipts,
+        builder.minerValue,
+        this.blobsBundles.get(payloadId),
+      ]
     }
     const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
 
