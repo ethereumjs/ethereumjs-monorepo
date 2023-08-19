@@ -24,6 +24,7 @@ import type { VMExecution } from '../../execution'
 import type { BlobsBundle } from '../../miner'
 import type { FullEthereumService } from '../../service'
 import type { ExecutionPayload } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
@@ -357,6 +358,34 @@ const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
   return {
     transactions,
     withdrawals,
+  }
+}
+
+function validateHardforkRange(
+  chainCommon: Common,
+  methodVersion: number,
+  checkNotBeforeHf: Hardfork | null,
+  checkNotAfterHf: Hardfork | null,
+  timestamp: bigint
+) {
+  if (checkNotBeforeHf !== null) {
+    const hfTimeStamp = chainCommon.hardforkTimestamp(checkNotBeforeHf)
+    if (hfTimeStamp !== null && timestamp < hfTimeStamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: `V${methodVersion} cannot be called pre-${checkNotBeforeHf}`,
+      }
+    }
+  }
+
+  if (checkNotAfterHf !== null) {
+    const nextHFTimestamp = chainCommon.nextHardforkBlockOrTimestamp(checkNotAfterHf)
+    if (nextHFTimestamp !== null && timestamp >= nextHFTimestamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: `V${methodVersion + 1} MUST be called post-${checkNotAfterHf}`,
+      }
+    }
   }
 }
 
@@ -1090,6 +1119,23 @@ export class Engine {
   private async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    const payloadAttributes = params[1]
+    if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      if (Object.keys(payloadAttributes).length > 3) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV1 MUST be used for forkchoiceUpdatedV2',
+        }
+      }
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        1,
+        null,
+        Hardfork.Paris,
+        BigInt(payloadAttributes.timestamp)
+      )
+    }
+
     return this.forkchoiceUpdated(params)
   }
 
@@ -1101,6 +1147,21 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      if (Object.keys(payloadAttributes).length > 4) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV{1|2} MUST be used for forkchoiceUpdatedV2',
+        }
+      }
+
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        2,
+        null,
+        Hardfork.Shanghai,
+        BigInt(payloadAttributes.timestamp)
+      )
+
       const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
       const ts = BigInt(payloadAttributes.timestamp)
       const withdrawals = (payloadAttributes as PayloadAttributesV2).withdrawals
@@ -1178,19 +1239,37 @@ export class Engine {
       this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       const executionPayload = blockToExecutionPayload(block, value, blobs)
 
-      if (payloadVersion === 3) {
-        const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
-        if (
-          cancunTimestamp !== null &&
-          BigInt(executionPayload.executionPayload.timestamp) < cancunTimestamp
-        ) {
-          throw {
-            code: UNSUPPORTED_FORK,
-            message: 'getPayloadV3 cannot be called on payloads pre-Cancun',
-          }
-        }
+      let checkNotBeforeHf: Hardfork | null
+      let checkNotAfterHf: Hardfork | null
+
+      switch (payloadVersion) {
+        case 3:
+          checkNotBeforeHf = Hardfork.Cancun
+          checkNotAfterHf = Hardfork.Cancun
+          break
+
+        case 2:
+          // no checks to be done for before as valid till paris
+          checkNotBeforeHf = null
+          checkNotAfterHf = Hardfork.Shanghai
+          break
+
+        case 1:
+          checkNotBeforeHf = null
+          checkNotAfterHf = Hardfork.Paris
+          break
+
+        default:
+          throw Error(`Invalid payloadVersion=${payloadVersion}`)
       }
 
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        payloadVersion,
+        checkNotBeforeHf,
+        checkNotAfterHf,
+        BigInt(executionPayload.executionPayload.timestamp)
+      )
       return executionPayload
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
