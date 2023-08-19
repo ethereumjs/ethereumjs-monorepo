@@ -1219,7 +1219,7 @@ export class Engine {
    *   1. payloadId: DATA, 8 bytes - identifier of the payload building process
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
-  private async getPayload(params: [Bytes8], payloadVersion?: number) {
+  private async getPayload(params: [Bytes8], payloadVersion: number) {
     const payloadId = params[0]
     try {
       const built = await this.pendingBlock.build(payloadId)
@@ -1281,12 +1281,12 @@ export class Engine {
   }
 
   async getPayloadV1(params: [Bytes8]) {
-    const { executionPayload } = await this.getPayload(params)
+    const { executionPayload } = await this.getPayload(params, 1)
     return executionPayload
   }
 
   async getPayloadV2(params: [Bytes8]) {
-    const { executionPayload, blockValue } = await this.getPayload(params)
+    const { executionPayload, blockValue } = await this.getPayload(params, 2)
     return { executionPayload, blockValue }
   }
 
