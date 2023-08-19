@@ -17,6 +17,7 @@ import {
   INTERNAL_ERROR,
   INVALID_PARAMS,
   TOO_LARGE_REQUEST,
+  UNKNOWN_PAYLOAD,
   UNSUPPORTED_FORK,
   validEngineCodes,
 } from '../error-code'
@@ -110,7 +111,7 @@ type ExecutionPayloadBodyV1 = {
 
 const EngineError = {
   UnknownPayload: {
-    code: -32001,
+    code: UNKNOWN_PAYLOAD,
     message: 'Unknown payload',
   },
 }
