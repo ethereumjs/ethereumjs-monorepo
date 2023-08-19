@@ -133,7 +133,7 @@ export class DBManager {
     } else {
       opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
     }
-    return Block.fromValuesArray(blockData, opts)
+    return Block.fromValuesArray(blockData, { ...opts, setHardfork: false })
   }
 
   /**
@@ -164,7 +164,10 @@ export class DBManager {
       const parentHash = headerData.parentHash as Uint8Array
       opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
     }
-    return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
+    return BlockHeader.fromValuesArray(headerValues as Uint8Array[], {
+      ...opts,
+      setHardfork: false,
+    })
   }
 
   /**

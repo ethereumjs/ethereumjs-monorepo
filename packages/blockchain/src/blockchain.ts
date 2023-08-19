@@ -490,17 +490,17 @@ export class Blockchain implements BlockchainInterface {
         // save header/block to the database
         dbOps = dbOps.concat(DBSetBlockOrHeader(block))
 
-        let commonAncestor: undefined | BlockHeader
-        let ancestorHeaders: undefined | BlockHeader[]
+        //let commonAncestor: undefined | BlockHeader
+        //let ancestorHeaders: undefined | BlockHeader[]
         // if total difficulty is higher than current, add it to canonical chain
         if (
           block.isGenesis() ||
           td > currentTd.header ||
           block.common.consensusType() === ConsensusType.ProofOfStake
         ) {
-          const foundCommon = await this.findCommonAncestor(header)
-          commonAncestor = foundCommon.commonAncestor
-          ancestorHeaders = foundCommon.ancestorHeaders
+          //const foundCommon = await this.findCommonAncestor(header)
+          //commonAncestor = foundCommon.commonAncestor
+          //ancestorHeaders = foundCommon.ancestorHeaders
 
           this._headHeaderHash = blockHash
           if (item instanceof Block) {
@@ -530,7 +530,7 @@ export class Blockchain implements BlockchainInterface {
         const ops = dbOps.concat(this._saveHeadOps())
         await this.dbManager.batch(ops)
 
-        await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+        //await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
       } catch (e) {
         // restore head to the previouly sane state
         this._heads = oldHeads
@@ -1191,9 +1191,13 @@ export class Blockchain implements BlockchainInterface {
         staleHeadBlock = true
       }
 
-      header = await this._getHeader(header.parentHash, --currentNumber)
-      if (header === undefined) {
-        staleHeads = []
+      try {
+        header = await this._getHeader(header.parentHash, --currentNumber)
+        if (header === undefined) {
+          staleHeads = []
+          break
+        }
+      } catch (e) {
         break
       }
     }

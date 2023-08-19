@@ -20,11 +20,14 @@ export interface EthersStateManagerOpts {
 }
 
 export class EthersStateManager implements EVMStateManagerInterface {
-  protected _provider: ethers.JsonRpcProvider
+  public _provider: ethers.JsonRpcProvider
   protected _contractCache: Map<string, Uint8Array>
   protected _storageCache: StorageCache
   protected _blockTag: string
   protected _accountCache: AccountCache
+  protected _preContractCache: Map<string, Uint8Array>
+  protected _preStorageCache: StorageCache
+  protected _preAccountCache: AccountCache
   originalStorageCache: OriginalStorageCache
   protected _debug: Debugger
   protected DEBUG: boolean
@@ -48,6 +51,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
     this._contractCache = new Map()
     this._storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
+
+    this._preContractCache = new Map()
+    this._preStorageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
+    this._preAccountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
@@ -104,9 +111,15 @@ export class EthersStateManager implements EVMStateManagerInterface {
   async getContractCode(address: Address): Promise<Uint8Array> {
     let codeBytes = this._contractCache.get(address.toString())
     if (codeBytes !== undefined) return codeBytes
+    codeBytes = this._preContractCache.get(address.toString())
+    if (codeBytes !== undefined) {
+      this._contractCache.set(address.toString(), codeBytes)
+      return codeBytes
+    }
     const code = await this._provider.getCode(address.toString(), this._blockTag)
     codeBytes = toBytes(code)
     this._contractCache.set(address.toString(), codeBytes)
+    this._preContractCache.set(address.toString(), codeBytes)
     return codeBytes
   }
 
@@ -140,7 +153,11 @@ export class EthersStateManager implements EVMStateManagerInterface {
     if (value !== undefined) {
       return value
     }
-
+    value = this._preStorageCache.get(address, key)
+    if (value !== undefined) {
+      await this.putContractStorage(address, key, value)
+      return value
+    }
     // Retrieve storage slot from provider if not found in cache
     const storage = await this._provider.getStorage(
       address.toString(),
@@ -150,6 +167,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
     value = toBytes(storage)
 
     await this.putContractStorage(address, key, value)
+    this._preStorageCache.put(address, key, value)
     return value
   }
 
@@ -234,10 +252,22 @@ export class EthersStateManager implements EVMStateManagerInterface {
         ? Account.fromRlpSerializedAccount(elem.accountRLP)
         : undefined
     }
+    if (this._preAccountCache.get(address) !== undefined) {
+      const data = this._preAccountCache.get(address)
+      if (data?.accountRLP !== undefined) {
+        const put = Account.fromRlpSerializedAccount(data.accountRLP)
+        this._accountCache.put(address, put)
+        return put
+      } else {
+        this._accountCache.put(address, undefined)
+        return undefined
+      }
+    }
 
     const rlp = (await this.getAccountFromProvider(address)).serialize()
     const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
     this._accountCache?.put(address, account)
+    this._preAccountCache.put(address, account)
     return account
   }
 
