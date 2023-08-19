@@ -24,6 +24,7 @@ export enum SyncMode {
   Full = 'full',
   Light = 'light',
   None = 'none',
+  VmPerformance = 'vmperf',
 }
 
 export interface ConfigOptions {

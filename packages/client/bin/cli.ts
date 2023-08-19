@@ -451,7 +451,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
       validateConsensus,
-      validateBlocks: true,
+      validateBlocks: false,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }

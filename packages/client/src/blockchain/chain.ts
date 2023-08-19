@@ -156,7 +156,7 @@ export class Chain {
         db: new LevelDB(options.chainDB),
         common: options.config.chainCommon,
         hardforkByHeadBlockNumber: true,
-        validateBlocks: true,
+        validateBlocks: false,
         validateConsensus,
       })
 

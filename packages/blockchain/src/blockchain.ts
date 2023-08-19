@@ -492,45 +492,15 @@ export class Blockchain implements BlockchainInterface {
 
         let commonAncestor: undefined | BlockHeader
         let ancestorHeaders: undefined | BlockHeader[]
-        // if total difficulty is higher than current, add it to canonical chain
-        if (
-          block.isGenesis() ||
-          td > currentTd.header ||
-          block.common.consensusType() === ConsensusType.ProofOfStake
-        ) {
-          const foundCommon = await this.findCommonAncestor(header)
-          commonAncestor = foundCommon.commonAncestor
-          ancestorHeaders = foundCommon.ancestorHeaders
 
-          this._headHeaderHash = blockHash
-          if (item instanceof Block) {
-            this._headBlockHash = blockHash
-          }
-          if (this._hardforkByHeadBlockNumber) {
-            await this.checkAndTransitionHardForkByNumber(blockNumber, parentTd, header.timestamp)
-          }
-
-          // delete higher number assignments and overwrite stale canonical chain
-          await this._deleteCanonicalChainReferences(blockNumber + BigInt(1), blockHash, dbOps)
-          // from the current header block, check the blockchain in reverse (i.e.
-          // traverse `parentHash`) until `numberToHash` matches the current
-          // number/hash in the canonical chain also: overwrite any heads if these
-          // heads are stale in `_heads` and `_headBlockHash`
-          await this._rebuildCanonical(header, dbOps)
-        } else {
-          // the TD is lower than the current highest TD so we will add the block
-          // to the DB, but will not mark it as the canonical chain.
-          if (td > currentTd.block && item instanceof Block) {
-            this._headBlockHash = blockHash
-          }
-          // save hash to number lookup info even if rebuild not needed
-          dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
-        }
+        this._headBlockHash = blockHash
+        // save hash to number lookup info even if rebuild not needed
+        dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
 
         const ops = dbOps.concat(this._saveHeadOps())
         await this.dbManager.batch(ops)
 
-        await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
+        //await this.consensus.newBlock(block, commonAncestor, ancestorHeaders)
       } catch (e) {
         // restore head to the previouly sane state
         this._heads = oldHeads

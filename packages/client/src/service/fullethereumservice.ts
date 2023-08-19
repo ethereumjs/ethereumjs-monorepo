@@ -9,7 +9,7 @@ import { Miner } from '../miner'
 import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
-import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
+import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer, VMPerformanceSync } from '../sync'
 import { Skeleton } from '../sync/skeleton'
 import { Event } from '../types'
 
@@ -31,7 +31,7 @@ interface FullEthereumServiceOptions extends ServiceOptions {
  * @memberof module:service
  */
 export class FullEthereumService extends Service {
-  public synchronizer?: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer
+  public synchronizer?: BeaconSynchronizer | FullSynchronizer | SnapSynchronizer | VMPerformanceSync
   public lightserv: boolean
   public miner: Miner | undefined
   public execution: VMExecution
@@ -78,6 +78,15 @@ export class FullEthereumService extends Service {
       } else {
         if (this.config.syncmode === SyncMode.Full) {
           this.synchronizer = new FullSynchronizer({
+            config: this.config,
+            pool: this.pool,
+            chain: this.chain,
+            txPool: this.txPool,
+            execution: this.execution,
+            interval: this.interval,
+          })
+        } else if (this.config.syncmode === SyncMode.VmPerformance) {
+          this.synchronizer = new VMPerformanceSync({
             config: this.config,
             pool: this.pool,
             chain: this.chain,

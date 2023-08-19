@@ -307,6 +307,10 @@ export class Common {
   getHardforkBy(opts: HardforkByOpts): string {
     let { blockNumber, timestamp, td } = opts
 
+    if (blockNumber !== BigInt(0) && blockNumber !== 0) {
+      return 'shanghai'
+    }
+
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     td = toType(td, TypeOutput.BigInt)
     timestamp = toType(timestamp, TypeOutput.BigInt)

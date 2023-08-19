@@ -86,7 +86,11 @@ export class EthereumClient {
     this.config = options.config
     this.chain = chain
 
-    if (this.config.syncmode === SyncMode.Full || this.config.syncmode === SyncMode.None) {
+    if (
+      this.config.syncmode === SyncMode.Full ||
+      this.config.syncmode === SyncMode.None ||
+      this.config.syncmode === SyncMode.VmPerformance
+    ) {
       this.services = [
         new FullEthereumService({
           config: this.config,
