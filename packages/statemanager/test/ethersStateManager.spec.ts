@@ -12,7 +12,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { EthersStateManager } from '../src/ethersStateManager.js'
 
@@ -84,10 +84,9 @@ describe('Ethers State Manager API tests', () => {
       )
 
       assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-      const doesThisAccountExist =
-        (await state.getAccount(
-          Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
-        )) === undefined
+      const doesThisAccountExist = await state.accountExists(
+        Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
+      )
       assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
       assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
@@ -110,6 +109,13 @@ describe('Ethers State Manager API tests', () => {
         setLengthLeft(bigIntToBytes(1n), 32)
       )
       assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
+
+      await expect(async () => {
+        await state.getContractStorage(
+          UNIerc20ContractAddress,
+          setLengthLeft(bigIntToBytes(1n), 31)
+        )
+      }).rejects.toThrowError('Storage key must be 32 bytes long')
 
       await state.putContractStorage(
         UNIerc20ContractAddress,

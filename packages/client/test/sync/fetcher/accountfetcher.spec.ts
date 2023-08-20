@@ -46,6 +46,38 @@ describe('[AccountFetcher]', async () => {
     assert.notOk((fetcher as any).running, 'stopped')
   })
 
+  it('should update highest known hash', () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new AccountFetcher({
+      config,
+      pool,
+      root: new Uint8Array(0),
+      first: BigInt(1),
+      count: BigInt(10),
+    })
+
+    const highestReceivedHash = Uint8Array.from([6])
+    const accountDataResponse: any = [
+      {
+        hash: Uint8Array.from([4]),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
+      {
+        hash: highestReceivedHash,
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
+    ]
+    fetcher.highestKnownHash = Uint8Array.from([4])
+    fetcher.process({} as any, accountDataResponse)
+
+    assert.deepEqual(
+      fetcher.highestKnownHash,
+      highestReceivedHash,
+      'highest known hash correctly updated'
+    )
+  })
+
   it('should process', () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
@@ -77,8 +109,9 @@ describe('[AccountFetcher]', async () => {
       },
     ]
     accountDataResponse.completed = true
+
     assert.deepEqual(fetcher.process({} as any, accountDataResponse), fullResult, 'got results')
-    assert.notOk(fetcher.process({} as any, { accountDataResponse: [] } as any), 'bad results')
+    assert.notOk(fetcher.process({} as any, []), 'bad results')
   })
 
   it('should adopt correctly', () => {
@@ -120,6 +153,43 @@ describe('[AccountFetcher]', async () => {
     remainingAccountData.completed = true
     results = fetcher.process(job as any, remainingAccountData)
     assert.equal(results?.length, 3, 'Should return full results')
+  })
+
+  it('should request correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new AccountFetcher({
+      config,
+      pool,
+      root: new Uint8Array(0),
+      first: BigInt(1),
+      count: BigInt(3),
+    })
+    fetcher.highestKnownHash = Uint8Array.from([5])
+    const task = { count: 3, first: BigInt(1) }
+    const peer = {
+      snap: { getAccountRange: td.func<any>() },
+      id: 'random',
+      address: 'random',
+    }
+    const partialResult: any = [
+      [
+        {
+          hash: new Uint8Array(0),
+          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+        },
+        {
+          hash: new Uint8Array(0),
+          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+        },
+      ],
+    ]
+    const job = { peer, partialResult, task }
+    const result = (await fetcher.request(job as any)) as any
+    assert.ok(
+      JSON.stringify(result[0]) === JSON.stringify({ skipped: true }),
+      'skipped fetching task with limit lower than highest known key hash'
+    )
   })
 
   it('should request correctly', async () => {
@@ -227,6 +297,7 @@ describe('[AccountFetcher]', async () => {
       fetcherDoneFlags,
       AccountFetcher,
       fetcher.accountTrie.root(),
+      fetcher.accountTrie,
       config.events
     )
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))

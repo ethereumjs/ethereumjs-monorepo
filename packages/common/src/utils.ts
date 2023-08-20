@@ -152,6 +152,12 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
+  for (const hf of params.hardforks) {
+    if (hf.timestamp === genesisTimestamp) {
+      hf.timestamp = 0
+    }
+  }
+
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
@@ -198,8 +204,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  */
 export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
   try {
-    if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
-      throw new Error('Invalid format, expected geth genesis fields missing')
+    const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
+    if (required.some((field) => !(field in json))) {
+      const missingField = required.filter((field) => !(field in json))
+      throw new Error(`Invalid format, expected geth genesis field "${missingField}" missing`)
     }
     if (name !== undefined) {
       json.name = name

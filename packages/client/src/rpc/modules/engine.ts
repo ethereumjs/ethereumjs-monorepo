@@ -806,6 +806,21 @@ export class Engine {
           message: 'ExecutionPayloadV2 MUST be used after Shanghai is activated',
         }
       }
+      const payloadAsV3 = params[0] as ExecutionPayloadV3
+      const { excessBlobGas, blobGasUsed } = payloadAsV3
+
+      if (excessBlobGas !== undefined && excessBlobGas !== null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Invalid PayloadV2: excessBlobGas is defined',
+        }
+      }
+      if (blobGasUsed !== undefined && blobGasUsed !== null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Invalid PayloadV2: blobGasUsed is defined',
+        }
+      }
     }
     const newPayloadRes = await this.newPayload(params)
     if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
@@ -1104,6 +1119,14 @@ export class Engine {
           }
         }
       }
+      const parentBeaconBlockRoot = (payloadAttributes as PayloadAttributesV3).parentBeaconBlockRoot
+
+      if (parentBeaconBlockRoot !== undefined && parentBeaconBlockRoot !== null) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'Invalid PayloadAttributesV{1|2}: parentBlockBeaconRoot defined',
+        }
+      }
     }
 
     return this.forkchoiceUpdated(params)
@@ -1118,7 +1141,7 @@ export class Engine {
       const ts = BigInt(payloadAttributes.timestamp)
       if (ts < cancunTimestamp!) {
         throw {
-          code: INVALID_PARAMS,
+          code: UNSUPPORTED_FORK,
           message: 'PayloadAttributesV{1|2} MUST be used before Cancun is activated',
         }
       }
@@ -1135,7 +1158,7 @@ export class Engine {
    *   1. payloadId: DATA, 8 bytes - identifier of the payload building process
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
-  private async getPayload(params: [Bytes8]) {
+  private async getPayload(params: [Bytes8], payloadVersion?: number) {
     const payloadId = params[0]
     try {
       const built = await this.pendingBlock.build(payloadId)
@@ -1153,7 +1176,22 @@ export class Engine {
       }
 
       this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
-      return blockToExecutionPayload(block, value, blobs)
+      const executionPayload = blockToExecutionPayload(block, value, blobs)
+
+      if (payloadVersion === 3) {
+        const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
+        if (
+          cancunTimestamp !== null &&
+          BigInt(executionPayload.executionPayload.timestamp) < cancunTimestamp
+        ) {
+          throw {
+            code: UNSUPPORTED_FORK,
+            message: 'getPayloadV3 cannot be called on payloads pre-Cancun',
+          }
+        }
+      }
+
+      return executionPayload
     } catch (error: any) {
       if (error === EngineError.UnknownPayload) throw error
       throw {
@@ -1174,7 +1212,7 @@ export class Engine {
   }
 
   async getPayloadV3(params: [Bytes8]) {
-    return this.getPayload(params)
+    return this.getPayload(params, 3)
   }
   /**
    * Compare transition configuration parameters.

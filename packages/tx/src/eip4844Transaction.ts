@@ -376,6 +376,27 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   }
 
   /**
+   * The amount of gas paid for the data in this tx
+   */
+  getDataFee(): bigint {
+    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
+      return this.cache.dataFee.value
+    }
+
+    let cost = super.getDataFee()
+    cost += BigInt(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
+
+    if (Object.isFrozen(this)) {
+      this.cache.dataFee = {
+        value: cost,
+        hardfork: this.common.hardfork(),
+      }
+    }
+
+    return cost
+  }
+
+  /**
    * The up front amount that an account must have for this transaction to be valid
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */

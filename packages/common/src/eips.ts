@@ -370,12 +370,7 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [],
-    gasPrices: {
-      beaconrootCost: {
-        v: 4200,
-        d: 'Gas cost when calling the beaconroot stateful precompile',
-      },
-    },
+    gasPrices: {},
     vm: {
       historicalRootsLength: {
         v: 98304,
