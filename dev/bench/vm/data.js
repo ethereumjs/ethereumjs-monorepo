@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692375361622,
+  "lastUpdate": 1692562104083,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e11a93cdce20295294d6226675e29ae04f19575c",
-          "message": "client: add trienode fetcher for snap sync (#2623)\n\n* parent 569128b0907a200750abbd7dcd52f08304cb15c9\r\nauthor Amir <indigophi@protonmail.com> 1680919955 -0700\r\ncommitter Amir <indigophi@protonmail.com> 1684182403 -0700\r\n\r\nCreate base for trienode fetcher\r\n\r\nIntegrate trie node fetcher with account fetcher - Implement task phase\r\n\r\nSwitch to fetching all nodes starting from root\r\n\r\nKeep record of node hashes with requested paths for cross reference check\r\n\r\nAdd mappings to track path and node requests\r\n\r\nFix bugs\r\n\r\nProcess node data in store\r\n\r\nQueue unkown children of received nodes for fetching\r\n\r\nFetch rest of subtrie before removing active request\r\n\r\n* Use Uint8Array instead of Buffer\r\n\r\n* Fix bugs and linting issues\r\n\r\n* Request all nodes on key path for fetching\r\n\r\n* Process nodes and request unkown ones\r\n\r\n* WIP: Debug encoding bugs\r\n\r\n* Create helper function for converting from hex to keybyte encoding\r\n\r\n* Update path with new paths for known child nodes\r\n\r\n* Append next nibble as a byte to stay consistent with hex encoding\r\n\r\n* Update debug statements to provide more clear logs\r\n\r\n* remove terminator from hex encoded key before appending to path\r\n\r\n* Debug actual and expected node data discrepancy\r\n\r\n* Put fetched node data by account data parsed from leaves\r\n\r\n* Debug putting accounts from fetched nodes\r\n\r\n* Initialize buffer of correct length\r\n\r\n* Clean up code\r\n\r\n* Rework how the extension node path is calculated\r\n\r\n* Rename functions and clean up\r\n\r\n* Set up checks for storage and code healing\r\n\r\n* Queue storage node for fetching from account leaf node\r\n\r\n* Merge and format paths with new stacked sync path\r\n\r\n* Complete path merge logic\r\n\r\n* Store storage node data with account it originates from\r\n\r\n* Update how syncPath is being calculated\r\n\r\n* Include originating account node hash in storage node requests\r\n\r\n* Clean up trienodefetcher.ts\r\n\r\n* Clean up accountfetcher.ts\r\n\r\n* Clean up snap sync files\r\n\r\n* Add tests for trienodefetcher\r\n\r\n* Add function docstrings and remove duplicated code\r\n\r\n* Clean up spacing\r\n\r\n* Remove getPathTo from encoding helpers\r\n\r\n* Rename functions\r\n\r\n* Test tasks and path request queing functions and helpers\r\n\r\n* Process node data collected from Sepolia\r\n\r\n* Update test\r\n\r\n* Move trie node fetcher helper functions into encoding helpers file\r\n\r\n* Use vitest for trie node fetcher tests\r\n\r\n* Clean up and update comments\r\n\r\n* Keep pathStrings in Job\r\n\r\n* Update tests\r\n\r\n* Add tests for pathToHexKey from encoding helpers\r\n\r\n* Use push instead of unshift\r\n\r\n* Do not start sync in test for finding best peer\r\n\r\n* Update tests\r\n\r\n* Fix linting issues\r\n\r\n* Update packages/client/src/sync/fetcher/trienodefetcher.ts\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\n\r\n* Update packages/client/src/sync/fetcher/trienodefetcher.ts\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\n\r\n* Update packages/client/src/sync/fetcher/trienodefetcher.ts\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\n\r\n* Update packages/client/src/sync/fetcher/trienodefetcher.ts\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\n\r\n* Use original map to check received data\r\n\r\n* Use MapDB for speedup\r\n\r\n* small refac\r\n\r\n* fixes\r\n\r\n* shift trie instances to using useKeyHashing true\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-08-01T19:15:17+05:30",
-          "tree_id": "2b0fdb772b5b118a95346ac30f6a327063032c15",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e11a93cdce20295294d6226675e29ae04f19575c"
-        },
-        "date": 1690898048790,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 20686,
-            "range": "±5.18%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20247,
-            "range": "±3.44%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20144,
-            "range": "±3.66%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20141,
-            "range": "±3.48%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19804,
-            "range": "±3.43%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.75%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b1129f01fc454fff1bb9387f784fc66c1eae83d8",
+          "message": "trie: fix broken import (#2976)",
+          "timestamp": "2023-08-20T16:04:48-04:00",
+          "tree_id": "823de9b676528fd1ee5fdf4604513d7812b4e8e5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b1129f01fc454fff1bb9387f784fc66c1eae83d8"
+        },
+        "date": 1692562103380,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31574,
+            "range": "±5.03%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31484,
+            "range": "±2.82%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31172,
+            "range": "±3.16%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26416,
+            "range": "±10.39%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30283,
+            "range": "±3.08%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
