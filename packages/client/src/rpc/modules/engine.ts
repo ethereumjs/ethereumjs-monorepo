@@ -1128,7 +1128,10 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
-      if (Object.keys(payloadAttributes).length > 3) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 3
+      ) {
         throw {
           code: INVALID_PARAMS,
           message: 'PayloadAttributesV1 MUST be used for forkchoiceUpdatedV2',
