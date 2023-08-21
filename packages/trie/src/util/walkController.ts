@@ -64,7 +64,7 @@ export class WalkController {
   /**
    * Run all children of a node. Priority of these nodes are the key length of the children.
    * @param node - Node to get all children of and call onNode on.
-   * @param key - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
+   * @param progress - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
    */
   allChildren(node: TrieNode, progress: Nibbles = []) {
     if (node instanceof LeafNode) {
