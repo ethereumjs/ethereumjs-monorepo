@@ -1,9 +1,9 @@
-import { BranchNode, ExtensionNode, LeafNode } from '../trie/node'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
 
-import { PrioritizedTaskExecutor } from './tasks'
+import { PrioritizedTaskExecutor } from './tasks.js'
 
-import type { Trie } from '../trie'
-import type { FoundNodeFunction, Nibbles, TrieNode } from '../types'
+import type { Trie } from '../trie.js'
+import type { FoundNodeFunction, Nibbles, TrieNode } from '../types.js'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.
@@ -39,14 +39,14 @@ export class WalkController {
   static async newWalk(
     onNode: FoundNodeFunction,
     trie: Trie,
-    root: Buffer,
+    root: Uint8Array,
     poolSize?: number
   ): Promise<void> {
     const strategy = new WalkController(onNode, trie, poolSize ?? 500)
     await strategy.startWalk(root)
   }
 
-  private async startWalk(root: Buffer): Promise<void> {
+  private async startWalk(root: Uint8Array): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       this.resolve = resolve
@@ -81,7 +81,7 @@ export class WalkController {
     }
     for (const child of children) {
       const keyExtension = child[0] as Nibbles
-      const childRef = child[1] as Buffer
+      const childRef = child[1] as Uint8Array
       const childKey = key.concat(keyExtension)
       const priority = childKey.length
       this.pushNodeToQueue(childRef, childKey, priority)
@@ -94,7 +94,7 @@ export class WalkController {
    * @param key - The current key.
    * @param priority - Optional priority, defaults to key length
    */
-  pushNodeToQueue(nodeRef: Buffer, key: Nibbles = [], priority?: number) {
+  pushNodeToQueue(nodeRef: Uint8Array, key: Nibbles = [], priority?: number) {
     this.taskExecutor.executeOrQueue(
       priority ?? key.length,
       async (taskFinishedCallback: Function) => {
@@ -105,7 +105,7 @@ export class WalkController {
           return this.reject(error)
         }
         taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.
-        this.processNode(nodeRef as Buffer, childNode as TrieNode, key)
+        this.processNode(nodeRef as Uint8Array, childNode as TrieNode, key)
       }
     )
   }
@@ -128,10 +128,10 @@ export class WalkController {
     const childKey = key.slice() // This copies the key to a new array.
     childKey.push(childIndex)
     const prio = priority ?? childKey.length
-    this.pushNodeToQueue(childRef as Buffer, childKey, prio)
+    this.pushNodeToQueue(childRef as Uint8Array, childKey, prio)
   }
 
-  private processNode(nodeRef: Buffer, node: TrieNode | null, key: Nibbles = []) {
+  private processNode(nodeRef: Uint8Array, node: TrieNode | null, key: Nibbles = []) {
     this.onNode(nodeRef, node, key, this)
     if (this.taskExecutor.finished()) {
       // onNode should schedule new tasks. If no tasks was added and the queue is empty, then we have finished our walk.

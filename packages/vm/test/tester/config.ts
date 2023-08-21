@@ -9,7 +9,7 @@ export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
 /**
  * Default hardfork rules to run tests against
  */
-export const DEFAULT_FORK_CONFIG = 'Merge'
+export const DEFAULT_FORK_CONFIG = 'Paris'
 
 /**
  * Tests which should be fixed
@@ -38,49 +38,18 @@ export const SKIP_PERMANENT = [
  * tests running slow (run from time to time)
  */
 export const SKIP_SLOW = [
-  'Call50000',
-  'Call50000_ecrec',
-  'Call50000_identity',
-  'Call50000_identity2',
   'Call50000_sha256',
-  'Call50000_rip160',
-  'Call50000bytesContract50_1',
-  'Call50000bytesContract50_2',
-  'Call1MB1024Calldepth',
-  'static_Call1MB1024Calldepth',
   'static_Call50000',
   'static_Call50000_ecrec',
   'static_Call50000_identity',
   'static_Call50000_identity2',
   'static_Call50000_rip160',
   'static_Return50000_2',
-  'Callcode50000',
   'Return50000',
   'Return50000_2',
-  'static_Call50000',
-  'static_Call50000_ecrec',
-  'static_Call50000_identity',
-  'static_Call50000_identity2',
   'static_Call50000_sha256',
-  'static_Call50000_rip160',
-  'static_Call50000bytesContract50_1',
-  'static_Call50000bytesContract50_2',
-  'static_Call1MB1024Calldepth',
-  'static_Callcode50000',
-  'static_Return50000',
-  'static_Return50000_2',
-  'QuadraticComplexitySolidity_CallDataCopy',
   'CALLBlake2f_MaxRounds',
-  'randomStatetest94_Istanbul',
   // vmPerformance tests
-  'ackermann',
-  'fibonacci',
-  'loop-add-10M',
-  'loop-divadd-10M',
-  'loop-divadd-unr100-10M',
-  'loop-exp',
-  'loop-mul',
-  'manyFunctions100',
   'loopMul',
   'loopExp',
 ]
@@ -129,28 +98,34 @@ export const SKIP_SLOW = [
  * @returns {String} Either an alias of the forkConfig param, or the forkConfig param itself
  */
 export function getRequiredForkConfigAlias(forkConfig: string) {
+  const indexOfPlus = forkConfig.indexOf('+')
+  const remainder = indexOfPlus !== -1 ? forkConfig.substring(indexOfPlus) : ''
   // Chainstart is also called Frontier and is called as such in the tests
   if (String(forkConfig).match(/^chainstart$/i)) {
-    return 'Frontier'
+    return 'Frontier' + remainder
   }
   // TangerineWhistle is named EIP150 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^tangerineWhistle$/i)) {
-    return 'EIP150'
+    return 'EIP150' + remainder
   }
   // SpuriousDragon is named EIP158 (attention: misleading name)
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^spuriousDragon$/i)) {
-    return 'EIP158'
+    return 'EIP158' + remainder
   }
   // Run the Istanbul tests for MuirGlacier since there are no dedicated tests
   if (String(forkConfig).match(/^muirGlacier/i)) {
-    return 'Istanbul'
+    return 'Istanbul' + remainder
   }
   // Petersburg is named ConstantinopleFix
   // in the client-independent consensus test suite
   if (String(forkConfig).match(/^petersburg$/i)) {
-    return 'ConstantinopleFix'
+    return 'ConstantinopleFix' + remainder
+  }
+  // Paris is named Merge
+  if (String(forkConfig).match(/^paris/i)) {
+    return 'Merge' + remainder
   }
   return forkConfig
 }
@@ -168,9 +143,10 @@ const normalHardforks = [
   'muirGlacier',
   'berlin',
   'london',
-  'merge',
+  'paris',
   'shanghai',
   'arrowGlacier', // This network has no tests, but need to add it due to common generation logic
+  'cancun',
 ]
 
 const transitionNetworks = {
@@ -223,7 +199,7 @@ const retestethAlias = {
   EIP150: 'tangerineWhistle',
   EIP158: 'spuriousDragon',
   ConstantinopleFix: 'petersburg',
-  Merged: 'merge',
+  Merge: 'paris',
 }
 
 const testLegacy = {
@@ -238,7 +214,7 @@ const testLegacy = {
   muirGlacier: false,
   berlin: false,
   london: false,
-  merge: false,
+  paris: false,
   ByzantiumToConstantinopleFixAt5: false,
   EIP158ToByzantiumAt5: false,
   FrontierToHomesteadAt5: false,
@@ -269,11 +245,11 @@ export function getTestDirs(network: string, testType: string) {
 }
 /**
  * Setups the common with networks
- * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
+ * @param network Network target (this can include EIPs, such as Byzantium+1559+2929)
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(network: string, ttd?: number) {
+function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -308,12 +284,19 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
           //forkHash: hf.forkHash,
           block: null,
         })
-      } else if (hf.name === 'merge') {
+      } else if (hf.name === 'paris') {
         // merge will currently always be after a hardfork, so add it here
         testHardforks.push({
           name: hf.name,
           block: null,
           ttd: BigInt(ttd),
+        })
+      }
+      if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          timestamp,
         })
       }
     }
@@ -362,6 +345,8 @@ export function getCommon(network: string): Common {
     const startNetwork = network.substring(0, start) // HF before the merge
     const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
     return setupCommonWithNetworks(startNetwork, TTD)
+  } else if (networkLowercase === 'shanghaitocancunattime15k') {
+    return setupCommonWithNetworks('Shanghai', undefined, 15000)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
@@ -429,7 +414,7 @@ const expectedTestsFull: {
     Berlin: 41365,
     London: 61197,
     ArrowGlacier: 0,
-    Merge: 60373,
+    Paris: 60373,
     Shanghai: 61563,
     ByzantiumToConstantinopleFixAt5: 3,
     EIP158ToByzantiumAt5: 3,
@@ -451,7 +436,7 @@ const expectedTestsFull: {
     MuirGlacier: 12439,
     Berlin: 13214,
     London: 19449,
-    Merge: 19598,
+    Paris: 19598,
     Shanghai: 19564,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,

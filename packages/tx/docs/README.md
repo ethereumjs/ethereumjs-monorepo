@@ -7,38 +7,52 @@
 ### Enumerations
 
 - [Capability](enums/Capability.md)
+- [TransactionType](enums/TransactionType.md)
 
 ### Classes
 
 - [AccessListEIP2930Transaction](classes/AccessListEIP2930Transaction.md)
+- [BlobEIP4844Transaction](classes/BlobEIP4844Transaction.md)
 - [FeeMarketEIP1559Transaction](classes/FeeMarketEIP1559Transaction.md)
-- [Transaction](classes/Transaction.md)
+- [LegacyTransaction](classes/LegacyTransaction.md)
 - [TransactionFactory](classes/TransactionFactory.md)
 
 ### Interfaces
 
 - [AccessListEIP2930TxData](interfaces/AccessListEIP2930TxData.md)
+- [BlobEIP4844TxData](interfaces/BlobEIP4844TxData.md)
 - [FeeMarketEIP1559TxData](interfaces/FeeMarketEIP1559TxData.md)
 - [JsonRpcTx](interfaces/JsonRpcTx.md)
 - [JsonTx](interfaces/JsonTx.md)
+- [Transaction](interfaces/Transaction.md)
+- [TransactionInterface](interfaces/TransactionInterface.md)
+- [TxData](interfaces/TxData.md)
 - [TxOptions](interfaces/TxOptions.md)
+- [TxValuesArray](interfaces/TxValuesArray.md)
 
 ### Type Aliases
 
 - [AccessList](README.md#accesslist)
-- [AccessListBuffer](README.md#accesslistbuffer)
-- [AccessListBufferItem](README.md#accesslistbufferitem)
-- [AccessListEIP2930ValuesArray](README.md#accesslisteip2930valuesarray)
+- [AccessListBytes](README.md#accesslistbytes)
+- [AccessListBytesItem](README.md#accesslistbytesitem)
 - [AccessListItem](README.md#accesslistitem)
-- [FeeMarketEIP1559ValuesArray](README.md#feemarketeip1559valuesarray)
-- [TxData](README.md#txdata)
-- [TxValuesArray](README.md#txvaluesarray)
+- [BlobEIP4844NetworkValuesArray](README.md#blobeip4844networkvaluesarray)
+- [LegacyTxData](README.md#legacytxdata)
 - [TypedTransaction](README.md#typedtransaction)
+- [TypedTxData](README.md#typedtxdata)
 
 ### Functions
 
 - [isAccessList](README.md#isaccesslist)
-- [isAccessListBuffer](README.md#isaccesslistbuffer)
+- [isAccessListBytes](README.md#isaccesslistbytes)
+- [isAccessListEIP2930Tx](README.md#isaccesslisteip2930tx)
+- [isAccessListEIP2930TxData](README.md#isaccesslisteip2930txdata)
+- [isBlobEIP4844Tx](README.md#isblobeip4844tx)
+- [isBlobEIP4844TxData](README.md#isblobeip4844txdata)
+- [isFeeMarketEIP1559Tx](README.md#isfeemarketeip1559tx)
+- [isFeeMarketEIP1559TxData](README.md#isfeemarketeip1559txdata)
+- [isLegacyTx](README.md#islegacytx)
+- [isLegacyTxData](README.md#islegacytxdata)
 
 ## Type Aliases
 
@@ -48,39 +62,27 @@
 
 #### Defined in
 
-[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L80)
+common/dist/cjs/interfaces.d.ts:29
 
 ___
 
-### AccessListBuffer
+### AccessListBytes
 
-Ƭ **AccessListBuffer**: [`AccessListBufferItem`](README.md#accesslistbufferitem)[]
+Ƭ **AccessListBytes**: [`AccessListBytesItem`](README.md#accesslistbytesitem)[]
 
 #### Defined in
 
-[types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L79)
+common/dist/cjs/interfaces.d.ts:28
 
 ___
 
-### AccessListBufferItem
+### AccessListBytesItem
 
-Ƭ **AccessListBufferItem**: [`Buffer`, `Buffer`[]]
-
-#### Defined in
-
-[types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
-
-___
-
-### AccessListEIP2930ValuesArray
-
-Ƭ **AccessListEIP2930ValuesArray**: [`Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, [`AccessListBuffer`](README.md#accesslistbuffer), Buffer?, Buffer?, Buffer?]
-
-Buffer values array for an [AccessListEIP2930Transaction](classes/AccessListEIP2930Transaction.md)
+Ƭ **AccessListBytesItem**: [`Uint8Array`, `Uint8Array`[]]
 
 #### Defined in
 
-[types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L208)
+common/dist/cjs/interfaces.d.ts:27
 
 ___
 
@@ -97,35 +99,33 @@ ___
 
 #### Defined in
 
-[types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L70)
+common/dist/cjs/interfaces.d.ts:23
 
 ___
 
-### FeeMarketEIP1559ValuesArray
+### BlobEIP4844NetworkValuesArray
 
-Ƭ **FeeMarketEIP1559ValuesArray**: [`Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, `Buffer`, [`AccessListBuffer`](README.md#accesslistbuffer), Buffer?, Buffer?, Buffer?]
-
-Buffer values array for a [FeeMarketEIP1559Transaction](classes/FeeMarketEIP1559Transaction.md)
+Ƭ **BlobEIP4844NetworkValuesArray**: [`BlobEIP4844TxValuesArray`, `Uint8Array`[], `Uint8Array`[], `Uint8Array`[]]
 
 #### Defined in
 
-[types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
+[tx/src/types.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L371)
 
 ___
 
-### TxData
+### LegacyTxData
 
-Ƭ **TxData**: `Object`
+Ƭ **LegacyTxData**: `Object`
 
-Legacy [Transaction](classes/Transaction.md) Data
+Legacy [Transaction](interfaces/Transaction.md) Data
 
 #### Type declaration
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `data?` | `BufferLike` | This will contain the data of the message or the init of a contract. |
+| `data?` | `BytesLike` | This will contain the data of the message or the init of a contract. |
 | `gasLimit?` | `BigIntLike` | The transaction's gas limit. |
-| `gasPrice?` | `BigIntLike` | The transaction's gas price. |
+| `gasPrice?` | `BigIntLike` \| ``null`` | The transaction's gas price. |
 | `nonce?` | `BigIntLike` | The transaction's nonce. |
 | `r?` | `BigIntLike` | EC signature parameter. |
 | `s?` | `BigIntLike` | EC signature parameter. |
@@ -136,34 +136,27 @@ Legacy [Transaction](classes/Transaction.md) Data
 
 #### Defined in
 
-[types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
-
-___
-
-### TxValuesArray
-
-Ƭ **TxValuesArray**: `Buffer`[]
-
-Buffer values array for a legacy [Transaction](classes/Transaction.md)
-
-#### Defined in
-
-[types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L203)
+[tx/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L187)
 
 ___
 
 ### TypedTransaction
 
-Ƭ **TypedTransaction**: [`Transaction`](classes/Transaction.md) \| [`AccessListEIP2930Transaction`](classes/AccessListEIP2930Transaction.md) \| [`FeeMarketEIP1559Transaction`](classes/FeeMarketEIP1559Transaction.md)
-
-Encompassing type for all transaction types.
-
-Note that this also includes legacy txs which are
-referenced as [Transaction](classes/Transaction.md) for compatibility reasons.
+Ƭ **TypedTransaction**: [`Transaction`](interfaces/Transaction.md)[[`TransactionType`](enums/TransactionType.md)]
 
 #### Defined in
 
-[types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L105)
+[tx/src/types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
+
+___
+
+### TypedTxData
+
+Ƭ **TypedTxData**: [`TxData`](interfaces/TxData.md)[[`TransactionType`](enums/TransactionType.md)]
+
+#### Defined in
+
+[tx/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)
 
 ## Functions
 
@@ -175,7 +168,7 @@ referenced as [Transaction](classes/Transaction.md) for compatibility reasons.
 
 | Name | Type |
 | :------ | :------ |
-| `input` | [`AccessListBuffer`](README.md#accesslistbuffer) \| [`AccessList`](README.md#accesslist) |
+| `input` | [`AccessListBytes`](README.md#accesslistbytes) \| [`AccessList`](README.md#accesslist) |
 
 #### Returns
 
@@ -183,24 +176,184 @@ input is AccessList
 
 #### Defined in
 
-[types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L95)
+[tx/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L92)
 
 ___
 
-### isAccessListBuffer
+### isAccessListBytes
 
-▸ **isAccessListBuffer**(`input`): input is AccessListBuffer
+▸ **isAccessListBytes**(`input`): input is AccessListBytes
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `input` | [`AccessListBuffer`](README.md#accesslistbuffer) \| [`AccessList`](README.md#accesslist) |
+| `input` | [`AccessListBytes`](README.md#accesslistbytes) \| [`AccessList`](README.md#accesslist) |
 
 #### Returns
 
-input is AccessListBuffer
+input is AccessListBytes
 
 #### Defined in
 
-[types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L82)
+[tx/src/types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L81)
+
+___
+
+### isAccessListEIP2930Tx
+
+▸ **isAccessListEIP2930Tx**(`tx`): tx is AccessListEIP2930Transaction
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `tx` | [`TypedTransaction`](README.md#typedtransaction) |
+
+#### Returns
+
+tx is AccessListEIP2930Transaction
+
+#### Defined in
+
+[tx/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L119)
+
+___
+
+### isAccessListEIP2930TxData
+
+▸ **isAccessListEIP2930TxData**(`txData`): txData is AccessListEIP2930TxData
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `txData` | [`TypedTxData`](README.md#typedtxdata) |
+
+#### Returns
+
+txData is AccessListEIP2930TxData
+
+#### Defined in
+
+[tx/src/types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)
+
+___
+
+### isBlobEIP4844Tx
+
+▸ **isBlobEIP4844Tx**(`tx`): tx is BlobEIP4844Transaction
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `tx` | [`TypedTransaction`](README.md#typedtransaction) |
+
+#### Returns
+
+tx is BlobEIP4844Transaction
+
+#### Defined in
+
+[tx/src/types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L127)
+
+___
+
+### isBlobEIP4844TxData
+
+▸ **isBlobEIP4844TxData**(`txData`): txData is BlobEIP4844TxData
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `txData` | [`TypedTxData`](README.md#typedtxdata) |
+
+#### Returns
+
+txData is BlobEIP4844TxData
+
+#### Defined in
+
+[tx/src/types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L179)
+
+___
+
+### isFeeMarketEIP1559Tx
+
+▸ **isFeeMarketEIP1559Tx**(`tx`): tx is FeeMarketEIP1559Transaction
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `tx` | [`TypedTransaction`](README.md#typedtransaction) |
+
+#### Returns
+
+tx is FeeMarketEIP1559Transaction
+
+#### Defined in
+
+[tx/src/types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L123)
+
+___
+
+### isFeeMarketEIP1559TxData
+
+▸ **isFeeMarketEIP1559TxData**(`txData`): txData is FeeMarketEIP1559TxData
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `txData` | [`TypedTxData`](README.md#typedtxdata) |
+
+#### Returns
+
+txData is FeeMarketEIP1559TxData
+
+#### Defined in
+
+[tx/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L174)
+
+___
+
+### isLegacyTx
+
+▸ **isLegacyTx**(`tx`): tx is LegacyTransaction
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `tx` | [`TypedTransaction`](README.md#typedtransaction) |
+
+#### Returns
+
+tx is LegacyTransaction
+
+#### Defined in
+
+[tx/src/types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L115)
+
+___
+
+### isLegacyTxData
+
+▸ **isLegacyTxData**(`txData`): txData is LegacyTxData
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `txData` | [`TypedTxData`](README.md#typedtxdata) |
+
+#### Returns
+
+txData is LegacyTxData
+
+#### Defined in
+
+[tx/src/types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)

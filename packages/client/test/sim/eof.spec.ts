@@ -1,7 +1,7 @@
 import { Common } from '@ethereumjs/common'
-import { privateToAddress } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   filterKeywords,
@@ -11,8 +11,8 @@ import {
   waitForELStart,
 } from './simutils'
 
-const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
-const sender = '0x' + privateToAddress(pkey).toString('hex')
+const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
+const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = 'eof'
@@ -23,7 +23,7 @@ export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
-tape('EOF ephemeral hardfork tests', async (t) => {
+describe('EOF ephemeral hardfork tests', async () => {
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
@@ -31,79 +31,78 @@ tape('EOF ephemeral hardfork tests', async (t) => {
   })
 
   if (result.includes('EthereumJS')) {
-    t.pass('connected to client')
+    assert.ok(true, 'connected to client')
   } else {
-    t.fail('connected to wrong client')
+    assert.fail('connected to wrong client')
   }
 
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    t.pass('ethereumjs<>lodestar started successfully')
+    assert.ok(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
-    t.fail('ethereumjs<>lodestar failed to start')
+    assert.fail('ethereumjs<>lodestar failed to start')
     throw e
   }
 
   // ------------Sanity checks--------------------------------
-  t.test('Simple transfer - sanity check', async (st) => {
+  it('Simple transfer - sanity check', async () => {
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
     let balance = await client.request('eth_getBalance', [
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
     ])
-    st.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+    assert.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
     await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
     balance = await client.request('eth_getBalance', [
       '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
       'latest',
     ])
-    st.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
-    st.end()
+    assert.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
   })
 
   // ------------EIP 3670 tests-------------------------------
-  t.test(' EIP 3670 tests', async (st) => {
+  it(' EIP 3670 tests', async () => {
     const data = '0x67EF0001010001006060005260086018F3'
     const res = await runTx(data)
-    st.ok(res.contractAddress !== undefined, 'created contract')
+    assert.ok(res.contractAddress !== undefined, 'created contract')
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
-    st.equal(code.result, '0x', 'no code was deposited for invalid EOF code')
-    st.end()
+    assert.equal(code.result, '0x', 'no code was deposited for invalid EOF code')
   })
   // ------------EIP 3540 tests-------------------------------
-  t.test('EIP 3540 tests', async (st) => {
+  it('EIP 3540 tests', async () => {
     const data = '0x6B' + 'EF0001' + '01000102000100' + '00' + 'AA' + '600052600C6014F3'
 
     const res = await runTx(data)
 
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
-    st.equal(code.result, '0XEF00010100010200010000AA'.toLowerCase(), 'deposited valid EOF1 code')
-    st.end()
+    assert.equal(
+      code.result,
+      '0XEF00010100010200010000AA'.toLowerCase(),
+      'deposited valid EOF1 code'
+    )
   })
   // ------------EIP 3860 tests-------------------------------
-  t.test('EIP 3860 tests', async (st) => {
+  it('EIP 3860 tests', async () => {
     const data =
       '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F'
     const res = await runTx(data)
     const code = await client.request('eth_getCode', [res.contractAddress, 'latest'])
 
-    st.equal(code.result, '0x', 'no code deposited with invalid init code')
-    st.end()
+    assert.equal(code.result, '0x', 'no code deposited with invalid init code')
   })
   // ------------EIP 3855 tests-------------------------------
-  t.test('EIP 3855 tests', async (st) => {
+  it('EIP 3855 tests', async () => {
     const push1res = await runTx('0x6000')
     const push0res = await runTx('0x5F')
-    st.ok(
+    assert.ok(
       BigInt(push1res.gasUsed) > BigInt(push0res.gasUsed),
       'PUSH1 transaction costs higher gas than PUSH0'
     )
-    st.end()
   })
   // ------------EIP 3651 tests-------------------------------
-  t.test('EIP 3651 tests', async (st) => {
+  it('EIP 3651 tests', async () => {
     /**
      * Solidity code for below contract calls
      *
@@ -132,22 +131,18 @@ tape('EOF ephemeral hardfork tests', async (t) => {
       '0x5caba0a40000000000000000000000004242424242424242424242424242424242424242',
       contractAddress
     )
-    st.ok(
+    assert.ok(
       BigInt(readCold.gasUsed) > BigInt(readWarmCoinbase.gasUsed),
       'read cold storage tx should have higher cumulative gas than than read coinbase tx'
     )
-    st.end()
   })
 
-  t.test('should reset td', async (st) => {
+  it('should reset td', async () => {
     try {
       await teardownCallBack()
-      st.pass('network cleaned')
+      assert.ok(true, 'network cleaned')
     } catch (e) {
-      st.fail('network not cleaned properly')
+      assert.fail('network not cleaned properly')
     }
-    st.end()
   })
-
-  t.end()
 })

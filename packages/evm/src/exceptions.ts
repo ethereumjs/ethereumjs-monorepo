@@ -21,6 +21,7 @@ export enum ERROR {
   INVALID_BYTECODE_RESULT = 'invalid bytecode deployed',
   INVALID_EOF_FORMAT = 'invalid EOF format',
   INITCODE_SIZE_VIOLATION = 'initcode exceeds max initcode size',
+  INVALID_INPUT_LENGTH = 'invalid input length',
 
   AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
   AUTHCALL_NONZERO_VALUEEXT = 'attempting to execute AUTHCALL with nonzero external value',
@@ -33,8 +34,9 @@ export enum ERROR {
   BLS_12_381_FP_NOT_IN_FIELD = 'fp point not in field',
 
   // Point Evaluation Errors
-  POINT_GREATER_THAN_BLS_MODULUS = 'point greater than BLS modulus',
   INVALID_COMMITMENT = 'kzg commitment does not match versioned hash',
+  INVALID_INPUTS = 'kzg inputs invalid',
+  INVALID_PROOF = 'kzg proof invalid',
 }
 
 export class EvmError {

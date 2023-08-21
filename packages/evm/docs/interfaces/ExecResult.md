@@ -8,6 +8,8 @@ Result of executing a call via the EVM.
 
 ### Properties
 
+- [blobGasUsed](ExecResult.md#blobgasused)
+- [createdAddresses](ExecResult.md#createdaddresses)
 - [exceptionError](ExecResult.md#exceptionerror)
 - [executionGasUsed](ExecResult.md#executiongasused)
 - [gas](ExecResult.md#gas)
@@ -19,6 +21,30 @@ Result of executing a call via the EVM.
 
 ## Properties
 
+### blobGasUsed
+
+• `Optional` **blobGasUsed**: `bigint`
+
+Amount of blob gas consumed by the transaction
+
+#### Defined in
+
+[types.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L313)
+
+___
+
+### createdAddresses
+
+• `Optional` **createdAddresses**: `Set`<`string`\>
+
+Map of addresses which were created (used in EIP 6780)
+
+#### Defined in
+
+[types.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L305)
+
+___
+
 ### exceptionError
 
 • `Optional` **exceptionError**: [`EvmError`](../classes/EvmError.md)
@@ -27,7 +53,7 @@ Description of the exception, if any occurred
 
 #### Defined in
 
-[evm.ts:983](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L983)
+[types.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L281)
 
 ___
 
@@ -39,7 +65,7 @@ Amount of gas the code used to run
 
 #### Defined in
 
-[evm.ts:991](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L991)
+[types.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L289)
 
 ___
 
@@ -51,7 +77,7 @@ Amount of gas left
 
 #### Defined in
 
-[evm.ts:987](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L987)
+[types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L285)
 
 ___
 
@@ -63,7 +89,7 @@ The gas refund counter
 
 #### Defined in
 
-[evm.ts:1007](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1007)
+[types.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L309)
 
 ___
 
@@ -75,19 +101,19 @@ Array of logs that the contract emitted
 
 #### Defined in
 
-[evm.ts:999](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L999)
+[types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L297)
 
 ___
 
 ### returnValue
 
-• **returnValue**: `Buffer`
+• **returnValue**: `Uint8Array`
 
 Return value from the contract
 
 #### Defined in
 
-[evm.ts:995](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L995)
+[types.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L293)
 
 ___
 
@@ -97,20 +123,16 @@ ___
 
 #### Defined in
 
-[evm.ts:979](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L979)
+[types.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L277)
 
 ___
 
 ### selfdestruct
 
-• `Optional` **selfdestruct**: `Object`
+• `Optional` **selfdestruct**: `Set`<`string`\>
 
-A map from the accounts that have self-destructed to the addresses to send their funds to
-
-#### Index signature
-
-▪ [k: `string`]: `Buffer`
+A set of accounts to selfdestruct
 
 #### Defined in
 
-[evm.ts:1003](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1003)
+[types.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L301)

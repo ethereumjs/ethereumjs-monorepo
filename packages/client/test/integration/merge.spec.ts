@@ -7,20 +7,20 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { Address, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { FullEthereumService } from '../../lib/service'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { FullEthereumService } from '../../src/service'
+import { Event } from '../../src/types'
 
 import { MockServer } from './mocks/mockserver'
 import { destroy, setup } from './util'
 
 import type { CliqueConsensus } from '@ethereumjs/blockchain'
 
-tape('[Integration:Merge]', async (t) => {
+describe('[Integration:Merge]', async () => {
   const commonPoA = Common.custom(
     {
       consensus: {
@@ -35,7 +35,7 @@ tape('[Integration:Merge]', async (t) => {
         { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
-          name: 'merge',
+          name: 'paris',
           block: null,
           forkHash: null,
           ttd: BigInt(5),
@@ -56,23 +56,23 @@ tape('[Integration:Merge]', async (t) => {
         { name: 'chainstart', block: 0 },
         { name: 'london', block: 0 },
         {
-          name: 'merge',
+          name: 'paris',
           block: null,
           forkHash: null,
           ttd: BigInt(1000),
         },
       ],
     },
-    { baseChain: ChainCommon.Ropsten, hardfork: Hardfork.London }
+    { baseChain: ChainCommon.Mainnet, hardfork: Hardfork.London }
   )
-  const accounts: [Address, Buffer][] = [
+  const accounts: [Address, Uint8Array][] = [
     [
-      new Address(Buffer.from('0b90087d864e82a284dca15923f3776de6bb016f', 'hex')),
-      Buffer.from('64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993', 'hex'),
+      new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
+      hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
     ],
   ]
   async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
-    const config = new Config({ common })
+    const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config })
     const blockchain = await Blockchain.create({
       common,
@@ -99,7 +99,7 @@ tape('[Integration:Merge]', async (t) => {
     return [server, service]
   }
 
-  t.test('should mine and stop at the merge (PoA)', async (t) => {
+  it('should mine and stop at the merge (PoA)', async () => {
     const [server, service] = await minerSetup(commonPoA)
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
@@ -109,32 +109,34 @@ tape('[Integration:Merge]', async (t) => {
     ;(remoteService.chain.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [
       accounts[0][0],
     ] // stub
-    BlockHeader.prototype._consensusFormatValidation = () => {} //stub
+    BlockHeader.prototype['_consensusFormatValidation'] = () => {} //stub
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(5)
-    remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      const { td } = remoteService.chain.headers
-      if (td === targetTTD) {
-        t.equal(
-          remoteService.chain.headers.td,
-          targetTTD,
-          'synced blocks to the merge successfully'
-        )
-        // Make sure the miner has stopped
-        t.notOk(service.miner!.running, 'miner should not be running')
-        await destroy(server, service)
-        await destroy(remoteServer, remoteService)
-        t.end()
-      }
-      if (td > targetTTD) {
-        t.fail('chain should not exceed merge TTD')
-      }
-    })
-    await remoteService.synchronizer.start()
-    await new Promise(() => {}) // resolves once t.end() is called
-  })
 
-  t.test('should mine and stop at the merge (PoW)', async (t) => {
+    await new Promise((resolve) => {
+      remoteService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
+        const { td } = remoteService.chain.headers
+        if (td === targetTTD) {
+          assert.equal(
+            remoteService.chain.headers.td,
+            targetTTD,
+            'synced blocks to the merge successfully'
+          )
+          // Make sure the miner has stopped
+          assert.notOk(service.miner!.running, 'miner should not be running')
+          await destroy(server, service)
+          await destroy(remoteServer, remoteService)
+          resolve(undefined)
+        }
+        if (td > targetTTD) {
+          assert.fail('chain should not exceed merge TTD')
+        }
+      })
+      void remoteService.synchronizer!.start()
+    })
+  }, 60000)
+
+  it('should mine and stop at the merge (PoW)', async () => {
     const [server, service] = await minerSetup(commonPoW)
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
@@ -144,32 +146,33 @@ tape('[Integration:Merge]', async (t) => {
     await server.discover('remotePeer1', '127.0.0.2')
     const targetTTD = BigInt(1000)
     let terminalHeight: bigint | undefined
-    remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
-      const { height, td } = remoteService.chain.headers
-      if (td > targetTTD) {
-        if (terminalHeight === undefined || terminalHeight === BigInt(0)) {
-          terminalHeight = height
+    await new Promise((resolve) => {
+      remoteService.config.events.on(Event.CHAIN_UPDATED, async () => {
+        const { height, td } = remoteService.chain.headers
+        if (td > targetTTD) {
+          if (terminalHeight === undefined || terminalHeight === BigInt(0)) {
+            terminalHeight = height
+          }
+          assert.equal(
+            remoteService.chain.headers.height,
+            terminalHeight,
+            'synced blocks to the merge successfully'
+          )
+          // Make sure the miner has stopped
+          assert.notOk(service.miner!.running, 'miner should not be running')
+          await destroy(server, service)
+          await destroy(remoteServer, remoteService)
+          resolve(undefined)
         }
-        t.equal(
-          remoteService.chain.headers.height,
-          terminalHeight,
-          'synced blocks to the merge successfully'
-        )
-        // Make sure the miner has stopped
-        t.notOk(service.miner!.running, 'miner should not be running')
-        await destroy(server, service)
-        await destroy(remoteServer, remoteService)
-        t.end()
-      }
-      if (
-        typeof terminalHeight === 'bigint' &&
-        terminalHeight !== BigInt(0) &&
-        terminalHeight < height
-      ) {
-        t.fail('chain should not exceed merge terminal block')
-      }
+        if (
+          typeof terminalHeight === 'bigint' &&
+          terminalHeight !== BigInt(0) &&
+          terminalHeight < height
+        ) {
+          assert.fail('chain should not exceed merge terminal block')
+        }
+      })
+      void remoteService.synchronizer!.start()
     })
-    await remoteService.synchronizer.start()
-    await new Promise(() => {}) // resolves once t.end() is called
-  })
+  }, 120000)
 })

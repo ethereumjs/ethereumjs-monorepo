@@ -1,7 +1,7 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../lib/rpc/error-code'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, params, setupChain } from '../helpers'
 import { checkError } from '../util'
 
@@ -19,20 +19,22 @@ const invalidConfig = {
   terminalBlockNumber: '0x0',
 }
 
-tape(`${method}: call with valid config`, async (t) => {
-  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+describe(method, () => {
+  it('call with valid config', async () => {
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-  const req = params(method, [validConfig])
-  const expectRes = (res: any) => {
-    t.deepEqual(res.body.result, validConfig)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const req = params(method, [validConfig])
+    const expectRes = (res: any) => {
+      assert.deepEqual(res.body.result, validConfig)
+    }
+    await baseRequest(server, req, 200, expectRes)
+  })
 
-tape(`${method}: call with invalid config`, async (t) => {
-  const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+  it('call with invalid config', async () => {
+    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-  const req = params(method, [invalidConfig])
-  const expectRes = checkError(t, INVALID_PARAMS, 'terminalTotalDifficulty set to 0, received 256')
-  await baseRequest(t, server, req, 200, expectRes)
+    const req = params(method, [invalidConfig])
+    const expectRes = checkError(INVALID_PARAMS, 'terminalTotalDifficulty set to 0, received 256')
+    await baseRequest(server, req, 200, expectRes)
+  })
 })

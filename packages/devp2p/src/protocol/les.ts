@@ -1,42 +1,53 @@
 import { RLP } from '@ethereumjs/rlp'
-import { arrToBufArr, bigIntToBuffer, bufArrToArr } from '@ethereumjs/util'
-import ms = require('ms')
+import {
+  bigIntToBytes,
+  bytesToHex,
+  bytesToInt,
+  bytesToUtf8,
+  intToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { DISCONNECT_REASONS } from '../rlpx/peer'
-import { assertEq, buffer2int, formatLogData, int2buffer } from '../util'
+import { DISCONNECT_REASON, ProtocolType } from '../types.js'
+import { assertEq, formatLogData } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Peer } from '../rlpx/peer'
-import type { SendMethod } from './protocol'
+import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from '../types.js'
+import type { Input, NestedUint8Array } from '@ethereumjs/rlp'
 
 export const DEFAULT_ANNOUNCE_TYPE = 1
 
 export class LES extends Protocol {
-  _status: LES.Status | null = null
-  _peerStatus: LES.Status | null = null
+  protected _status: LES.Status | null = null
+  protected _peerStatus: LES.Status | null = null
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, EthProtocol.LES, version, LES.MESSAGE_CODES)
+    super(peer, send, ProtocolType.LES, version, LES.MESSAGE_CODES)
 
     this._statusTimeoutId = setTimeout(() => {
-      this._peer.disconnect(DISCONNECT_REASONS.TIMEOUT)
-    }, ms('5s'))
+      this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
+    }, 5000) // 5 sec * 1000
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
   static les3 = { name: 'les', version: 3, length: 23, constructor: LES }
   static les4 = { name: 'les', version: 4, length: 23, constructor: LES }
 
-  _handleMessage(code: LES.MESSAGE_CODES, data: any) {
-    const payload = arrToBufArr(RLP.decode(bufArrToArr(data)))
-    const messageName = this.getMsgPrefix(code)
-    const debugMsg = `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-
+  _handleMessage(code: LES.MESSAGE_CODES, data: Uint8Array) {
+    const payload = RLP.decode(data)
     if (code !== LES.MESSAGE_CODES.STATUS) {
-      const logData = formatLogData(data.toString('hex'), this._verbose)
-      this.debug(messageName, `${debugMsg}: ${logData}`)
+      const logData = formatLogData(bytesToHex(data as Uint8Array), this._verbose)
+      this.debug(
+        this.getMsgPrefix(code),
+        // @ts-ignore
+        `${`Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
+          this._peer._socket.remotePort
+        }`}: ${logData}`
+      )
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS: {
@@ -47,13 +58,19 @@ export class LES extends Protocol {
           this.debug.bind(this),
           'STATUS'
         )
-        const statusArray: any = {}
-        for (const value of payload as any) {
-          statusArray[value[0].toString()] = value[1]
+        const status: LES.Status = Object.assign({})
+        for (const value of payload as NestedUint8Array) {
+          status[bytesToUtf8(value[0] as Uint8Array)] = value[1]
         }
-        this._peerStatus = statusArray
-        const peerStatusMsg = `${this._peerStatus ? this._getStatusString(this._peerStatus) : ''}`
-        this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+        this._peerStatus = status
+        this.debug(
+          this.getMsgPrefix(code),
+          `${`Received ${this.getMsgPrefix(code)} message from ${
+            // @ts-ignore
+            this._peer._socket.remoteAddress
+            // @ts-ignore
+          }:${this._peer._socket.remotePort}`}: ${this._getStatusString(this._peerStatus)}`
+        )
         this._handleStatus()
         break
       }
@@ -91,7 +108,7 @@ export class LES extends Protocol {
         return
     }
 
-    this.emit('message', code, payload)
+    this.events.emit('message', code, payload)
   }
 
   _handleStatus() {
@@ -119,7 +136,7 @@ export class LES extends Protocol {
       'STATUS'
     )
 
-    this.emit('status', this._peerStatus)
+    this.events.emit('status', this._peerStatus)
     if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }
@@ -130,27 +147,27 @@ export class LES extends Protocol {
   }
 
   _getStatusString(status: LES.Status) {
-    let sStr = `[V:${buffer2int(status['protocolVersion'])}, `
-    sStr += `NID:${buffer2int(status['networkId'] as Buffer)}, HTD:${buffer2int(
+    let sStr = `[V:${bytesToInt(status['protocolVersion'])}, `
+    sStr += `NID:${bytesToInt(status['networkId'] as Uint8Array)}, HTD:${bytesToInt(
       status['headTd']
     )}, `
-    sStr += `HeadH:${status['headHash'].toString('hex')}, HeadN:${buffer2int(status['headNum'])}, `
-    sStr += `GenH:${status['genesisHash'].toString('hex')}`
+    sStr += `HeadH:${bytesToHex(status['headHash'])}, HeadN:${bytesToInt(status['headNum'])}, `
+    sStr += `GenH:${bytesToHex(status['genesisHash'])}`
     if (status['serveHeaders'] !== undefined) sStr += `, serveHeaders active`
     if (status['serveChainSince'] !== undefined)
-      sStr += `, ServeCS: ${buffer2int(status['serveChainSince'])}`
+      sStr += `, ServeCS: ${bytesToInt(status['serveChainSince'])}`
     if (status['serveStateSince'] !== undefined)
-      sStr += `, ServeSS: ${buffer2int(status['serveStateSince'])}`
+      sStr += `, ServeSS: ${bytesToInt(status['serveStateSince'])}`
     if (status['txRelay'] !== undefined) sStr += `, txRelay active`
     if (status['flowControl/BL)'] !== undefined) sStr += `, flowControl/BL set`
     if (status['flowControl/MRR)'] !== undefined) sStr += `, flowControl/MRR set`
     if (status['flowControl/MRC)'] !== undefined) sStr += `, flowControl/MRC set`
     if (status['forkID'] !== undefined)
-      sStr += `, forkID: [crc32: ${status['forkID'][0].toString('hex')}, nextFork: ${buffer2int(
+      sStr += `, forkID: [crc32: ${bytesToHex(status['forkID'][0])}, nextFork: ${bytesToInt(
         status['forkID'][1]
       )}]`
     if (status['recentTxLookup'] !== undefined)
-      sStr += `, recentTxLookup: ${buffer2int(status['recentTxLookup'])}`
+      sStr += `, recentTxLookup: ${bytesToInt(status['recentTxLookup'])}`
     sStr += `]`
     return sStr
   }
@@ -159,28 +176,31 @@ export class LES extends Protocol {
     if (this._status !== null) return
 
     if (status.announceType === undefined) {
-      status['announceType'] = int2buffer(DEFAULT_ANNOUNCE_TYPE)
+      status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
     }
-    status['protocolVersion'] = int2buffer(this._version)
-    status['networkId'] = bigIntToBuffer(this._peer._common.chainId())
+    status['protocolVersion'] = intToBytes(this._version)
+    status['networkId'] = bigIntToBytes(this._peer.common.chainId())
 
     this._status = status
 
-    const statusList: any[][] = []
+    const statusList: [Uint8Array, Uint8Array][] = []
     for (const key of Object.keys(status)) {
-      statusList.push([Buffer.from(key), status[key]])
+      statusList.push([utf8ToBytes(key), status[key]])
     }
 
     this.debug(
       'STATUS',
+      // @ts-ignore
       `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+        // @ts-ignore
         this._peer._socket.remotePort
       } (les${this._version}): ${this._getStatusString(this._status)}`
     )
 
-    let payload = Buffer.from(RLP.encode(bufArrToArr(statusList)))
+    let payload = RLP.encode(statusList)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
@@ -194,15 +214,15 @@ export class LES extends Protocol {
    * @param code Message code
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
-  sendMessage(code: LES.MESSAGE_CODES, payload: any) {
-    const messageName = this.getMsgPrefix(code)
-    const logData = formatLogData(
-      Buffer.from(RLP.encode(bufArrToArr(payload))).toString('hex'),
-      this._verbose
+  sendMessage(code: LES.MESSAGE_CODES, payload: Input) {
+    this.debug(
+      this.getMsgPrefix(code),
+      // @ts-ignore
+      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+        // @ts-ignore
+        this._peer._socket.remotePort
+      }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`
     )
-    const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
-
-    this.debug(messageName, debugMsg)
 
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:
@@ -241,9 +261,10 @@ export class LES extends Protocol {
         throw new Error(`Unknown code ${code}`)
     }
 
-    payload = Buffer.from(RLP.encode(payload))
+    payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
@@ -259,22 +280,22 @@ export class LES extends Protocol {
 export namespace LES {
   export interface Status {
     [key: string]: any
-    protocolVersion: Buffer
-    networkId: Buffer
-    headTd: Buffer
-    headHash: Buffer
-    headNum: Buffer
-    genesisHash: Buffer
-    serveHeaders: Buffer
-    serveChainSince: Buffer
-    serveStateSince: Buffer
-    txRelay: Buffer
-    'flowControl/BL': Buffer
-    'flowControl/MRR': Buffer
-    'flowControl/MRC': Buffer
-    announceType: Buffer
-    forkID: [Buffer, Buffer]
-    recentTxLookup: Buffer
+    protocolVersion: Uint8Array
+    networkId: Uint8Array
+    headTd: Uint8Array
+    headHash: Uint8Array
+    headNum: Uint8Array
+    genesisHash: Uint8Array
+    serveHeaders: Uint8Array
+    serveChainSince: Uint8Array
+    serveStateSince: Uint8Array
+    txRelay: Uint8Array
+    'flowControl/BL': Uint8Array
+    'flowControl/MRR': Uint8Array
+    'flowControl/MRC': Uint8Array
+    announceType: Uint8Array
+    forkID: [Uint8Array, Uint8Array]
+    recentTxLookup: Uint8Array
   }
 
   export enum MESSAGE_CODES {

@@ -20,7 +20,7 @@
 		"arrowGlacierBlock": 0,
 		"grayGlacierBlock": 0,
         "shanghaiTime": 1673487257,
-        "shardingForkTime": 1673487293,
+        "cancunTime": 1673487293,
 		"ethash": {
 		},
 		"terminalTotalDifficulty": 50

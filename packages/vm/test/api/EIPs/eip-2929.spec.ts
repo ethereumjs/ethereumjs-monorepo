@@ -1,21 +1,18 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Transaction } from '@ethereumjs/tx'
-import { Account, Address } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
-tape('EIP 2929: gas cost tests', (t) => {
+describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
-  const address = new Address(Buffer.from('000000000000000000000000636F6E7472616374', 'hex'))
-  const senderKey = Buffer.from(
-    'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    'hex'
-  )
+  const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
+  const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
-  const runTest = async function (test: any, st: tape.Test) {
+  const runTest = async function (test: any) {
     let i = 0
     let currentGas = initialGas
     const vm = await VM.create({ common })
@@ -24,7 +21,7 @@ tape('EIP 2929: gas cost tests', (t) => {
       currentGas = step.gasLeft
 
       if (test.steps.length > 0) {
-        st.equal(
+        assert.equal(
           step.opcode.name,
           test.steps[i].expectedOpcode,
           `Expected Opcode: ${test.steps[i].expectedOpcode}`
@@ -36,7 +33,7 @@ tape('EIP 2929: gas cost tests', (t) => {
         // (ex: PUSH) and the last opcode is always STOP
         if (i > 0) {
           const expectedGasUsed = BigInt(test.steps[i - 1].expectedGasUsed)
-          st.equal(
+          assert.equal(
             true,
             gasUsed === expectedGasUsed,
             `Opcode: ${
@@ -48,9 +45,9 @@ tape('EIP 2929: gas cost tests', (t) => {
       i++
     })
 
-    await vm.stateManager.putContractCode(address, Buffer.from(test.code, 'hex'))
+    await vm.stateManager.putContractCode(address, hexToBytes(test.code))
 
-    const unsignedTx = Transaction.fromTxData({
+    const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
       to: address, // call to the contract address,
     })
@@ -60,27 +57,24 @@ tape('EIP 2929: gas cost tests', (t) => {
     const result = await vm.runTx({ tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
-    st.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
+    assert.equal(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
     return result
   }
 
-  const runCodeTest = async function (code: string, expectedGasUsed: bigint, st: tape.Test) {
+  const runCodeTest = async function (code: string, expectedGasUsed: bigint) {
     // setup the accounts for this test
-    const privateKey = Buffer.from(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      'hex'
+    const privateKey = hexToBytes(
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
-    const contractAddress = new Address(
-      Buffer.from('00000000000000000000000000000000000000ff', 'hex')
-    )
+    const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
     const vm = await VM.create({ common })
 
-    await vm.stateManager.putContractCode(contractAddress, Buffer.from(code, 'hex')) // setup the contract code
+    await vm.stateManager.putContractCode(contractAddress, hexToBytes(code)) // setup the contract code
 
     // setup the call arguments
-    const unsignedTx = Transaction.fromTxData({
+    const unsignedTx = LegacyTransaction.fromTxData({
       gasLimit: BigInt(21000 + 9000), // ensure we pass a lot of gas, so we do not run out of gas
       to: contractAddress, // call to the contract address,
       value: BigInt(1),
@@ -99,15 +93,15 @@ tape('EIP 2929: gas cost tests', (t) => {
 
     const result = await vm.runTx({ tx, skipHardForkValidation: true })
 
-    st.equal(result.totalGasSpent, expectedGasUsed)
+    assert.equal(result.totalGasSpent, expectedGasUsed)
   }
 
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
   // and later checks the same operations twice against some non-precompiles. Those are
   // cheaper second time they are accessed. Lastly, it checks the BALANCE of origin and this.
-  t.test('should charge for warm address loads correctly', async (st) => {
+  it('should charge for warm address loads correctly', async () => {
     const test = {
-      code: '60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
+      code: '0x60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
       totalGasUsed: 8653,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
@@ -147,16 +141,15 @@ tape('EIP 2929: gas cost tests', (t) => {
       ],
     }
 
-    const result = await runTest(test, st)
-    st.equal(undefined, result.execResult.exceptionError)
-    st.end()
+    const result = await runTest(test)
+    assert.equal(undefined, result.execResult.exceptionError)
   })
 
   // Checks `extcodecopy( 0xff,0,0,0,0)` twice, (should be expensive first time),
   // and then does `extcodecopy( this,0,0,0,0)`.
-  t.test('should charge for extcodecopy correctly', async (st) => {
+  it('should charge for extcodecopy correctly', async () => {
     const test = {
-      code: '60006000600060ff3c60006000600060ff3c600060006000303c00',
+      code: '0x60006000600060ff3c60006000600060ff3c600060006000303c00',
       totalGasUsed: BigInt(2835),
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: BigInt(3) },
@@ -178,16 +171,15 @@ tape('EIP 2929: gas cost tests', (t) => {
       ],
     }
 
-    const result = await runTest(test, st)
-    st.equal(undefined, result.execResult.exceptionError)
-    st.end()
+    const result = await runTest(test)
+    assert.equal(undefined, result.execResult.exceptionError)
   })
 
   // Checks `sload( 0x1)` followed by `sstore(loc: 0x01, val:0x11)`,
   // then 'naked' sstore:`sstore(loc: 0x02, val:0x11)` twice, and `sload(0x2)`, `sload(0x1)`.
-  t.test('should charge for sload and sstore correctly )', async (st) => {
+  it('should charge for sload and sstore correctly )', async () => {
     const test = {
-      code: '6001545060116001556011600255601160025560025460015400',
+      code: '0x6001545060116001556011600255601160025560025460015400',
       totalGasUsed: 44529,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
@@ -210,16 +202,15 @@ tape('EIP 2929: gas cost tests', (t) => {
       ],
     }
 
-    const result = await runTest(test, st)
-    st.equal(undefined, result.execResult.exceptionError)
-    st.end()
+    const result = await runTest(test)
+    assert.equal(undefined, result.execResult.exceptionError)
   })
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
   // and `staticcall`s the sameaccount (cheap)
-  t.test('should charge for pre-compiles and staticcalls correctly', async (st) => {
+  it('should charge for pre-compiles and staticcalls correctly', async () => {
     const test = {
-      code: '60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
+      code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
       totalGasUsed: 2869,
       steps: [
         { expectedOpcode: 'PUSH1', expectedGasUsed: 3 },
@@ -253,12 +244,11 @@ tape('EIP 2929: gas cost tests', (t) => {
       ],
     }
 
-    const result = await runTest(test, st)
-    st.equal(undefined, result.execResult.exceptionError)
-    st.end()
+    const result = await runTest(test)
+    assert.equal(undefined, result.execResult.exceptionError)
   })
 
-  t.test('ensure warm addresses/slots are tracked transaction-wide', async (st) => {
+  it('ensure warm addresses/slots are tracked transaction-wide', async () => {
     // Note: these tests were manually analyzed to check if these are correct.
     // The gas cost has been taken from these tests.
 
@@ -272,21 +262,18 @@ tape('EIP 2929: gas cost tests', (t) => {
     // SLOAD or CALL operations.
 
     // load same storage slot twice (also in inner call)
-    await runCodeTest('60005460003415601357600080808080305AF15B00', BigInt(23369), st)
+    await runCodeTest('0x60005460003415601357600080808080305AF15B00', BigInt(23369))
     // call to contract, load slot 0, revert inner call. load slot 0 in outer call.
-    await runCodeTest('341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374), st)
+    await runCodeTest('0x341515600D57600054600080FD5B600080808080305AF160005400', BigInt(25374))
 
     // call to address 0xFFFF..FF
     const callFF = '6000808080806000195AF1'
     // call address 0xFF..FF, now call same contract again, call 0xFF..FF again (it is now warm)
-    await runCodeTest(callFF + '60003415601B57600080808080305AF15B00', BigInt(23909), st)
+    await runCodeTest('0x' + callFF + '60003415601B57600080808080305AF15B00', BigInt(23909))
     // call to contract, call 0xFF..FF, revert, call 0xFF..FF (should be cold)
     await runCodeTest(
-      '341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
-      BigInt(26414),
-      st
+      '0x341515601557' + callFF + '600080FD5B600080808080305AF1' + callFF + '00',
+      BigInt(26414)
     )
-
-    st.end()
   })
 })

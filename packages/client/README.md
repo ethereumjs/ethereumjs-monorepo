@@ -29,11 +29,10 @@ The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](
 
 Here are some use cases:
 
-- Sync the main Ethereum networks (`mainnet` (experimental), `goerli`, `rinkeby`, `sepolia`...)
+- Sync the main Ethereum networks (`mainnet` (experimental), `goerli`, `sepolia`, ...)
 - Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./lib/sync/txpool.ts)
-- Run experiments with Ethereum browser sync (see [example](./examples/light-browser-sync.md)) **currently unsupported due to browser dependency issues**
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
@@ -74,6 +73,8 @@ docker build . -f Dockerfile.fromSource --tag ethereumjs:latest
 ```
 
 You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
+
+Also, in your `docker run` command, be sure to include the `--init` flag so that the container will properly handle kernel signals (like SIGINT and SIGTERM). Not doing so can lead to unexpected behaviour [(as documented here)](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals)
 
 ## General Usage
 

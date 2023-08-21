@@ -1,22 +1,23 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import { assert, describe, it, vi } from 'vitest'
 
-import { Event } from '../../lib/types'
-import * as genesisJSON from '../testdata/geth-genesis/post-merge.json'
+import { Event } from '../../src/types'
+import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
-
-tape('[Integration:BeaconSync]', async (t) => {
+describe('[Integration:BeaconSync]', () => {
   const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
-  common.setHardforkByBlockNumber(BigInt(0), BigInt(0))
+  common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
 
-  t.test('should sync blocks', async (t) => {
-    BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-    td.replace('@ethereumjs/block', { BlockHeader })
+  it('should sync blocks', async () => {
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+    vi.doMock('@ethereumjs/block', () => {
+      {
+        BlockHeader
+      }
+    })
 
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
@@ -28,30 +29,30 @@ tape('[Integration:BeaconSync]', async (t) => {
         next: next.hash(),
       },
     ]
-    await localService.synchronizer.stop()
+    await localService.synchronizer!.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      t.equals(localService.chain.blocks.height, BigInt(20), 'synced')
+      assert.equal(localService.chain.blocks.height, BigInt(20), 'synced')
       await destroy(localServer, localService)
       await destroy(remoteServer, remoteService)
     })
-    await localService.synchronizer.start()
+    await localService.synchronizer!.start()
   })
 
-  t.test('should not sync with stale peers', async (t) => {
+  it('should not sync with stale peers', async () => {
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 9, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 10, common })
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      t.fail('synced with a stale peer')
+      assert.fail('synced with a stale peer')
     })
     await localServer.discover('remotePeer', '127.0.0.2')
     await wait(300)
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)
-    t.pass('did not sync')
+    assert.ok(true, 'did not sync')
   })
 
-  t.test('should sync with best peer', async (t) => {
+  it('should sync with best peer', async () => {
     const [remoteServer1, remoteService1] = await setup({
       location: '127.0.0.2',
       height: 7,
@@ -76,24 +77,18 @@ tape('[Integration:BeaconSync]', async (t) => {
       },
     ]
     localService.interval = 1000
-    await localService.synchronizer.stop()
+    await localService.synchronizer!.stop()
     await localServer.discover('remotePeer1', '127.0.0.2')
     await localServer.discover('remotePeer2', '127.0.0.3')
 
     localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
       if (localService.chain.blocks.height === BigInt(10)) {
-        t.pass('synced with best peer')
+        assert.ok(true, 'synced with best peer')
         await destroy(localServer, localService)
         await destroy(remoteServer1, remoteService1)
         await destroy(remoteServer2, remoteService2)
       }
     })
-    await localService.synchronizer.start()
+    await localService.synchronizer!.start()
   })
-})
-
-tape('reset TD', (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
-  td.reset()
-  t.end()
-})
+}, 60000)

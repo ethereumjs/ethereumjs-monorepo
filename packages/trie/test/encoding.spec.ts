@@ -1,15 +1,16 @@
-import { toBuffer } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { bytesToHex, hexToBytes, toBytes, utf8ToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
 const trie = new Trie()
 const trie2 = new Trie()
 const hex = 'FF44A3B3'
 
-tape('encoding hex prefixes', async function (t) {
-  await trie.put(Buffer.from(hex, 'hex'), Buffer.from('test'))
-  await trie2.put(toBuffer(`0x${hex}`), Buffer.from('test'))
-  t.equal(trie.root().toString('hex'), trie2.root().toString('hex'))
-  t.end()
+describe('encoding hex prefixes', () => {
+  it('should work', async () => {
+    await trie.put(hexToBytes('0x' + hex), utf8ToBytes('test'))
+    await trie2.put(toBytes(`0x${hex}`), utf8ToBytes('test'))
+    assert.equal(bytesToHex(trie.root()), bytesToHex(trie2.root()))
+  })
 })

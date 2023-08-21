@@ -31,7 +31,7 @@
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L10)
+[packages/trie/src/node/branch.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L9)
 
 ## Properties
 
@@ -41,17 +41,17 @@
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L7)
+[packages/trie/src/node/branch.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L6)
 
 ___
 
 ### \_value
 
-• **\_value**: ``null`` \| `Buffer`
+• **\_value**: ``null`` \| `Uint8Array`
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L8)
+[packages/trie/src/node/branch.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L7)
 
 ## Methods
 
@@ -71,7 +71,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L42)
+[packages/trie/src/node/branch.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L41)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L51)
+[packages/trie/src/node/branch.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L50)
 
 ___
 
@@ -99,21 +99,21 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L34)
+[packages/trie/src/node/branch.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L33)
 
 ___
 
 ### serialize
 
-▸ **serialize**(): `Buffer`
+▸ **serialize**(): `Uint8Array`
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L38)
+[packages/trie/src/node/branch.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L37)
 
 ___
 
@@ -134,27 +134,27 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L30)
+[packages/trie/src/node/branch.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L29)
 
 ___
 
 ### value
 
-▸ **value**(`v?`): ``null`` \| `Buffer`
+▸ **value**(`v?`): ``null`` \| `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `v?` | ``null`` \| `Buffer` |
+| `v?` | ``null`` \| `Uint8Array` |
 
 #### Returns
 
-``null`` \| `Buffer`
+``null`` \| `Uint8Array`
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L22)
+[packages/trie/src/node/branch.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L21)
 
 ___
 
@@ -166,7 +166,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `arr` | `Buffer`[] |
+| `arr` | `Uint8Array`[] |
 
 #### Returns
 
@@ -174,4 +174,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/branch.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/branch.ts#L15)
+[packages/trie/src/node/branch.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/branch.ts#L14)

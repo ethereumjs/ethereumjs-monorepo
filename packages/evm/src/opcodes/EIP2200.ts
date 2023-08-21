@@ -1,26 +1,28 @@
-import { ERROR } from '../exceptions'
+import { equalsBytes } from '@ethereumjs/util'
 
-import { adjustSstoreGasEIP2929 } from './EIP2929'
-import { trap } from './util'
+import { ERROR } from '../exceptions.js'
 
-import type { RunState } from '../interpreter'
+import { adjustSstoreGasEIP2929 } from './EIP2929.js'
+import { trap } from './util.js'
+
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 /**
  * Adjusts gas usage and refunds of SStore ops per EIP-2200 (Istanbul)
  *
  * @param {RunState} runState
- * @param {Buffer}   currentStorage
- * @param {Buffer}   originalStorage
- * @param {Buffer}   value
+ * @param {Uint8Array}   currentStorage
+ * @param {Uint8Array}   originalStorage
+ * @param {Uint8Array}   value
  * @param {Common}   common
  */
 export function updateSstoreGasEIP2200(
   runState: RunState,
-  currentStorage: Buffer,
-  originalStorage: Buffer,
-  value: Buffer,
-  key: Buffer,
+  currentStorage: Uint8Array,
+  originalStorage: Uint8Array,
+  value: Uint8Array,
+  key: Uint8Array,
   common: Common
 ) {
   // Fail if not enough gas is left
@@ -29,11 +31,11 @@ export function updateSstoreGasEIP2200(
   }
 
   // Noop
-  if (currentStorage.equals(value)) {
+  if (equalsBytes(currentStorage, value)) {
     const sstoreNoopCost = common.param('gasPrices', 'sstoreNoopGasEIP2200')
     return adjustSstoreGasEIP2929(runState, key, sstoreNoopCost, 'noop', common)
   }
-  if (originalStorage.equals(currentStorage)) {
+  if (equalsBytes(originalStorage, currentStorage)) {
     // Create slot
     if (originalStorage.length === 0) {
       return common.param('gasPrices', 'sstoreInitGasEIP2200')
@@ -63,7 +65,7 @@ export function updateSstoreGasEIP2200(
       )
     }
   }
-  if (originalStorage.equals(value)) {
+  if (equalsBytes(originalStorage, value)) {
     if (originalStorage.length === 0) {
       // Reset to original non-existent slot
       const sstoreInitRefund = common.param('gasPrices', 'sstoreInitRefundEIP2200')

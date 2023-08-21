@@ -1,13 +1,12 @@
-import * as tape from 'tape'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src'
+import { EVM } from '../src/index.js'
 
-import { getEEI } from './utils'
-
+const PUSH1 = '60'
 const STOP = '00'
 const JUMP = '56'
 const JUMPDEST = '5b'
-const PUSH1 = '60'
 
 const testCases = [
   { code: [STOP, JUMPDEST, PUSH1, '05', JUMP, JUMPDEST], pc: 1, resultPC: 6 },
@@ -20,49 +19,49 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-tape('VM.runCode: initial program counter', async (t) => {
-  const eei = await getEEI()
-  const evm = await EVM.create({ eei })
+describe('VM.runCode: initial program counter', () => {
+  it('should work', async () => {
+    const evm = new EVM()
 
-  for (const [i, testData] of testCases.entries()) {
-    const runCodeArgs = {
-      code: Buffer.from(testData.code.join(''), 'hex'),
-      pc: testData.pc,
-      gasLimit: BigInt(0xffff),
-    }
-
-    let err
-    try {
-      const result = await evm.runCode!(runCodeArgs)
-      if (testData.resultPC !== undefined) {
-        t.equal(
-          result.runState?.programCounter,
-          testData.resultPC,
-          `should start the execution at the specified pc or 0, testCases[${i}]`
-        )
+    for (const [i, testData] of testCases.entries()) {
+      const runCodeArgs = {
+        code: hexToBytes('0x' + testData.code.join('')),
+        pc: testData.pc,
+        gasLimit: BigInt(0xffff),
       }
-    } catch (e: any) {
-      err = e
-    }
 
-    if (testData.error !== undefined) {
-      err = err?.message ?? 'no error thrown'
-      t.equal(err, testData.error, 'error message should match')
-      err = false
-    }
+      let err
+      try {
+        const result = await evm.runCode!(runCodeArgs)
+        if (testData.resultPC !== undefined) {
+          assert.equal(
+            result.runState?.programCounter,
+            testData.resultPC,
+            `should start the execution at the specified pc or 0, testCases[${i}]`
+          )
+        }
+      } catch (e: any) {
+        err = e
+      }
 
-    t.assert(err === false || err === undefined)
-  }
+      if (testData.error !== undefined) {
+        err = err?.message ?? 'no error thrown'
+        assert.equal(err, testData.error, 'error message should match')
+        err = false
+      }
+
+      assert.ok(err === false || err === undefined)
+    }
+  })
 })
 
-tape('VM.runCode: interpreter', (t) => {
-  t.test('should return a EvmError as an exceptionError on the result', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+describe('VM.runCode: interpreter', () => {
+  it('should return a EvmError as an exceptionError on the result', async () => {
+    const evm = new EVM()
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
-      code: Buffer.from(INVALID_opcode, 'hex'),
+      code: hexToBytes('0x' + INVALID_opcode),
       gasLimit: BigInt(0xffff),
     }
 
@@ -70,40 +69,43 @@ tape('VM.runCode: interpreter', (t) => {
     try {
       result = await evm.runCode!(runCodeArgs)
     } catch (e: any) {
-      st.fail('should not throw error')
+      assert.fail('should not throw error')
     }
-    st.equal(result!.exceptionError!.errorType, 'EvmError')
-    st.ok(result!.exceptionError!.error.includes('invalid opcode'))
-    st.end()
+    assert.equal(result!.exceptionError!.errorType, 'EvmError')
+    assert.ok(result!.exceptionError!.error.includes('invalid opcode'))
   })
 
-  t.test('should throw on non-EvmError', async (st) => {
-    const eei = await getEEI()
-    eei.putContractStorage = (..._args) => {
+  it('should throw on non-EvmError', async () => {
+    const evm = new EVM()
+    // NOTE: due to now throwing on `getContractStorage` if account does not exist
+    // this now means that if `runCode` is called and the address it runs on (default: zero address)
+    // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
+    // TODO: is this behavior which we should fix? (Either in StateManager OR in runCode where we load the account first,
+    // then re-put the account after (if account === undefined put empty account, such that the account exists))
+    const address = Address.fromString(`0x${'00'.repeat(20)}`)
+    await evm.stateManager.putAccount(address, new Account())
+    evm.stateManager.putContractStorage = (..._args) => {
       throw new Error('Test')
     }
-    const evm = await EVM.create({ eei })
 
     const SSTORE = '55'
     const runCodeArgs = {
-      code: Buffer.from([PUSH1, '01', PUSH1, '05', SSTORE].join(''), 'hex'),
+      code: hexToBytes('0x' + [PUSH1, '01', PUSH1, '05', SSTORE].join('')),
       gasLimit: BigInt(0xffff),
     }
 
     try {
       await evm.runCode!(runCodeArgs)
-      st.fail('should throw error')
+      assert.fail('should throw error')
     } catch (e: any) {
-      st.ok(e.toString().includes('Test'), 'error thrown')
+      assert.ok(e.toString().includes('Test'), 'error thrown')
     }
-    st.end()
   })
 })
 
-tape('VM.runCode: RunCodeOptions', (t) => {
-  t.test('should throw on negative value args', async (st) => {
-    const eei = await getEEI()
-    const evm = await EVM.create({ eei })
+describe('VM.runCode: RunCodeOptions', () => {
+  it('should throw on negative value args', async () => {
+    const evm = new EVM()
 
     const runCodeArgs = {
       value: BigInt(-10),
@@ -112,11 +114,12 @@ tape('VM.runCode: RunCodeOptions', (t) => {
 
     try {
       await evm.runCode!(runCodeArgs)
-      st.fail('should not accept a negative call value')
+      assert.fail('should not accept a negative call value')
     } catch (err: any) {
-      st.ok(err.message.includes('value field cannot be negative'), 'throws on negative call value')
+      assert.ok(
+        err.message.includes('value field cannot be negative'),
+        'throws on negative call value'
+      )
     }
-
-    st.end()
   })
 })

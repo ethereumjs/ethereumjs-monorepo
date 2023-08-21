@@ -20,28 +20,95 @@
 
 ### Type Aliases
 
-- [BlockBodyBuffer](README.md#blockbodybuffer)
-- [BlockBuffer](README.md#blockbuffer)
-- [BlockHeaderBuffer](README.md#blockheaderbuffer)
-- [TransactionsBuffer](README.md#transactionsbuffer)
-- [UncleHeadersBuffer](README.md#uncleheadersbuffer)
-- [WithdrawalsBuffer](README.md#withdrawalsbuffer)
+- [BlockBodyBytes](README.md#blockbodybytes)
+- [BlockBytes](README.md#blockbytes)
+- [BlockHeaderBytes](README.md#blockheaderbytes)
+- [ExecutionPayload](README.md#executionpayload)
+- [TransactionsBytes](README.md#transactionsbytes)
+- [UncleHeadersBytes](README.md#uncleheadersbytes)
+- [WithdrawalV1](README.md#withdrawalv1)
+- [WithdrawalsBytes](README.md#withdrawalsbytes)
 
 ## Type Aliases
 
-### BlockBodyBuffer
+### BlockBodyBytes
 
-Ƭ **BlockBodyBuffer**: [[`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer), WithdrawalsBuffer?]
+Ƭ **BlockBodyBytes**: [[`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), WithdrawalsBytes?]
 
 #### Defined in
 
-[types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)
+[types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)
 
 ___
 
-### BlockBuffer
+### BlockBytes
 
-Ƭ **BlockBuffer**: [[`BlockHeaderBuffer`](README.md#blockheaderbuffer), [`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer)] \| [[`BlockHeaderBuffer`](README.md#blockheaderbuffer), [`TransactionsBuffer`](README.md#transactionsbuffer), [`UncleHeadersBuffer`](README.md#uncleheadersbuffer), [`WithdrawalsBuffer`](README.md#withdrawalsbuffer)]
+Ƭ **BlockBytes**: [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes)] \| [[`BlockHeaderBytes`](README.md#blockheaderbytes), [`TransactionsBytes`](README.md#transactionsbytes), [`UncleHeadersBytes`](README.md#uncleheadersbytes), [`WithdrawalsBytes`](README.md#withdrawalsbytes)]
+
+#### Defined in
+
+[types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L115)
+
+___
+
+### BlockHeaderBytes
+
+Ƭ **BlockHeaderBytes**: `Uint8Array`[]
+
+#### Defined in
+
+[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
+
+___
+
+### ExecutionPayload
+
+Ƭ **ExecutionPayload**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `baseFeePerGas` | `PrefixedHexString` |
+| `blobGasUsed?` | `PrefixedHexString` |
+| `blockHash` | `PrefixedHexString` |
+| `blockNumber` | `PrefixedHexString` |
+| `excessBlobGas?` | `PrefixedHexString` |
+| `extraData` | `PrefixedHexString` |
+| `feeRecipient` | `PrefixedHexString` |
+| `gasLimit` | `PrefixedHexString` |
+| `gasUsed` | `PrefixedHexString` |
+| `logsBloom` | `PrefixedHexString` |
+| `parentBeaconBlockRoot?` | `PrefixedHexString` |
+| `parentHash` | `PrefixedHexString` |
+| `prevRandao` | `PrefixedHexString` |
+| `receiptsRoot` | `PrefixedHexString` |
+| `stateRoot` | `PrefixedHexString` |
+| `timestamp` | `PrefixedHexString` |
+| `transactions` | `PrefixedHexString`[] |
+| `withdrawals?` | [`WithdrawalV1`](README.md#withdrawalv1)[] |
+
+#### Defined in
+
+[types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L206)
+
+___
+
+### TransactionsBytes
+
+Ƭ **TransactionsBytes**: `Uint8Array`[][] \| `Uint8Array`[]
+
+TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
+
+#### Defined in
+
+[types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L123)
+
+___
+
+### UncleHeadersBytes
+
+Ƭ **UncleHeadersBytes**: `Uint8Array`[][]
 
 #### Defined in
 
@@ -49,42 +116,29 @@ ___
 
 ___
 
-### BlockHeaderBuffer
+### WithdrawalV1
 
-Ƭ **BlockHeaderBuffer**: `Buffer`[]
+Ƭ **WithdrawalV1**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `PrefixedHexString` |
+| `amount` | `PrefixedHexString` |
+| `index` | `PrefixedHexString` |
+| `validatorIndex` | `PrefixedHexString` |
 
 #### Defined in
 
-[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L127)
+[types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L198)
 
 ___
 
-### TransactionsBuffer
+### WithdrawalsBytes
 
-Ƭ **TransactionsBuffer**: `Buffer`[][] \| `Buffer`[]
-
-TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
+Ƭ **WithdrawalsBytes**: `WithdrawalBytes`[]
 
 #### Defined in
 
-[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
-
-___
-
-### UncleHeadersBuffer
-
-Ƭ **UncleHeadersBuffer**: `Buffer`[][]
-
-#### Defined in
-
-[types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)
-
-___
-
-### WithdrawalsBuffer
-
-Ƭ **WithdrawalsBuffer**: `WithdrawalBuffer`[]
-
-#### Defined in
-
-[types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L122)
+[types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L113)

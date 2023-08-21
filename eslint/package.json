@@ -1,0 +1,9 @@
+{
+  "name": "eslint-plugin-ethereumjs",
+  "version": "0.1.0",
+  "files": [
+    "index.js",
+    "noBuffer.js"
+  ],
+  "main": "index.js"
+}

@@ -1,12 +1,12 @@
 import { TransactionFactory } from '@ethereumjs/tx'
-import { TypeOutput, setLengthLeft, toBuffer, toType } from '@ethereumjs/util'
+import { TypeOutput, setLengthLeft, toBytes, toType } from '@ethereumjs/util'
 
-import { blockHeaderFromRpc } from './header-from-rpc'
+import { blockHeaderFromRpc } from './header-from-rpc.js'
 
-import { Block } from './index'
+import { Block } from './index.js'
 
-import type { BlockOptions, JsonRpcBlock } from './index'
-import type { TxData, TypedTransaction } from '@ethereumjs/tx'
+import type { BlockOptions, JsonRpcBlock } from './index.js'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 function normalizeTxParams(_txParams: any) {
   const txParams = Object.assign({}, _txParams)
@@ -21,7 +21,7 @@ function normalizeTxParams(_txParams: any) {
   // strict byte length checking
   txParams.to =
     txParams.to !== null && txParams.to !== undefined
-      ? setLengthLeft(toBuffer(txParams.to), 20)
+      ? setLengthLeft(toBytes(txParams.to), 20)
       : null
 
   txParams.v = toType(txParams.v, TypeOutput.BigInt)
@@ -45,10 +45,10 @@ export function blockFromRpc(
   const header = blockHeaderFromRpc(blockParams, options)
 
   const transactions: TypedTransaction[] = []
-  const opts = { common: header._common }
+  const opts = { common: header.common }
   for (const _txParams of blockParams.transactions ?? []) {
     const txParams = normalizeTxParams(_txParams)
-    const tx = TransactionFactory.fromTxData(txParams as TxData, opts)
+    const tx = TransactionFactory.fromTxData(txParams, opts)
     transactions.push(tx)
   }
 

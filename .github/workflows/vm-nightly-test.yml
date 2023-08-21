@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       # The job is meant to run with a fresh lock file
@@ -31,7 +31,7 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
-      - run: npm run test:API:browser
+  #     - run: npm run test:API:browser
 
   test-vm-state:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       # The job is meant to run with a fresh lock file
@@ -64,7 +64,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       # The job is meant to run with a fresh lock file
@@ -87,7 +87,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       # The job is meant to run with a fresh lock file

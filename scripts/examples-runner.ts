@@ -15,12 +15,11 @@ readdir(path, async (err, files) => {
   }
 
   const getTsFiles = (fileName: string): Promise<NodeModule> | undefined => {
-    if (extname(fileName) === '.ts') {
+    if (extname(fileName) === '.cts' || extname(fileName) === '.ts') {
       return import(examplesPath + fileName)
     }
   }
 
   const importedFiles = files.map(getTsFiles).filter((file) => file)
-
   await Promise.all(importedFiles)
 })

@@ -1,86 +1,80 @@
-import { KECCAK256_RLP } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { KECCAK256_RLP, equalsBytes, hexToBytes, randomBytes, utf8ToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../../src'
+import { Trie } from '../../src/index.js'
 
-const crypto = require('crypto')
-
-tape('Pruned trie tests', function (tester) {
-  const it = tester.test
-
-  it('should default to not prune the trie', async function (st) {
+describe('Pruned trie tests', () => {
+  it('should default to not prune the trie', async () => {
     const trie = new Trie()
-    const key = Buffer.from('test')
-    await trie.put(key, Buffer.from('1'))
-    await trie.put(key, Buffer.from('2'))
-    await trie.put(key, Buffer.from('3'))
-    await trie.put(key, Buffer.from('4'))
-    await trie.put(key, Buffer.from('5'))
-    await trie.put(key, Buffer.from('6'))
+    const key = utf8ToBytes('test')
+    await trie.put(key, utf8ToBytes('1'))
+    await trie.put(key, utf8ToBytes('2'))
+    await trie.put(key, utf8ToBytes('3'))
+    await trie.put(key, utf8ToBytes('4'))
+    await trie.put(key, utf8ToBytes('5'))
+    await trie.put(key, utf8ToBytes('6'))
 
-    st.equals((<any>trie)._db.db._database.size, 6, 'DB size correct')
+    assert.equal((<any>trie)._db.db._database.size, 6, 'DB size correct')
   })
 
-  it('should prune simple trie', async function (st) {
+  it('should prune simple trie', async () => {
     const trie = new Trie({ useNodePruning: true })
-    const key = Buffer.from('test')
-    await trie.put(key, Buffer.from('1'))
-    await trie.put(key, Buffer.from('2'))
-    await trie.put(key, Buffer.from('3'))
-    await trie.put(key, Buffer.from('4'))
-    await trie.put(key, Buffer.from('5'))
-    await trie.put(key, Buffer.from('6'))
+    const key = utf8ToBytes('test')
+    await trie.put(key, utf8ToBytes('1'))
+    await trie.put(key, utf8ToBytes('2'))
+    await trie.put(key, utf8ToBytes('3'))
+    await trie.put(key, utf8ToBytes('4'))
+    await trie.put(key, utf8ToBytes('5'))
+    await trie.put(key, utf8ToBytes('6'))
 
-    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
   })
 
-  it('should prune simple trie', async function (st) {
+  it('should prune simple trie', async () => {
     const trie = new Trie({ useNodePruning: true })
-    const key = Buffer.from('test')
-    await trie.put(key, Buffer.from('1'))
-    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    const key = utf8ToBytes('test')
+    await trie.put(key, utf8ToBytes('1'))
+    assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
 
     await trie.del(key)
-    st.equals((<any>trie)._db.db._database.size, 0, 'DB size correct')
+    assert.equal((<any>trie)._db.db._database.size, 0, 'DB size correct')
 
-    await trie.put(key, Buffer.from('1'))
-    st.equals((<any>trie)._db.db._database.size, 1, 'DB size correct')
+    await trie.put(key, utf8ToBytes('1'))
+    assert.equal((<any>trie)._db.db._database.size, 1, 'DB size correct')
   })
 
-  it('should prune trie with depth = 2', async function (st) {
+  it('should prune trie with depth = 2', async () => {
     const trie = new Trie({ useNodePruning: true })
     // Create a Trie with
     const keys = ['01', '02', '0103', '0104', '0105']
     const values = ['00', '02', '03', '04', '05']
 
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(Buffer.from(keys[i], 'hex'), Buffer.from(values[i], 'hex'))
+      await trie.put(hexToBytes('0x' + keys[i]), hexToBytes('0x' + values[i]))
     }
-
-    st.end()
   })
 
-  it('should not prune if the same value is put twice', async function (st) {
+  it('should not prune if the same value is put twice', async () => {
     const trie = new Trie()
-    const key = Buffer.from('01')
-    const value = Buffer.from('02')
+    const key = utf8ToBytes('01')
+    const value = utf8ToBytes('02')
 
     await trie.put(key, value)
     await trie.put(key, value)
     const reported = await trie.get(key)
-    st.ok(reported?.equals(value), 'value matches expected value')
+    assert.ok(equalsBytes(reported!, value), 'value matches expected value')
   })
 
-  it('should not throw if a key is either non-existent or deleted twice', async function (st) {
+  it('should not throw if a key is either non-existent or deleted twice', async () => {
     const trie = new Trie()
-    const key = Buffer.from('01')
-    const value = Buffer.from('02')
+    const key = utf8ToBytes('01')
+    const value = utf8ToBytes('02')
 
     // key does not exist (empty trie)
     await trie.del(key)
 
-    const key2 = Buffer.from('AA')
-    const value2 = Buffer.from('ee')
+    const key2 = utf8ToBytes('AA')
+    const value2 = utf8ToBytes('ee')
     await trie.put(key2, value2)
     // key does not exist (non-empty trie)
     await trie.del(key)
@@ -89,18 +83,19 @@ tape('Pruned trie tests', function (tester) {
     await trie.del(key)
     await trie.del(key)
     const reported = await trie.get(key)
-    st.ok(reported === null, 'value is null')
+    assert.ok(reported === null, 'value is null')
     const reported2 = await trie.get(key2)
-    st.ok(reported2?.equals(value2), 'value matches expected value')
+    assert.ok(equalsBytes(reported2!, value2), 'value matches expected value')
   })
 
-  it('should prune when keys are updated or deleted', async (st) => {
+  it('should prune when keys are updated or deleted', async () => {
     for (let testID = 0; testID < 1; testID++) {
       const trie = new Trie({ useNodePruning: true })
-      const keys: string[] = []
+      const keys: Uint8Array[] = []
       for (let i = 0; i < 100; i++) {
-        keys.push(crypto.randomBytes(32))
+        keys.push(randomBytes(32))
       }
+
       const values: string[] = []
       for (let i = 0; i < 1000; i++) {
         let val = Math.floor(Math.random() * 16384)
@@ -113,76 +108,77 @@ tape('Pruned trie tests', function (tester) {
       for (let i = 0; i < keys.length; i++) {
         const idx = Math.floor(Math.random() * keys.length)
         const key = keys[idx]
-        await trie.put(Buffer.from(key), Buffer.from(values[i]))
+
+        await trie.put(key, utf8ToBytes(values[i]))
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Randomly delete keys
       for (let i = 0; i < 20; i++) {
         const idx = Math.floor(Math.random() * keys.length)
-        await trie.del(Buffer.from(keys[idx]))
+        await trie.del(keys[idx])
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them
       for (let i = 0; i < keys.length; i++) {
         const idx = Math.floor(Math.random() * keys.length)
         const key = keys[idx]
         if (Math.random() < 0.5) {
-          await trie.put(Buffer.from(key), Buffer.from(values[i]))
+          await trie.put(key, utf8ToBytes(values[i]))
         } else {
-          await trie.del(Buffer.from(key))
+          await trie.del(key)
         }
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Delete all keys
       for (let idx = 0; idx < 100; idx++) {
-        await trie.del(Buffer.from(keys[idx]))
+        await trie.del(keys[idx])
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
-      st.ok(trie.root().equals(KECCAK256_RLP), 'trie is empty')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {
         dbKeys++
       }
-      st.ok(dbKeys === 0, 'db is empty')
+      assert.ok(dbKeys === 0, 'db is empty')
     }
   })
 
-  it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async (st) => {
+  it('verifyPrunedIntegrity() => should correctly report unpruned Tries', async () => {
     // Create empty Trie (is pruned)
     let trie = new Trie()
     // Create a new value (still is pruned)
-    await trie.put(Buffer.from('aa', 'hex'), Buffer.from('bb', 'hex'))
+    await trie.put(hexToBytes('0xaa'), hexToBytes('0xbb'))
     // Overwrite this value (trie is now not pruned anymore)
-    await trie.put(Buffer.from('aa', 'hex'), Buffer.from('aa', 'hex'))
-    st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    await trie.put(hexToBytes('0xaa'), hexToBytes('0xaa'))
+    assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
 
     // Create new empty Trie (is pruned)
     trie = new Trie()
     // Create a new value raw in DB (is not pruned)
-    await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
-    st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
-    await (<any>trie)._db.db.del(Buffer.from('aa', 'hex'))
-    st.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
-    await trie.put(Buffer.from('aa', 'hex'), Buffer.from('bb', 'hex'))
-    st.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
-    await (<any>trie)._db.db.put(Buffer.from('aa', 'hex'))
-    st.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    await (<any>trie)._db.db.put(utf8ToBytes('aa'))
+    assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
+    await (<any>trie)._db.db.del(utf8ToBytes('aa'))
+    assert.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
+    await trie.put(utf8ToBytes('aa'), utf8ToBytes('bb'))
+    assert.ok(await trie.verifyPrunedIntegrity(), 'trie is pruned')
+    await (<any>trie)._db.db.put(utf8ToBytes('aa'))
+    assert.ok(!(await trie.verifyPrunedIntegrity()), 'trie is not pruned')
   })
 
-  it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async (st) => {
+  it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async () => {
     for (let testID = 0; testID < 1; testID++) {
       const trie = await Trie.create({ useNodePruning: true, useRootPersistence: true })
-      const keys: string[] = []
+      const keys: Uint8Array[] = []
       for (let i = 0; i < 100; i++) {
-        keys.push(crypto.randomBytes(32))
+        keys.push(randomBytes(32))
       }
       const values: string[] = []
       for (let i = 0; i < 1000; i++) {
@@ -196,45 +192,45 @@ tape('Pruned trie tests', function (tester) {
       for (let i = 0; i < keys.length; i++) {
         const idx = Math.floor(Math.random() * keys.length)
         const key = keys[idx]
-        await trie.put(Buffer.from(key), Buffer.from(values[i]))
+        await trie.put(key, utf8ToBytes(values[i]))
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Randomly delete keys
       for (let i = 0; i < 20; i++) {
         const idx = Math.floor(Math.random() * keys.length)
-        await trie.del(Buffer.from(keys[idx]))
+        await trie.del(keys[idx])
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Fill trie with items or randomly delete them
       for (let i = 0; i < keys.length; i++) {
         const idx = Math.floor(Math.random() * keys.length)
         const key = keys[idx]
         if (Math.random() < 0.5) {
-          await trie.put(Buffer.from(key), Buffer.from(values[i]))
+          await trie.put(key, utf8ToBytes(values[i]))
         } else {
-          await trie.del(Buffer.from(key))
+          await trie.del(key)
         }
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
 
       // Delete all keys
       for (let idx = 0; idx < 100; idx++) {
-        await trie.del(Buffer.from(keys[idx]))
+        await trie.del(keys[idx])
       }
 
-      st.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
-      st.ok(trie.root().equals(KECCAK256_RLP), 'trie is empty')
+      assert.ok(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.ok(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
 
       let dbKeys = 0
       for (const _dbkey of (<any>trie)._db.db._database.keys()) {
         dbKeys++
       }
-      st.ok(dbKeys === 1, 'db is empty')
+      assert.ok(dbKeys === 1, 'db is empty')
     }
   })
 })

@@ -1,28 +1,34 @@
 import { Blockchain } from '@ethereumjs/blockchain'
-import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction, initKZG } from '@ethereumjs/tx'
+import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
+  Address,
   blobsToCommitments,
+  blobsToProofs,
+  bytesToHex,
+  bytesToUtf8,
   commitmentsToVersionedHashes,
   getBlobs,
-} from '@ethereumjs/tx/dist/utils/blobHelpers'
-import { Address } from '@ethereumjs/util'
+  initKZG,
+  randomBytes,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
-import { randomBytes } from 'crypto'
 import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
-import { EthereumClient } from '../../lib/client'
-import { Config } from '../../lib/config'
+import { EthereumClient } from '../../src/client'
+import { Config } from '../../src/config'
+import { LevelDB } from '../../src/execution/level'
 
 import type { Common } from '@ethereumjs/common'
+import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // Initialize the kzg object with the kzg library
-initKZG(kzg, __dirname + '/../../lib/trustedSetups/devnet4.txt')
+initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {
@@ -133,7 +139,7 @@ export function runNetwork(
   const runProcPrefix = withPeer !== undefined ? 'peer1' : ''
   let lastPrintedDot = false
   runProc.stdout.on('data', (chunk) => {
-    const str = Buffer.from(chunk).toString('utf8')
+    const str = bytesToUtf8(chunk)
     const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
     if (filterStr && !filterOutStr) {
@@ -143,16 +149,16 @@ export function runNetwork(
       }
       process.stdout.write(`data:${runProcPrefix}: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
     } else {
-      if (str.includes('Synchronized')) {
+      if (str.includes('Synchronized') === true) {
         process.stdout.write('.')
         lastPrintedDot = true
-      } else if (str.includes('Synced') && !str.includes('skipped')) {
+      } else if (str.includes('Synced') === true && str.includes('skipped') === false) {
         process.stdout.write('`')
       }
     }
   })
   runProc.stderr.on('data', (chunk) => {
-    const str = Buffer.from(chunk).toString('utf8')
+    const str = bytesToUtf8(chunk)
     const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
     const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
     if (filterStr && !filterOutStr) {
@@ -178,7 +184,7 @@ export function runNetwork(
 
     let lastPrintedDot = false
     peerRunProc.stdout.on('data', (chunk) => {
-      const str = Buffer.from(chunk).toString('utf8')
+      const str = bytesToUtf8(chunk)
       const filterStr = filterKeywords.reduce((acc, next) => acc || str.includes(next), false)
       const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
       if (filterStr && !filterOutStr) {
@@ -188,14 +194,14 @@ export function runNetwork(
         }
         process.stdout.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
       } else {
-        if (str.includes('Synchronized')) {
+        if (str.includes('Synchronized') === true) {
           process.stdout.write('.')
           lastPrintedDot = true
         }
       }
     })
     peerRunProc.stderr.on('data', (chunk) => {
-      const str = Buffer.from(chunk).toString('utf8')
+      const str = bytesToUtf8(chunk)
       const filterOutStr = filterOutWords.reduce((acc, next) => acc || str.includes(next), false)
       if (!filterOutStr) {
         process.stderr.write(`${withPeer}:el<>cl: ${runProc.pid}: ${str}`) // str already contains a new line. console.log adds a new line
@@ -241,7 +247,7 @@ export async function startNetwork(
 }
 
 export async function runTxHelper(
-  opts: { client: Client; common: Common; sender: string; pkey: Buffer },
+  opts: { client: Client; common: Common; sender: string; pkey: Uint8Array },
   data: string,
   to?: string,
   value?: bigint
@@ -265,11 +271,7 @@ export async function runTxHelper(
     { common }
   ).sign(pkey)
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    ['0x' + tx.serialize().toString('hex')],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(tx.serialize())], 2.0)
   let mined = false
   let receipt
   console.log(`tx: ${res.result}`)
@@ -290,25 +292,26 @@ export async function runTxHelper(
 export const runBlobTx = async (
   client: Client,
   blobSize: number,
-  pkey: Buffer,
+  pkey: Uint8Array,
   to?: string,
-  value?: bigint
+  value?: bigint,
+  opts?: TxOptions
 ) => {
-  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
+  const proofs = blobsToProofs(blobs, commitments)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = Address.fromPrivateKey(pkey)
-  const txData = {
-    from: '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
+  const txData: TxData[TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',
     blobs,
     kzgCommitments: commitments,
+    kzgProofs: proofs,
     versionedHashes: hashes,
-    gas: undefined,
-    maxFeePerDataGas: undefined,
+    maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
     nonce: undefined,
@@ -316,21 +319,17 @@ export const runBlobTx = async (
     value,
   }
 
-  txData['maxFeePerGas'] = '0xff' as any
-  txData['maxPriorityFeePerGas'] = BigInt(1) as any
-  txData['maxFeePerDataGas'] = BigInt(1000) as any
-  txData['gasLimit'] = BigInt(1000000) as any
+  txData.maxFeePerGas = '0xff'
+  txData.maxPriorityFeePerGas = BigInt(1)
+  txData.maxFeePerBlobGas = BigInt(1000)
+  txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
-  txData['nonce'] = BigInt(nonce.result) as any
-  const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+  txData.nonce = BigInt(nonce.result)
+  const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    ['0x' + serializedWrapper.toString('hex')],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   console.log(`tx: ${res.result}`)
   let tries = 0
@@ -351,48 +350,50 @@ export const runBlobTx = async (
 
 export const createBlobTxs = async (
   numTxs: number,
-  blobSize = 2 ** 17 - 1,
-  pkey: Buffer,
-  to?: string,
-  value?: bigint
+  pkey: Uint8Array,
+  startNonce: number = 0,
+  txMeta: {
+    to?: string
+    value?: bigint
+    chainId?: number
+    maxFeePerBlobGas: bigint
+    maxPriorityFeePerGas: bigint
+    maxFeePerGas: bigint
+    gasLimit: bigint
+    blobSize: number
+  },
+  opts?: TxOptions
 ) => {
-  const txHashes: any = []
+  const txHashes: string[] = []
+  const blobSize = txMeta.blobSize ?? 2 ** 17 - 1
 
-  const blobs = getBlobs(randomBytes(blobSize).toString('hex'))
+  const blobs = getBlobs(bytesToHex(randomBytes(blobSize)))
   const commitments = blobsToCommitments(blobs)
+  const proofs = blobsToProofs(blobs, commitments)
   const hashes = commitmentsToVersionedHashes(commitments)
+  const txns = []
 
-  for (let x = 1; x <= numTxs; x++) {
+  for (let x = startNonce; x <= startNonce + numTxs; x++) {
     const sender = Address.fromPrivateKey(pkey)
     const txData = {
       from: sender.toString(),
-      to,
-      data: '0x',
-      chainId: '0x1',
+      ...txMeta,
       blobs,
       kzgCommitments: commitments,
+      kzgProofs: proofs,
       versionedHashes: hashes,
-      gas: undefined,
-      maxFeePerDataGas: undefined,
-      maxPriorityFeePerGas: undefined,
-      maxFeePerGas: undefined,
       nonce: BigInt(x),
-      gasLimit: undefined,
-      value,
+      gas: undefined,
     }
 
-    txData['maxFeePerGas'] = '0xff' as any
-    txData['maxPriorityFeePerGas'] = BigInt(1) as any
-    txData['maxFeePerDataGas'] = BigInt(1000) as any
-    txData['gasLimit'] = BigInt(1000000) as any
-
-    const blobTx = BlobEIP4844Transaction.fromTxData(txData).sign(pkey)
+    const blobTx = BlobEIP4844Transaction.fromTxData(txData, opts).sign(pkey)
 
     const serializedWrapper = blobTx.serializeNetworkWrapper()
-    await fs.appendFile('./blobs.txt', '0x' + serializedWrapper.toString('hex') + '\n')
-    txHashes.push('0x' + blobTx.hash().toString('hex'))
+    await fs.appendFile('./blobs.txt', bytesToHex(serializedWrapper) + '\n')
+    txns.push(bytesToHex(serializedWrapper))
+    txHashes.push(bytesToHex(blobTx.hash()))
   }
-  return txHashes
+  return txns
 }
 
 export const runBlobTxsFromFile = async (client: Client, path: string) => {
@@ -409,18 +410,18 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
 export async function createInlineClient(config: any, common: any, customGenesisState: any) {
   config.events.setMaxListeners(50)
   const datadir = Config.DATADIR_DEFAULT
-  const chainDB = new Level<string | Buffer, string | Buffer>(
+  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`
   )
-  const stateDB = new Level<string | Buffer, string | Buffer>(
+  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/stateDB`
   )
-  const metaDB = new Level<string | Buffer, string | Buffer>(
+  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/metaDB`
   )
 
   const blockchain = await Blockchain.create({
-    db: chainDB,
+    db: new LevelDB(chainDB),
     genesisState: customGenesisState,
     common: config.chainCommon,
     hardforkByHeadBlockNumber: true,
@@ -428,7 +429,14 @@ export async function createInlineClient(config: any, common: any, customGenesis
     validateConsensus: false,
   })
   config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
-  const inlineClient = await EthereumClient.create({ config, blockchain, chainDB, stateDB, metaDB })
+  const inlineClient = await EthereumClient.create({
+    config,
+    blockchain,
+    chainDB,
+    stateDB,
+    metaDB,
+    genesisState: customGenesisState,
+  })
   await inlineClient.open()
   await inlineClient.start()
   return inlineClient

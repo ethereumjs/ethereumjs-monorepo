@@ -1,32 +1,31 @@
-import * as tape from 'tape'
+import { bytesToHex } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../lib/blockchain'
-import { Config } from '../../../lib/config'
-import { FlowControl, LesProtocol } from '../../../lib/net/protocol'
+import { Chain } from '../../../src/blockchain'
+import { Config } from '../../../src/config'
+import { FlowControl, LesProtocol } from '../../../src/net/protocol'
 
-tape('[LesProtocol]', (t) => {
-  t.test('should get properties', async (t) => {
-    const config = new Config({ transports: [] })
+describe('[LesProtocol]', () => {
+  it('should get properties', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
-    t.ok(typeof p.name === 'string', 'get name')
-    t.ok(Array.isArray(p.versions), 'get versions')
-    t.ok(Array.isArray(p.messages), 'get messages')
-    t.end()
+    assert.ok(typeof p.name === 'string', 'get name')
+    assert.ok(Array.isArray(p.versions), 'get versions')
+    assert.ok(Array.isArray(p.messages), 'get messages')
   })
 
-  t.test('should open correctly', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should open correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new LesProtocol({ config, chain })
     await p.open()
-    t.ok(p.opened, 'opened is true')
-    t.notOk(await p.open(), 'repeat open')
-    t.end()
+    assert.ok(p.opened, 'opened is true')
+    assert.notOk(await p.open(), 'repeat open')
   })
 
-  t.test('should encode/decode status', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should encode/decode status', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const flow = new FlowControl({
       bl: 1000,
@@ -65,37 +64,37 @@ tape('[LesProtocol]', (t) => {
       },
     })
     let status = p.encodeStatus()
-    t.ok(
-      status.networkId.toString('hex') === '01' &&
-        status.headTd.toString('hex') === '64' &&
+    assert.ok(
+      bytesToHex(status.networkId) === '0x01' &&
+        bytesToHex(status.headTd) === '0x64' &&
         status.headHash === '0xaa' &&
-        status.headNum.toString('hex') === '64' &&
+        bytesToHex(status.headNum) === '0x64' &&
         status.genesisHash === '0xbb' &&
-        status.forkID[0].toString('hex') === 'fc64ec04' &&
-        status.forkID[1].toString('hex') === '118c30' &&
-        status.recentTxLookup.toString('hex') === '01' &&
+        bytesToHex(status.forkID[0]) === '0xfc64ec04' &&
+        bytesToHex(status.forkID[1]) === '0x118c30' &&
+        bytesToHex(status.recentTxLookup) === '0x01' &&
         status.serveHeaders === 1 &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&
         //status.txRelay === 1 && TODO: uncomment with client tx pool functionality
-        status['flowControl/BL'].toString('hex') === '03e8' &&
-        status['flowControl/MRR'].toString('hex') === '0a' &&
-        status['flowControl/MRC'][0][0].toString('hex') === '02' &&
-        status['flowControl/MRC'][0][1].toString('hex') === '0a' &&
-        status['flowControl/MRC'][0][2].toString('hex') === '0a',
+        bytesToHex(status['flowControl/BL']) === '0x03e8' &&
+        bytesToHex(status['flowControl/MRR']) === '0x0a' &&
+        bytesToHex(status['flowControl/MRC'][0][0]) === '0x02' &&
+        bytesToHex(status['flowControl/MRC'][0][1]) === '0x0a' &&
+        bytesToHex(status['flowControl/MRC'][0][2]) === '0x0a',
       'encode status'
     )
     status = { ...status, networkId: [0x01] }
     status = p.decodeStatus(status)
-    t.ok(
+    assert.ok(
       status.networkId === BigInt(1) &&
         status.headTd === BigInt(100) &&
         status.headHash === '0xaa' &&
         status.headNum === BigInt(100) &&
         status.genesisHash === '0xbb' &&
-        status.forkID[0].toString('hex') === 'fc64ec04' &&
-        status.forkID[1].toString('hex') === '118c30' &&
-        status.recentTxLookup.toString('hex') === '01' &&
+        bytesToHex(status.forkID[0]) === '0xfc64ec04' &&
+        bytesToHex(status.forkID[1]) === '0x118c30' &&
+        bytesToHex(status.recentTxLookup) === '0x01' &&
         status.serveHeaders === true &&
         status.serveChainSince === 0 &&
         status.serveStateSince === 0 &&
@@ -108,6 +107,5 @@ tape('[LesProtocol]', (t) => {
         status.mrc.GetBlockHeaders.req === 10,
       'decode status'
     )
-    t.end()
   })
 })

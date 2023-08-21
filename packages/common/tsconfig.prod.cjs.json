@@ -1,0 +1,10 @@
+{
+  "extends": "../../config/tsconfig.prod.cjs.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/cjs",
+    "composite": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "references": [{ "path": "../util/tsconfig.prod.cjs.json" }]
+}

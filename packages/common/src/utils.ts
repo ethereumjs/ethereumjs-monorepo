@@ -1,6 +1,6 @@
 import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
-import { Hardfork } from './enums'
+import { Hardfork } from './enums.js'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -37,6 +37,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     gasLimit,
     coinbase,
     baseFeePerGas,
+    excessBlobGas,
   }: {
     name: string
     config: any
@@ -45,6 +46,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     gasLimit: string
     coinbase: string
     baseFeePerGas: string
+    excessBlobGas: string
   } = json
   let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
     json
@@ -78,13 +80,14 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     networkId: chainId,
     genesis: {
       timestamp,
-      gasLimit: parseInt(gasLimit), // geth gasLimit and difficulty are hex strings while ours are `number`s
-      difficulty: parseInt(difficulty),
+      gasLimit,
+      difficulty,
       nonce,
       extraData,
       mixHash,
       coinbase,
       baseFeePerGas,
+      excessBlobGas,
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],
@@ -123,7 +126,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.London]: { name: 'londonBlock' },
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
-    [Hardfork.ShardingForkDev]: { name: 'shardingForkTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -149,6 +152,12 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
+  for (const hf of params.hardforks) {
+    if (hf.timestamp === genesisTimestamp) {
+      hf.timestamp = 0
+    }
+  }
+
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
@@ -164,7 +173,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     // - Merge hardfork has to be placed just after genesis if any of the genesis hardforks make CL
     //   necessary for e.g. withdrawals
     const mergeConfig = {
-      name: Hardfork.Merge,
+      name: Hardfork.Paris,
       ttd: config.terminalTotalDifficulty,
       block: null,
     }
@@ -195,8 +204,10 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
  */
 export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?: boolean) {
   try {
-    if (['config', 'difficulty', 'gasLimit', 'alloc'].some((field) => !(field in json))) {
-      throw new Error('Invalid format, expected geth genesis fields missing')
+    const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
+    if (required.some((field) => !(field in json))) {
+      const missingField = required.filter((field) => !(field in json))
+      throw new Error(`Invalid format, expected geth genesis field "${missingField}" missing`)
     }
     if (name !== undefined) {
       json.name = name

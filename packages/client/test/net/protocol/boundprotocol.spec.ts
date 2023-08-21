@@ -1,14 +1,14 @@
 /// <reference path="./testdouble.d.ts" />
 import { EventEmitter } from 'events'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../lib/config'
-import { BoundProtocol } from '../../../lib/net/protocol'
-import { Sender } from '../../../lib/net/protocol/sender'
-import { Event } from '../../../lib/types'
+import { Config } from '../../../src/config'
+import { BoundProtocol } from '../../../src/net/protocol'
+import { Sender } from '../../../src/net/protocol/sender'
+import { Event } from '../../../src/types'
 
-tape('[BoundProtocol]', (t) => {
+describe('[BoundProtocol]', () => {
   const peer = td.object('Peer') as any
   const protocol = td.object('Protocol') as any
   const testMessage = {
@@ -27,36 +27,34 @@ tape('[BoundProtocol]', (t) => {
   protocol.timeout = 100
   protocol.messages = [testMessage, testResponse]
 
-  t.test('should add methods for messages with a response', (t) => {
+  it('should add methods for messages with a response', () => {
     const sender = new Sender()
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const bound = new BoundProtocol({
       config,
       protocol,
       peer,
       sender,
     })
-    t.ok(/this.request/.test((bound as any).testMessage.toString()), 'added testMessage')
-    t.end()
+    assert.ok(/this.request/.test((bound as any).testMessage.toString()), 'added testMessage')
   })
 
-  t.test('should get/set status', (t) => {
+  it('should get/set status', () => {
     const sender = new Sender()
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const bound = new BoundProtocol({
       config,
       protocol,
       peer,
       sender,
     })
-    t.deepEquals(bound.status, {}, 'empty status')
+    assert.deepEqual(bound.status, {}, 'empty status')
     bound.status = { id: 1 }
-    t.deepEquals(bound.status, { id: 1 }, 'status set')
-    t.end()
+    assert.deepEqual(bound.status, { id: 1 }, 'status set')
   })
 
-  t.test('should do handshake', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should do handshake', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new EventEmitter() as Sender
     const bound = new BoundProtocol({
       config,
@@ -66,12 +64,11 @@ tape('[BoundProtocol]', (t) => {
     })
     td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({ id: 1 })
     await bound.handshake(sender)
-    t.deepEquals(bound.status, { id: 1 }, 'handshake success')
-    t.end()
+    assert.deepEqual(bound.status, { id: 1 }, 'handshake success')
   })
 
-  t.test('should handle incoming without resolver', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should handle incoming without resolver', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -80,20 +77,19 @@ tape('[BoundProtocol]', (t) => {
       sender,
     })
     bound.config.events.once(Event.PROTOCOL_ERROR, (err) => {
-      t.ok(/error0/.test(err.message), 'decode error')
+      assert.ok(/error0/.test(err.message), 'decode error')
     })
     td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
     ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '1' })
     bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
-      t.deepEquals(message, { name: 'TestMessage', data: 2 }, 'correct message')
+      assert.deepEqual(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
     td.when(protocol.decode(testMessage, '2')).thenReturn(2)
     ;(bound as any).handle({ name: 'TestMessage', code: 0x01, payload: '2' })
-    t.end()
   })
 
-  t.test('should perform send', (t) => {
-    const config = new Config({ transports: [] })
+  it('should perform send', () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     sender.sendMessage = td.func<Sender['sendMessage']>()
     const bound = new BoundProtocol({
@@ -103,14 +99,13 @@ tape('[BoundProtocol]', (t) => {
       sender,
     })
     td.when(protocol.encode(testMessage, 3)).thenReturn('3')
-    t.deepEquals(bound.send('TestMessage', 3), testMessage, 'message returned')
+    assert.deepEqual(bound.send('TestMessage', 3), testMessage, 'message returned')
     td.verify(sender.sendMessage(0x01, '3' as any))
-    t.throws(() => bound.send('UnknownMessage'), /Unknown message/, 'unknown message')
-    t.end()
+    assert.throws(() => bound.send('UnknownMessage'), /Unknown message/, 'unknown message')
   })
 
-  t.test('should perform request', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should perform request', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -127,18 +122,17 @@ tape('[BoundProtocol]', (t) => {
       }, 100)
     })
     const response = await (bound as any).testMessage(1)
-    t.equals(response, 2, 'got response')
+    assert.equal(response, 2, 'got response')
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
       await (bound as any).testMessage(1)
     } catch (err: any) {
-      t.ok(/error1/.test(err.message), 'got error')
+      assert.ok(/error1/.test(err.message), 'got error')
     }
-    t.end()
   })
 
-  t.test('should timeout request', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should timeout request', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const sender = td.object<Sender>('Sender')
     const bound = new BoundProtocol({
       config,
@@ -149,13 +143,11 @@ tape('[BoundProtocol]', (t) => {
     try {
       await (bound as any).testMessage(1)
     } catch (err: any) {
-      t.ok(/timed out/.test(err.message), 'got error')
+      assert.ok(/timed out/.test(err.message), 'got error')
     }
-    t.end()
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

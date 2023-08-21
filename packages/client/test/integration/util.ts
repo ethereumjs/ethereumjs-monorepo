@@ -1,14 +1,14 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { MemoryLevel } from 'memory-level'
 
-import { Config } from '../../lib/config'
-import { FullEthereumService, LightEthereumService } from '../../lib/service'
-import { Event } from '../../lib/types'
+import { Config } from '../../src/config'
+import { FullEthereumService, LightEthereumService } from '../../src/service'
+import { Event } from '../../src/types'
 
 import { MockChain } from './mocks/mockchain'
 import { MockServer } from './mocks/mockserver'
 
-import type { SyncMode } from '../../lib/config'
+import type { SyncMode } from '../../src/config'
 import type { Common } from '@ethereumjs/common'
 
 interface SetupOptions {
@@ -28,7 +28,15 @@ export async function setup(
 
   const lightserv = syncmode === 'full'
   const common = options.common?.copy()
-  const config = new Config({ syncmode, lightserv, minPeers, common, safeReorgDistance: 0 })
+  const config = new Config({
+    syncmode,
+    lightserv,
+    minPeers,
+    common,
+    safeReorgDistance: 0,
+    accountCache: 10000,
+    storageCache: 1000,
+  })
 
   const server = new MockServer({ config, location })
   const blockchain = await Blockchain.create({
@@ -62,7 +70,7 @@ export async function setup(
   } else {
     service = new FullEthereumService({
       ...serviceOpts,
-      metaDB: new MemoryLevel() as any,
+      metaDB: new MemoryLevel(),
       lightserv: true,
     })
   }

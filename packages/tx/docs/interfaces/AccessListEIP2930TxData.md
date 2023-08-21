@@ -6,7 +6,7 @@
 
 ## Hierarchy
 
-- [`TxData`](../README.md#txdata)
+- [`LegacyTxData`](../README.md#legacytxdata)
 
   ↳ **`AccessListEIP2930TxData`**
 
@@ -33,13 +33,13 @@
 
 ### accessList
 
-• `Optional` **accessList**: [`AccessListBuffer`](../README.md#accesslistbuffer) \| [`AccessList`](../README.md#accesslist)
+• `Optional` **accessList**: ``null`` \| [`AccessListBytes`](../README.md#accesslistbytes) \| [`AccessList`](../README.md#accesslist)
 
 The access list which contains the addresses/storage slots which the transaction wishes to access
 
 #### Defined in
 
-[types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L178)
+[tx/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
 
 ___
 
@@ -51,23 +51,23 @@ The transaction's chain ID
 
 #### Defined in
 
-[types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L173)
+[tx/src/types.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L247)
 
 ___
 
 ### data
 
-• `Optional` **data**: `BufferLike`
+• `Optional` **data**: `BytesLike`
 
 This will contain the data of the message or the init of a contract.
 
 #### Inherited from
 
-TxData.data
+LegacyTxData.data
 
 #### Defined in
 
-[types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+[tx/src/types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L216)
 
 ___
 
@@ -79,27 +79,27 @@ The transaction's gas limit.
 
 #### Inherited from
 
-TxData.gasLimit
+LegacyTxData.gasLimit
 
 #### Defined in
 
-[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L127)
+[tx/src/types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L201)
 
 ___
 
 ### gasPrice
 
-• `Optional` **gasPrice**: `BigIntLike`
+• `Optional` **gasPrice**: ``null`` \| `BigIntLike`
 
 The transaction's gas price.
 
 #### Inherited from
 
-TxData.gasPrice
+LegacyTxData.gasPrice
 
 #### Defined in
 
-[types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L122)
+[tx/src/types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L196)
 
 ___
 
@@ -111,11 +111,11 @@ The transaction's nonce.
 
 #### Inherited from
 
-TxData.nonce
+LegacyTxData.nonce
 
 #### Defined in
 
-[types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L117)
+[tx/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L191)
 
 ___
 
@@ -127,11 +127,11 @@ EC signature parameter.
 
 #### Inherited from
 
-TxData.r
+LegacyTxData.r
 
 #### Defined in
 
-[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L152)
+[tx/src/types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L226)
 
 ___
 
@@ -143,11 +143,11 @@ EC signature parameter.
 
 #### Inherited from
 
-TxData.s
+LegacyTxData.s
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
+[tx/src/types.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L231)
 
 ___
 
@@ -159,11 +159,11 @@ The transaction's the address is sent to.
 
 #### Inherited from
 
-TxData.to
+LegacyTxData.to
 
 #### Defined in
 
-[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
+[tx/src/types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L206)
 
 ___
 
@@ -175,11 +175,11 @@ The transaction type
 
 #### Inherited from
 
-TxData.type
+LegacyTxData.type
 
 #### Defined in
 
-[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
+[tx/src/types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L237)
 
 ___
 
@@ -191,11 +191,11 @@ EC recovery ID.
 
 #### Inherited from
 
-TxData.v
+LegacyTxData.v
 
 #### Defined in
 
-[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
+[tx/src/types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
 
 ___
 
@@ -207,8 +207,8 @@ The amount of Ether sent.
 
 #### Inherited from
 
-TxData.value
+LegacyTxData.value
 
 #### Defined in
 
-[types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L137)
+[tx/src/types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L211)

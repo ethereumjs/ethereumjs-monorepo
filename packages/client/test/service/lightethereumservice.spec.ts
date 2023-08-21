@@ -1,92 +1,81 @@
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain/chain'
+import { Config } from '../../src/config'
+import { LesProtocol } from '../../src/net/protocol'
+import { RlpxServer } from '../../src/net/server'
+import { LightSynchronizer } from '../../src/sync/lightsync'
+import { Event } from '../../src/types'
+describe('[LightEthereumService]', async () => {
+  vi.mock('../../src/net/peerpool')
 
-tape('[LightEthereumService]', async (t) => {
-  class PeerPool {
-    open() {}
-    close() {}
-  }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  td.replace('../../lib/net/peerpool', { PeerPool })
-  const MockChain = td.constructor([] as any)
-  MockChain.prototype.open = td.func()
-  td.replace('../../lib/blockchain', { MockChain })
-  const LesProtocol = td.constructor([] as any)
-  td.replace('../../lib/net/protocol/lesprotocol', { LesProtocol })
-  class LightSynchronizer {
-    start() {}
-    stop() {}
-    open() {}
-    close() {}
-  }
-  LightSynchronizer.prototype.start = td.func<any>()
-  LightSynchronizer.prototype.stop = td.func<any>()
-  LightSynchronizer.prototype.open = td.func<any>()
-  LightSynchronizer.prototype.close = td.func<any>()
-  td.replace('../../lib/sync/lightsync', { LightSynchronizer })
-
-  const { LightEthereumService } = await import('../../lib/service/lightethereumservice')
-
-  t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
-    const chain = await Chain.create({ config })
-    const service = new LightEthereumService({ config, chain })
-    t.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
-    t.equals(service.name, 'eth', 'got name')
-    t.end()
+  vi.mock('../../src/net/server')
+  vi.mock('../../src/blockchain', () => {
+    const Chain = vi.fn()
+    Chain.prototype.open = vi.fn()
+    return { Chain }
+  })
+  vi.mock('../../src/net/protocol/lesprotocol', () => {
+    const LesProtocol = vi.fn()
+    return { LesProtocol }
+  })
+  vi.mock('../../src/sync/lightsync', () => {
+    const LightSynchronizer = vi.fn()
+    LightSynchronizer.prototype.start = vi.fn()
+    LightSynchronizer.prototype.stop = vi.fn()
+    LightSynchronizer.prototype.open = vi.fn()
+    LightSynchronizer.prototype.close = vi.fn()
+    return { LightSynchronizer }
   })
 
-  t.test('should get protocols', async (t) => {
-    const config = new Config({ transports: [] })
+  const { LightEthereumService } = await import('../../src/service/lightethereumservice')
+
+  it('should initialize correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
-    t.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
-    t.end()
+    assert.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
+    assert.equal(service.name, 'eth', 'got name')
   })
 
-  t.test('should open', async (t) => {
-    t.plan(3)
-    const server = td.object() as any
-    const config = new Config({ servers: [server] })
+  it('should get protocols', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const chain = await Chain.create({ config })
+    const service = new LightEthereumService({ config, chain })
+    assert.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
+  })
+
+  it('should open', async () => {
+    const server = new RlpxServer({} as any)
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.open()
-    td.verify(service.synchronizer.open())
-    td.verify(server.addProtocols(td.matchers.anything()))
-    service.config.events.on(Event.SYNC_SYNCHRONIZED, () => t.pass('synchronized'))
+    expect(service.synchronizer.open).toHaveBeenCalled()
+    expect(server.addProtocols).toBeCalled()
+    service.config.events.on(Event.SYNC_SYNCHRONIZED, () => assert.ok(true, 'synchronized'))
     service.config.events.on(Event.SYNC_ERROR, (err: Error) => {
-      if (err.message === 'error0') t.pass('got error 1')
+      if (err.message === 'error0') assert.ok(true, 'got error 1')
     })
     service.config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     service.config.events.emit(Event.SYNC_ERROR, new Error('error0'))
     service.config.events.on(Event.SERVER_ERROR, (err: Error) => {
-      if (err.message === 'error1') t.pass('got error 2')
+      if (err.message === 'error1') assert.ok(true, 'got error 2')
     })
     service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
     await service.close()
   })
 
-  t.test('should start/stop', async (t) => {
-    const server = td.object() as any
-    const config = new Config({ servers: [server] })
+  it('should start/stop', async () => {
+    const server = new RlpxServer({} as any)
+    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.start()
-    td.verify(service.synchronizer.start())
-    t.notOk(await service.start(), 'already started')
+    expect(service.synchronizer.start).toBeCalled()
+    assert.notOk(await service.start(), 'already started')
     await service.stop()
-    td.verify(service.synchronizer.stop())
-    t.notOk(await service.stop(), 'already stopped')
-    t.end()
-  })
-
-  t.test('should reset td', (t) => {
-    td.reset()
-    t.end()
+    expect(service.synchronizer.stop).toBeCalled()
+    assert.notOk(await service.stop(), 'already stopped')
   })
 })

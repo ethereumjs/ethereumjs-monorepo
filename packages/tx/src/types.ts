@@ -1,37 +1,17 @@
-import {
-  BooleanType,
-  ByteListType,
-  ByteVectorType,
-  ContainerType,
-  ListCompositeType,
-  NoneType,
-  UintBigintType,
-  UnionType,
-} from '@chainsafe/ssz'
+import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
-import {
-  BYTES_PER_FIELD_ELEMENT,
-  FIELD_ELEMENTS_PER_BLOB,
-  LIMIT_BLOBS_PER_TX,
-  MAX_ACCESS_LIST_SIZE,
-  MAX_CALLDATA_SIZE,
-  MAX_TX_WRAP_KZG_COMMITMENTS,
-  MAX_VERSIONED_HASHES_LIST_SIZE,
-} from './constants'
-
-import type { FeeMarketEIP1559Transaction } from './eip1559Transaction'
-import type { AccessListEIP2930Transaction } from './eip2930Transaction'
-import type { BlobEIP4844Transaction } from './eip4844Transaction'
-import type { Transaction } from './legacyTransaction'
-import type { Common } from '@ethereumjs/common'
-import type { AddressLike, BigIntLike, BufferLike, PrefixedHexString } from '@ethereumjs/util'
-
-const Bytes20 = new ByteVectorType(20)
-const Bytes32 = new ByteVectorType(32)
-const Bytes48 = new ByteVectorType(48)
-
-const Uint64 = new UintBigintType(8)
-const Uint256 = new UintBigintType(32)
+import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
+import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
+import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
+import type { LegacyTransaction } from './legacyTransaction.js'
+import type { AccessList, AccessListBytes, Common } from '@ethereumjs/common'
+import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+export type {
+  AccessList,
+  AccessListBytes,
+  AccessListBytesItem,
+  AccessListItem,
+} from '@ethereumjs/common'
 
 /**
  * Can be used in conjunction with {@link Transaction.supports}
@@ -98,25 +78,7 @@ export interface TxOptions {
   allowUnlimitedInitCodeSize?: boolean
 }
 
-/*
- * Access List types
- */
-
-export type AccessListItem = {
-  address: PrefixedHexString
-  storageKeys: PrefixedHexString[]
-}
-
-/*
- * An Access List as a tuple of [address: Buffer, storageKeys: Buffer[]]
- */
-export type AccessListBufferItem = [Buffer, Buffer[]]
-export type AccessListBuffer = AccessListBufferItem[]
-export type AccessList = AccessListItem[]
-
-export function isAccessListBuffer(
-  input: AccessListBuffer | AccessList
-): input is AccessListBuffer {
+export function isAccessListBytes(input: AccessListBytes | AccessList): input is AccessListBytes {
   if (input.length === 0) {
     return true
   }
@@ -127,26 +89,102 @@ export function isAccessListBuffer(
   return false
 }
 
-export function isAccessList(input: AccessListBuffer | AccessList): input is AccessList {
-  return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
+export function isAccessList(input: AccessListBytes | AccessList): input is AccessList {
+  return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
 /**
  * Encompassing type for all transaction types.
- *
- * Note that this also includes legacy txs which are
- * referenced as {@link Transaction} for compatibility reasons.
  */
-export type TypedTransaction =
-  | Transaction
-  | AccessListEIP2930Transaction
-  | FeeMarketEIP1559Transaction
-  | BlobEIP4844Transaction
+export enum TransactionType {
+  Legacy = 0,
+  AccessListEIP2930 = 1,
+  FeeMarketEIP1559 = 2,
+  BlobEIP4844 = 3,
+}
+
+export interface Transaction {
+  [TransactionType.Legacy]: LegacyTransaction
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559Transaction
+  [TransactionType.AccessListEIP2930]: AccessListEIP2930Transaction
+  [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
+}
+
+export type TypedTransaction = Transaction[TransactionType]
+
+export function isLegacyTx(tx: TypedTransaction): tx is LegacyTransaction {
+  return tx.type === TransactionType.Legacy
+}
+
+export function isAccessListEIP2930Tx(tx: TypedTransaction): tx is AccessListEIP2930Transaction {
+  return tx.type === TransactionType.AccessListEIP2930
+}
+
+export function isFeeMarketEIP1559Tx(tx: TypedTransaction): tx is FeeMarketEIP1559Transaction {
+  return tx.type === TransactionType.FeeMarketEIP1559
+}
+
+export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transaction {
+  return tx.type === TransactionType.BlobEIP4844
+}
+
+export interface TransactionInterface<T extends TransactionType> {
+  supports(capability: Capability): boolean
+  type: number
+  getBaseFee(): bigint
+  getDataFee(): bigint
+  getUpfrontCost(): bigint
+  toCreationAddress(): boolean
+  raw(): TxValuesArray[T]
+  serialize(): Uint8Array
+  getMessageToSign(): Uint8Array | Uint8Array[]
+  getHashedMessageToSign(): Uint8Array
+  hash(): Uint8Array
+  getMessageToVerifySignature(): Uint8Array
+  getValidationErrors(): string[]
+  isSigned(): boolean
+  isValid(): boolean
+  verifySignature(): boolean
+  getSenderAddress(): Address
+  getSenderPublicKey(): Uint8Array
+  sign(privateKey: Uint8Array): Transaction[T]
+  toJSON(): JsonTx
+  errorStr(): string
+}
+
+export interface TxData {
+  [TransactionType.Legacy]: LegacyTxData
+  [TransactionType.AccessListEIP2930]: AccessListEIP2930TxData
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData
+  [TransactionType.BlobEIP4844]: BlobEIP4844TxData
+}
+
+export type TypedTxData = TxData[TransactionType]
+
+export function isLegacyTxData(txData: TypedTxData): txData is LegacyTxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.Legacy
+}
+
+export function isAccessListEIP2930TxData(txData: TypedTxData): txData is AccessListEIP2930TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.AccessListEIP2930
+}
+
+export function isFeeMarketEIP1559TxData(txData: TypedTxData): txData is FeeMarketEIP1559TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.FeeMarketEIP1559
+}
+
+export function isBlobEIP4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.BlobEIP4844
+}
 
 /**
  * Legacy {@link Transaction} Data
  */
-export type TxData = {
+export type LegacyTxData = {
   /**
    * The transaction's nonce.
    */
@@ -175,7 +213,7 @@ export type TxData = {
   /**
    * This will contain the data of the message or the init of a contract.
    */
-  data?: BufferLike
+  data?: BytesLike
 
   /**
    * EC recovery ID.
@@ -202,7 +240,7 @@ export type TxData = {
 /**
  * {@link AccessListEIP2930Transaction} data.
  */
-export interface AccessListEIP2930TxData extends TxData {
+export interface AccessListEIP2930TxData extends LegacyTxData {
   /**
    * The transaction's chain ID
    */
@@ -211,7 +249,7 @@ export interface AccessListEIP2930TxData extends TxData {
   /**
    * The access list which contains the addresses/storage slots which the transaction wishes to access
    */
-  accessList?: AccessListBuffer | AccessList | null
+  accessList?: AccessListBytes | AccessList | null
 }
 
 /**
@@ -240,63 +278,101 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  versionedHashes?: BufferLike[]
+  versionedHashes?: BytesLike[]
   /**
-   * The maximum fee per data gas paid for the transaction
+   * The maximum fee per blob gas paid for the transaction
    */
-  maxFeePerDataGas?: BigIntLike
+  maxFeePerBlobGas?: BigIntLike
   /**
    * The blobs associated with a transaction
    */
-  blobs?: BufferLike[]
+  blobs?: BytesLike[]
   /**
    * The KZG commitments corresponding to the versioned hashes for each blob
    */
-  kzgCommitments?: BufferLike[]
+  kzgCommitments?: BytesLike[]
   /**
-   * The aggregate KZG proof associated with the transaction
+   * The KZG proofs associated with the transaction
    */
-  kzgProof?: BufferLike
+  kzgProofs?: BytesLike[]
+  /**
+   * An array of arbitrary strings that blobs are to be constructed from
+   */
+  blobsData?: string[]
+}
+
+export interface TxValuesArray {
+  [TransactionType.Legacy]: LegacyTxValuesArray
+  [TransactionType.AccessListEIP2930]: AccessListEIP2930TxValuesArray
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray
+  [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray
 }
 
 /**
- * Buffer values array for a legacy {@link Transaction}
+ * Bytes values array for a legacy {@link Transaction}
  */
-export type TxValuesArray = Buffer[]
+type LegacyTxValuesArray = Uint8Array[]
 
 /**
- * Buffer values array for an {@link AccessListEIP2930Transaction}
+ * Bytes values array for an {@link AccessListEIP2930Transaction}
  */
-export type AccessListEIP2930ValuesArray = [
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  AccessListBuffer,
-  Buffer?,
-  Buffer?,
-  Buffer?
+type AccessListEIP2930TxValuesArray = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
 ]
 
 /**
- * Buffer values array for a {@link FeeMarketEIP1559Transaction}
+ * Bytes values array for a {@link FeeMarketEIP1559Transaction}
  */
-export type FeeMarketEIP1559ValuesArray = [
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer,
-  AccessListBuffer,
-  Buffer?,
-  Buffer?,
-  Buffer?
+type FeeMarketEIP1559TxValuesArray = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
+]
+
+/**
+ * Bytes values array for a {@link BlobEIP4844Transaction}
+ */
+type BlobEIP4844TxValuesArray = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array,
+  Uint8Array[],
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
+]
+
+export type BlobEIP4844NetworkValuesArray = [
+  BlobEIP4844TxValuesArray,
+  Uint8Array[],
+  Uint8Array[],
+  Uint8Array[]
 ]
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }
@@ -324,7 +400,7 @@ export interface JsonTx {
   type?: string
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
-  maxFeePerDataGas?: string
+  maxFeePerBlobGas?: string
   versionedHashes?: string[]
 }
 
@@ -351,58 +427,6 @@ export interface JsonRpcTx {
   v: string // QUANTITY - ECDSA recovery id
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
-  maxFeePerDataGas?: string // QUANTITY - max data fee for blob transactions
+  maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
   versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }
-
-/** EIP4844 types */
-export const AddressType = Bytes20 // SSZ encoded address
-
-// SSZ encoded container for address and storage keys
-export const AccessTupleType = new ContainerType({
-  address: AddressType,
-  storageKeys: new ListCompositeType(Bytes32, MAX_VERSIONED_HASHES_LIST_SIZE),
-})
-
-// SSZ encoded blob transaction
-export const BlobTransactionType = new ContainerType({
-  chainId: Uint256,
-  nonce: Uint64,
-  maxPriorityFeePerGas: Uint256,
-  maxFeePerGas: Uint256,
-  gas: Uint64,
-  to: new UnionType([new NoneType(), AddressType]),
-  value: Uint256,
-  data: new ByteListType(MAX_CALLDATA_SIZE),
-  accessList: new ListCompositeType(AccessTupleType, MAX_ACCESS_LIST_SIZE),
-  maxFeePerDataGas: Uint256,
-  blobVersionedHashes: new ListCompositeType(Bytes32, MAX_VERSIONED_HASHES_LIST_SIZE),
-})
-
-// SSZ encoded ECDSA Signature
-export const ECDSASignatureType = new ContainerType({
-  yParity: new BooleanType(),
-  r: Uint256,
-  s: Uint256,
-})
-
-// SSZ encoded signed blob transaction
-export const SignedBlobTransactionType = new ContainerType({
-  message: BlobTransactionType,
-  signature: ECDSASignatureType,
-})
-
-// SSZ encoded KZG Commitment/Proof (48 bytes)
-export const KZGCommitmentType = Bytes48
-export const KZGProofType = KZGCommitmentType
-
-// SSZ encoded blob network transaction wrapper
-export const BlobNetworkTransactionWrapper = new ContainerType({
-  tx: SignedBlobTransactionType,
-  blobKzgs: new ListCompositeType(KZGCommitmentType, MAX_TX_WRAP_KZG_COMMITMENTS),
-  blobs: new ListCompositeType(
-    new ByteVectorType(FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT),
-    LIMIT_BLOBS_PER_TX
-  ),
-  kzgAggregatedProof: KZGProofType,
-})

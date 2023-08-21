@@ -1,64 +1,61 @@
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
-import _KBucket = require('k-bucket')
 
-import type { PeerInfo } from './dpt'
+import { KBucket as _KBucket } from '../ext/index.js'
+
+import type { PeerInfo } from '../types.js'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3
 
-export interface CustomContact extends PeerInfo {
-  id: Uint8Array | Buffer
-  vectorClock: number
-}
-
-export class KBucket extends EventEmitter {
-  _peers: Map<string, PeerInfo> = new Map()
-  _kbucket: _KBucket
-  constructor(localNodeId: Buffer) {
-    super()
-
-    this._kbucket = new _KBucket<CustomContact>({
+export class KBucket {
+  public events: EventEmitter
+  protected _peers: Map<string, PeerInfo> = new Map()
+  protected _kbucket: _KBucket
+  constructor(localNodeId: Uint8Array) {
+    this.events = new EventEmitter()
+    this._kbucket = new _KBucket({
       localNodeId,
       numberOfNodesPerKBucket: KBUCKET_SIZE,
       numberOfNodesToPing: KBUCKET_CONCURRENCY,
     })
 
-    this._kbucket.on('added', (peer: PeerInfo) => {
+    this._kbucket.events.on('added', (peer: PeerInfo) => {
       for (const key of KBucket.getKeys(peer)) {
         this._peers.set(key, peer)
       }
-      this.emit('added', peer)
+      this.events.emit('added', peer)
     })
 
-    this._kbucket.on('removed', (peer: PeerInfo) => {
+    this._kbucket.events.on('removed', (peer: PeerInfo) => {
       for (const key of KBucket.getKeys(peer)) {
         this._peers.delete(key)
       }
-      this.emit('removed', peer)
+      this.events.emit('removed', peer)
     })
 
-    this._kbucket.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
-      this.emit('ping', oldPeers, newPeer)
+    this._kbucket.events.on('ping', (oldPeers: PeerInfo[], newPeer: PeerInfo | undefined) => {
+      this.events.emit('ping', oldPeers, newPeer)
     })
   }
 
-  static getKeys(obj: Buffer | string | PeerInfo): string[] {
-    if (Buffer.isBuffer(obj)) return [obj.toString('hex')]
+  static getKeys(obj: Uint8Array | string | PeerInfo): string[] {
+    if (obj instanceof Uint8Array) return [bytesToUnprefixedHex(obj)]
     if (typeof obj === 'string') return [obj]
 
     const keys = []
-    if (Buffer.isBuffer(obj.id)) keys.push(obj.id.toString('hex'))
+    if (obj.id instanceof Uint8Array) keys.push(bytesToUnprefixedHex(obj.id))
     if (obj.address !== undefined && typeof obj.tcpPort === 'number')
       keys.push(`${obj.address}:${obj.tcpPort}`)
     return keys
   }
 
-  add(peer: PeerInfo) {
+  add(peer: PeerInfo): _KBucket | void {
     const isExists = KBucket.getKeys(peer).some((key) => this._peers.has(key))
-    if (!isExists) this._kbucket.add(peer as CustomContact)
+    if (!isExists) this._kbucket.add(peer)
   }
 
-  get(obj: Buffer | string | PeerInfo) {
+  get(obj: Uint8Array | string | PeerInfo): PeerInfo | null {
     for (const key of KBucket.getKeys(obj)) {
       const peer = this._peers.get(key)
       if (peer !== undefined) return peer
@@ -71,12 +68,12 @@ export class KBucket extends EventEmitter {
     return this._kbucket.toArray()
   }
 
-  closest(id: string): PeerInfo[] {
-    return this._kbucket.closest(Buffer.from(id), KBUCKET_SIZE)
+  closest(id: Uint8Array): PeerInfo[] {
+    return this._kbucket.closest(id, KBUCKET_SIZE)
   }
 
-  remove(obj: Buffer | string | PeerInfo) {
+  remove(obj: Uint8Array | string | PeerInfo) {
     const peer = this.get(obj)
-    if (peer !== null) this._kbucket.remove((peer as CustomContact).id)
+    if (peer?.id !== undefined) this._kbucket.remove(peer.id)
   }
 }

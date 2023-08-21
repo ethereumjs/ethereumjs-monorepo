@@ -1,5 +1,8 @@
-import type { BranchNode, ExtensionNode, LeafNode } from './trie'
-import type { WalkController } from './util/walkController'
+import { utf8ToBytes } from '@ethereumjs/util'
+
+import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
+import type { WalkController } from './util/walkController.js'
+import type { DB } from '@ethereumjs/util'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
@@ -7,12 +10,12 @@ export type Nibbles = number[]
 
 // Branch and extension nodes might store
 // hash to next node, or embed it if its len < 32
-export type EmbeddedNode = Buffer | Buffer[]
+export type EmbeddedNode = Uint8Array | Uint8Array[]
 
-export type Proof = Buffer[]
+export type Proof = Uint8Array[]
 
 export type FoundNodeFunction = (
-  nodeRef: Buffer,
+  nodeRef: Uint8Array,
   node: TrieNode | null,
   key: Nibbles,
   walkController: WalkController
@@ -24,12 +27,12 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB
+  db?: DB<string, string>
 
   /**
-   * A `Buffer` for the root of a previously stored trie
+   * A `Uint8Array` for the root of a previously stored trie
    */
-  root?: Buffer
+  root?: Uint8Array
 
   /**
    * Create as a secure Trie where the keys are automatically hashed using the
@@ -60,6 +63,13 @@ export interface TrieOpts {
    * unreachable nodes will be pruned (deleted) from the trie
    */
   useNodePruning?: boolean
+
+  /**
+   * LRU cache for trie nodes to allow for faster node retrieval.
+   *
+   * Default: 0 (deactivated)
+   */
+  cacheSize?: number
 }
 
 export type TrieOptsWithDefaults = TrieOpts & {
@@ -67,60 +77,26 @@ export type TrieOptsWithDefaults = TrieOpts & {
   useKeyHashingFunction: HashKeysFunction
   useRootPersistence: boolean
   useNodePruning: boolean
+  cacheSize: number
 }
 
-export type BatchDBOp = PutBatch | DelBatch
-
-export interface PutBatch {
-  type: 'put'
-  key: Buffer
-  value: Buffer
-}
-
-export interface DelBatch {
-  type: 'del'
-  key: Buffer
-}
-
-export interface DB {
+export interface CheckpointDBOpts {
   /**
-   * Retrieves a raw value from leveldb.
-   * @param key
-   * @returns A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
+   * A database instance.
    */
-  get(key: Buffer): Promise<Buffer | null>
+  db: DB<string, string>
 
   /**
-   * Writes a value directly to leveldb.
-   * @param key The key as a `Buffer`
-   * @param value The value to be stored
+   * Cache size (default: 0)
    */
-  put(key: Buffer, val: Buffer): Promise<void>
-
-  /**
-   * Removes a raw value in the underlying leveldb.
-   * @param keys
-   */
-  del(key: Buffer): Promise<void>
-
-  /**
-   * Performs a batch operation on db.
-   * @param opStack A stack of levelup operations
-   */
-  batch(opStack: BatchDBOp[]): Promise<void>
-
-  /**
-   * Returns a copy of the DB instance, with a reference
-   * to the **same** underlying leveldb instance.
-   */
-  copy(): DB
+  cacheSize?: number
 }
 
 export type Checkpoint = {
-  // We cannot use a Buffer => Buffer map directly. If you create two Buffers with the same internal value,
+  // We cannot use a Uint8Array => Uint8Array map directly. If you create two Uint8Arrays with the same internal value,
   // then when setting a value on the Map, it actually creates two indices.
-  keyValueMap: Map<string, Buffer | null>
-  root: Buffer
+  keyValueMap: Map<string, Uint8Array | undefined>
+  root: Uint8Array
 }
 
-export const ROOT_DB_KEY = Buffer.from('__root__')
+export const ROOT_DB_KEY = utf8ToBytes('__root__')

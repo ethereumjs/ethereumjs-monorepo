@@ -1,6 +1,7 @@
-import * as tape from 'tape'
+import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { getEOFCode } from '../src/eof'
+import { getEOFCode } from '../src/eof.js'
 
 function generateEOFCode(code: string) {
   const len = (code.length / 2).toString(16).padStart(4, '0')
@@ -12,20 +13,21 @@ function generateInvalidEOFCode(code: string) {
   return '0xEF000101' + len + '00' + code
 }
 
-tape('getEOFCode()', (t) => {
-  const code = '600100'
-  const validEofCode = generateEOFCode(code)
-  const invalidEofCode = generateInvalidEOFCode(code)
+describe('getEOFCode()', () => {
+  it('should work', () => {
+    const code = '600100'
+    const validEofCode = generateEOFCode(code)
+    const invalidEofCode = generateInvalidEOFCode(code)
 
-  t.equal(
-    getEOFCode(Buffer.from(validEofCode.slice(2), 'hex')).toString('hex'),
-    code,
-    'returned just code section of EOF container'
-  )
-  t.equal(
-    getEOFCode(Buffer.from(invalidEofCode.slice(2), 'hex')).toString('hex'),
-    invalidEofCode.toLowerCase().slice(2),
-    'returns entire code string for non EOF code'
-  )
-  t.end()
+    assert.equal(
+      bytesToUnprefixedHex(getEOFCode(hexToBytes(validEofCode))),
+      code,
+      'returned just code section of EOF container'
+    )
+    assert.equal(
+      bytesToUnprefixedHex(getEOFCode(hexToBytes(invalidEofCode))),
+      invalidEofCode.toLowerCase().slice(2),
+      'returns entire code string for non EOF code'
+    )
+  })
 })

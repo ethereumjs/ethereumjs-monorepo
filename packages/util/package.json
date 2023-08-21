@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "8.0.5",
+  "version": "9.0.0",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",
@@ -61,8 +61,15 @@
       "url": "https://github.com/asinyagin"
     }
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -70,28 +77,32 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
-    "docs:build": "npx typedoc --options typedoc.js",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "docs:build": "npx typedoc --options typedoc.cjs",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- util",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- test/*.spec.ts",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=chrome --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.10.2",
-    "@ethereumjs/rlp": "^4.0.1",
-    "ethereum-cryptography": "^1.1.2"
+    "@ethereumjs/rlp": "^5.0.0",
+    "ethereum-cryptography": "^2.1.2"
   },
-  "devDependencies": {
-    "@types/bn.js": "^5.1.0",
-    "@types/secp256k1": "^4.0.1"
+  "devDependencies": {},
+  "peerDependencies": {
+    "c-kzg": "^2.1.0"
+  },
+  "peerDependenciesMeta": {
+    "c-kzg": {
+      "optional": true
+    }
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   }
 }

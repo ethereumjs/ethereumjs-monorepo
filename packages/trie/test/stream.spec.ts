@@ -1,96 +1,96 @@
-import * as tape from 'tape'
+import { utf8ToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
-import type { BatchDBOp } from '../src'
+import type { BatchDBOp } from '@ethereumjs/util'
 
-tape('kv stream test', function (tester) {
-  const it = tester.test
+describe('kv stream test', () => {
   const trie = new Trie()
   const ops = [
     {
       type: 'del',
-      key: Buffer.from('father'),
+      key: utf8ToBytes('father'),
     },
     {
       type: 'put',
-      key: Buffer.from('name'),
-      value: Buffer.from('Yuri Irsenovich Kim'),
+      key: utf8ToBytes('name'),
+      value: utf8ToBytes('Yuri Irsenovich Kim'),
     },
     {
       type: 'put',
-      key: Buffer.from('dob'),
-      value: Buffer.from('16 February 1941'),
+      key: utf8ToBytes('dob'),
+      value: utf8ToBytes('16 February 1941'),
     },
     {
       type: 'put',
-      key: Buffer.from('spouse'),
-      value: Buffer.from('Kim Young-sook'),
+      key: utf8ToBytes('spouse'),
+      value: utf8ToBytes('Kim Young-sook'),
     },
     {
       type: 'put',
-      key: Buffer.from('occupation'),
-      value: Buffer.from('Clown'),
+      key: utf8ToBytes('occupation'),
+      value: utf8ToBytes('Clown'),
     },
     {
       type: 'put',
-      key: Buffer.from('nameads'),
-      value: Buffer.from('Yuri Irsenovich Kim'),
+      key: utf8ToBytes('nameads'),
+      value: utf8ToBytes('Yuri Irsenovich Kim'),
     },
     {
       type: 'put',
-      key: Buffer.from('namfde'),
-      value: Buffer.from('Yuri Irsenovich Kim'),
+      key: utf8ToBytes('namfde'),
+      value: utf8ToBytes('Yuri Irsenovich Kim'),
     },
     {
       type: 'put',
-      key: Buffer.from('namsse'),
-      value: Buffer.from('Yuri Irsenovich Kim'),
+      key: utf8ToBytes('namsse'),
+      value: utf8ToBytes('Yuri Irsenovich Kim'),
     },
     {
       type: 'put',
-      key: Buffer.from('dofab'),
-      value: Buffer.from('16 February 1941'),
+      key: utf8ToBytes('dofab'),
+      value: utf8ToBytes('16 February 1941'),
     },
     {
       type: 'put',
-      key: Buffer.from('spoudse'),
-      value: Buffer.from('Kim Young-sook'),
+      key: utf8ToBytes('spoudse'),
+      value: utf8ToBytes('Kim Young-sook'),
     },
     {
       type: 'put',
-      key: Buffer.from('occupdsation'),
-      value: Buffer.from('Clown'),
+      key: utf8ToBytes('occupdsation'),
+      value: utf8ToBytes('Clown'),
     },
     {
       type: 'put',
-      key: Buffer.from('dozzzb'),
-      value: Buffer.from('16 February 1941'),
+      key: utf8ToBytes('dozzzb'),
+      value: utf8ToBytes('16 February 1941'),
     },
     {
       type: 'put',
-      key: Buffer.from('spouszze'),
-      value: Buffer.from('Kim Young-sook'),
+      key: utf8ToBytes('spouszze'),
+      value: utf8ToBytes('Kim Young-sook'),
     },
     {
       type: 'put',
-      key: Buffer.from('occupatdfion'),
-      value: Buffer.from('Clown'),
+      key: utf8ToBytes('occupatdfion'),
+      value: utf8ToBytes('Clown'),
     },
     {
       type: 'put',
-      key: Buffer.from('dssob'),
-      value: Buffer.from('16 February 1941'),
+      key: utf8ToBytes('dssob'),
+      value: utf8ToBytes('16 February 1941'),
     },
     {
       type: 'put',
-      key: Buffer.from('spossuse'),
-      value: Buffer.from('Kim Young-sook'),
+      key: utf8ToBytes('spossuse'),
+      value: utf8ToBytes('Kim Young-sook'),
     },
     {
       type: 'put',
-      key: Buffer.from('occupssation'),
-      value: Buffer.from('Clown'),
+      key: utf8ToBytes('occupssation'),
+      value: utf8ToBytes('Clown'),
     },
   ] as BatchDBOp[]
 
@@ -101,66 +101,62 @@ tape('kv stream test', function (tester) {
     }
   }
 
-  it('should populate trie', async function (t) {
+  it('should populate trie', async () => {
     await trie.batch(ops)
-    t.end()
   })
 
-  it('should fetch all of the nodes', function (t) {
+  it('should fetch all of the nodes', () => {
     const stream = trie.createReadStream()
     stream.on('data', (d: any) => {
       const key = d.key.toString()
       const value = d.value.toString()
-      t.equal(valObj[key], value)
+      assert.equal(valObj[key], value)
       delete valObj[key]
     })
     stream.on('end', () => {
       const keys = Object.keys(valObj)
-      t.equal(keys.length, 0)
-      t.end()
+      assert.equal(keys.length, 0)
     })
   })
 })
 
-tape('db stream test', function (tester) {
-  const it = tester.test
+describe('db stream test', () => {
   const trie = new Trie()
   const ops = [
     {
       type: 'put',
-      key: Buffer.from('color'),
-      value: Buffer.from('purple'),
+      key: utf8ToBytes('color'),
+      value: utf8ToBytes('purple'),
     },
     {
       type: 'put',
-      key: Buffer.from('food'),
-      value: Buffer.from('sushi'),
+      key: utf8ToBytes('food'),
+      value: utf8ToBytes('sushi'),
     },
     {
       type: 'put',
-      key: Buffer.from('fight'),
-      value: Buffer.from('fire'),
+      key: utf8ToBytes('fight'),
+      value: utf8ToBytes('fire'),
     },
     {
       type: 'put',
-      key: Buffer.from('colo'),
-      value: Buffer.from('trolo'),
+      key: utf8ToBytes('colo'),
+      value: utf8ToBytes('trolo'),
     },
     {
       type: 'put',
-      key: Buffer.from('color'),
-      value: Buffer.from('blue'),
+      key: utf8ToBytes('color'),
+      value: utf8ToBytes('blue'),
     },
     {
       type: 'put',
-      key: Buffer.from('color'),
-      value: Buffer.from('pink'),
+      key: utf8ToBytes('color'),
+      value: utf8ToBytes('pink'),
     },
   ] as BatchDBOp[]
 
-  it('should populate trie', async function (t) {
+  it('should populate trie', async () => {
     trie.checkpoint()
     await trie.batch(ops)
-    t.end()
   })
 })

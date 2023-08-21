@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [18]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -40,9 +40,7 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-
       - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: block
-        if: ${{ matrix.node-version == 16 }}

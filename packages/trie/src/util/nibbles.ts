@@ -1,13 +1,15 @@
-import type { Nibbles } from '../types'
+import { toBytes } from '@ethereumjs/util'
+
+import type { Nibbles } from '../types.js'
 
 /**
- * Converts a buffer to a nibble array.
+ * Converts a bytes to a nibble array.
  * @private
  * @param key
  */
-export function bufferToNibbles(key: Buffer): Nibbles {
-  const bkey = Buffer.from(key)
-  const nibbles = [] as any
+export function bytesToNibbles(key: Uint8Array): Nibbles {
+  const bkey = toBytes(key)
+  const nibbles = [] as Nibbles
 
   for (let i = 0; i < bkey.length; i++) {
     let q = i * 2
@@ -20,12 +22,12 @@ export function bufferToNibbles(key: Buffer): Nibbles {
 }
 
 /**
- * Converts a nibble array into a buffer.
+ * Converts a nibble array into bytes.
  * @private
  * @param arr - Nibble array
  */
-export function nibblesToBuffer(arr: Nibbles): Buffer {
-  const buf = Buffer.alloc(arr.length / 2)
+export function nibblestoBytes(arr: Nibbles): Uint8Array {
+  const buf = new Uint8Array(arr.length / 2)
   for (let i = 0; i < buf.length; i++) {
     let q = i * 2
     buf[i] = (arr[q] << 4) + arr[++q]

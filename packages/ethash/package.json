@@ -1,7 +1,7 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "2.0.4",
-  "description": "An ethash implementation in JavaScript",
+  "version": "3.0.0",
+  "description": "An implementation of the Ethash consensus algorithm in JavaScript",
   "keywords": [
     "ethash",
     "ethereum",
@@ -17,8 +17,15 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -26,28 +33,27 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
-    "docs:build": "typedoc --options typedoc.js",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- ethash",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "test": "tape -r ts-node/register test/*.spec.ts",
+    "test": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^4.2.1",
-    "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.5",
-    "abstract-level": "^1.0.3",
-    "bigint-crypto-utils": "^3.0.23",
-    "ethereum-cryptography": "^1.1.2"
+    "@ethereumjs/block": "^5.0.0",
+    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
+    "bigint-crypto-utils": "^3.2.2",
+    "ethereum-cryptography": "^2.1.2"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^3.1.1",
-    "memory-level": "^1.0.0"
+    "@ethereumjs/common": "^4.0.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   }
 }

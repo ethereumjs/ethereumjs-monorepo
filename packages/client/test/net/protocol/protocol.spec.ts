@@ -1,10 +1,10 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../lib/config'
-import { BoundProtocol, Protocol, Sender } from '../../../lib/net/protocol'
+import { Config } from '../../../src/config'
+import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol'
 
-tape('[Protocol]', (t) => {
+describe('[Protocol]', () => {
   const testMessage = {
     name: 'TestMessage',
     code: 0x01,
@@ -13,7 +13,7 @@ tape('[Protocol]', (t) => {
   }
   class TestProtocol extends Protocol {
     constructor() {
-      const config = new Config({ transports: [] })
+      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
       super({ config })
     }
 
@@ -34,34 +34,31 @@ tape('[Protocol]', (t) => {
     }
   }
 
-  t.test('should throw if missing abstract methods', (t) => {
-    const config = new Config({ transports: [] })
+  it('should throw if missing abstract methods', () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
-    t.throws(() => p.versions, /Unimplemented/)
-    t.throws(() => p.messages, /Unimplemented/)
-    t.throws(() => p.encodeStatus(), /Unimplemented/)
-    t.throws(() => p.decodeStatus({}), /Unimplemented/)
-    t.end()
+    assert.throws(() => p.versions, /Unimplemented/)
+    assert.throws(() => p.messages, /Unimplemented/)
+    assert.throws(() => p.encodeStatus(), /Unimplemented/)
+    assert.throws(() => p.decodeStatus({}), /Unimplemented/)
   })
 
-  t.test('should handle open', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should handle open', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     await p.open()
-    t.ok(p.opened, 'is open')
-    t.end()
+    assert.ok(p.opened, 'is open')
   })
 
-  t.test('should perform handshake (status now)', async (t) => {
+  it('should perform handshake (status now)', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
     sender.sendStatus = td.func<Sender['sendStatus']>()
     sender.status = [1]
-    t.deepEquals(await p.handshake(sender), { id: 1 }, 'got status now')
-    t.end()
+    assert.deepEqual(await p.handshake(sender), { id: 1 }, 'got status now')
   })
 
-  t.test('should perform handshake (status later)', async (t) => {
+  it('should perform handshake (status later)', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
     sender.sendStatus = td.func<Sender['sendStatus']>()
@@ -70,11 +67,10 @@ tape('[Protocol]', (t) => {
     }, 100)
     const status = await p.handshake(sender)
     td.verify(sender.sendStatus([1]))
-    t.deepEquals(status, { id: 1 }, 'got status later')
-    t.end()
+    assert.deepEqual(status, { id: 1 }, 'got status later')
   })
 
-  t.test('should handle handshake timeout', async (t) => {
+  it('should handle handshake timeout', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
     sender.sendStatus = td.func<Sender['sendStatus']>()
@@ -85,35 +81,31 @@ tape('[Protocol]', (t) => {
     try {
       await p.handshake(sender)
     } catch (e: any) {
-      t.ok(/timed out/.test(e.message), 'got timeout error')
+      assert.ok(/timed out/.test(e.message), 'got timeout error')
     }
-    t.end()
   })
 
-  t.test('should encode message', (t) => {
+  it('should encode message', () => {
     const p = new TestProtocol()
-    t.equals(p.encode(testMessage, 1234), '1234', 'encoded')
-    t.equals(p.encode({} as any, 1234), 1234, 'encode not defined')
-    t.end()
+    assert.equal(p.encode(testMessage, 1234), '1234', 'encoded')
+    assert.equal(p.encode({} as any, 1234), 1234, 'encode not defined')
   })
 
-  t.test('should decode message', (t) => {
+  it('should decode message', () => {
     const p = new TestProtocol()
-    t.equals(p.decode(testMessage, '1234'), 1234, 'decoded')
-    t.equals(p.decode({} as any, 1234), 1234, 'decode not defined')
-    t.end()
+    assert.equal(p.decode(testMessage, '1234'), 1234, 'decoded')
+    assert.equal(p.decode({} as any, 1234), 1234, 'decode not defined')
   })
 
-  t.test('should bind to peer', async (t) => {
+  it('should bind to peer', async () => {
     const p = new TestProtocol()
     const peer = td.object('Peer') as any
     const sender = new Sender()
     BoundProtocol.prototype.handshake = td.func<BoundProtocol['handshake']>()
     td.when(BoundProtocol.prototype.handshake(td.matchers.isA(Sender))).thenResolve()
     const bound = await p.bind(peer, sender)
-    t.ok(bound instanceof BoundProtocol, 'correct bound protocol')
-    t.equals(peer.test, bound, 'bound to peer')
-    t.end()
+    assert.ok(bound instanceof BoundProtocol, 'correct bound protocol')
+    assert.equal(peer.test, bound, 'bound to peer')
   })
 
   td.reset()

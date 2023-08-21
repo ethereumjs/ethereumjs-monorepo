@@ -2,15 +2,13 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Account, Address, AsyncEventEmitter, TypeOutput, toType } from '@ethereumjs/util'
-import { promisify } from 'util'
+import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { buildBlock } from './buildBlock'
-import { EEI } from './eei/eei'
-import { runBlock } from './runBlock'
-import { runTx } from './runTx'
+import { buildBlock } from './buildBlock.js'
+import { runBlock } from './runBlock.js'
+import { runTx } from './runTx.js'
 
-import type { BlockBuilder } from './buildBlock'
+import type { BlockBuilder } from './buildBlock.js'
 import type {
   BuildBlockOpts,
   RunBlockOpts,
@@ -19,10 +17,11 @@ import type {
   RunTxResult,
   VMEvents,
   VMOpts,
-} from './types'
+} from './types.js'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
-import type { EEIInterface, EVMInterface } from '@ethereumjs/evm'
-import type { StateManager } from '@ethereumjs/statemanager'
+import type { EVMStateManagerInterface } from '@ethereumjs/common'
+import type { EVMInterface } from '@ethereumjs/evm'
+import type { BigIntLike, GenesisState } from '@ethereumjs/util'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -34,27 +33,25 @@ export class VM {
   /**
    * The StateManager used by the VM
    */
-  readonly stateManager: StateManager
+  readonly stateManager: EVMStateManagerInterface
 
   /**
    * The blockchain the VM operates on
    */
   readonly blockchain: BlockchainInterface
 
-  readonly _common: Common
+  readonly common: Common
 
   readonly events: AsyncEventEmitter<VMEvents>
   /**
    * The EVM used for bytecode execution
    */
   readonly evm: EVMInterface
-  readonly eei: EEIInterface
 
   protected readonly _opts: VMOpts
   protected _isInitialized: boolean = false
 
-  protected readonly _hardforkByBlockNumber: boolean
-  protected readonly _hardforkByTTD?: bigint
+  protected readonly _setHardfork: boolean | BigIntLike
 
   /**
    * Cached emit() function, not for public usage
@@ -80,7 +77,11 @@ export class VM {
    */
   static async create(opts: VMOpts = {}): Promise<VM> {
     const vm = new this(opts)
-    await vm.init()
+    const genesisStateOpts =
+      opts.stateManager === undefined && opts.genesisState === undefined
+        ? { genesisState: {} }
+        : undefined
+    await vm.init({ ...genesisStateOpts, ...opts })
     return vm
   }
 
@@ -98,98 +99,74 @@ export class VM {
     this._opts = opts
 
     if (opts.common) {
-      this._common = opts.common
+      this.common = opts.common
     } else {
       const DEFAULT_CHAIN = Chain.Mainnet
-      this._common = new Common({ chain: DEFAULT_CHAIN })
+      this.common = new Common({ chain: DEFAULT_CHAIN })
     }
 
     if (opts.stateManager) {
       this.stateManager = opts.stateManager
     } else {
-      this.stateManager = new DefaultStateManager({})
+      this.stateManager = new DefaultStateManager({ common: this.common })
     }
 
-    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this._common })
-
-    // TODO tests
-    if (opts.eei) {
-      if (opts.evm) {
-        throw new Error('cannot specify EEI if EVM opt provided')
-      }
-      this.eei = opts.eei
-    } else {
-      if (opts.evm) {
-        this.eei = opts.evm.eei
-      } else {
-        this.eei = new EEI(this.stateManager, this._common, this.blockchain)
-      }
-    }
+    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this.common })
 
     // TODO tests
     if (opts.evm) {
       this.evm = opts.evm
     } else {
       this.evm = new EVM({
-        common: this._common,
-        eei: this.eei,
+        common: this.common,
+        stateManager: this.stateManager,
+        blockchain: this.blockchain,
       })
     }
 
-    if (opts.hardforkByBlockNumber !== undefined && opts.hardforkByTTD !== undefined) {
-      throw new Error(
-        `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-      )
+    this._setHardfork = opts.setHardfork ?? false
+
+    this._emit = async (topic: string, data: any): Promise<void> => {
+      return new Promise((resolve) => this.events.emit(topic as keyof VMEvents, data, resolve))
     }
-
-    this._hardforkByBlockNumber = opts.hardforkByBlockNumber ?? false
-    this._hardforkByTTD = toType(opts.hardforkByTTD, TypeOutput.BigInt)
-
-    // We cache this promisified function as it's called from the main execution loop, and
-    // promisifying each time has a huge performance impact.
-    this._emit = <(topic: string, data: any) => Promise<void>>(
-      promisify(this.events.emit.bind(this.events))
-    )
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
-  async init(): Promise<void> {
+  async init({ genesisState }: { genesisState?: GenesisState } = {}): Promise<void> {
     if (this._isInitialized) return
-    if (typeof (<any>this.blockchain)._init === 'function') {
-      await (this.blockchain as any)._init()
+
+    if (genesisState !== undefined) {
+      await this.stateManager.generateCanonicalGenesis(genesisState)
+    } else if (this._opts.stateManager === undefined) {
+      throw Error('genesisState state required to set genesis for stateManager')
     }
 
-    if (!this._opts.stateManager) {
-      if (this._opts.activateGenesisState === true) {
-        if (typeof (<any>this.blockchain).genesisState === 'function') {
-          await this.eei.generateCanonicalGenesis((<any>this.blockchain).genesisState())
-        } else {
-          throw new Error(
-            'cannot activate genesis state: blockchain object has no `genesisState` method'
-          )
-        }
-      }
+    if (typeof (<any>this.blockchain)._init === 'function') {
+      await (this.blockchain as any)._init({ genesisState })
     }
 
     if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
-      await this.eei.checkpoint()
+      await this.evm.journal.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      for (const [addressStr] of getActivePrecompiles(this._common)) {
-        const address = new Address(Buffer.from(addressStr, 'hex'))
-        const account = await this.eei.getAccount(address)
+      for (const [addressStr] of getActivePrecompiles(this.common)) {
+        const address = new Address(unprefixedHexToBytes(addressStr))
+        let account = await this.stateManager.getAccount(address)
         // Only do this if it is not overridden in genesis
         // Note: in the case that custom genesis has storage fields, this is preserved
-        if (account.isEmpty()) {
+        if (account === undefined) {
+          account = new Account()
           const newAccount = Account.fromAccountData({
             balance: 1,
             storageRoot: account.storageRoot,
           })
-          await this.eei.putAccount(address, newAccount)
+          await this.stateManager.putAccount(address, newAccount)
         }
       }
-      await this.eei.commit()
+      await this.evm.journal.commit()
     }
     this._isInitialized = true
   }
@@ -241,24 +218,27 @@ export class VM {
 
   /**
    * Returns a copy of the {@link VM} instance.
+   *
+   * Note that the returned copy will share the same db as the original for the blockchain and the statemanager
    */
-  async copy(): Promise<VM> {
-    const common = this._common.copy()
-    common.setHardfork(this._common.hardfork())
-    const eeiCopy = new EEI(this.stateManager.copy(), common, this.blockchain.copy())
+  async shallowCopy(): Promise<VM> {
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
+    const blockchain = this.blockchain.shallowCopy()
+    const stateManager = this.stateManager.shallowCopy()
     const evmOpts = {
       ...(this.evm as any)._optsCached,
       common,
-      eei: eeiCopy,
+      blockchain,
+      stateManager,
     }
-    const evmCopy = new EVM(evmOpts)
+    const evmCopy = new EVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
-      stateManager: (eeiCopy as any)._stateManager,
-      blockchain: (eeiCopy as any)._blockchain,
-      common: (eeiCopy as any)._common,
+      stateManager,
+      blockchain: this.blockchain,
+      common,
       evm: evmCopy,
-      hardforkByBlockNumber: this._hardforkByBlockNumber ? true : undefined,
-      hardforkByTTD: this._hardforkByTTD,
+      setHardfork: this._setHardfork,
     })
   }
 
@@ -268,7 +248,7 @@ export class VM {
   errorStr() {
     let hf = ''
     try {
-      hf = this._common.hardfork()
+      hf = this.common.hardfork()
     } catch (e: any) {
       hf = 'error'
     }

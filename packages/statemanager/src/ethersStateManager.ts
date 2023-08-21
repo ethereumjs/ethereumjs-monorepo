@@ -1,74 +1,76 @@
 import { Trie } from '@ethereumjs/trie'
-import {
-  Account,
-  bigIntToHex,
-  bufferToBigInt,
-  bufferToHex,
-  setLengthLeft,
-  toBuffer,
-} from '@ethereumjs/util'
-import { debug } from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
-import { Cache } from './cache'
+import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
-import { BaseStateManager } from '.'
-
-import type { Proof, StateManager } from '.'
-import type { getCb, putCb } from './cache'
-import type { StorageDump } from './interface'
+import type { Proof } from './index.js'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { StorageRange } from '@ethereumjs/common/src'
 import type { Address } from '@ethereumjs/util'
-
-const log = debug('statemanager')
+import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export interface EthersStateManagerOpts {
-  provider: string | ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
+  provider: string | ethers.JsonRpcProvider
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager extends BaseStateManager implements StateManager {
-  private provider: ethers.providers.StaticJsonRpcProvider | ethers.providers.JsonRpcProvider
-  private contractCache: Map<string, Buffer>
-  private storageCache: Map<string, Map<string, Buffer>>
-  private blockTag: string
-  _cache: Cache
-
+export class EthersStateManager implements EVMStateManagerInterface {
+  protected _provider: ethers.JsonRpcProvider
+  protected _contractCache: Map<string, Uint8Array>
+  protected _storageCache: StorageCache
+  protected _blockTag: string
+  protected _accountCache: AccountCache
+  originalStorageCache: OriginalStorageCache
+  protected _debug: Debugger
+  protected DEBUG: boolean
   constructor(opts: EthersStateManagerOpts) {
-    super({})
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+
+    this._debug = createDebugLogger('statemanager:ethersStateManager')
     if (typeof opts.provider === 'string') {
-      this.provider = new ethers.providers.StaticJsonRpcProvider(opts.provider)
-    } else if (opts.provider instanceof ethers.providers.JsonRpcProvider) {
-      this.provider = opts.provider
+      this._provider = new ethers.JsonRpcProvider(opts.provider)
+    } else if (opts.provider instanceof ethers.JsonRpcProvider) {
+      this._provider = opts.provider
     } else {
       throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
     }
 
-    this.blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
+    this._blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
 
-    this.contractCache = new Map()
-    this.storageCache = new Map()
+    this._contractCache = new Map()
+    this._storageCache = new StorageCache({ size: 100000, type: CacheType.ORDERED_MAP })
+    this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
-    const getCb: getCb = async (address) => {
-      return this.getAccountFromProvider(address)
-    }
-    const putCb: putCb = async (_keyBuf, _accountRlp) => {
-      return Promise.resolve()
-    }
-    const deleteCb = async (_keyBuf: Buffer) => {
-      return Promise.resolve()
-    }
-    this._cache = new Cache({ getCb, putCb, deleteCb })
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
   }
 
-  copy(): EthersStateManager {
+  /**
+   * Note that the returned statemanager will share the same JsonRpcProvider as the original
+   *
+   * @returns EthersStateManager
+   */
+  shallowCopy(): EthersStateManager {
     const newState = new EthersStateManager({
-      provider: this.provider,
-      blockTag: BigInt(this.blockTag),
+      provider: this._provider,
+      blockTag: BigInt(this._blockTag),
     })
-    ;(newState as any).contractCache = new Map(this.contractCache)
-    ;(newState as any).storageCache = new Map(this.storageCache)
-    ;(newState as any)._cache = this._cache
+    newState._contractCache = new Map(this._contractCache)
+    newState._storageCache = new StorageCache({
+      size: 100000,
+      type: CacheType.ORDERED_MAP,
+    })
+    newState._accountCache = new AccountCache({
+      size: 100000,
+      type: CacheType.ORDERED_MAP,
+    })
     return newState
   }
 
@@ -78,33 +80,34 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param blockTag - the new block tag to use when querying the provider
    */
   setBlockTag(blockTag: bigint | 'earliest'): void {
-    this.blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
-    this.clearCache()
+    this._blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
+    this.clearCaches()
+    if (this.DEBUG) this._debug(`setting block tag to ${this._blockTag}`)
   }
 
   /**
    * Clears the internal cache so all accounts, contract code, and storage slots will
    * initially be retrieved from the provider
    */
-  clearCache(): void {
-    this.contractCache.clear()
-    this.storageCache.clear()
-    this._cache.clear()
+  clearCaches(): void {
+    this._contractCache.clear()
+    this._storageCache.clear()
+    this._accountCache.clear()
   }
 
   /**
    * Gets the code corresponding to the provided `address`.
    * @param address - Address to get the `code` for
-   * @returns {Promise<Buffer>} - Resolves with the code corresponding to the provided address.
-   * Returns an empty `Buffer` if the account has no associated code.
+   * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
+   * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getContractCode(address: Address): Promise<Buffer> {
-    let codeBuffer = this.contractCache.get(address.toString())
-    if (codeBuffer !== undefined) return codeBuffer
-    const code = await this.provider.getCode(address.toString(), this.blockTag)
-    codeBuffer = toBuffer(code)
-    this.contractCache.set(address.toString(), codeBuffer)
-    return codeBuffer
+  async getContractCode(address: Address): Promise<Uint8Array> {
+    let codeBytes = this._contractCache.get(address.toString())
+    if (codeBytes !== undefined) return codeBytes
+    const code = await this._provider.getCode(address.toString(), this._blockTag)
+    codeBytes = toBytes(code)
+    this._contractCache.set(address.toString(), codeBytes)
+    return codeBytes
   }
 
   /**
@@ -113,9 +116,9 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
-  async putContractCode(address: Address, value: Buffer): Promise<void> {
+  async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     // Store contract code in the cache
-    this.contractCache.set(address.toString(), value)
+    this._contractCache.set(address.toString(), value)
   }
 
   /**
@@ -123,30 +126,28 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * the shortest representation of the stored value.
    * @param address - Address of the account to get the storage for
    * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   * @returns {Buffer} - The storage value for the account
+   * @returns {Uint8Array} - The storage value for the account
    * corresponding to the provided address at the provided key.
-   * If this does not exist an empty `Buffer` is returned.
+   * If this does not exist an empty `Uint8Array` is returned.
    */
-  async getContractStorage(address: Address, key: Buffer): Promise<Buffer> {
+  async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
-    const accountStorage: Map<string, Buffer> | undefined = this.storageCache.get(
-      address.toString()
-    )
-    let storage: Buffer | string | undefined
-    if (accountStorage !== undefined) {
-      storage = accountStorage.get(key.toString('hex'))
-      if (storage !== undefined) {
-        return storage
-      }
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    let value = this._storageCache!.get(address, key)
+    if (value !== undefined) {
+      return value
     }
 
     // Retrieve storage slot from provider if not found in cache
-    storage = await this.provider.getStorageAt(
+    const storage = await this._provider.getStorage(
       address.toString(),
-      bufferToBigInt(key),
-      this.blockTag
+      bytesToBigInt(key),
+      this._blockTag
     )
-    const value = toBuffer(storage)
+    value = toBytes(storage)
 
     await this.putContractStorage(address, key, value)
     return value
@@ -161,13 +162,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Cannot be more than 32 bytes. Leading zeros are stripped.
    * If it is empty or filled with zeros, deletes the value.
    */
-  async putContractStorage(address: Address, key: Buffer, value: Buffer): Promise<void> {
-    let accountStorage = this.storageCache.get(address.toString())
-    if (accountStorage === undefined) {
-      this.storageCache.set(address.toString(), new Map<string, Buffer>())
-      accountStorage = this.storageCache.get(address.toString())
-    }
-    accountStorage?.set(key.toString('hex'), value)
+  async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
+    this._storageCache.put(address, key, value)
   }
 
   /**
@@ -175,7 +171,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    this.storageCache.delete(address.toString())
+    this._storageCache.clearContractStorage(address)
   }
 
   /**
@@ -186,14 +182,19 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Both are represented as `0x` prefixed hex strings.
    */
   dumpStorage(address: Address): Promise<StorageDump> {
-    const addressStorage = this.storageCache.get(address.toString())
+    const storageMap = this._storageCache._lruCache?.get(address.toString())
     const dump: StorageDump = {}
-    if (addressStorage !== undefined) {
-      for (const slot of addressStorage) {
-        dump[slot[0]] = bufferToHex(slot[1])
+    if (storageMap !== undefined) {
+      for (const slot of storageMap) {
+        dump[slot[0]] = bytesToHex(slot[1])
       }
     }
     return Promise.resolve(dump)
+  }
+
+  dumpStorageRange(_address: Address, _startKey: bigint, _limit: number): Promise<StorageRange> {
+    // TODO: Implement.
+    return Promise.reject()
   }
 
   /**
@@ -201,34 +202,42 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
-    log(`Verify if ${address.toString()} exists`)
+    if (this.DEBUG) this._debug?.(`verify if ${address.toString()} exists`)
 
-    const localAccount = this._cache.get(address)
-    if (!localAccount.isEmpty()) return true
+    const localAccount = this._accountCache.get(address)
+    if (localAccount !== undefined) return true
     // Get merkle proof for `address` from provider
-    const proof = await this.provider.send('eth_getProof', [address.toString(), [], this.blockTag])
+    const proof = await this._provider.send('eth_getProof', [
+      address.toString(),
+      [],
+      this._blockTag,
+    ])
 
-    const proofBuf = proof.accountProof.map((proofNode: string) => toBuffer(proofNode))
+    const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
     const trie = new Trie({ useKeyHashing: true })
-    const verified = await trie.verifyProof(
-      Buffer.from(keccak256(proofBuf[0])),
-      address.buf,
-      proofBuf
-    )
+    const verified = await trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf)
     // if not verified (i.e. verifyProof returns null), account does not exist
     return verified === null ? false : true
   }
 
   /**
    * Gets the code corresponding to the provided `address`.
-   * @param address - Address to get the `code` for
-   * @returns {Promise<Buffer>} - Resolves with the code corresponding to the provided address.
-   * Returns an empty `Buffer` if the account has no associated code.
+   * @param address - Address to get the `account` for
+   * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
+   * Returns an empty `Uint8Array` if the account has no associated code.
    */
-  async getAccount(address: Address): Promise<Account> {
-    const account = this._cache.getOrLoad(address)
+  async getAccount(address: Address): Promise<Account | undefined> {
+    const elem = this._accountCache?.get(address)
+    if (elem !== undefined) {
+      return elem.accountRLP !== undefined
+        ? Account.fromRlpSerializedAccount(elem.accountRLP)
+        : undefined
+    }
 
+    const rlp = (await this.getAccountFromProvider(address)).serialize()
+    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    this._accountCache?.put(address, account)
     return account
   }
 
@@ -238,16 +247,17 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @private
    */
   async getAccountFromProvider(address: Address): Promise<Account> {
-    const accountData = await this.provider.send('eth_getProof', [
+    if (this.DEBUG) this._debug(`retrieving account data from ${address.toString()} from provider`)
+    const accountData = await this._provider.send('eth_getProof', [
       address.toString(),
       [],
-      this.blockTag,
+      this._blockTag,
     ])
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
-      codeHash: toBuffer(accountData.codeHash),
-      storageRoot: toBuffer(accountData.storageHash),
+      codeHash: toBytes(accountData.codeHash),
+      storageRoot: toBytes(accountData.storageHash),
     })
     return account
   }
@@ -257,8 +267,64 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param address - Address under which to store `account`
    * @param account - The account to store
    */
-  async putAccount(address: Address, account: Account): Promise<void> {
-    this._cache.put(address, account)
+  async putAccount(address: Address, account: Account | undefined): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(
+        `Save account address=${address} nonce=${account?.nonce} balance=${
+          account?.balance
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
+          account && account.isEmpty() ? 'yes' : 'no'
+        }`
+      )
+    }
+    if (account !== undefined) {
+      this._accountCache!.put(address, account)
+    } else {
+      this._accountCache!.del(address)
+    }
+  }
+
+  /**
+   * Gets the account associated with `address`, modifies the given account
+   * fields, then saves the account into state. Account fields can include
+   * `nonce`, `balance`, `storageRoot`, and `codeHash`.
+   * @param address - Address of the account to modify
+   * @param accountFields - Object containing account fields and values to modify
+   */
+  async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    if (this.DEBUG) {
+      this._debug(`modifying account fields for ${address.toString()}`)
+      this._debug(
+        JSON.stringify(
+          accountFields,
+          (k, v) => {
+            if (k === 'nonce') return v.toString()
+            return v
+          },
+          2
+        )
+      )
+    }
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
+  }
+
+  /**
+   * Deletes an account from state under the provided `address`.
+   * @param address - Address of the account which should be deleted
+   */
+  async deleteAccount(address: Address) {
+    if (this.DEBUG) {
+      this._debug(`deleting account corresponding to ${address.toString()}`)
+    }
+    this._accountCache.del(address)
   }
 
   /**
@@ -267,11 +333,12 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * @param storageSlots storage slots to get proof of
    * @returns an EIP-1186 formatted proof
    */
-  async getProof(address: Address, storageSlots: Buffer[] = []): Promise<Proof> {
-    const proof = await this.provider.send('eth_getProof', [
+  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
+    const proof = await this._provider.send('eth_getProof', [
       address.toString(),
-      [storageSlots.map((slot) => bufferToHex(slot))],
-      this.blockTag,
+      [storageSlots.map((slot) => bytesToHex(slot))],
+      this._blockTag,
     ])
 
     return proof
@@ -285,7 +352,8 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Partial implementation, called from the subclass.
    */
   async checkpoint(): Promise<void> {
-    this._cache.checkpoint()
+    this._accountCache.checkpoint()
+    this._storageCache.checkpoint()
   }
 
   /**
@@ -296,7 +364,7 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    */
   async commit(): Promise<void> {
     // setup cache checkpointing
-    this._cache.commit()
+    this._accountCache.commit()
   }
 
   /**
@@ -306,30 +374,35 @@ export class EthersStateManager extends BaseStateManager implements StateManager
    * Partial implementation , called from the subclass.
    */
   async revert(): Promise<void> {
-    // setup cache checkpointing
-    this._cache.revert()
+    this._accountCache.revert()
+    this._storageCache.revert()
+    this._contractCache.clear()
   }
 
   async flush(): Promise<void> {
-    await this._cache.flush()
+    this._accountCache.flush()
   }
 
   /**
    * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
    */
   getStateRoot = async () => {
-    return setLengthLeft(Buffer.from([]), 32)
+    return new Uint8Array(32)
   }
 
   /**
    * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
    */
-  setStateRoot = async (_root: Buffer) => {}
+  setStateRoot = async (_root: Uint8Array) => {}
 
   /**
    * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
     throw new Error('function not implemented')
+  }
+
+  generateCanonicalGenesis(_initState: any): Promise<void> {
+    return Promise.resolve()
   }
 }

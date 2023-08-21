@@ -1,9 +1,8 @@
-import { bufferToHex, setLengthLeft, toBuffer } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
-import { isAccessList } from './types'
+import { isAccessList } from './types.js'
 
-import type { BlobEIP4844Transaction } from './eip4844Transaction'
-import type { AccessList, AccessListBuffer, AccessListItem } from './types'
+import type { AccessList, AccessListBytes, AccessListItem } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
@@ -19,21 +18,21 @@ export function checkMaxInitCodeSize(common: Common, length: number) {
 }
 
 export class AccessLists {
-  public static getAccessListData(accessList: AccessListBuffer | AccessList) {
+  public static getAccessListData(accessList: AccessListBytes | AccessList) {
     let AccessListJSON
     let bufferAccessList
     if (isAccessList(accessList)) {
       AccessListJSON = accessList
-      const newAccessList: AccessListBuffer = []
+      const newAccessList: AccessListBytes = []
 
       for (let i = 0; i < accessList.length; i++) {
         const item: AccessListItem = accessList[i]
-        const addressBuffer = toBuffer(item.address)
-        const storageItems: Buffer[] = []
+        const addressBytes = hexToBytes(item.address)
+        const storageItems: Uint8Array[] = []
         for (let index = 0; index < item.storageKeys.length; index++) {
-          storageItems.push(toBuffer(item.storageKeys[index]))
+          storageItems.push(hexToBytes(item.storageKeys[index]))
         }
-        newAccessList.push([addressBuffer, storageItems])
+        newAccessList.push([addressBytes, storageItems])
       }
       bufferAccessList = newAccessList
     } else {
@@ -42,10 +41,10 @@ export class AccessLists {
       const json: AccessList = []
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
-        const address = bufferToHex(data[0])
+        const address = bytesToHex(data[0])
         const storageKeys: string[] = []
         for (let item = 0; item < data[1].length; item++) {
-          storageKeys.push(bufferToHex(data[1][item]))
+          storageKeys.push(bytesToHex(data[1][item]))
         }
         const jsonItem: AccessListItem = {
           address,
@@ -62,11 +61,11 @@ export class AccessLists {
     }
   }
 
-  public static verifyAccessList(accessList: AccessListBuffer) {
+  public static verifyAccessList(accessList: AccessListBytes) {
     for (let key = 0; key < accessList.length; key++) {
       const accessListItem = accessList[key]
-      const address = <Buffer>accessListItem[0]
-      const storageSlots = <Buffer[]>accessListItem[1]
+      const address = accessListItem[0]
+      const storageSlots = accessListItem[1]
       if ((<any>accessListItem)[2] !== undefined) {
         throw new Error(
           'Access list item cannot have 3 elements. It can only have an address, and an array of storage slots.'
@@ -83,25 +82,25 @@ export class AccessLists {
     }
   }
 
-  public static getAccessListJSON(accessList: AccessListBuffer) {
+  public static getAccessListJSON(accessList: AccessListBytes) {
     const accessListJSON = []
     for (let index = 0; index < accessList.length; index++) {
       const item: any = accessList[index]
       const JSONItem: any = {
-        address: '0x' + setLengthLeft(<Buffer>item[0], 20).toString('hex'),
+        address: bytesToHex(setLengthLeft(item[0], 20)),
         storageKeys: [],
       }
-      const storageSlots: Buffer[] = item[1]
+      const storageSlots: Uint8Array[] = item[1]
       for (let slot = 0; slot < storageSlots.length; slot++) {
         const storageSlot = storageSlots[slot]
-        JSONItem.storageKeys.push('0x' + setLengthLeft(storageSlot, 32).toString('hex'))
+        JSONItem.storageKeys.push(bytesToHex(setLengthLeft(storageSlot, 32)))
       }
       accessListJSON.push(JSONItem)
     }
     return accessListJSON
   }
 
-  public static getDataFeeEIP2930(accessList: AccessListBuffer, common: Common): number {
+  public static getDataFeeEIP2930(accessList: AccessListBytes, common: Common): number {
     const accessListStorageKeyCost = common.param('gasPrices', 'accessListStorageKeyCost')
     const accessListAddressCost = common.param('gasPrices', 'accessListAddressCost')
 
@@ -114,35 +113,5 @@ export class AccessLists {
 
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
-  }
-}
-
-export const blobTxToNetworkWrapperDataFormat = (tx: BlobEIP4844Transaction) => {
-  const to = {
-    selector: tx.to !== undefined ? 1 : 0,
-    value: tx.to?.toBuffer() ?? null,
-  }
-  return {
-    message: {
-      chainId: tx.common.chainId(),
-      nonce: tx.nonce,
-      maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
-      maxFeePerGas: tx.maxFeePerGas,
-      gas: tx.gasLimit,
-      to,
-      value: tx.value,
-      data: tx.data,
-      accessList: tx.accessList.map((listItem) => {
-        return { address: listItem[0], storageKeys: listItem[1] }
-      }),
-      blobVersionedHashes: tx.versionedHashes,
-      maxFeePerDataGas: tx.maxFeePerDataGas,
-    },
-    // If transaction is unsigned, signature fields will be initialized to zeroes
-    signature: {
-      r: tx.r ?? BigInt(0),
-      s: tx.s ?? BigInt(0),
-      yParity: tx.v === BigInt(1) ? true : false,
-    },
   }
 }

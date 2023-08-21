@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const RLP = require('../dist/index.js')
+const RLP = require('../dist/cjs/index.js')
 const method = process.argv[2]
 const strInput = process.argv[3]
 

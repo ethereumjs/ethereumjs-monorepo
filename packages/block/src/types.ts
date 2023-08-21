@@ -1,18 +1,13 @@
-import type { BlockHeader } from './header'
+import type { BlockHeader } from './header.js'
 import type { Common } from '@ethereumjs/common'
-import type {
-  AccessListEIP2930TxData,
-  FeeMarketEIP1559TxData,
-  JsonRpcTx,
-  JsonTx,
-  TxData,
-} from '@ethereumjs/tx'
+import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
   AddressLike,
   BigIntLike,
-  BufferLike,
+  BytesLike,
   JsonRpcWithdrawal,
-  WithdrawalBuffer,
+  PrefixedHexString,
+  WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
 
@@ -35,22 +30,15 @@ export interface BlockOptions {
    */
   common?: Common
   /**
-   * Determine the HF by the block number
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
+   *
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByBlockNumber?: boolean
-  /**
-   * Determine the HF by total difficulty (Merge HF)
-   *
-   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
-   * and determines the HF by both the block number and the TD.
-   *
-   * Since the TTD is only a threshold the block number will in doubt take precedence (imagine
-   * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
-   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
-   */
-  hardforkByTTD?: BigIntLike
+  setHardfork?: boolean | BigIntLike
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
@@ -76,7 +64,7 @@ export interface BlockOptions {
    * Provide a clique signer's privateKey to seal this block.
    * Will throw if provided on a non-PoA chain.
    */
-  cliqueSigner?: Buffer
+  cliqueSigner?: Uint8Array
   /**
    *  Skip consensus format validation checks on header if set. Defaults to false.
    */
@@ -87,24 +75,26 @@ export interface BlockOptions {
  * A block header's data.
  */
 export interface HeaderData {
-  parentHash?: BufferLike
-  uncleHash?: BufferLike
+  parentHash?: BytesLike
+  uncleHash?: BytesLike
   coinbase?: AddressLike
-  stateRoot?: BufferLike
-  transactionsTrie?: BufferLike
-  receiptTrie?: BufferLike
-  logsBloom?: BufferLike
+  stateRoot?: BytesLike
+  transactionsTrie?: BytesLike
+  receiptTrie?: BytesLike
+  logsBloom?: BytesLike
   difficulty?: BigIntLike
   number?: BigIntLike
   gasLimit?: BigIntLike
   gasUsed?: BigIntLike
   timestamp?: BigIntLike
-  extraData?: BufferLike
-  mixHash?: BufferLike
-  nonce?: BufferLike
+  extraData?: BytesLike
+  mixHash?: BytesLike
+  nonce?: BytesLike
   baseFeePerGas?: BigIntLike
-  withdrawalsRoot?: BufferLike
-  excessDataGas?: BigIntLike
+  withdrawalsRoot?: BytesLike
+  blobGasUsed?: BigIntLike
+  excessBlobGas?: BigIntLike
+  parentBeaconBlockRoot?: BytesLike
 }
 
 /**
@@ -115,23 +105,23 @@ export interface BlockData {
    * Header data for the block
    */
   header?: HeaderData
-  transactions?: Array<TxData | AccessListEIP2930TxData | FeeMarketEIP1559TxData>
+  transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
 }
 
-export type WithdrawalsBuffer = WithdrawalBuffer[]
+export type WithdrawalsBytes = WithdrawalBytes[]
 
-export type BlockBuffer =
-  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer]
-  | [BlockHeaderBuffer, TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer]
-export type BlockHeaderBuffer = Buffer[]
-export type BlockBodyBuffer = [TransactionsBuffer, UncleHeadersBuffer, WithdrawalsBuffer?]
+export type BlockBytes =
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+export type BlockHeaderBytes = Uint8Array[]
+export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
- * TransactionsBuffer can be an array of serialized txs for Typed Transactions or an array of Buffer Arrays for legacy transactions.
+ * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
  */
-export type TransactionsBuffer = Buffer[][] | Buffer[]
-export type UncleHeadersBuffer = Buffer[][]
+export type TransactionsBytes = Uint8Array[][] | Uint8Array[]
+export type UncleHeadersBytes = Uint8Array[][]
 
 /**
  * An object with the block's data represented as strings.
@@ -167,7 +157,9 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
-  excessDataGas?: string
+  blobGasUsed?: string
+  excessBlobGas?: string
+  parentBeaconBlockRoot?: string
 }
 
 /*
@@ -197,5 +189,37 @@ export interface JsonRpcBlock {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
-  excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
+  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
+  excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
+  parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
+}
+
+// Note: all these strings are 0x-prefixed
+export type WithdrawalV1 = {
+  index: PrefixedHexString // Quantity, 8 Bytes
+  validatorIndex: PrefixedHexString // Quantity, 8 bytes
+  address: PrefixedHexString // DATA, 20 bytes
+  amount: PrefixedHexString // Quantity, 32 bytes
+}
+
+// Note: all these strings are 0x-prefixed
+export type ExecutionPayload = {
+  parentHash: PrefixedHexString // DATA, 32 Bytes
+  feeRecipient: PrefixedHexString // DATA, 20 Bytes
+  stateRoot: PrefixedHexString // DATA, 32 Bytes
+  receiptsRoot: PrefixedHexString // DATA, 32 bytes
+  logsBloom: PrefixedHexString // DATA, 256 Bytes
+  prevRandao: PrefixedHexString // DATA, 32 Bytes
+  blockNumber: PrefixedHexString // QUANTITY, 64 Bits
+  gasLimit: PrefixedHexString // QUANTITY, 64 Bits
+  gasUsed: PrefixedHexString // QUANTITY, 64 Bits
+  timestamp: PrefixedHexString // QUANTITY, 64 Bits
+  extraData: PrefixedHexString // DATA, 0 to 32 Bytes
+  baseFeePerGas: PrefixedHexString // QUANTITY, 256 Bits
+  blockHash: PrefixedHexString // DATA, 32 Bytes
+  transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
+  withdrawals?: WithdrawalV1[] // Array of withdrawal objects
+  blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
+  excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
+  parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
 }

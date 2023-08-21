@@ -6,7 +6,8 @@
 [![Code Coverage][util-coverage-badge]][util-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-A collection of utility functions for Ethereum. It can be used in Node.js and in the browser with [browserify](http://browserify.org/).
+| A collection of utility functions for Ethereum. |
+| ----------------------------------------------- |
 
 ## Installation
 
@@ -19,13 +20,18 @@ npm install @ethereumjs/util
 ## Usage
 
 ```js
-import assert from 'assert'
-import { isValidChecksumAddress, unpadBuffer } from '@ethereumjs/util'
+import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
 
-assert.ok(isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A'))
+isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A') // true
 
-assert.ok(unpadBuffer(Buffer.from('000000006600', 'hex')).equals(Buffer.from('6600', 'hex')))
+hexToBytes('0x342770c0')
 ```
+
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -40,25 +46,92 @@ Read the [API docs](docs/).
   - Private/public key and address-related functionality (creation, validation, conversion)
 - [address](src/address.ts)
   - Address class and type
+- [blobs](src/blobs.ts)
+  - Helpers for 4844 blobs and versioned hashes
 - [bytes](src/bytes.ts)
   - Byte-related helper and conversion functions
 - [constants](src/constants.ts)
-  - Exposed constants
-    - e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null
-- hash
-  - This module has been removed with `v8`, please use [ethereum-cryptography](https://github.com/ethereum/js-ethereum-cryptography) directly instead
+  - Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
+- [db](src/db.ts)
+  - DB interface for database abstraction (Blockchain, Trie)
+- [genesis](src/genesis.ts)
+  - Genesis related interfaces and helpers
+- [internal](src/internal.ts)
+  - Internalized helper methods
+- [kzg](src/kzg.ts)
+  - KZG interface (used for 4844 blob txs)
+- [mapDB](src/mapDB.ts)
+  - Simple map DB implementation using the `DB` interface
 - [signature](src/signature.ts)
   - Signing, signature validation, conversion, recovery
 - [types](src/types.ts)
   - Helpful TypeScript types
-- [internal](src/internal.ts)
-  - Internalized helper methods
 - [withdrawal](src/withdrawal.ts)
   - Withdrawal class (EIP-4895)
 
+### Upgrade Helpers in bytes-Module
+
+Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
+
+We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
+
+```typescript
+Buffer.alloc(97) // Allocate a Buffer with length 97
+new Uint8Array(97) // Allocate a Uint8Array with length 97
+
+Buffer.from('342770c0', 'hex') // Convert a hex string to a Buffer
+hexToBytes('0x342770c0') // Convert a prefixed hex string to a Uint8Array, Util.hexToBytes()
+
+`0x${myBuffer.toString('hex')}` // Convert a Buffer to a prefixed hex string
+bytesToHex(myUint8Array) // Convert a Uint8Array to a prefixed hex string
+
+intToBuffer(9) // Convert an integer to a Buffer, old (removed)
+intToBytes(9) // Convert an integer to a Uint8Array, Util.intToBytes()
+bytesToInt(myUint8Array) // Convert a Uint8Array to an integer, Util.bytesToInt()
+
+bigIntToBytes(myBigInt) // Convert a BigInt to a Uint8Array, Util.bigIntToBytes()
+bytesToBigInt(myUint8Array) // Convert a Uint8Array to a BigInt, Util.bytesToInt()
+
+utf8ToBytes(myUtf8String) // Converts a UTF-8 string to a Uint8Array, Util.utf8ToBytes()
+bytesToUtf8(myUint8Array) // Converts a Uint8Array to a UTF-8 string, Util.bytesToUtf8()
+
+toBuffer(v: ToBufferInputTypes) // Converts various byte compatible types to Buffer, old (removed)
+toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8Array, Util.toBytes()
+```
+
+Helper methods can be imported like this:
+
+```typescript
+import { hexToBytes } from '@ethereumjs/util'
+```
+
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
 ### BigInt Support
 
-Starting with v8 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
+Starting with Util v8 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 

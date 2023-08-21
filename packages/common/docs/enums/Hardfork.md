@@ -9,6 +9,7 @@
 - [ArrowGlacier](Hardfork.md#arrowglacier)
 - [Berlin](Hardfork.md#berlin)
 - [Byzantium](Hardfork.md#byzantium)
+- [Cancun](Hardfork.md#cancun)
 - [Chainstart](Hardfork.md#chainstart)
 - [Constantinople](Hardfork.md#constantinople)
 - [Dao](Hardfork.md#dao)
@@ -16,12 +17,11 @@
 - [Homestead](Hardfork.md#homestead)
 - [Istanbul](Hardfork.md#istanbul)
 - [London](Hardfork.md#london)
-- [Merge](Hardfork.md#merge)
 - [MergeForkIdTransition](Hardfork.md#mergeforkidtransition)
 - [MuirGlacier](Hardfork.md#muirglacier)
+- [Paris](Hardfork.md#paris)
 - [Petersburg](Hardfork.md#petersburg)
 - [Shanghai](Hardfork.md#shanghai)
-- [ShardingForkDev](Hardfork.md#shardingforkdev)
 - [SpuriousDragon](Hardfork.md#spuriousdragon)
 - [TangerineWhistle](Hardfork.md#tangerinewhistle)
 
@@ -33,7 +33,7 @@
 
 #### Defined in
 
-[packages/common/src/enums.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L22)
+[enums.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L51)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L20)
+[enums.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L49)
 
 ___
 
@@ -53,7 +53,17 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L15)
+[enums.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L44)
+
+___
+
+### Cancun
+
+• **Cancun** = ``"cancun"``
+
+#### Defined in
+
+[enums.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L56)
 
 ___
 
@@ -63,7 +73,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L10)
+[enums.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L39)
 
 ___
 
@@ -73,7 +83,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L16)
+[enums.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L45)
 
 ___
 
@@ -83,7 +93,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L12)
+[enums.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L41)
 
 ___
 
@@ -93,7 +103,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L23)
+[enums.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L52)
 
 ___
 
@@ -103,7 +113,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L11)
+[enums.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L40)
 
 ___
 
@@ -113,7 +123,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L18)
+[enums.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L47)
 
 ___
 
@@ -123,17 +133,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L21)
-
-___
-
-### Merge
-
-• **Merge** = ``"merge"``
-
-#### Defined in
-
-[packages/common/src/enums.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L25)
+[enums.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L50)
 
 ___
 
@@ -143,7 +143,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L24)
+[enums.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L53)
 
 ___
 
@@ -153,7 +153,17 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L19)
+[enums.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L48)
+
+___
+
+### Paris
+
+• **Paris** = ``"paris"``
+
+#### Defined in
+
+[enums.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L54)
 
 ___
 
@@ -163,7 +173,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L17)
+[enums.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L46)
 
 ___
 
@@ -173,17 +183,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L26)
-
-___
-
-### ShardingForkDev
-
-• **ShardingForkDev** = ``"shardingFork"``
-
-#### Defined in
-
-[packages/common/src/enums.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L27)
+[enums.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L55)
 
 ___
 
@@ -193,7 +193,7 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L14)
+[enums.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L43)
 
 ___
 
@@ -203,4 +203,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/enums.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L13)
+[enums.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L42)

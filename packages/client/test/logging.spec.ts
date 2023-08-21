@@ -1,42 +1,51 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { getLogger } from '../lib/logging'
+import { getLogger } from '../src/logging'
 
-tape('[Logging]', (t) => {
-  const logger = getLogger()
+describe('[Logging]', () => {
+  const logger = getLogger({ logLevel: 'info', logFile: 'ethereumjs.log', logLevelFile: 'info' })
   const format = logger.transports.find((t: any) => t.name === 'console')!.format!
 
-  t.test('should log error stacks properly', (st) => {
+  it('should have correct transports', () => {
+    assert.ok(
+      logger.transports.find((t: any) => t.name === 'console') !== undefined,
+      'should have stdout transport'
+    )
+    assert.ok(
+      logger.transports.find((t: any) => t.name === 'file') !== undefined,
+      'should have file transport'
+    )
+  })
+
+  it('should log error stacks properly', () => {
     try {
       throw new Error('an error')
     } catch (e: any) {
       e.level = 'error'
-      st.ok(
+      assert.ok(
         /an error\n {4}at/.test((format.transform(e) as any).message),
         'log message should contain stack trace (1)'
       )
-      st.ok(
+      assert.ok(
         /an error\n {4}at/.test((format.transform({ level: 'error', message: e }) as any).message),
         'log message should contain stack trace (2)'
       )
-      st.end()
     }
   })
 
-  t.test('should colorize key=value pairs', (st) => {
+  it('should colorize key=value pairs', () => {
     if (process.env.GITHUB_ACTION !== undefined) {
-      st.skip('no color functionality in ci')
-      return st.end()
+      assert.ok(true, 'no color functionality in ci')
+      return
     }
     const { message } = format.transform({
       level: 'info',
       message: 'test key=value',
     }) as any
-    st.equal(
+    assert.equal(
       message,
       'test \x1B[38;2;0;128;0mkey\x1B[39m=value ',
       'key=value pairs should be colorized'
     )
-    st.end()
   })
 })

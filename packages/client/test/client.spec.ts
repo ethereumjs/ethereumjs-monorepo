@@ -1,11 +1,12 @@
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import { assert, describe, it, vi } from 'vitest'
 
-import { Config } from '../lib/config'
-import { PeerPool } from '../lib/net/peerpool'
+import { EthereumClient } from '../src/client'
+import { Config } from '../src/config'
+import { PeerPool } from '../src/net/peerpool'
+import { RlpxServer } from '../src/net/server'
 
-tape('[EthereumClient]', async (t) => {
-  const config = new Config({ transports: [] })
+describe('[EthereumClient]', async () => {
+  const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
   class FullEthereumService {
     open() {}
     start() {}
@@ -13,13 +14,14 @@ tape('[EthereumClient]', async (t) => {
     config = config
     pool = new PeerPool({ config })
   }
-  FullEthereumService.prototype.open = td.func<any>()
-  FullEthereumService.prototype.start = td.func<any>()
-  FullEthereumService.prototype.stop = td.func<any>()
-  td.replace('../lib/service', { FullEthereumService })
-  td.when(FullEthereumService.prototype.open()).thenResolve()
-  td.when(FullEthereumService.prototype.start()).thenResolve()
-  td.when(FullEthereumService.prototype.stop()).thenResolve()
+  FullEthereumService.prototype.open = vi.fn().mockResolvedValue(null)
+  FullEthereumService.prototype.start = vi.fn().mockResolvedValue(null)
+  FullEthereumService.prototype.stop = vi.fn().mockResolvedValue(null)
+  vi.doMock('../src/service', () => {
+    {
+      FullEthereumService
+    }
+  })
 
   class Server {
     open() {}
@@ -27,49 +29,43 @@ tape('[EthereumClient]', async (t) => {
     stop() {}
     bootstrap() {}
   }
-  Server.prototype.open = td.func<any>()
-  Server.prototype.start = td.func<any>()
-  Server.prototype.stop = td.func<any>()
-  Server.prototype.bootstrap = td.func<any>()
-  td.replace('../lib/net/server/server', { Server })
-  td.when(Server.prototype.start()).thenResolve()
-  td.when(Server.prototype.stop()).thenResolve()
-  td.when(Server.prototype.bootstrap()).thenResolve()
-
-  const { EthereumClient } = await import('../lib/client')
-
-  t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
-    const client = await EthereumClient.create({ config })
-    t.ok(client.services[0] instanceof FullEthereumService, 'added service')
-    t.end()
+  Server.prototype.open = vi.fn()
+  Server.prototype.start = vi.fn().mockResolvedValue(null)
+  Server.prototype.stop = vi.fn().mockResolvedValue(null)
+  Server.prototype.bootstrap = vi.fn().mockResolvedValue(null)
+  vi.doMock('../src/net/server/server', () => {
+    {
+      Server
+    }
   })
 
-  t.test('should open', async (t) => {
-    t.plan(2)
-    const servers = [new Server()] as any
-    const config = new Config({ servers })
+  it('should initialize correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config })
+    assert.ok('lightserv' in client.services[0], 'added FullEthereumService')
+    assert.ok('execution' in client.services[0], 'added FullEthereumService')
+    assert.ok('txPool' in client.services[0], 'added FullEthereumService')
+  })
+
+  it('should open', async () => {
+    const servers = [new RlpxServer({ config: new Config() })]
+    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
 
     await client.open()
-    t.ok(client.opened, 'opened')
-    t.equals(await client.open(), false, 'already opened')
-  })
+    assert.ok(client.opened, 'opened')
+    assert.equal(await client.open(), false, 'already opened')
+  }, 30000)
 
-  t.test('should start/stop', async (t) => {
+  it('should start/stop', async () => {
     const servers = [new Server()] as any
-    const config = new Config({ servers })
+    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
     await client.start()
-    t.ok(client.started, 'started')
-    t.equals(await client.start(), false, 'already started')
+    assert.ok(client.started, 'started')
+    assert.equal(await client.start(), false, 'already started')
     await client.stop()
-    t.notOk(client.started, 'stopped')
-    t.equals(await client.stop(), false, 'already stopped')
-  })
-
-  t.test('should reset td', (t) => {
-    td.reset()
-    t.end()
-  })
+    assert.notOk(client.started, 'stopped')
+    assert.equal(await client.stop(), false, 'already stopped')
+  }, 30000)
 })

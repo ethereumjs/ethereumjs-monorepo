@@ -1,10 +1,10 @@
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Synchronizer } from '../../lib/sync/sync'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { Synchronizer } from '../../src/sync/sync'
+import { Event } from '../../src/types'
 
 class SynchronizerTest extends Synchronizer {
   async syncWithPeer() {
@@ -18,7 +18,7 @@ class SynchronizerTest extends Synchronizer {
   }
 }
 
-tape('[Synchronizer]', async (t) => {
+describe('[Synchronizer]', async () => {
   class PeerPool {
     open() {}
     close() {}
@@ -26,8 +26,8 @@ tape('[Synchronizer]', async (t) => {
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
 
-  t.test('should sync', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should sync', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     config.syncTargetHeight = BigInt(1)
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -35,16 +35,15 @@ tape('[Synchronizer]', async (t) => {
     ;(sync as any).sync = td.func()
     td.when((sync as any).sync()).thenResolve(true)
     config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
-      t.ok('synchronized', 'synchronized')
+      assert.ok('synchronized', 'synchronized')
       await sync.stop()
-      t.notOk((sync as any).running, 'stopped')
+      assert.notOk((sync as any).running, 'stopped')
       await sync.close()
       await chain.close()
-      t.end()
     })
     void sync.start()
     ;(sync as any).chain._headers = {
-      latest: { hash: () => Buffer.from([]), number: BigInt(1) },
+      latest: { hash: () => new Uint8Array(0), number: BigInt(1) },
       td: BigInt(0),
       height: BigInt(1),
     }
@@ -53,12 +52,10 @@ tape('[Synchronizer]', async (t) => {
     // test getting out of sync
     ;(config as any).syncedStateRemovalPeriod = 0
     config.updateSynchronizedState()
-    t.equal(config.synchronized, false, 'should fall out of sync')
-    await new Promise(() => {}) // resolves once t.end() is called
+    assert.equal(config.synchronized, false, 'should fall out of sync')
   })
 
-  t.test('should reset td', (t) => {
+  it('should reset td', () => {
     td.reset()
-    t.end()
   })
 })

@@ -1,16 +1,17 @@
+import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
-import { RPCManager, saveReceiptsMethods } from '../lib/rpc'
-import * as modules from '../lib/rpc/modules'
+import { RPCManager, saveReceiptsMethods } from '../src/rpc'
+import * as modules from '../src/rpc/modules'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../lib/util'
+} from '../src/util'
 
-import type { EthereumClient } from '../lib/client'
-import type { Config } from '../lib/config'
+import type { EthereumClient } from '../src/client'
+import type { Config } from '../src/config'
 import type { Server as RPCServer } from 'jayson/promise'
 
 export type RPCArgs = {
@@ -35,8 +36,8 @@ export type RPCArgs = {
 /**
  * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
  */
-function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
-  let jwtSecret: Buffer
+function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
+  let jwtSecret: Uint8Array
   const defaultJwtPath = `${config.datadir}/jwtsecret`
   const usedJwtPath = jwtFilePath !== undefined ? jwtFilePath : defaultJwtPath
 
@@ -52,15 +53,15 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Buffer {
     if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
       throw Error('Need a valid 256 bit hex encoded secret')
     }
-    jwtSecret = Buffer.from(jwtSecretHex, 'hex')
+    jwtSecret = hexToBytes('0x' + jwtSecretHex)
   } else {
     const folderExists = existsSync(config.datadir)
     if (!folderExists) {
       mkdirSync(config.datadir, { recursive: true })
     }
 
-    jwtSecret = Buffer.from(Array.from({ length: 32 }, () => Math.round(Math.random() * 255)))
-    writeFileSync(defaultJwtPath, jwtSecret.toString('hex'), {})
+    jwtSecret = randomBytes(32)
+    writeFileSync(defaultJwtPath, bytesToUnprefixedHex(jwtSecret), {})
     config.logger.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }
   config.logger.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)
@@ -93,7 +94,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const manager = new RPCManager(client, config)
   const { logger } = config
   const jwtSecret =
-    rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : Buffer.from([])
+    rpcEngine && rpcEngineAuth ? parseJwtSecret(config, jwtSecretPath) : new Uint8Array(0)
   let withEngineMethods = false
 
   if ((rpc || rpcEngine) && !config.saveReceipts) {
@@ -128,7 +129,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
               }
             : undefined,
       })
-      rpcHttpServer.listen(rpcPort)
+      rpcHttpServer.listen(rpcPort, rpcAddr)
       logger.info(
         `Started JSON RPC Server address=http://${rpcAddr}:${rpcPort} namespaces=${namespaces}${
           withEngineMethods ? ' rpcEngineAuth=' + rpcEngineAuth.toString() : ''
@@ -182,7 +183,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
           }
         : undefined,
     })
-    rpcHttpServer.listen(rpcEnginePort)
+    rpcHttpServer.listen(rpcEnginePort, rpcEngineAddr)
     logger.info(
       `Started JSON RPC server address=http://${rpcEngineAddr}:${rpcEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
     )
@@ -205,7 +206,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       }
 
       const rpcWsServer = createWsRPCServerListener(opts)
-      if (rpcWsServer) rpcWsServer.listen(wsEnginePort)
+      if (rpcWsServer) rpcWsServer.listen(wsEnginePort, wsEngineAddr)
       logger.info(
         `Started JSON RPC Server address=ws://${wsEngineAddr}:${wsEnginePort} namespaces=${namespaces} rpcEngineAuth=${rpcEngineAuth}`
       )

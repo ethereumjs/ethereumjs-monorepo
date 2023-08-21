@@ -24,15 +24,32 @@
 - [ChainsConfig](interfaces/ChainsConfig.md)
 - [CommonOpts](interfaces/CommonOpts.md)
 - [CustomCommonOpts](interfaces/CustomCommonOpts.md)
+- [EVMStateManagerInterface](interfaces/EVMStateManagerInterface.md)
 - [GenesisBlockConfig](interfaces/GenesisBlockConfig.md)
 - [GethConfigOpts](interfaces/GethConfigOpts.md)
-- [HardforkConfig](interfaces/HardforkConfig.md)
+- [HardforkByOpts](interfaces/HardforkByOpts.md)
+- [HardforkTransitionConfig](interfaces/HardforkTransitionConfig.md)
+- [StateManagerInterface](interfaces/StateManagerInterface.md)
+- [StorageDump](interfaces/StorageDump.md)
 
 ### Type Aliases
 
+- [AccessList](README.md#accesslist)
+- [AccessListBytes](README.md#accesslistbytes)
+- [AccessListBytesItem](README.md#accesslistbytesitem)
+- [AccessListItem](README.md#accesslistitem)
+- [AccountFields](README.md#accountfields)
 - [CasperConfig](README.md#casperconfig)
 - [CliqueConfig](README.md#cliqueconfig)
+- [EIPConfig](README.md#eipconfig)
 - [EthashConfig](README.md#ethashconfig)
+- [HardforkConfig](README.md#hardforkconfig)
+- [Proof](README.md#proof)
+- [StorageProof](README.md#storageproof)
+
+### Variables
+
+- [ChainGenesis](README.md#chaingenesis)
 
 ### Functions
 
@@ -40,13 +57,70 @@
 
 ## Type Aliases
 
+### AccessList
+
+Ƭ **AccessList**: [`AccessListItem`](README.md#accesslistitem)[]
+
+#### Defined in
+
+[interfaces.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L43)
+
+___
+
+### AccessListBytes
+
+Ƭ **AccessListBytes**: [`AccessListBytesItem`](README.md#accesslistbytesitem)[]
+
+#### Defined in
+
+[interfaces.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L42)
+
+___
+
+### AccessListBytesItem
+
+Ƭ **AccessListBytesItem**: [`Uint8Array`, `Uint8Array`[]]
+
+#### Defined in
+
+[interfaces.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L41)
+
+___
+
+### AccessListItem
+
+Ƭ **AccessListItem**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `PrefixedHexString` |
+| `storageKeys` | `PrefixedHexString`[] |
+
+#### Defined in
+
+[interfaces.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L33)
+
+___
+
+### AccountFields
+
+Ƭ **AccountFields**: `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"storageRoot"`` \| ``"codeHash"``\>\>
+
+#### Defined in
+
+[interfaces.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L11)
+
+___
+
 ### CasperConfig
 
 Ƭ **CasperConfig**: `Object`
 
 #### Defined in
 
-[packages/common/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L17)
+[types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L18)
 
 ___
 
@@ -63,7 +137,17 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L10)
+[types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L11)
+
+___
+
+### EIPConfig
+
+Ƭ **EIPConfig**: { `minimumHardfork`: [`Hardfork`](enums/Hardfork.md) ; `requiredEIPs`: `number`[]  } & `EIPOrHFConfig`
+
+#### Defined in
+
+[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
 
 ___
 
@@ -73,7 +157,69 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L15)
+[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L16)
+
+___
+
+### HardforkConfig
+
+Ƭ **HardforkConfig**: { `consensus?`: `ConsensusConfig` ; `eips?`: `number`[] ; `name`: `string`  } & `EIPOrHFConfig`
+
+#### Defined in
+
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L162)
+
+___
+
+### Proof
+
+Ƭ **Proof**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `accountProof` | `PrefixedHexString`[] |
+| `address` | `PrefixedHexString` |
+| `balance` | `PrefixedHexString` |
+| `codeHash` | `PrefixedHexString` |
+| `nonce` | `PrefixedHexString` |
+| `storageHash` | `PrefixedHexString` |
+| `storageProof` | [`StorageProof`](README.md#storageproof)[] |
+
+#### Defined in
+
+[interfaces.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L19)
+
+___
+
+### StorageProof
+
+Ƭ **StorageProof**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `key` | `PrefixedHexString` |
+| `proof` | `PrefixedHexString`[] |
+| `value` | `PrefixedHexString` |
+
+#### Defined in
+
+[interfaces.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L13)
+
+## Variables
+
+### ChainGenesis
+
+• `Const` **ChainGenesis**: `Record`<[`Chain`](enums/Chain.md), `GenesisState`\>
+
+GenesisState info about well known ethereum chains
+
+#### Defined in
+
+[enums.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L23)
 
 ## Functions
 
@@ -102,12 +248,13 @@ parsed params
 | `bootstrapNodes` | `never`[] |
 | `chainId` | `number` |
 | `consensus` | { `algorithm`: `string` = 'clique'; `clique`: { `epoch`: `any` ; `period`: `any`  } ; `ethash`: `undefined` = {}; `type`: `string` = 'poa' } \| { `algorithm`: `string` = 'ethash'; `clique`: `undefined` ; `ethash`: {} = {}; `type`: `string` = 'pow' } |
-| `genesis` | { `baseFeePerGas`: `string` ; `coinbase`: `string` ; `difficulty`: `number` ; `extraData`: `string` ; `gasLimit`: `number` ; `mixHash`: `string` ; `nonce`: `string` ; `timestamp`: `string`  } |
+| `genesis` | { `baseFeePerGas`: `string` ; `coinbase`: `string` ; `difficulty`: `string` ; `excessBlobGas`: `string` ; `extraData`: `string` ; `gasLimit`: `string` ; `mixHash`: `string` ; `nonce`: `string` ; `timestamp`: `string`  } |
 | `genesis.baseFeePerGas` | `string` |
 | `genesis.coinbase` | `string` |
-| `genesis.difficulty` | `number` |
+| `genesis.difficulty` | `string` |
+| `genesis.excessBlobGas` | `string` |
 | `genesis.extraData` | `string` |
-| `genesis.gasLimit` | `number` |
+| `genesis.gasLimit` | `string` |
 | `genesis.mixHash` | `string` |
 | `genesis.nonce` | `string` |
 | `genesis.timestamp` | `string` |
@@ -118,4 +265,4 @@ parsed params
 
 #### Defined in
 
-[packages/common/src/utils.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L207)
+[utils.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L199)

@@ -2,26 +2,9 @@
 
 # Class: EthersStateManager
 
-Abstract BaseStateManager class for the non-storage-backend
-related functionality parts of a StateManager like keeping
-track of accessed storage (`EIP-2929`) or touched accounts
-(`EIP-158`).
-
-This is not a full StateManager implementation in itself but
-can be used to ease implementing an own StateManager.
-
-Note that the implementation is pretty new (October 2021)
-and we cannot guarantee a stable interface yet.
-
-## Hierarchy
-
-- [`BaseStateManager`](BaseStateManager.md)
-
-  ↳ **`EthersStateManager`**
-
 ## Implements
 
-- [`StateManager`](../interfaces/StateManager.md)
+- `EVMStateManagerInterface`
 
 ## Table of contents
 
@@ -31,21 +14,19 @@ and we cannot guarantee a stable interface yet.
 
 ### Properties
 
-- [\_cache](EthersStateManager.md#_cache)
-- [\_debug](EthersStateManager.md#_debug)
+- [originalStorageCache](EthersStateManager.md#originalstoragecache)
 
 ### Methods
 
 - [accountExists](EthersStateManager.md#accountexists)
-- [accountIsEmpty](EthersStateManager.md#accountisempty)
 - [checkpoint](EthersStateManager.md#checkpoint)
-- [clearCache](EthersStateManager.md#clearcache)
+- [clearCaches](EthersStateManager.md#clearcaches)
 - [clearContractStorage](EthersStateManager.md#clearcontractstorage)
 - [commit](EthersStateManager.md#commit)
-- [copy](EthersStateManager.md#copy)
 - [deleteAccount](EthersStateManager.md#deleteaccount)
 - [dumpStorage](EthersStateManager.md#dumpstorage)
 - [flush](EthersStateManager.md#flush)
+- [generateCanonicalGenesis](EthersStateManager.md#generatecanonicalgenesis)
 - [getAccount](EthersStateManager.md#getaccount)
 - [getContractCode](EthersStateManager.md#getcontractcode)
 - [getContractStorage](EthersStateManager.md#getcontractstorage)
@@ -59,6 +40,7 @@ and we cannot guarantee a stable interface yet.
 - [revert](EthersStateManager.md#revert)
 - [setBlockTag](EthersStateManager.md#setblocktag)
 - [setStateRoot](EthersStateManager.md#setstateroot)
+- [shallowCopy](EthersStateManager.md#shallowcopy)
 
 ## Constructors
 
@@ -72,41 +54,23 @@ and we cannot guarantee a stable interface yet.
 | :------ | :------ |
 | `opts` | [`EthersStateManagerOpts`](../interfaces/EthersStateManagerOpts.md) |
 
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[constructor](BaseStateManager.md#constructor)
-
 #### Defined in
 
-[ethersStateManager.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L37)
+[ethersStateManager.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L30)
 
 ## Properties
 
-### \_cache
+### originalStorageCache
 
-• **\_cache**: `Cache`
+• **originalStorageCache**: `OriginalStorageCache`
 
-#### Overrides
+#### Implementation of
 
-[BaseStateManager](BaseStateManager.md).[_cache](BaseStateManager.md#_cache)
-
-#### Defined in
-
-[ethersStateManager.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L35)
-
-___
-
-### \_debug
-
-• **\_debug**: `Debugger`
-
-#### Inherited from
-
-[BaseStateManager](BaseStateManager.md).[_debug](BaseStateManager.md#_debug)
+EVMStateManagerInterface.originalStorageCache
 
 #### Defined in
 
-[baseStateManager.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L22)
+[ethersStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L27)
 
 ## Methods
 
@@ -126,41 +90,9 @@ Checks if an `account` exists at `address`
 
 `Promise`<`boolean`\>
 
-#### Implementation of
-
-[StateManager](../interfaces/StateManager.md).[accountExists](../interfaces/StateManager.md#accountexists)
-
 #### Defined in
 
-[ethersStateManager.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L203)
-
-___
-
-### accountIsEmpty
-
-▸ **accountIsEmpty**(`address`): `Promise`<`boolean`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-
-#### Returns
-
-`Promise`<`boolean`\>
-
-#### Implementation of
-
-[StateManager](../interfaces/StateManager.md).[accountIsEmpty](../interfaces/StateManager.md#accountisempty)
-
-#### Inherited from
-
-[BaseStateManager](BaseStateManager.md).[accountIsEmpty](BaseStateManager.md#accountisempty)
-
-#### Defined in
-
-[baseStateManager.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L97)
+[ethersStateManager.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L198)
 
 ___
 
@@ -180,21 +112,17 @@ Partial implementation, called from the subclass.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[checkpoint](../interfaces/StateManager.md#checkpoint)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[checkpoint](BaseStateManager.md#checkpoint)
+EVMStateManagerInterface.checkpoint
 
 #### Defined in
 
-[ethersStateManager.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L287)
+[ethersStateManager.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L348)
 
 ___
 
-### clearCache
+### clearCaches
 
-▸ **clearCache**(): `void`
+▸ **clearCaches**(): `void`
 
 Clears the internal cache so all accounts, contract code, and storage slots will
 initially be retrieved from the provider
@@ -205,7 +133,7 @@ initially be retrieved from the provider
 
 #### Defined in
 
-[ethersStateManager.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L89)
+[ethersStateManager.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L91)
 
 ___
 
@@ -227,11 +155,11 @@ Clears all storage entries for the account corresponding to `address`.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[clearContractStorage](../interfaces/StateManager.md#clearcontractstorage)
+EVMStateManagerInterface.clearContractStorage
 
 #### Defined in
 
-[ethersStateManager.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L177)
+[ethersStateManager.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L172)
 
 ___
 
@@ -250,33 +178,11 @@ Partial implementation, called from the subclass.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[commit](../interfaces/StateManager.md#commit)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[commit](BaseStateManager.md#commit)
+EVMStateManagerInterface.commit
 
 #### Defined in
 
-[ethersStateManager.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L297)
-
-___
-
-### copy
-
-▸ **copy**(): [`EthersStateManager`](EthersStateManager.md)
-
-#### Returns
-
-[`EthersStateManager`](EthersStateManager.md)
-
-#### Implementation of
-
-[StateManager](../interfaces/StateManager.md).[copy](../interfaces/StateManager.md#copy)
-
-#### Defined in
-
-[ethersStateManager.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L64)
+[ethersStateManager.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L359)
 
 ___
 
@@ -284,7 +190,7 @@ ___
 
 ▸ **deleteAccount**(`address`): `Promise`<`void`\>
 
-Deletes an account from state under the provided `address`. The account will also be removed from the state trie.
+Deletes an account from state under the provided `address`.
 
 #### Parameters
 
@@ -298,15 +204,11 @@ Deletes an account from state under the provided `address`. The account will als
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[deleteAccount](../interfaces/StateManager.md#deleteaccount)
-
-#### Inherited from
-
-[BaseStateManager](BaseStateManager.md).[deleteAccount](BaseStateManager.md#deleteaccount)
+EVMStateManagerInterface.deleteAccount
 
 #### Defined in
 
-[baseStateManager.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L90)
+[ethersStateManager.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L317)
 
 ___
 
@@ -332,11 +234,11 @@ Both are represented as `0x` prefixed hex strings.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[dumpStorage](../interfaces/StateManager.md#dumpstorage)
+EVMStateManagerInterface.dumpStorage
 
 #### Defined in
 
-[ethersStateManager.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L188)
+[ethersStateManager.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L183)
 
 ___
 
@@ -348,23 +250,39 @@ ___
 
 `Promise`<`void`\>
 
+#### Defined in
+
+[ethersStateManager.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L376)
+
+___
+
+### generateCanonicalGenesis
+
+▸ **generateCanonicalGenesis**(`_initState`): `Promise`<`void`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `_initState` | `any` |
+
+#### Returns
+
+`Promise`<`void`\>
+
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[flush](../interfaces/StateManager.md#flush)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[flush](BaseStateManager.md#flush)
+EVMStateManagerInterface.generateCanonicalGenesis
 
 #### Defined in
 
-[ethersStateManager.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L313)
+[ethersStateManager.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L399)
 
 ___
 
 ### getAccount
 
-▸ **getAccount**(`address`): `Promise`<`Account`\>
+▸ **getAccount**(`address`): `Promise`<`undefined` \| `Account`\>
 
 Gets the code corresponding to the provided `address`.
 
@@ -372,32 +290,28 @@ Gets the code corresponding to the provided `address`.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `address` | `Address` | Address to get the `code` for |
+| `address` | `Address` | Address to get the `account` for |
 
 #### Returns
 
-`Promise`<`Account`\>
+`Promise`<`undefined` \| `Account`\>
 
 - Resolves with the code corresponding to the provided address.
-Returns an empty `Buffer` if the account has no associated code.
+Returns an empty `Uint8Array` if the account has no associated code.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[getAccount](../interfaces/StateManager.md#getaccount)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[getAccount](BaseStateManager.md#getaccount)
+EVMStateManagerInterface.getAccount
 
 #### Defined in
 
-[ethersStateManager.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L229)
+[ethersStateManager.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L224)
 
 ___
 
 ### getContractCode
 
-▸ **getContractCode**(`address`): `Promise`<`Buffer`\>
+▸ **getContractCode**(`address`): `Promise`<`Uint8Array`\>
 
 Gets the code corresponding to the provided `address`.
 
@@ -409,24 +323,24 @@ Gets the code corresponding to the provided `address`.
 
 #### Returns
 
-`Promise`<`Buffer`\>
+`Promise`<`Uint8Array`\>
 
 - Resolves with the code corresponding to the provided address.
-Returns an empty `Buffer` if the account has no associated code.
+Returns an empty `Uint8Array` if the account has no associated code.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[getContractCode](../interfaces/StateManager.md#getcontractcode)
+EVMStateManagerInterface.getContractCode
 
 #### Defined in
 
-[ethersStateManager.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L101)
+[ethersStateManager.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L103)
 
 ___
 
 ### getContractStorage
 
-▸ **getContractStorage**(`address`, `key`): `Promise`<`Buffer`\>
+▸ **getContractStorage**(`address`, `key`): `Promise`<`Uint8Array`\>
 
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.
@@ -436,27 +350,23 @@ the shortest representation of the stored value.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `address` | `Address` | Address of the account to get the storage for |
-| `key` | `Buffer` | Key in the account's storage to get the value for. Must be 32 bytes long. |
+| `key` | `Uint8Array` | Key in the account's storage to get the value for. Must be 32 bytes long. |
 
 #### Returns
 
-`Promise`<`Buffer`\>
+`Promise`<`Uint8Array`\>
 
 - The storage value for the account
 corresponding to the provided address at the provided key.
-If this does not exist an empty `Buffer` is returned.
+If this does not exist an empty `Uint8Array` is returned.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[getContractStorage](../interfaces/StateManager.md#getcontractstorage)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[getContractStorage](BaseStateManager.md#getcontractstorage)
+EVMStateManagerInterface.getContractStorage
 
 #### Defined in
 
-[ethersStateManager.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L130)
+[ethersStateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L132)
 
 ___
 
@@ -471,7 +381,7 @@ Get an EIP-1186 proof from the provider
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
 | `address` | `Address` | `undefined` | address to get proof of |
-| `storageSlots` | `Buffer`[] | `[]` | storage slots to get proof of |
+| `storageSlots` | `Uint8Array`[] | `[]` | storage slots to get proof of |
 
 #### Returns
 
@@ -481,17 +391,17 @@ an EIP-1186 formatted proof
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[getProof](../interfaces/StateManager.md#getproof)
+EVMStateManagerInterface.getProof
 
 #### Defined in
 
-[ethersStateManager.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L270)
+[ethersStateManager.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L330)
 
 ___
 
 ### getStateRoot
 
-▸ **getStateRoot**(): `Promise`<`Buffer`\>
+▸ **getStateRoot**(): `Promise`<`Uint8Array`\>
 
 **`Deprecated`**
 
@@ -499,15 +409,15 @@ This method is not used by the Ethers State Manager and is a stub required by th
 
 #### Returns
 
-`Promise`<`Buffer`\>
+`Promise`<`Uint8Array`\>
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[getStateRoot](../interfaces/StateManager.md#getstateroot)
+EVMStateManagerInterface.getStateRoot
 
 #### Defined in
 
-[ethersStateManager.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L320)
+[ethersStateManager.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L383)
 
 ___
 
@@ -525,11 +435,11 @@ This method is not used by the Ethers State Manager and is a stub required by th
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[hasStateRoot](../interfaces/StateManager.md#hasstateroot)
+EVMStateManagerInterface.hasStateRoot
 
 #### Defined in
 
-[ethersStateManager.ts:332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L332)
+[ethersStateManager.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L395)
 
 ___
 
@@ -554,15 +464,11 @@ fields, then saves the account into state. Account fields can include
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[modifyAccountFields](../interfaces/StateManager.md#modifyaccountfields)
-
-#### Inherited from
-
-[BaseStateManager](BaseStateManager.md).[modifyAccountFields](BaseStateManager.md#modifyaccountfields)
+EVMStateManagerInterface.modifyAccountFields
 
 #### Defined in
 
-[baseStateManager.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/baseStateManager.ts#L77)
+[ethersStateManager.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L288)
 
 ___
 
@@ -577,7 +483,7 @@ Saves an account into state under the provided `address`.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `address` | `Address` | Address under which to store `account` |
-| `account` | `Account` | The account to store |
+| `account` | `undefined` \| `Account` | The account to store |
 
 #### Returns
 
@@ -585,15 +491,11 @@ Saves an account into state under the provided `address`.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[putAccount](../interfaces/StateManager.md#putaccount)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[putAccount](BaseStateManager.md#putaccount)
+EVMStateManagerInterface.putAccount
 
 #### Defined in
 
-[ethersStateManager.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L260)
+[ethersStateManager.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L264)
 
 ___
 
@@ -609,7 +511,7 @@ corresponding to `address` to reference this.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `address` | `Address` | Address of the `account` to add the `code` for |
-| `value` | `Buffer` | The value of the `code` |
+| `value` | `Uint8Array` | The value of the `code` |
 
 #### Returns
 
@@ -617,15 +519,11 @@ corresponding to `address` to reference this.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[putContractCode](../interfaces/StateManager.md#putcontractcode)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[putContractCode](BaseStateManager.md#putcontractcode)
+EVMStateManagerInterface.putContractCode
 
 #### Defined in
 
-[ethersStateManager.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L116)
+[ethersStateManager.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L118)
 
 ___
 
@@ -641,8 +539,8 @@ corresponding to `address` at the provided `key`.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `address` | `Address` | Address to set a storage value for |
-| `key` | `Buffer` | Key to set the value at. Must be 32 bytes long. |
-| `value` | `Buffer` | Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is empty or filled with zeros, deletes the value. |
+| `key` | `Uint8Array` | Key to set the value at. Must be 32 bytes long. |
+| `value` | `Uint8Array` | Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is empty or filled with zeros, deletes the value. |
 
 #### Returns
 
@@ -650,11 +548,7 @@ corresponding to `address` at the provided `key`.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[putContractStorage](../interfaces/StateManager.md#putcontractstorage)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[putContractStorage](BaseStateManager.md#putcontractstorage)
+EVMStateManagerInterface.putContractStorage
 
 #### Defined in
 
@@ -677,15 +571,11 @@ Partial implementation , called from the subclass.
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[revert](../interfaces/StateManager.md#revert)
-
-#### Overrides
-
-[BaseStateManager](BaseStateManager.md).[revert](BaseStateManager.md#revert)
+EVMStateManagerInterface.revert
 
 #### Defined in
 
-[ethersStateManager.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L308)
+[ethersStateManager.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L370)
 
 ___
 
@@ -708,7 +598,7 @@ internal cache.
 
 #### Defined in
 
-[ethersStateManager.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L80)
+[ethersStateManager.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L81)
 
 ___
 
@@ -724,7 +614,7 @@ This method is not used by the Ethers State Manager and is a stub required by th
 
 | Name | Type |
 | :------ | :------ |
-| `_root` | `Buffer` |
+| `_root` | `Uint8Array` |
 
 #### Returns
 
@@ -732,8 +622,30 @@ This method is not used by the Ethers State Manager and is a stub required by th
 
 #### Implementation of
 
-[StateManager](../interfaces/StateManager.md).[setStateRoot](../interfaces/StateManager.md#setstateroot)
+EVMStateManagerInterface.setStateRoot
 
 #### Defined in
 
-[ethersStateManager.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L327)
+[ethersStateManager.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L390)
+
+___
+
+### shallowCopy
+
+▸ **shallowCopy**(): [`EthersStateManager`](EthersStateManager.md)
+
+Note that the returned statemanager will share the same JsonRpcProvider as the original
+
+#### Returns
+
+[`EthersStateManager`](EthersStateManager.md)
+
+EthersStateManager
+
+#### Implementation of
+
+EVMStateManagerInterface.shallowCopy
+
+#### Defined in
+
+[ethersStateManager.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L59)

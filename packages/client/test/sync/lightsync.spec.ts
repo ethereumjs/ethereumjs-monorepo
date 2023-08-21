@@ -1,39 +1,38 @@
 import { BlockHeader } from '@ethereumjs/block'
-import * as tape from 'tape'
 import * as td from 'testdouble'
+import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../lib/blockchain'
-import { Config } from '../../lib/config'
-import { Event } from '../../lib/types'
+import { Chain } from '../../src/blockchain'
+import { Config } from '../../src/config'
+import { HeaderFetcher } from '../../src/sync/fetcher/headerfetcher'
+import { Event } from '../../src/types'
 
-tape('[LightSynchronizer]', async (t) => {
+describe('[LightSynchronizer]', async () => {
   class PeerPool {
     open() {}
     close() {}
+    idle() {}
   }
   PeerPool.prototype.open = td.func<any>()
   PeerPool.prototype.close = td.func<any>()
-  class HeaderFetcher {
-    fetch() {}
-    clear() {}
-    destroy() {}
-  }
+
   HeaderFetcher.prototype.fetch = td.func<any>()
-  td.replace('../../lib/sync/fetcher', { HeaderFetcher })
+  HeaderFetcher.prototype.clear = td.func<any>()
+  HeaderFetcher.prototype.destroy = td.func<any>()
+  vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
 
-  const { LightSynchronizer } = await import('../../lib/sync/lightsync')
+  const { LightSynchronizer } = await import('../../src/sync/lightsync')
 
-  t.test('should initialize correctly', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should initialize correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
-    t.equals(sync.type, 'light', 'light type')
-    t.end()
+    assert.equal(sync.type, 'light', 'light type')
   })
 
-  t.test('should find best', async (t) => {
-    const config = new Config({ transports: [] })
+  it('should find best', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -42,7 +41,7 @@ tape('[LightSynchronizer]', async (t) => {
       pool,
       chain,
     })
-    ;(sync as any).running = true
+    sync['running'] = true
     ;(sync as any).chain = { headers: { td: BigInt(1) } }
     const peers = [
       {
@@ -56,13 +55,16 @@ tape('[LightSynchronizer]', async (t) => {
     ]
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
-    t.equal(await sync.best(), peers[1], 'found best')
-    t.end()
+    assert.equal(await sync.best(), <any>peers[1], 'found best')
   })
 
-  t.test('should sync', async (t) => {
-    t.plan(3)
-    const config = new Config({ transports: [], safeReorgDistance: 0 })
+  it('should sync', async () => {
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      safeReorgDistance: 0,
+    })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -76,30 +78,40 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(undefined)
     ;(sync as any).chain = { headers: { height: BigInt(3) } }
-    t.notOk(await sync.sync(), 'local height > remote height')
+    assert.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = { headers: { height: BigInt(0) } }
     setTimeout(() => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
     }, 100)
-    t.ok(await sync.sync(), 'local height < remote height')
+    assert.ok(await sync.sync(), 'local height < remote height')
     td.when(HeaderFetcher.prototype.fetch()).thenReject(new Error('err0'))
     try {
       await sync.sync()
     } catch (err: any) {
-      t.equals(err.message, 'err0', 'got error')
+      assert.equal(err.message, 'err0', 'got error')
       await sync.stop()
       await sync.close()
+      vi.unmock('../../src/sync/fetcher/headerfetcher')
     }
   })
 
-  t.test('import headers', async (st) => {
+  it('import headers', async () => {
     td.reset()
-    st.plan(1)
-    const config = new Config({ transports: [], safeReorgDistance: 0 })
+    HeaderFetcher.prototype.fetch = td.func<any>()
+    HeaderFetcher.prototype.clear = td.func<any>()
+    HeaderFetcher.prototype.destroy = td.func<any>()
+    vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
+    const { LightSynchronizer } = await import('../../src/sync/lightsync')
+    const config = new Config({
+      transports: [],
+      accountCache: 10000,
+      storageCache: 1000,
+      safeReorgDistance: 0,
+    })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -113,7 +125,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
@@ -121,19 +133,19 @@ tape('[LightSynchronizer]', async (t) => {
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('Imported headers count=1')) {
-        st.pass('successfully imported new header')
+        assert.ok(true, 'successfully imported new header')
         config.logger.removeAllListeners()
         await sync.stop()
         await sync.close()
+        vi.unmock('../../src/sync/fetcher/headerfetcher')
       }
     })
     await sync.sync()
   })
 
-  t.test('sync errors', async (st) => {
+  it('sync errors', async () => {
     td.reset()
-    st.plan(1)
-    const config = new Config({ transports: [] })
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -147,7 +159,7 @@ tape('[LightSynchronizer]', async (t) => {
     td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
     td.when(sync.latest(td.matchers.anything())).thenResolve({
       number: BigInt(2),
-      hash: () => Buffer.from([]),
+      hash: () => new Uint8Array(0),
     })
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(undefined)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
@@ -155,7 +167,7 @@ tape('[LightSynchronizer]', async (t) => {
     )
     config.logger.on('data', async (data) => {
       if ((data.message as string).includes('No headers fetched are applicable for import')) {
-        st.pass('generated correct warning message when no headers received')
+        assert.ok(true, 'generated correct warning message when no headers received')
         config.logger.removeAllListeners()
         await sync.stop()
         await sync.close()

@@ -1,25 +1,30 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBuffer, setLengthLeft, setLengthRight } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import {
+  bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions'
+import { EvmError } from '../exceptions.js'
 
-import type { ERROR } from '../exceptions'
-import type { RunState } from '../interpreter'
+import type { ERROR } from '../exceptions.js'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
- * length buffer in case the buffer is full of zeros.
- * @param value Buffer which we want to pad
+ * length Uint8Array in case the Uint8Array is full of zeros.
+ * @param value Uint8Array which we want to pad
  */
-export function setLengthLeftStorage(value: Buffer) {
-  if (value.equals(Buffer.alloc(value.length, 0))) {
-    // return the empty buffer (the value is zero)
-    return Buffer.alloc(0)
+export function setLengthLeftStorage(value: Uint8Array) {
+  if (equalsBytes(value, new Uint8Array(value.length))) {
+    // return the empty Uint8Array (the value is zero)
+    return new Uint8Array(0)
   } else {
     return setLengthLeft(value, 32)
   }
@@ -34,11 +39,11 @@ export function trap(err: string) {
 }
 
 /**
- * Converts bigint address (they're stored like this on the stack) to buffer address
+ * Converts bigint address (they're stored like this on the stack) to Uint8Array address
  */
-export function addressToBuffer(address: bigint | Buffer) {
-  if (Buffer.isBuffer(address)) return address
-  return setLengthLeft(bigIntToBuffer(address & MASK_160), 20)
+export function addresstoBytes(address: bigint | Uint8Array) {
+  if (address instanceof Uint8Array) return address
+  return setLengthLeft(bigIntToBytes(address & MASK_160), 20)
 }
 
 /**
@@ -46,7 +51,7 @@ export function addressToBuffer(address: bigint | Buffer) {
  */
 export function describeLocation(runState: RunState): string {
   const hash = bytesToHex(keccak256(runState.interpreter.getCode()))
-  const address = runState.interpreter.getAddress().buf.toString('hex')
+  const address = runState.interpreter.getAddress().toString()
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`
 }
@@ -73,7 +78,7 @@ export function divCeil(a: bigint, b: bigint): bigint {
  * Returns an overflow-safe slice of an array. It right-pads
  * the data with zeros to `length`.
  */
-export function getDataSlice(data: Buffer, offset: bigint, length: bigint): Buffer {
+export function getDataSlice(data: Uint8Array, offset: bigint, length: bigint): Uint8Array {
   const len = BigInt(data.length)
   if (offset > len) {
     offset = len
@@ -84,7 +89,7 @@ export function getDataSlice(data: Buffer, offset: bigint, length: bigint): Buff
     end = len
   }
 
-  data = data.slice(Number(offset), Number(end))
+  data = data.subarray(Number(offset), Number(end))
   // Right-pad with zeros to fill dataLength bytes
   data = setLengthRight(data, Number(length))
 
@@ -180,7 +185,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
 }
 
 /**
- * Writes data returned by eei.call* methods to memory
+ * Writes data returned by evm.call* methods to memory
  */
 export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
   const returnData = runState.interpreter.getReturnData()
@@ -201,8 +206,8 @@ export function writeCallOutput(runState: RunState, outOffset: bigint, outLength
  */
 export function updateSstoreGas(
   runState: RunState,
-  currentStorage: Buffer,
-  value: Buffer,
+  currentStorage: Uint8Array,
+  value: Uint8Array,
   common: Common
 ): bigint {
   if (

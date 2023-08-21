@@ -1,6 +1,6 @@
 import { Database, open } from 'lmdb'
 
-import type { BatchDBOp, DB } from '@ethereumjs/trie'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 
 export class LMDB implements DB {
   readonly _path: string
@@ -15,15 +15,15 @@ export class LMDB implements DB {
     })
   }
 
-  async get(key: Buffer): Promise<Buffer | null> {
+  async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     return this._database.get(key)
   }
 
-  async put(key: Buffer, val: Buffer): Promise<void> {
+  async put(key: Uint8Array, val: Uint8Array): Promise<void> {
     await this._database.put(key, val)
   }
 
-  async del(key: Buffer): Promise<void> {
+  async del(key: Uint8Array): Promise<void> {
     await this._database.remove(key)
   }
 
@@ -39,7 +39,11 @@ export class LMDB implements DB {
     }
   }
 
-  copy(): DB {
+  shallowCopy(): DB {
     return new LMDB(this._path)
+  }
+
+  open() {
+    return Promise.resolve()
   }
 }

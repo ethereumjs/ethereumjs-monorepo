@@ -2,16 +2,30 @@
 
 # Interface: TxOptions
 
-The options for initializing a [Transaction](../classes/Transaction.md).
+The options for initializing a [Transaction](Transaction.md).
 
 ## Table of contents
 
 ### Properties
 
+- [allowUnlimitedInitCodeSize](TxOptions.md#allowunlimitedinitcodesize)
 - [common](TxOptions.md#common)
 - [freeze](TxOptions.md#freeze)
 
 ## Properties
+
+### allowUnlimitedInitCodeSize
+
+• `Optional` **allowUnlimitedInitCodeSize**: `boolean`
+
+Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
+Gas cost for initcode size analysis will still be charged. Use with caution.
+
+#### Defined in
+
+[tx/src/types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
+
+___
 
 ### common
 
@@ -28,7 +42,7 @@ Current default hardfork: `istanbul`
 
 #### Defined in
 
-[types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L51)
+[tx/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L60)
 
 ___
 
@@ -48,4 +62,4 @@ Default: true
 
 #### Defined in
 
-[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L63)
+[tx/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L72)

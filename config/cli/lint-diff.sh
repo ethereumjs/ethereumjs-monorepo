@@ -25,7 +25,7 @@ dim() {
     echo "${DIM}$1${NOCOLOR}"
 }
 
-dim "> eslint --format codeframe --config ./.eslintrc.js . \\ "
+dim "> eslint --format codeframe --config ./.eslintrc.cjs . \\ "
 dim "\t --ext .js,.jsx,.ts,.tsx \\ "
 
 blue "[Lint]${NOCOLOR} checking..."
@@ -35,7 +35,7 @@ if [ -z "$FILESCHANGED" ]; then
     exit
 fi
 
-eslint --format codeframe --config ./.eslintrc.js $FILESCHANGED
+eslint --format codeframe --config ./.eslintrc.cjs $FILESCHANGED
 
 RETURN_CODE=$?
 

@@ -12,48 +12,36 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
-- Ethereum Wire Protocol (ETH/66)
+- Ethereum Wire Protocol (ETH/68)
 - Light Ethereum Subprotocol (LES/4)
 
-## Run/Build
+## Usage
 
-To build the `dist/` directory, run:
-
-```shell
-npm run build
-```
-
-You can also use `ts-node` to run a script without first transpiling to js (you need to `npm i --save-dev ts-node` first):
-
-```shell
-node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
-```
-
-## Usage/Examples
-
-All components of this library are implemented as Node `EventEmitter` objects
+All components of this library have a public `events` property containing a Node.js `EventEmitter` object
 and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
 
 ```typescript
-dpt.on('peer:added', (peer) => {
+dpt.events.on('peer:added', (peer) => {
   // Do something...
 })
 ```
 
+## Examples
+
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
-- [simple](examples/simple.ts)
+- [simple](examples/simple.cts)
 
 Communicate with peers to read new transaction and block information:
 
-- [peer-communication](examples/peer-communication.ts)
+- [peer-communication](examples/peer-communication.cts)
 
 Run an example with:
 
 ```
-DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.ts
+DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.cts
 ```
 
 ## Docs
@@ -73,7 +61,10 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 Create your peer table:
 
 ```typescript
-const dpt = new DPT(Buffer.from(PRIVATE_KEY, 'hex'), {
+import { DPT } from '@ethereumjs/devp2p'
+import { hexToBytes } from '@ethereumjs/util'
+
+const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
   endpoint: {
     address: '0.0.0.0',
     udpPort: null,
@@ -226,7 +217,7 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```typescript
-eth.once('status', () => {
+eth.events.once('status', () => {
   // Send an initial message
   eth.sendMessage()
 })
@@ -235,7 +226,7 @@ eth.once('status', () => {
 Wait for follow-up messages to arrive, send your responses.
 
 ```typescript
-eth.on('message', async (code, payload) => {
+eth.events.on('message', async (code, payload) => {
   if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
     // Do something with your new block hashes :-)
   }
@@ -295,7 +286,7 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```typescript
-les.once('status', () => {
+les.events.once('status', () => {
   // Send an initial message
   les.sendMessage()
 })
@@ -304,7 +295,7 @@ les.once('status', () => {
 Wait for follow-up messages to arrive, send your responses.
 
 ```typescript
-les.on('message', async (code, payload) => {
+les.events.on('message', async (code, payload) => {
   if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
     // Do something with your new block headers :-)
   }
@@ -342,7 +333,31 @@ Send initial status message.
 - `reqId` - Request ID, will be echoed back on response.
 - `payload` - Payload as a list, will be rlp-encoded.
 
-#### BigInt Support
+#### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```typescript
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```typescript
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
+### BigInt Support
 
 Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
@@ -368,14 +383,6 @@ While it's possible to bundle this package for the browser, some features do not
 - EIP-1459 (DNS Peer Discovery) is disabled due to the absence of a standard polyfill for Node's `dns`
   module. DNS discovery mode can be toggled on/off via the DPTOption `shouldGetDnsPeers` ("false"
   by default).
-
-## Tests
-
-There are unit tests in the `test/` directory which can be run with:
-
-```shell
-npm run test
-```
 
 ## Debugging
 

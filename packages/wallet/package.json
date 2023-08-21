@@ -1,0 +1,65 @@
+{
+  "name": "@ethereumjs/wallet",
+  "version": "2.0.0",
+  "description": "Utilities for handling Ethereum keys",
+  "keywords": [
+    "ethereum",
+    "wallets",
+    "keys"
+  ],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/packages/wallet",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MIT",
+  "author": "Alex Beregszaszi <alex@rtfs.hu>",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
+    "docs:build": "npx typedoc --options typedoc.cjs",
+    "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
+    "lint": "../../config/cli/lint.sh",
+    "lint:diff": "../../config/cli/lint-diff.sh",
+    "lint:fix": "../../config/cli/lint-fix.sh",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "vitest run --config=vitest.config.browser.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:node": "vitest run",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/util": "^9.0.0",
+    "@scure/base": "^1.1.1",
+    "ethereum-cryptography": "^2.1.2",
+    "js-md5": "^0.7.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/js-md5": "^0.4.3",
+    "@types/lodash.zip": "^4.2.7",
+    "@types/uuid": "^9.0.2",
+    "ethers": "^6.4.0",
+    "lodash.zip": "^4.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,8 +1,8 @@
-import { Address } from './address'
-import { bigIntToHex } from './bytes'
-import { TypeOutput, toType } from './types'
+import { Address } from './address.js'
+import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
+import { TypeOutput, toType } from './types.js'
 
-import type { AddressLike, BigIntLike } from './types'
+import type { AddressLike, BigIntLike } from './types.js'
 
 /**
  * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
@@ -26,7 +26,7 @@ export interface JsonRpcWithdrawal {
   amount: string // QUANTITY - bigint amount in Gwei 8 bytes
 }
 
-export type WithdrawalBuffer = [Buffer, Buffer, Buffer, Buffer]
+export type WithdrawalBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
 
 /**
  * Representation of EIP-4895 withdrawal data
@@ -56,13 +56,13 @@ export class Withdrawal {
     } = withdrawalData
     const index = toType(indexData, TypeOutput.BigInt)
     const validatorIndex = toType(validatorIndexData, TypeOutput.BigInt)
-    const address = new Address(toType(addressData, TypeOutput.Buffer))
+    const address = addressData instanceof Address ? addressData : new Address(toBytes(addressData))
     const amount = toType(amountData, TypeOutput.BigInt)
 
     return new Withdrawal(index, validatorIndex, address, amount)
   }
 
-  public static fromValuesArray(withdrawalArray: WithdrawalBuffer) {
+  public static fromValuesArray(withdrawalArray: WithdrawalBytes) {
     if (withdrawalArray.length !== 4) {
       throw Error(`Invalid withdrawalArray length expected=4 actual=${withdrawalArray.length}`)
     }
@@ -75,39 +75,36 @@ export class Withdrawal {
    * @param withdrawal the withdrawal to convert
    * @returns buffer array of the withdrawal
    */
-  public static toBufferArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBuffer {
+  public static toBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
     const { index, validatorIndex, address, amount } = withdrawal
-    const indexBuffer =
+    const indexBytes =
       toType(index, TypeOutput.BigInt) === BigInt(0)
-        ? Buffer.alloc(0)
-        : toType(index, TypeOutput.Buffer)
-    const validatorIndexBuffer =
+        ? new Uint8Array()
+        : toType(index, TypeOutput.Uint8Array)
+    const validatorIndexBytes =
       toType(validatorIndex, TypeOutput.BigInt) === BigInt(0)
-        ? Buffer.alloc(0)
-        : toType(validatorIndex, TypeOutput.Buffer)
-    let addressBuffer
-    if (address instanceof Address) {
-      addressBuffer = (<Address>address).buf
-    } else {
-      addressBuffer = toType(address, TypeOutput.Buffer)
-    }
-    const amountBuffer =
-      toType(amount, TypeOutput.BigInt) === BigInt(0)
-        ? Buffer.alloc(0)
-        : toType(amount, TypeOutput.Buffer)
+        ? new Uint8Array()
+        : toType(validatorIndex, TypeOutput.Uint8Array)
+    const addressBytes =
+      address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
 
-    return [indexBuffer, validatorIndexBuffer, addressBuffer, amountBuffer]
+    const amountBytes =
+      toType(amount, TypeOutput.BigInt) === BigInt(0)
+        ? new Uint8Array()
+        : toType(amount, TypeOutput.Uint8Array)
+
+    return [indexBytes, validatorIndexBytes, addressBytes, amountBytes]
   }
 
   raw() {
-    return Withdrawal.toBufferArray(this)
+    return Withdrawal.toBytesArray(this)
   }
 
   toValue() {
     return {
       index: this.index,
       validatorIndex: this.validatorIndex,
-      address: this.address.buf,
+      address: this.address.bytes,
       amount: this.amount,
     }
   }
@@ -116,7 +113,7 @@ export class Withdrawal {
     return {
       index: bigIntToHex(this.index),
       validatorIndex: bigIntToHex(this.validatorIndex),
-      address: '0x' + this.address.buf.toString('hex'),
+      address: bytesToHex(this.address.bytes),
       amount: bigIntToHex(this.amount),
     }
   }

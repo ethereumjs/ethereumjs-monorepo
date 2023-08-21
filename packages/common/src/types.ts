@@ -1,4 +1,5 @@
-import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums'
+import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
+import type { BigIntLike } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -15,6 +16,15 @@ export type CliqueConfig = {
 export type EthashConfig = {}
 
 export type CasperConfig = {}
+
+type ConsensusConfig = {
+  type: ConsensusType | string
+  algorithm: ConsensusAlgorithm | string
+  clique?: CliqueConfig
+  ethash?: EthashConfig
+  casper?: CasperConfig
+}
+
 export interface ChainConfig {
   name: string
   chainId: number | bigint
@@ -23,28 +33,23 @@ export interface ChainConfig {
   comment?: string
   url?: string
   genesis: GenesisBlockConfig
-  hardforks: HardforkConfig[]
+  hardforks: HardforkTransitionConfig[]
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
-  consensus: {
-    type: ConsensusType | string
-    algorithm: ConsensusAlgorithm | string
-    clique?: CliqueConfig
-    ethash?: EthashConfig
-    casper?: CasperConfig
-  }
+  consensus: ConsensusConfig
 }
 
 export interface GenesisBlockConfig {
   timestamp?: string
-  gasLimit: number
-  difficulty: number
+  gasLimit: number | string
+  difficulty: number | string
   nonce: string
   extraData: string
   baseFeePerGas?: string
+  excessBlobGas?: string
 }
 
-export interface HardforkConfig {
+export interface HardforkTransitionConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string
@@ -71,11 +76,7 @@ interface BaseOpts {
   hardfork?: string | Hardfork
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
-   * (e.g. `eips: [ 2537, ]`)
-   *
-   * Currently supported:
-   *
-   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+   * (e.g. `eips: [ 1559, 3860 ]`)
    */
   eips?: number[]
 }
@@ -117,6 +118,49 @@ export interface CustomCommonOpts extends BaseOpts {
 
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
-  genesisHash?: Buffer
+  genesisHash?: Uint8Array
   mergeForkIdPostMerge?: boolean
 }
+
+export interface HardforkByOpts {
+  blockNumber?: BigIntLike
+  timestamp?: BigIntLike
+  td?: BigIntLike
+}
+
+type ParamDict = {
+  v: number | bigint | null
+  d: string
+}
+
+type EIPOrHFConfig = {
+  comment: string
+  url: string
+  status: string
+  gasConfig?: {
+    [key: string]: ParamDict
+  }
+  gasPrices?: {
+    [key: string]: ParamDict
+  }
+  pow?: {
+    [key: string]: ParamDict
+  }
+  sharding?: {
+    [key: string]: ParamDict
+  }
+  vm?: {
+    [key: string]: ParamDict
+  }
+}
+
+export type EIPConfig = {
+  minimumHardfork: Hardfork
+  requiredEIPs: number[]
+} & EIPOrHFConfig
+
+export type HardforkConfig = {
+  name: string
+  eips?: number[]
+  consensus?: ConsensusConfig
+} & EIPOrHFConfig

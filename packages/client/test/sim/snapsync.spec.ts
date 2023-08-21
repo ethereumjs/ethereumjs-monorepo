@@ -1,13 +1,19 @@
-import { parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Common } from '@ethereumjs/common'
-import { privateToAddress } from '@ethereumjs/util'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import {
+  Address,
+  bytesToHex,
+  hexToBytes,
+  parseGethGenesisState,
+  privateToAddress,
+} from '@ethereumjs/util'
 import debug from 'debug'
 import { Client } from 'jayson/promise'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../lib/config'
-import { getLogger } from '../../lib/logging'
-import { Event } from '../../lib/types'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { Event } from '../../src/types.js'
 
 import {
   createInlineClient,
@@ -18,25 +24,35 @@ import {
   waitForELStart,
 } from './simutils'
 
-import type { EthereumClient } from '../../lib/client'
-import type { RlpxServer } from '../../lib/net/server'
+import type { EthereumClient } from '../../src/client'
+import type { RlpxServer } from '../../src/net/server'
+import type { Trie } from '@ethereumjs/trie'
 
-const pkey = Buffer.from('ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e', 'hex')
-const sender = '0x' + privateToAddress(pkey).toString('hex')
 const client = Client.http({ port: 8545 })
 
 const network = 'mainnet'
 const networkJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(networkJson, { chain: network })
 const customGenesisState = parseGethGenesisState(networkJson)
+
+const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
+// 0x97C9B168C5E14d5D369B6D88E9776E5B7b11dcC1
+const sender = bytesToHex(privateToAddress(pkey))
+let senderBalance = BigInt(customGenesisState[sender][0])
+
 let ejsClient: EthereumClient | null = null
 let snapCompleted: Promise<unknown> | undefined = undefined
+let syncedTrie: Trie | undefined = undefined
+
+// This account doesn't exist in the genesis so starting balance is zero
+const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
+let EOATransferToBalance = BigInt(0)
 
 export async function runTx(data: string, to?: string, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 
-tape('simple mainnet test run', async (t) => {
+describe('simple mainnet test run', async () => {
   // Better add it as a option in startnetwork
   process.env.NETWORKID = `${common.networkId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
@@ -47,120 +63,156 @@ tape('simple mainnet test run', async (t) => {
   })
 
   if (result.includes('Geth')) {
-    t.pass('connected to Geth')
+    assert.ok(true, 'connected to Geth')
   } else {
-    t.fail('connected to wrong client')
+    assert.fail('connected to wrong client')
   }
 
   const nodeInfo = (await client.request('admin_nodeInfo', [])).result
-  t.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
+  assert.ok(nodeInfo.enode !== undefined, 'fetched enode for peering')
 
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    t.pass('geth<>lodestar started successfully')
+    assert.ok(true, 'geth<>lodestar started successfully')
   } catch (e) {
-    t.fail('geth<>lodestar failed to start')
+    assert.fail('geth<>lodestar failed to start')
     throw e
   }
 
   // ------------Sanity checks--------------------------------
-  t.test(
+  it.skipIf(process.env.ADD_EOA_STATE === undefined)(
     'add some EOA transfers',
-    { skip: process.env.ADD_EOA_STATE === undefined },
-    async (st) => {
-      const startBalance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      st.ok(
-        startBalance.result !== undefined,
-        `fetched 0x3dA33B9A0894b908DdBb00d96399e506515A1009 balance=${startBalance.result}`
-      )
-      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-      let balance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      st.equal(
+    async () => {
+      let balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
+      assert.equal(
+        EOATransferToBalance,
         BigInt(balance.result),
-        BigInt(startBalance.result) + 1000000n,
-        'sent a simple ETH transfer'
+        `fetched ${EOATransferToAccount} balance=${EOATransferToBalance}`
       )
-      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-      balance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      balance = await client.request('eth_getBalance', [
-        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-        'latest',
-      ])
-      st.equal(
-        BigInt(balance.result),
-        BigInt(startBalance.result) + 2000000n,
-        'sent a simple ETH transfer 2x'
+      balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
+
+      await runTx('', EOATransferToAccount, 1000000n)
+      EOATransferToBalance += 1000000n
+
+      balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
+      assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer')
+      await runTx('', EOATransferToAccount, 1000000n)
+      EOATransferToBalance += 1000000n
+
+      balance = await client.request('eth_getBalance', [EOATransferToAccount, 'latest'])
+      assert.equal(BigInt(balance.result), EOATransferToBalance, 'sent a simple ETH transfer 2x')
+
+      balance = await client.request('eth_getBalance', [sender, 'latest'])
+      assert.ok(
+        balance.result !== undefined,
+        'remaining sender balance after transfers and gas fee'
       )
-      st.end()
-    }
+      senderBalance = BigInt(balance.result)
+    },
+    2 * 60_000
   )
 
-  t.test('setup snap sync', { skip: process.env.SNAP_SYNC === undefined }, async (st) => {
-    // start client inline here for snap sync, no need for beacon
-    const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      (await createSnapClient(common, customGenesisState, [nodeInfo.enode]).catch((e) => {
-        console.log(e)
-        return null
-      })) ?? {
-        ejsInlineClient: null,
-        peerConnectedPromise: Promise.reject('Client creation error'),
-      }
-    ejsClient = ejsInlineClient
-    snapCompleted = snapSyncCompletedPromise
-    st.ok(ejsClient !== null, 'ethereumjs client started')
-
-    const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
-    const res = await client.request('admin_addPeer', [enode])
-    st.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
-
-    const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
-    try {
-      await Promise.race([peerConnectedPromise, peerConnectTimeout])
-      st.pass('connected to geth peer')
-    } catch (e) {
-      st.fail('could not connect to geth peer in 10 seconds')
-    }
-    st.end()
-  })
-
-  t.test('should snap sync and finish', async (st) => {
-    try {
-      if (ejsClient !== null && snapCompleted !== undefined) {
-        // call sync if not has been called yet
-        void ejsClient.services[0].synchronizer.sync()
-        // wait on the sync promise to complete if it has been called independently
-        const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 40000))
-        try {
-          await Promise.race([snapCompleted, snapSyncTimeout])
-          st.pass('completed snap sync')
-        } catch (e) {
-          st.fail('could not complete snap sync in 40 seconds')
+  it.skipIf(process.env.SNAP_SYNC === undefined)(
+    'setup snap sync',
+    async () => {
+      // start client inline here for snap sync, no need for beacon
+      const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        (await createSnapClient(common, customGenesisState, [nodeInfo.enode]).catch((e) => {
+          console.log(e)
+          return null
+        })) ?? {
+          ejsInlineClient: null,
+          peerConnectedPromise: Promise.reject('Client creation error'),
         }
-        await ejsClient.stop()
-      } else {
-        st.fail('ethereumjs client not setup properly for snap sync')
-      }
+      ejsClient = ejsInlineClient
+      snapCompleted = snapSyncCompletedPromise
+      assert.ok(ejsClient !== null, 'ethereumjs client started')
 
-      await teardownCallBack()
-      st.pass('network cleaned')
-    } catch (e) {
-      st.fail('network not cleaned properly')
+      const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+      const res = await client.request('admin_addPeer', [enode])
+      assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
+
+      const peerConnectTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
+      try {
+        await Promise.race([peerConnectedPromise, peerConnectTimeout])
+        assert.ok(true, 'connected to geth peer')
+      } catch (e) {
+        assert.fail('could not connect to geth peer in 10 seconds')
+      }
+    },
+    60_000
+  )
+
+  it(
+    'should snap sync and finish',
+    async () => {
+      if (ejsClient !== null && snapCompleted !== undefined) {
+        // wait on the sync promise to complete if it has been called independently
+        const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 8 * 60_000))
+        let syncedSnapRoot: Uint8Array | undefined = undefined
+
+        try {
+          // call sync if not has been called yet
+          void ejsClient.services[0].synchronizer?.sync()
+          await Promise.race([
+            snapCompleted.then(([root, trie]) => {
+              syncedSnapRoot = root
+              syncedTrie = trie
+            }),
+            snapSyncTimeout,
+          ])
+          await ejsClient.stop()
+          assert.ok(true, 'completed snap sync')
+        } catch (e) {
+          assert.fail('could not complete snap sync in 8 minutes')
+        }
+
+        const peerLatest = (await client.request('eth_getBlockByNumber', ['latest', false])).result
+        const snapRootsMatch =
+          syncedSnapRoot !== undefined && bytesToHex(syncedSnapRoot) === peerLatest.stateRoot
+        assert.ok(snapRootsMatch, 'synced stateRoot should match with peer')
+      } else {
+        assert.fail('ethereumjs client not setup properly for snap sync')
+      }
+    },
+    10 * 60_000
+  )
+
+  it.skipIf(syncedTrie !== undefined)('should match entire state', async () => {
+    // update customGenesisState to reflect latest changes and match entire customGenesisState
+    if (process.env.ADD_EOA_STATE !== undefined) {
+      customGenesisState[EOATransferToAccount] = [
+        `0x${EOATransferToBalance.toString(16)}`,
+        undefined,
+        undefined,
+        BigInt(0),
+      ]
+      customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
     }
-    st.end()
+
+    const stateManager = new DefaultStateManager({ trie: syncedTrie })
+
+    for (const addressString of Object.keys(customGenesisState)) {
+      const address = Address.fromString(addressString)
+      const account = await stateManager.getAccount(address)
+      assert.equal(
+        account.balance,
+        BigInt(customGenesisState[addressString][0]),
+        `${addressString} balance should match`
+      )
+    }
   })
 
-  t.end()
+  it('network cleanup', async () => {
+    try {
+      await teardownCallBack()
+      assert.ok(true, 'network cleaned')
+    } catch (e) {
+      assert.fail('network not cleaned properly')
+    }
+  }, 60_000)
 })
 
 async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {
@@ -173,6 +225,8 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     bootnodes,
     multiaddrs: [],
     logger,
+    accountCache: 10000,
+    storageCache: 1000,
     discDns: false,
     discV4: false,
     port: 30304,
@@ -185,7 +239,9 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
   })
   const snapSyncCompletedPromise = new Promise((resolve) => {
-    config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: any) => resolve(stateRoot))
+    config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: Uint8Array, trie: Trie) =>
+      resolve([stateRoot, trie])
+    )
   })
 
   const ejsInlineClient = await createInlineClient(config, common, customGenesisState)

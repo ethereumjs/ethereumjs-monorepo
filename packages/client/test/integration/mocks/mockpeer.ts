@@ -1,20 +1,20 @@
-import * as EventEmitter from 'events'
-import * as pipe from 'it-pipe'
-import * as pushable from 'it-pushable'
+import { EventEmitter } from 'events'
+import { pipe } from 'it-pipe'
+import pushable from 'it-pushable'
 
-import { Peer } from '../../../lib/net/peer'
-import { Event } from '../../../lib/types'
+import { Peer } from '../../../src/net/peer'
+import { Event } from '../../../src/types'
 
 import { MockSender } from './mocksender'
 import { createStream } from './network'
 
-import type { PeerOptions } from '../../../lib/net/peer'
+import type { PeerOptions } from '../../../src/net/peer'
 import type { MockServer } from './mockserver'
 import type { RemoteStream } from './network'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
-const wrapperPushable = () => pushable<Buffer>()
+const wrapperPushable = () => pushable<Uint8Array>()
 export type Pushable = ReturnType<typeof wrapperPushable>
 
 interface MockPeerOptions extends PeerOptions {
@@ -58,8 +58,8 @@ export class MockPeer extends Peer {
   async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
     const pushableFn: Pushable = pushable()
-    pipe.pipe(pushableFn, stream)
-    void pipe.pipe(stream, async (source: any) => {
+    pipe(pushableFn, stream)
+    void pipe(stream, async (source: any) => {
       for await (const data of source) {
         setTimeout(() => {
           receiver.emit('data', data)

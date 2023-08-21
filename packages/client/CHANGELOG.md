@@ -6,6 +6,88 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.8.1 - 2023-08-09
+
+Note: this release is not yet fully ready for `4844-devnet-8` (launch in August 2023).
+
+### EIP-4844 / devnet-8 Updates
+
+- 4844: Rename `dataGas` to `blobGas` (see EIP-4844 PR [#7354](https://github.com/ethereum/EIPs/pull/7354)), PR [#2919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2919)
+- Engine api changes for devnet 8, PR [#2896](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2896)
+  - forkChoiceUpdated v3
+  - change validations of newPayload v3, make them 1-1
+
+### Features
+
+- Add `debug_traceCall` RPC method, PR [#2913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2913)
+- Add `debug_storageRangeAt` RPC method, PR [#2922](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2922)
+- Handle SIGTERM kernel signal, PR [#2921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2921)
+
+### Bugfixes / Maintenance
+
+- Broadcast the contents of the transaction pool to newly connected peers, PR [#2935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2935)
+- Add support for multiple same-type messages over devp2p, PR [#2940](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2940)
+- Fix RPC server custom address/port bugs, PR [#2930](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2930)
+- Address security vulnerabilities, PR [#2912](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2912)
+
+## 0.8.0 - 2023-07-11
+
+### Permanent Account, Storage and Trie Node Caches
+
+The client now has integrated persistent caches for accounts and storage as well as trie nodes and a lot less trie reads and writes are needed over time, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630), [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667) and [#2681](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2681). This is a quantum leap for client sync and execution performance leading to the ability sync substantially more extensive networks (no: `mainnet` not yet 😋).
+
+The new caches are activated by default and stats are provided in regular intervals. Caches can be adopted and resized with the new `--accountCache`, `--storageCache` and `--trieCache` options as well as completely deactivated by setting size to `0`, e.g. with `--accountCache=0`.
+
+### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
+
+While there might be last-round final tweaks,, [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
+
+This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
+
+The following changes are included:
+
+- Add proofs to engine API BlobsBundleV1, PR [#2642](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2642)
+- Limit blobs as per the maxDataGasPerBlock for block building, PR [#2661](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2661)
+- Add 4844 devnet5 blob post utility, PR [#2674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2674)
+- De-sszify 4844 blob transaction, PR [#2708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2708)
+- Extend newPayloadV3 for blob versioned hashes checks, PR [#2716](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2716)
+- Fix double runs of the block execution, PR [#2730](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2730)
+- Merge get blobs engine api into `getPayloadV3`, PR [#2650](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2650)
+- Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
+- Update the kzg validation and replace trusted setup with latest (devnet6), PR [#2756](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2756)
+- Fix new payload excessDataGas/4844 validation, PR [#2784](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2784)
+- Add `shouldOverrideBuilder` flag for `getPayloadV3`, PR [#2891](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2891)
+
+### Other Changes
+
+- Memory logging and memory optimizations, PR [#2675](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2675) and [#2678](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2678)
+- New `--execute` option to activate/deactivate VM execution, PR [#2675](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2675)
+- Fix unclean shutdown scenario where SIGINT may come before client fully started, PR [#2677](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2677)
+- Fix PeerPool Memory Leak, PR [#2752](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2752)
+- Allow to disable transports and/or sync, PR [#2668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2668)
+- Fix `eth_getStorage` RPC method, PR [#2646](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2646)
+- Fix `newPayloadV3` engine API validations, PR [#2762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2762)
+- Fixes for block and blob building uncovered in devnet6, PR [#2763](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2763)
+- Discard blob txs with missing blobs for block building, PR [#2765](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2765)
+- Remove unused `libp2p` transport layer (preserved for future re-introduction if there is demand 🙂), PR [#2758](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2758)
+- Optimize engine API `newPayload` block executions, PR [#2787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2787)
+- Improve engine API `newPayload` and `forkChoiceUpdated` block executions, PR [#2880](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2880)
+
+## 0.7.1 - 2023-04-20
+
+### Features
+
+- New `numBlocksPerIteration` option to allow to set the number of blocks executed in bulk, other UX optimizations, PR [#2586](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2586)
+
+### Bugfixes / Maintenance
+
+- Stability and reorg improvements regarding safe and finalized blocks, PR [#2585](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2585)
+- Beacon sync fixes, PR [#2584](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2584)
+- Engine API timestamp checks, PR [#2579](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2579)
+- Ensure safe/finalized blocks are part of the canonical chain on Engine API `forkchoiceUpdated`, PR [#2577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2577)
+- Engine API: ensure invalid blockhash status gets reported correctly, PR [#2583](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2583)
+- Turn off libp2p transport by default, PR [#2557](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2557)
+
 ## 0.7.0 - 2023-02-16
 
 This client release comes with finalized `Shanghai` hardfork support, fully integrates with a (non final) version of `EIP-4844` and allows to setup and run respective testnets, substantially improves on post-Merge UX and comes with a ton of bugfixes and (robustness) improvements being done during January 2023 core dev interop in Austria. So we felt this to be worth a minor version bump! 🙂 🎉 ❤️

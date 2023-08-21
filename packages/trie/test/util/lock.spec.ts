@@ -1,12 +1,12 @@
 // Based on https://github.com/jsoendermann/semaphore-async-await/blob/master/__tests__/Semaphore.spec.ts
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { Lock } from '../../src/util/lock'
+import { Lock } from '../../src/util/lock.js'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-tape('Lock', (t) => {
-  t.test('should lock', async (st) => {
+describe('Lock', () => {
+  it('should lock', async () => {
     let global = 0
     const lock = new Lock()
 
@@ -22,8 +22,6 @@ tape('Lock', (t) => {
     void f()
     await wait(1500)
 
-    st.equal(global, 2)
-    st.end()
+    assert.equal(global, 2)
   })
-  t.end()
 })

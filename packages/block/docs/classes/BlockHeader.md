@@ -12,10 +12,12 @@ An object that represents the block header.
 
 ### Properties
 
-- [\_common](BlockHeader.md#_common)
 - [baseFeePerGas](BlockHeader.md#basefeepergas)
+- [blobGasUsed](BlockHeader.md#blobgasused)
 - [coinbase](BlockHeader.md#coinbase)
+- [common](BlockHeader.md#common)
 - [difficulty](BlockHeader.md#difficulty)
+- [excessBlobGas](BlockHeader.md#excessblobgas)
 - [extraData](BlockHeader.md#extradata)
 - [gasLimit](BlockHeader.md#gaslimit)
 - [gasUsed](BlockHeader.md#gasused)
@@ -23,6 +25,7 @@ An object that represents the block header.
 - [mixHash](BlockHeader.md#mixhash)
 - [nonce](BlockHeader.md#nonce)
 - [number](BlockHeader.md#number)
+- [parentBeaconBlockRoot](BlockHeader.md#parentbeaconblockroot)
 - [parentHash](BlockHeader.md#parenthash)
 - [receiptTrie](BlockHeader.md#receipttrie)
 - [stateRoot](BlockHeader.md#stateroot)
@@ -37,9 +40,9 @@ An object that represents the block header.
 
 ### Methods
 
-- [\_consensusFormatValidation](BlockHeader.md#_consensusformatvalidation)
-- [\_genericFormatValidation](BlockHeader.md#_genericformatvalidation)
+- [calcDataFee](BlockHeader.md#calcdatafee)
 - [calcNextBaseFee](BlockHeader.md#calcnextbasefee)
+- [calcNextExcessBlobGas](BlockHeader.md#calcnextexcessblobgas)
 - [cliqueEpochTransitionSigners](BlockHeader.md#cliqueepochtransitionsigners)
 - [cliqueExtraSeal](BlockHeader.md#cliqueextraseal)
 - [cliqueExtraVanity](BlockHeader.md#cliqueextravanity)
@@ -49,6 +52,7 @@ An object that represents the block header.
 - [cliqueVerifySignature](BlockHeader.md#cliqueverifysignature)
 - [errorStr](BlockHeader.md#errorstr)
 - [ethashCanonicalDifficulty](BlockHeader.md#ethashcanonicaldifficulty)
+- [getBlobGasPrice](BlockHeader.md#getblobgasprice)
 - [hash](BlockHeader.md#hash)
 - [isGenesis](BlockHeader.md#isgenesis)
 - [raw](BlockHeader.md#raw)
@@ -81,19 +85,9 @@ varying data types. For a default empty header, use [fromHeaderData](BlockHeader
 
 #### Defined in
 
-[header.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L125)
+[header.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L142)
 
 ## Properties
-
-### \_common
-
-• `Readonly` **\_common**: `Common`
-
-#### Defined in
-
-[header.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L56)
-
-___
 
 ### baseFeePerGas
 
@@ -101,7 +95,17 @@ ___
 
 #### Defined in
 
-[header.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L53)
+[header.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L55)
+
+___
+
+### blobGasUsed
+
+• `Optional` `Readonly` **blobGasUsed**: `bigint`
+
+#### Defined in
+
+[header.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L57)
 
 ___
 
@@ -111,7 +115,17 @@ ___
 
 #### Defined in
 
-[header.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L40)
+[header.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L42)
+
+___
+
+### common
+
+• `Readonly` **common**: `Common`
+
+#### Defined in
+
+[header.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L61)
 
 ___
 
@@ -121,17 +135,27 @@ ___
 
 #### Defined in
 
-[header.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L45)
+[header.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L47)
+
+___
+
+### excessBlobGas
+
+• `Optional` `Readonly` **excessBlobGas**: `bigint`
+
+#### Defined in
+
+[header.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L58)
 
 ___
 
 ### extraData
 
-• `Readonly` **extraData**: `Buffer`
+• `Readonly` **extraData**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L50)
+[header.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L52)
 
 ___
 
@@ -141,7 +165,7 @@ ___
 
 #### Defined in
 
-[header.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L47)
+[header.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L49)
 
 ___
 
@@ -151,37 +175,37 @@ ___
 
 #### Defined in
 
-[header.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L48)
+[header.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L50)
 
 ___
 
 ### logsBloom
 
-• `Readonly` **logsBloom**: `Buffer`
+• `Readonly` **logsBloom**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L44)
+[header.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L46)
 
 ___
 
 ### mixHash
 
-• `Readonly` **mixHash**: `Buffer`
+• `Readonly` **mixHash**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L51)
+[header.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L53)
 
 ___
 
 ### nonce
 
-• `Readonly` **nonce**: `Buffer`
+• `Readonly` **nonce**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L52)
+[header.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L54)
 
 ___
 
@@ -191,37 +215,47 @@ ___
 
 #### Defined in
 
-[header.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L46)
+[header.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L48)
+
+___
+
+### parentBeaconBlockRoot
+
+• `Optional` `Readonly` **parentBeaconBlockRoot**: `Uint8Array`
+
+#### Defined in
+
+[header.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L59)
 
 ___
 
 ### parentHash
 
-• `Readonly` **parentHash**: `Buffer`
+• `Readonly` **parentHash**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L38)
+[header.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L40)
 
 ___
 
 ### receiptTrie
 
-• `Readonly` **receiptTrie**: `Buffer`
+• `Readonly` **receiptTrie**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L43)
+[header.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L45)
 
 ___
 
 ### stateRoot
 
-• `Readonly` **stateRoot**: `Buffer`
+• `Readonly` **stateRoot**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L41)
+[header.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L43)
 
 ___
 
@@ -231,89 +265,77 @@ ___
 
 #### Defined in
 
-[header.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L49)
+[header.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L51)
 
 ___
 
 ### transactionsTrie
 
-• `Readonly` **transactionsTrie**: `Buffer`
+• `Readonly` **transactionsTrie**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L42)
+[header.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L44)
 
 ___
 
 ### uncleHash
 
-• `Readonly` **uncleHash**: `Buffer`
+• `Readonly` **uncleHash**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L39)
+[header.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L41)
 
 ___
 
 ### withdrawalsRoot
 
-• `Optional` `Readonly` **withdrawalsRoot**: `Buffer`
+• `Optional` `Readonly` **withdrawalsRoot**: `Uint8Array`
 
 #### Defined in
 
-[header.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L54)
+[header.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L56)
 
 ## Accessors
 
 ### prevRandao
 
-• `get` **prevRandao**(): `Buffer`
+• `get` **prevRandao**(): `Uint8Array`
 
 EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[header.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L65)
+[header.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L70)
 
 ## Methods
 
-### \_consensusFormatValidation
+### calcDataFee
 
-▸ **_consensusFormatValidation**(): `void`
+▸ **calcDataFee**(`numBlobs`): `bigint`
 
-Checks static parameters related to consensus algorithm
+Returns the total fee for blob gas spent for including blobs in block.
 
-**`Throws`**
+#### Parameters
 
-if any check fails
-
-#### Returns
-
-`void`
-
-#### Defined in
-
-[header.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L349)
-
-___
-
-### \_genericFormatValidation
-
-▸ **_genericFormatValidation**(): `void`
-
-Validates correct buffer lengths, throws if invalid.
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `numBlobs` | `number` | number of blobs in the transaction/block |
 
 #### Returns
 
-`void`
+`bigint`
+
+the total blob gas fee for numBlobs blobs
 
 #### Defined in
 
-[header.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L272)
+[header.ts:599](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L599)
 
 ___
 
@@ -329,7 +351,23 @@ Calculates the base fee for a potential next block
 
 #### Defined in
 
-[header.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L476)
+[header.ts:537](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L537)
+
+___
+
+### calcNextExcessBlobGas
+
+▸ **calcNextExcessBlobGas**(): `bigint`
+
+Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
+
+#### Returns
+
+`bigint`
+
+#### Defined in
+
+[header.ts:610](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L610)
 
 ___
 
@@ -350,41 +388,41 @@ in conjunction with [cliqueIsEpochTransition](BlockHeader.md#cliqueisepochtransi
 
 #### Defined in
 
-[header.ts:723](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L723)
+[header.ts:838](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L838)
 
 ___
 
 ### cliqueExtraSeal
 
-▸ **cliqueExtraSeal**(): `Buffer`
+▸ **cliqueExtraSeal**(): `Uint8Array`
 
 Returns extra seal data
 (only clique PoA, throws otherwise)
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[header.ts:690](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L690)
+[header.ts:802](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L802)
 
 ___
 
 ### cliqueExtraVanity
 
-▸ **cliqueExtraVanity**(): `Buffer`
+▸ **cliqueExtraVanity**(): `Uint8Array`
 
 Returns extra vanity data
 (only clique PoA, throws otherwise)
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[header.ts:681](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L681)
+[header.ts:793](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L793)
 
 ___
 
@@ -401,23 +439,23 @@ header (only clique PoA, throws otherwise)
 
 #### Defined in
 
-[header.ts:669](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L669)
+[header.ts:781](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L781)
 
 ___
 
 ### cliqueSigHash
 
-▸ **cliqueSigHash**(): `Buffer`
+▸ **cliqueSigHash**(): `Uint8Array`
 
 PoA clique signature hash without the seal.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[header.ts:658](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L658)
+[header.ts:770](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L770)
 
 ___
 
@@ -433,7 +471,7 @@ Returns the signer address
 
 #### Defined in
 
-[header.ts:760](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L760)
+[header.ts:875](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L875)
 
 ___
 
@@ -458,7 +496,7 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 #### Defined in
 
-[header.ts:748](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L748)
+[header.ts:863](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L863)
 
 ___
 
@@ -474,7 +512,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[header.ts:836](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L836)
+[header.ts:958](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L958)
 
 ___
 
@@ -496,23 +534,41 @@ Returns the canonical difficulty for this block.
 
 #### Defined in
 
-[header.ts:585](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L585)
+[header.ts:697](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L697)
+
+___
+
+### getBlobGasPrice
+
+▸ **getBlobGasPrice**(): `bigint`
+
+Returns the price per unit of blob gas for a blob transaction in the current/pending block
+
+#### Returns
+
+`bigint`
+
+the price in gwei per unit of blob gas spent
+
+#### Defined in
+
+[header.ts:582](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L582)
 
 ___
 
 ### hash
 
-▸ **hash**(): `Buffer`
+▸ **hash**(): `Uint8Array`
 
 Returns the hash of the block header.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[header.ts:553](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L553)
+[header.ts:665](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L665)
 
 ___
 
@@ -528,39 +584,39 @@ Checks if the block header is a genesis header.
 
 #### Defined in
 
-[header.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L567)
+[header.ts:679](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L679)
 
 ___
 
 ### raw
 
-▸ **raw**(): [`BlockHeaderBuffer`](../README.md#blockheaderbuffer)
+▸ **raw**(): [`BlockHeaderBytes`](../README.md#blockheaderbytes)
 
-Returns a Buffer Array of the raw Buffers in this header, in order.
+Returns a Uint8Array Array of the raw Bytes in this header, in order.
 
 #### Returns
 
-[`BlockHeaderBuffer`](../README.md#blockheaderbuffer)
+[`BlockHeaderBytes`](../README.md#blockheaderbytes)
 
 #### Defined in
 
-[header.ts:520](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L520)
+[header.ts:625](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L625)
 
 ___
 
 ### serialize
 
-▸ **serialize**(): `Buffer`
+▸ **serialize**(): `Uint8Array`
 
 Returns the rlp encoding of the block header.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[header.ts:777](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L777)
+[header.ts:892](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L892)
 
 ___
 
@@ -576,7 +632,7 @@ Returns the block header in JSON format.
 
 #### Defined in
 
-[header.ts:784](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L784)
+[header.ts:899](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L899)
 
 ___
 
@@ -599,7 +655,7 @@ Throws if out of bounds.
 
 #### Defined in
 
-[header.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L434)
+[header.ts:495](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L495)
 
 ___
 
@@ -622,7 +678,7 @@ Static constructor to create a block header from a header data dictionary
 
 #### Defined in
 
-[header.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L81)
+[header.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L86)
 
 ___
 
@@ -636,7 +692,7 @@ Static constructor to create a block header from a RLP-serialized header
 
 | Name | Type |
 | :------ | :------ |
-| `serializedHeaderData` | `Buffer` |
+| `serializedHeaderData` | `Uint8Array` |
 | `opts` | [`BlockOptions`](../interfaces/BlockOptions.md) |
 
 #### Returns
@@ -645,7 +701,7 @@ Static constructor to create a block header from a RLP-serialized header
 
 #### Defined in
 
-[header.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L91)
+[header.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L96)
 
 ___
 
@@ -653,13 +709,13 @@ ___
 
 ▸ `Static` **fromValuesArray**(`values`, `opts?`): [`BlockHeader`](BlockHeader.md)
 
-Static constructor to create a block header from an array of Buffer values
+Static constructor to create a block header from an array of Bytes values
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `values` | [`BlockHeaderBuffer`](../README.md#blockheaderbuffer) |
+| `values` | [`BlockHeaderBytes`](../README.md#blockheaderbytes) |
 | `opts` | [`BlockOptions`](../interfaces/BlockOptions.md) |
 
 #### Returns
@@ -668,4 +724,4 @@ Static constructor to create a block header from an array of Buffer values
 
 #### Defined in
 
-[header.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L105)
+[header.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L110)

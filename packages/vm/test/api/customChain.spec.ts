@@ -2,16 +2,16 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Address } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Interface } from '@ethersproject/abi'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
 
 import * as testChain from './testdata/testnet.json'
 import * as testnetMerge from './testdata/testnetMerge.json'
 
-import type { AccountState } from '@ethereumjs/blockchain/dist/genesisStates'
+import type { AccountState } from '@ethereumjs/util'
 
 const storage: Array<[string, string]> = [
   [
@@ -23,6 +23,7 @@ const accountState: AccountState = [
   '0x0',
   '0x6080604052348015600f57600080fd5b506004361060285760003560e01c80632e64cec114602d575b600080fd5b60336047565b604051603e9190605d565b60405180910390f35b60008054905090565b6057816076565b82525050565b6000602082019050607060008301846050565b92915050565b600081905091905056fea2646970667358221220338001095242a334ada78025237955fa36b6f2f895ea7f297b69af72f8bc7fd164736f6c63430008070033',
   storage,
+  '0x0',
 ]
 
 /**
@@ -57,15 +58,12 @@ const block = Block.fromBlockData(
     common,
   }
 )
-const privateKey = Buffer.from(
-  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-  'hex'
-)
+const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
-tape('VM initialized with custom state', (t) => {
-  t.test('should transfer eth from already existent account', async (t) => {
+describe('VM initialized with custom state', () => {
+  it('should transfer eth from already existent account', async () => {
     const blockchain = await Blockchain.create({ common, genesisState })
-    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
+    const vm = await VM.create({ blockchain, common, genesisState })
 
     const to = '0x00000000000000000000000000000000000000ff'
     const tx = TransactionFactory.fromTxData(
@@ -86,54 +84,36 @@ tape('VM initialized with custom state', (t) => {
     const toAddress = Address.fromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
-    t.equal(result.totalGasSpent.toString(), '21000')
-    t.equal(receiverAddress.balance.toString(), '1')
-    t.end()
+    assert.equal(result.totalGasSpent.toString(), '21000')
+    assert.equal(receiverAddress!.balance.toString(), '1')
   })
 
-  t.test('should retrieve value from storage', async (t) => {
+  it('should retrieve value from storage', async () => {
     const blockchain = await Blockchain.create({ common, genesisState })
     common.setHardfork(Hardfork.London)
-    const vm = await VM.create({ blockchain, common, activateGenesisState: true })
+    const vm = await VM.create({ blockchain, common, genesisState })
     const sigHash = new Interface(['function retrieve()']).getSighash('retrieve')
 
     const callResult = await vm.evm.runCall({
       to: Address.fromString(contractAddress),
-      data: Buffer.from(sigHash.slice(2), 'hex'),
+      data: hexToBytes(sigHash),
       caller: Address.fromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    t.equal(callResult.execResult.returnValue.toString('hex'), storage[0][1].slice(2))
-    t.end()
+    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1])
   })
 
-  t.test('hardforkByBlockNumber, hardforkByTTD', async (st) => {
+  it('setHardfork', async () => {
     const customChains = [testnetMerge]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
-    let vm = await VM.create({ common, hardforkByBlockNumber: true })
-    st.equal((vm as any)._hardforkByBlockNumber, true, 'should set hardforkByBlockNumber option')
+    let vm = await VM.create({ common, setHardfork: true, genesisState: {} })
+    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
 
-    vm = await VM.create({ common, hardforkByTTD: 5001 })
-    st.equal((vm as any)._hardforkByTTD, BigInt(5001), 'should set hardforkByTTD option')
-
-    try {
-      await VM.create({ common, hardforkByBlockNumber: true, hardforkByTTD: 3000 })
-      st.fail('should not reach this')
-    } catch (e: any) {
-      const msg =
-        'should throw if hardforkByBlockNumber and hardforkByTTD options are used in conjunction'
-      st.ok(
-        e.message.includes(
-          `The hardforkByBlockNumber and hardforkByTTD options can't be used in conjunction`
-        ),
-        msg
-      )
-    }
-
-    st.end()
+    vm = await VM.create({ common, setHardfork: 5001, genesisState: {} })
+    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
   })
 })

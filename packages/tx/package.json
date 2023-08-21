@@ -1,7 +1,7 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "4.1.1",
-  "description": "A simple module for creating, manipulating and signing Ethereum transactions",
+  "version": "5.0.0",
+  "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": [
     "ethereum",
     "transactions"
@@ -27,8 +27,15 @@
       "hireable": true
     }
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -36,30 +43,26 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
-    "docs:build": "typedoc --options typedoc.js",
+    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- tx",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
-    "test": "npm run test:node && npm run test:browser && npm run test:txTests",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "tape -r ts-node/register -- 'test/**/*.spec.ts'",
-    "test:txTests": "tape -r ts-node/register ./test/transactionRunner.ts",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=chrome --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.10.2",
-    "@ethereumjs/common": "^3.1.1",
-    "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/util": "^8.0.5",
-    "ethereum-cryptography": "^1.1.2",
-    "@ethersproject/providers": "^5.7.2"
+    "@ethereumjs/common": "^4.0.0",
+    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
+    "ethereum-cryptography": "^2.1.2"
   },
   "peerDependencies": {
-    "c-kzg": "^1.0.8"
+    "c-kzg": "^2.1.0"
   },
   "peerDependenciesMeta": {
     "c-kzg": {
@@ -73,6 +76,6 @@
     "node-dir": "^0.1.16"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   }
 }

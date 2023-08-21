@@ -1,12 +1,13 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // @ts-ignore - package has no types...
 import { run, mark, logMem } from 'micro-bmark'
 
-import { DB, Trie } from '../dist'
-
+import { Trie } from '../dist/cjs/index.js'
 import { keys } from './keys'
 
-export function createSuite(db: DB) {
+import type { DB } from '@ethereumjs/util'
+
+export function createSuite(db: DB<string, string>) {
   const trie = new Trie({ db })
   const checkpointTrie = new Trie({ db })
 
@@ -27,15 +28,15 @@ export function createSuite(db: DB) {
       ['1k-1k-32-mir', 1000, true],
     ]) {
       await mark(title, async () => {
-        let key = Buffer.alloc(KEY_SIZE)
+        let key = new Uint8Array(KEY_SIZE)
 
         for (let i = 0; i <= ROUNDS; i++) {
-          key = Buffer.from(keccak256(key))
+          key = keccak256(key)
 
           if (symmetric) {
             await trie.put(key, key)
           } else {
-            await trie.put(key, Buffer.from(key))
+            await trie.put(key, key)
           }
 
           if (i % (eraSize as number) === 0) {
