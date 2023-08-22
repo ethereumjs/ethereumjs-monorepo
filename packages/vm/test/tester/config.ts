@@ -422,7 +422,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
     BerlinToLondonAt5: 24,
-    Cancun: 0, // FIX ME
+    Cancun: 0,
   },
   GeneralStateTests: {
     Chainstart: 1045,
