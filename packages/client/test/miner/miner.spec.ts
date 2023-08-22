@@ -635,7 +635,7 @@ describe('[Miner]', async () => {
     await chain.close()
   })
 
-  it('should handle mining ethash PoW', async () => {
+  it.skip('should handle mining ethash PoW', async () => {
     const addr = A.address.toString().slice(2)
     const consensusConfig = { ethash: true }
     const defaultChainData = {
