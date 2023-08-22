@@ -123,7 +123,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         // ensure the range is monotonically increasing
         if (bytesToBigInt(slots[i].hash) > bytesToBigInt(slots[i + 1].hash)) {
           throw Error(
-            `Account hashes not monotonically increasing: ${i} ${slots[i].hash} vs ${i + 1} ${
+            `Storage hashes not monotonically increasing: ${i} ${slots[i].hash} vs ${i + 1} ${
               slots[i + 1].hash
             }`
           )

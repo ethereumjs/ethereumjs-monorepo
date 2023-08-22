@@ -703,5 +703,5 @@ describe('[Miner]', async () => {
     })
     await (miner as any).queueNextAssembly(0)
     await wait(10000)
-  }, 100000)
+  }, 80000)
 })
