@@ -422,6 +422,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
     BerlinToLondonAt5: 24,
+    Cancun: 0, // FIX ME
   },
   GeneralStateTests: {
     Chainstart: 1045,
@@ -432,8 +433,8 @@ const expectedTestsFull: {
     Byzantium: 4857,
     Constantinople: 10648,
     Petersburg: 10642,
-    Istanbul: 12272,
-    MuirGlacier: 12272,
+    Istanbul: 12271,
+    MuirGlacier: 12271,
     Berlin: 13214,
     London: 19449,
     Paris: 19598,
@@ -444,6 +445,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 0,
     HomesteadToEIP150At5: 0,
     BerlinToLondonAt5: 0,
+    Cancun: 1,
   },
 }
 
