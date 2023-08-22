@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692562104083,
+  "lastUpdate": 1692713378856,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "14e7bbacad603088feafff1d8be2c81cf193d0ab",
-          "message": "Fix rpc custom address bug (#2930)\n\n* Add custom address parameters to RPC server startup\r\n\r\n* Adjust port numbers in cli tests\r\n\r\n* custom dir fixes\r\n\r\n* clean up tempdir after test\r\n\r\n* Remove duplicate rpc tests with colliding ports\r\n\r\n* Update rpc custom address test\r\n\r\n* Fix custom address test\r\n\r\n* lint\r\n\r\n* Manual wait before connecting client\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>",
-          "timestamp": "2023-08-01T13:42:23-07:00",
-          "tree_id": "7b822bb7f5756cc5a2d0aef143e074a7463760b4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/14e7bbacad603088feafff1d8be2c81cf193d0ab"
-        },
-        "date": 1690922736209,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 33031,
-            "range": "±4.38%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 32402,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31994,
-            "range": "±2.41%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27754,
-            "range": "±8.37%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30228,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.08%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4567956cc06e9df27b296b4feeefdec6e9501e0b",
+          "message": "Snap Sync: Storage Fetcher Highest-Known-Hash Optimization (#2965)\n\n* Don't request tasks with limit lower than the highest known hash\r\n\r\n* Update test message\r\n\r\n* Update highest known hash in process phase\r\n\r\n* Test highest known hash optimization\r\n\r\n* Update test\r\n\r\n* Increase miner ethash PoW test timeout\r\n\r\n* Clean up code\r\n\r\n* small cleanup\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-08-22T19:35:32+05:30",
+          "tree_id": "6eea974436898c1fe3fccc918c66a4c7293833a1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4567956cc06e9df27b296b4feeefdec6e9501e0b"
+        },
+        "date": 1692713378001,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 26285,
+            "range": "±5.51%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 26206,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 26044,
+            "range": "±3.39%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25304,
+            "range": "±3.62%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20913,
+            "range": "±10.50%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
