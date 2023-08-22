@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692719834814,
+  "lastUpdate": 1692721943155,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6eb9532ddfe50acfcc1b4e35791d6b91c38b5a67",
-          "message": "client: test and update devnet 8 integration sims (#2934)\n\n* client: test and update devnet 8 integration sims\r\n\r\n* Client test import fix\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-08-02T21:49:20+02:00",
-          "tree_id": "adaa1286de978a66643f3329f4b3d106c332de8e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6eb9532ddfe50acfcc1b4e35791d6b91c38b5a67"
-        },
-        "date": 1691006212841,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19797,
-            "range": "±6.05%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20473,
-            "range": "±3.68%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20221,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20019,
-            "range": "±3.77%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19322,
-            "range": "±3.87%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.61%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "26c51791a1794e39c75f51f5454324ac6a5beef6",
+          "message": "client: fixes for new engine api method validations for hive pr-834 (#2973)\n\n* client: fixes for new engine api method validations for hive pr-834\r\n\r\n* fix spec\r\n\r\n* handle null values hive sends\r\n\r\n* fix remaining errors\r\n\r\n* return blobs of already build payload\r\n\r\n* fix client spec\r\n\r\n* small fix\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-08-22T18:29:00+02:00",
+          "tree_id": "7ab22d29c9761543727f0f763ad0a4da21cb15a3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/26c51791a1794e39c75f51f5454324ac6a5beef6"
+        },
+        "date": 1692721941865,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32624,
+            "range": "±4.48%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31919,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31993,
+            "range": "±2.55%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27693,
+            "range": "±8.93%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 30349,
+            "range": "±2.68%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
