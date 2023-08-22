@@ -399,7 +399,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
-      } value=${value} data=0x${short(data)}`
+      } value=${value} data=${short(data)}`
     )
   }
 
@@ -424,7 +424,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
         exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
-      } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
+      } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
   }
 
