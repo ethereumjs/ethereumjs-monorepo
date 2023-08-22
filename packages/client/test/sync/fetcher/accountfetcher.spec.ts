@@ -155,7 +155,7 @@ describe('[AccountFetcher]', async () => {
     assert.equal(results?.length, 3, 'Should return full results')
   })
 
-  it('should request correctly', async () => {
+  it('should skip job with limit lower than highest known hash', async () => {
     const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
