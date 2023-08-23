@@ -524,8 +524,6 @@ export const chains: ChainsDict = {
         forkHash: '0x01d65a8c',
       },
       {
-        // The forkHash will remain same as mergeForkIdTransition is post merge,
-        // terminal block: https://sepolia.etherscan.io/block/1450408
         name: 'paris',
         ttd: '0',
         block: 0,
