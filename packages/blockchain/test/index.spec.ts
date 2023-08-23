@@ -38,6 +38,10 @@ describe('blockchain test', () => {
       'chainstart',
       'correct HF setting with hardforkByHeadBlockNumber option'
     )
+
+    // TODO add hash test for Holesky
+    //const holeskyHash = '0xff9006519a8ce843ac9c28549d24211420b546e12ce2d170c77a8cca7964f23d'
+    assert.fail()
   })
 
   it('should initialize correctly with Blockchain.fromBlocksData()', async () => {

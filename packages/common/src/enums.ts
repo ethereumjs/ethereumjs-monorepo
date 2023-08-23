@@ -4,6 +4,7 @@ export enum Chain {
   Mainnet = 1,
   Goerli = 5,
   Sepolia = 11155111,
+  Holesky = 17000,
 }
 
 /**
@@ -32,6 +33,10 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
   [Chain.Sepolia]: {
     blockNumber: BigInt(0),
     stateRoot: hexToBytes('0x5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494'),
+  },
+  [Chain.Holesky]: {
+    blockNumber: BigInt(0),
+    stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
   },
 }
 
