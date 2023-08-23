@@ -40,7 +40,7 @@ describe('blockchain test', () => {
     )
   })
 
-  it.only('should initialize holesky correctly', async () => {
+  it('should initialize holesky correctly', async () => {
     // Taken from: https://github.com/eth-clients/holesky/blob/36e4ff2d5138dcb2eb614f0f60fdb060b2adc1e2/README.md#metadata
     const holeskyHash = '0xff9006519a8ce843ac9c28549d24211420b546e12ce2d170c77a8cca7964f23d'
     const common = new Common({ chain: Chain.Holesky })
