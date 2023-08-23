@@ -1,4 +1,4 @@
-import { MapDB, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as lmdb from 'lmdb'
 import { assert, describe, it } from 'vitest'
 

@@ -1,4 +1,4 @@
-import { MapDB, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { Level } from 'level'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
