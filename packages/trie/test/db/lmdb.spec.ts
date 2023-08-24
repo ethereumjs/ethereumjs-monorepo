@@ -1,6 +1,8 @@
-import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import * as lmdb from 'lmdb'
 import { assert, describe, it } from 'vitest'
+
+import { Trie } from '../../src/index.js'
 
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 
@@ -76,5 +78,13 @@ describe('DB tests', () => {
     await db.batch(ops)
     const res = await db.get(k2)
     assert.ok(equalsBytes(v2, res!))
+  })
+
+  it('Reads and writes to trie that uses level db', async () => {
+    const trie = new Trie({ db })
+
+    await trie.put(utf8ToBytes('test'), utf8ToBytes('one'), true)
+    const value = await trie.get(utf8ToBytes('test'))
+    assert.equal(bytesToUtf8(value), 'one')
   })
 })
