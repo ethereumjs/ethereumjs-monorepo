@@ -448,4 +448,120 @@ export const chains: ChainsDict = {
       'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.sepolia.ethdisco.net',
     ],
   },
+  holesky: {
+    name: 'holesky',
+    chainId: 17000,
+    networkId: 17000,
+    defaultHardfork: 'paris',
+    consensus: {
+      type: 'pos',
+      algorithm: 'casper',
+    },
+    comment: 'PoS test network to replace Goerli',
+    url: 'https://github.com/eth-clients/holesky/',
+    genesis: {
+      baseFeePerGas: '0x3B9ACA00',
+      difficulty: '0x01',
+      extraData: '0x686f77206d7563682069732074686520666973683f',
+      gasLimit: '0x17D7840',
+      nonce: '0x0000000000001234',
+      timestamp: '0x65046234',
+    },
+    hardforks: [
+      {
+        name: 'chainstart',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'homestead',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'tangerineWhistle',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'spuriousDragon',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'byzantium',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'constantinople',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'petersburg',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'istanbul',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'muirGlacier',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'berlin',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'london',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'paris',
+        ttd: '0',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'mergeForkIdTransition',
+        block: 0,
+        forkHash: '0x01d65a8c',
+      },
+      {
+        name: 'shanghai',
+        block: null,
+        timestamp: '1694790240',
+        forkHash: '0x445efa46',
+      },
+      {
+        name: 'cancun',
+        block: null,
+        timestamp: '2000000000',
+        forkHash: '0x104c16da',
+      },
+    ],
+    bootstrapNodes: [
+      {
+        ip: '146.190.13.128',
+        port: 30303,
+        id: 'ac906289e4b7f12df423d654c5a962b6ebe5b3a74cc9e06292a85221f9a64a6f1cfdd6b714ed6dacef51578f92b34c60ee91e9ede9c7f8fadc4d347326d95e2b',
+        location: '',
+        comment: 'bootnode 1',
+      },
+      {
+        ip: '178.128.136.233',
+        port: 30303,
+        id: 'a3435a0155a3e837c02f5e7f5662a2f1fbc25b48e4dc232016e1c51b544cb5b4510ef633ea3278c0e970fa8ad8141e2d4d0f9f95456c537ff05fdf9b31c15072',
+        location: '',
+        comment: 'bootnode 2',
+      },
+    ],
+  },
 }
