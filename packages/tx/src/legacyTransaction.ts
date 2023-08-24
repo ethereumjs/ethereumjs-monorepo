@@ -286,6 +286,10 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Returns the public key of the sender
    */
   getSenderPublicKey(): Uint8Array {
+    if (this.cache.senderPubKey !== undefined) {
+      return this.cache.senderPubKey
+    }
+
     const msgHash = this.getMessageToVerifySignature()
 
     const { v, r, s } = this
@@ -293,13 +297,17 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     this._validateHighS()
 
     try {
-      return ecrecover(
+      const sender = ecrecover(
         msgHash,
         v!,
         bigIntToUnpaddedBytes(r!),
         bigIntToUnpaddedBytes(s!),
         this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
       )
+      if (Object.isFrozen(this)) {
+        this.cache.senderPubKey = sender
+      }
+      return sender
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
       throw new Error(msg)
