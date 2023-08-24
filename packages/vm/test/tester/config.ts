@@ -38,13 +38,14 @@ export const SKIP_PERMANENT = [
  * tests running slow (run from time to time)
  */
 export const SKIP_SLOW = [
-  'Call50000_sha256',
-  'Return50000',
-  'Return50000_2',
-  'CALLBlake2f_MaxRounds',
+  'Call50000_sha256', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'CALLBlake2f_MaxRounds', // Last check: 2023-08-24, Berlin HF, still very slow (several minutes per block execution)
+  'Return50000', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'Return50000_2', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'static_Call50000_sha256', // Last check: 2023-08-24, Berlin HF, still slow (30-60 secs per block execution)
   // vmPerformance tests
-  'loopMul',
-  'loopExp',
+  'loopMul', // Last check: 2023-08-24, Berlin HF, still very slow (up to minutes per block execution)
+  'loopExp', // Last check: 2023-08-24, Berlin HF, somewhat slow (5-10 secs per block execution)
 ]
 
 /**
