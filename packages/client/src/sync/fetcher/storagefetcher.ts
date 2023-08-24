@@ -283,7 +283,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         if (proof === undefined || proof.length === 0) {
           // no-proof verification
           const trie = new Trie()
-          const valid = await trie.verifyRangeProof(
+          await trie.verifyRangeProof(
             root,
             null,
             null,
@@ -292,7 +292,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             null
           )
 
-          if (!valid) return undefined
           if (proof?.length === 0)
             return Object.assign([], [rangeResult.slots], { completed: true })
         } else {
