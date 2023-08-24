@@ -39,15 +39,8 @@ export const SKIP_PERMANENT = [
  */
 export const SKIP_SLOW = [
   'Call50000_sha256',
-  'static_Call50000',
-  'static_Call50000_ecrec',
-  'static_Call50000_identity',
-  'static_Call50000_identity2',
-  'static_Call50000_rip160',
-  'static_Return50000_2',
   'Return50000',
   'Return50000_2',
-  'static_Call50000_sha256',
   'CALLBlake2f_MaxRounds',
   // vmPerformance tests
   'loopMul',
