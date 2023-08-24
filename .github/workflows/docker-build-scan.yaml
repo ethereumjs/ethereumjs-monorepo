@@ -1,0 +1,10 @@
+name: Docker Build Push
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+jobs:
+  Build-Scan-Container:
+    uses: celo-org/reusable-workflows/.github/workflows/container-cicd-local.yaml@main
+    with:
+      dockerfile: Dockerfile
