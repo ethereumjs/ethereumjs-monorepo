@@ -30,11 +30,12 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVM, EVMInterface } from '@ethereumjs/evm'
 
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
+const debugProfilerEVM = createDebugLogger('evm:profiler')
 
 const parentBeaconBlockRootAddress = Address.fromString(
   '0x000000000000000000000000000000000000000b'
@@ -222,6 +223,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
         block.header.number
       } hardfork=${this.common.hardfork()}`
     )
+  }
+
+  if (this._opts.profilerOpts?.reportProfilerAfterBlock === true) {
+    const logs = (<EVM>this.evm).getPerformanceLogs()
+    debugProfilerEVM(logs)
+    ;(<EVM>this.evm).clearPerformanceLogs()
   }
 
   return results

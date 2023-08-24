@@ -27,6 +27,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { AccessList, AccessListItem } from '@ethereumjs/common'
+import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -37,6 +38,7 @@ const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
+const debugProfilerEVM = createDebugLogger('evm:profiler')
 
 /**
  * Returns the hardfork excluding the merge hf which has
@@ -162,6 +164,11 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
+    if (this._opts.profilerOpts?.reportProfilerAfterTx === true) {
+      const logs = (<EVM>this.evm).getPerformanceLogs()
+      debugProfilerEVM(logs)
+      ;(<EVM>this.evm).clearPerformanceLogs()
+    }
   }
 }
 

@@ -38,6 +38,8 @@ import type {
   EVMEvents,
   EVMInterface,
   EVMOpts,
+  EVMPerformanceLogEntry,
+  EVMPerformanceLogs,
   EVMResult,
   EVMRunCallOpts,
   EVMRunCodeOpts,
@@ -107,6 +109,8 @@ export class EVM implements EVMInterface {
   protected _precompiles!: Map<string, PrecompileFunc>
 
   protected readonly _optsCached: EVMOpts
+
+  protected _performanceLogs: EVMPerformanceLogs
 
   public get precompiles() {
     return this._precompiles
@@ -191,6 +195,8 @@ export class EVM implements EVMInterface {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
     }
 
+    this._performanceLogs = this.clearPerformanceLogs()
+
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
@@ -265,11 +271,35 @@ export class EVM implements EVMInterface {
 
     let result: ExecResult
     if (message.isCompiled) {
+      let timer: number
+      let target: string
+      if (this._optsCached.profiler?.enabled === true) {
+        target = bytesToUnprefixedHex(message.codeAddress.bytes)
+        if (this._performanceLogs.precompiles[target] === undefined) {
+          this._performanceLogs.precompiles[target] = {
+            calls: 0,
+            time: 0,
+            gasUsed: 0,
+            gasPerSecond: 0,
+          }
+        }
+        timer = performance.now()
+      }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
         message.gasLimit
       )
+
+      if (this._optsCached.profiler?.enabled === true) {
+        const delta = (performance.now() - timer!) / 1000
+
+        const field = this._performanceLogs.precompiles[target!]
+        field.calls++
+        field.gasUsed += Number(result.executionGasUsed)
+        field.time += delta
+        // gas per second is updated when it is being read (i.e. evm.getPerformanceLogs())
+      }
       result.gasRefund = message.gasRefund
     } else {
       if (this.DEBUG) {
@@ -557,7 +587,9 @@ export class EVM implements EVMInterface {
       this.blockchain,
       env,
       message.gasLimit,
-      this.journal
+      this.journal,
+      this._performanceLogs,
+      this._optsCached.profiler
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct
@@ -884,6 +916,26 @@ export class EVM implements EVMInterface {
     }
     ;(opts.stateManager as any).common = common
     return new EVM(opts)
+  }
+
+  public getPerformanceLogs() {
+    // Update gas/s
+    function updateFields(fields: { [key: string]: EVMPerformanceLogEntry }) {
+      for (const k in fields) {
+        fields[k].gasPerSecond = fields[k].gasUsed / fields[k].time
+      }
+    }
+    updateFields(this._performanceLogs.opcodes)
+    updateFields(this._performanceLogs.precompiles)
+    return this._performanceLogs
+  }
+
+  public clearPerformanceLogs() {
+    this._performanceLogs = {
+      opcodes: {},
+      precompiles: {},
+    }
+    return this._performanceLogs
   }
 }
 

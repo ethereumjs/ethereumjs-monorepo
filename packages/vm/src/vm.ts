@@ -117,10 +117,17 @@ export class VM {
     if (opts.evm) {
       this.evm = opts.evm
     } else {
+      const enableProfiler =
+        this._opts.profilerOpts?.reportProfilerAfterBlock ??
+        this._opts.profilerOpts?.reportProfilerAfterTx ??
+        false
       this.evm = new EVM({
         common: this.common,
         stateManager: this.stateManager,
         blockchain: this.blockchain,
+        profiler: {
+          enabled: enableProfiler,
+        },
       })
     }
 
