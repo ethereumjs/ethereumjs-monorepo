@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1692878510947,
+  "lastUpdate": 1692902833856,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "konjou@gmail.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0a612d0c37a2ecbe037569ce31fda8094eee6ed7",
-          "message": "Collapse `EthereumService` abstraction service (#2943)\n\n* Collapse ethereumservice into service\r\n\r\n* Clean up ethereumservice references",
-          "timestamp": "2023-08-07T22:24:51+02:00",
-          "tree_id": "1f2e9ec43b6096ae74733495ad63e40f93bd0649",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0a612d0c37a2ecbe037569ce31fda8094eee6ed7"
-        },
-        "date": 1691440216845,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 20761,
-            "range": "±5.42%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21730,
-            "range": "±3.13%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20508,
-            "range": "±3.40%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20647,
-            "range": "±3.34%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19904,
-            "range": "±3.76%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.81%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "35ec012473efcf4d3134c02bdacfdd19e7ff1e07",
+          "message": "common: update the shanghai hf schedule for holesky (#2989)",
+          "timestamp": "2023-08-24T20:43:08+02:00",
+          "tree_id": "0422a26bbd9d86bebcd428fe2f4f033e59e6ca28",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/35ec012473efcf4d3134c02bdacfdd19e7ff1e07"
+        },
+        "date": 1692902832596,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 24125,
+            "range": "±6.35%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25109,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 24871,
+            "range": "±3.81%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 24386,
+            "range": "±3.98%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19991,
+            "range": "±11.51%",
+            "unit": "ops/sec",
+            "extra": "67 samples"
           }
         ]
       }
