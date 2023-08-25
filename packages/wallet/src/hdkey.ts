@@ -1,5 +1,6 @@
-import { HDKey } from 'ethereum-cryptography/hdkey.js'
 import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
+import { HDKey } from 'ethereum-cryptography/hdkey.js'
+
 import { Wallet } from './wallet.js'
 
 export class EthereumHDKey {
