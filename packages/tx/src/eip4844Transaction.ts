@@ -10,7 +10,6 @@ import {
   commitmentsToVersionedHashes,
   computeVersionedHash,
   concatBytes,
-  ecrecover,
   equalsBytes,
   getBlobs,
   hexToBytes,
@@ -21,6 +20,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as Generic from './capabilities/generic.js'
 import { LIMIT_BLOBS_PER_TX } from './constants.js'
 import { TransactionType } from './types.js'
 import { AccessLists } from './util.js'
@@ -509,19 +509,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Use {@link BlobEIP4844Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = keccak256(this.serialize())
-      }
-      return this.cache.hash
-    }
-
-    return keccak256(this.serialize())
+    return Generic.hash.bind(this)()
   }
 
   getMessageToVerifySignature(): Uint8Array {
@@ -532,35 +520,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    if (this.cache.senderPubKey !== undefined) {
-      return this.cache.senderPubKey
-    }
-
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    const msgHash = this.getMessageToVerifySignature()
-    const { v, r, s } = this
-
-    this._validateHighS()
-
-    try {
-      const sender = ecrecover(
-        msgHash,
-        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBytes(r!),
-        bigIntToUnpaddedBytes(s!)
-      )
-      if (Object.isFrozen(this)) {
-        this.cache.senderPubKey = sender
-      }
-      return sender
-    } catch (e: any) {
-      const msg = this._errorMsg('Invalid Signature')
-      throw new Error(msg)
-    }
+    return Generic.getSenderPublicKey.bind(this)()
   }
 
   toJSON(): JsonTx {
@@ -620,7 +580,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`
+    return Generic.errorMsg.bind(this)(msg)
   }
 
   /**
