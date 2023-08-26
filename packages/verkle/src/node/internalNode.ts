@@ -42,6 +42,15 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   getChildren(index: number): Uint8Array | null {
     return this.children?.[index] ?? null
   }
+
+  insert(key: Uint8Array, value: Uint8Array, resolver: () => void): void {
+    const values = new Array<Uint8Array>(NODE_WIDTH)
+    values[key[31]] = value
+    this.insertStem(key.slice(0, 31), values, resolver)
+  }
+
+  insertStem(key)
+
   // TODO: go-verkle also adds the bitlist to the raw format.
   raw(): Uint8Array[] {
     return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
