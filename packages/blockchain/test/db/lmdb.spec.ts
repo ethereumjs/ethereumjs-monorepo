@@ -24,8 +24,14 @@ class LMDB<
   private path
   private database
 
+  // It's necessary to use a different path for every init to avoid reading old data from a previous test
+  static nonce: number
+
   constructor(path?: string) {
-    this.path = path ?? './'
+    if (LMDB.nonce === undefined) {
+      LMDB.nonce = 0
+    }
+    this.path = path ?? `./${LMDB.nonce++}`
     this.database = lmdb.open({
       compression: true,
       name: '@ethereumjs/trie',
@@ -39,11 +45,14 @@ class LMDB<
   async get(key: TKey, opts?: EncodingOpts): Promise<TValue | undefined> {
     let value
 
-    console.log('inside get')
+    console.log('inside lmdb get')
     console.log(key)
 
     try {
       value = await this.database.get(key)
+      console.log('value from get')
+      console.log(value)
+      // console.log(value.toString('hex'))
       if (value === null) return undefined
     } catch (error: any) {
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
@@ -63,6 +72,9 @@ class LMDB<
    * @inheritDoc
    */
   async put(key: TKey, val: TValue, opts?: {}): Promise<void> {
+    console.log('inside lmdb put')
+    console.log(key)
+
     await this.database.put(key, val)
   }
 
