@@ -23,7 +23,7 @@ import { Journal } from './journal.js'
 import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { getActivePrecompiles } from './precompiles/index.js'
+import { getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 import { DefaultBlockchain } from './types.js'
 
@@ -275,6 +275,8 @@ export class EVM implements EVMInterface {
       let target: string
       if (this._optsCached.profiler?.enabled === true) {
         target = bytesToUnprefixedHex(message.codeAddress.bytes)
+        // TODO: map target precompile not to address, but to a name
+        target = getPrecompileName(target) ?? target.slice(20)
         timer = this.performanceLogger.startTimer(target)
       }
       result = await this.runPrecompile(

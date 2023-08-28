@@ -892,9 +892,14 @@ export class Interpreter {
       return BigInt(0)
     }
 
-    const timer = this.performanceLogger.pauseTimer()
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message: msg })
-    this.performanceLogger.unpauseTimer(timer)
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -993,9 +998,14 @@ export class Interpreter {
       message.createdAddresses = createdAddresses
     }
 
-    const timer = this.performanceLogger.pauseTimer()
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message })
-    this.performanceLogger.unpauseTimer(timer)
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)

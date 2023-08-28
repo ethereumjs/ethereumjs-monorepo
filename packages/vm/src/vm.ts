@@ -3,6 +3,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
@@ -21,7 +22,11 @@ import type {
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVMPerformanceLogOutput } from '@ethereumjs/evm/dist/cjs/logger.js'
 import type { BigIntLike, GenesisState } from '@ethereumjs/util'
+const { debug: createDebugLogger } = debugDefault
+
+const debugProfilerEVM = createDebugLogger('evm:profiler')
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -112,6 +117,18 @@ export class VM {
     }
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this.common })
+
+    if (this._opts.profilerOpts !== undefined) {
+      const profilerOpts = this._opts.profilerOpts
+      if (
+        profilerOpts.reportProfilerAfterBlock === true &&
+        profilerOpts.reportProfilerAfterTx === true
+      ) {
+        throw new Error(
+          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
+        )
+      }
+    }
 
     // TODO tests
     if (opts.evm) {
@@ -261,5 +278,53 @@ export class VM {
     }
     const errorStr = `vm hf=${hf}`
     return errorStr
+  }
+
+  /**
+   * Emit EVM profile logs
+   * @param logs
+   * @param profileTitle
+   * @hidden
+   */
+  emitEVMProfile(logs: EVMPerformanceLogOutput[], profileTitle: string) {
+    if (logs.length === 0) {
+      return
+    }
+    const colSize = 17
+    const colOrder = [
+      'tag',
+      'calls',
+      'avgTimePerCall',
+      'totalTime',
+      'gasUsed',
+      'millionGasPerSecond',
+    ]
+    const colNames = [
+      'tag',
+      'calls',
+      'time/call (s)',
+      'total time (s)',
+      'gas used',
+      'gas/s (Mgas/s)',
+    ]
+    function padStr(str: string | number) {
+      return ' ' + str.toString().padStart(colSize, ' ') + ' |'
+    }
+    const header = '|' + colNames.map(padStr).join('')
+    let title = '+ ' + profileTitle + ' '
+    title = title.padEnd(header.length - 1, '-') + '+'
+    debugProfilerEVM(title)
+    debugProfilerEVM(header)
+
+    for (const entry of logs) {
+      let str = '|'
+      for (const key of colOrder) {
+        //@ts-ignore
+        str += padStr(entry[key])
+      }
+      debugProfilerEVM(str)
+    }
+
+    debugProfilerEVM('+' + '-'.repeat(header.length - 2) + '+')
   }
 }
