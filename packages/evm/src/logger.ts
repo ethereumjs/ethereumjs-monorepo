@@ -10,6 +10,7 @@ type EVMPerformanceLogOutput = {
   avgTimePerCall: number // Avg time per call of this opcode/precompile (rounded to 3 digits)
   gasUsed: number // Total amount of gas used by this opcode/precompile
   millionGasPerSecond: number // How much million gas is executed per second (rounded to 3 digits)
+  tag: string // opcode/precompile tag
 }
 
 type EVMPerformanceLogs = {
@@ -66,6 +67,7 @@ export class EVMPerformanceLogger {
           avgTimePerCall: Math.round((field.time / field.calls) * 1000) / 1000,
           gasUsed: field.gasUsed,
           millionGasPerSecond: Math.round((field.gasUsed / 1e6 / field.time) * 1e3) / 1e3,
+          tag: key,
         }
         output.push(entry)
       }
@@ -76,6 +78,7 @@ export class EVMPerformanceLogger {
 
       return output
     }
+
     return {
       opcodes: getLogsFor(this.opcodes),
       precompiles: getLogsFor(this.precompiles),
