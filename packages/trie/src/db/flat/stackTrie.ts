@@ -1,58 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { matchingNibbleLength } from '@ethereumjs/trie'
 import { KECCAK256_RLP, addHexPrefix, bytesToHex } from '@ethereumjs/util'
 import * as assert from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import type { Nibbles } from '@ethereumjs/trie'
+import { nibbleTypeToPackedBytes } from '../../util/index.js'
+import { bytesToNibbles, matchingNibbleLength, nibblestoBytes } from '../../util/nibbles.js'
 
-// can potentially keep the stack trie in the trie package since it uses trie package types like nibbles and helpers,
-// and import it in vm flat directory for integration with snapshot and statemanager
-
-// TODO have to rename this function or the other since there are two nibblesToBytes being exported from trie package
-function nibblestoBytes(arr: Nibbles): Uint8Array {
-  const buf = new Uint8Array(arr.length / 2)
-  for (let i = 0; i < buf.length; i++) {
-    let q = i * 2
-    buf[i] = (arr[q] << 4) + arr[++q]
-  }
-  return buf
-}
-
-// TODO have to rename this function or the other since there are two bytesToNibbles being exported from trie package
-function bytesToNibbles(key: Uint8Array): Nibbles {
-  const bkey = toBytes(key)
-  const nibbles = [] as Nibbles
-
-  for (let i = 0; i < bkey.length; i++) {
-    let q = i * 2
-    nibbles[q] = bkey[i] >> 4
-    ++q
-    nibbles[q] = bkey[i] % 16
-  }
-
-  return nibbles
-}
-
-///
-
-/**
- * Given a list of leaves with keys sorted in the ascending order,
- * re-creates the trie structure hashing up simultaneously the
- * branches that won't be visited again.
- * Implementation based on:
- * https://github.com/holiman/go-ethereum/blob/b7e737bdd87ba51631837f337d128282ff066d24/trie/stacktrie.go
- */
-export function merkleizeList(leaves: Uint8Array[][]): Uint8Array {
-  let root = new EmptyNode()
-
-  for (const kv of leaves) {
-    const key = bytesToNibbles(kv[0])
-    root = root.insert(key, kv[1])
-  }
-
-  return root.hash()
-}
+import type { Nibbles } from '../../index.js'
 
 abstract class BaseNode {
   abstract insert(key: Nibbles, value: Uint8Array): BaseNode
@@ -67,6 +21,7 @@ abstract class BaseNode {
 
 export class EmptyNode extends BaseNode {
   insert(key: Nibbles, value: Uint8Array): BaseNode {
+    //eslint-disable-next-line
     return new LeafNode(key, value)
   }
 
@@ -98,6 +53,8 @@ export class LeafNode extends BaseNode {
     assert(commonLen < this._key.length, 'replacing leaf is not supported')
 
     const newLeaf = new LeafNode(key.slice(commonLen + 1), value)
+
+    //eslint-disable-next-line
     const branch = new BranchNode()
     branch.setChild(key[commonLen], newLeaf)
     branch.setChild(this._key[commonLen], this)
@@ -105,6 +62,7 @@ export class LeafNode extends BaseNode {
     let root: BaseNode = branch
     // Need extension node for common path
     if (commonLen > 0) {
+      //eslint-disable-next-line
       root = new ExtensionNode(this._key.slice(0, commonLen), branch)
     }
 
@@ -115,8 +73,10 @@ export class LeafNode extends BaseNode {
   }
 
   raw(): [Uint8Array, Uint8Array] {
-    const encodedKey = addHexPrefix(this._key.slice(0), true) // the true is for adding terminator
-    return [nibblesToBuffer(encodedKey), this._value]
+    const val: Nibbles = this._key.slice(0)
+    val.push(16)
+    const encodedKey = addHexPrefix(val) // add terminator value to end of key
+    return [nibbleTypeToPackedBytes(encodedKey), this._value]
   }
 }
 
@@ -140,6 +100,8 @@ export class ExtensionNode extends BaseNode {
 
     // Otherwise we'll need a new leaf, a branch and possibly an extension
     const newLeaf = new LeafNode(key.slice(commonLen + 1), value)
+
+    //eslint-disable-next-line
     const branch = new BranchNode()
     branch.setChild(key[commonLen], newLeaf)
 
@@ -163,11 +125,44 @@ export class ExtensionNode extends BaseNode {
     const childRaw = this._child.raw()
     const childSerialized = RLP.encode(childRaw)
     const value = childSerialized.length < 32 ? childRaw : keccak256(childSerialized)
-    const encodedKey = addHexPrefix(this._key.slice(0), false)
-    return [nibblesToBuffer(encodedKey), value]
+    const encodedKey = addHexPrefix(this._key.slice(0))
+    return [nibbleTypeToPackedBytes(encodedKey), value]
   }
 }
 
+// TODO: Either remove HashNode or precompute hash
+//       to save on iterating already visited sub-tries.
+export class HashNode extends BaseNode {
+  _ref: BaseNode
+  _serialized: Uint8Array
+
+  constructor(ref: BaseNode) {
+    super()
+    this._ref = ref
+    this._serialized = ref.serialize()
+  }
+
+  get embedded(): boolean {
+    return this._serialized.length < 32
+  }
+
+  // eslint-disable-next-line
+  insert(key: Nibbles, value: Uint8Array): BaseNode {
+    throw new Error("Can't insert into hash node")
+  }
+
+  raw(): any {
+    return this._ref.raw()
+  }
+
+  serialize(): Uint8Array {
+    throw new Error('Cant serialize hashnode')
+  }
+
+  hash(): Uint8Array {
+    return keccak256(this._serialized)
+  }
+}
 export class BranchNode extends BaseNode {
   _children: (BaseNode | null)[]
   _value: Uint8Array | null
@@ -221,36 +216,20 @@ export class BranchNode extends BaseNode {
   }
 }
 
-// TODO: Either remove HashNode or precompute hash
-//       to save on iterating already visited sub-tries.
-export class HashNode extends BaseNode {
-  _ref: BaseNode
-  _serialized: Uint8Array
+/**
+ * Given a list of leaves with keys sorted in the ascending order,
+ * re-creates the trie structure hashing up simultaneously the
+ * branches that won't be visited again.
+ * Implementation based on:
+ * https://github.com/holiman/go-ethereum/blob/b7e737bdd87ba51631837f337d128282ff066d24/trie/stacktrie.go
+ */
+export function merkleizeList(leaves: Uint8Array[][]): Uint8Array {
+  let root = new EmptyNode()
 
-  constructor(ref: BaseNode) {
-    super()
-    this._ref = ref
-    this._serialized = ref.serialize()
+  for (const kv of leaves) {
+    const key = bytesToNibbles(kv[0])
+    root = root.insert(key, kv[1])
   }
 
-  get embedded(): boolean {
-    return this._serialized.length < 32
-  }
-
-  // eslint-disable-next-line
-  insert(key: Nibbles, value: Uint8Array): BaseNode {
-    throw new Error("Can't insert into hash node")
-  }
-
-  raw(): any {
-    return this._ref.raw()
-  }
-
-  serialize(): Uint8Array {
-    throw new Error('Cant serialize hashnode')
-  }
-
-  hash(): Uint8Array {
-    return keccak256(this._serialized)
-  }
+  return root.hash()
 }
