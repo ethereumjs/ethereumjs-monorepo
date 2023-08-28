@@ -76,6 +76,12 @@ export type VMEvents = {
   afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
 }
 
+export type VMProfilerOpts = {
+  //evmProfilerOpts: EVMProfilerOpts
+  reportProfilerAfterTx?: boolean
+  reportProfilerAfterBlock?: boolean
+}
+
 /**
  * Options for instantiating a {@link VM}.
  */
@@ -146,11 +152,7 @@ export interface VMOpts {
    */
   evm?: EVMInterface
 
-  profilerOpts?: {
-    //evmProfilerOpts: EVMProfilerOpts
-    reportProfilerAfterTx?: boolean
-    reportProfilerAfterBlock?: boolean
-  }
+  profilerOpts?: VMProfilerOpts
 }
 
 /**

@@ -263,6 +263,7 @@ export class VM {
       common,
       evm: evmCopy,
       setHardfork: this._setHardfork,
+      profilerOpts: this._opts.profilerOpts,
     })
   }
 

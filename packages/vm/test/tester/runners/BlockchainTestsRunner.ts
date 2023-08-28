@@ -93,6 +93,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     blockchain,
     common,
     setHardfork: true,
+    profilerOpts: {
+      reportProfilerAfterBlock: true,
+    },
   })
 
   // set up pre-state
