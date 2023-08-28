@@ -64,6 +64,11 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
   blobGasPrice: bigint
 }
 
+export type EVMProfilerOpts = {
+  enabled: boolean
+  // extra options here (such as use X hardfork for gas)
+}
+
 export type VMEvents = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
