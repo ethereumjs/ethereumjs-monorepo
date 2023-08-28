@@ -1,133 +1,127 @@
-const tape = require('tape')
-const promisify = require('util-promisify')
-const BN = require('bn.js')
-const Account = require('ethereumjs-account').default
-const { keccak256, KECCAK256_RLP } = require('ethereumjs-util')
-const BaseTrie = require('merkle-patricia-tree/baseTrie')
+import { Account, KECCAK256_RLP, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { assert, describe, it } from 'vitest'
 
-const { merkleizeList } = require('../../../../dist/state/flat/stackTrie')
+import { Trie, merkleizeList } from '../../../src/index.js'
 
-tape('snapshot merkleize list', (t) => {
-  t.test('should merkleize empty list', async (st) => {
-    const leaves = []
+async function merkleizeViaTrie(leaves: Uint8Array[][]) {
+  const trie = new Trie()
+  for (const leaf of leaves) {
+    await trie.put(leaf[0], leaf[1])
+  }
+  return trie.root()
+}
+
+describe('snapshot merkleize list', () => {
+  it('should merkleize empty list', async () => {
+    const leaves: Uint8Array[][] = []
     const root = merkleizeList(leaves)
-    st.ok(root.equals(KECCAK256_RLP))
-    st.end()
+    assert.equal(JSON.stringify(root), JSON.stringify(KECCAK256_RLP))
   })
 
-  t.test('should merkleize single leaf', async (st) => {
+  it('should merkleize single leaf', async () => {
     const serializedEmptyAcc = new Account().serialize()
-    const leaves = [[new BN(1).toArrayLike(Buffer, 'be', 32), serializedEmptyAcc]]
+    const leaves: Uint8Array[][] = [[hexToBytes('1'.repeat(32)), serializedEmptyAcc]]
     const expected = await merkleizeViaTrie(leaves)
     const root = merkleizeList(leaves)
-    st.ok(
-      root.equals(expected),
-      `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`
+    assert.equal(
+      JSON.stringify(root),
+      JSON.stringify(expected),
+      `Merkleized root ${bytesToHex(root)} should match ${bytesToHex(expected)}`
     )
-    st.end()
   })
 
-  t.test('should merkleize two leaves', async (st) => {
+  it('should merkleize two leaves', async () => {
     const serializedEmptyAcc = new Account().serialize()
-    const leaves = [
-      [Buffer.from('01111111111111111111111111111111', 'hex'), serializedEmptyAcc],
-      [Buffer.from('02111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+    const leaves: Uint8Array[][] = [
+      [hexToBytes('01111111111111111111111111111111'), serializedEmptyAcc],
+      [hexToBytes('02111111111111111111111111111111'), serializedEmptyAcc],
     ]
     const expected = await merkleizeViaTrie(leaves)
     const root = merkleizeList(leaves)
-    st.ok(
-      root.equals(expected),
-      `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`
+    assert.equal(
+      JSON.stringify(root),
+      JSON.stringify(expected),
+      `Merkleized root ${bytesToHex(root)} should match ${bytesToHex(expected)}`
     )
-    st.end()
   })
 
-  t.test('should merkleize trie with leaf inserted to branch', async (st) => {
+  it('should merkleize trie with leaf inserted to branch', async () => {
     const serializedEmptyAcc = new Account().serialize()
-    const leaves = [
-      [Buffer.from('01111111111111111111111111111111', 'hex'), serializedEmptyAcc],
-      [Buffer.from('12111111111111111111111111111111', 'hex'), serializedEmptyAcc],
-      [Buffer.from('13111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+    const leaves: Uint8Array[][] = [
+      [hexToBytes('01111111111111111111111111111111'), serializedEmptyAcc],
+      [hexToBytes('12111111111111111111111111111111'), serializedEmptyAcc],
+      [hexToBytes('13111111111111111111111111111111'), serializedEmptyAcc],
     ]
     const expected = await merkleizeViaTrie(leaves)
     const root = merkleizeList(leaves)
-    st.ok(
-      root.equals(expected),
-      `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`
+    assert.equal(
+      JSON.stringify(root),
+      JSON.stringify(expected),
+      `Merkleized root ${bytesToHex(root)} should match ${bytesToHex(expected)}`
     )
-    st.end()
   })
 
-  t.test('should merkleize trie with extension insertion', async (st) => {
+  it('should merkleize trie with extension insertion', async () => {
     const serializedEmptyAcc = new Account().serialize()
     const testcases = [
       [
-        [Buffer.from('01111111111111111111111111111111', 'hex'), serializedEmptyAcc],
-        [Buffer.from('02111111111111111111111111111111', 'hex'), serializedEmptyAcc],
-        [Buffer.from('03111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [hexToBytes('01111111111111111111111111111111'), serializedEmptyAcc],
+        [hexToBytes('02111111111111111111111111111111'), serializedEmptyAcc],
+        [hexToBytes('03111111111111111111111111111111'), serializedEmptyAcc],
       ],
       [
-        [Buffer.from('00001111111111111111111111111111', 'hex'), serializedEmptyAcc],
-        [Buffer.from('00002111111111111111111111111111', 'hex'), serializedEmptyAcc],
-        [Buffer.from('00111111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [hexToBytes('00001111111111111111111111111111'), serializedEmptyAcc],
+        [hexToBytes('00002111111111111111111111111111'), serializedEmptyAcc],
+        [hexToBytes('00111111111111111111111111111111'), serializedEmptyAcc],
       ],
       [
-        [Buffer.from('00001111111111111111111111111111', 'hex'), serializedEmptyAcc],
-        [Buffer.from('00002111111111111111111111111111', 'hex'), serializedEmptyAcc],
-        [Buffer.from('00011111111111111111111111111111', 'hex'), serializedEmptyAcc],
+        [hexToBytes('00001111111111111111111111111111'), serializedEmptyAcc],
+        [hexToBytes('00002111111111111111111111111111'), serializedEmptyAcc],
+        [hexToBytes('00011111111111111111111111111111'), serializedEmptyAcc],
       ],
     ]
 
     for (const leaves of testcases) {
       const expected = await merkleizeViaTrie(leaves)
       const root = merkleizeList(leaves)
-      st.ok(
-        root.equals(expected),
-        `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`
+      assert.equal(
+        JSON.stringify(root),
+        JSON.stringify(expected),
+        `Merkleized root ${bytesToHex(root)} should match ${bytesToHex(expected)}`
       )
     }
-
-    st.end()
   })
 
-  t.test('should merkleize multiple leaves', async (st) => {
+  it('should merkleize multiple leaves', async () => {
     const serializedEmptyAcc = new Account().serialize()
-    const leaves = [
-      [keccak256(new BN(5).toArrayLike(Buffer, 'be', 20)), serializedEmptyAcc],
-      [keccak256(new BN(3).toArrayLike(Buffer, 'be', 20)), serializedEmptyAcc],
-      [keccak256(new BN(4).toArrayLike(Buffer, 'be', 20)), serializedEmptyAcc],
+    const leaves: Uint8Array[][] = [
+      [keccak256(hexToBytes('5'.repeat(20))), serializedEmptyAcc],
+      [keccak256(hexToBytes('3'.repeat(20))), serializedEmptyAcc],
+      [keccak256(hexToBytes('4'.repeat(20))), serializedEmptyAcc],
     ]
     const expected = await merkleizeViaTrie(leaves)
     const root = merkleizeList(leaves)
-    st.ok(
-      root.equals(expected),
-      `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`
+    assert.equal(
+      JSON.stringify(root),
+      JSON.stringify(expected),
+      `Merkleized root ${bytesToHex(root)} should match ${bytesToHex(expected)}`
     )
-    st.end()
   })
 
-  t.test('should merkleize trie with embedded nodes', async (st) => {
-    const value = Buffer.from('11', 'hex')
-    const leaves = [
-      [new BN(1).toArrayLike(Buffer, 'be', 32), value],
-      [new BN(2).toArrayLike(Buffer, 'be', 32), value],
-      [new BN(3).toArrayLike(Buffer, 'be', 32), value],
+  it('should merkleize trie with embedded nodes', async () => {
+    const value = Uint8Array.from([1, 1])
+    const leaves: Uint8Array[][] = [
+      [hexToBytes('1'.repeat(32)), value],
+      [hexToBytes('2'.repeat(32)), value],
+      [hexToBytes('3'.repeat(32)), value],
     ]
     const expected = await merkleizeViaTrie(leaves)
     const root = merkleizeList(leaves)
-    st.ok(
-      root.equals(expected),
-      `Merkleized root ${root.toString('hex')} should match ${expected.toString('hex')}`
+    assert.equal(
+      JSON.stringify(root),
+      JSON.stringify(expected),
+      `Merkleized root ${bytesToHex(root)} should match ${bytesToHex(expected)}`
     )
-    st.end()
   })
 })
-
-async function merkleizeViaTrie(leaves) {
-  const trie = new BaseTrie()
-  const put = promisify(trie.put.bind(trie))
-  for (const leaf of leaves) {
-    await put(leaf[0], leaf[1])
-  }
-  return trie.root
-}
