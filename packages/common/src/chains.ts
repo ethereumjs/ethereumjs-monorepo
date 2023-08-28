@@ -537,14 +537,14 @@ export const chains: ChainsDict = {
       {
         name: 'shanghai',
         block: null,
-        timestamp: '1694790240',
-        forkHash: '0x445efa46',
+        timestamp: '1694884704',
+        forkHash: '0x2dc62b2a',
       },
       {
         name: 'cancun',
         block: null,
         timestamp: '2000000000',
-        forkHash: '0x104c16da',
+        forkHash: '0xffab2acd',
       },
     ],
     bootstrapNodes: [
