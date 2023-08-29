@@ -246,7 +246,7 @@ export class Common {
     if (opts.eips) {
       this.setEIPs(opts.eips)
     }
-    if (this._paramsCache === undefined) {
+    if (Object.keys(this._paramsCache).length === 0) {
       this._buildParamsCache()
     }
   }
