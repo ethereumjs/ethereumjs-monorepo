@@ -25,6 +25,7 @@ import type {
   CliqueConfig,
   CommonOpts,
   CustomCommonOpts,
+  EIPOrHFConfig,
   EthashConfig,
   GenesisBlockConfig,
   GethConfigOpts,
@@ -35,6 +36,19 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
+
+/**
+ * Superset from EIPConfig and HardforkConfig types from types.ts,
+ * easiest for internally "merging" configs together for the parameter cache
+ * by using the spread operator and keep typing intact.
+ */
+type ParamsCacheConfig = {
+  name: string
+  eips?: number[]
+  minimumHardfork?: Hardfork
+  requiredEIPs?: number[]
+} & EIPOrHFConfig
+
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
@@ -50,6 +64,8 @@ export class Common {
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
   protected _customChains: ChainConfig[]
+
+  protected _paramsCache: ParamsCacheConfig = {}
 
   protected HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
 
@@ -283,6 +299,7 @@ export class Common {
       if (hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
+          this._buildParamsCache()
           this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
@@ -467,6 +484,14 @@ export class Common {
       }
     }
     this._eips = eips
+    this._buildParamsCache()
+  }
+
+  /**
+   * Build up a cache for all parameter values for the current HF and all activated EIPs
+   */
+  protected _buildParamsCache() {
+    console.log(this._paramsCache)
   }
 
   /**
