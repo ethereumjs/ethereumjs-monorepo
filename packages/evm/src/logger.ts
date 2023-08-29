@@ -63,7 +63,7 @@ export class EVMPerformanceLogger {
         const field = obj[key]
         const entry = {
           calls: field.calls,
-          totalTime: Math.round(field.time * 1e3) / 1e6,
+          totalTime: Math.round(field.time * 1e6) / 1e3,
           avgTimePerCall: Math.round((field.time / field.calls) * 1e6) / 1e3,
           gasUsed: field.gasUsed,
           millionGasPerSecond: Math.round(field.gasUsed / field.time / 1e3) / 1e3,

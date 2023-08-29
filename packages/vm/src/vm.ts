@@ -299,14 +299,7 @@ export class VM {
       'gasUsed',
       'millionGasPerSecond',
     ]
-    const colNames = [
-      'tag',
-      'calls',
-      'time/call (ms)',
-      'total time (ms)',
-      'gas used',
-      'gas/s (Mgas/s)',
-    ]
+    const colNames = ['tag', 'calls', 'ms/call', 'total (ms)', 'gas used', 'Mgas/s']
     function padStr(str: string | number, leftpad: number) {
       return ' ' + str.toString().padStart(leftpad, ' ') + ' '
     }
