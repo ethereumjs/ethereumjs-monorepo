@@ -28,11 +28,12 @@ import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
 
 interface TransactionCache {
-  hash: Uint8Array | undefined
+  hash?: Uint8Array
   dataFee?: {
     value: bigint
     hardfork: string | Hardfork
   }
+  senderPubKey?: Uint8Array
 }
 
 /**
@@ -62,6 +63,7 @@ export abstract class BaseTransaction<T extends TransactionType>
   protected cache: TransactionCache = {
     hash: undefined,
     dataFee: undefined,
+    senderPubKey: undefined,
   }
 
   protected readonly txOptions: TxOptions

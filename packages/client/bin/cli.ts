@@ -671,6 +671,14 @@ function generateAccount(): Account {
 const stopClient = async (config: Config, clientStartPromise: any) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
   config.logger.info('(This might take a little longer if client not yet fully started)')
+  let timeoutHandle
+  if (clientStartPromise.toString().includes('Promise') === true)
+    // Client hasn't finished starting up so setting timeout to terminate process if not already shutdown gracefully
+    timeoutHandle = setTimeout(() => {
+      config.logger.warn('Client has become unresponsive while starting up.')
+      config.logger.warn('Check logging output for potential errors.  Exiting...')
+      process.exit(1)
+    }, 30000)
   const clientHandle = await clientStartPromise
   if (clientHandle !== null) {
     config.logger.info('Shutting down the client and the servers...')
@@ -683,7 +691,7 @@ const stopClient = async (config: Config, clientStartPromise: any) => {
   } else {
     config.logger.info('Client did not start properly, exiting ...')
   }
-
+  clearTimeout(timeoutHandle)
   process.exit()
 }
 
@@ -861,6 +869,15 @@ async function run() {
 
   process.on('SIGTERM', async () => {
     await stopClient(config, clientStartPromise)
+  })
+
+  process.on('uncaughtException', (err) => {
+    // Handles uncaught exceptions that are thrown in async events/functions and aren't caught in
+    // main client process
+    config.logger.error(`Uncaught error: ${err.message}`)
+    config.logger.error(err)
+
+    void stopClient(config, clientStartPromise)
   })
 }
 

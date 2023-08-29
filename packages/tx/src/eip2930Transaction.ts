@@ -307,6 +307,10 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
+    if (this.cache.senderPubKey !== undefined) {
+      return this.cache.senderPubKey
+    }
+
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call this method if transaction is not signed')
       throw new Error(msg)
@@ -318,12 +322,16 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     this._validateHighS()
 
     try {
-      return ecrecover(
+      const sender = ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
         bigIntToUnpaddedBytes(r!),
         bigIntToUnpaddedBytes(s!)
       )
+      if (Object.isFrozen(this)) {
+        this.cache.senderPubKey = sender
+      }
+      return sender
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
       throw new Error(msg)
