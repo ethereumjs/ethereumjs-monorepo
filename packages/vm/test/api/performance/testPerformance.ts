@@ -104,9 +104,68 @@ async function testJUMPDEST() {
   })
 }
 
+async function testOpcode(stackPop: number, stackPush: number, opcode: number) {
+  const opcodeStr = opcode.toString(16).padStart(2, '0')
+  const codeStr = '0x5B' + '60FF'.repeat(stackPop) + opcodeStr + '50'.repeat(stackPush) + '600056'
+  await runProfiler('Test opcode' + opcode, codeStr, {
+    gas: BigInt(30 * 1e6),
+  })
+}
+
 async function tests() {
-  await testJUMPDEST_Loop()
-  await testJUMPDEST()
+  //await testJUMPDEST_Loop()
+  //await testJUMPDEST()
+
+  const tests: [string, number, number, number][] = [
+    /*["ADD", 2, 1, 0x01],
+    ["MUL", 2, 1, 0x02],
+    ["SUB", 2, 1, 0x03],
+    ["DIV", 2, 1, 0x04],
+    ["SDIV", 2, 1, 0x05],
+    ["MOD", 2, 1, 0x06],
+    ["SMOD", 2, 1, 0x07],
+    ["ADDMOD", 3, 1, 0x08],
+    ["MULMOD", 3, 1, 0x09],
+    ["EXP", 2, 1, 0x0A],
+    ["SIGNEXTEND", 2, 1, 0x0B],*/
+
+    /*["LT", 2, 1, 0x10],
+    ["GT", 2, 1, 0x11],
+    ["SLT", 2, 1, 0x12],
+    ["SGT", 2, 1, 0x13],
+    ["EQ", 2, 1, 0x14],
+    ["ISZERO", 1, 1, 0x15],
+    ["AND", 2, 1, 0x16],
+    ["OR", 2, 1, 0x17],
+    ["XOR", 2, 1, 0x18],
+    ["NOT", 1, 1, 0x19],
+    ["BYTE", 2, 1, 0x1A],
+    ["SHL", 2, 1, 0x1B],
+    ["SHR", 2, 1, 0x1C],
+    ["SAR", 2, 1, 0x1D],*/
+
+    /*["KECCAK256", 2, 1, 0x20]*/
+
+    ['SLOAD', 1, 1, 0x54],
+    ['SSTORE', 2, 0, 0x55],
+
+    ['LOG', 2, 0, 0xa0],
+    ['LOG', 3, 0, 0xa1],
+    ['LOG', 4, 0, 0xa2],
+    ['LOG', 5, 0, 0xa3],
+    ['LOG', 6, 0, 0xa4],
+
+    ['CREATE', 3, 1, 0xf0],
+    ['CALL', 7, 1, 0xf1],
+    ['CALLCODE', 7, 1, 0xf2],
+    ['DELEGATECALL', 6, 1, 0xf4],
+    ['CREATE2', 4, 1, 0xf5],
+    ['STATICCALL', 6, 1, 0xfa],
+  ]
+  for (const entry of tests) {
+    ;(<any>global).logOnlyOpcode = entry[0]
+    await testOpcode(entry[1], entry[2], entry[3])
+  }
 }
 
 // eslint-disable-next-line

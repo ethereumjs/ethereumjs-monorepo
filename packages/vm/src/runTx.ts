@@ -166,8 +166,16 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (this._opts.profilerOpts?.reportProfilerAfterTx === true) {
       const logs = (<EVM>this.evm).getPerformanceLogs()
       const tag = ' - Tx ' + bytesToHex(opts.tx.hash())
-      this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
-      this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
+      if ((<any>global).logOnlyOpcode) {
+        const op = (<any>global).logOnlyOpcode
+        const filter = logs.opcodes.filter((e) => {
+          return e.tag === op
+        })
+        this.emitEVMProfile(filter, 'Opcodes performance' + tag)
+      } else {
+        this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
+        this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
+      }
       ;(<EVM>this.evm).clearPerformanceLogs()
     }
   }
