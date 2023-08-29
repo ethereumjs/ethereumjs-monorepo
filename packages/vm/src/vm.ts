@@ -3,7 +3,6 @@ import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
-import debugDefault from 'debug'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
@@ -24,9 +23,6 @@ import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
 import type { EVMPerformanceLogOutput } from '@ethereumjs/evm/dist/cjs/logger.js'
 import type { BigIntLike, GenesisState } from '@ethereumjs/util'
-const { debug: createDebugLogger } = debugDefault
-
-const debugProfilerEVM = createDebugLogger('evm:profiler')
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -324,10 +320,12 @@ export class VM {
     }
 
     const headerLength = colLength.reduce((pv, cv) => pv + cv, 0) + colLength.length * 3 - 1
-    debugProfilerEVM('+== ' + profileTitle + ' ==+')
+    // eslint-disable-next-line
+    console.log('+== ' + profileTitle + ' ==+')
 
     const header = '|' + '-'.repeat(headerLength) + '|'
-    debugProfilerEVM(header)
+    // eslint-disable-next-line
+    console.log(header)
 
     let str = ''
     for (const i in colLength) {
@@ -335,7 +333,8 @@ export class VM {
     }
     str += '|'
 
-    debugProfilerEVM(str)
+    // eslint-disable-next-line
+    console.log(str)
 
     for (const entry of logs) {
       let str = ''
@@ -346,10 +345,12 @@ export class VM {
         i++
       }
       str += '|'
-      debugProfilerEVM(str)
+      // eslint-disable-next-line
+      console.log(str)
     }
 
     const footer = '+' + '-'.repeat(headerLength) + '+'
-    debugProfilerEVM(footer)
+    // eslint-disable-next-line
+    console.log(footer)
   }
 }
