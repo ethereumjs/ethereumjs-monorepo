@@ -46,12 +46,12 @@ type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
 
-  private _chainParams: ChainConfig
-  private _hardfork: string | Hardfork
-  private _eips: number[] = []
-  private _customChains: ChainConfig[]
+  protected _chainParams: ChainConfig
+  protected _hardfork: string | Hardfork
+  protected _eips: number[] = []
+  protected _customChains: ChainConfig[]
 
-  private HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
+  protected HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
 
   public events: EventEmitter
 
@@ -197,7 +197,7 @@ export class Common {
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
-  private static _getChainParams(
+  protected static _getChainParams(
     chain: string | number | Chain | bigint,
     customChains?: ChainConfig[]
   ): ChainConfig {
@@ -243,7 +243,7 @@ export class Common {
   /**
    * Sets the chain
    * @param chain String ('mainnet') or Number (1) chain representation.
-   *              Or, a Dictionary of chain parameters for a private network.
+   *              Or, a Dictionary of chain parameters for a protected network.
    * @returns The dictionary with parameters set as chain
    */
   setChain(chain: string | number | Chain | bigint | object): ChainConfig {
@@ -435,7 +435,7 @@ export class Common {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  private _getHardfork(hardfork: string | Hardfork): HardforkTransitionConfig | null {
+  protected _getHardfork(hardfork: string | Hardfork): HardforkTransitionConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -755,7 +755,7 @@ export class Common {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  private _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
+  protected _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
     let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
