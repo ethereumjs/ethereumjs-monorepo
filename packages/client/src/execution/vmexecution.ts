@@ -11,6 +11,7 @@ import { Trie } from '@ethereumjs/trie'
 import { Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
+import { LMDB } from '../blockchain'
 import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
@@ -50,7 +51,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: new LevelDB(this.stateDB),
+        db: this.stateDB,
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
       })

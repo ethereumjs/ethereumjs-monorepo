@@ -5,6 +5,7 @@ import { SyncMode } from './config'
 import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 
+import type { LMDB } from './blockchain'
 import type { Config } from './config'
 import type { MultiaddrLike } from './types'
 import type { Blockchain } from '@ethereumjs/blockchain'
@@ -32,7 +33,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Trie class
    */
-  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB?: LMDB
 
   /**
    * Database to store tx receipts, logs, and indexes.

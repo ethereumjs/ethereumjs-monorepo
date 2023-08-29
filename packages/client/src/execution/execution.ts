@@ -1,4 +1,4 @@
-import type { Chain } from '../blockchain'
+import type { Chain, LMDB } from '../blockchain'
 import type { Config } from '../config'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -7,7 +7,7 @@ export interface ExecutionOptions {
   config: Config
 
   /* State database */
-  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB?: LMDB
 
   /* Meta database (receipts, logs, indexes) */
   metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
@@ -19,7 +19,7 @@ export interface ExecutionOptions {
 export abstract class Execution {
   public config: Config
 
-  protected stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  protected stateDB?: LMDB
   protected metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   protected chain: Chain
 

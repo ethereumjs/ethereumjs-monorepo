@@ -4,6 +4,7 @@ import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
 import { type V8Engine, getV8Engine } from '../util'
 
+import type { LMDB } from '../blockchain'
 import type { Config } from '../config'
 import type { Peer } from '../net/peer/peer'
 import type { Protocol } from '../net/protocol'
@@ -21,7 +22,7 @@ export interface ServiceOptions {
   chainDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* State database */
-  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB?: LMDB
 
   /* Meta database (receipts, logs, indexes) */
   metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>

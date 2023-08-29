@@ -24,6 +24,7 @@ import readline from 'readline'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
+import { LMDB } from '../src/blockchain'
 import { EthereumClient } from '../src/client'
 import { Config, DataDirectory, SyncMode } from '../src/config'
 import { LevelDB } from '../src/execution/level'
@@ -356,7 +357,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
  */
 function initDBs(config: Config): {
   chainDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
-  stateDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB: LMDB
   metaDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 } {
   // Chain DB
@@ -367,7 +368,7 @@ function initDBs(config: Config): {
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   ensureDirSync(stateDataDir)
-  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
+  const stateDB = new LMDB()
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
