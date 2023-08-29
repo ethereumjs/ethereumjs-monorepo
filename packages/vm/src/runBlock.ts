@@ -226,8 +226,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   if (this._opts.profilerOpts?.reportProfilerAfterBlock === true) {
     const logs = (<EVM>this.evm).getPerformanceLogs()
-    const tag =
-      ' - Block ' + Number(block.header.number) + ' performance (' + bytesToHex(block.hash()) + ')'
+    const tag = ' - Block ' + Number(block.header.number) + ' (' + bytesToHex(block.hash()) + ')'
     this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
     this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
     ;(<EVM>this.evm).clearPerformanceLogs()

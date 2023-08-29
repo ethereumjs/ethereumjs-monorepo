@@ -291,7 +291,6 @@ export class VM {
     if (logs.length === 0) {
       return
     }
-    const colSize = 17
     const colOrder = [
       'tag',
       'calls',
@@ -303,29 +302,61 @@ export class VM {
     const colNames = [
       'tag',
       'calls',
-      'time/call (s)',
-      'total time (s)',
+      'time/call (ms)',
+      'total time (ms)',
       'gas used',
       'gas/s (Mgas/s)',
     ]
-    function padStr(str: string | number) {
-      return ' ' + str.toString().padStart(colSize, ' ') + ' |'
+    function padStr(str: string | number, leftpad: number) {
+      return ' ' + str.toString().padStart(leftpad, ' ') + ' '
     }
-    const header = '|' + colNames.map(padStr).join('')
-    let title = '+ ' + profileTitle + ' '
-    title = title.padEnd(header.length - 1, '-') + '+'
-    debugProfilerEVM(title)
-    debugProfilerEVM(header)
+    function strLen(str: string | number) {
+      return padStr(str, 0).length - 2
+    }
+
+    const colLength: number[] = []
 
     for (const entry of logs) {
-      let str = '|'
+      let ins = 0
+      colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(colNames[ins]))
       for (const key of colOrder) {
         //@ts-ignore
-        str += padStr(entry[key])
+        colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(entry[key]))
+        ins++
       }
+    }
+
+    for (const i in colLength) {
+      colLength[i] = Math.max(colLength[i] ?? 0, strLen(colNames[i]))
+    }
+
+    const headerLength = colLength.reduce((pv, cv) => pv + cv, 0) + colLength.length * 3 - 1
+    debugProfilerEVM('+== ' + profileTitle + ' ==+')
+
+    const header = '|' + '-'.repeat(headerLength) + '|'
+    debugProfilerEVM(header)
+
+    let str = ''
+    for (const i in colLength) {
+      str += '|' + padStr(colNames[i], colLength[i])
+    }
+    str += '|'
+
+    debugProfilerEVM(str)
+
+    for (const entry of logs) {
+      let str = ''
+      let i = 0
+      for (const key of colOrder) {
+        //@ts-ignore
+        str += '|' + padStr(entry[key], colLength[i])
+        i++
+      }
+      str += '|'
       debugProfilerEVM(str)
     }
 
-    debugProfilerEVM('+' + '-'.repeat(header.length - 2) + '+')
+    const footer = '+' + '-'.repeat(headerLength) + '+'
+    debugProfilerEVM(footer)
   }
 }

@@ -51,7 +51,7 @@ export const SKIP_SLOW = [
   'CALLBlake2f_MaxRounds',
   // vmPerformance tests
   'loopMul',
-  'loopExp',
+  //  'loopExp',
 ]
 
 /**
