@@ -874,11 +874,16 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_RANGE)
       }
 
-      const loaded = bytesToBigInt(
-        runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
-      )
-      runState.programCounter += numToPush
-      runState.stack.push(loaded)
+      if (!runState.shouldDoJumpAnalysis) {
+        runState.stack.push(runState.cachedPushs[runState.programCounter])
+        runState.programCounter += numToPush
+      } else {
+        const loaded = bytesToBigInt(
+          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
+        )
+        runState.programCounter += numToPush
+        runState.stack.push(loaded)
+      }
     },
   ],
   // 0x80: DUP
