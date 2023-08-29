@@ -25,11 +25,13 @@ import type {
   CliqueConfig,
   CommonOpts,
   CustomCommonOpts,
+  EIPConfig,
   EIPOrHFConfig,
   EthashConfig,
   GenesisBlockConfig,
   GethConfigOpts,
   HardforkByOpts,
+  HardforkConfig,
   HardforkTransitionConfig,
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
@@ -37,17 +39,7 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 
-/**
- * Superset from EIPConfig and HardforkConfig types from types.ts,
- * easiest for internally "merging" configs together for the parameter cache
- * by using the spread operator and keep typing intact.
- */
-type ParamsCacheConfig = {
-  name: string
-  eips?: number[]
-  minimumHardfork?: Hardfork
-  requiredEIPs?: number[]
-} & EIPOrHFConfig
+type ParamsCacheConfig = Omit<EIPOrHFConfig, 'comment' | 'url' | 'status'>
 
 /**
  * Common class to access chain and hardfork parameters and to provide
@@ -253,6 +245,9 @@ export class Common {
     }
     if (opts.eips) {
       this.setEIPs(opts.eips)
+    }
+    if (this._paramsCache === undefined) {
+      this._buildParamsCache()
     }
   }
 
@@ -488,17 +483,69 @@ export class Common {
   }
 
   /**
+   * Internal helper for _buildParamsCache()
+   */
+  protected _mergeWithParamsCache(params: HardforkConfig | EIPConfig) {
+    this._paramsCache['gasConfig'] = {
+      ...this._paramsCache['gasConfig'],
+      ...params['gasConfig'],
+    }
+    this._paramsCache['gasPrices'] = {
+      ...this._paramsCache['gasPrices'],
+      ...params['gasPrices'],
+    }
+    this._paramsCache['pow'] = {
+      ...this._paramsCache['pow'],
+      ...params['pow'],
+    }
+    this._paramsCache['sharding'] = {
+      ...this._paramsCache['sharding'],
+      ...params['sharding'],
+    }
+    this._paramsCache['vm'] = {
+      ...this._paramsCache['vm'],
+      ...params['vm'],
+    }
+  }
+
+  /**
    * Build up a cache for all parameter values for the current HF and all activated EIPs
    */
   protected _buildParamsCache() {
-    console.log(this._paramsCache)
+    // Iterate through all hardforks up to hardfork set
+    const hardfork = this.hardfork()
+    for (const hfChanges of this.HARDFORK_CHANGES) {
+      // EIP-referencing HF config (e.g. for berlin)
+      if ('eips' in hfChanges[1]) {
+        const hfEIPs = hfChanges[1]['eips']
+        for (const eip of hfEIPs!) {
+          if (!(eip in EIPs)) {
+            throw new Error(`${eip} not supported`)
+          }
+
+          this._mergeWithParamsCache(EIPs[eip])
+        }
+        // Parameter-inlining HF config (e.g. for istanbul)
+      } else {
+        this._mergeWithParamsCache(hfChanges[1])
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    // Iterate through all additionally activated EIPs
+    for (const eip of this._eips) {
+      if (!(eip in EIPs)) {
+        throw new Error(`${eip} not supported`)
+      }
+
+      this._mergeWithParamsCache(EIPs[eip])
+    }
   }
 
   /**
    * Returns a parameter for the current chain setup
    *
    * If the parameter is present in an EIP, the EIP always takes precedence.
-   * Otherwise the parameter if taken from the latest applied HF with
+   * Otherwise the parameter is taken from the latest applied HF with
    * a change on the respective parameter.
    *
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
@@ -508,12 +555,14 @@ export class Common {
   param(topic: string, name: string): bigint {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
-    let value
-    for (const eip of this._eips) {
-      value = this.paramByEIP(topic, name, eip)
-      if (value !== undefined) return value
+    let value = null
+    if (
+      (this._paramsCache as any)[topic] !== undefined &&
+      (this._paramsCache as any)[topic][name] !== undefined
+    ) {
+      value = (this._paramsCache as any)[topic][name].v
     }
-    return this.paramByHardfork(topic, name, this._hardfork)
+    return BigInt(value ?? 0)
   }
 
   /**
@@ -526,14 +575,14 @@ export class Common {
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
     let value = null
     for (const hfChanges of this.HARDFORK_CHANGES) {
-      // EIP-referencing HF file (e.g. berlin.json)
+      // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
           const valueEIP = this.paramByEIP(topic, name, eip)
           value = typeof valueEIP === 'bigint' ? valueEIP : value
         }
-        // Parameter-inlining HF file (e.g. istanbul.json)
+        // Parameter-inlining HF config (e.g. for istanbul)
       } else {
         if (
           (hfChanges[1] as any)[topic] !== undefined &&
