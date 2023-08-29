@@ -580,10 +580,8 @@ export class Common {
     }
     for (const hfChanges of this.HARDFORK_CHANGES) {
       const hf = hfChanges[1]
-      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
-        if ((hf['eips'] as number[]).includes(eip)) {
-          return true
-        }
+      if ('eips' in hf && (hf['eips'] as number[]).includes(eip) && this.gteHardfork(hf['name'])) {
+        return true
       }
     }
     return false
