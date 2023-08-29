@@ -78,6 +78,7 @@ export interface RunState {
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
+  cachedPushs: { [pc: number]: bigint }
   stateManager: EVMStateManagerInterface
   blockchain: Blockchain
   env: Env
@@ -161,6 +162,7 @@ export class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
+      cachedPushs: {},
       stateManager: this._stateManager,
       blockchain,
       env,
@@ -233,7 +235,9 @@ export class Interpreter {
         (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
       ) {
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        this._runState.validJumps = this._getValidJumpDests(this._runState.code)
+        const { jumps, pushs } = this._getValidJumpDests(this._runState.code)
+        this._runState.validJumps = jumps
+        this._runState.cachedPushs = pushs
         this._runState.shouldDoJumpAnalysis = false
       }
       this._runState.opCode = opCode
@@ -408,13 +412,17 @@ export class Interpreter {
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
+    const pushs: { [pc: number]: bigint } = {}
 
     for (let i = 0; i < code.length; i++) {
       const opcode = code[i]
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
-          i += opcode - 0x5f
+          const extraSteps = opcode - 0x5f
+          const push = bytesToBigInt(code.slice(i + 1, i + opcode - 0x5e))
+          pushs[i + 1] = push
+          i += extraSteps
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
@@ -424,7 +432,7 @@ export class Interpreter {
         }
       }
     }
-    return jumps
+    return { jumps, pushs }
   }
 
   /**
