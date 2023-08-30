@@ -302,7 +302,7 @@ export class Interpreter {
       }
 
       // Reduce opcode's base fee
-      this.useGas(gas, `${opInfo.name} fee`)
+      this.useGas(gas, opInfo)
       // Advance program counter
       this._runState.programCounter++
 
@@ -441,9 +441,15 @@ export class Interpreter {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  useGas(amount: bigint, context?: string): void {
+  useGas(amount: bigint, context?: string | Opcode): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
+      let tstr = ''
+      if (typeof context === 'string') {
+        tstr = context
+      } else if (context !== undefined) {
+        tstr = `${context.name} fee`
+      }
       debugGas(
         `${typeof context === 'string' ? context + ': ' : ''}used ${amount} gas (-> ${
           this._runState.gasLeft
