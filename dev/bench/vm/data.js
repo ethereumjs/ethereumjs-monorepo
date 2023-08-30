@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1693405574262,
+  "lastUpdate": 1693425867952,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c47d2c7351f04f35744de0f2082c37d5f2d2afd0",
-          "message": "Breaking Releases (#2945)\n\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Block)\r\n\r\n* Correct Block dependency version to include ^\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Blockchain)\r\n\r\n* Bump client version\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Common)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (devp2p)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Ethash)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (EVM)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Genesis)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (RLP)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (StateManager)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Trie)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Tx)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Util)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (VM)\r\n\r\n* Add CHANGELOG base entry, bump version number, update upstream dependency versions (Wallet)\r\n\r\n* Rebuild package-lock.json\r\n\r\n* CHANGELOG updates with change diff since RC1 (partly RC2)\r\n\r\n* Rebuild docs\r\n\r\n* Small fixes\r\n\r\n* Additional README updates\r\n\r\n* Update packages/client/CHANGELOG.md\r\n\r\n* Update packages/devp2p/CHANGELOG.md\r\n\r\n* Small release note additions\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2023-08-09T13:22:37+02:00",
-          "tree_id": "12f5b78da957e94c0328ee3afcf2651a6867e33a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c47d2c7351f04f35744de0f2082c37d5f2d2afd0"
-        },
-        "date": 1691580374177,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31774,
-            "range": "±5.20%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31181,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31268,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26060,
-            "range": "±10.53%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29816,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.56%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f5c6769fa95239a104119b0d43ab39cae19f2917",
+          "message": "tx: consolidate generic tx capabilities (#2993)\n\n* tx: consolidate generic tx capabilities\r\n\r\n* tx: refactor highS and YParity validation into generic\r\n\r\n* tx: refactor getDataFee\r\n\r\n* tx: refactor getUpfrontCost capability\r\n\r\n* tx: refactor getHashedMessageToSign and serialize methods\r\n\r\n* tx: refactor usage of this",
+          "timestamp": "2023-08-30T15:56:00-04:00",
+          "tree_id": "947f6ff0ca4a63bdb8be4100c50d0d8a8948373e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5c6769fa95239a104119b0d43ab39cae19f2917"
+        },
+        "date": 1693425866590,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25299,
+            "range": "±5.58%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25713,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 25705,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25696,
+            "range": "±3.41%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20213,
+            "range": "±11.60%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
           }
         ]
       }
