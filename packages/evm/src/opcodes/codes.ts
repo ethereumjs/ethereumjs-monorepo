@@ -14,6 +14,7 @@ export class Opcode {
   readonly name: string
   readonly fullName: string
   readonly fee: number
+  readonly feeBigInt: bigint
   readonly isAsync: boolean
   readonly dynamicGas: boolean
 
@@ -36,6 +37,7 @@ export class Opcode {
     this.name = name
     this.fullName = fullName
     this.fee = fee
+    this.feeBigInt = BigInt(fee)
     this.isAsync = isAsync
     this.dynamicGas = dynamicGas
 
