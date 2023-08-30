@@ -6,7 +6,6 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   compareBytes,
-  equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -281,7 +280,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         // all but the last returned slot array must include all slots for the requested account
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
-          // no-proof verification
+          // all-elements proof verification
           const trie = new Trie()
           await trie.verifyRangeProof(
             root,
