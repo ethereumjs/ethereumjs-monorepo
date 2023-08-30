@@ -14,6 +14,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as EIP2930 from './capabilities/eip2930.js'
 import * as Generic from './capabilities/generic.js'
 import { TransactionType } from './types.js'
 import { AccessLists } from './util.js'
@@ -201,21 +202,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    let cost = super.getDataFee()
-    cost += BigInt(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: cost,
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return cost
+    return EIP2930.getDataFee.bind(this)()
   }
 
   /**
