@@ -188,8 +188,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
       throw new Error(msg)
     }
 
-    this._validateYParity()
-    this._validateHighS()
+    Generic.validateYParity.bind(this)()
+    Generic.validateHighS.bind(this)()
 
     const freeze = opts?.freeze ?? true
     if (freeze) {

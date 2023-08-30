@@ -118,6 +118,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
+
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
     BaseTransaction._validateNotArray(txData)
 

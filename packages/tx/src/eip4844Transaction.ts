@@ -154,8 +154,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     )
 
     this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBytes(vh))
-    this._validateYParity()
-    this._validateHighS()
+    Generic.validateYParity.bind(this)()
+    Generic.validateHighS.bind(this)()
 
     for (const hash of this.versionedHashes) {
       if (hash.length !== 32) {

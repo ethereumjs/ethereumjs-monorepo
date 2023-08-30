@@ -3,7 +3,6 @@ import {
   Address,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
@@ -177,28 +176,6 @@ export abstract class BaseTransaction<T extends TransactionType>
     const errors = this.getValidationErrors()
 
     return errors.length === 0
-  }
-
-  protected _validateYParity() {
-    const { v } = this
-    if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
-      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
-      throw new Error(msg)
-    }
-  }
-
-  /**
-   * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
-   * Reasoning: https://ethereum.stackexchange.com/a/55728
-   */
-  protected _validateHighS() {
-    const { s } = this
-    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
   }
 
   /**
