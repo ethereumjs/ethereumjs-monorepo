@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1693308457286,
+  "lastUpdate": 1693397054600,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f704378efa913f793ab01f1a2ab2acb1f02ed3b8",
-          "message": "Client: If \"dev\" option is used, it should have a value and not be defaulted to mainnet (#2948)\n\n* Throw error if \"dev\" option is passed in without a value\r\n\r\n* Remove log statements\r\n\r\n* Add test for \"dev\" option being passed in without a value\r\n\r\n* Update test",
-          "timestamp": "2023-08-09T11:30:55+02:00",
-          "tree_id": "91424e153ed1dd5d8e6b41f8a51ef0e215e7de62",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f704378efa913f793ab01f1a2ab2acb1f02ed3b8"
-        },
-        "date": 1691573730387,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19830,
-            "range": "±7.17%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19769,
-            "range": "±3.71%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20568,
-            "range": "±3.53%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19819,
-            "range": "±3.65%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19594,
-            "range": "±3.67%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.73%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fcc910e3ac06525d67ed7425bf3638b290430bee",
+          "message": "common: unschedule Cancun for holesky (#2997)",
+          "timestamp": "2023-08-30T17:29:42+05:30",
+          "tree_id": "50aa1a845ff2919065a71d5c970b4894a9f9c1d3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fcc910e3ac06525d67ed7425bf3638b290430bee"
+        },
+        "date": 1693397053196,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20654,
+            "range": "±5.17%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20924,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20325,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20156,
+            "range": "±3.64%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19941,
+            "range": "±3.49%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
