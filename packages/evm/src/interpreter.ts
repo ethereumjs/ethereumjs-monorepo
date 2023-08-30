@@ -177,7 +177,8 @@ export class Interpreter {
       returnValue: undefined,
       selfdestruct: new Set(),
     }
-    ;(this.profilerOpts = profilerOpts), (this.performanceLogger = performanceLogs)
+    this.profilerOpts = profilerOpts
+    this.performanceLogger = performanceLogs
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
