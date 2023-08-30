@@ -225,8 +225,9 @@ describe('VM -> setHardfork, state (deprecated), blockchain', () => {
       const contractAddress = Address.fromString('0x00000000000000000000000000000000000000ff') // contract address
       // setup the vm
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+      const common2 = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vmNotActivated = await VM.create({ common })
-      const vmActivated = await VM.create({ common, activatePrecompiles: true })
+      const vmActivated = await VM.create({ common: common2, activatePrecompiles: true })
       const code = '0x6000808080347300000000000000000000000000000000000000045AF100'
       /*
         idea: call the Identity precompile with nonzero value in order to trigger "callNewAccount" for the non-activated VM and do not deduct this
