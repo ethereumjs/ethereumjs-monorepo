@@ -276,7 +276,7 @@ export class Interpreter {
       timer = this.performanceLogger.startTimer(opInfo.name)
     }
 
-    let gas = BigInt(opInfo.fee)
+    let gas = opInfo.feeBigInt
 
     try {
       // clone the gas limit; call opcodes can add stipend,
