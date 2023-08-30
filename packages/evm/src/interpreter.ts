@@ -227,23 +227,31 @@ export class Interpreter {
     }
 
     let err
+    let cachedOpcodes: OpcodeMapEntry[]
+    let doJumpAnalysis = true
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
-      const opCode = this._runState.code[this._runState.programCounter]
-      if (
-        this._runState.shouldDoJumpAnalysis &&
-        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
-      ) {
+      let opCode: number
+      let opCodeObj: OpcodeMapEntry
+      if (doJumpAnalysis) {
+        opCode = this._runState.code[this._runState.programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        const { jumps, pushs } = this._getValidJumpDests(this._runState.code)
-        this._runState.validJumps = jumps
-        this._runState.cachedPushs = pushs
-        this._runState.shouldDoJumpAnalysis = false
+        if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
+          const { jumps, pushs, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          this._runState.validJumps = jumps
+          this._runState.cachedPushs = pushs
+          this._runState.shouldDoJumpAnalysis = false
+          cachedOpcodes = opcodesCached
+          doJumpAnalysis = false
+        }
+      } else {
+        opCodeObj = cachedOpcodes![this._runState.programCounter]
+        opCode = opCodeObj.opcodeInfo.code
       }
-      this._runState.opCode = opCode
+      this._runState.opCode = opCode!
 
       try {
-        await this.runStep()
+        await this.runStep(opCodeObj!)
       } catch (e: any) {
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'EvmError')) {
@@ -267,8 +275,8 @@ export class Interpreter {
    * Executes the opcode to which the program counter is pointing,
    * reducing its base gas cost, and increments the program counter.
    */
-  async runStep(): Promise<void> {
-    const opEntry = this.lookupOpInfo(this._runState.opCode)
+  async runStep(opcodeObj?: OpcodeMapEntry): Promise<void> {
+    const opEntry = opcodeObj ?? this.lookupOpInfo(this._runState.opCode)
     const opInfo = opEntry.opcodeInfo
 
     let timer: Timer
@@ -280,10 +288,6 @@ export class Interpreter {
     let gas = opInfo.feeBigInt
 
     try {
-      // clone the gas limit; call opcodes can add stipend,
-      // which makes it seem like the gas left increases
-      const gasLimitClone = this.getGasLeft()
-
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
@@ -293,7 +297,7 @@ export class Interpreter {
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
         // or if the vm is running in debug mode (to display opcode debug logs)
-        await this._runStepHook(gas, gasLimitClone)
+        await this._runStepHook(gas, this.getGasLeft())
       }
 
       // Check for invalid opcode
@@ -325,8 +329,7 @@ export class Interpreter {
    * Get info for an opcode from EVM's list of opcodes.
    */
   lookupOpInfo(op: number): OpcodeMapEntry {
-    // if not found, return 0xfe: INVALID
-    return (<any>this._evm)._opcodeMap.get(op) ?? (<any>this._evm)._opcodeMap.get(0xfe)!
+    return (<any>this._evm)._opcodeMap[op]
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
@@ -408,8 +411,11 @@ export class Interpreter {
     const jumps = new Uint8Array(code.length).fill(0)
     const pushs: { [pc: number]: bigint } = {}
 
+    const opcodesCached = Array(code.length)
+
     for (let i = 0; i < code.length; i++) {
       const opcode = code[i]
+      opcodesCached[i] = this.lookupOpInfo(opcode)
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
@@ -426,7 +432,7 @@ export class Interpreter {
         }
       }
     }
-    return { jumps, pushs }
+    return { jumps, pushs, opcodesCached }
   }
 
   /**
