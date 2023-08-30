@@ -58,6 +58,7 @@ export class Common {
   protected _customChains: ChainConfig[]
 
   protected _paramsCache: ParamsCacheConfig = {}
+  protected _activatedEIPsCache: number[] = []
 
   protected HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
 
@@ -248,6 +249,7 @@ export class Common {
     }
     if (Object.keys(this._paramsCache).length === 0) {
       this._buildParamsCache()
+      this._buildActivatedEIPsCache()
     }
   }
 
@@ -295,6 +297,7 @@ export class Common {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
           this._buildParamsCache()
+          this._buildActivatedEIPsCache()
           this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
@@ -470,6 +473,12 @@ export class Common {
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
+    }
+    this._eips = eips
+    this._buildParamsCache()
+    this._buildActivatedEIPsCache()
+
+    for (const eip of eips) {
       if ((EIPs as any)[eip].requiredEIPs !== undefined) {
         for (const elem of (EIPs as any)[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
@@ -478,8 +487,6 @@ export class Common {
         }
       }
     }
-    this._eips = eips
-    this._buildParamsCache()
   }
 
   /**
@@ -540,6 +547,18 @@ export class Common {
 
       this._mergeWithParamsCache(EIPs[eip])
     }
+  }
+
+  protected _buildActivatedEIPsCache() {
+    this._activatedEIPsCache = []
+
+    for (const hfChanges of this.HARDFORK_CHANGES) {
+      const hf = hfChanges[1]
+      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
+        this._activatedEIPsCache = this._activatedEIPsCache.concat(hf['eips'] as number[])
+      }
+    }
+    this._activatedEIPsCache = this._activatedEIPsCache.concat(this._eips)
   }
 
   /**
@@ -650,16 +669,8 @@ export class Common {
    * @param eip
    */
   isActivatedEIP(eip: number): boolean {
-    if (this.eips().includes(eip)) {
+    if (this._activatedEIPsCache.includes(eip)) {
       return true
-    }
-    for (const hfChanges of this.HARDFORK_CHANGES) {
-      const hf = hfChanges[1]
-      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
-        if ((hf['eips'] as number[]).includes(eip)) {
-          return true
-        }
-      }
     }
     return false
   }
@@ -980,7 +991,8 @@ export class Common {
   }
 
   /**
-   * Returns the active EIPs
+   * Returns the additionally activated EIPs
+   * (by using the `eips` constructor option)
    * @returns List of EIPs
    */
   eips(): number[] {
