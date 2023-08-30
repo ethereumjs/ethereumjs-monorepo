@@ -20,6 +20,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as EIP1559 from './capabilities/eip1559.js'
 import * as EIP2930 from './capabilities/eip2930.js'
 import * as Generic from './capabilities/generic.js'
 import { LIMIT_BLOBS_PER_TX } from './constants.js'
@@ -386,11 +387,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
-    const prio = this.maxPriorityFeePerGas
-    const maxBase = this.maxFeePerGas - baseFee
-    const inclusionFeePerGas = prio < maxBase ? prio : maxBase
-    const gasPrice = inclusionFeePerGas + baseFee
-    return this.gasLimit * gasPrice + this.value
+    return EIP1559.getUpfrontCost.bind(this)(baseFee)
   }
 
   /**
