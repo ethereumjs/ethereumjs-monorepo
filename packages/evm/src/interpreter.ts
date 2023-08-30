@@ -19,7 +19,7 @@ import { Stack } from './stack.js'
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { EVMPerformanceLogger, Timer } from './logger.js'
-import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
@@ -268,7 +268,8 @@ export class Interpreter {
    * reducing its base gas cost, and increments the program counter.
    */
   async runStep(): Promise<void> {
-    const opInfo = this.lookupOpInfo(this._runState.opCode)
+    const opEntry = this.lookupOpInfo(this._runState.opCode)
+    const opInfo = opEntry.opcodeInfo
 
     let timer: Timer
 
@@ -284,10 +285,9 @@ export class Interpreter {
       const gasLimitClone = this.getGasLeft()
 
       if (opInfo.dynamicGas) {
-        const dynamicGasHandler = (this._evm as any)._dynamicGasHandlers.get(this._runState.opCode)!
         // This function updates the gas in-place.
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-        gas = await dynamicGasHandler(this._runState, gas, this.common)
+        gas = await opEntry.gasHandler(this._runState, gas, this.common)
       }
 
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
@@ -307,7 +307,7 @@ export class Interpreter {
       this._runState.programCounter++
 
       // Execute opcode handler
-      const opFn = this.getOpHandler(opInfo)
+      const opFn = opEntry.opHandler
 
       if (opInfo.isAsync) {
         await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
@@ -322,22 +322,16 @@ export class Interpreter {
   }
 
   /**
-   * Get the handler function for an opcode.
-   */
-  getOpHandler(opInfo: Opcode): OpHandler {
-    return (this._evm as any)._handlers.get(opInfo.code)!
-  }
-
-  /**
    * Get info for an opcode from EVM's list of opcodes.
    */
-  lookupOpInfo(op: number): Opcode {
+  lookupOpInfo(op: number): OpcodeMapEntry {
     // if not found, return 0xfe: INVALID
-    return this._evm.opcodes.get(op) ?? this._evm.opcodes.get(0xfe)!
+    return (<any>this._evm)._opcodeMap.get(op) ?? (<any>this._evm)._opcodeMap.get(0xfe)!
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
-    const opcode = this.lookupOpInfo(this._runState.opCode)
+    const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
+    const opcode = opcodeInfo.opcodeInfo
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
@@ -446,15 +440,11 @@ export class Interpreter {
     if (this._evm.DEBUG) {
       let tstr = ''
       if (typeof context === 'string') {
-        tstr = context
+        tstr = context + ': '
       } else if (context !== undefined) {
-        tstr = `${context.name} fee`
+        tstr = `${context.name} fee: `
       }
-      debugGas(
-        `${typeof context === 'string' ? context + ': ' : ''}used ${amount} gas (-> ${
-          this._runState.gasLeft
-        })`
-      )
+      debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
     if (this._runState.gasLeft < BigInt(0)) {
       this._runState.gasLeft = BigInt(0)
