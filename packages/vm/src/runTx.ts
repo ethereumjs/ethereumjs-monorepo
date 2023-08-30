@@ -163,7 +163,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
-    if (this._opts.profilerOpts?.reportProfilerAfterTx === true) {
+    if (this._opts.profilerOpts?.reportAfterTx === true) {
       const logs = (<EVM>this.evm).getPerformanceLogs()
       const tag = ' - Tx ' + bytesToHex(opts.tx.hash())
       this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)

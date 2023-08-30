@@ -78,8 +78,8 @@ export type VMEvents = {
 
 export type VMProfilerOpts = {
   //evmProfilerOpts: EVMProfilerOpts
-  reportProfilerAfterTx?: boolean
-  reportProfilerAfterBlock?: boolean
+  reportAfterTx?: boolean
+  reportAfterBlock?: boolean
 }
 
 /**

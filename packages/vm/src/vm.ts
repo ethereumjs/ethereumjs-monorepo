@@ -116,10 +116,7 @@ export class VM {
 
     if (this._opts.profilerOpts !== undefined) {
       const profilerOpts = this._opts.profilerOpts
-      if (
-        profilerOpts.reportProfilerAfterBlock === true &&
-        profilerOpts.reportProfilerAfterTx === true
-      ) {
+      if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
         throw new Error(
           'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
         )
@@ -131,9 +128,7 @@ export class VM {
       this.evm = opts.evm
     } else {
       const enableProfiler =
-        this._opts.profilerOpts?.reportProfilerAfterBlock ??
-        this._opts.profilerOpts?.reportProfilerAfterTx ??
-        false
+        this._opts.profilerOpts?.reportAfterBlock ?? this._opts.profilerOpts?.reportAfterTx ?? false
       this.evm = new EVM({
         common: this.common,
         stateManager: this.stateManager,
