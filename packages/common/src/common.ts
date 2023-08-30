@@ -256,7 +256,7 @@ export class Common {
   /**
    * Sets the chain
    * @param chain String ('mainnet') or Number (1) chain representation.
-   *              Or, a Dictionary of chain parameters for a protected network.
+   *              Or, a Dictionary of chain parameters for a private network.
    * @returns The dictionary with parameters set as chain
    */
   setChain(chain: string | number | Chain | bigint | object): ChainConfig {
