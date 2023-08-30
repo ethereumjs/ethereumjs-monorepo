@@ -158,6 +158,11 @@ export interface EVMInterface {
   events?: AsyncEventEmitter<EVMEvents>
 }
 
+export type EVMProfilerOpts = {
+  enabled: boolean
+  // extra options here (such as use X hardfork for gas)
+}
+
 /**
  * Options for instantiating a {@link EVM}.
  */
@@ -254,6 +259,11 @@ export interface EVMOpts {
    *
    */
   blockchain?: Blockchain
+
+  /**
+   *
+   */
+  profiler?: EVMProfilerOpts
 }
 
 /**

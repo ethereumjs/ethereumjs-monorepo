@@ -80,6 +80,22 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     )
   })
 
+  it('Access on copied Common instances', () => {
+    const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    let msg = 'Should correctly access param with param() on original Common'
+    assert.equal(c.param('pow', 'minerReward'), BigInt(2000000000000000000), msg)
+
+    const cCopy = c.copy()
+    cCopy.setHardfork(Hardfork.Chainstart)
+
+    msg = 'Should correctly access param with param() on copied Common with hardfork changed'
+    assert.equal(cCopy.param('pow', 'minerReward'), BigInt(5000000000000000000), msg)
+
+    msg =
+      'Should correctly access param with param() on original Common after copy and HF change on copied Common'
+    assert.equal(c.param('pow', 'minerReward'), BigInt(2000000000000000000), msg)
+  })
+
   it('EIP param access, paramByEIP()', () => {
     const c = new Common({ chain: Chain.Mainnet })
 
