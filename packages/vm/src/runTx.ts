@@ -38,7 +38,6 @@ const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
-const debugProfilerEVM = createDebugLogger('evm:profiler')
 
 /**
  * Returns the hardfork excluding the merge hf which has
@@ -166,7 +165,9 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.stateManager.originalStorageCache.clear()
     if (this._opts.profilerOpts?.reportProfilerAfterTx === true) {
       const logs = (<EVM>this.evm).getPerformanceLogs()
-      debugProfilerEVM(logs)
+      const tag = ' - Tx ' + bytesToHex(opts.tx.hash())
+      this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
+      this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
       ;(<EVM>this.evm).clearPerformanceLogs()
     }
   }

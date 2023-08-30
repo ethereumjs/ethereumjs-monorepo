@@ -35,7 +35,6 @@ import type { EVM, EVMInterface } from '@ethereumjs/evm'
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
-const debugProfilerEVM = createDebugLogger('evm:profiler')
 
 const parentBeaconBlockRootAddress = Address.fromString(
   '0x000000000000000000000000000000000000000b'
@@ -227,7 +226,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
   if (this._opts.profilerOpts?.reportProfilerAfterBlock === true) {
     const logs = (<EVM>this.evm).getPerformanceLogs()
-    debugProfilerEVM(logs)
+    const tag = ' - Block ' + Number(block.header.number) + ' (' + bytesToHex(block.hash()) + ')'
+    this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
+    this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
     ;(<EVM>this.evm).clearPerformanceLogs()
   }
 

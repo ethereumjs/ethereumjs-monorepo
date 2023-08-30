@@ -344,6 +344,16 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
     boolean: true,
   })
+  .option('vmProfileBlocks', {
+    describe: 'Report the VM profile after running each block',
+    boolean: true,
+    default: false,
+  })
+  .option('vmProfileTxs', {
+    describe: 'Report the VM profile after running each block',
+    boolean: true,
+    default: false,
+  })
   .option('loadBlocksFromRlp', {
     describe: 'path to a file of RLP encoded blocks',
     string: true,
@@ -816,6 +826,8 @@ async function run() {
     mine,
     minerCoinbase: args.minerCoinbase,
     isSingleNode,
+    vmProfileBlocks: args.vmProfileBlocks,
+    vmProfileTxs: args.vmProfileTxs,
     minPeers: args.minPeers,
     multiaddrs,
     port: args.port,

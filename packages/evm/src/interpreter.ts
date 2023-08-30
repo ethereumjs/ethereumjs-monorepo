@@ -18,15 +18,9 @@ import { Stack } from './stack.js'
 
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
+import type { EVMPerformanceLogger, Timer } from './logger.js'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
-import type {
-  Block,
-  Blockchain,
-  EVMPerformanceLogs,
-  EVMProfilerOpts,
-  EVMResult,
-  Log,
-} from './types.js'
+import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
@@ -141,7 +135,7 @@ export class Interpreter {
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
   private profilerOpts?: EVMProfilerOpts
-  private preformanceLogs: EVMPerformanceLogs
+  private performanceLogger: EVMPerformanceLogger
 
   // TODO remove gasLeft as constructor argument
   constructor(
@@ -151,7 +145,7 @@ export class Interpreter {
     env: Env,
     gasLeft: bigint,
     journal: Journal,
-    performanceLogs: EVMPerformanceLogs,
+    performanceLogs: EVMPerformanceLogger,
     profilerOpts?: EVMProfilerOpts
   ) {
     this._evm = evm
@@ -183,7 +177,7 @@ export class Interpreter {
       returnValue: undefined,
       selfdestruct: new Set(),
     }
-    ;(this.profilerOpts = profilerOpts), (this.preformanceLogs = performanceLogs)
+    ;(this.profilerOpts = profilerOpts), (this.performanceLogger = performanceLogs)
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
@@ -272,18 +266,10 @@ export class Interpreter {
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
 
-    let timer: number
+    let timer: Timer
 
     if (this.profilerOpts?.enabled === true) {
-      if (this.preformanceLogs.opcodes[opInfo.name] === undefined) {
-        this.preformanceLogs.opcodes[opInfo.name] = {
-          time: 0,
-          calls: 0,
-          gasUsed: 0,
-          gasPerSecond: 0,
-        }
-      }
-      timer = performance.now()
+      timer = this.performanceLogger.startTimer(opInfo.name)
     }
 
     let gas = BigInt(opInfo.fee)
@@ -326,13 +312,7 @@ export class Interpreter {
       }
     } finally {
       if (this.profilerOpts?.enabled === true) {
-        const delta = (performance.now() - timer!) / 1000
-
-        const field = this.preformanceLogs.opcodes[opInfo.name]
-        field.calls++
-        field.gasUsed += Number(gas)
-        field.time += delta
-        // gas per second is updated when it is being read (i.e. evm.getPerformanceLogs())
+        this.performanceLogger.stopTimer(timer!, Number(gas), 'opcodes')
       }
     }
   }
@@ -912,7 +892,14 @@ export class Interpreter {
       return BigInt(0)
     }
 
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message: msg })
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -1011,7 +998,14 @@ export class Interpreter {
       message.createdAddresses = createdAddresses
     }
 
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message })
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)

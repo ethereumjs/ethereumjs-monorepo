@@ -163,22 +163,6 @@ export type EVMProfilerOpts = {
   // extra options here (such as use X hardfork for gas)
 }
 
-export type EVMPerformanceLogEntry = {
-  calls: number
-  time: number
-  gasUsed: number
-  gasPerSecond: number
-}
-
-export type EVMPerformanceLogs = {
-  opcodes: {
-    [opcodeName: string]: EVMPerformanceLogEntry
-  }
-  precompiles: {
-    [precompileTag: string]: EVMPerformanceLogEntry
-  }
-}
-
 /**
  * Options for instantiating a {@link EVM}.
  */
