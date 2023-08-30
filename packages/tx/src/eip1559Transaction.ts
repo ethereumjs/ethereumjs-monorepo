@@ -189,8 +189,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
       throw new Error(msg)
     }
 
-    Generic.validateYParity.bind(this)()
-    Generic.validateHighS.bind(this)()
+    Generic.validateYParity(this)
+    Generic.validateHighS(this)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -202,7 +202,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    return EIP2930.getDataFee.bind(this)()
+    return EIP2930.getDataFee(this)
   }
 
   /**
@@ -210,7 +210,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
-    return EIP1559.getUpfrontCost.bind(this)(baseFee)
+    return EIP1559.getUpfrontCost(this, baseFee)
   }
 
   /**
@@ -254,7 +254,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2930.serialize.bind(this)()
+    return EIP2930.serialize(this)
   }
 
   /**
@@ -282,7 +282,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2930.getHashedMessageToSign.bind(this)()
+    return EIP2930.getHashedMessageToSign(this)
   }
 
   /**
@@ -292,7 +292,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Generic.hash.bind(this)()
+    return Generic.hash(this)
   }
 
   /**
@@ -306,7 +306,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey.bind(this)()
+    return Generic.getSenderPublicKey(this)
   }
 
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
@@ -363,6 +363,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg.bind(this)(msg)
+    return Generic.errorMsg(this, msg)
   }
 }

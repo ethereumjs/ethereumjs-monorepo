@@ -257,7 +257,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Uint8Array {
-    return Generic.hash.bind(this)()
+    return Generic.hash(this)
   }
 
   /**
@@ -275,7 +275,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Returns the public key of the sender
    */
   getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey.bind(this)()
+    return Generic.getSenderPublicKey(this)
   }
 
   /**
@@ -377,6 +377,6 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg.bind(this)(msg)
+    return Generic.errorMsg(this, msg)
   }
 }

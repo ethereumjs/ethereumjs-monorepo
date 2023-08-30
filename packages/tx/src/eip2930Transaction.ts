@@ -165,8 +165,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
       throw new Error(msg)
     }
 
-    Generic.validateYParity.bind(this)()
-    Generic.validateHighS.bind(this)()
+    Generic.validateYParity(this)
+    Generic.validateHighS(this)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -178,7 +178,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    return EIP2930.getDataFee.bind(this)()
+    return EIP2930.getDataFee(this)
   }
 
   /**
@@ -228,7 +228,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2930.serialize.bind(this)()
+    return EIP2930.serialize(this)
   }
 
   /**
@@ -256,7 +256,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2930.getHashedMessageToSign.bind(this)()
+    return EIP2930.getHashedMessageToSign(this)
   }
 
   /**
@@ -266,7 +266,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Generic.hash.bind(this)()
+    return Generic.hash(this)
   }
 
   /**
@@ -280,7 +280,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey.bind(this)()
+    return Generic.getSenderPublicKey(this)
   }
 
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
@@ -336,6 +336,6 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg.bind(this)(msg)
+    return Generic.errorMsg(this, msg)
   }
 }
