@@ -543,8 +543,7 @@ export const chains: ChainsDict = {
       {
         name: 'cancun',
         block: null,
-        timestamp: '2000000000',
-        forkHash: '0xffab2acd',
+        forkHash: null,
       },
     ],
     bootstrapNodes: [
