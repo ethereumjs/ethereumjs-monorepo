@@ -17,6 +17,7 @@ export class Opcode {
   readonly feeBigInt: bigint
   readonly isAsync: boolean
   readonly dynamicGas: boolean
+  readonly isInvalid: boolean
 
   constructor({
     code,
@@ -40,6 +41,7 @@ export class Opcode {
     this.feeBigInt = BigInt(fee)
     this.isAsync = isAsync
     this.dynamicGas = dynamicGas
+    this.isInvalid = this.name === 'INVALID'
 
     // Opcode isn't subject to change, thus all further modifications are prevented.
     Object.freeze(this)

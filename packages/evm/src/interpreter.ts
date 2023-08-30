@@ -297,7 +297,7 @@ export class Interpreter {
       }
 
       // Check for invalid opcode
-      if (opInfo.name === 'INVALID') {
+      if (opInfo.isInvalid) {
         throw new EvmError(ERROR.INVALID_OPCODE)
       }
 
