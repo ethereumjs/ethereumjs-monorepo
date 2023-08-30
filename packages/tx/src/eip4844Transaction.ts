@@ -17,7 +17,6 @@ import {
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
 import * as EIP1559 from './capabilities/eip1559.js'
@@ -433,8 +432,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    const base = this.raw()
-    return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
+    return EIP2930.serialize.bind(this)()
   }
 
   /**
@@ -483,7 +481,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return keccak256(this.getMessageToSign())
+    return EIP2930.getHashedMessageToSign.bind(this)()
   }
 
   /**
