@@ -448,8 +448,8 @@ export class Config {
 
     if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
       this.vmProfilerOpts = {
-        reportProfilerAfterBlock: options.vmProfileBlocks !== false,
-        reportProfilerAfterTx: options.vmProfileTxs !== false,
+        reportAfterBlock: options.vmProfileBlocks !== false,
+        reportAfterTx: options.vmProfileTxs !== false,
       }
     }
 
