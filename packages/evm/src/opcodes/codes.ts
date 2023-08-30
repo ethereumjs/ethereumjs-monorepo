@@ -350,7 +350,7 @@ export type OpcodeMapEntry = {
   opHandler: OpHandler
   gasHandler: AsyncDynamicGasHandler | SyncDynamicGasHandler
 }
-export type OpcodeMap = Map<number, OpcodeMapEntry>
+export type OpcodeMap = OpcodeMapEntry[]
 
 /**
  * Get suitable opcodes for the required hardfork.
@@ -420,16 +420,24 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
   //const handlers = handlersCopy
   const ops = createOpcodes(opcodeBuilder)
 
-  const opcodeMap: OpcodeMap = new Map()
+  const opcodeMap: OpcodeMap = []
 
   for (const [opNumber, op] of ops) {
     const dynamicGas = dynamicGasHandlersCopy.get(opNumber)!
     const handler = handlersCopy.get(opNumber)!
-    opcodeMap.set(opNumber, {
+    opcodeMap[opNumber] = {
       opcodeInfo: op,
       opHandler: handler,
       gasHandler: dynamicGas,
-    })
+    }
+  }
+
+  const INVALID = opcodeMap[0xfe]
+
+  for (let i = 0x0; i <= 0xff; i++) {
+    if (opcodeMap[i] === undefined) {
+      opcodeMap[i] = INVALID
+    }
   }
 
   return {
