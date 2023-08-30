@@ -512,6 +512,7 @@ export class Common {
    * Build up a cache for all parameter values for the current HF and all activated EIPs
    */
   protected _buildParamsCache() {
+    this._paramsCache = {}
     // Iterate through all hardforks up to hardfork set
     const hardfork = this.hardfork()
     for (const hfChanges of this.HARDFORK_CHANGES) {
