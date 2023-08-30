@@ -162,9 +162,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (
-        BigInt(hash[0]) !== this.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844)
-      ) {
+      if (BigInt(hash[0]) !== this.common.param('sharding', 'blobCommitmentVersionKzg')) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }
@@ -352,7 +350,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
     }
 
-    const version = Number(opts.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
+    const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
     validateBlobTransactionNetworkWrapper(
       decodedTx.versionedHashes,
       blobs,
@@ -534,6 +532,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
+    if (this.cache.senderPubKey !== undefined) {
+      return this.cache.senderPubKey
+    }
+
     if (!this.isSigned()) {
       const msg = this._errorMsg('Cannot call this method if transaction is not signed')
       throw new Error(msg)
@@ -545,12 +547,16 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     this._validateHighS()
 
     try {
-      return ecrecover(
+      const sender = ecrecover(
         msgHash,
         v! + BigInt(27), // Recover the 27 which was stripped from ecsign
         bigIntToUnpaddedBytes(r!),
         bigIntToUnpaddedBytes(s!)
       )
+      if (Object.isFrozen(this)) {
+        this.cache.senderPubKey = sender
+      }
+      return sender
     } catch (e: any) {
       const msg = this._errorMsg('Invalid Signature')
       throw new Error(msg)

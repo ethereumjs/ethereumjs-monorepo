@@ -38,59 +38,15 @@ export const SKIP_PERMANENT = [
  * tests running slow (run from time to time)
  */
 export const SKIP_SLOW = [
-  'Call50000_sha256',
-  'static_Call50000',
-  'static_Call50000_ecrec',
-  'static_Call50000_identity',
-  'static_Call50000_identity2',
-  'static_Call50000_rip160',
-  'static_Return50000_2',
-  'Return50000',
-  'Return50000_2',
-  'static_Call50000_sha256',
-  'CALLBlake2f_MaxRounds',
+  'Call50000_sha256', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'CALLBlake2f_MaxRounds', // Last check: 2023-08-24, Berlin HF, still very slow (several minutes per block execution)
+  'Return50000', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'Return50000_2', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'static_Call50000_sha256', // Last check: 2023-08-24, Berlin HF, still slow (30-60 secs per block execution)
   // vmPerformance tests
-  'loopMul',
-  'loopExp',
+  'loopMul', // Last check: 2023-08-24, Berlin HF, still very slow (up to minutes per block execution)
+  'loopExp', // Last check: 2023-08-24, Berlin HF, somewhat slow (5-10 secs per block execution)
 ]
-
-/**
- * VMTests have been deprecated, see https://github.com/ethereum/tests/issues/593
- * skipVM test list is currently not used but might be useful in the future since VMTests
- * have now been converted to BlockchainTests, see https://github.com/ethereum/tests/pull/680
- * Disabling this due to ESLint, but will keep it here for possible future reference
- */
-/*const SKIP_VM = [
-  // slow performance tests
-  'loop-mul',
-  'loop-add-10M',
-  'loop-divadd-10M',
-  'loop-divadd-unr100-10M',
-  'loop-exp-16b-100k',
-  'loop-exp-1b-1M',
-  'loop-exp-2b-100k',
-  'loop-exp-32b-100k',
-  'loop-exp-4b-100k',
-  'loop-exp-8b-100k',
-  'loop-exp-nop-1M',
-  'loop-mulmod-2M',
-  'ABAcalls0',
-  'ABAcallsSuicide0',
-  'ABAcallsSuicide1',
-  'sha3_bigSize',
-  'CallRecursiveBomb0',
-  'CallToNameRegistrator0',
-  'CallToPrecompiledContract',
-  'CallToReturn1',
-  'PostToNameRegistrator0',
-  'PostToReturn1',
-  'callcodeToNameRegistrator0',
-  'callcodeToReturn1',
-  'callstatelessToNameRegistrator0',
-  'callstatelessToReturn1',
-  'createNameRegistrator',
-  'randomTest643',
-]*/
 
 /**
  * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
@@ -409,8 +365,8 @@ const expectedTestsFull: {
     Byzantium: 15703,
     Constantinople: 33146,
     Petersburg: 33128,
-    Istanbul: 38773,
-    MuirGlacier: 38773,
+    Istanbul: 38340,
+    MuirGlacier: 38340,
     Berlin: 41365,
     London: 61197,
     ArrowGlacier: 0,
