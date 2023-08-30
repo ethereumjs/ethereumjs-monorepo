@@ -27,6 +27,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { AccessList, AccessListItem } from '@ethereumjs/common'
+import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -162,6 +163,13 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
+    if (this._opts.profilerOpts?.reportAfterTx === true) {
+      const logs = (<EVM>this.evm).getPerformanceLogs()
+      const tag = ' - Tx ' + bytesToHex(opts.tx.hash())
+      this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
+      this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
+      ;(<EVM>this.evm).clearPerformanceLogs()
+    }
   }
 }
 
