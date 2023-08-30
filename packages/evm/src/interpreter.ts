@@ -18,8 +18,9 @@ import { Stack } from './stack.js'
 
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
+import type { EVMPerformanceLogger, Timer } from './logger.js'
 import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
-import type { Block, Blockchain, EVMResult, Log } from './types.js'
+import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
@@ -133,6 +134,9 @@ export class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
+  private profilerOpts?: EVMProfilerOpts
+  private performanceLogger: EVMPerformanceLogger
+
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
@@ -140,7 +144,9 @@ export class Interpreter {
     blockchain: Blockchain,
     env: Env,
     gasLeft: bigint,
-    journal: Journal
+    journal: Journal,
+    performanceLogs: EVMPerformanceLogger,
+    profilerOpts?: EVMProfilerOpts
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -171,6 +177,8 @@ export class Interpreter {
       returnValue: undefined,
       selfdestruct: new Set(),
     }
+    this.profilerOpts = profilerOpts
+    this.performanceLogger = performanceLogs
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
@@ -259,41 +267,54 @@ export class Interpreter {
   async runStep(): Promise<void> {
     const opInfo = this.lookupOpInfo(this._runState.opCode)
 
+    let timer: Timer
+
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.startTimer(opInfo.name)
+    }
+
     let gas = BigInt(opInfo.fee)
-    // clone the gas limit; call opcodes can add stipend,
-    // which makes it seem like the gas left increases
-    const gasLimitClone = this.getGasLeft()
 
-    if (opInfo.dynamicGas) {
-      const dynamicGasHandler = (this._evm as any)._dynamicGasHandlers.get(this._runState.opCode)!
-      // This function updates the gas in-place.
-      // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      gas = await dynamicGasHandler(this._runState, gas, this.common)
-    }
+    try {
+      // clone the gas limit; call opcodes can add stipend,
+      // which makes it seem like the gas left increases
+      const gasLimitClone = this.getGasLeft()
 
-    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
-      // Only run this stepHook function if there is an event listener (e.g. test runner)
-      // or if the vm is running in debug mode (to display opcode debug logs)
-      await this._runStepHook(gas, gasLimitClone)
-    }
+      if (opInfo.dynamicGas) {
+        const dynamicGasHandler = (this._evm as any)._dynamicGasHandlers.get(this._runState.opCode)!
+        // This function updates the gas in-place.
+        // It needs the base fee, for correct gas limit calculation for the CALL opcodes
+        gas = await dynamicGasHandler(this._runState, gas, this.common)
+      }
 
-    // Check for invalid opcode
-    if (opInfo.name === 'INVALID') {
-      throw new EvmError(ERROR.INVALID_OPCODE)
-    }
+      if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
+        // Only run this stepHook function if there is an event listener (e.g. test runner)
+        // or if the vm is running in debug mode (to display opcode debug logs)
+        await this._runStepHook(gas, gasLimitClone)
+      }
 
-    // Reduce opcode's base fee
-    this.useGas(gas, `${opInfo.name} fee`)
-    // Advance program counter
-    this._runState.programCounter++
+      // Check for invalid opcode
+      if (opInfo.name === 'INVALID') {
+        throw new EvmError(ERROR.INVALID_OPCODE)
+      }
 
-    // Execute opcode handler
-    const opFn = this.getOpHandler(opInfo)
+      // Reduce opcode's base fee
+      this.useGas(gas, `${opInfo.name} fee`)
+      // Advance program counter
+      this._runState.programCounter++
 
-    if (opInfo.isAsync) {
-      await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
-    } else {
-      opFn.apply(null, [this._runState, this.common])
+      // Execute opcode handler
+      const opFn = this.getOpHandler(opInfo)
+
+      if (opInfo.isAsync) {
+        await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
+      } else {
+        opFn.apply(null, [this._runState, this.common])
+      }
+    } finally {
+      if (this.profilerOpts?.enabled === true) {
+        this.performanceLogger.stopTimer(timer!, Number(gas), 'opcodes')
+      }
     }
   }
 
@@ -872,7 +893,14 @@ export class Interpreter {
       return BigInt(0)
     }
 
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message: msg })
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -971,7 +999,14 @@ export class Interpreter {
       message.createdAddresses = createdAddresses
     }
 
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message })
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)

@@ -25,16 +25,22 @@ import type {
   CliqueConfig,
   CommonOpts,
   CustomCommonOpts,
+  EIPConfig,
+  EIPOrHFConfig,
   EthashConfig,
   GenesisBlockConfig,
   GethConfigOpts,
   HardforkByOpts,
+  HardforkConfig,
   HardforkTransitionConfig,
 } from './types.js'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 
 type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
+
+type ParamsCacheConfig = Omit<EIPOrHFConfig, 'comment' | 'url' | 'status'>
+
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
@@ -46,12 +52,15 @@ type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
 export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
 
-  private _chainParams: ChainConfig
-  private _hardfork: string | Hardfork
-  private _eips: number[] = []
-  private _customChains: ChainConfig[]
+  protected _chainParams: ChainConfig
+  protected _hardfork: string | Hardfork
+  protected _eips: number[] = []
+  protected _customChains: ChainConfig[]
 
-  private HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
+  protected _paramsCache: ParamsCacheConfig = {}
+  protected _activatedEIPsCache: number[] = []
+
+  protected HARDFORK_CHANGES: [HardforkSpecKeys, HardforkSpecValues][]
 
   public events: EventEmitter
 
@@ -197,7 +206,7 @@ export class Common {
     return Boolean((initializedChains['names'] as ChainName)[chainId.toString()])
   }
 
-  private static _getChainParams(
+  protected static _getChainParams(
     chain: string | number | Chain | bigint,
     customChains?: ChainConfig[]
   ): ChainConfig {
@@ -237,6 +246,10 @@ export class Common {
     }
     if (opts.eips) {
       this.setEIPs(opts.eips)
+    }
+    if (Object.keys(this._paramsCache).length === 0) {
+      this._buildParamsCache()
+      this._buildActivatedEIPsCache()
     }
   }
 
@@ -283,6 +296,8 @@ export class Common {
       if (hfChanges[0] === hardfork) {
         if (this._hardfork !== hardfork) {
           this._hardfork = hardfork
+          this._buildParamsCache()
+          this._buildActivatedEIPsCache()
           this.events.emit('hardforkChanged', hardfork)
         }
         existing = true
@@ -435,7 +450,7 @@ export class Common {
    * @param hardfork Hardfork name
    * @returns Dictionary with hardfork params or null if hardfork not on chain
    */
-  private _getHardfork(hardfork: string | Hardfork): HardforkTransitionConfig | null {
+  protected _getHardfork(hardfork: string | Hardfork): HardforkTransitionConfig | null {
     const hfs = this.hardforks()
     for (const hf of hfs) {
       if (hf['name'] === hardfork) return hf
@@ -458,6 +473,12 @@ export class Common {
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`
         )
       }
+    }
+    this._eips = eips
+    this._buildParamsCache()
+    this._buildActivatedEIPsCache()
+
+    for (const eip of eips) {
       if ((EIPs as any)[eip].requiredEIPs !== undefined) {
         for (const elem of (EIPs as any)[eip].requiredEIPs) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
@@ -466,14 +487,85 @@ export class Common {
         }
       }
     }
-    this._eips = eips
+  }
+
+  /**
+   * Internal helper for _buildParamsCache()
+   */
+  protected _mergeWithParamsCache(params: HardforkConfig | EIPConfig) {
+    this._paramsCache['gasConfig'] = {
+      ...this._paramsCache['gasConfig'],
+      ...params['gasConfig'],
+    }
+    this._paramsCache['gasPrices'] = {
+      ...this._paramsCache['gasPrices'],
+      ...params['gasPrices'],
+    }
+    this._paramsCache['pow'] = {
+      ...this._paramsCache['pow'],
+      ...params['pow'],
+    }
+    this._paramsCache['sharding'] = {
+      ...this._paramsCache['sharding'],
+      ...params['sharding'],
+    }
+    this._paramsCache['vm'] = {
+      ...this._paramsCache['vm'],
+      ...params['vm'],
+    }
+  }
+
+  /**
+   * Build up a cache for all parameter values for the current HF and all activated EIPs
+   */
+  protected _buildParamsCache() {
+    this._paramsCache = {}
+    // Iterate through all hardforks up to hardfork set
+    const hardfork = this.hardfork()
+    for (const hfChanges of this.HARDFORK_CHANGES) {
+      // EIP-referencing HF config (e.g. for berlin)
+      if ('eips' in hfChanges[1]) {
+        const hfEIPs = hfChanges[1]['eips']
+        for (const eip of hfEIPs!) {
+          if (!(eip in EIPs)) {
+            throw new Error(`${eip} not supported`)
+          }
+
+          this._mergeWithParamsCache(EIPs[eip])
+        }
+        // Parameter-inlining HF config (e.g. for istanbul)
+      } else {
+        this._mergeWithParamsCache(hfChanges[1])
+      }
+      if (hfChanges[0] === hardfork) break
+    }
+    // Iterate through all additionally activated EIPs
+    for (const eip of this._eips) {
+      if (!(eip in EIPs)) {
+        throw new Error(`${eip} not supported`)
+      }
+
+      this._mergeWithParamsCache(EIPs[eip])
+    }
+  }
+
+  protected _buildActivatedEIPsCache() {
+    this._activatedEIPsCache = []
+
+    for (const hfChanges of this.HARDFORK_CHANGES) {
+      const hf = hfChanges[1]
+      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
+        this._activatedEIPsCache = this._activatedEIPsCache.concat(hf['eips'] as number[])
+      }
+    }
+    this._activatedEIPsCache = this._activatedEIPsCache.concat(this._eips)
   }
 
   /**
    * Returns a parameter for the current chain setup
    *
    * If the parameter is present in an EIP, the EIP always takes precedence.
-   * Otherwise the parameter if taken from the latest applied HF with
+   * Otherwise the parameter is taken from the latest applied HF with
    * a change on the respective parameter.
    *
    * @param topic Parameter topic ('gasConfig', 'gasPrices', 'vm', 'pow')
@@ -483,12 +575,14 @@ export class Common {
   param(topic: string, name: string): bigint {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
-    let value
-    for (const eip of this._eips) {
-      value = this.paramByEIP(topic, name, eip)
-      if (value !== undefined) return value
+    let value = null
+    if (
+      (this._paramsCache as any)[topic] !== undefined &&
+      (this._paramsCache as any)[topic][name] !== undefined
+    ) {
+      value = (this._paramsCache as any)[topic][name].v
     }
-    return this.paramByHardfork(topic, name, this._hardfork)
+    return BigInt(value ?? 0)
   }
 
   /**
@@ -501,14 +595,14 @@ export class Common {
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
     let value = null
     for (const hfChanges of this.HARDFORK_CHANGES) {
-      // EIP-referencing HF file (e.g. berlin.json)
+      // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1]['eips']
         for (const eip of hfEIPs!) {
           const valueEIP = this.paramByEIP(topic, name, eip)
           value = typeof valueEIP === 'bigint' ? valueEIP : value
         }
-        // Parameter-inlining HF file (e.g. istanbul.json)
+        // Parameter-inlining HF config (e.g. for istanbul)
       } else {
         if (
           (hfChanges[1] as any)[topic] !== undefined &&
@@ -575,16 +669,8 @@ export class Common {
    * @param eip
    */
   isActivatedEIP(eip: number): boolean {
-    if (this.eips().includes(eip)) {
+    if (this._activatedEIPsCache.includes(eip)) {
       return true
-    }
-    for (const hfChanges of this.HARDFORK_CHANGES) {
-      const hf = hfChanges[1]
-      if (this.gteHardfork(hf['name']) && 'eips' in hf) {
-        if ((hf['eips'] as number[]).includes(eip)) {
-          return true
-        }
-      }
     }
     return false
   }
@@ -755,7 +841,7 @@ export class Common {
    * @param genesisHash Genesis block hash of the chain
    * @returns Fork hash as hex string
    */
-  private _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
+  protected _calcForkHash(hardfork: string | Hardfork, genesisHash: Uint8Array): PrefixedHexString {
     let hfBytes = new Uint8Array(0)
     let prevBlockOrTime = 0
     for (const hf of this.hardforks()) {
@@ -905,7 +991,8 @@ export class Common {
   }
 
   /**
-   * Returns the active EIPs
+   * Returns the additionally activated EIPs
+   * (by using the `eips` constructor option)
    * @returns List of EIPs
    */
   eips(): number[] {

@@ -21,6 +21,7 @@ import type {
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVMPerformanceLogOutput } from '@ethereumjs/evm/dist/cjs/logger.js'
 import type { BigIntLike, GenesisState } from '@ethereumjs/util'
 
 /**
@@ -113,14 +114,28 @@ export class VM {
 
     this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this.common })
 
+    if (this._opts.profilerOpts !== undefined) {
+      const profilerOpts = this._opts.profilerOpts
+      if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
+        throw new Error(
+          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
+        )
+      }
+    }
+
     // TODO tests
     if (opts.evm) {
       this.evm = opts.evm
     } else {
+      const enableProfiler =
+        this._opts.profilerOpts?.reportAfterBlock ?? this._opts.profilerOpts?.reportAfterTx ?? false
       this.evm = new EVM({
         common: this.common,
         stateManager: this.stateManager,
         blockchain: this.blockchain,
+        profiler: {
+          enabled: enableProfiler,
+        },
       })
     }
 
@@ -239,6 +254,7 @@ export class VM {
       common,
       evm: evmCopy,
       setHardfork: this._setHardfork,
+      profilerOpts: this._opts.profilerOpts,
     })
   }
 
@@ -254,5 +270,82 @@ export class VM {
     }
     const errorStr = `vm hf=${hf}`
     return errorStr
+  }
+
+  /**
+   * Emit EVM profile logs
+   * @param logs
+   * @param profileTitle
+   * @hidden
+   */
+  emitEVMProfile(logs: EVMPerformanceLogOutput[], profileTitle: string) {
+    if (logs.length === 0) {
+      return
+    }
+    const colOrder = [
+      'tag',
+      'calls',
+      'avgTimePerCall',
+      'totalTime',
+      'gasUsed',
+      'millionGasPerSecond',
+    ]
+    const colNames = ['tag', 'calls', 'ms/call', 'total (ms)', 'gas used', 'Mgas/s']
+    function padStr(str: string | number, leftpad: number) {
+      return ' ' + str.toString().padStart(leftpad, ' ') + ' '
+    }
+    function strLen(str: string | number) {
+      return padStr(str, 0).length - 2
+    }
+
+    const colLength: number[] = []
+
+    for (const entry of logs) {
+      let ins = 0
+      colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(colNames[ins]))
+      for (const key of colOrder) {
+        //@ts-ignore
+        colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(entry[key]))
+        ins++
+      }
+    }
+
+    for (const i in colLength) {
+      colLength[i] = Math.max(colLength[i] ?? 0, strLen(colNames[i]))
+    }
+
+    const headerLength = colLength.reduce((pv, cv) => pv + cv, 0) + colLength.length * 3 - 1
+    // eslint-disable-next-line
+    console.log('+== ' + profileTitle + ' ==+')
+
+    const header = '|' + '-'.repeat(headerLength) + '|'
+    // eslint-disable-next-line
+    console.log(header)
+
+    let str = ''
+    for (const i in colLength) {
+      str += '|' + padStr(colNames[i], colLength[i])
+    }
+    str += '|'
+
+    // eslint-disable-next-line
+    console.log(str)
+
+    for (const entry of logs) {
+      let str = ''
+      let i = 0
+      for (const key of colOrder) {
+        //@ts-ignore
+        str += '|' + padStr(entry[key], colLength[i])
+        i++
+      }
+      str += '|'
+      // eslint-disable-next-line
+      console.log(str)
+    }
+
+    const footer = '+' + '-'.repeat(headerLength) + '+'
+    // eslint-disable-next-line
+    console.log(footer)
   }
 }

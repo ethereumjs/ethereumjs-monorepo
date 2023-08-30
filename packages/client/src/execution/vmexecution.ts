@@ -76,6 +76,7 @@ export class VMExecution extends Execution {
         common: this.config.execCommon,
         blockchain: this.chain.blockchain,
         stateManager,
+        profilerOpts: this.config.vmProfilerOpts,
       })
     } else {
       this.vm = this.config.vm

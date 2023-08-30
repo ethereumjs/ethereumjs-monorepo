@@ -11,7 +11,7 @@ import type { Logger } from './logging'
 import type { EventBusType, MultiaddrLike } from './types'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { Address } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
+import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from 'multiaddr'
 
 export enum DataDirectory {
@@ -252,6 +252,16 @@ export interface ConfigOptions {
   isSingleNode?: boolean
 
   /**
+   * Whether to profile VM blocks
+   */
+  vmProfileBlocks?: boolean
+
+  /**
+   * Whether to profile VM txs
+   */
+  vmProfileTxs?: boolean
+
+  /**
    * Unlocked accounts of form [address, privateKey]
    * Currently only the first account is used to seal mined PoA blocks
    *
@@ -376,6 +386,7 @@ export class Config {
   public readonly isSingleNode: boolean
   public readonly accounts: [address: Address, privKey: Uint8Array][]
   public readonly minerCoinbase?: Address
+  public readonly vmProfilerOpts?: VMProfilerOpts
 
   public readonly safeReorgDistance: number
   public readonly skeletonFillCanonicalBackStep: number
@@ -434,6 +445,14 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
+
+    if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
+      this.vmProfilerOpts = {
+        reportAfterBlock: options.vmProfileBlocks !== false,
+        reportAfterTx: options.vmProfileTxs !== false,
+      }
+    }
+
     this.accounts = options.accounts ?? []
     this.minerCoinbase = options.minerCoinbase
 

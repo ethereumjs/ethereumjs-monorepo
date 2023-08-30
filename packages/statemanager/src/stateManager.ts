@@ -926,6 +926,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * 2. Cache values are generally not copied along
    */
   shallowCopy(): DefaultStateManager {
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
+
     const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
@@ -938,6 +941,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     return new DefaultStateManager({
+      common,
       trie,
       prefixCodeHashes,
       accountCacheOpts,
