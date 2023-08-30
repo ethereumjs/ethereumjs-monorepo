@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1693397054600,
+  "lastUpdate": 1693405574262,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "23524378+KoningR@users.noreply.github.com",
-            "name": "KoningR",
-            "username": "KoningR"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fa8a518f9a34bf1effaf3d69d521ae20e1dde763",
-          "message": "Client/StateManager: storageRangeAt() RPC call / EVMStateManager Interface Extension (#2922)\n\n* Initial version of storageRangeAt().\r\n\r\n* Update input validation of storageRangeAt().\r\n\r\n* Add validator for unsigned integers.\r\n\r\n* remove return await\r\n\r\n---------\r\n\r\nCo-authored-by: KoningR <KoningR@users.noreply.github.com>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-08-09T12:30:08+02:00",
-          "tree_id": "2c7a840a3082ce0c1154d32a1c7f268640f400d8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fa8a518f9a34bf1effaf3d69d521ae20e1dde763"
-        },
-        "date": 1691578028509,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18853,
-            "range": "±6.36%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19496,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19789,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19822,
-            "range": "±3.27%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19131,
-            "range": "±3.23%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.49%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d6d9391f1fdfc259baf3150523ecd7f27d2a9373",
+          "message": "Common: Cache Parameter Values + activated EIPs for current Hardfork / SM copy() fix (#2994)\n\n* VM: add total test time tracking to blockchain test runner\r\n\r\n* Simplify on paramByHardfork(), paramByEIP() reads, replace with param() usage\r\n\r\n* Common: make private members protected for some greater flexibility for users on sub-classing\r\n\r\n* Common: new _buildParamsCache() methods + entrypoint calls, new _paramsCache member\r\n\r\n* Common: add _buildParamsCache() implementation, replace param() code with direct _paramsCache() access\r\n\r\n* Small fix\r\n\r\n* VM: fix precompile activation API test\r\n\r\n* StateManager: fix Common not properly copied within shallowCopy() method\r\n\r\n* Common: add additional param() test for copied/original Common\r\n\r\n* Common: fix cache initialization in params cache build method\r\n\r\n* Common: add activated EIPs cache\r\n\r\n* Apply review suggestions",
+          "timestamp": "2023-08-30T16:22:33+02:00",
+          "tree_id": "fe65b0e4b474013fdf9a23776d5ea475ef21ad43",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d6d9391f1fdfc259baf3150523ecd7f27d2a9373"
+        },
+        "date": 1693405572764,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30972,
+            "range": "±5.88%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30418,
+            "range": "±3.16%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30779,
+            "range": "±3.27%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25663,
+            "range": "±10.51%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29152,
+            "range": "±3.56%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
