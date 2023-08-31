@@ -4,13 +4,16 @@ import { ERROR, EvmError } from './exceptions.js'
  * Implementation of the stack used in evm.
  */
 export class Stack {
+  // This array is initialized as an empty array. Once values are pushed, the array size will never decrease.
   _store: bigint[]
   _maxHeight: number
 
   private _len: number = 0
 
   constructor(maxHeight?: number) {
-    this._store = [] //Array(maxHeight ?? 1024) -> initializing the array makes the constructor 10x slower
+    // It is possible to initialize the array with `maxHeight` items. However,
+    // this makes the constructor 10x slower and there do not seem to be any observable performance gains
+    this._store = []
     this._maxHeight = maxHeight ?? 1024
   }
 
@@ -23,6 +26,7 @@ export class Stack {
       throw new EvmError(ERROR.STACK_OVERFLOW)
     }
 
+    // Read current length, set `_store` to value, and then increase the length
     this._store[this._len++] = value
   }
 
@@ -32,6 +36,9 @@ export class Stack {
     }
 
     // Length is checked above, so pop shouldn't return undefined
+    // First decrease current length, then read the item and return it
+    // Note: this does thus not delete the item from the internal array
+    // However, the length is decreased, so it is not accessible to external observors
     return this._store[--this._len]
   }
 
@@ -53,6 +60,7 @@ export class Stack {
     const cache = this._store
 
     for (let pop = 0; pop < num; pop++) {
+      // Note: this thus also (correctly) reduces the length of the internal array (without deleting items)
       arr[pop] = cache[--this._len]
     }
 
@@ -89,11 +97,11 @@ export class Stack {
 
     const head = this._len - 1
     const i = head - position
-    const sto = this._store
+    const storageCached = this._store
 
-    const tmp = sto[head]
-    sto[head] = sto[i]
-    sto[i] = tmp
+    const tmp = storageCached[head]
+    storageCached[head] = storageCached[i]
+    storageCached[i] = tmp
   }
 
   /**
@@ -109,6 +117,8 @@ export class Stack {
     if (len < position) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
     }
+
+    // Note: this code is borrowed from `push()` (avoids a call)
     if (len >= this._maxHeight) {
       throw new EvmError(ERROR.STACK_OVERFLOW)
     }
