@@ -342,7 +342,12 @@ export class Trie {
     })
   }
 
-  async processNode(nodeKey: Uint8Array, stack: TrieNode[], progress: Nibbles, remaining: Nibbles) {
+  async processPathNode(
+    nodeKey: Uint8Array,
+    stack: TrieNode[],
+    progress: Nibbles,
+    remaining: Nibbles
+  ) {
     const node = await this.lookupNode(nodeKey)
 
     if (node === null) {
@@ -366,7 +371,7 @@ export class Trie {
           // node found, continuing search
           // this can be optimized as this calls getBranch again.
           //walkController.onlyBranchIndex(node, progress, branchIndex)
-          await this.processNode(branchNode as Uint8Array, stack, progress, remaining)
+          await this.processPathNode(branchNode as Uint8Array, stack, progress, remaining)
         }
       }
     } else if (node instanceof LeafNode) {
@@ -383,7 +388,7 @@ export class Trie {
         for (const child of children) {
           const childRef = child[1] as Uint8Array
           //this.pushNodeToQueue(childRef, childKey, priority)
-          await this.processNode(childRef, stack, progress, remaining)
+          await this.processPathNode(childRef, stack, progress, remaining)
         }
       }
     }
@@ -401,7 +406,7 @@ export class Trie {
     const progress: Nibbles = []
     const remaining = bytesToNibbles(key)
     try {
-      await this.processNode(nodeKey, stack, progress, remaining)
+      await this.processPathNode(nodeKey, stack, progress, remaining)
     } catch (error: any) {
       if (error.message === 'Missing node in DB' && !throwIfMissing) {
         // pass
