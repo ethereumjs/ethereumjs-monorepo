@@ -389,7 +389,7 @@ export class Trie {
       try {
         await this.lookupNode(childRef)
       } catch {
-        return { node: null, remaining, stack }
+        return { node: null, remaining: [], stack }
       }
       remaining = remaining.slice(nibbleLen)
       return this.processPathNode(childRef, stack, progress, remaining)
