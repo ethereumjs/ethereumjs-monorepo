@@ -62,6 +62,8 @@ export type JobTask = {
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
 
+  private _proofTrie: Trie
+
   /**
    * The stateRoot for the fetcher which sorts of pin it to a snapshot.
    * This might eventually be removed as the snapshots are moving and not static
@@ -83,6 +85,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   constructor(options: StorageFetcherOptions) {
     super(options)
+    this._proofTrie = new Trie()
     this.fragmentedRequests = []
     this.root = options.root
     this.storageRequests = options.storageRequests ?? []
@@ -281,8 +284,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
           // all-elements proof verification
-          const trie = new Trie()
-          await trie.verifyRangeProof(
+          await this._proofTrie.verifyRangeProof(
             root,
             null,
             null,
