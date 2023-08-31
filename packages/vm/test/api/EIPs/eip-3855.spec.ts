@@ -7,7 +7,7 @@ import { VM } from '../../../src/vm'
 
 import type { InterpreterStep } from '@ethereumjs/evm'
 
-describe('EIP 3541 tests', () => {
+describe('EIP 3855 tests', () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
   const commonNoEIP3855 = new Common({
     chain: Chain.Mainnet,
@@ -19,14 +19,11 @@ describe('EIP 3541 tests', () => {
     const vm = await VM.create({ common })
     let stack: bigint[]
     vm.evm.events!.on('step', (e: InterpreterStep) => {
-      if (typeof stack !== 'undefined') {
-        assert.fail('should only do PUSH0 once')
-      }
       stack = e.stack
     })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('0x5F'),
+      code: hexToBytes('0x5F00'),
       gasLimit: BigInt(10),
     })
 
@@ -45,7 +42,7 @@ describe('EIP 3541 tests', () => {
     const depth = Number(common.param('vm', 'stackLimit'))
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('0x' + '5F'.repeat(depth)),
+      code: hexToBytes('0x' + '5F'.repeat(depth) + '00'),
       gasLimit: BigInt(10000),
     })
 
