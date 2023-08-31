@@ -5,8 +5,8 @@ import { ERROR, EvmError } from './exceptions.js'
  */
 export class Stack {
   // This array is initialized as an empty array. Once values are pushed, the array size will never decrease.
-  _store: bigint[]
-  _maxHeight: number
+  private _store: bigint[]
+  private _maxHeight: number
 
   private _len: number = 0
 
@@ -125,5 +125,13 @@ export class Stack {
 
     const i = len - position
     this._store[this._len++] = this._store[i]
+  }
+
+  /**
+   * Returns a copy of the current stack. This represents the actual state of the stack
+   * (not the internal state of the stack, which might have unreachable elements in it)
+   */
+  getStack() {
+    return this._store.slice(0, this._len)
   }
 }
