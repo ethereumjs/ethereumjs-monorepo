@@ -199,7 +199,7 @@ export class Trie {
       await this._createInitialNode(appliedKey, value)
     } else {
       // First try to find the given key or its nearest node
-      const { remaining, stack } = await this.findPath(appliedKey)
+      const { remaining, stack } = await this.findPath2(appliedKey)
       let ops: BatchDBOp[] = []
       if (this._opts.useNodePruning) {
         const val = await this.get(key)
@@ -242,7 +242,7 @@ export class Trie {
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    const { node, stack } = await this.findPath(appliedKey)
+    const { node, stack } = await this.findPath2(appliedKey)
 
     let ops: BatchDBOp[] = []
     // Only delete if the `key` currently has any value
@@ -860,7 +860,7 @@ export class Trie {
    * @param key
    */
   async createProof(key: Uint8Array): Promise<Proof> {
-    const { stack } = await this.findPath(this.appliedKey(key))
+    const { stack } = await this.findPath2(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
