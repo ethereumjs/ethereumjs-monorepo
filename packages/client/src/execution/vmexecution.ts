@@ -253,7 +253,7 @@ export class VMExecution extends Execution {
       for (const block of blocks) {
         const receipts = this.pendingReceipts?.get(bytesToHex(block.hash()))
         if (receipts) {
-          void this.receiptsManager?.saveReceipts(block, receipts)
+          await this.receiptsManager?.saveReceipts(block, receipts)
           this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
       }
@@ -419,7 +419,7 @@ export class VMExecution extends Execution {
                     this.config.logger.warn(msg)
                   }
 
-                  void this.receiptsManager?.saveReceipts(block, result.receipts)
+                  await this.receiptsManager?.saveReceipts(block, result.receipts)
 
                   txCounter += block.transactions.length
                   // set as new head block
