@@ -400,13 +400,21 @@ export class Trie {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findPath2(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    const stack: TrieNode[] = []
-    const nodeKey = this.root()
-    const progress: Nibbles = []
-    const remaining = bytesToNibbles(key)
+  async findPath2(key: Uint8Array, throwIfMissing: boolean = false): Promise<Path> {
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+      if (throwIfMissing) {
+        throw new Error('Missing node in DB')
+      }
+      return { node: null, stack: [], remaining: [] }
+    }
+
+    let path: Path = {
+      node: null,
+      remaining: bytesToNibbles(key),
+      stack: [],
+    }
     try {
-      await this.processPathNode(nodeKey, stack, progress, remaining)
+      path = await this.processPathNode(this.root(), path.stack, [], path.remaining)
     } catch (error: any) {
       if (error.message === 'Missing node in DB' && !throwIfMissing) {
         // pass
@@ -414,7 +422,7 @@ export class Trie {
         throw error
       }
     }
-    return { node: null, stack, remaining }
+    return path
   }
 
   /**
