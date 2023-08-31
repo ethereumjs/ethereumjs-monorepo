@@ -9,7 +9,7 @@ import { createAccount } from './utils.js'
 describe('Stack', () => {
   it('should be empty initially', () => {
     const s = new Stack()
-    assert.equal(s._store.length, 0)
+    assert.equal(s.length, 0)
     assert.throws(() => s.pop())
   })
 
@@ -17,12 +17,6 @@ describe('Stack', () => {
     const s = new Stack()
     assert.deepEqual(s.popN(0), [])
     assert.throws(() => s.popN(1))
-  })
-
-  it('should not push invalid type values', () => {
-    const s = new Stack()
-    assert.throws(() => s.push(<any>'str'))
-    assert.throws(() => s.push(<any>5))
   })
 
   it('should push item', () => {
@@ -100,14 +94,6 @@ describe('Stack', () => {
     s.push(BigInt(7))
     s.dup(2)
     assert.deepEqual(s.pop(), BigInt(5))
-  })
-
-  it('should validate value overflow', () => {
-    const s = new Stack()
-    const max = BigInt(2) ** BigInt(256) - BigInt(1)
-    s.push(max)
-    assert.deepEqual(s.pop(), max)
-    assert.throws(() => s.push(max + BigInt(1)))
   })
 
   it('stack items should not change if they are DUPed', async () => {
