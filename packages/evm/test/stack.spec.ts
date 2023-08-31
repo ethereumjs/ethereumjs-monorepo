@@ -138,4 +138,14 @@ describe('Stack', () => {
       assert.fail(e.message)
     }
   })
+
+  it('stack should report actual stack correctly', () => {
+    const s = new Stack()
+    s.push(BigInt(4))
+    s.push(BigInt(6))
+    s.push(BigInt(8))
+    s.pop()
+    const reportedStack = s.getStack()
+    assert.deepEqual(reportedStack, [BigInt(4), BigInt(6)])
+  })
 })
