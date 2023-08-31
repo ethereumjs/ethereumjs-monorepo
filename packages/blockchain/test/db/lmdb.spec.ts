@@ -1,17 +1,8 @@
-import { Block } from '@ethereumjs/block'
-import { Chain, Chain, Common, Common, Hardfork, Hardfork } from '@ethereumjs/common'
-import {
-  Address,
-  KeyEncoding,
-  ValueEncoding,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import * as lmdb from 'lmdb'
-import { assert, assert, describe, describe, it, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
-import { Blockchain, Blockchain } from '../../src/index.js'
+import { Blockchain } from '../../src/index.js'
 import { createBlock } from '../util.js'
 
 import type { BatchDBOp, DB, DBObject, EncodingOpts } from '@ethereumjs/util'
