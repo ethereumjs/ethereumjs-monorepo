@@ -343,54 +343,58 @@ export class Trie {
   }
 
   async processPathNode(
-    nodeKey: Uint8Array,
+    nodeKey: Uint8Array | Uint8Array[],
     stack: TrieNode[],
     progress: Nibbles,
     remaining: Nibbles
-  ) {
-    const node = await this.lookupNode(nodeKey)
-
-    if (node === null) {
-      throw new Error('Path not found')
+  ): Promise<Path> {
+    let node: TrieNode | null
+    try {
+      node = await this.lookupNode(nodeKey)
+    } catch {
+      throw new Error('Missing node in DB')
     }
     stack.push(node)
-    const current = remaining[0]!
-    progress.push(current)
-    remaining = remaining.slice(1)
-
+    if (node instanceof LeafNode) {
+      const matching = doKeysMatch(remaining, node.key())
+      if (matching) {
+        return { node, remaining: [], stack }
+      }
+      return { node: null, remaining, stack }
+    }
+    const nibbleLen = 'key' in node ? node.key().length : 1
+    const current = remaining.slice(0, nibbleLen)
+    progress.push(...current)
     if (node instanceof BranchNode) {
       if (remaining.length === 0) {
-        // we exhausted the key without finding a node
-        return
+        return { node, remaining, stack }
       } else {
-        const branchNode = node.getBranch(current)
-        if (!branchNode) {
-          // there are no more nodes to find and we didn't find the key
-          return
-        } else {
-          // node found, continuing search
-          // this can be optimized as this calls getBranch again.
-          //walkController.onlyBranchIndex(node, progress, branchIndex)
-          await this.processPathNode(branchNode as Uint8Array, stack, progress, remaining)
+        const encodedBranch = node.getBranch(current[0])
+        if (encodedBranch === null) {
+          return { node: null, remaining, stack }
         }
-      }
-    } else if (node instanceof LeafNode) {
-      if (doKeysMatch(remaining, node.key())) {
-        return
+        try {
+          await this.lookupNode(encodedBranch)
+        } catch {
+          throw new Error('Missing node in DB')
+        }
+        remaining = remaining.slice(1)
+        return this.processPathNode(encodedBranch!, stack, progress, remaining)
       }
     } else if (node instanceof ExtensionNode) {
-      const matchingLen = matchingNibbleLength(remaining, node.key())
-      if (matchingLen !== node.key().length) {
-        return
-      } else {
-        // keys match, continue search
-        const children = [[node.key(), node.value()]]
-        for (const child of children) {
-          const childRef = child[1] as Uint8Array
-          //this.pushNodeToQueue(childRef, childKey, priority)
-          await this.processPathNode(childRef, stack, progress, remaining)
-        }
+      if (!doKeysMatch(current, node.key())) {
+        return { node: null, remaining, stack }
       }
+      const childRef = node.value()
+      try {
+        await this.lookupNode(childRef)
+      } catch {
+        return { node: null, remaining, stack }
+      }
+      remaining = remaining.slice(nibbleLen)
+      return this.processPathNode(childRef, stack, progress, remaining)
+    } else {
+      throw new Error('Unknown node type')
     }
   }
 
