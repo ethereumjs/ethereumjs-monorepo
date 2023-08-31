@@ -30,7 +30,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVM, EVMInterface } from '@ethereumjs/evm'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -222,6 +222,14 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
         block.header.number
       } hardfork=${this.common.hardfork()}`
     )
+  }
+
+  if (this._opts.profilerOpts?.reportAfterBlock === true) {
+    const logs = (<EVM>this.evm).getPerformanceLogs()
+    const tag = ' - Block ' + Number(block.header.number) + ' (' + bytesToHex(block.hash()) + ')'
+    this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
+    this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
+    ;(<EVM>this.evm).clearPerformanceLogs()
   }
 
   return results

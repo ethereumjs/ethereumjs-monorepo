@@ -157,5 +157,7 @@ export interface ClientOpts {
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
+  vmProfileBlocks?: boolean
+  vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
 }
