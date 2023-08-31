@@ -105,11 +105,15 @@ export class Stack {
   // Nevertheless not sure if we "loose" something here?
   // Will keep commented out for now
   dup(position: number) {
-    if (this._len < position) {
+    const len = this._len
+    if (len < position) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
     }
+    if (len >= this._maxHeight) {
+      throw new EvmError(ERROR.STACK_OVERFLOW)
+    }
 
-    const i = this._len - position
+    const i = len - position
     this._store[this._len++] = this._store[i]
   }
 }
