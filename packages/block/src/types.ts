@@ -192,6 +192,7 @@ export interface JsonHeader {
   blobGasUsed?: string
   excessBlobGas?: string
   parentBeaconBlockRoot?: string
+  executionWitness?: VerkleExecutionWitness
 }
 
 /*
@@ -224,6 +225,7 @@ export interface JsonRpcBlock {
   blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
+  executionWitness?: VerkleExecutionWitness // If Verkle is enabled for this block
 }
 
 // Note: all these strings are 0x-prefixed
@@ -254,4 +256,6 @@ export type ExecutionPayload = {
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
+  // VerkleExecutionWitness is already a hex serialized object
+  executionWitness?: VerkleExecutionWitness // QUANTITY, 64 Bits
 }

@@ -1,7 +1,7 @@
 import { Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { Block } from '../src'
+import { Block } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinenBlock1.json'
