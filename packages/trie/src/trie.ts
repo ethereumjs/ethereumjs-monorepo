@@ -167,11 +167,10 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    const { remaining, stack } = await this.findPath2(this.appliedKey(key), throwIfMissing)
+    const { node, remaining } = await this.findPath2(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
-    if (remaining.length === 0) {
-      const last = stack.pop()!
-      value = last.value()
+    if (node && remaining.length === 0) {
+      value = node.value()
     }
     return value
   }
