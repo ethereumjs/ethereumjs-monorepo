@@ -8,16 +8,14 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { type DB, Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
-import { LMDB } from '../blockchain'
 import { Event } from '../types'
 import { short } from '../util'
 import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
-import { LevelDB } from './level'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -51,7 +49,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: this.stateDB,
+        db: this.stateDB as DB<string, string>,
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
       })
