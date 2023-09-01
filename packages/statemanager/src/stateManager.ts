@@ -176,7 +176,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   constructor(opts: DefaultStateManagerOpts = {}) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
+    /* c8 ignore next */ this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
     this._debug = createDebugLogger('statemanager:statemanager')
@@ -237,7 +237,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const rlp = await this._trie.get(address.bytes)
     const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
-    if (this.DEBUG) {
+    /* c8 ignore next 2 */ if (this.DEBUG) {
       this._debug(`Get account ${address} from DB (${account ? 'exists' : 'non-existent'})`)
     }
     this._accountCache?.put(address, account)
@@ -250,7 +250,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param account - The account to store or undefined if to be deleted
    */
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
-    if (this.DEBUG) {
+    /* c8 ignore next 8 */ if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
           account?.balance
@@ -299,7 +299,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    if (this.DEBUG) {
+    /* c8 ignore next 2 */ if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
     if (this._accountCacheSettings.deactivate) {
@@ -331,7 +331,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const keyHex = bytesToUnprefixedHex(key)
     this._codeCache[keyHex] = value
 
-    if (this.DEBUG) {
+    /* c8 ignore next 2 */ if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
     if ((await this.getAccount(address)) === undefined) {
@@ -459,13 +459,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       if (value instanceof Uint8Array && value.length) {
         // format input
         const encodedValue = RLP.encode(value)
-        if (this.DEBUG) {
+        /* c8 ignore next 2 */ if (this.DEBUG) {
           this._debug(`Update contract storage for account ${address} to ${short(value)}`)
         }
         await storageTrie.put(key, encodedValue)
       } else {
         // deleting a value
-        if (this.DEBUG) {
+        /* c8 ignore next 2 */ if (this.DEBUG) {
           this._debug(`Delete contract storage for account`)
         }
         await storageTrie.del(key)
@@ -550,7 +550,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       this.originalStorageCache.clear()
     }
 
-    if (this.DEBUG) {
+    /* c8 ignore next 2 */ if (this.DEBUG) {
       this._debug(`state checkpoint committed`)
     }
   }
@@ -876,7 +876,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (this._checkpointCount !== 0) {
       throw new Error('Cannot create genesis state with uncommitted checkpoints')
     }
-    if (this.DEBUG) {
+    /* c8 ignore next 2 */ if (this.DEBUG) {
       this._debug(`Save genesis state into the state trie`)
     }
     const addresses = Object.keys(initState)
