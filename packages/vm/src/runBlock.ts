@@ -37,7 +37,7 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0x000000000000000000000000000000000000000b'
+  '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
 )
 
 /**
