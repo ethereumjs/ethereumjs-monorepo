@@ -31,7 +31,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
   constructor(opts: EthersStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
+    /* c8 ignore next  */ this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
     this._debug = createDebugLogger('statemanager:ethersStateManager')
@@ -82,6 +82,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
   setBlockTag(blockTag: bigint | 'earliest'): void {
     this._blockTag = blockTag === 'earliest' ? blockTag : bigIntToHex(blockTag)
     this.clearCaches()
+    /* c8 ignore next  */
     if (this.DEBUG) this._debug(`setting block tag to ${this._blockTag}`)
   }
 
@@ -202,6 +203,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to check
    */
   async accountExists(address: Address): Promise<boolean> {
+    /* c8 ignore next  */
     if (this.DEBUG) this._debug?.(`verify if ${address.toString()} exists`)
 
     const localAccount = this._accountCache.get(address)
@@ -247,6 +249,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @private
    */
   async getAccountFromProvider(address: Address): Promise<Account> {
+    /* c8 ignore next  */
     if (this.DEBUG) this._debug(`retrieving account data from ${address.toString()} from provider`)
     const accountData = await this._provider.send('eth_getProof', [
       address.toString(),
@@ -268,7 +271,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
-    if (this.DEBUG) {
+    /* c8 ignore next 8 */ if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
           account?.balance
@@ -292,7 +295,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    if (this.DEBUG) {
+    /* c8 ignore next 12 */ if (this.DEBUG) {
       this._debug(`modifying account fields for ${address.toString()}`)
       this._debug(
         JSON.stringify(
@@ -321,7 +324,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    if (this.DEBUG) {
+    /* c8 ignore next 2 */ if (this.DEBUG) {
       this._debug(`deleting account corresponding to ${address.toString()}`)
     }
     this._accountCache.del(address)
@@ -334,7 +337,9 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @returns an EIP-1186 formatted proof
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
+    /* c8 ignore next 2 */ if (this.DEBUG) {
+      this._debug(`retrieving proof from provider for ${address.toString()}`)
+    }
     const proof = await this._provider.send('eth_getProof', [
       address.toString(),
       [storageSlots.map((slot) => bytesToHex(slot))],
