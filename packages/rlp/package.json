@@ -34,7 +34,7 @@
     }
   },
   "bin": {
-    "rlp": "bin/rlp"
+    "rlp": "bin/rlp.cjs"
   },
   "files": [
     "dist",
