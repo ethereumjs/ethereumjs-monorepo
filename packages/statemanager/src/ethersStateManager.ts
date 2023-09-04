@@ -31,7 +31,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
   constructor(opts: EthersStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    /* c8 ignore next  */ this.DEBUG =
+    /* c8 ignore next 2 */
+    this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
     this._debug = createDebugLogger('statemanager:ethersStateManager')
@@ -271,7 +272,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param account - The account to store
    */
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
-    /* c8 ignore next 8 */ if (this.DEBUG) {
+    /* c8 ignore next 9 */
+    if (this.DEBUG) {
       this._debug(
         `Save account address=${address} nonce=${account?.nonce} balance=${
           account?.balance
@@ -295,7 +297,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    /* c8 ignore next 12 */ if (this.DEBUG) {
+    /* c8 ignore next 13 */
+    if (this.DEBUG) {
       this._debug(`modifying account fields for ${address.toString()}`)
       this._debug(
         JSON.stringify(
@@ -324,7 +327,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    /* c8 ignore next 2 */ if (this.DEBUG) {
+    /* c8 ignore next 3 */
+    if (this.DEBUG) {
       this._debug(`deleting account corresponding to ${address.toString()}`)
     }
     this._accountCache.del(address)
@@ -337,7 +341,8 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * @returns an EIP-1186 formatted proof
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    /* c8 ignore next 2 */ if (this.DEBUG) {
+    /* c8 ignore next 3 */
+    if (this.DEBUG) {
       this._debug(`retrieving proof from provider for ${address.toString()}`)
     }
     const proof = await this._provider.send('eth_getProof', [
