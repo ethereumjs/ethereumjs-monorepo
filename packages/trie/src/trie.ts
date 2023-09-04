@@ -771,7 +771,11 @@ export class Trie {
       } as PutBatch
     })
 
-    if (this.root() === this.EMPTY_TRIE_ROOT && opStack[0] !== undefined && opStack[0] !== null) {
+    if (
+      equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) &&
+      opStack[0] !== undefined &&
+      opStack[0] !== null
+    ) {
       this.root(opStack[0].key)
     }
 
