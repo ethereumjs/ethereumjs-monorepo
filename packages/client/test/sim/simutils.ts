@@ -17,6 +17,7 @@ import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
 
+import { LMDB } from '../../src/blockchain'
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
 import { LevelDB } from '../../src/execution/level'
@@ -413,7 +414,7 @@ export async function createInlineClient(config: any, common: any, customGenesis
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`
   )
-  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
+  const stateDB = new LMDB<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/stateDB`
   )
   const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
