@@ -11,7 +11,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
-import * as Generic from './capabilities/generic.js'
+import * as Legacy from './capabilities/legacy.js'
 import { Capability, TransactionType } from './types.js'
 
 import type {
@@ -257,7 +257,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Uint8Array {
-    return Generic.hash(this)
+    return Legacy.hash(this)
   }
 
   /**
@@ -275,7 +275,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Returns the public key of the sender
    */
   getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this)
   }
 
   /**
@@ -377,6 +377,6 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg)
   }
 }

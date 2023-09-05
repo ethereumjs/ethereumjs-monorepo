@@ -1,10 +1,6 @@
-import type { Transaction, TransactionType } from '../types.js'
+import type { EIP1559CompatibleTxInterface } from '../types.js'
 
-type TypedTransactionEIP1559 =
-  | Transaction[TransactionType.BlobEIP4844]
-  | Transaction[TransactionType.FeeMarketEIP1559]
-
-export function getUpfrontCost(tx: TypedTransactionEIP1559, baseFee: bigint): bigint {
+export function getUpfrontCost(tx: EIP1559CompatibleTxInterface, baseFee: bigint): bigint {
   const prio = tx.maxPriorityFeePerGas
   const maxBase = tx.maxFeePerGas - baseFee
   const inclusionFeePerGas = prio < maxBase ? prio : maxBase

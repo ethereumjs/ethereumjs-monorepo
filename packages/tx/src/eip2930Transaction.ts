@@ -13,8 +13,9 @@ import {
 } from '@ethereumjs/util'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as EIP2718 from './capabilities/eip2718.js'
 import * as EIP2930 from './capabilities/eip2930.js'
-import * as Generic from './capabilities/generic.js'
+import * as Legacy from './capabilities/legacy.js'
 import { TransactionType } from './types.js'
 import { AccessLists } from './util.js'
 
@@ -23,6 +24,7 @@ import type {
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
+  EIP2930CompatibleTxInterface,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -41,7 +43,10 @@ const TRANSACTION_TYPE_BYTES = hexToBytes(
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export class AccessListEIP2930Transaction extends BaseTransaction<TransactionType.AccessListEIP2930> {
+export class AccessListEIP2930Transaction
+  extends BaseTransaction<TransactionType.AccessListEIP2930>
+  implements EIP2930CompatibleTxInterface<TransactionType.AccessListEIP2930>
+{
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -165,8 +170,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
       throw new Error(msg)
     }
 
-    Generic.validateYParity(this)
-    Generic.validateHighS(this)
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -228,7 +233,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2930.serialize(this)
+    return EIP2718.serialize(this)
   }
 
   /**
@@ -256,7 +261,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2930.getHashedMessageToSign(this)
+    return EIP2718.getHashedMessageToSign(this)
   }
 
   /**
@@ -266,7 +271,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Generic.hash(this)
+    return Legacy.hash(this)
   }
 
   /**
@@ -280,7 +285,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this)
   }
 
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
@@ -336,6 +341,6 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg)
   }
 }

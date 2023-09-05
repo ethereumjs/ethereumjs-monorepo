@@ -4,7 +4,7 @@ import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
 import type { LegacyTransaction } from './legacyTransaction.js'
-import type { AccessList, AccessListBytes, Common } from '@ethereumjs/common'
+import type { AccessList, AccessListBytes, Common, Hardfork } from '@ethereumjs/common'
 import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 export type {
   AccessList,
@@ -14,7 +14,7 @@ export type {
 } from '@ethereumjs/common'
 
 /**
- * Can be used in conjunction with {@link Transaction.supports}
+ * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
  */
 export enum Capability {
@@ -93,6 +93,15 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
+export interface TransactionCache {
+  hash?: Uint8Array
+  dataFee?: {
+    value: bigint
+    hardfork: string | Hardfork
+  }
+  senderPubKey?: Uint8Array
+}
+
 /**
  * Encompassing type for all transaction types.
  */
@@ -128,9 +137,19 @@ export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transact
   return tx.type === TransactionType.BlobEIP4844
 }
 
-export interface TransactionInterface<T extends TransactionType> {
+export interface TransactionInterface<T extends TransactionType = TransactionType> {
+  readonly common: Common
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+  readonly cache: TransactionCache
   supports(capability: Capability): boolean
-  type: number
+  type: TransactionType
   getBaseFee(): bigint
   getDataFee(): bigint
   getUpfrontCost(): bigint
@@ -150,6 +169,32 @@ export interface TransactionInterface<T extends TransactionType> {
   sign(privateKey: Uint8Array): Transaction[T]
   toJSON(): JsonTx
   errorStr(): string
+}
+
+export interface EIP2718CompatibleTxInterface<T extends TransactionType = TransactionType>
+  extends TransactionInterface<T> {
+  getMessageToSign(): Uint8Array
+}
+
+export interface EIP2930CompatibleTxInterface<T extends TransactionType = TransactionType>
+  extends EIP2718CompatibleTxInterface<T> {
+  accessList: AccessListBytes
+}
+
+export interface EIP1559CompatibleTxInterface<T extends TransactionType = TransactionType>
+  extends EIP2930CompatibleTxInterface<T> {
+  readonly maxPriorityFeePerGas: bigint
+  readonly maxFeePerGas: bigint
+}
+
+export interface EIP4844CompatibleTxInterface<T extends TransactionType = TransactionType>
+  extends EIP1559CompatibleTxInterface<T> {
+  readonly maxFeePerBlobGas: bigint
+  readonly common: Common
+  versionedHashes: Uint8Array[]
+  blobs?: Uint8Array[]
+  kzgCommitments?: Uint8Array[]
+  kzgProofs?: Uint8Array[]
 }
 
 export interface TxData {

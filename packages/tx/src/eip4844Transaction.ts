@@ -20,8 +20,9 @@ import {
 
 import { BaseTransaction } from './baseTransaction.js'
 import * as EIP1559 from './capabilities/eip1559.js'
+import * as EIP2718 from './capabilities/eip2718.js'
 import * as EIP2930 from './capabilities/eip2930.js'
-import * as Generic from './capabilities/generic.js'
+import * as Legacy from './capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from './constants.js'
 import { TransactionType } from './types.js'
 import { AccessLists } from './util.js'
@@ -32,6 +33,7 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   BlobEIP4844NetworkValuesArray,
+  EIP4844CompatibleTxInterface,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -82,7 +84,10 @@ const validateBlobTransactionNetworkWrapper = (
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.BlobEIP4844> {
+export class BlobEIP4844Transaction
+  extends BaseTransaction<TransactionType.BlobEIP4844>
+  implements EIP4844CompatibleTxInterface<TransactionType.BlobEIP4844>
+{
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -155,8 +160,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     )
 
     this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBytes(vh))
-    Generic.validateYParity(this)
-    Generic.validateHighS(this)
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
 
     for (const hash of this.versionedHashes) {
       if (hash.length !== 32) {
@@ -432,7 +437,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2930.serialize(this)
+    return EIP2718.serialize(this)
   }
 
   /**
@@ -481,7 +486,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2930.getHashedMessageToSign(this)
+    return EIP2718.getHashedMessageToSign(this)
   }
 
   /**
@@ -491,7 +496,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Use {@link BlobEIP4844Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Generic.hash(this)
+    return Legacy.hash(this)
   }
 
   getMessageToVerifySignature(): Uint8Array {
@@ -502,7 +507,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this)
   }
 
   toJSON(): JsonTx {
@@ -562,7 +567,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg)
   }
 
   /**
