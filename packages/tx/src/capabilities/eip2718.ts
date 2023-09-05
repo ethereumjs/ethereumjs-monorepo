@@ -1,19 +1,20 @@
 import { RLP } from '@ethereumjs/rlp'
-import { concatBytes, hexToBytes } from '@ethereumjs/util'
+import { concatBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
+import { txTypeBytes } from '../util.js'
 
 import { errorMsg } from './legacy.js'
 
 import type { EIP2718CompatibleTxInterface, TypedTransaction } from '../types'
+import type { Input } from '@ethereumjs/rlp'
 
 export function getHashedMessageToSign(tx: EIP2718CompatibleTxInterface): Uint8Array {
   return keccak256(tx.getMessageToSign())
 }
 
-export function serialize(tx: EIP2718CompatibleTxInterface): Uint8Array {
-  const base = tx.raw()
-  const txTypeBytes = hexToBytes('0x' + tx.type.toString(16).padStart(2, '0'))
-  return concatBytes(txTypeBytes, RLP.encode(base))
+export function serialize(tx: EIP2718CompatibleTxInterface, base?: Input): Uint8Array {
+  return concatBytes(txTypeBytes(tx.type), RLP.encode(base ?? tx.raw()))
 }
 
 export function validateYParity(tx: TypedTransaction) {
