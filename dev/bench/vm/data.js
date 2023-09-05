@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1693817327534,
+  "lastUpdate": 1693906729804,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "simon@klein-homepage.de",
-            "name": "box25",
-            "username": "simone1999"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b54a05cba582f0c1530f52f6c95b3535db571470",
-          "message": "fixed kademlia kbucket add (#2957)\n\nin the kbucket implementation the dontSplit attribute of KBucketNode is typed as bool, but was checked wit \"!== undefined\" which always was true. This caused KBucket.add to never split the leaf node and therefore kept the kbucket as a single level tree with a maximum of _numberOfNodesPerKBucket entrys in total.",
-          "timestamp": "2023-08-14T15:08:58+02:00",
-          "tree_id": "0ee53854d75d78c246798369682c552dc62f02e7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b54a05cba582f0c1530f52f6c95b3535db571470"
-        },
-        "date": 1692018913076,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32790,
-            "range": "±3.81%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31848,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 32222,
-            "range": "±2.43%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27696,
-            "range": "±9.45%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30296,
-            "range": "±2.72%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.63%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5df04ff1948327a3ac2924eef811d21e85a54bad",
+          "message": "VM: Small Profiler UX improvements / Fix client reportAfterTx option propagation to EVM (#3011)\n\n* VM: add general profiler title for block profiling independently from the txs in the block, add informative msg if no txs applicable for profiling\r\n\r\n* VM: add permanent tx profiler run title, message for txs without precompile or opcode execution\r\n\r\n* Client: fix --vmProfileTxs option not being propagated correctly",
+          "timestamp": "2023-09-05T11:35:24+02:00",
+          "tree_id": "2872f54e1db66a02b70ea03d520014affa863569",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5df04ff1948327a3ac2924eef811d21e85a54bad"
+        },
+        "date": 1693906728267,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32029,
+            "range": "±5.11%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31067,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31036,
+            "range": "±2.47%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27132,
+            "range": "±8.33%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29643,
+            "range": "±2.63%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
