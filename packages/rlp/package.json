@@ -34,7 +34,7 @@
     }
   },
   "bin": {
-    "rlp": "bin/rlp"
+    "rlp": "bin/rlp.cjs"
   },
   "files": [
     "dist",
@@ -51,7 +51,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --browser.name=chrome --browser.headless -c=vitest.config.browser.ts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },

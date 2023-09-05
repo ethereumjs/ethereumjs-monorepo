@@ -351,7 +351,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: false,
   })
   .option('vmProfileTxs', {
-    describe: 'Report the VM profile after running each block',
+    describe: 'Report the VM profile after running each tx',
     boolean: true,
     default: false,
   })
