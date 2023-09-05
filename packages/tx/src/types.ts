@@ -173,6 +173,9 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
 
 export interface EIP2718CompatibleTxInterface<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {
+  readonly chainId: bigint
+  readonly accessList: AccessListBytes
+  readonly AccessListJSON: AccessList
   getMessageToSign(): Uint8Array
 }
 
@@ -195,6 +198,8 @@ export interface EIP4844CompatibleTxInterface<T extends TransactionType = Transa
   blobs?: Uint8Array[]
   kzgCommitments?: Uint8Array[]
   kzgProofs?: Uint8Array[]
+  serializeNetworkWrapper(): Uint8Array
+  numBlobs(): number
 }
 
 export interface TxData {
