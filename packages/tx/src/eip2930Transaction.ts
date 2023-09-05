@@ -5,9 +5,7 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  concatBytes,
   equalsBytes,
-  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -17,7 +15,7 @@ import * as EIP2718 from './capabilities/eip2718.js'
 import * as EIP2930 from './capabilities/eip2930.js'
 import * as Legacy from './capabilities/legacy.js'
 import { TransactionType } from './types.js'
-import { AccessLists } from './util.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -32,10 +30,6 @@ import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
-
-const TRANSACTION_TYPE_BYTES = hexToBytes(
-  '0x' + TransactionType.AccessListEIP2930.toString(16).padStart(2, '0')
-)
 
 /**
  * Typed transaction with optional access lists
@@ -75,7 +69,10 @@ export class AccessListEIP2930Transaction
    * signatureYParity (v), signatureR (r), signatureS (s)])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.AccessListEIP2930)) ===
+      false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${
           TransactionType.AccessListEIP2930
@@ -248,9 +245,7 @@ export class AccessListEIP2930Transaction
    * ```
    */
   getMessageToSign(): Uint8Array {
-    const base = this.raw().slice(0, 8)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return message
+    return EIP2718.serialize(this, this.raw().slice(0, 8))
   }
 
   /**

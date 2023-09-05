@@ -5,9 +5,7 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  concatBytes,
   equalsBytes,
-  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -18,7 +16,7 @@ import * as EIP2718 from './capabilities/eip2718.js'
 import * as EIP2930 from './capabilities/eip2930.js'
 import * as Legacy from './capabilities/legacy.js'
 import { TransactionType } from './types.js'
-import { AccessLists } from './util.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -33,10 +31,6 @@ import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
-
-const TRANSACTION_TYPE_BYTES = hexToBytes(
-  '0x' + TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
-)
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -77,7 +71,10 @@ export class FeeMarketEIP1559Transaction
    * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.FeeMarketEIP1559)) ===
+      false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
           TransactionType.FeeMarketEIP1559
@@ -274,9 +271,7 @@ export class FeeMarketEIP1559Transaction
    * ```
    */
   getMessageToSign(): Uint8Array {
-    const base = this.raw().slice(0, 9)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return message
+    return EIP2718.serialize(this, this.raw().slice(0, 9))
   }
 
   /**

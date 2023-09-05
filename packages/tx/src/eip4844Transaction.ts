@@ -9,10 +9,8 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   computeVersionedHash,
-  concatBytes,
   equalsBytes,
   getBlobs,
-  hexToBytes,
   kzg,
   toBytes,
   validateNoLeadingZeroes,
@@ -25,7 +23,7 @@ import * as EIP2930 from './capabilities/eip2930.js'
 import * as Legacy from './capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from './constants.js'
 import { TransactionType } from './types.js'
-import { AccessLists } from './util.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -41,10 +39,6 @@ import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
-
-const TRANSACTION_TYPE_BYTES = hexToBytes(
-  '0x' + TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
-)
 
 const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
@@ -220,7 +214,10 @@ export class BlobEIP4844Transaction
    * @param opts - dictionary of {@link TxOptions}
    * @returns the "minimal" representation of a BlobEIP4844Transaction (i.e. transaction object minus blobs and kzg commitments)
    */
-  public static minimalFromNetworkWrapper(txData: BlobEIP4844Transaction, opts?: TxOptions) {
+  public static minimalFromNetworkWrapper(
+    txData: BlobEIP4844Transaction,
+    opts?: TxOptions
+  ): BlobEIP4844Transaction {
     const tx = BlobEIP4844Transaction.fromTxData(
       {
         ...txData,
@@ -238,7 +235,9 @@ export class BlobEIP4844Transaction
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
           TransactionType.BlobEIP4844
@@ -334,7 +333,9 @@ export class BlobEIP4844Transaction
       throw new Error('common instance required to validate versioned hashes')
     }
 
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
           TransactionType.BlobEIP4844
@@ -454,11 +455,7 @@ export class BlobEIP4844Transaction
       )
     }
 
-    const tx_payload = this.raw()
-    return concatBytes(
-      TRANSACTION_TYPE_BYTES,
-      RLP.encode([tx_payload, this.blobs, this.kzgCommitments, this.kzgProofs])
-    )
+    return EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
   }
 
   /**
@@ -473,9 +470,7 @@ export class BlobEIP4844Transaction
    * ```
    */
   getMessageToSign(): Uint8Array {
-    const base = this.raw().slice(0, 11)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return message
+    return EIP2718.serialize(this, this.raw().slice(0, 11))
   }
 
   /**
@@ -573,7 +568,7 @@ export class BlobEIP4844Transaction
   /**
    * @returns the number of blobs included with this transaction
    */
-  public numBlobs() {
+  public numBlobs(): number {
     return this.versionedHashes.length
   }
 }
