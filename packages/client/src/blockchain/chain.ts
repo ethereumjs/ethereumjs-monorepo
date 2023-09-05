@@ -93,10 +93,10 @@ export class LMDB<
     await this.database.batch(levelOps as any)
   }
 
-  // not implemented
+  // returns a reference to itself
   shallowCopy(): DB<TKey, TValue> {
     // @ts-ignore
-    return
+    return this
   }
 
   async open() {}
