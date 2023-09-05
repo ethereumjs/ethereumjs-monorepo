@@ -237,7 +237,7 @@ export class Skeleton extends MetaDBManager {
       const mayBeDupBlock = await this.getBlock(number)
       if (mayBeDupBlock !== undefined && equalsBytes(mayBeDupBlock.header.hash(), head.hash())) {
         this.config.logger.debug(
-          `Skeleton duplicate announcement tail=${lastchain.tail} head=${
+          `Skeleton duplicate ${force ? 'setHead' : 'announcement'} tail=${lastchain.tail} head=${
             lastchain.head
           } number=${number} hash=${short(head.hash())}`
         )
@@ -363,7 +363,12 @@ export class Skeleton extends MetaDBManager {
       if (force || init) {
         await this.writeSyncStatus()
       }
-      if (force && this.status.linked) {
+      if (
+        (force &&
+          this.status.linked &&
+          head.header.number > this.status.progress.subchains[0]?.head) ??
+        BigInt(0)
+      ) {
         void this.fillCanonicalChain()
       }
       // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
