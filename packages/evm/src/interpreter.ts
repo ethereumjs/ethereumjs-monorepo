@@ -313,7 +313,13 @@ export class Interpreter {
       }
     } finally {
       if (this.profilerOpts?.enabled === true) {
-        this.performanceLogger.stopTimer(timer!, Number(gas), 'opcodes')
+        this.performanceLogger.stopTimer(
+          timer!,
+          Number(gas),
+          'opcodes',
+          opInfo.fee,
+          Number(gas) - opInfo.fee
+        )
       }
     }
   }
