@@ -2,6 +2,8 @@ type EVMPerformanceLogEntry = {
   calls: number
   time: number
   gasUsed: number
+  staticGas?: number
+  dynamicGasUsed?: number
 }
 
 export type EVMPerformanceLogOutput = {
@@ -11,6 +13,9 @@ export type EVMPerformanceLogOutput = {
   gasUsed: number // Total amount of gas used by this opcode/precompile
   millionGasPerSecond: number // How much million gas is executed per second (rounded to 3 digits)
   tag: string // opcode/precompile tag
+  staticGasUsed?: number // total static gas units spent
+  dynamicGasUsed?: number // total dynamic gas units spent
+  staticGas?: number // static gas of the opcode
 }
 
 type EVMPerformanceLogs = {
@@ -61,13 +66,19 @@ export class EVMPerformanceLogger {
       const output: EVMPerformanceLogOutput[] = []
       for (const key in obj) {
         const field = obj[key]
-        const entry = {
+        const entry: EVMPerformanceLogOutput = {
           calls: field.calls,
           totalTime: Math.round(field.time * 1e6) / 1e3,
           avgTimePerCall: Math.round((field.time / field.calls) * 1e6) / 1e3,
           gasUsed: field.gasUsed,
           millionGasPerSecond: Math.round(field.gasUsed / field.time / 1e3) / 1e3,
           tag: key,
+        }
+        if (field.dynamicGasUsed !== undefined) {
+          // This is an opcode entry
+          entry.staticGas = field.staticGas
+          entry.staticGasUsed = field.staticGas! * field.calls
+          entry.dynamicGasUsed = field.dynamicGasUsed
         }
         output.push(entry)
       }
@@ -117,7 +128,13 @@ export class EVMPerformanceLogger {
   }
 
   // Stops a timer from running
-  stopTimer(timer: Timer, gasUsed: number, targetTimer: 'precompiles' | 'opcodes' = 'opcodes') {
+  stopTimer(
+    timer: Timer,
+    gasUsed: number,
+    targetTimer: 'precompiles' | 'opcodes' = 'opcodes',
+    staticGas?: number,
+    dynamicGas?: number
+  ) {
     if (this.currentTimer !== undefined && this.currentTimer !== timer) {
       throw new Error('Cannot unpause timer: another timer is already running')
     }
@@ -139,5 +156,10 @@ export class EVMPerformanceLogger {
     obj.calls++
     obj.time += time
     obj.gasUsed += gasUsed
+
+    if (targetTimer === 'opcodes') {
+      obj.staticGas = staticGas
+      obj.dynamicGasUsed = (obj.dynamicGasUsed ?? 0) + dynamicGas!
+    }
   }
 }
