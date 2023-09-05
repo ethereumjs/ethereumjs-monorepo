@@ -6,7 +6,11 @@ import { DefaultStateManager } from '../src/index.js'
 import { createAccount } from './util.js'
 
 describe('StateManager -> Code', () => {
-  for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
+  for (const accountCacheOpts of [
+    { deactivate: false },
+    { deactivate: true },
+    { deactivate: false, size: 0 },
+  ]) {
     it(`should store codehashes using a prefix`, async () => {
       /*
         This test is mostly an example of why a code prefix is necessary

@@ -164,10 +164,16 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     this.evm.stateManager.originalStorageCache.clear()
     if (this._opts.profilerOpts?.reportAfterTx === true) {
+      const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
+      // eslint-disable-next-line
+      console.log(title)
       const logs = (<EVM>this.evm).getPerformanceLogs()
-      const tag = ' - Tx ' + bytesToHex(opts.tx.hash())
-      this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
-      this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
+      if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+        // eslint-disable-next-line
+        console.log('No precompile or opcode execution.')
+      }
+      this.emitEVMProfile(logs.precompiles, 'Precompile performance')
+      this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
       ;(<EVM>this.evm).clearPerformanceLogs()
     }
   }

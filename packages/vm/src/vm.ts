@@ -127,8 +127,13 @@ export class VM {
     if (opts.evm) {
       this.evm = opts.evm
     } else {
-      const enableProfiler =
-        this._opts.profilerOpts?.reportAfterBlock ?? this._opts.profilerOpts?.reportAfterTx ?? false
+      let enableProfiler = false
+      if (
+        this._opts.profilerOpts?.reportAfterBlock === true ||
+        this._opts.profilerOpts?.reportAfterTx === true
+      ) {
+        enableProfiler = true
+      }
       this.evm = new EVM({
         common: this.common,
         stateManager: this.stateManager,
