@@ -37,7 +37,7 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0x000000000000000000000000000000000000000b'
+  '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
 )
 
 /**
@@ -225,10 +225,19 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   if (this._opts.profilerOpts?.reportAfterBlock === true) {
+    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
+      block.transactions.length
+    } txs`
+    // eslint-disable-next-line
+    console.log(title)
     const logs = (<EVM>this.evm).getPerformanceLogs()
-    const tag = ' - Block ' + Number(block.header.number) + ' (' + bytesToHex(block.hash()) + ')'
-    this.emitEVMProfile(logs.precompiles, 'Precompile performance ' + tag)
-    this.emitEVMProfile(logs.opcodes, 'Opcodes performance' + tag)
+    if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+      // eslint-disable-next-line
+      console.log('No block txs with precompile or opcode execution.')
+    }
+
+    this.emitEVMProfile(logs.precompiles, 'Precompile performance')
+    this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
     ;(<EVM>this.evm).clearPerformanceLogs()
   }
 
