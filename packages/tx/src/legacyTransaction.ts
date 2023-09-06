@@ -229,18 +229,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: super.getDataFee(),
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return super.getDataFee()
+    return Legacy.getDataFee(this)
   }
 
   /**

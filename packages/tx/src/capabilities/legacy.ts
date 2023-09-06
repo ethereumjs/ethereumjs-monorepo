@@ -1,9 +1,14 @@
 import { SECP256K1_ORDER_DIV_2, bigIntToUnpaddedBytes, ecrecover } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
+import { BaseTransaction } from '../baseTransaction.js'
 import { Capability } from '../types.js'
 
 import type { TransactionInterface } from '../types.js'
+
+export function errorMsg(tx: TransactionInterface, msg: string) {
+  return `${msg} (${tx.errorStr()})`
+}
 
 export function isSigned(tx: TransactionInterface): boolean {
   const { v, r, s } = tx
@@ -14,8 +19,24 @@ export function isSigned(tx: TransactionInterface): boolean {
   }
 }
 
-export function errorMsg(tx: TransactionInterface, msg: string) {
-  return `${msg} (${tx.errorStr()})`
+/**
+ * The amount of gas paid for the data in this tx
+ */
+export function getDataFee(tx: TransactionInterface, extraCost?: bigint): bigint {
+  if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
+    return tx.cache.dataFee.value
+  }
+
+  const cost = BaseTransaction.prototype.getDataFee.bind(tx)() + (extraCost ?? 0n)
+
+  if (Object.isFrozen(tx)) {
+    tx.cache.dataFee = {
+      value: cost,
+      hardfork: tx.common.hardfork(),
+    }
+  }
+
+  return cost
 }
 
 export function hash(tx: TransactionInterface): Uint8Array {
