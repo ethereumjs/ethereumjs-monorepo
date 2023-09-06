@@ -196,7 +196,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._accountCacheSettings = {
-      deactivate: opts.accountCacheOpts?.deactivate ?? false,
+      deactivate:
+        (opts.accountCacheOpts?.deactivate === true || opts.accountCacheOpts?.size === 0) ?? false,
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.accountCacheOpts?.size ?? 100000,
     }
@@ -209,7 +210,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     this._storageCacheSettings = {
-      deactivate: opts.storageCacheOpts?.deactivate ?? false,
+      deactivate:
+        (opts.storageCacheOpts?.deactivate === true || opts.storageCacheOpts?.size === 0) ?? false,
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.storageCacheOpts?.size ?? 20000,
     }
