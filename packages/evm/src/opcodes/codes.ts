@@ -404,7 +404,8 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
           name: code.opcodeName,
           isAsync: true,
           dynamicGas: code.gasFunction !== undefined,
-          fee: BigInt(code.baseFee),
+          fee: code.baseFee,
+          feeBigInt: BigInt(code.baseFee),
         },
       }
       opcodeBuilder = { ...opcodeBuilder, ...entry }
