@@ -193,7 +193,6 @@ export interface EIP1559CompatibleTxInterface<T extends TransactionType = Transa
 export interface EIP4844CompatibleTxInterface<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTxInterface<T> {
   readonly maxFeePerBlobGas: bigint
-  readonly common: Common
   versionedHashes: Uint8Array[]
   blobs?: Uint8Array[]
   kzgCommitments?: Uint8Array[]
