@@ -395,12 +395,11 @@ export class Trie {
             `,
             ['FIND_PATH', 'ExtensionNode']
           )
-        const matchingLen = matchingNibbleLength(keyRemainder, node.key())
-        if (matchingLen !== node.key().length) {
-          result = { node: null, remaining: keyRemainder, stack }
-        } else {
+        if (doKeysMatch(keyRemainder.slice(0, node.key().length), node.key())) {
           this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
           walkController.allChildren(node, keyProgress)
+        } else {
+          result = { node: null, remaining: keyRemainder, stack }
         }
       }
     }
