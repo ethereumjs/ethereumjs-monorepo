@@ -321,7 +321,13 @@ export class Interpreter {
       }
     } finally {
       if (this.profilerOpts?.enabled === true) {
-        this.performanceLogger.stopTimer(timer!, Number(gas), 'opcodes')
+        this.performanceLogger.stopTimer(
+          timer!,
+          Number(gas),
+          'opcodes',
+          opInfo.fee,
+          Number(gas) - opInfo.fee
+        )
       }
     }
   }
@@ -346,8 +352,8 @@ export class Interpreter {
         dynamicFee,
         isAsync: opcode.isAsync,
       },
-      stack: this._runState.stack._store,
-      returnStack: this._runState.returnStack._store,
+      stack: this._runState.stack.getStack(),
+      returnStack: this._runState.returnStack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,

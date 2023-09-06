@@ -127,8 +127,13 @@ export class VM {
     if (opts.evm) {
       this.evm = opts.evm
     } else {
-      const enableProfiler =
-        this._opts.profilerOpts?.reportAfterBlock ?? this._opts.profilerOpts?.reportAfterTx ?? false
+      let enableProfiler = false
+      if (
+        this._opts.profilerOpts?.reportAfterBlock === true ||
+        this._opts.profilerOpts?.reportAfterTx === true
+      ) {
+        enableProfiler = true
+      }
       this.evm = new EVM({
         common: this.common,
         stateManager: this.stateManager,
@@ -287,10 +292,23 @@ export class VM {
       'calls',
       'avgTimePerCall',
       'totalTime',
+      'staticGasUsed',
+      'dynamicGasUsed',
       'gasUsed',
+      'staticGas',
       'millionGasPerSecond',
     ]
-    const colNames = ['tag', 'calls', 'ms/call', 'total (ms)', 'gas used', 'Mgas/s']
+    const colNames = [
+      'tag',
+      'calls',
+      'ms/call',
+      'total (ms)',
+      'sgas',
+      'dgas',
+      'total (s+d)',
+      'static fee',
+      'Mgas/s',
+    ]
     function padStr(str: string | number, leftpad: number) {
       return ' ' + str.toString().padStart(leftpad, ' ') + ' '
     }
@@ -304,9 +322,12 @@ export class VM {
       let ins = 0
       colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(colNames[ins]))
       for (const key of colOrder) {
-        //@ts-ignore
-        colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(entry[key]))
-        ins++
+        // @ts-ignore
+        if (entry[key] !== undefined) {
+          //@ts-ignore
+          colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(entry[key]))
+          ins++
+        }
       }
     }
 
@@ -336,8 +357,11 @@ export class VM {
       let i = 0
       for (const key of colOrder) {
         //@ts-ignore
-        str += '|' + padStr(entry[key], colLength[i])
-        i++
+        if (entry[key] !== undefined) {
+          //@ts-ignore
+          str += '|' + padStr(entry[key], colLength[i])
+          i++
+        }
       }
       str += '|'
       // eslint-disable-next-line
