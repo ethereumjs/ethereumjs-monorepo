@@ -105,6 +105,7 @@ export class Trie {
     if (opts?.root) {
       this.root(opts.root)
     }
+    this.DEBUG && this.debug(`Trie created with root ${bytesToHex(this.root())}`)
   }
 
   static async create(opts?: TrieOpts) {
