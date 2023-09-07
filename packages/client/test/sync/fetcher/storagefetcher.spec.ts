@@ -295,6 +295,39 @@ describe('[StorageFetcher]', async () => {
         bytes: BigInt(50000),
       })
     )
+
+    peer.snap.getStorageRanges = td
+      .when(mockedGetStorageRanges(td.matchers.anything()))
+      .thenReturn({
+        reqId,
+        slots: [],
+        proof: [new Uint8Array()],
+      })
+    let ret = await fetcher.request(job as any)
+    assert.ok(
+      ret?.completed === true,
+      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
+    )
+
+    peer.snap.getStorageRanges = td
+      .when(mockedGetStorageRanges(td.matchers.anything()))
+      .thenReturn({
+        reqId,
+        slots: slots + [new Uint8Array()],
+        proof,
+      })
+    ret = await fetcher.request(job as any)
+    assert.notOk(ret, "Reject the response if the hash sets and slot sets don't match")
+
+    peer.snap.getStorageRanges = td
+      .when(mockedGetStorageRanges(td.matchers.anything()))
+      .thenReturn({
+        reqId,
+        slots: [],
+        proof: [],
+      })
+    ret = await fetcher.request(job as any)
+    assert.notOk(ret, 'Should stop requesting from peer that rejected storage request')
   })
 
   it('should verify proof correctly', async () => {
