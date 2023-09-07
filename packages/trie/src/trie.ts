@@ -340,7 +340,6 @@ export class Trie {
           ['FIND_PATH', keyProgress.toString()]
         )
 
-      const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
       this.DEBUG && this.debug(`[${keyRemainder}] Remaining`, ['FIND_PATH', keyProgress.toString()])
       stack.push(node)
       this.DEBUG &&
