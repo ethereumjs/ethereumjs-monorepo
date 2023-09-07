@@ -160,14 +160,13 @@ export class Trie {
       if (value === null) {
         value = this.EMPTY_TRIE_ROOT
       }
-
+      this.DEBUG && this.debug(`Setting root to ${bytesToHex(value)}`)
       if (value.length !== this._hashLen) {
         throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
       }
 
       this._root = value
     }
-
     return this._root
   }
 
