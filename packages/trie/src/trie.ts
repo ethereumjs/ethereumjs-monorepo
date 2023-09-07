@@ -193,11 +193,13 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['GET'])
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(value)}`, ['GET'])
     return value
   }
 
