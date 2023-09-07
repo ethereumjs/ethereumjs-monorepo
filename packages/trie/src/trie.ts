@@ -352,10 +352,10 @@ export class Trie {
         )
 
       if (node instanceof BranchNode) {
-        if (keyRemainder.length === 0) {
+        if (targetKey.length === 0) {
           result = { node, remaining: [], stack }
         } else {
-          const branchIndex = keyRemainder[0]
+          const branchIndex = targetKey.shift()!
           this.DEBUG &&
             this.debug(`Looking for node on branch index: [${branchIndex}]`, [
               'FIND_PATH',
@@ -372,16 +372,16 @@ export class Trie {
               ['FIND_PATH', 'BranchNode', branchIndex.toString()]
             )
           if (!branchNode) {
-            result = { node: null, remaining: keyRemainder, stack }
+            result = { node: null, remaining: [branchIndex, ...targetKey], stack }
           } else {
             walkController.onlyBranchIndex(node, keyProgress, branchIndex)
           }
         }
       } else if (node instanceof LeafNode) {
-        if (doKeysMatch(keyRemainder, node.key())) {
+        if (doKeysMatch(targetKey, node.key())) {
           result = { node, remaining: [], stack }
         } else {
-          result = { node: null, remaining: keyRemainder, stack }
+          result = { node: null, remaining: targetKey, stack }
         }
       } else if (node instanceof ExtensionNode) {
         this.DEBUG &&
@@ -395,11 +395,12 @@ export class Trie {
             `,
             ['FIND_PATH', 'ExtensionNode']
           )
-        if (doKeysMatch(keyRemainder.slice(0, node.key().length), node.key())) {
+        const consumed = targetKey.splice(0, node.key().length)
+        if (doKeysMatch(consumed, node.key())) {
           this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
           walkController.allChildren(node, keyProgress)
         } else {
-          result = { node: null, remaining: keyRemainder, stack }
+          result = { node: null, remaining: [...consumed, ...targetKey], stack }
         }
       }
     }
