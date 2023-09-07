@@ -87,7 +87,7 @@ export class Trie {
 
     this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
     this.debug = this.DEBUG
-      ? (namespaces: string[] = [], message: string) => {
+      ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
           for (const name of namespaces) {
             log = log.extend(name)
