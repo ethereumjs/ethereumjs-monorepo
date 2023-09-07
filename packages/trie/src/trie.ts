@@ -329,26 +329,7 @@ export class Trie {
       // If we already have a result, exit early
       if (result) return
 
-      if (node === null) {
-        result = { node: null, remaining: [], stack }
-        return
-      }
-
-      this.DEBUG &&
-        this.debug(
-          `${node.constructor.name} FOUND${'_nibbles' in node ? `: [${node._nibbles}]` : ''}`,
-          ['FIND_PATH', keyProgress.toString()]
-        )
-
-      this.DEBUG && this.debug(`[${keyRemainder}] Remaining`, ['FIND_PATH', keyProgress.toString()])
-      stack.push(node)
-      this.DEBUG &&
-        this.debug(
-          `Adding ${node.constructor.name} to STACK (size: ${stack.length}) ${stack.map(
-            (e, i) => `${i === stack.length - 1 ? '\n|| +' : '\n|| '}` + e.constructor.name
-          )}`,
-          ['FIND_PATH']
-        )
+      stack.push(node!)
 
       if (node instanceof BranchNode) {
         if (targetKey.length === 0) {
