@@ -326,9 +326,6 @@ export class Trie {
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      // If we already have a result, exit early
-      if (result) return
-
       stack.push(node!)
 
       if (node instanceof BranchNode) {
