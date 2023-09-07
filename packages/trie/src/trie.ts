@@ -105,7 +105,14 @@ export class Trie {
     if (opts?.root) {
       this.root(opts.root)
     }
-    this.DEBUG && this.debug(`Trie created with root ${bytesToHex(this.root())}`)
+    this.DEBUG &&
+      this.debug(`Trie created:
+    \n Root: ${bytesToHex(this.root())}
+    \n Secure: ${this._opts.useKeyHashing}
+    \n Persistent: ${this._opts.useRootPersistence}
+    \n Pruning: ${this._opts.useNodePruning}
+    \n CacheSize: ${this._opts.cacheSize}
+    \n ----------------`)
   }
 
   static async create(opts?: TrieOpts) {
