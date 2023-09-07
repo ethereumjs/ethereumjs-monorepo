@@ -8,6 +8,7 @@ import {
   equalsBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
@@ -38,6 +39,7 @@ import type {
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 interface Path {
   node: TrieNode | null
@@ -66,6 +68,8 @@ export class Trie {
   protected _lock = new Lock()
   protected _root: Uint8Array
 
+  protected _debug: Debugger
+
   /**
    * Creates a new trie.
    * @param opts Options for instantiating the trie
@@ -76,6 +80,8 @@ export class Trie {
     if (opts !== undefined) {
       this._opts = { ...this._opts, ...opts }
     }
+
+    this._debug = debug('ethjs').extend('trie')
 
     this.database(opts?.db ?? new MapDB<string, string>())
 
