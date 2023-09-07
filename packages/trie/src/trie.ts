@@ -3,6 +3,7 @@ import {
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
+  bytesToHex,
   bytesToUnprefixedHex,
   bytesToUtf8,
   equalsBytes,
@@ -68,7 +69,10 @@ export class Trie {
   protected _lock = new Lock()
   protected _root: Uint8Array
 
-  protected _debug: Debugger
+  /** Debug logging */
+  protected DEBUG: boolean
+  protected _debug: Debugger = debug('ethjs').extend('trie')
+  protected debug: (...args: any) => void
 
   /**
    * Creates a new trie.
@@ -81,7 +85,16 @@ export class Trie {
       this._opts = { ...this._opts, ...opts }
     }
 
-    this._debug = debug('ethjs').extend('trie')
+    this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
+    this.debug = this.DEBUG
+      ? (namespaces: string[] = [], message: string) => {
+          let log = this._debug
+          for (const name of namespaces) {
+            log = log.extend(name)
+          }
+          log(message)
+        }
+      : (..._: any) => {}
 
     this.database(opts?.db ?? new MapDB<string, string>())
 
