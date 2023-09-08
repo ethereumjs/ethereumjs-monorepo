@@ -857,6 +857,7 @@ export class Trie {
    * @param proof
    */
   async fromProof(proof: Proof): Promise<void> {
+    this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
@@ -870,6 +871,7 @@ export class Trie {
       opStack[0] !== undefined &&
       opStack[0] !== null
     ) {
+      this.DEBUG && this.debug(`Setting Trie root from Proof Node 0`, ['FROM_PROOF'])
       this.root(opStack[0].key)
     }
 
@@ -883,10 +885,12 @@ export class Trie {
    * @param key
    */
   async createProof(key: Uint8Array): Promise<Proof> {
+    this.DEBUG && this.debug(`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
     const { stack } = await this.findPath(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
+    this.DEBUG && this.debug(`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
     return p
   }
 
@@ -903,6 +907,15 @@ export class Trie {
     key: Uint8Array,
     proof: Proof
   ): Promise<Uint8Array | null> {
+    this.DEBUG &&
+      this.debug(
+        `Verifying Proof:
+      \n || Key: ${bytesToHex(key)}
+      \n || Root: ${bytesToHex(rootHash)}
+      \n || Proof: (${proof.length}) nodes
+    `,
+        ['VERIFY_PROOF']
+      )
     const proofTrie = new Trie({
       root: rootHash,
       useKeyHashingFunction: this._opts.useKeyHashingFunction,
@@ -913,7 +926,12 @@ export class Trie {
       throw new Error('Invalid proof nodes given')
     }
     try {
+      this.DEBUG &&
+        this.debug(`Verifying proof by retrieving key: ${bytesToHex(key)} from proof trie`, [
+          'VERIFY_PROOF',
+        ])
       const value = await proofTrie.get(this.appliedKey(key), true)
+      this.DEBUG && this.debug(`PROOF VERIFIED`, ['VERIFY_PROOF'])
       return value
     } catch (err: any) {
       if (err.message === 'Missing node in DB') {
@@ -1038,6 +1056,13 @@ export class Trie {
    */
   async persistRoot() {
     if (this._opts.useRootPersistence) {
+      this.DEBUG &&
+        this.debug(
+          `Persisting root: 
+          \n || RootHash: ${bytesToHex(this.root())}
+          \n || RootKey: ${bytesToHex(this.appliedKey(ROOT_DB_KEY))}`,
+          ['PERSIST_ROOT']
+        )
       await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
     }
   }
