@@ -1114,6 +1114,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['CHECKPOINT'])
     this._db.checkpoint(this.root())
   }
 
@@ -1126,7 +1127,7 @@ export class Trie {
     if (!this.hasCheckpoints()) {
       throw new Error('trying to commit when not checkpointed')
     }
-
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['COMMIT'])
     await this._lock.acquire()
     await this._db.commit()
     await this.persistRoot()
@@ -1143,16 +1144,20 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'BEFORE'])
     await this._lock.acquire()
     this.root(await this._db.revert())
     await this.persistRoot()
     this._lock.release()
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'AFTER'])
   }
 
   /**
    * Flushes all checkpoints, restoring the initial checkpoint state.
    */
   flushCheckpoints() {
+    this.DEBUG &&
+      this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['FLUSH_CHECKPOINTS'])
     this._db.checkpoints = []
   }
 }
