@@ -490,8 +490,11 @@ export class Trie {
    */
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
     if (isRawNode(node)) {
-      return decodeRawNode(node)
+      const decoded = decodeRawNode(node)
+      this.DEBUG && this.debug(`${decoded.constructor.name}`, ['LOOKUP_NODE', 'RAW_NODE'])
+      return decoded
     }
+    this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['LOOKUP_NODE', 'BY_HASH'])
     const value = (await this._db.get(node)) ?? null
 
     if (value === null) {
@@ -499,7 +502,9 @@ export class Trie {
       throw new Error('Missing node in DB')
     }
 
-    return decodeNode(value)
+    const decoded = decodeNode(value)
+    this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['LOOKUP_NODE', 'BY_HASH'])
+    return decoded
   }
 
   /**
