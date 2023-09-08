@@ -107,12 +107,12 @@ export class Trie {
     }
     this.DEBUG &&
       this.debug(`Trie created:
-    \n Root: ${bytesToHex(this.root())}
-    \n Secure: ${this._opts.useKeyHashing}
-    \n Persistent: ${this._opts.useRootPersistence}
-    \n Pruning: ${this._opts.useNodePruning}
-    \n CacheSize: ${this._opts.cacheSize}
-    \n ----------------`)
+    || Root: ${bytesToHex(this.root())}
+    || Secure: ${this._opts.useKeyHashing}
+    || Persistent: ${this._opts.useRootPersistence}
+    || Pruning: ${this._opts.useNodePruning}
+    || CacheSize: ${this._opts.cacheSize}
+    || ----------------`)
   }
 
   static async create(opts?: TrieOpts) {
@@ -338,11 +338,9 @@ export class Trie {
       stack.push(node)
       this.DEBUG &&
         this.debug(
-          `Adding ${node.constructor.name} to STACK (size: ${stack.length})
-        \n ${stack
-          .map((e, i) => `${i === stack.length - 1 ? '+' : ''}` + e.constructor.name)
-          .join(`, \n`)}
-        `,
+          `Adding ${node.constructor.name} to STACK (size: ${stack.length}) ${stack.map(
+            (e, i) => `${i === stack.length - 1 ? '\n|| +' : '\n|| '}` + e.constructor.name
+          )}`,
           ['FIND_PATH']
         )
 
@@ -381,12 +379,12 @@ export class Trie {
       } else if (node instanceof ExtensionNode) {
         this.DEBUG &&
           this.debug(
-            `Comparing node key to expected
-          \n || Node_Key: [${node.key()}]
-          \n || Expected: [${keyRemainder.slice(0, node.key().length)}]
-          \n || Matching: [${
-            keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
-          }]
+            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${keyRemainder.slice(
+              0,
+              node.key().length
+            )}]\n|| Matching: [${
+              keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
+            }]
             `,
             ['FIND_PATH', 'ExtensionNode']
           )
@@ -422,10 +420,11 @@ export class Trie {
 
     this.DEBUG &&
       this.debug(
-        `Result: 
-      \n || Node: ${result.node === null ? 'null' : result.node.constructor.name}
-      \n || Remaining: [${result.remaining}]
-      \n || Stack: ${result.stack.map((e) => e.constructor.name).join(', ')}`,
+        `Result: \n|| Node: ${
+          result.node === null ? 'null' : result.node.constructor.name
+        }\n|| Remaining: [${result.remaining}]\n|| Stack: ${result.stack
+          .map((e) => e.constructor.name)
+          .join(', ')}`,
         ['FIND_PATH']
       )
     return result
@@ -909,10 +908,9 @@ export class Trie {
   ): Promise<Uint8Array | null> {
     this.DEBUG &&
       this.debug(
-        `Verifying Proof:
-      \n || Key: ${bytesToHex(key)}
-      \n || Root: ${bytesToHex(rootHash)}
-      \n || Proof: (${proof.length}) nodes
+        `Verifying Proof:\n|| Key: ${bytesToHex(key)}\n|| Root: ${bytesToHex(
+          rootHash
+        )}\n|| Proof: (${proof.length}) nodes
     `,
         ['VERIFY_PROOF']
       )
@@ -1058,9 +1056,9 @@ export class Trie {
     if (this._opts.useRootPersistence) {
       this.DEBUG &&
         this.debug(
-          `Persisting root: 
-          \n || RootHash: ${bytesToHex(this.root())}
-          \n || RootKey: ${bytesToHex(this.appliedKey(ROOT_DB_KEY))}`,
+          `Persisting root: \n|| RootHash: ${bytesToHex(this.root())}\n|| RootKey: ${bytesToHex(
+            this.appliedKey(ROOT_DB_KEY)
+          )}`,
           ['PERSIST_ROOT']
         )
       await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
