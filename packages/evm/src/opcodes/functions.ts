@@ -868,17 +868,22 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
       if (
-        common.isActivatedEIP(3540) &&
-        runState.programCounter + numToPush > runState.code.length
+        runState.programCounter + numToPush > runState.code.length &&
+        common.isActivatedEIP(3540)
       ) {
         trap(ERROR.OUT_OF_RANGE)
       }
 
-      const loaded = bytesToBigInt(
-        runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
-      )
-      runState.programCounter += numToPush
-      runState.stack.push(loaded)
+      if (!runState.shouldDoJumpAnalysis) {
+        runState.stack.push(runState.cachedPushes[runState.programCounter])
+        runState.programCounter += numToPush
+      } else {
+        const loaded = bytesToBigInt(
+          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
+        )
+        runState.programCounter += numToPush
+        runState.stack.push(loaded)
+      }
     },
   ],
   // 0x80: DUP
