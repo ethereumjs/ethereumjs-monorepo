@@ -215,6 +215,8 @@ export class Trie {
     value: Uint8Array | null,
     skipKeyTransform: boolean = false
   ): Promise<void> {
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
@@ -272,6 +274,7 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['DEL'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
@@ -312,6 +315,7 @@ export class Trie {
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
     const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
+    this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
@@ -323,15 +327,45 @@ export class Trie {
         return
       }
 
+      this.DEBUG &&
+        this.debug(
+          `${node.constructor.name} FOUND${'_nibbles' in node ? `: [${node._nibbles}]` : ''}`,
+          ['FIND_PATH', keyProgress.toString()]
+        )
+
       const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
+      this.DEBUG && this.debug(`[${keyRemainder}] Remaining`, ['FIND_PATH', keyProgress.toString()])
       stack.push(node)
+      this.DEBUG &&
+        this.debug(
+          `Adding ${node.constructor.name} to STACK (size: ${stack.length})
+        \n ${stack
+          .map((e, i) => `${i === stack.length - 1 ? '+' : ''}` + e.constructor.name)
+          .join(`, \n`)}
+        `,
+          ['FIND_PATH']
+        )
 
       if (node instanceof BranchNode) {
         if (keyRemainder.length === 0) {
           result = { node, remaining: [], stack }
         } else {
           const branchIndex = keyRemainder[0]
+          this.DEBUG &&
+            this.debug(`Looking for node on branch index: [${branchIndex}]`, [
+              'FIND_PATH',
+              'BranchNode',
+            ])
           const branchNode = node.getBranch(branchIndex)
+          this.DEBUG &&
+            this.debug(
+              branchNode === null
+                ? 'NULL'
+                : branchNode instanceof Uint8Array
+                ? `NodeHash: ${bytesToHex(branchNode)}`
+                : `Raw_Node: ${branchNode.toString()}`,
+              ['FIND_PATH', 'BranchNode', branchIndex.toString()]
+            )
           if (!branchNode) {
             result = { node: null, remaining: keyRemainder, stack }
           } else {
@@ -345,16 +379,29 @@ export class Trie {
           result = { node: null, remaining: keyRemainder, stack }
         }
       } else if (node instanceof ExtensionNode) {
+        this.DEBUG &&
+          this.debug(
+            `Comparing node key to expected
+          \n || Node_Key: [${node.key()}]
+          \n || Expected: [${keyRemainder.slice(0, node.key().length)}]
+          \n || Matching: [${
+            keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
+          }]
+            `,
+            ['FIND_PATH', 'ExtensionNode']
+          )
         const matchingLen = matchingNibbleLength(keyRemainder, node.key())
         if (matchingLen !== node.key().length) {
           result = { node: null, remaining: keyRemainder, stack }
         } else {
+          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
           walkController.allChildren(node, keyProgress)
         }
       }
     }
 
     try {
+      this.DEBUG && this.debug(`Walking trie from root: ${bytesToHex(this.root())}`, ['FIND_PATH'])
       await this.walkTrie(this.root(), onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
@@ -365,7 +412,22 @@ export class Trie {
     if (result === null) {
       result = { node: null, remaining: [], stack }
     }
+    this.DEBUG &&
+      this.debug(
+        result.node !== null
+          ? `Target Node FOUND for ${bytesToNibbles(key)}`
+          : `Target Node NOT FOUND`,
+        ['FIND_PATH']
+      )
 
+    this.DEBUG &&
+      this.debug(
+        `Result: 
+      \n || Node: ${result.node === null ? 'null' : result.node.constructor.name}
+      \n || Remaining: [${result.remaining}]
+      \n || Stack: ${result.stack.map((e) => e.constructor.name).join(', ')}`,
+        ['FIND_PATH']
+      )
     return result
   }
 
