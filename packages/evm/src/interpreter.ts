@@ -78,7 +78,7 @@ export interface RunState {
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  cachedPushs: { [pc: number]: bigint }
+  cachedPushes: { [pc: number]: bigint }
   stateManager: EVMStateManagerInterface
   blockchain: Blockchain
   env: Env
@@ -162,7 +162,7 @@ export class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
-      cachedPushs: {},
+      cachedPushes: {},
       stateManager: this._stateManager,
       blockchain,
       env,
@@ -238,9 +238,9 @@ export class Interpreter {
         opCode = this._runState.code[this._runState.programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
-          const { jumps, pushs, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
           this._runState.validJumps = jumps
-          this._runState.cachedPushs = pushs
+          this._runState.cachedPushes = pushes
           this._runState.shouldDoJumpAnalysis = false
           cachedOpcodes = opcodesCached
           doJumpAnalysis = false
@@ -416,7 +416,7 @@ export class Interpreter {
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
-    const pushs: { [pc: number]: bigint } = {}
+    const pushes: { [pc: number]: bigint } = {}
 
     const opcodesCached = Array(code.length)
 
@@ -428,7 +428,7 @@ export class Interpreter {
         if (opcode >= 0x60) {
           const extraSteps = opcode - 0x5f
           const push = bytesToBigInt(code.slice(i + 1, i + opcode - 0x5e))
-          pushs[i + 1] = push
+          pushes[i + 1] = push
           i += extraSteps
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
@@ -439,7 +439,7 @@ export class Interpreter {
         }
       }
     }
-    return { jumps, pushs, opcodesCached }
+    return { jumps, pushes, opcodesCached }
   }
 
   /**

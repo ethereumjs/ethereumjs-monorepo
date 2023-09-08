@@ -875,7 +875,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       if (!runState.shouldDoJumpAnalysis) {
-        runState.stack.push(runState.cachedPushs[runState.programCounter])
+        runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
       } else {
         const loaded = bytesToBigInt(
