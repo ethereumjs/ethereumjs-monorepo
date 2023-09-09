@@ -26,7 +26,7 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { Lock } from './util/lock.js'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
@@ -323,16 +323,17 @@ export class Trie {
     const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
+    const keyLen = targetKey.length
     let result: Path | null = null
-
+    let progress = 0
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
       stack.push(node!)
 
       if (node instanceof BranchNode) {
-        if (targetKey.length === 0) {
+        if (progress === keyLen) {
           result = { node, remaining: [], stack }
         } else {
-          const branchIndex = targetKey.shift()!
+          const branchIndex = targetKey[progress]
           this.DEBUG &&
             this.debug(`Looking for node on branch index: [${branchIndex}]`, [
               'FIND_PATH',
@@ -349,17 +350,26 @@ export class Trie {
               ['FIND_PATH', 'BranchNode', branchIndex.toString()]
             )
           if (!branchNode) {
-            result = { node: null, remaining: [branchIndex, ...targetKey], stack }
+            result = { node: null, remaining: targetKey.slice(progress), stack }
           } else {
+            progress++
             walkController.onlyBranchIndex(node, keyProgress, branchIndex)
           }
         }
       } else if (node instanceof LeafNode) {
-        if (doKeysMatch(targetKey, node.key())) {
-          result = { node, remaining: [], stack }
-        } else {
-          result = { node: null, remaining: targetKey, stack }
+        const _progress = progress
+        if (keyLen - progress > node.key().length) {
+          result = { node: null, remaining: targetKey.slice(_progress), stack }
+          return
         }
+        for (const k of node.key()) {
+          if (k !== targetKey[progress]) {
+            result = { node: null, remaining: targetKey.slice(_progress), stack }
+            return
+          }
+          progress++
+        }
+        result = { node, remaining: [], stack }
       } else if (node instanceof ExtensionNode) {
         this.DEBUG &&
           this.debug(
@@ -372,13 +382,16 @@ export class Trie {
             `,
             ['FIND_PATH', 'ExtensionNode']
           )
-        const consumed = targetKey.splice(0, node.key().length)
-        if (doKeysMatch(consumed, node.key())) {
+        const _progress = progress
+        for (const k of node.key()) {
           this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
-          walkController.allChildren(node, keyProgress)
-        } else {
-          result = { node: null, remaining: [...consumed, ...targetKey], stack }
+          if (k !== targetKey[progress]) {
+            result = { node: null, remaining: targetKey.slice(_progress), stack }
+            return
+          }
+          progress++
         }
+        walkController.allChildren(node, keyProgress)
       }
     }
 
