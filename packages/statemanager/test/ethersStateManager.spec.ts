@@ -5,6 +5,8 @@ import {
   Account,
   Address,
   bigIntToBytes,
+  bytesToHex,
+  bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -128,6 +130,14 @@ describe('Ethers State Manager API tests', () => {
       )
       assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
 
+      const dumpedStorage = await state.dumpStorage(UNIerc20ContractAddress)
+      assert.deepEqual(dumpedStorage, {
+        [bytesToUnprefixedHex(setLengthLeft(bigIntToBytes(1n), 32))]: '0xabcd',
+        [bytesToUnprefixedHex(setLengthLeft(bigIntToBytes(2n), 32))]: bytesToHex(
+          utf8ToBytes('abcd')
+        ),
+      })
+
       // Verify that provider is not called for cached data
       ;(provider as any).getStorageAt = function () {
         throw new Error('should not be called!')
@@ -197,6 +207,16 @@ describe('Ethers State Manager API tests', () => {
         4,
         'slot deleted since last checkpoint should exist in storage cache after revert'
       )
+
+      const cacheStorage = await state.dumpStorage(UNIerc20ContractAddress)
+      assert.equal(
+        2,
+        Object.keys(cacheStorage).length,
+        'should have 2 storage slots in cache before clear'
+      )
+      await state.clearContractStorage(UNIerc20ContractAddress)
+      const clearedStorage = await state.dumpStorage(UNIerc20ContractAddress)
+      assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
       try {
         await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)
