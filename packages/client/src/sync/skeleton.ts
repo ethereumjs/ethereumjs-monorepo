@@ -438,7 +438,7 @@ export class Skeleton extends MetaDBManager {
       // If the old subchain is an extension of the new one, merge the two
       // and let the skeleton syncer restart (to clean internal state)
 
-      // subchains are useful is subChain1Head is in skeleton only and its tail correct
+      // subchains are useful if subChain1Head is in skeleton only and its tail correct
       const subChain1Head = await this.getBlock(this.status.progress.subchains[1].head, true)
       // tail lookup can be from skeleton or chain
       const subChain1Tail = await this.getBlock(this.status.progress.subchains[1].tail)
@@ -447,7 +447,7 @@ export class Skeleton extends MetaDBManager {
         subChain1Tail === undefined ||
         !equalsBytes(subChain1Tail.header.parentHash, this.status.progress.subchains[1].next)
       ) {
-        // if subChain1Head is not in the skeleton that all previous subchains are not useful
+        // if subChain1Head is not in the skeleton then all previous subchains are not useful
         // and better to junk
         this.config.logger.debug(
           `Removing all previous subchains as skeleton missing block at previous subchain head=${this.status.progress.subchains[1].head}`
