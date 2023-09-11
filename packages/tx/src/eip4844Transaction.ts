@@ -31,7 +31,6 @@ import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   BlobEIP4844NetworkValuesArray,
-  EIP4844CompatibleTx,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -78,10 +77,7 @@ const validateBlobTransactionNetworkWrapper = (
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  */
-export class BlobEIP4844Transaction
-  extends BaseTransaction<TransactionType.BlobEIP4844>
-  implements EIP4844CompatibleTx<TransactionType.BlobEIP4844>
-{
+export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.BlobEIP4844> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList

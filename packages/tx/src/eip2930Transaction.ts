@@ -22,7 +22,6 @@ import type {
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  EIP2930CompatibleTx,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -37,10 +36,7 @@ type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
  * - TransactionType: 1
  * - EIP: [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930)
  */
-export class AccessListEIP2930Transaction
-  extends BaseTransaction<TransactionType.AccessListEIP2930>
-  implements EIP2930CompatibleTx<TransactionType.AccessListEIP2930>
-{
+export class AccessListEIP2930Transaction extends BaseTransaction<TransactionType.AccessListEIP2930> {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList

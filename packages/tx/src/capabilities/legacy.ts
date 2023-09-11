@@ -4,13 +4,13 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { BaseTransaction } from '../baseTransaction.js'
 import { Capability } from '../types.js'
 
-import type { TransactionInterface } from '../types.js'
+import type { LegacyTxInterface } from '../types.js'
 
-export function errorMsg(tx: TransactionInterface, msg: string) {
+export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`
 }
 
-export function isSigned(tx: TransactionInterface): boolean {
+export function isSigned(tx: LegacyTxInterface): boolean {
   const { v, r, s } = tx
   if (v === undefined || r === undefined || s === undefined) {
     return false
@@ -22,7 +22,7 @@ export function isSigned(tx: TransactionInterface): boolean {
 /**
  * The amount of gas paid for the data in this tx
  */
-export function getDataFee(tx: TransactionInterface, extraCost?: bigint): bigint {
+export function getDataFee(tx: LegacyTxInterface, extraCost?: bigint): bigint {
   if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
     return tx.cache.dataFee.value
   }
@@ -39,7 +39,7 @@ export function getDataFee(tx: TransactionInterface, extraCost?: bigint): bigint
   return cost
 }
 
-export function hash(tx: TransactionInterface): Uint8Array {
+export function hash(tx: LegacyTxInterface): Uint8Array {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
     throw new Error(msg)
@@ -59,7 +59,7 @@ export function hash(tx: TransactionInterface): Uint8Array {
  * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
  * Reasoning: https://ethereum.stackexchange.com/a/55728
  */
-export function validateHighS(tx: TransactionInterface): void {
+export function validateHighS(tx: LegacyTxInterface): void {
   const { s } = tx
   if (tx.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
     const msg = errorMsg(
@@ -70,7 +70,7 @@ export function validateHighS(tx: TransactionInterface): void {
   }
 }
 
-export function getSenderPublicKey(tx: TransactionInterface): Uint8Array {
+export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
   if (tx.cache.senderPubKey !== undefined) {
     return tx.cache.senderPubKey
   }
