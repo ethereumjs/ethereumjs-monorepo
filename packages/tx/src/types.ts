@@ -171,17 +171,19 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   errorStr(): string
 }
 
+export interface LegacyTxInterface<T extends TransactionType = TransactionType>
+  extends TransactionInterface<T> {}
+
 export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {
   readonly chainId: bigint
-  readonly accessList: AccessListBytes
-  readonly AccessListJSON: AccessList
   getMessageToSign(): Uint8Array
 }
 
 export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP2718CompatibleTx<T> {
-  accessList: AccessListBytes
+  readonly accessList: AccessListBytes
+  readonly AccessListJSON: AccessList
 }
 
 export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
