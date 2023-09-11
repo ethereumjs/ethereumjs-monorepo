@@ -171,7 +171,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   errorStr(): string
 }
 
-export interface EIP2718CompatibleTxInterface<T extends TransactionType = TransactionType>
+export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {
   readonly chainId: bigint
   readonly accessList: AccessListBytes
@@ -179,19 +179,19 @@ export interface EIP2718CompatibleTxInterface<T extends TransactionType = Transa
   getMessageToSign(): Uint8Array
 }
 
-export interface EIP2930CompatibleTxInterface<T extends TransactionType = TransactionType>
-  extends EIP2718CompatibleTxInterface<T> {
+export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP2718CompatibleTx<T> {
   accessList: AccessListBytes
 }
 
-export interface EIP1559CompatibleTxInterface<T extends TransactionType = TransactionType>
-  extends EIP2930CompatibleTxInterface<T> {
+export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP2930CompatibleTx<T> {
   readonly maxPriorityFeePerGas: bigint
   readonly maxFeePerGas: bigint
 }
 
-export interface EIP4844CompatibleTxInterface<T extends TransactionType = TransactionType>
-  extends EIP1559CompatibleTxInterface<T> {
+export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP1559CompatibleTx<T> {
   readonly maxFeePerBlobGas: bigint
   versionedHashes: Uint8Array[]
   blobs?: Uint8Array[]

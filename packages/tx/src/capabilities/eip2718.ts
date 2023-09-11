@@ -6,14 +6,14 @@ import { txTypeBytes } from '../util.js'
 
 import { errorMsg } from './legacy.js'
 
-import type { EIP2718CompatibleTxInterface, TypedTransaction } from '../types'
+import type { EIP2718CompatibleTx, TypedTransaction } from '../types'
 import type { Input } from '@ethereumjs/rlp'
 
-export function getHashedMessageToSign(tx: EIP2718CompatibleTxInterface): Uint8Array {
+export function getHashedMessageToSign(tx: EIP2718CompatibleTx): Uint8Array {
   return keccak256(tx.getMessageToSign())
 }
 
-export function serialize(tx: EIP2718CompatibleTxInterface, base?: Input): Uint8Array {
+export function serialize(tx: EIP2718CompatibleTx, base?: Input): Uint8Array {
   return concatBytes(txTypeBytes(tx.type), RLP.encode(base ?? tx.raw()))
 }
 

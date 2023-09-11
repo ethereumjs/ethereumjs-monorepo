@@ -23,7 +23,7 @@ import type {
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
-  EIP1559CompatibleTxInterface,
+  EIP1559CompatibleTx,
   JsonTx,
   TxOptions,
 } from './types.js'
@@ -40,7 +40,7 @@ type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
  */
 export class FeeMarketEIP1559Transaction
   extends BaseTransaction<TransactionType.FeeMarketEIP1559>
-  implements EIP1559CompatibleTxInterface<TransactionType.FeeMarketEIP1559>
+  implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
 {
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
