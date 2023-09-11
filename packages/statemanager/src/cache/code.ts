@@ -1,4 +1,3 @@
-import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
