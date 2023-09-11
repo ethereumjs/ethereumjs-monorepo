@@ -6,7 +6,7 @@ import { txTypeBytes } from '../util.js'
 
 import { errorMsg } from './legacy.js'
 
-import type { EIP2718CompatibleTx, TypedTransaction } from '../types'
+import type { EIP2718CompatibleTx } from '../types'
 import type { Input } from '@ethereumjs/rlp'
 
 export function getHashedMessageToSign(tx: EIP2718CompatibleTx): Uint8Array {
@@ -17,7 +17,7 @@ export function serialize(tx: EIP2718CompatibleTx, base?: Input): Uint8Array {
   return concatBytes(txTypeBytes(tx.type), RLP.encode(base ?? tx.raw()))
 }
 
-export function validateYParity(tx: TypedTransaction) {
+export function validateYParity(tx: EIP2718CompatibleTx) {
   const { v } = tx
   if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
     const msg = errorMsg(tx, 'The y-parity of the transaction should either be 0 or 1')
