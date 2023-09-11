@@ -31,7 +31,7 @@ import type { InterpreterOpts } from './interpreter.js'
 import type { Timer } from './logger.js'
 import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler, OpcodeList } from './opcodes/index.js'
+import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
@@ -105,6 +105,8 @@ export class EVM implements EVMInterface {
   protected _handlers!: Map<number, OpHandler>
 
   protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
+
+  protected _opcodeMap!: OpcodeMap
 
   protected _precompiles!: Map<string, PrecompileFunc>
 
@@ -212,6 +214,7 @@ export class EVM implements EVMInterface {
     this._opcodes = data.opcodes
     this._dynamicGasHandlers = data.dynamicGasHandlers
     this._handlers = data.handlers
+    this._opcodeMap = data.opcodeMap
     return data.opcodes
   }
 
