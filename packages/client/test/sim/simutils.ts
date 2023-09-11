@@ -1,3 +1,4 @@
+import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
@@ -16,10 +17,12 @@ import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
+import qs from 'qs'
 
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
 import { LevelDB } from '../../src/execution/level'
+import { RPCManager } from '../../src/rpc'
 
 import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
@@ -27,6 +30,24 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+// This function switches between the native web implementation and a nodejs implemnetation
+export async function getEventSource(): Promise<typeof EventSource> {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  if (globalThis.EventSource) {
+    return EventSource
+  } else {
+    return (await import('eventsource')).default as unknown as typeof EventSource
+  }
+}
+
+/**
+ * Ethereum Beacon API requires the query with format:
+ * - arrayFormat: repeat `topic=topic1&topic=topic2`
+ */
+export function stringifyQuery(query: unknown): string {
+  return qs.stringify(query, { arrayFormat: 'repeat' })
+}
+
 // Initialize the kzg object with the kzg library
 initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
 
@@ -407,9 +428,13 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
   return txnHashes
 }
 
-export async function createInlineClient(config: any, common: any, customGenesisState: any) {
+export async function createInlineClient(
+  config: any,
+  common: any,
+  customGenesisState: any,
+  datadir: any = Config.DATADIR_DEFAULT
+) {
   config.events.setMaxListeners(50)
-  const datadir = Config.DATADIR_DEFAULT
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`
   )
@@ -440,6 +465,128 @@ export async function createInlineClient(config: any, common: any, customGenesis
   await inlineClient.open()
   await inlineClient.start()
   return inlineClient
+}
+
+export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconUrl: string) {
+  // track head
+  const topics = ['head']
+  const EventSource = await getEventSource()
+  const query = stringifyQuery({ topics })
+  console.log({ query })
+  const eventSource = new EventSource(`${peerBeaconUrl}/eth/v1/events?${query}`)
+  const manager = new RPCManager(client, client.config)
+  const engineMethods = manager.getMethods(true)
+  console.log('engineMethods', Object.keys(engineMethods))
+
+  // possible values: STARTED, PAUSED, ERRORED, SYNCING, VALID
+  let syncState = 'PAUSED'
+  let errorMessage = ''
+  const updateState = (newState) => {
+    if (syncState !== 'PAUSED') {
+      syncState = newState
+    }
+  }
+
+  const playUpdate = async (payload, finalizedBlockHash, version) => {
+    if (version !== 'capella') {
+      throw Error('only capella replay supported yet')
+    }
+    console.log('playUpdate', payload, { finalizedBlockHash })
+
+    try {
+      const newPayloadRes = await engineMethods['engine_newPayloadV2']([payload])
+      if (
+        newPayloadRes.status === undefined ||
+        !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
+      ) {
+        throw Error(
+          `newPayload error: status${newPayloadRes.status} validationError=${newPayloadRes.validationError} error=${newPayloadRes.error}`
+        )
+      }
+
+      const fcUState = {
+        headBlockHash: payload.blockHash,
+        safeBlockHash: finalizedBlockHash,
+        finalizedBlockHash,
+      }
+      console.log({ fcUState })
+      const fcuRes = await engineMethods['engine_forkchoiceUpdatedV2']([fcUState])
+      if (
+        fcuRes.payloadStatus === undefined ||
+        !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
+      ) {
+        throw Error(`fcU error: error:${fcuRes.error} message=${fcuRes.message}`)
+      } else {
+        updateState(fcuRes.payloadStatus.status)
+      }
+    } catch (e) {
+      console.log('playUpdate error', e)
+      updateState('ERRORED')
+    }
+  }
+
+  // ignoring the actual even, just using it as trigger to feed
+  eventSource.addEventListener(topics[0], (async (_event: MessageEvent) => {
+    if (syncState === 'PAUSED') return
+    try {
+      // just fetch finalized updated, it has all relevant hashesh to fcU
+      const beaconFinalized = await (
+        await fetch(`${peerBeaconUrl}/eth/v1/beacon/light_client/finality_update`)
+      ).json()
+      console.log({ beaconFinalized: beaconFinalized.data?.finalized_header })
+      if (beaconFinalized.error !== undefined) {
+        if (beaconFinalized.message?.includes('No finality update available') === true) {
+          // waiting for finality
+          return
+        } else {
+          throw Error(beaconFinalized.message ?? 'finality update fetch error')
+        }
+      }
+
+      const beaconHead = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/head`)).json()
+
+      const payload = executionPayloadFromBeaconPayload(
+        beaconHead.data.message.body.execution_payload
+      )
+      console.log('beaconFinalized', beaconFinalized.data.finalized_header)
+      const finalizedBlockHash = beaconFinalized.data.finalized_header.execution.block_hash
+      console.log('playing update', { payload, finalizedBlockHash })
+
+      await playUpdate(payload, finalizedBlockHash, beaconHead.version)
+    } catch (e) {
+      console.log('errored -----', e)
+      updateState('ERRORED')
+      errorMessage = (e as Error).message
+    }
+  }) as EventListener)
+
+  const start = () => {
+    if (syncState === 'PAUSED') syncState = 'STARTED'
+    return new Promise((resolve, reject) => {
+      const resolveOnSynced = () => {
+        console.log('resolveOnSynced', { syncState })
+        if (syncState === 'VALID') {
+          resolve({ syncState })
+        } else if (syncState === 'INVALID') {
+          reject(Error(errorMessage))
+        }
+
+        client.config.events.removeListener(resolveOnSynced)
+      }
+      client.config.events.on(Event.CHAIN_UPDATED, resolveOnSynced)
+    })
+  }
+  const pause = () => {
+    syncState = 'PAUSED'
+  }
+
+  return {
+    syncState,
+    playUpdate,
+    eventSource,
+    start,
+    pause,
+  }
 }
 
 // To minimise noise on the spec run, selective filteration is applied to let the important events
