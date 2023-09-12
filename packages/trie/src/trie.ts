@@ -1049,11 +1049,12 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true): Trie {
+  shallowCopy(includeCheckpoints = true, keyPrefix?: Uint8Array): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
+      keyPrefix: keyPrefix ?? this._opts.keyPrefix,
       cacheSize: 0,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
