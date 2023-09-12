@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1694185904693,
+  "lastUpdate": 1694563041513,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "04412bcae5bf7380061f2b39838057de6e3a6485",
-          "message": "Replace testdouble with vitest test helpers (#2953)\n\n* Refactor headerfetcher.spec.ts to use vi instead of td\r\n\r\n* Refactor skeleton.spec.ts to use vi instead of td\r\n\r\n* Refactor newPayloadV2.spec.ts to use vi instead of td\r\n\r\n* Refactor newPayloadV1.spec.ts.spec.ts to use vi instead of td\r\n\r\n* Remove unused variable\r\n\r\n* Use longer timeout for locally failing tests\r\n\r\n* Refactor client.spec.ts to use vi instead of td\r\n\r\n* Remove commented out code\r\n\r\n* Refactor pendingBlock.spec.ts to use vi instead of td\r\n\r\n* Refactor beaconsync.spec.ts to use vi instead of td\r\n\r\n* Refactor peerpool.spec.ts to use vi instead of td\r\n\r\n* Refactor snapsync.spec.ts to use vi instead of td\r\n\r\n* Remove unused variable\r\n\r\n* Refactor fullsync.spec.ts to use vi instead of td\r\n\r\n* Remove commented code\r\n\r\n* Refactor rlpxserver.spec.ts to use vi instead of td\r\n\r\n* Refactor miner.spec.ts to use vi instead of td\r\n\r\n* fix rlpxserver test\r\n\r\n* Increate timeout for ethash PoW test\r\n\r\n* Fix linting issues\r\n\r\n* Remove extraneous td reference\r\n\r\n* Add some any to skip typing errors\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-08-16T13:49:03-07:00",
-          "tree_id": "3957afb6f6fbd6464564557a4918ee1560a60afd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/04412bcae5bf7380061f2b39838057de6e3a6485"
-        },
-        "date": 1692219160434,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31938,
-            "range": "±5.07%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31656,
-            "range": "±3.11%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30961,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25877,
-            "range": "±10.89%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 28600,
-            "range": "±3.73%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 28875,
             "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1e2f955ad768784868b9e508e2f3f1182086a1a",
+          "message": "trie: include null as possilbe value type in PUT (#3020)",
+          "timestamp": "2023-09-12T16:53:58-07:00",
+          "tree_id": "7e9966ea75e57def161b54758132723360fcc973",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1e2f955ad768784868b9e508e2f3f1182086a1a"
+        },
+        "date": 1694563039975,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31501,
+            "range": "±4.81%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31288,
+            "range": "±2.51%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31444,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26881,
+            "range": "±9.45%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29526,
+            "range": "±2.71%",
             "unit": "ops/sec",
             "extra": "85 samples"
           }
