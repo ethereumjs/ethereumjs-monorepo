@@ -25,7 +25,7 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
@@ -143,6 +143,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _debug: Debugger
   protected _accountCache?: AccountCache
   protected _storageCache?: StorageCache
+  protected _codeCache2?: CodeCache
 
   originalStorageCache: OriginalStorageCache
 
@@ -221,6 +222,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         type: this._storageCacheSettings.type,
       })
     }
+
+    this._codeCache2 = new CodeCache({
+      size: 100,
+      type: CacheType.ORDERED_MAP,
+    })
   }
 
   /**
@@ -332,6 +338,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const keyHex = bytesToUnprefixedHex(key)
     this._codeCache[keyHex] = value
+    this._codeCache2!.put(keyHex, value)
 
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
@@ -361,11 +368,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       : account.codeHash
 
     const keyHex = bytesToUnprefixedHex(key)
-    if (keyHex in this._codeCache) {
-      return this._codeCache[keyHex]
+    const elem = this._codeCache2!.get(keyHex)
+    if (elem !== undefined) {
+      return elem.code ?? new Uint8Array(0)
     } else {
       const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
-      this._codeCache[keyHex] = code
+      this._codeCache2!.put(keyHex, code)
       return code
     }
   }
@@ -566,6 +574,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this._trie.revert()
     this._storageCache?.revert()
     this._accountCache?.revert()
+    this._codeCache2?.revert()
+
     this._storageTries = {}
     this._codeCache = {}
 
@@ -767,6 +777,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     if (this._storageCache !== undefined && clearCache) {
       this._storageCache.clear()
+    }
+    if (this._storageCache !== undefined && clearCache) {
+      this._codeCache2!.clear()
     }
     this._storageTries = {}
     this._codeCache = {}
