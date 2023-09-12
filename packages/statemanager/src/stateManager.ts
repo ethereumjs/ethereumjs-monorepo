@@ -541,6 +541,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
+    this._codeCache2?.checkpoint()
     this._checkpointCount++
   }
 
@@ -553,6 +554,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this._trie.commit()
     this._storageCache?.commit()
     this._accountCache?.commit()
+    this._codeCache2?.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -778,7 +780,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (this._storageCache !== undefined && clearCache) {
       this._storageCache.clear()
     }
-    if (this._storageCache !== undefined && clearCache) {
+    if (this._codeCache2 !== undefined && clearCache) {
       this._codeCache2!.clear()
     }
     this._storageTries = {}
@@ -970,5 +972,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   clearCaches() {
     this._accountCache?.clear()
     this._storageCache?.clear()
+    this._codeCache2?.clear()
   }
 }
