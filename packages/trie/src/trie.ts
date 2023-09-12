@@ -810,25 +810,25 @@ export class Trie {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
-      let hashRoot = this.hash(encoded)
-      hashRoot = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, hashRoot) : hashRoot
+      const lastRoot = this.hash(encoded)
+      const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, lastRoot) : lastRoot
 
       if (remove) {
         if (this._opts.useNodePruning) {
           opStack.push({
             type: 'del',
-            key: hashRoot,
+            key,
           })
         }
       } else {
         opStack.push({
           type: 'put',
-          key: hashRoot,
+          key,
           value: encoded,
         })
       }
 
-      return hashRoot
+      return lastRoot
     }
 
     return node.raw()
