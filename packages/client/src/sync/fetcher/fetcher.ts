@@ -182,7 +182,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     for (let f = this.out.peek(); f && f.index <= this.processed; ) {
       this.processed++
       const job = this.out.remove()
-      if (!this.push(job)) {
+      // Push the job to the Readable stream
+      const success = this.push(job)
+      if (!success) {
         return
       }
       f = this.out.peek()
@@ -417,6 +419,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       cb: Function
     ) => {
       const jobItems = job instanceof Array ? job : [job]
+      this.debug(`Starting write for ${jobItems.length} jobs...`)
       try {
         for (const jobItem of jobItems) {
           await this.store(jobItem.result as StorageItem[])
