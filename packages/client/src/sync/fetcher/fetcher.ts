@@ -345,8 +345,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       )
       return false
     }
-    if (job.index > this.processed + this.maxQueue) {
-      this.debug(`Job index greater than processed + max queue size, skip job ${jobStr} execution.`)
+    if (job.index > this.finished + this.maxQueue) {
+      this.debug(`Job index greater than finished + max queue size, skip job ${jobStr} execution.`)
       return false
     }
     if (this.processed === this.total) {
