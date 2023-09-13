@@ -231,17 +231,25 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param result job result
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
-    if (job.state !== 'active') return
     let jobStr = this.jobStr(job, true)
+    if (job.state !== 'active') return
+
     let reenqueue = false
     let resultSet = ''
     if (result === undefined) {
       resultSet = 'undefined'
       reenqueue = true
     }
-    if (result !== undefined && (result as any).length === 0) {
-      resultSet = 'empty'
-      reenqueue = true
+    if (result !== undefined) {
+      if ('length' in (result as any)) {
+        if ((result as any).length === 0) {
+          resultSet = 'empty'
+          reenqueue = true
+        }
+      } else {
+        resultSet = 'unknown'
+        reenqueue = true
+      }
     }
     if (reenqueue) {
       this.debug(
@@ -259,6 +267,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       job.result = this.process(job, result)
       jobStr = this.jobStr(job, true)
       if (job.result) {
+        this.debug(`Successful job completion job ${jobStr}, writing to out and dequeue`)
         this.out.insert(job)
         this.dequeue()
       } else {
@@ -364,7 +373,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       }, this.timeout)
       this.debug(`All requirements met for job ${jobStr}, start requesting.`)
       this.request(job, peer)
-        .then((result?: JobResult) => this.success(job, result))
+        .then((result?: JobResult) => {
+          this.success(job, result)
+        })
         .catch((error: Error) => {
           const { banPeer } = this.processStoreError(error, job.task)
           this.failure(job, error, false, false, banPeer)

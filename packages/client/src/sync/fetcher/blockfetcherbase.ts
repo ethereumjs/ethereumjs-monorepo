@@ -243,6 +243,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     if ('reverse' in this) {
       str += ` reverse=${this.reverse}`
     }
+    str += ` state=${job.state}`
     return str
   }
 }
