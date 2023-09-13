@@ -476,10 +476,10 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
   const eventSource = new EventSource(`${peerBeaconUrl}/eth/v1/events?${query}`)
   const manager = new RPCManager(client, client.config)
   const engineMethods = manager.getMethods(true)
-  console.log('engineMethods', Object.keys(engineMethods))
 
   // possible values: STARTED, PAUSED, ERRORED, SYNCING, VALID
   let syncState = 'PAUSED'
+  let pollInterval = null
   let errorMessage = ''
   const updateState = (newState) => {
     if (syncState !== 'PAUSED') {
@@ -491,7 +491,12 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     if (version !== 'capella') {
       throw Error('only capella replay supported yet')
     }
-    console.log('playUpdate', payload, { finalizedBlockHash })
+    const fcUState = {
+      headBlockHash: payload.blockHash,
+      safeBlockHash: finalizedBlockHash,
+      finalizedBlockHash,
+    }
+    console.log('playUpdate', fcUState)
 
     try {
       const newPayloadRes = await engineMethods['engine_newPayloadV2']([payload])
@@ -504,12 +509,6 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
         )
       }
 
-      const fcUState = {
-        headBlockHash: payload.blockHash,
-        safeBlockHash: finalizedBlockHash,
-        finalizedBlockHash,
-      }
-      console.log({ fcUState })
       const fcuRes = await engineMethods['engine_forkchoiceUpdatedV2']([fcUState])
       if (
         fcuRes.payloadStatus === undefined ||
@@ -533,7 +532,6 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
       const beaconFinalized = await (
         await fetch(`${peerBeaconUrl}/eth/v1/beacon/light_client/finality_update`)
       ).json()
-      console.log({ beaconFinalized: beaconFinalized.data?.finalized_header })
       if (beaconFinalized.error !== undefined) {
         if (beaconFinalized.message?.includes('No finality update available') === true) {
           // waiting for finality
@@ -548,31 +546,35 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
       const payload = executionPayloadFromBeaconPayload(
         beaconHead.data.message.body.execution_payload
       )
-      console.log('beaconFinalized', beaconFinalized.data.finalized_header)
       const finalizedBlockHash = beaconFinalized.data.finalized_header.execution.block_hash
-      console.log('playing update', { payload, finalizedBlockHash })
 
       await playUpdate(payload, finalizedBlockHash, beaconHead.version)
     } catch (e) {
-      console.log('errored -----', e)
+      console.log('update fetch error', e)
       updateState('ERRORED')
       errorMessage = (e as Error).message
     }
   }) as EventListener)
 
   const start = () => {
+    if (pollInterval !== null) {
+      throw Error('Already waiting on sync')
+    }
     if (syncState === 'PAUSED') syncState = 'STARTED'
     return new Promise((resolve, reject) => {
       const resolveOnSynced = () => {
-        console.log('resolveOnSynced', { syncState })
+        console.log('resolve sync', { syncState })
         if (syncState === 'VALID') {
           resolve({ syncState })
+          pollInterval = null
         } else if (syncState === 'INVALID') {
+          console.log('rejected sync', { syncState })
           reject(Error(errorMessage))
+          pollInterval = null
         }
-
-        client.config.events.removeListener(resolveOnSynced)
       }
+
+      pollInterval = setInterval(resolveOnSynced, 6000)
       client.config.events.on(Event.CHAIN_UPDATED, resolveOnSynced)
     })
   }

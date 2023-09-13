@@ -13,14 +13,19 @@ Note: All commands should be run from the `client` package directory root (so so
 
 ## How to run
 
-1. Cleanup some datadirs
+1. Cleanup some datadirs (if you have had previous runs)
 
 ```bash
-rm -rf ./datadir (if you have had previous runs)
+rm -rf ./datadir
 ``` 
 
 2. Run the sim
 
 ```bash
 BEACON_SYNC=true  NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth npx vitest run test/sim/beaconsync.spec.ts
+```
+
+or just
+```bash
+rm -rf ./datadir; DEBUG=ethjs,client:* BEACON_SYNC=true  NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth npx vitest run test/sim/beaconsync.spec.ts
 ```

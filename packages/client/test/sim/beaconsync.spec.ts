@@ -143,6 +143,7 @@ describe('simple mainnet test run', async () => {
         await Promise.race([peerConnectedPromise, peerConnectTimeout])
         assert.ok(true, 'connected to geth peer')
       } catch (e) {
+        console.log(e)
         assert.fail('could not connect to geth peer in 10 seconds')
       }
     },
@@ -160,8 +161,8 @@ describe('simple mainnet test run', async () => {
         try {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
-          await Promise.race([beaconSyncPromise, syncTimeout])
-          assert(beaconSyncRelayer.status, 'SYNCED', 'beaconSyncRelayer should have synced client')
+          const syncResponse = await Promise.race([beaconSyncPromise, syncTimeout])
+          assert(syncResponse.syncState, 'SYNCED', 'beaconSyncRelayer should have synced client')
           await ejsClient.stop()
           assert.ok(true, 'completed beacon sync')
         } catch (e) {
