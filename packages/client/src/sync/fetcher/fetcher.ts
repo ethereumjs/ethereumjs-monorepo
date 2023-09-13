@@ -331,7 +331,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
     const jobStr = this.jobStr(job)
-    if (this._readableState!.length > this.maxQueue) {
+    if (this._readableState === undefined || this._readableState!.length > this.maxQueue) {
       this.debug(
         `Readable state length=${this._readableState!.length} exceeds max queue size=${
           this.maxQueue
@@ -341,6 +341,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     }
     if (job.index > this.processed + this.maxQueue) {
       this.debug(`Job index greater than processed + max queue size, skip job ${jobStr} execution.`)
+      return false
     }
     if (this.processed === this.total) {
       this.debug(`Total number of tasks reached, skip job ${jobStr} execution.`)
