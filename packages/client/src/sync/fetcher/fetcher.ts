@@ -87,6 +87,10 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.banTime = options.banTime ?? 60000
     this.maxQueue = options.maxQueue ?? 4
 
+    this.debug(
+      `Fetcher initialized timeout=${this.timeout} interval=${this.interval} banTime=${this.banTime} maxQueue=${this.maxQueue}`
+    )
+
     this.in = new Heap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
