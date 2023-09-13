@@ -112,7 +112,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       this.debug(`Enqueued num=${tasks.length} tasks`)
     } else {
       this.debug(
-        `Fetcher skipping nextTasks in=${this.in.length} count=${this.count} processed=${this.processed} finished=${this.finished}`
+        `No new tasks enqueued in=${this.in.length} count=${this.count} processed=${this.processed} finished=${this.finished}`
       )
     }
   }

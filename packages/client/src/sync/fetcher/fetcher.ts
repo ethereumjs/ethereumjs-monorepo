@@ -320,7 +320,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
-          `No job found on next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`
+          `No job found as next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`
         )
       } else {
         // There are no more jobs in the fetcher, so its better to resolve
@@ -330,19 +330,20 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       }
       return false
     }
+    const jobStr = this.jobStr(job)
     if (this._readableState!.length > this.maxQueue) {
       this.debug(
         `Readable state length=${this._readableState!.length} exceeds max queue size=${
           this.maxQueue
-        }, skip next job execution.`
+        }, skip job ${jobStr} execution.`
       )
       return false
     }
     if (job.index > this.processed + this.maxQueue) {
-      this.debug(`Job index greater than processed + max queue size, skip next job execution.`)
+      this.debug(`Job index greater than processed + max queue size, skip job ${jobStr} execution.`)
     }
     if (this.processed === this.total) {
-      this.debug(`Total number of tasks reached, skip next job execution.`)
+      this.debug(`Total number of tasks reached, skip job ${jobStr} execution.`)
       return false
     }
     const peer = this.peer()
@@ -354,6 +355,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       const timeout = setTimeout(() => {
         this.expire(job)
       }, this.timeout)
+      this.debug(`All requirements met for job ${jobStr}, start requesting.`)
       this.request(job, peer)
         .then((result?: JobResult) => this.success(job, result))
         .catch((error: Error) => {
@@ -363,7 +365,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         .finally(() => clearTimeout(timeout))
       return job
     } else {
-      this.debug(`No idle peer available, skip next job execution.`)
+      this.debug(`No idle peer available, skip execution for job ${jobStr}.`)
       return false
     }
   }
