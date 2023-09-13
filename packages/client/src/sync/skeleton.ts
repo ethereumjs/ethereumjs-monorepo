@@ -448,7 +448,7 @@ export class Skeleton extends MetaDBManager {
         // if subChain1Head is not in the skeleton then all previous subchains are not useful
         // and better to junk
         this.config.logger.debug(
-          `Removing all previous subchains as skeleton missing block at previous subchain head=${this.status.progress.subchains[1].head}`
+          `Removing all previous subchains as skeleton missing block at previous subchain head=${this.status.progress.subchains[1].head} or its tail=${this.status.progress.subchains[1].tail}`
         )
         this.status.progress.subchains.splice(1, this.status.progress.subchains.length - 1)
       } else if (
