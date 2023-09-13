@@ -563,7 +563,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     if (syncState === 'PAUSED') syncState = 'STARTED'
     return new Promise((resolve, reject) => {
       const resolveOnSynced = () => {
-        console.log('resolve sync', { syncState })
+        console.log('resolve sync check', { syncState })
         if (syncState === 'VALID') {
           resolve({ syncState })
           pollInterval = null

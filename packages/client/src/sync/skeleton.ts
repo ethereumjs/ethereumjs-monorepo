@@ -322,7 +322,10 @@ export class Skeleton extends MetaDBManager {
           head.hash()
         )} force=${force}`
       )
+
+      const subchain0Head = this.status.progress.subchains[0]?.head ?? BigInt(0)
       const reorg = await this.processNewHead(head, force)
+
       if (force && reorg) {
         // It could just be a reorg at this head with previous tail preserved unless
         //   1. parent is not present in skeleton (it could be in chain for whatever reason) or
@@ -363,12 +366,7 @@ export class Skeleton extends MetaDBManager {
       if (force || init) {
         await this.writeSyncStatus()
       }
-      if (
-        (force &&
-          this.status.linked &&
-          head.header.number > this.status.progress.subchains[0]?.head) ??
-        BigInt(0)
-      ) {
+      if (force && this.status.linked && head.header.number > subchain0Head) {
         void this.fillCanonicalChain()
       }
       // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
