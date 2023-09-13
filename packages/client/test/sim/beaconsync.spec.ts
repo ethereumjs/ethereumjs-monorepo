@@ -169,7 +169,7 @@ describe('simple mainnet test run', async () => {
           assert.fail('could not complete beacon sync in 8 minutes')
         }
       } else {
-        assert.fail('ethereumjs client not setup properly for snap sync')
+        assert.fail('ethereumjs client not setup properly for beacon sync')
       }
     },
     10 * 60_000
@@ -193,7 +193,7 @@ async function createBeaconSyncClient(
   datadir: any
 ) {
   // Turn on `debug` logs, defaults to all client logging
-  debug.enable(process.env.DEBUG_SNAP ?? '')
+  debug.enable(process.env.DEBUG_SYNC ?? '')
   const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,

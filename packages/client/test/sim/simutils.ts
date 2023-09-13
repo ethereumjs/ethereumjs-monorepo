@@ -30,10 +30,9 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-// This function switches between the native web implementation and a nodejs implemnetation
+// This function switches between the native web implementation and a nodejs implementation
 export async function getEventSource(): Promise<typeof EventSource> {
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (globalThis.EventSource) {
+  if (globalThis.EventSource !== undefined) {
     return EventSource
   } else {
     return (await import('eventsource')).default as unknown as typeof EventSource
@@ -528,7 +527,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
   eventSource.addEventListener(topics[0], (async (_event: MessageEvent) => {
     if (syncState === 'PAUSED') return
     try {
-      // just fetch finalized updated, it has all relevant hashesh to fcU
+      // just fetch finalized updated, it has all relevant hashes for fcU
       const beaconFinalized = await (
         await fetch(`${peerBeaconUrl}/eth/v1/beacon/light_client/finality_update`)
       ).json()
