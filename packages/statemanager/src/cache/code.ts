@@ -1,4 +1,4 @@
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
@@ -67,7 +67,7 @@ export class CodeCache extends Cache {
    * @param code - Bytecode or undefined if code doesn't exist.
    */
   put(address: Address, code: Uint8Array | undefined): void {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
       code,
@@ -89,7 +89,7 @@ export class CodeCache extends Cache {
    * @param codeHash - Hash of the code.
    */
   get(address: Address): CodeCacheElement | undefined {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this.DEBUG) {
       this._debug(`Get code ${addressHex}`)
     }
@@ -112,7 +112,7 @@ export class CodeCache extends Cache {
    * @param codeHash - Hash of the code.
    */
   del(address: Address): void {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     if (this.DEBUG) {
       this._debug(`Delete code ${addressHex}`)
