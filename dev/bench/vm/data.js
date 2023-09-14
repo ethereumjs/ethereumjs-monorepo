@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1694709695676,
+  "lastUpdate": 1694720951730,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "85b8aa430d8bc97ad01b6f0ac3140e287076ee01",
-          "message": "Trie: decouple walk test from demo (#2966)\n\n* trie: remove console logs from test\r\n\r\n* add debug package\r\n\r\n* walk log helper functions\r\n\r\n* add walk demo\r\n\r\n* commit lock\r\n\r\n* Clean up demo and turn on debug logs during run\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-08-18T12:11:23-04:00",
-          "tree_id": "e5d1bf94f389254cefd64feb909b5a2e145d19c7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/85b8aa430d8bc97ad01b6f0ac3140e287076ee01"
-        },
-        "date": 1692375359749,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 21359,
-            "range": "±5.71%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 21390,
-            "range": "±3.34%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 21132,
-            "range": "±3.36%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 21278,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20472,
-            "range": "±3.75%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.10%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "67a20de06d965a21ac045c543b533962f4ace859",
+          "message": "tx: improve tx capability handling (#3010)\n\n* tx: TxCapability interfaces and rename generic capability to legacy\r\n\r\n* tx: txTypeBytes helper\r\n\r\n* tx: add missing methods and props to tx interfaces\r\n\r\n* tx: refactor and improve serialize helper\r\n\r\n* tx: implement update serialize helper and txTypeBytes helper\r\n\r\n* tx: refactor getDataFee for use in legacyTransaction\r\n\r\n* tx: remove redundant prop from EIP4844CompatibleTxInterface\r\n\r\n* tx: shorten compatibletxInterface name\r\n\r\n* tx: typedTransaction -> EIP2718CompatibleTx\r\n\r\n* tx: remove implements interface\r\n\r\n* tx: add legacytxinterface and move accesslists props to eip2930 interface",
+          "timestamp": "2023-09-14T21:45:38+02:00",
+          "tree_id": "415609fe0bd3aa0cc67f33d4d7dee384a261c77b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/67a20de06d965a21ac045c543b533962f4ace859"
+        },
+        "date": 1694720950485,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30362,
+            "range": "±5.47%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30208,
+            "range": "±2.92%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30177,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25232,
+            "range": "±10.24%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 28995,
+            "range": "±3.34%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
