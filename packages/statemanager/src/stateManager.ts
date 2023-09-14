@@ -224,7 +224,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     this._codeCache2 = new CodeCache({
-      size: 100,
+      size: 20000,
       type: CacheType.ORDERED_MAP,
     })
   }
@@ -328,25 +328,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     const codeHash = keccak256(value)
-
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
     }
 
-    const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-    await this._trie.database().put(key, value)
-
-    const keyHex = bytesToUnprefixedHex(key)
-    this._codeCache[keyHex] = value
-    this._codeCache2!.put(keyHex, value)
-
     if (this.DEBUG) {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
-    if ((await this.getAccount(address)) === undefined) {
-      await this.putAccount(address, new Account())
-    }
-    await this.modifyAccountFields(address, { codeHash })
+
+    this._codeCache2?.put(address, value)
   }
 
   /**
@@ -356,6 +346,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
+    const elem = this._codeCache2?.get(address)
+    if (elem !== undefined) {
+      return elem.code ?? new Uint8Array(0)
+    }
+
     const account = await this.getAccount(address)
     if (!account) {
       return new Uint8Array(0)
@@ -367,15 +362,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
 
-    const keyHex = bytesToUnprefixedHex(key)
-    const elem = this._codeCache2!.get(keyHex)
-    if (elem !== undefined) {
-      return elem.code ?? new Uint8Array(0)
-    } else {
-      const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
-      this._codeCache2!.put(keyHex, code)
-      return code
-    }
+    const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
+    this._codeCache2!.put(address, code)
+    return code
   }
 
   /**
@@ -622,6 +611,28 @@ export class DefaultStateManager implements EVMStateManagerInterface {
           await trie.put(addressBytes, elem.accountRLP)
         }
       }
+    }
+    const items = this._codeCache2!.flush()
+    for (const item of items) {
+      const addressHex = item[0]
+      const addressBytes = unprefixedHexToBytes(addressHex)
+
+      const code = item[1].code
+      if (code === undefined) {
+        throw new Error('Cannot delete preexisting code for an account')
+      }
+
+      // update code in database
+      const codeHash = keccak256(code)
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._trie.database().put(key, code)
+
+      // update code root of associated account
+      const addr = new Address(addressBytes)
+      if ((await this.getAccount(addr)) === undefined) {
+        await this.putAccount(addr, new Account())
+      }
+      await this.modifyAccountFields(addr, { codeHash })
     }
   }
 
