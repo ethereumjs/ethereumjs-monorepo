@@ -1,3 +1,4 @@
+import { bytesToHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
@@ -6,6 +7,7 @@ import { Cache } from './cache.js'
 import { CacheType } from './types.js'
 
 import type { CacheOpts } from './types.js'
+import type { Address } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -64,19 +66,20 @@ export class CodeCache extends Cache {
    * @param codeHash - Hash of the code.
    * @param code - Bytecode or undefined if code doesn't exist.
    */
-  put(codeHash: string, code: Uint8Array | undefined): void {
-    this._saveCachePreState(codeHash)
+  put(address: Address, code: Uint8Array | undefined): void {
+    const addressHex = bytesToHex(address.bytes)
+    this._saveCachePreState(addressHex)
     const elem = {
       code,
     }
 
     if (this.DEBUG) {
-      this._debug(`Put code ${codeHash}`)
+      this._debug(`Put code ${addressHex}`)
     }
     if (this._lruCache) {
-      this._lruCache.set(codeHash, elem)
+      this._lruCache.set(addressHex, elem)
     } else {
-      this._orderedMapCache!.setElement(codeHash, elem)
+      this._orderedMapCache!.setElement(addressHex, elem)
     }
     this._stats.writes += 1
   }
@@ -85,16 +88,17 @@ export class CodeCache extends Cache {
    * Returns the queried code or undefined if it doesn't exist.
    * @param codeHash - Hash of the code.
    */
-  get(codeHash: string): CodeCacheElement | undefined {
+  get(address: Address): CodeCacheElement | undefined {
+    const addressHex = bytesToHex(address.bytes)
     if (this.DEBUG) {
-      this._debug(`Get code ${codeHash}`)
+      this._debug(`Get code ${addressHex}`)
     }
 
     let elem: CodeCacheElement | undefined
     if (this._lruCache) {
-      elem = this._lruCache.get(codeHash)
+      elem = this._lruCache.get(addressHex)
     } else {
-      elem = this._orderedMapCache!.getElementByKey(codeHash)
+      elem = this._orderedMapCache!.getElementByKey(addressHex)
     }
     this._stats.reads += 1
     if (elem) {
@@ -107,17 +111,18 @@ export class CodeCache extends Cache {
    * Marks code as deleted in the cache.
    * @param codeHash - Hash of the code.
    */
-  del(codeHash: string): void {
-    this._saveCachePreState(codeHash)
+  del(address: Address): void {
+    const addressHex = bytesToHex(address.bytes)
+    this._saveCachePreState(addressHex)
     if (this.DEBUG) {
-      this._debug(`Delete code ${codeHash}`)
+      this._debug(`Delete code ${addressHex}`)
     }
     if (this._lruCache) {
-      this._lruCache.set(codeHash, {
+      this._lruCache.set(addressHex, {
         code: undefined,
       })
     } else {
-      this._orderedMapCache!.setElement(codeHash, {
+      this._orderedMapCache!.setElement(addressHex, {
         code: undefined,
       })
     }
@@ -139,16 +144,16 @@ export class CodeCache extends Cache {
     const items: [string, CodeCacheElement][] = []
 
     for (const entry of diffMap.entries()) {
-      const codeHash = entry[0]
+      const cacheKeyHex = entry[0]
       let elem: CodeCacheElement | undefined
       if (this._lruCache) {
-        elem = this._lruCache.get(codeHash)
+        elem = this._lruCache.get(cacheKeyHex)
       } else {
-        elem = this._orderedMapCache!.getElementByKey(codeHash)
+        elem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
 
       if (elem !== undefined) {
-        items.push([codeHash, elem])
+        items.push([cacheKeyHex, elem])
       }
     }
     this._diffCache[this._checkpoints] = new Map<string, CodeCacheElement | undefined>()
@@ -165,19 +170,19 @@ export class CodeCache extends Cache {
     }
     const diffMap = this._diffCache.pop()!
     for (const entry of diffMap.entries()) {
-      const codeHash = entry[0]
+      const addressHex = entry[0]
       const elem = entry[1]
       if (elem === undefined) {
         if (this._lruCache) {
-          this._lruCache.delete(codeHash)
+          this._lruCache.delete(addressHex)
         } else {
-          this._orderedMapCache!.eraseElementByKey(codeHash)
+          this._orderedMapCache!.eraseElementByKey(addressHex)
         }
       } else {
         if (this._lruCache) {
-          this._lruCache.set(codeHash, elem)
+          this._lruCache.set(addressHex, elem)
         } else {
-          this._orderedMapCache!.setElement(codeHash, elem)
+          this._orderedMapCache!.setElement(addressHex, elem)
         }
       }
     }
@@ -193,11 +198,11 @@ export class CodeCache extends Cache {
     }
     const diffMap = this._diffCache.pop()!
     for (const entry of diffMap.entries()) {
-      const codeHash = entry[0]
-      const oldEntry = this._diffCache[this._checkpoints].has(codeHash)
+      const addressHex = entry[0]
+      const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
       if (!oldEntry) {
         const elem = entry[1]
-        this._diffCache[this._checkpoints].set(codeHash, elem)
+        this._diffCache[this._checkpoints].set(addressHex, elem)
       }
     }
   }
