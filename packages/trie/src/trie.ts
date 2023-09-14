@@ -71,7 +71,7 @@ export class Trie {
 
   /** Debug logging */
   protected DEBUG: boolean
-  protected _debug: Debugger = debug('ethjs').extend('trie')
+  protected _debug: Debugger = debug('trie')
   protected debug: (...args: any) => void
 
   /**
