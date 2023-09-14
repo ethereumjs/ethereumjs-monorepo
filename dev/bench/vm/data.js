@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1694695093053,
+  "lastUpdate": 1694709695676,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b7cb22f02881b87c79d7297cb0ed4913cc1dab15",
-          "message": "Fix the Trie Package Benchmarks (#2969)\n\n* Refactor esm to cjs and db usage\n\n* Update level implementation to match current api\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-08-17T22:44:24-04:00",
-          "tree_id": "8dc381cefeb479cccd194ab04b4dc1be81efa014",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b7cb22f02881b87c79d7297cb0ed4913cc1dab15"
-        },
-        "date": 1692326870065,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31460,
-            "range": "±5.20%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31015,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31034,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26045,
-            "range": "±10.58%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29611,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.25%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "04aa4dad54b9e258db8c4e51de5801c9b0680d02",
+          "message": "client: some skeleton improvements from observations on devnet syncs (#3014)\n\n* client: some skeleton improvements from observations on devnet syncs\r\n\r\n* skip filling chain on duplicate sethead\r\n\r\n* apply nits\r\n\r\n* add beacon sync sim for incline client\r\n\r\n* get the beacon sync to resolve\r\n\r\n* fix breaking skeleton spec\r\n\r\n* fix reverse block fetcher\r\n\r\n* apply feeback",
+          "timestamp": "2023-09-14T22:05:28+05:30",
+          "tree_id": "1fe291a8fa53de82a53ce23b8b16e119598d81bb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/04aa4dad54b9e258db8c4e51de5801c9b0680d02"
+        },
+        "date": 1694709694469,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30563,
+            "range": "±5.57%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30281,
+            "range": "±2.87%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30327,
+            "range": "±3.03%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25730,
+            "range": "±10.20%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29412,
+            "range": "±3.10%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
