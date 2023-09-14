@@ -16,6 +16,7 @@
     "prepare": "git config --local core.hooksPath .githooks",
     "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
+    
   },
   "devDependencies": {
     "@types/node": "16.11.49",
