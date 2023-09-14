@@ -182,7 +182,11 @@ export class Trie {
    * @param value
    * @returns A Promise that resolves once value is stored.
    */
-  async put(key: Uint8Array, value: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+  async put(
+    key: Uint8Array,
+    value: Uint8Array | null,
+    skipKeyTransform: boolean = false
+  ): Promise<void> {
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
