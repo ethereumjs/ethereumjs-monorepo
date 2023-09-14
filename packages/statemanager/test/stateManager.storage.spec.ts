@@ -15,7 +15,11 @@ import { DefaultStateManager } from '../src/index.js'
 import { createAccount } from './util.js'
 
 describe('StateManager -> Storage', () => {
-  for (const storageCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
+  for (const storageCacheOpts of [
+    { deactivate: false },
+    { deactivate: true },
+    { deactivate: false, size: 0 },
+  ]) {
     it(`should dump storage`, async () => {
       const stateManager = new DefaultStateManager({ storageCacheOpts })
       const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))

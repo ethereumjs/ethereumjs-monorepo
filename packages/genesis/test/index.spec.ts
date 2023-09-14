@@ -7,6 +7,7 @@ const chainToName: Record<Chain, string> = {
   [Chain.Mainnet]: 'mainnet',
   [Chain.Goerli]: 'goerli',
   [Chain.Sepolia]: 'sepolia',
+  [Chain.Holesky]: 'holesky',
 }
 
 describe('genesis test', () => {

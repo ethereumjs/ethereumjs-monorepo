@@ -19,6 +19,7 @@ interface PrecompileEntry {
   address: string
   check: PrecompileAvailabilityCheckType
   precompile: PrecompileFunc
+  name: string
 }
 
 interface Precompiles {
@@ -54,6 +55,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile01,
+    name: 'ECRECOVER (0x01)',
   },
   {
     address: '0000000000000000000000000000000000000002',
@@ -62,6 +64,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile02,
+    name: 'SHA256 (0x02)',
   },
   {
     address: '0000000000000000000000000000000000000003',
@@ -70,6 +73,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile03,
+    name: 'RIPEMD160 (0x03)',
   },
   {
     address: '0000000000000000000000000000000000000004',
@@ -78,6 +82,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Chainstart,
     },
     precompile: precompile04,
+    name: 'Identity (0x04)',
   },
   {
     address: '0000000000000000000000000000000000000005',
@@ -86,6 +91,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile05,
+    name: 'MODEXP (0x05)',
   },
   {
     address: '0000000000000000000000000000000000000006',
@@ -94,6 +100,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile06,
+    name: 'ECADD (0x06)',
   },
   {
     address: '0000000000000000000000000000000000000007',
@@ -102,6 +109,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile07,
+    name: 'ECMUL (0x07)',
   },
   {
     address: '0000000000000000000000000000000000000008',
@@ -110,6 +118,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Byzantium,
     },
     precompile: precompile08,
+    name: 'ECPAIR (0x08)',
   },
   {
     address: '0000000000000000000000000000000000000009',
@@ -118,6 +127,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: Hardfork.Istanbul,
     },
     precompile: precompile09,
+    name: 'BLAKE2f (0x09)',
   },
   {
     address: '000000000000000000000000000000000000000a',
@@ -126,6 +136,7 @@ const precompileEntries: PrecompileEntry[] = [
       param: 4844,
     },
     precompile: precompile0a,
+    name: 'KZG (0x0a)',
   },
 ]
 
@@ -183,6 +194,20 @@ function getActivePrecompiles(
   return precompileMap
 }
 
-export { getActivePrecompiles, precompileEntries, precompiles, ripemdPrecompileAddress }
+function getPrecompileName(addressUnprefixedStr: string) {
+  for (const entry of precompileEntries) {
+    if (entry.address === addressUnprefixedStr) {
+      return entry.name
+    }
+  }
+}
+
+export {
+  getActivePrecompiles,
+  getPrecompileName,
+  precompileEntries,
+  precompiles,
+  ripemdPrecompileAddress,
+}
 
 export type { AddPrecompile, CustomPrecompile, DeletePrecompile, PrecompileFunc, PrecompileInput }

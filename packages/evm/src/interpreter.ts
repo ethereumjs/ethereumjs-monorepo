@@ -18,8 +18,9 @@ import { Stack } from './stack.js'
 
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
-import type { AsyncOpHandler, OpHandler, Opcode } from './opcodes/index.js'
-import type { Block, Blockchain, EVMResult, Log } from './types.js'
+import type { EVMPerformanceLogger, Timer } from './logger.js'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
+import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
@@ -77,6 +78,7 @@ export interface RunState {
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
+  cachedPushes: { [pc: number]: bigint }
   stateManager: EVMStateManagerInterface
   blockchain: Blockchain
   env: Env
@@ -133,6 +135,9 @@ export class Interpreter {
   // Opcode debuggers (e.g. { 'push': [debug Object], 'sstore': [debug Object], ...})
   private opDebuggers: { [key: string]: (debug: string) => void } = {}
 
+  private profilerOpts?: EVMProfilerOpts
+  private performanceLogger: EVMPerformanceLogger
+
   // TODO remove gasLeft as constructor argument
   constructor(
     evm: EVM,
@@ -140,7 +145,9 @@ export class Interpreter {
     blockchain: Blockchain,
     env: Env,
     gasLeft: bigint,
-    journal: Journal
+    journal: Journal,
+    performanceLogs: EVMPerformanceLogger,
+    profilerOpts?: EVMProfilerOpts
   ) {
     this._evm = evm
     this._stateManager = stateManager
@@ -155,6 +162,7 @@ export class Interpreter {
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
+      cachedPushes: {},
       stateManager: this._stateManager,
       blockchain,
       env,
@@ -171,6 +179,8 @@ export class Interpreter {
       returnValue: undefined,
       selfdestruct: new Set(),
     }
+    this.profilerOpts = profilerOpts
+    this.performanceLogger = performanceLogs
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
@@ -218,21 +228,31 @@ export class Interpreter {
     }
 
     let err
+    let cachedOpcodes: OpcodeMapEntry[]
+    let doJumpAnalysis = true
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
-      const opCode = this._runState.code[this._runState.programCounter]
-      if (
-        this._runState.shouldDoJumpAnalysis &&
-        (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e)
-      ) {
+      let opCode: number
+      let opCodeObj: OpcodeMapEntry
+      if (doJumpAnalysis) {
+        opCode = this._runState.code[this._runState.programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
-        this._runState.validJumps = this._getValidJumpDests(this._runState.code)
-        this._runState.shouldDoJumpAnalysis = false
+        if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
+          const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
+          this._runState.validJumps = jumps
+          this._runState.cachedPushes = pushes
+          this._runState.shouldDoJumpAnalysis = false
+          cachedOpcodes = opcodesCached
+          doJumpAnalysis = false
+        }
+      } else {
+        opCodeObj = cachedOpcodes![this._runState.programCounter]
+        opCode = opCodeObj.opcodeInfo.code
       }
-      this._runState.opCode = opCode
+      this._runState.opCode = opCode!
 
       try {
-        await this.runStep()
+        await this.runStep(opCodeObj!)
       } catch (e: any) {
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'EvmError')) {
@@ -256,64 +276,72 @@ export class Interpreter {
    * Executes the opcode to which the program counter is pointing,
    * reducing its base gas cost, and increments the program counter.
    */
-  async runStep(): Promise<void> {
-    const opInfo = this.lookupOpInfo(this._runState.opCode)
+  async runStep(opcodeObj?: OpcodeMapEntry): Promise<void> {
+    const opEntry = opcodeObj ?? this.lookupOpInfo(this._runState.opCode)
+    const opInfo = opEntry.opcodeInfo
 
-    let gas = BigInt(opInfo.fee)
-    // clone the gas limit; call opcodes can add stipend,
-    // which makes it seem like the gas left increases
-    const gasLimitClone = this.getGasLeft()
+    let timer: Timer
 
-    if (opInfo.dynamicGas) {
-      const dynamicGasHandler = (this._evm as any)._dynamicGasHandlers.get(this._runState.opCode)!
-      // This function updates the gas in-place.
-      // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-      gas = await dynamicGasHandler(this._runState, gas, this.common)
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.startTimer(opInfo.name)
     }
 
-    if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
-      // Only run this stepHook function if there is an event listener (e.g. test runner)
-      // or if the vm is running in debug mode (to display opcode debug logs)
-      await this._runStepHook(gas, gasLimitClone)
+    let gas = opInfo.feeBigInt
+
+    try {
+      if (opInfo.dynamicGas) {
+        // This function updates the gas in-place.
+        // It needs the base fee, for correct gas limit calculation for the CALL opcodes
+        gas = await opEntry.gasHandler(this._runState, gas, this.common)
+      }
+
+      if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
+        // Only run this stepHook function if there is an event listener (e.g. test runner)
+        // or if the vm is running in debug mode (to display opcode debug logs)
+        await this._runStepHook(gas, this.getGasLeft())
+      }
+
+      // Check for invalid opcode
+      if (opInfo.isInvalid) {
+        throw new EvmError(ERROR.INVALID_OPCODE)
+      }
+
+      // Reduce opcode's base fee
+      this.useGas(gas, opInfo)
+      // Advance program counter
+      this._runState.programCounter++
+
+      // Execute opcode handler
+      const opFn = opEntry.opHandler
+
+      if (opInfo.isAsync) {
+        await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
+      } else {
+        opFn.apply(null, [this._runState, this.common])
+      }
+    } finally {
+      if (this.profilerOpts?.enabled === true) {
+        this.performanceLogger.stopTimer(
+          timer!,
+          Number(gas),
+          'opcodes',
+          opInfo.fee,
+          Number(gas) - opInfo.fee
+        )
+      }
     }
-
-    // Check for invalid opcode
-    if (opInfo.name === 'INVALID') {
-      throw new EvmError(ERROR.INVALID_OPCODE)
-    }
-
-    // Reduce opcode's base fee
-    this.useGas(gas, `${opInfo.name} fee`)
-    // Advance program counter
-    this._runState.programCounter++
-
-    // Execute opcode handler
-    const opFn = this.getOpHandler(opInfo)
-
-    if (opInfo.isAsync) {
-      await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
-    } else {
-      opFn.apply(null, [this._runState, this.common])
-    }
-  }
-
-  /**
-   * Get the handler function for an opcode.
-   */
-  getOpHandler(opInfo: Opcode): OpHandler {
-    return (this._evm as any)._handlers.get(opInfo.code)!
   }
 
   /**
    * Get info for an opcode from EVM's list of opcodes.
    */
-  lookupOpInfo(op: number): Opcode {
-    // if not found, return 0xfe: INVALID
-    return this._evm.opcodes.get(op) ?? this._evm.opcodes.get(0xfe)!
+  lookupOpInfo(op: number): OpcodeMapEntry {
+    return (<any>this._evm)._opcodeMap[op]
   }
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint): Promise<void> {
-    const opcode = this.lookupOpInfo(this._runState.opCode)
+    const opcodeInfo = this.lookupOpInfo(this._runState.opCode)
+    const opcode = opcodeInfo.opcodeInfo
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
       gasLeft,
@@ -324,8 +352,8 @@ export class Interpreter {
         dynamicFee,
         isAsync: opcode.isAsync,
       },
-      stack: this._runState.stack._store,
-      returnStack: this._runState.returnStack._store,
+      stack: this._runState.stack.getStack(),
+      returnStack: this._runState.returnStack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
@@ -388,13 +416,20 @@ export class Interpreter {
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
+    const pushes: { [pc: number]: bigint } = {}
+
+    const opcodesCached = Array(code.length)
 
     for (let i = 0; i < code.length; i++) {
       const opcode = code[i]
+      opcodesCached[i] = this.lookupOpInfo(opcode)
       // skip over PUSH0-32 since no jump destinations in the middle of a push block
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
-          i += opcode - 0x5f
+          const extraSteps = opcode - 0x5f
+          const push = bytesToBigInt(code.slice(i + 1, i + opcode - 0x5e))
+          pushes[i + 1] = push
+          i += extraSteps
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
@@ -404,7 +439,7 @@ export class Interpreter {
         }
       }
     }
-    return jumps
+    return { jumps, pushes, opcodesCached }
   }
 
   /**
@@ -413,14 +448,16 @@ export class Interpreter {
    * @param context - Usage context for debugging
    * @throws if out of gas
    */
-  useGas(amount: bigint, context?: string): void {
+  useGas(amount: bigint, context?: string | Opcode): void {
     this._runState.gasLeft -= amount
     if (this._evm.DEBUG) {
-      debugGas(
-        `${typeof context === 'string' ? context + ': ' : ''}used ${amount} gas (-> ${
-          this._runState.gasLeft
-        })`
-      )
+      let tstr = ''
+      if (typeof context === 'string') {
+        tstr = context + ': '
+      } else if (context !== undefined) {
+        tstr = `${context.name} fee: `
+      }
+      debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
     if (this._runState.gasLeft < BigInt(0)) {
       this._runState.gasLeft = BigInt(0)
@@ -872,7 +909,14 @@ export class Interpreter {
       return BigInt(0)
     }
 
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message: msg })
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -971,7 +1015,14 @@ export class Interpreter {
       message.createdAddresses = createdAddresses
     }
 
+    let timer: Timer
+    if (this.profilerOpts?.enabled === true) {
+      timer = this.performanceLogger.pauseTimer()
+    }
     const results = await this._evm.runCall({ message })
+    if (this.profilerOpts?.enabled === true) {
+      this.performanceLogger.unpauseTimer(timer!)
+    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)

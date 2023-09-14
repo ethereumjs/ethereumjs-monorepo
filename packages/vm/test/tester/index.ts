@@ -200,7 +200,6 @@ async function runTests() {
     tape(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
-
       ;(t as any).on('result', (o: any) => {
         if (
           typeof o.ok !== 'undefined' &&
@@ -218,6 +217,7 @@ async function runTests() {
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
       const dirs = getTestDirs(FORK_CONFIG_VM, name)
+      console.time('Total (including setup)')
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
           if (argv.customTestsPath !== undefined) {
@@ -262,6 +262,9 @@ async function runTests() {
         const { assertCount } = t as any
         t.ok(assertCount >= expectedTests, `expected ${expectedTests} checks, got ${assertCount}`)
       }
+
+      console.log()
+      console.timeEnd('Total (including setup)')
 
       t.end()
     })

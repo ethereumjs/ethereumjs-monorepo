@@ -20,16 +20,18 @@ import { EOF, getEOFCode } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
 import { Interpreter } from './interpreter.js'
 import { Journal } from './journal.js'
+import { EVMPerformanceLogger } from './logger.js'
 import { Message } from './message.js'
 import { getOpcodesForHF } from './opcodes/index.js'
-import { getActivePrecompiles } from './precompiles/index.js'
+import { getActivePrecompiles, getPrecompileName } from './precompiles/index.js'
 import { TransientStorage } from './transientStorage.js'
 import { DefaultBlockchain } from './types.js'
 
 import type { InterpreterOpts } from './interpreter.js'
+import type { Timer } from './logger.js'
 import type { MessageWithTo } from './message.js'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler, OpcodeList } from './opcodes/index.js'
+import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.js'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.js'
 import type {
   Block,
@@ -104,9 +106,13 @@ export class EVM implements EVMInterface {
 
   protected _dynamicGasHandlers!: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
 
+  protected _opcodeMap!: OpcodeMap
+
   protected _precompiles!: Map<string, PrecompileFunc>
 
   protected readonly _optsCached: EVMOpts
+
+  protected performanceLogger: EVMPerformanceLogger
 
   public get precompiles() {
     return this._precompiles
@@ -191,6 +197,8 @@ export class EVM implements EVMInterface {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
     }
 
+    this.performanceLogger = new EVMPerformanceLogger()
+
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
@@ -206,6 +214,7 @@ export class EVM implements EVMInterface {
     this._opcodes = data.opcodes
     this._dynamicGasHandlers = data.dynamicGasHandlers
     this._handlers = data.handlers
+    this._opcodeMap = data.opcodeMap
     return data.opcodes
   }
 
@@ -265,11 +274,23 @@ export class EVM implements EVMInterface {
 
     let result: ExecResult
     if (message.isCompiled) {
+      let timer: Timer
+      let target: string
+      if (this._optsCached.profiler?.enabled === true) {
+        target = bytesToUnprefixedHex(message.codeAddress.bytes)
+        // TODO: map target precompile not to address, but to a name
+        target = getPrecompileName(target) ?? target.slice(20)
+        timer = this.performanceLogger.startTimer(target)
+      }
       result = await this.runPrecompile(
         message.code as PrecompileFunc,
         message.data,
         message.gasLimit
       )
+
+      if (this._optsCached.profiler?.enabled === true) {
+        this.performanceLogger.stopTimer(timer!, Number(result.executionGasUsed), 'precompiles')
+      }
       result.gasRefund = message.gasRefund
     } else {
       if (this.DEBUG) {
@@ -557,7 +578,9 @@ export class EVM implements EVMInterface {
       this.blockchain,
       env,
       message.gasLimit,
-      this.journal
+      this.journal,
+      this.performanceLogger,
+      this._optsCached.profiler
     )
     if (message.selfdestruct) {
       interpreter._result.selfdestruct = message.selfdestruct
@@ -702,7 +725,7 @@ export class EVM implements EVMInterface {
       debug(
         `Received message execResult: [ gasUsed=${executionGasUsed} exceptionError=${
           exceptionError ? `'${exceptionError.error}'` : 'none'
-        } returnValue=0x${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
+        } returnValue=${short(returnValue)} gasRefund=${result.execResult.gasRefund ?? 0} ]`
       )
     }
     const err = result.execResult.exceptionError
@@ -884,6 +907,14 @@ export class EVM implements EVMInterface {
     }
     ;(opts.stateManager as any).common = common
     return new EVM(opts)
+  }
+
+  public getPerformanceLogs() {
+    return this.performanceLogger.getLogs()
+  }
+
+  public clearPerformanceLogs() {
+    this.performanceLogger.clear()
   }
 }
 

@@ -344,6 +344,16 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
     boolean: true,
   })
+  .option('vmProfileBlocks', {
+    describe: 'Report the VM profile after running each block',
+    boolean: true,
+    default: false,
+  })
+  .option('vmProfileTxs', {
+    describe: 'Report the VM profile after running each tx',
+    boolean: true,
+    default: false,
+  })
   .option('loadBlocksFromRlp', {
     describe: 'path to a file of RLP encoded blocks',
     string: true,
@@ -464,27 +474,6 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   })
   await client.open()
 
-  if (typeof args.startBlock === 'number') {
-    await startBlock(client)
-  }
-
-  // update client's sync status and start txpool if synchronized
-  client.config.updateSynchronizedState(client.chain.headers.latest)
-  if (client.config.synchronized === true) {
-    const fullService = client.services.find((s) => s.name === 'eth')
-    // The service might not be FullEthereumService even if we cast it as one,
-    // so txPool might not exist on it
-    ;(fullService as FullEthereumService).txPool?.checkRunState()
-  }
-
-  if (args.executeBlocks !== undefined) {
-    // Special block execution debug mode (does not change any state)
-    await executeBlocks(client)
-  } else {
-    // Regular client start
-    await client.start()
-  }
-
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload blocks provided in RLP format
     const blockRlp = readFileSync(args.loadBlocksFromRlp)
@@ -517,10 +506,34 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       }
 
       await client.chain.putBlocks(blocks)
-      const service = client.service('eth') as FullEthereumService
-      await service.execution.open()
-      await service.execution.run()
     }
+  }
+
+  if (typeof args.startBlock === 'number') {
+    await startBlock(client)
+  }
+
+  // update client's sync status and start txpool if synchronized
+  client.config.updateSynchronizedState(client.chain.headers.latest)
+  if (client.config.synchronized === true) {
+    const fullService = client.services.find((s) => s.name === 'eth')
+    // The service might not be FullEthereumService even if we cast it as one,
+    // so txPool might not exist on it
+    ;(fullService as FullEthereumService).txPool?.checkRunState()
+  }
+
+  if (args.executeBlocks !== undefined) {
+    // Special block execution debug mode (does not change any state)
+    await executeBlocks(client)
+  } else {
+    // Regular client start
+    await client.start()
+  }
+
+  if (args.loadBlocksFromRlp !== undefined && client.chain.opened) {
+    const service = client.service('eth') as FullEthereumService
+    await service.execution.open()
+    await service.execution.run()
   }
   return client
 }
@@ -667,6 +680,14 @@ function generateAccount(): Account {
 const stopClient = async (config: Config, clientStartPromise: any) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
   config.logger.info('(This might take a little longer if client not yet fully started)')
+  let timeoutHandle
+  if (clientStartPromise.toString().includes('Promise') === true)
+    // Client hasn't finished starting up so setting timeout to terminate process if not already shutdown gracefully
+    timeoutHandle = setTimeout(() => {
+      config.logger.warn('Client has become unresponsive while starting up.')
+      config.logger.warn('Check logging output for potential errors.  Exiting...')
+      process.exit(1)
+    }, 30000)
   const clientHandle = await clientStartPromise
   if (clientHandle !== null) {
     config.logger.info('Shutting down the client and the servers...')
@@ -679,7 +700,7 @@ const stopClient = async (config: Config, clientStartPromise: any) => {
   } else {
     config.logger.info('Client did not start properly, exiting ...')
   }
-
+  clearTimeout(timeoutHandle)
   process.exit()
 }
 
@@ -805,6 +826,8 @@ async function run() {
     mine,
     minerCoinbase: args.minerCoinbase,
     isSingleNode,
+    vmProfileBlocks: args.vmProfileBlocks,
+    vmProfileTxs: args.vmProfileTxs,
     minPeers: args.minPeers,
     multiaddrs,
     port: args.port,
@@ -857,6 +880,15 @@ async function run() {
 
   process.on('SIGTERM', async () => {
     await stopClient(config, clientStartPromise)
+  })
+
+  process.on('uncaughtException', (err) => {
+    // Handles uncaught exceptions that are thrown in async events/functions and aren't caught in
+    // main client process
+    config.logger.error(`Uncaught error: ${err.message}`)
+    config.logger.error(err)
+
+    void stopClient(config, clientStartPromise)
   })
 }
 

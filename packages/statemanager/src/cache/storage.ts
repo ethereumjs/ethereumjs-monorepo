@@ -354,4 +354,19 @@ export class StorageCache extends Cache {
       this._orderedMapCache!.clear()
     }
   }
+
+  /**
+   * Dumps the RLP-encoded storage values for an `account` specified by `address`.
+   * @param address - The address of the `account` to return storage for
+   * @returns {StorageCacheMap | undefined} - The storage values for the `account` or undefined if the `account` is not in the cache
+   */
+  dump(address: Address): StorageCacheMap | undefined {
+    let storageMap
+    if (this._lruCache) {
+      storageMap = this._lruCache!.get(bytesToUnprefixedHex(address.bytes))
+    } else {
+      storageMap = this._orderedMapCache?.getElementByKey(bytesToUnprefixedHex(address.bytes))
+    }
+    return storageMap
+  }
 }
