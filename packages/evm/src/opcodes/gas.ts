@@ -73,8 +73,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x31,
       async function (runState, gas, common): Promise<bigint> {
         if (common.isActivatedEIP(2929) === true) {
-          const addressBigInt = runState.stack.peekBigInt()[0]
-          const address = new Address(addresstoBytes(addressBigInt))
+          const addressBytes = runState.stack.peekBytes()[0]
+          const address = new Address(addressBytes)
           gas += accessAddressEIP2929(runState, address, common)
         }
         return gas
@@ -111,8 +111,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x3b,
       async function (runState, gas, common): Promise<bigint> {
         if (common.isActivatedEIP(2929) === true) {
-          const addressBigInt = runState.stack.peekBigInt()[0]
-          const address = new Address(addresstoBytes(addressBigInt))
+          const addressBytes = runState.stack.peekBytes()[0]
+          const address = new Address(addressBytes)
           gas += accessAddressEIP2929(runState, address, common)
         }
         return gas
@@ -122,12 +122,13 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* EXTCODECOPY */
       0x3c,
       async function (runState, gas, common): Promise<bigint> {
-        const [addressBigInt, memOffset, _codeOffset, dataLength] = runState.stack.peekBigInt(4)
+        const addressBytes = runState.stack.peekBytes()[0]
+        const [memOffset, _codeOffset, dataLength] = runState.stack.peekBigInt(3)
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
         if (common.isActivatedEIP(2929) === true) {
-          const address = new Address(addresstoBytes(addressBigInt))
+          const address = new Address(addressBytes)
           gas += accessAddressEIP2929(runState, address, common)
         }
 
@@ -160,8 +161,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x3f,
       async function (runState, gas, common): Promise<bigint> {
         if (common.isActivatedEIP(2929) === true) {
-          const addressBigInt = runState.stack.peekBigInt()[0]
-          const address = new Address(addresstoBytes(addressBigInt))
+          const addressBytes = runState.stack.peekBytes()[0]
+          const address = new Address(addressBytes)
           gas += accessAddressEIP2929(runState, address, common)
         }
         return gas
@@ -198,8 +199,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* SLOAD */
       0x54,
       async function (runState, gas, common): Promise<bigint> {
-        const key = runState.stack.peekBigInt()[0]
-        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+        const key = runState.stack.peekBytes()[0]
+        const keyBuf = setLengthLeft(key, 32)
 
         if (common.isActivatedEIP(2929) === true) {
           gas += accessStorageEIP2929(runState, keyBuf, false, common)
@@ -214,16 +215,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
-        const [key, val] = runState.stack.peekBigInt(2)
+        const [key, value] = runState.stack.peekBytes(2)
 
-        const keyBytes = setLengthLeft(bigIntToBytes(key), 32)
-        // NOTE: this should be the shortest representation
-        let value
-        if (val === BigInt(0)) {
-          value = Uint8Array.from([])
-        } else {
-          value = bigIntToBytes(val)
-        }
+        const keyBytes = setLengthLeft(key, 32)
 
         const currentStorage = setLengthLeftStorage(
           await runState.interpreter.storageLoad(keyBytes)
