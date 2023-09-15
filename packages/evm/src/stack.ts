@@ -30,6 +30,10 @@ export class Stack {
     this._store[this._len++] = value
   }
 
+  pushBigInt(value: bigint) {
+    this.push(value)
+  }
+
   pop(): bigint {
     if (this._len < 1) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)

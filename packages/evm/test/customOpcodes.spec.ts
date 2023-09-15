@@ -20,7 +20,7 @@ describe('VM: custom opcodes', () => {
       return gas + logicFee
     },
     logicFunction(runState: RunState) {
-      runState.stack.push(BigInt(stackPush))
+      runState.stack.pushBigInt(BigInt(stackPush))
     },
   }
 
@@ -109,7 +109,7 @@ describe('VM: custom opcodes', () => {
       opcodeName: 'TEST',
       baseFee: fee,
       logicFunction(runState: RunState) {
-        runState.stack.push(BigInt(stackPush))
+        runState.stack.pushBigInt(BigInt(stackPush))
       },
     }
 
