@@ -11,37 +11,70 @@ describe('Stack', () => {
     const s = new Stack()
     assert.equal(s.length, 0)
     assert.throws(() => s.popBigInt())
+    assert.throws(() => s.popBytes())
   })
 
   it('popN should throw for empty stack', () => {
     const s = new Stack()
     assert.deepEqual(s.popNBigInt(0), [])
+    assert.deepEqual(s.popNBytes(0), [])
     assert.throws(() => s.popNBigInt(1))
+    assert.throws(() => s.popNBytes(1))
   })
 
-  it('should push item', () => {
+  it('should push/peek/pop item (BigInt)', () => {
     const s = new Stack()
-    s.pushBigInt(BigInt(5))
-    assert.equal(s.popBigInt(), BigInt(5))
+    const v = BigInt(5)
+    s.pushBigInt(v)
+    assert.deepEqual(s.peekBigInt(), [v])
+    assert.equal(s.popBigInt(), v)
   })
 
-  it('popN should return array for n = 1', () => {
+  it('should push/peek/pop item (Bytes)', () => {
     const s = new Stack()
-    s.pushBigInt(BigInt(5))
-    assert.deepEqual(s.popNBigInt(1), [BigInt(5)])
+    const v = new Uint8Array([5])
+    s.pushBytes(v)
+    assert.deepEqual(s.peekBytes(), [v])
+    assert.deepEqual(s.popBytes(), v)
+  })
+
+  it('popN should return array for n = 1 (BigInt)', () => {
+    const s = new Stack()
+    const v = BigInt(5)
+    s.pushBigInt(v)
+    assert.deepEqual(s.popNBigInt(1), [v])
+  })
+
+  it('popN should return array for n = 1 (Bytes)', () => {
+    const s = new Stack()
+    const v = new Uint8Array([5])
+    s.pushBytes(v)
+    assert.deepEqual(s.popNBytes(1), [v])
   })
 
   it('popN should fail on underflow', () => {
     const s = new Stack()
     s.pushBigInt(BigInt(5))
     assert.throws(() => s.popNBigInt(2))
+    assert.throws(() => s.popNBytes(2))
   })
 
-  it('popN should return in correct order', () => {
+  it('popN should return in correct order (BigInt)', () => {
     const s = new Stack()
-    s.pushBigInt(BigInt(5))
-    s.pushBigInt(BigInt(7))
-    assert.deepEqual(s.popNBigInt(2), [BigInt(7), BigInt(5)])
+    const v1 = BigInt(5)
+    const v2 = BigInt(7)
+    s.pushBigInt(v1)
+    s.pushBigInt(v2)
+    assert.deepEqual(s.popNBigInt(2), [v2, v1])
+  })
+
+  it('popN should return in correct order (Bytes)', () => {
+    const s = new Stack()
+    const v1 = new Uint8Array([5])
+    const v2 = new Uint8Array([7])
+    s.pushBytes(v1)
+    s.pushBytes(v2)
+    assert.deepEqual(s.popNBytes(2), [v2, v1])
   })
 
   it('should throw on overflow', () => {
@@ -50,6 +83,7 @@ describe('Stack', () => {
       s.pushBigInt(BigInt(i))
     }
     assert.throws(() => s.pushBigInt(BigInt(1024)))
+    assert.throws(() => s.pushBytes(new Uint8Array([7])))
   })
 
   it('overflow limit should be configurable', () => {
@@ -94,6 +128,20 @@ describe('Stack', () => {
     s.pushBigInt(BigInt(7))
     s.dup(2)
     assert.deepEqual(s.popBigInt(), BigInt(5))
+  })
+
+  it('should work with mixed BigInt/Bytes usage', () => {
+    const s = new Stack()
+    const v1BigInt = BigInt(5)
+    const v1Bytes = new Uint8Array([5])
+    const v2BigInt = BigInt(7)
+    const v2Bytes = new Uint8Array([7])
+    s.pushBigInt(v1BigInt)
+    s.pushBytes(v2Bytes)
+    assert.deepEqual(s.peekBigInt(1), [v2BigInt])
+    assert.deepEqual(s.peekBytes(1), [v2Bytes])
+    assert.equal(s.popBigInt(), v2BigInt)
+    assert.deepEqual(s.popBytes(), v1Bytes)
   })
 
   it('stack items should not change if they are DUPed', async () => {
