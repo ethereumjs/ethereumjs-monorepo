@@ -2,7 +2,7 @@ import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { isAccessList } from './types.js'
 
-import type { AccessList, AccessListBytes, AccessListItem } from './types.js'
+import type { AccessList, AccessListBytes, AccessListItem, TransactionType } from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 export function checkMaxInitCodeSize(common: Common, length: number) {
@@ -114,4 +114,8 @@ export class AccessLists {
     const addresses = accessList.length
     return addresses * Number(accessListAddressCost) + slots * Number(accessListStorageKeyCost)
   }
+}
+
+export function txTypeBytes(txType: TransactionType): Uint8Array {
+  return hexToBytes('0x' + txType.toString(16).padStart(2, '0'))
 }
