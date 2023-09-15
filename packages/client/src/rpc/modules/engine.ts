@@ -1088,6 +1088,17 @@ export class Engine {
       if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
       }
+    } else {
+      // even if the vmHead is same still validations need to be done regarding the correctness
+      // of the sequence and canonical-ity
+      try {
+        await this.execution.setHead([headBlock], { safeBlock, finalizedBlock })
+      } catch (e) {
+        throw {
+          message: (e as Error).message,
+          code: INVALID_PARAMS,
+        }
+      }
     }
 
     // prepare valid response

@@ -807,16 +807,19 @@ export class Skeleton extends MetaDBManager {
   async getBlockByHash(hash: Uint8Array, onlySkeleton?: boolean): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
     if (number) {
-      return this.getBlock(bytesToBigInt(number), onlySkeleton)
+      const block = await this.getBlock(bytesToBigInt(number), onlySkeleton)
+      if (block !== undefined && equalsBytes(block.hash(), hash)) {
+        return block
+      }
+    }
+
+    if (onlySkeleton === true) {
+      return undefined
     } else {
-      if (onlySkeleton === true || !this.status.linked) {
+      try {
+        return await this.chain.getBlock(hash)
+      } catch (e) {
         return undefined
-      } else {
-        try {
-          return await this.chain.getBlock(hash)
-        } catch (e) {
-          return undefined
-        }
       }
     }
   }
