@@ -98,6 +98,10 @@ export class Stack {
     return peekArray
   }
 
+  peekBigInt(num: number = 1): bigint[] {
+    return this.peek(num)
+  }
+
   /**
    * Swap top of stack with an item in the stack.
    * @param position - Index of item from top of the stack (0-indexed)
