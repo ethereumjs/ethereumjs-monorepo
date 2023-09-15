@@ -25,6 +25,9 @@ export async function runTx(data: string, to?: string, value?: bigint) {
 }
 
 describe('simple mainnet test run', async () => {
+  if (process.env.EXTRA_CL_PARAMS === undefined) {
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0'
+  }
   const { teardownCallBack, result } = await startNetwork(network, client, {
     filterKeywords,
     filterOutWords,
@@ -48,26 +51,30 @@ describe('simple mainnet test run', async () => {
 
   const blockHashes: string[] = []
   // ------------Sanity checks--------------------------------
-  it('Simple transfer - sanity check', async () => {
-    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-    let balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    assert.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
-    await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
-    balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    balance = await client.request('eth_getBalance', [
-      '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
-      'latest',
-    ])
-    assert.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
-    const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
-    blockHashes.push(latestBlock.result.hash)
-  })
+  it(
+    'Simple transfer - sanity check',
+    async () => {
+      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+      let balance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      assert.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+      await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
+      balance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      balance = await client.request('eth_getBalance', [
+        '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
+        'latest',
+      ])
+      assert.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
+      const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
+      blockHashes.push(latestBlock.result.hash)
+    },
+    2 * 60_000
+  )
 
   it('Validate execution hashes present in beacon headers', async () => {
     const eth2res = await (await fetch('http://127.0.0.1:9596/eth/v1/beacon/headers')).json()
@@ -77,7 +84,7 @@ describe('simple mainnet test run', async () => {
       parseInt(eth2res.data[0].header.message.slot),
       blockHashes
     )
-  })
+  }, 60_000)
 
   it('should reset td', async () => {
     try {
@@ -86,5 +93,5 @@ describe('simple mainnet test run', async () => {
     } catch (e) {
       assert.fail('network not cleaned properly')
     }
-  })
+  }, 60_000)
 })
