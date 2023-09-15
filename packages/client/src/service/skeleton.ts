@@ -89,17 +89,11 @@ export class Skeleton extends MetaDBManager {
   private fillLogIndex = 0
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
-  private chainTTD: BigIntLike
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
     this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: true }
     this.started = 0
-    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
-    if (chainTTD === undefined || chainTTD === null) {
-      throw Error('Cannot create skeleton as merge not set')
-    }
-    this.chainTTD = chainTTD
   }
 
   /**
