@@ -20,7 +20,7 @@ import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
 import type { EVMPerformanceLogger, Timer } from './logger.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
-import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
+import type { Block, Blockchain, EVMProfilerOpts, EVMResult, EVMStack, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
@@ -73,8 +73,8 @@ export interface RunState {
   memory: Memory
   memoryWordCount: bigint
   highestMemCost: bigint
-  stack: Stack
-  returnStack: Stack
+  stack: EVMStack
+  returnStack: EVMStack
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)

@@ -2,6 +2,8 @@ import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
 
 import { ERROR, EvmError } from './exceptions.js'
 
+import type { EVMStack } from './types.js'
+
 /**
  * Simple single type (BigInt) stack implementation for the EVM.
  *
@@ -19,7 +21,7 @@ import { ERROR, EvmError } from './exceptions.js'
  * 2. If a byte-based opcode implementation has no direct performance penalties towards the bigint version,
  * the bytes version should be used (respectively: replace the bigint version)
  */
-export class Stack {
+export class Stack implements EVMStack {
   // This array is initialized as an empty array. Once values are pushed, the array size will never decrease.
   private _store: bigint[]
   private _maxHeight: number

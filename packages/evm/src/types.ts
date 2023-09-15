@@ -266,6 +266,21 @@ export interface EVMOpts {
   profiler?: EVMProfilerOpts
 }
 
+export interface EVMStack {
+  length: number
+  pushBigInt(value: bigint): void
+  pushBytes(value: Uint8Array): void
+  popBigInt(): bigint
+  popBytes(): Uint8Array
+  popNBigInt(num: number): bigint[]
+  popNBytes(num: number): Uint8Array[]
+  peekBigInt(num: number): bigint[]
+  peekBytes(num: number): Uint8Array[]
+  swap(position: number): void
+  dup(position: number): void
+  getStack(): bigint[]
+}
+
 /**
  * Result of executing a message via the {@link EVM}.
  */

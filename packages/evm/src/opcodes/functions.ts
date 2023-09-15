@@ -805,7 +805,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           trap(ERROR.INVALID_RETURNSUB)
         }
 
-        const dest = runState.returnStack.pop()
+        const dest = runState.returnStack.popBigInt()
         runState.programCounter = Number(dest)
       } else if (common.isActivatedEIP(1153)) {
         // TSTORE
@@ -845,7 +845,7 @@ export const handlers: Map<number, OpHandler> = new Map([
           trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
         }
 
-        runState.returnStack.push(BigInt(runState.programCounter))
+        runState.returnStack.pushBigInt(BigInt(runState.programCounter))
         runState.programCounter = destNum + 1
       } else if (common.isActivatedEIP(5656)) {
         // MCOPY
