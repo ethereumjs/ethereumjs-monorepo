@@ -78,7 +78,7 @@ export interface RunState {
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
-  cachedPushes: { [pc: number]: bigint }
+  cachedPushes: { [pc: number]: Uint8Array }
   stateManager: EVMStateManagerInterface
   blockchain: Blockchain
   env: Env
@@ -416,7 +416,7 @@ export class Interpreter {
   // Returns all valid jump and jumpsub destinations.
   _getValidJumpDests(code: Uint8Array) {
     const jumps = new Uint8Array(code.length).fill(0)
-    const pushes: { [pc: number]: bigint } = {}
+    const pushes: { [pc: number]: Uint8Array } = {}
 
     const opcodesCached = Array(code.length)
 
@@ -427,7 +427,7 @@ export class Interpreter {
       if (opcode <= 0x7f) {
         if (opcode >= 0x60) {
           const extraSteps = opcode - 0x5f
-          const push = bytesToBigInt(code.slice(i + 1, i + opcode - 0x5e))
+          const push = code.slice(i + 1, i + opcode - 0x5e)
           pushes[i + 1] = push
           i += extraSteps
         } else if (opcode === 0x5b) {
@@ -634,8 +634,8 @@ export class Interpreter {
    * Returns caller address. This is the address of the account
    * that is directly responsible for this execution.
    */
-  getCaller(): bigint {
-    return bytesToBigInt(this._env.caller.bytes)
+  getCaller(): Uint8Array {
+    return this._env.caller.bytes
   }
 
   /**
@@ -696,8 +696,8 @@ export class Interpreter {
    * sender of original transaction; it is never an account with
    * non-empty associated code.
    */
-  getTxOrigin(): bigint {
-    return bytesToBigInt(this._env.origin.bytes)
+  getTxOrigin(): Uint8Array {
+    return this._env.origin.bytes
   }
 
   /**
@@ -710,14 +710,14 @@ export class Interpreter {
   /**
    * Returns the block's beneficiary address.
    */
-  getBlockCoinbase(): bigint {
+  getBlockCoinbase(): Uint8Array {
     let coinbase: Address
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Clique) {
       coinbase = this._env.block.header.cliqueSigner()
     } else {
       coinbase = this._env.block.header.coinbase
     }
-    return bytesToBigInt(coinbase.toBytes())
+    return coinbase.toBytes()
   }
 
   /**
@@ -737,8 +737,8 @@ export class Interpreter {
   /**
    * Returns the block's prevRandao field.
    */
-  getBlockPrevRandao(): bigint {
-    return bytesToBigInt(this._env.block.header.prevRandao)
+  getBlockPrevRandao(): Uint8Array {
+    return this._env.block.header.prevRandao
   }
 
   /**

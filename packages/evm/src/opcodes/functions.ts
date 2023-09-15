@@ -375,8 +375,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BigInt(0)) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt(bytesToHex(keccak256(data)))
-      runState.stack.pushBigInt(r)
+      const r = keccak256(data)
+      runState.stack.pushBytes(r)
     },
   ],
   // 0x30 range - closure state
@@ -384,16 +384,16 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x30,
     function (runState) {
-      const address = bytesToBigInt(runState.interpreter.getAddress().bytes)
-      runState.stack.pushBigInt(address)
+      const address = runState.interpreter.getAddress().bytes
+      runState.stack.pushBytes(address)
     },
   ],
   // 0x31: BALANCE
   [
     0x31,
     async function (runState) {
-      const addressBigInt = runState.stack.popBigInt()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const addressBytes = runState.stack.popBytes()
+      const address = new Address(addressBytes)
       const balance = await runState.interpreter.getExternalBalance(address)
       runState.stack.pushBigInt(balance)
     },
@@ -402,14 +402,14 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x32,
     function (runState) {
-      runState.stack.pushBigInt(runState.interpreter.getTxOrigin())
+      runState.stack.pushBytes(runState.interpreter.getTxOrigin())
     },
   ],
   // 0x33: CALLER
   [
     0x33,
     function (runState) {
-      runState.stack.pushBigInt(runState.interpreter.getCaller())
+      runState.stack.pushBytes(runState.interpreter.getCaller())
     },
   ],
   // 0x34: CALLVALUE
@@ -520,11 +520,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = new Address(addresstoBytes(addressBigInt))
       const account = await runState.stateManager.getAccount(address)
       if (!account || account.isEmpty()) {
-        runState.stack.pushBigInt(BigInt(0))
+        runState.stack.pushBytes(new Uint8Array([0]))
         return
       }
 
-      runState.stack.pushBigInt(BigInt(bytesToHex(account.codeHash)))
+      runState.stack.pushBytes(account.codeHash)
     },
   ],
   // 0x3d: RETURNDATASIZE
@@ -569,20 +569,20 @@ export const handlers: Map<number, OpHandler> = new Map([
       const diff = runState.interpreter.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
       if (diff > BigInt(256) || diff <= BigInt(0)) {
-        runState.stack.pushBigInt(BigInt(0))
+        runState.stack.pushBytes(new Uint8Array([0]))
         return
       }
 
       const block = await runState.blockchain.getBlock(Number(number))
 
-      runState.stack.pushBigInt(bytesToBigInt(block.hash()))
+      runState.stack.pushBytes(block.hash())
     },
   ],
   // 0x41: COINBASE
   [
     0x41,
     function (runState) {
-      runState.stack.pushBigInt(runState.interpreter.getBlockCoinbase())
+      runState.stack.pushBytes(runState.interpreter.getBlockCoinbase())
     },
   ],
   // 0x42: TIMESTAMP
@@ -604,7 +604,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x44,
     function (runState, common) {
       if (common.isActivatedEIP(4399)) {
-        runState.stack.pushBigInt(runState.interpreter.getBlockPrevRandao())
+        runState.stack.pushBytes(runState.interpreter.getBlockPrevRandao())
       } else {
         runState.stack.pushBigInt(runState.interpreter.getBlockDifficulty())
       }
@@ -644,9 +644,9 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const index = runState.stack.popBigInt()
       if (runState.env.versionedHashes.length > Number(index)) {
-        runState.stack.pushBigInt(bytesToBigInt(runState.env.versionedHashes[Number(index)]))
+        runState.stack.pushBytes(runState.env.versionedHashes[Number(index)])
       } else {
-        runState.stack.pushBigInt(BigInt(0))
+        runState.stack.pushBytes(new Uint8Array([0]))
       }
     },
   ],
@@ -664,7 +664,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const pos = runState.stack.popBigInt()
       const word = runState.memory.read(Number(pos), 32, true)
-      runState.stack.pushBigInt(bytesToBigInt(word))
+      runState.stack.pushBytes(word)
     },
   ],
   // 0x52: MSTORE
@@ -695,8 +695,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       const key = runState.stack.popBigInt()
       const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
       const value = await runState.interpreter.storageLoad(keyBuf)
-      const valueBigInt = value.length ? bytesToBigInt(value) : BigInt(0)
-      runState.stack.pushBigInt(valueBigInt)
+      const valueBytes = value.length ? value : new Uint8Array([0])
+      runState.stack.pushBytes(valueBytes)
     },
   ],
   // 0x55: SSTORE
@@ -790,8 +790,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         const key = runState.stack.popBigInt()
         const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
         const value = runState.interpreter.transientStorageLoad(keyBuf)
-        const valueBN = value.length ? bytesToBigInt(value) : BigInt(0)
-        runState.stack.pushBigInt(valueBN)
+        const valueBytes = value.length ? value : new Uint8Array([0])
+        runState.stack.pushBytes(valueBytes)
       }
     },
   ],
@@ -859,7 +859,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x5f,
     function (runState) {
-      runState.stack.pushBigInt(BigInt(0))
+      runState.stack.pushBytes(new Uint8Array([0]))
     },
   ],
   // 0x60: PUSH
@@ -875,14 +875,15 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       if (!runState.shouldDoJumpAnalysis) {
-        runState.stack.pushBigInt(runState.cachedPushes[runState.programCounter])
+        runState.stack.pushBytes(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
       } else {
-        const loaded = bytesToBigInt(
-          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush)
+        const loaded = runState.code.subarray(
+          runState.programCounter,
+          runState.programCounter + numToPush
         )
         runState.programCounter += numToPush
-        runState.stack.pushBigInt(loaded)
+        runState.stack.pushBytes(loaded)
       }
     },
   ],
