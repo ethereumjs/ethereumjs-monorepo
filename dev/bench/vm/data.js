@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1694786384013,
+  "lastUpdate": 1694815071687,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4567956cc06e9df27b296b4feeefdec6e9501e0b",
-          "message": "Snap Sync: Storage Fetcher Highest-Known-Hash Optimization (#2965)\n\n* Don't request tasks with limit lower than the highest known hash\r\n\r\n* Update test message\r\n\r\n* Update highest known hash in process phase\r\n\r\n* Test highest known hash optimization\r\n\r\n* Update test\r\n\r\n* Increase miner ethash PoW test timeout\r\n\r\n* Clean up code\r\n\r\n* small cleanup\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-08-22T19:35:32+05:30",
-          "tree_id": "6eea974436898c1fe3fccc918c66a4c7293833a1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4567956cc06e9df27b296b4feeefdec6e9501e0b"
-        },
-        "date": 1692713378001,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 26285,
-            "range": "±5.51%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 26206,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 26044,
-            "range": "±3.39%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25304,
-            "range": "±3.62%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20913,
-            "range": "±10.50%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.23%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "91968d7b1e88a3fd19e7491f68337ba3843bd346",
+          "message": "Use trie verifyRangeProof for no-proof range verification (#2977)\n\n* Use trie verifyRangeProof for no-proof range verification\r\n\r\n* Update all-element proof verification\r\n\r\n* Update test\r\n\r\n* Clean up and fix linting issue\r\n\r\n* Keep a single instance of proof trie\r\n\r\n* Reuse proof trie for verifyRangeProof\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: g11tech <gajinder@g11.in>",
+          "timestamp": "2023-09-15T14:39:05-07:00",
+          "tree_id": "55e590842c427bf7e36563f024252db60863d77e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91968d7b1e88a3fd19e7491f68337ba3843bd346"
+        },
+        "date": 1694815070312,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20428,
+            "range": "±5.54%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20309,
+            "range": "±3.23%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19180,
+            "range": "±7.84%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19266,
+            "range": "±7.65%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19537,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
