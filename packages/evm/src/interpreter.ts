@@ -11,10 +11,10 @@ import debugDefault from 'debug'
 
 import { EOF } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
+import { HybridStack } from './hybridStack.js'
 import { Memory } from './memory.js'
 import { Message } from './message.js'
 import { trap } from './opcodes/index.js'
-import { Stack } from './stack.js'
 
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
@@ -158,8 +158,8 @@ export class Interpreter {
       memory: new Memory(),
       memoryWordCount: BigInt(0),
       highestMemCost: BigInt(0),
-      stack: new Stack(),
-      returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
+      stack: new HybridStack(),
+      returnStack: new HybridStack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
       cachedPushes: {},
