@@ -46,6 +46,10 @@ export class Stack {
     return this._store[--this._len]
   }
 
+  popBigInt(): bigint {
+    return this.pop()
+  }
+
   /**
    * Pop multiple items from stack. Top of stack is first item
    * in returned array.
