@@ -6,7 +6,6 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   compareBytes,
-  equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -63,6 +62,8 @@ export type JobTask = {
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
 
+  private _proofTrie: Trie
+
   /**
    * The stateRoot for the fetcher which sorts of pin it to a snapshot.
    * This might eventually be removed as the snapshots are moving and not static
@@ -84,6 +85,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   constructor(options: StorageFetcherOptions) {
     super(options)
+    this._proofTrie = new Trie()
     this.fragmentedRequests = []
     this.root = options.root
     this.storageRequests = options.storageRequests ?? []
@@ -119,20 +121,9 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           slots[slots.length - 1].hash
         )}`
       )
-      for (let i = 0; i < slots.length - 1; i++) {
-        // ensure the range is monotonically increasing
-        if (bytesToBigInt(slots[i].hash) > bytesToBigInt(slots[i + 1].hash)) {
-          throw Error(
-            `Storage hashes not monotonically increasing: ${i} ${slots[i].hash} vs ${i + 1} ${
-              slots[i + 1].hash
-            }`
-          )
-        }
-      }
-      const trie = new Trie()
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return await trie.verifyRangeProof(
+      return await this._proofTrie.verifyRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],
@@ -140,37 +131,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         values,
         <any>proof
       )
-    } catch (err) {
-      this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
-      throw Error((err as Error).message)
-    }
-  }
-
-  // TODO currently have to use verifySlots instead of verify range proof because no-proof verification is not working for verifyRangeProof
-  private async verifySlots(slots: StorageData[], root: Uint8Array): Promise<boolean> {
-    try {
-      this.debug(`verify ${slots.length} slots`)
-      for (let i = 0; i < slots.length - 1; i++) {
-        // ensure the range is monotonically increasing
-        if (bytesToBigInt(slots[i].hash) > bytesToBigInt(slots[i + 1].hash)) {
-          throw Error(
-            `Account hashes not monotonically increasing: ${i} ${slots[i].hash} vs ${i + 1} ${
-              slots[i + 1].hash
-            }`
-          )
-        }
-      }
-      const trie = new Trie()
-      await trie.batch(
-        slots.map((s) => {
-          return {
-            type: 'put',
-            key: s.hash,
-            value: s.body,
-          }
-        })
-      )
-      return equalsBytes(trie.root(), root)
     } catch (err) {
       this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
       throw Error((err as Error).message)
@@ -308,11 +268,30 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const root = task.storageRequests[i].storageRoot
         const highestReceivedhash = accountSlots[accountSlots.length - 1].hash
 
+        for (let i = 0; i < accountSlots.length - 1; i++) {
+          // ensure the range is monotonically increasing
+          if (bytesToBigInt(accountSlots[i].hash) > bytesToBigInt(accountSlots[i + 1].hash)) {
+            throw Error(
+              `Account hashes not monotonically increasing: ${i} ${accountSlots[i].hash} vs ${
+                i + 1
+              } ${accountSlots[i + 1].hash}`
+            )
+          }
+        }
+
         // all but the last returned slot array must include all slots for the requested account
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
-          const valid = await this.verifySlots(accountSlots, root)
-          if (!valid) return undefined
+          // all-elements proof verification
+          await this._proofTrie.verifyRangeProof(
+            root,
+            null,
+            null,
+            accountSlots.map((s) => s.hash),
+            accountSlots.map((s) => s.body),
+            null
+          )
+
           if (proof?.length === 0)
             return Object.assign([], [rangeResult.slots], { completed: true })
         } else {
