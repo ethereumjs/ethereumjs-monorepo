@@ -5,7 +5,7 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
-import { Skeleton } from '../../src/service/skeleton'
+import { Skeleton } from '../../src/sync'
 import { ReverseBlockFetcher } from '../../src/sync/fetcher/reverseblockfetcher'
 
 describe('[BeaconSynchronizer]', async () => {
