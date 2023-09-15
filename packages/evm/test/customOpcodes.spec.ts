@@ -40,7 +40,7 @@ describe('VM: custom opcodes', () => {
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.ok(res.runState!.stack.peekBigInt()[0] === stackPush, 'successfully ran opcode logic')
+    assert.ok(res.runState!.stack.peekBigInt(1)[0] === stackPush, 'successfully ran opcode logic')
     assert.ok(correctOpcodeName, 'successfully set opcode name')
   })
 
@@ -97,7 +97,7 @@ describe('VM: custom opcodes', () => {
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.ok(res.runState!.stack.peekBigInt()[0] === stackPush, 'successfully ran opcode logic')
+    assert.ok(res.runState!.stack.peekBigInt(1)[0] === stackPush, 'successfully ran opcode logic')
   })
 
   it('should pass the correct EVM options when copying the EVM', async () => {

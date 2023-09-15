@@ -26,7 +26,7 @@ describe('Stack', () => {
     const s = new Stack()
     const v = BigInt(5)
     s.pushBigInt(v)
-    assert.deepEqual(s.peekBigInt(), [v])
+    assert.deepEqual(s.peekBigInt(1), [v])
     assert.equal(s.popBigInt(), v)
   })
 
@@ -34,7 +34,7 @@ describe('Stack', () => {
     const s = new Stack()
     const v = new Uint8Array([5])
     s.pushBytes(v)
-    assert.deepEqual(s.peekBytes(), [v])
+    assert.deepEqual(s.peekBytes(1), [v])
     assert.deepEqual(s.popBytes(), v)
   })
 
