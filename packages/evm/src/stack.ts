@@ -75,6 +75,10 @@ export class Stack {
     return arr
   }
 
+  popNBigInt(num: number = 1): bigint[] {
+    return this.popN(num)
+  }
+
   /**
    * Return items from the stack
    * @param num Number of items to return
