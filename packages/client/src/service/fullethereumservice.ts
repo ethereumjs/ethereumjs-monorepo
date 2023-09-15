@@ -10,10 +10,10 @@ import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
-import { Skeleton } from '../sync/skeleton'
 import { Event } from '../types'
 
 import { Service, type ServiceOptions } from './service'
+import { Skeleton } from './skeleton'
 import { TxPool } from './txpool'
 
 import type { Peer } from '../net/peer/peer'
@@ -36,6 +36,7 @@ export class FullEthereumService extends Service {
   public miner: Miner | undefined
   public execution: VMExecution
   public txPool: TxPool
+  public skeleton: Skeleton
 
   /**
    * Create new ETH service
@@ -57,6 +58,12 @@ export class FullEthereumService extends Service {
     this.txPool = new TxPool({
       config: this.config,
       service: this,
+    })
+
+    this.skeleton = new Skeleton({
+      config: this.config,
+      chain: this.chain,
+      metaDB: (this.execution as any).metaDB,
     })
 
     // This flag is just to run and test snap sync, when fully ready, this needs to
@@ -117,24 +124,21 @@ export class FullEthereumService extends Service {
       this.miner?.stop()
       this.config.logger.info(`Transitioning to beacon sync`)
     }
-    const skeleton = new Skeleton({
-      config: this.config,
-      chain: this.chain,
-      metaDB: (this.execution as any).metaDB,
-    })
+
     this.synchronizer = new BeaconSynchronizer({
       config: this.config,
       pool: this.pool,
       chain: this.chain,
       interval: this.interval,
       execution: this.execution,
-      skeleton,
+      skeleton: this.skeleton,
     })
     await this.synchronizer.open()
   }
 
   async open() {
     if (this.synchronizer !== undefined) {
+      await this.skeleton.open()
       this.config.logger.info(
         `Preparing for sync using FullEthereumService with ${
           this.synchronizer instanceof BeaconSynchronizer

@@ -661,7 +661,10 @@ export class Engine {
     // been initialized here but a batch of blocks new payloads arrive, most likely during sync
     // We still can't switch to beacon sync here especially if the chain is pre merge and there
     // is pow block which this client would like to mint and attempt proposing it
-    const optimisticLookup = await this.service.beaconSync?.extendChain(block)
+    //
+    // call skeleton setHead without forcing head change to return if its reorged or not
+    // and flip it go get lookup flag
+    const optimisticLookup = !(await this.service.skeleton.setHead(block, false))
 
     // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
@@ -682,7 +685,7 @@ export class Engine {
       // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
       // to run basic validations based on parent
       const parent =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
+        (await this.service.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
         (await this.chain.getBlock(hexToBytes(parentHash)))
 
@@ -789,7 +792,7 @@ export class Engine {
         // eslint-disable-next-line no-empty
       } catch {}
       try {
-        await this.service.beaconSync?.skeleton.deleteBlock(lastBlock!)
+        await this.service.skeleton.deleteBlock(lastBlock!)
         // eslint-disable-next-line no-empty
       } catch {}
       return response
@@ -937,7 +940,7 @@ export class Engine {
       const head = toBytes(headBlockHash)
       headBlock =
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
-        (await this.service.beaconSync?.skeleton.getBlockByHash(head, true)) ??
+        (await this.service.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
     } catch (error) {
       this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
@@ -967,7 +970,11 @@ export class Engine {
         headBlock.hash()
       )}`
     )
-    await this.service.beaconSync?.setHead(headBlock)
+
+    // call skeleton sethead with force head change and reset beacon sync if reorg
+    const reorged = await this.service.skeleton.setHead(headBlock, true)
+    if (reorged) await this.service.beaconSync?.reorged(headBlock)
+
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
@@ -1012,7 +1019,7 @@ export class Engine {
           // Right now only check if the block is available, canonicality check is done
           // in setHead after chain.putBlocks so as to reflect latest canonical chain
           safeBlock =
-            (await this.service.beaconSync?.skeleton.getBlockByHash(safe, true)) ??
+            (await this.service.skeleton.getBlockByHash(safe, true)) ??
             (await this.chain.getBlock(safe))
         } catch (_error: any) {
           throw {
@@ -1030,7 +1037,7 @@ export class Engine {
         // Right now only check if the block is available, canonicality check is done
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
         finalizedBlock =
-          (await this.service.beaconSync?.skeleton.getBlockByHash(finalized, true)) ??
+          (await this.service.skeleton.getBlockByHash(finalized, true)) ??
           (await this.chain.getBlock(finalized))
       } catch (error: any) {
         throw {
