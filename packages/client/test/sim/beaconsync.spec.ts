@@ -177,6 +177,7 @@ describe('simple mainnet test run', async () => {
 
   it('network cleanup', async () => {
     try {
+      beaconSyncRelayer?.close()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
     } catch (e) {
