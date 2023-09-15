@@ -10,90 +10,90 @@ describe('Stack', () => {
   it('should be empty initially', () => {
     const s = new Stack()
     assert.equal(s.length, 0)
-    assert.throws(() => s.pop())
+    assert.throws(() => s.popBigInt())
   })
 
   it('popN should throw for empty stack', () => {
     const s = new Stack()
-    assert.deepEqual(s.popN(0), [])
-    assert.throws(() => s.popN(1))
+    assert.deepEqual(s.popNBigInt(0), [])
+    assert.throws(() => s.popNBigInt(1))
   })
 
   it('should push item', () => {
     const s = new Stack()
-    s.push(BigInt(5))
-    assert.equal(s.pop(), BigInt(5))
+    s.pushBigInt(BigInt(5))
+    assert.equal(s.popBigInt(), BigInt(5))
   })
 
   it('popN should return array for n = 1', () => {
     const s = new Stack()
-    s.push(BigInt(5))
-    assert.deepEqual(s.popN(1), [BigInt(5)])
+    s.pushBigInt(BigInt(5))
+    assert.deepEqual(s.popNBigInt(1), [BigInt(5)])
   })
 
   it('popN should fail on underflow', () => {
     const s = new Stack()
-    s.push(BigInt(5))
-    assert.throws(() => s.popN(2))
+    s.pushBigInt(BigInt(5))
+    assert.throws(() => s.popNBigInt(2))
   })
 
   it('popN should return in correct order', () => {
     const s = new Stack()
-    s.push(BigInt(5))
-    s.push(BigInt(7))
-    assert.deepEqual(s.popN(2), [BigInt(7), BigInt(5)])
+    s.pushBigInt(BigInt(5))
+    s.pushBigInt(BigInt(7))
+    assert.deepEqual(s.popNBigInt(2), [BigInt(7), BigInt(5)])
   })
 
   it('should throw on overflow', () => {
     const s = new Stack()
     for (let i = 0; i < 1024; i++) {
-      s.push(BigInt(i))
+      s.pushBigInt(BigInt(i))
     }
-    assert.throws(() => s.push(BigInt(1024)))
+    assert.throws(() => s.pushBigInt(BigInt(1024)))
   })
 
   it('overflow limit should be configurable', () => {
     const s = new Stack(1023)
     for (let i = 0; i < 1023; i++) {
-      s.push(BigInt(i))
+      s.pushBigInt(BigInt(i))
     }
-    assert.throws(() => s.push(BigInt(1023)))
+    assert.throws(() => s.pushBigInt(BigInt(1023)))
   })
 
   it('should swap top with itself', () => {
     const s = new Stack()
-    s.push(BigInt(5))
+    s.pushBigInt(BigInt(5))
     s.swap(0)
-    assert.deepEqual(s.pop(), BigInt(5))
+    assert.deepEqual(s.popBigInt(), BigInt(5))
   })
 
   it('swap should throw on underflow', () => {
     const s = new Stack()
-    s.push(BigInt(5))
+    s.pushBigInt(BigInt(5))
     assert.throws(() => s.swap(1))
   })
 
   it('should swap', () => {
     const s = new Stack()
-    s.push(BigInt(5))
-    s.push(BigInt(7))
+    s.pushBigInt(BigInt(5))
+    s.pushBigInt(BigInt(7))
     s.swap(1)
-    assert.deepEqual(s.pop(), BigInt(5))
+    assert.deepEqual(s.popBigInt(), BigInt(5))
   })
 
   it('dup should throw on underflow', () => {
     const s = new Stack()
     assert.throws(() => s.dup(1))
-    s.push(BigInt(5))
+    s.pushBigInt(BigInt(5))
     assert.throws(() => s.dup(2))
   })
 
   it('should dup', () => {
     const s = new Stack()
-    s.push(BigInt(5))
-    s.push(BigInt(7))
+    s.pushBigInt(BigInt(5))
+    s.pushBigInt(BigInt(7))
     s.dup(2)
-    assert.deepEqual(s.pop(), BigInt(5))
+    assert.deepEqual(s.popBigInt(), BigInt(5))
   })
 
   it('stack items should not change if they are DUPed', async () => {
@@ -141,10 +141,10 @@ describe('Stack', () => {
 
   it('stack should report actual stack correctly', () => {
     const s = new Stack()
-    s.push(BigInt(4))
-    s.push(BigInt(6))
-    s.push(BigInt(8))
-    s.pop()
+    s.pushBigInt(BigInt(4))
+    s.pushBigInt(BigInt(6))
+    s.pushBigInt(BigInt(8))
+    s.popBigInt()
     const reportedStack = s.getStack()
     assert.deepEqual(reportedStack, [BigInt(4), BigInt(6)])
   })

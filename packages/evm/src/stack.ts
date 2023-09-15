@@ -1,3 +1,5 @@
+import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
+
 import { ERROR, EvmError } from './exceptions.js'
 
 /**
@@ -34,6 +36,10 @@ export class Stack {
     this.push(value)
   }
 
+  pushBytes(value: Uint8Array) {
+    this.push(bytesToBigInt(value))
+  }
+
   pop(): bigint {
     if (this._len < 1) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
@@ -48,6 +54,10 @@ export class Stack {
 
   popBigInt(): bigint {
     return this.pop()
+  }
+
+  popBytes(): Uint8Array {
+    return bigIntToBytes(this.pop())
   }
 
   /**
@@ -79,6 +89,26 @@ export class Stack {
     return this.popN(num)
   }
 
+  popNBytes(num: number = 1): Uint8Array[] {
+    if (this._len < num) {
+      throw new EvmError(ERROR.STACK_UNDERFLOW)
+    }
+
+    if (num === 0) {
+      return []
+    }
+
+    const arr = Array(num)
+    const cache = this._store
+
+    for (let pop = 0; pop < num; pop++) {
+      // Note: this thus also (correctly) reduces the length of the internal array (without deleting items)
+      arr[pop] = bigIntToBytes(cache[--this._len])
+    }
+
+    return arr
+  }
+
   /**
    * Return items from the stack
    * @param num Number of items to return
@@ -100,6 +130,20 @@ export class Stack {
 
   peekBigInt(num: number = 1): bigint[] {
     return this.peek(num)
+  }
+
+  peekBytes(num: number = 1): Uint8Array[] {
+    const peekArray: Uint8Array[] = Array(num)
+    let start = this._len
+
+    for (let peek = 0; peek < num; peek++) {
+      const index = --start
+      if (index < 0) {
+        throw new EvmError(ERROR.STACK_UNDERFLOW)
+      }
+      peekArray[peek] = bigIntToBytes(this._store[index])
+    }
+    return peekArray
   }
 
   /**
