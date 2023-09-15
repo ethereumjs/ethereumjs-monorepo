@@ -3,7 +3,21 @@ import { bigIntToBytes, bytesToBigInt } from '@ethereumjs/util'
 import { ERROR, EvmError } from './exceptions.js'
 
 /**
- * Implementation of the stack used in evm.
+ * Simple single type (BigInt) stack implementation for the EVM.
+ *
+ * While this is still the default for the EVM for backwards-compatibility reason this stack comes with
+ * significant performance penalties since all stack values need to be converted to and from BigInt.
+ *
+ * In the current EVM version this stack performs significantly better than the hybrid type stack on the EVM
+ * `step` event (if used), since there is no mapping to a single type stack needed on each step.
+ *
+ * Developer notes:
+ *
+ * 1. If there are bigint/bytes conversions in opcode implementations before or after accessing the stack,
+ * direct calling into the type-named methods here should be preferred and the conversion removed from the
+ * opcode implementation.
+ * 2. If a byte-based opcode implementation has no direct performance penalties towards the bigint version,
+ * the bytes version should be used (respectively: replace the bigint version)
  */
 export class Stack {
   // This array is initialized as an empty array. Once values are pushed, the array size will never decrease.
@@ -23,6 +37,11 @@ export class Stack {
     return this._len
   }
 
+  /**
+   * Push an item to the stack.
+   * @deprecated use the type-named version of the method
+   * @param value
+   */
   push(value: bigint) {
     if (this._len >= this._maxHeight) {
       throw new EvmError(ERROR.STACK_OVERFLOW)
@@ -32,14 +51,27 @@ export class Stack {
     this._store[this._len++] = value
   }
 
+  /**
+   * Push an item to the stack.
+   * @param value
+   */
   pushBigInt(value: bigint) {
     this.push(value)
   }
 
+  /**
+   * Push an item to the stack.
+   * @param value
+   */
   pushBytes(value: Uint8Array) {
     this.push(bytesToBigInt(value))
   }
 
+  /**
+   * Pop an item from the stack.
+   * @deprecated use the type-named version of the method
+   * @param value
+   */
   pop(): bigint {
     if (this._len < 1) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
@@ -52,10 +84,18 @@ export class Stack {
     return this._store[--this._len]
   }
 
+  /**
+   * Pop an item from the stack.
+   * @param value
+   */
   popBigInt(): bigint {
     return this.pop()
   }
 
+  /**
+   * Pop an item from the stack.
+   * @param value
+   */
   popBytes(): Uint8Array {
     return bigIntToBytes(this.pop())
   }
@@ -63,6 +103,7 @@ export class Stack {
   /**
    * Pop multiple items from stack. Top of stack is first item
    * in returned array.
+   * @deprecated use the type-named version of the method
    * @param num - Number of items to pop
    */
   popN(num: number = 1): bigint[] {
@@ -85,10 +126,20 @@ export class Stack {
     return arr
   }
 
+  /**
+   * Pop multiple items from stack. Top of stack is first item
+   * in returned array.
+   * @param num - Number of items to pop
+   */
   popNBigInt(num: number = 1): bigint[] {
     return this.popN(num)
   }
 
+  /**
+   * Pop multiple items from stack. Top of stack is first item
+   * in returned array.
+   * @param num - Number of items to pop
+   */
   popNBytes(num: number = 1): Uint8Array[] {
     if (this._len < num) {
       throw new EvmError(ERROR.STACK_UNDERFLOW)
@@ -111,6 +162,7 @@ export class Stack {
 
   /**
    * Return items from the stack
+   * @deprecated use the type-named version of the method
    * @param num Number of items to return
    * @throws {@link ERROR.STACK_UNDERFLOW}
    */
@@ -128,10 +180,20 @@ export class Stack {
     return peekArray
   }
 
+  /**
+   * Return items from the stack
+   * @param num Number of items to return
+   * @throws {@link ERROR.STACK_UNDERFLOW}
+   */
   peekBigInt(num: number = 1): bigint[] {
     return this.peek(num)
   }
 
+  /**
+   * Return items from the stack
+   * @param num Number of items to return
+   * @throws {@link ERROR.STACK_UNDERFLOW}
+   */
   peekBytes(num: number = 1): Uint8Array[] {
     const peekArray: Uint8Array[] = Array(num)
     let start = this._len
