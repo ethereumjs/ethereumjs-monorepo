@@ -486,10 +486,9 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3b,
     async function (runState) {
-      const addressBigInt = runState.stack.popBigInt()
+      const addressBytes = runState.stack.popBytes()
       const size = BigInt(
-        (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
-          .length
+        (await runState.stateManager.getContractCode(new Address(addressBytes))).length
       )
       runState.stack.pushBigInt(size)
     },
@@ -498,12 +497,11 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3c,
     async function (runState) {
-      const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popNBigInt(4)
+      const addressBytes = runState.stack.popBytes()
+      const [memOffset, codeOffset, dataLength] = runState.stack.popNBigInt(3)
 
       if (dataLength !== BigInt(0)) {
-        const code = await runState.stateManager.getContractCode(
-          new Address(addresstoBytes(addressBigInt))
-        )
+        const code = await runState.stateManager.getContractCode(new Address(addressBytes))
 
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
@@ -516,8 +514,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x3f,
     async function (runState) {
-      const addressBigInt = runState.stack.popBigInt()
-      const address = new Address(addresstoBytes(addressBigInt))
+      const addressBytes = runState.stack.popBytes()
+      const address = new Address(addressBytes)
       const account = await runState.stateManager.getAccount(address)
       if (!account || account.isEmpty()) {
         runState.stack.pushBytes(new Uint8Array([0]))
@@ -671,8 +669,9 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x52,
     function (runState) {
-      const [offset, word] = runState.stack.popNBigInt(2)
-      const buf = setLengthLeft(bigIntToBytes(word), 32)
+      const offset = runState.stack.popBigInt()
+      const word = runState.stack.popBytes()
+      const buf = setLengthLeft(word, 32)
       const offsetNum = Number(offset)
       runState.memory.write(offsetNum, 32, buf)
     },
@@ -692,8 +691,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x54,
     async function (runState) {
-      const key = runState.stack.popBigInt()
-      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+      const key = runState.stack.popBytes()
+      const keyBuf = setLengthLeft(key, 32)
       const value = await runState.interpreter.storageLoad(keyBuf)
       const valueBytes = value.length ? value : new Uint8Array([0])
       runState.stack.pushBytes(valueBytes)
@@ -703,17 +702,9 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x55,
     async function (runState) {
-      const [key, val] = runState.stack.popNBigInt(2)
+      const [key, value] = runState.stack.popNBytes(2)
 
-      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-      // NOTE: this should be the shortest representation
-      let value
-      if (val === BigInt(0)) {
-        value = Uint8Array.from([])
-      } else {
-        value = bigIntToBytes(val)
-      }
-
+      const keyBuf = setLengthLeft(key, 32)
       await runState.interpreter.storageStore(keyBuf, value)
     },
   ],
@@ -787,9 +778,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
       } else if (common.isActivatedEIP(1153)) {
         // TLOAD
-        const key = runState.stack.popBigInt()
-        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-        const value = runState.interpreter.transientStorageLoad(keyBuf)
+        const key = setLengthLeft(runState.stack.popBytes(), 32)
+        const value = runState.interpreter.transientStorageLoad(key)
         const valueBytes = value.length ? value : new Uint8Array([0])
         runState.stack.pushBytes(valueBytes)
       }
@@ -812,17 +802,9 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (runState.interpreter.isStatic()) {
           trap(ERROR.STATIC_STATE_CHANGE)
         }
-        const [key, val] = runState.stack.popNBigInt(2)
+        const [key, value] = runState.stack.popNBytes(2)
 
-        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-        // NOTE: this should be the shortest representation
-        let value
-        if (val === BigInt(0)) {
-          value = Uint8Array.from([])
-        } else {
-          value = bigIntToBytes(val)
-        }
-
+        const keyBuf = setLengthLeft(key, 32)
         runState.interpreter.transientStorageStore(keyBuf, value)
       }
     },
@@ -911,9 +893,9 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const topicsCount = runState.opCode - 0xa0
 
-      const topics = runState.stack.popNBigInt(topicsCount)
-      const topicsBuf = topics.map(function (a: bigint) {
-        return setLengthLeft(bigIntToBytes(a), 32)
+      const topics = runState.stack.popNBytes(topicsCount)
+      const topicsBuf = topics.map(function (a: Uint8Array) {
+        return setLengthLeft(a, 32)
       })
 
       let mem = new Uint8Array(0)
@@ -959,7 +941,8 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.STATIC_STATE_CHANGE)
       }
 
-      const [value, offset, length, salt] = runState.stack.popNBigInt(4)
+      const [value, offset, length] = runState.stack.popNBigInt(3)
+      const salt = runState.stack.popBytes()
 
       if (
         common.isActivatedEIP(3860) &&
@@ -977,12 +960,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(offset), Number(length), true)
       }
 
-      const ret = await runState.interpreter.create2(
-        gasLimit,
-        value,
-        data,
-        setLengthLeft(bigIntToBytes(salt), 32)
-      )
+      const ret = await runState.interpreter.create2(gasLimit, value, data, setLengthLeft(salt, 32))
       runState.stack.pushBigInt(ret)
     },
   ],
