@@ -180,6 +180,30 @@ export class BeaconSynchronizer extends Synchronizer {
   }
 
   /**
+   * Returns true if the block successfully extends the chain.
+   */
+  async extendChain(block: Block): Promise<boolean> {
+    if (!this.opened) return false
+    const reorg = await this.skeleton.setHead(block, false)
+    return !reorg
+  }
+
+  /**
+   * Sets the new head of the skeleton chain.
+   */
+  async setHead(block: Block): Promise<boolean> {
+    if (!this.opened) return false
+    // New head announced, start syncing to it if we are not already.
+    // If this causes a reorg, we will tear down the fetcher and start
+    // from the new head.
+    const reorg = await this.skeleton.setHead(block, true, !this.running)
+    if (reorg) {
+      await this.reorged(block)
+    }
+    return true
+  }
+
+  /**
    * Sync blocks from the skeleton chain tail.
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
