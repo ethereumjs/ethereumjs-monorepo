@@ -1,9 +1,16 @@
 import { SECP256K1_ORDER_DIV_2, bigIntToUnpaddedBytes, ecrecover } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Capability, type TypedTransaction } from '../types.js'
+import { BaseTransaction } from '../baseTransaction.js'
+import { Capability } from '../types.js'
 
-export function isSigned(tx: TypedTransaction): boolean {
+import type { LegacyTxInterface } from '../types.js'
+
+export function errorMsg(tx: LegacyTxInterface, msg: string) {
+  return `${msg} (${tx.errorStr()})`
+}
+
+export function isSigned(tx: LegacyTxInterface): boolean {
   const { v, r, s } = tx
   if (v === undefined || r === undefined || s === undefined) {
     return false
@@ -12,21 +19,37 @@ export function isSigned(tx: TypedTransaction): boolean {
   }
 }
 
-export function errorMsg(tx: TypedTransaction, msg: string) {
-  return `${msg} (${tx.errorStr()})`
+/**
+ * The amount of gas paid for the data in this tx
+ */
+export function getDataFee(tx: LegacyTxInterface, extraCost?: bigint): bigint {
+  if (tx.cache.dataFee && tx.cache.dataFee.hardfork === tx.common.hardfork()) {
+    return tx.cache.dataFee.value
+  }
+
+  const cost = BaseTransaction.prototype.getDataFee.bind(tx)() + (extraCost ?? 0n)
+
+  if (Object.isFrozen(tx)) {
+    tx.cache.dataFee = {
+      value: cost,
+      hardfork: tx.common.hardfork(),
+    }
+  }
+
+  return cost
 }
 
-export function hash(tx: TypedTransaction): Uint8Array {
+export function hash(tx: LegacyTxInterface): Uint8Array {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
     throw new Error(msg)
   }
 
   if (Object.isFrozen(tx)) {
-    if (!tx['cache'].hash) {
-      tx['cache'].hash = keccak256(tx.serialize())
+    if (!tx.cache.hash) {
+      tx.cache.hash = keccak256(tx.serialize())
     }
-    return tx['cache'].hash
+    return tx.cache.hash
   }
 
   return keccak256(tx.serialize())
@@ -36,7 +59,7 @@ export function hash(tx: TypedTransaction): Uint8Array {
  * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
  * Reasoning: https://ethereum.stackexchange.com/a/55728
  */
-export function validateHighS(tx: TypedTransaction): void {
+export function validateHighS(tx: LegacyTxInterface): void {
   const { s } = tx
   if (tx.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
     const msg = errorMsg(
@@ -47,17 +70,9 @@ export function validateHighS(tx: TypedTransaction): void {
   }
 }
 
-export function validateYParity(tx: TypedTransaction) {
-  const { v } = tx
-  if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
-    const msg = errorMsg(tx, 'The y-parity of the transaction should either be 0 or 1')
-    throw new Error(msg)
-  }
-}
-
-export function getSenderPublicKey(tx: TypedTransaction): Uint8Array {
-  if (tx['cache'].senderPubKey !== undefined) {
-    return tx['cache'].senderPubKey
+export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
+  if (tx.cache.senderPubKey !== undefined) {
+    return tx.cache.senderPubKey
   }
 
   const msgHash = tx.getMessageToVerifySignature()
@@ -75,7 +90,7 @@ export function getSenderPublicKey(tx: TypedTransaction): Uint8Array {
       tx.supports(Capability.EIP155ReplayProtection) ? tx.common.chainId() : undefined
     )
     if (Object.isFrozen(tx)) {
-      tx['cache'].senderPubKey = sender
+      tx.cache.senderPubKey = sender
     }
     return sender
   } catch (e: any) {
