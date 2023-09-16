@@ -36,7 +36,7 @@ export class FullEthereumService extends Service {
   public miner: Miner | undefined
   public execution: VMExecution
   public txPool: TxPool
-  public skeleton: Skeleton
+  public skeleton?: Skeleton
 
   /**
    * Create new ETH service
@@ -60,11 +60,14 @@ export class FullEthereumService extends Service {
       service: this,
     })
 
-    this.skeleton = new Skeleton({
-      config: this.config,
-      chain: this.chain,
-      metaDB: (this.execution as any).metaDB,
-    })
+    const metaDB = (this.execution as any).metaDB
+    if (metaDB !== undefined) {
+      this.skeleton = new Skeleton({
+        config: this.config,
+        chain: this.chain,
+        metaDB,
+      })
+    }
 
     // This flag is just to run and test snap sync, when fully ready, this needs to
     // be replaced by a more sophisticated condition based on how far back we are
@@ -131,14 +134,14 @@ export class FullEthereumService extends Service {
       chain: this.chain,
       interval: this.interval,
       execution: this.execution,
-      skeleton: this.skeleton,
+      skeleton: this.skeleton!,
     })
     await this.synchronizer.open()
   }
 
   async open() {
     if (this.synchronizer !== undefined) {
-      await this.skeleton.open()
+      await this.skeleton?.open()
       this.config.logger.info(
         `Preparing for sync using FullEthereumService with ${
           this.synchronizer instanceof BeaconSynchronizer
