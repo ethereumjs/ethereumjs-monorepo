@@ -1,5 +1,4 @@
 import { Block } from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -18,7 +17,7 @@ import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { Hardfork } from '@ethereumjs/common'
 
 // Thanks to go-ethereum for the skeleton design
 
