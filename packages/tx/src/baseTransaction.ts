@@ -18,22 +18,13 @@ import { checkMaxInitCodeSize } from './util.js'
 import type {
   JsonTx,
   Transaction,
+  TransactionCache,
   TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
-
-interface TransactionCache {
-  hash?: Uint8Array
-  dataFee?: {
-    value: bigint
-    hardfork: string | Hardfork
-  }
-  senderPubKey?: Uint8Array
-}
 
 /**
  * This base class will likely be subject to further
@@ -59,7 +50,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
   public readonly common!: Common
 
-  protected cache: TransactionCache = {
+  public cache: TransactionCache = {
     hash: undefined,
     dataFee: undefined,
     senderPubKey: undefined,
