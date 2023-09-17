@@ -153,30 +153,26 @@ export abstract class Synchronizer {
     }
 
     if (!(await this.syncWithPeer(peer))) return false
-
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      const resolveSync = (height?: number) => {
-        this.clearFetcher()
-        resolve(true)
-        const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
-        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
+    const resolveSync = (height?: number) => {
+      this.clearFetcher()
+      const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
+      this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
+    }
+    this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
+    try {
+      if (this._fetcher) {
+        await this._fetcher.fetch()
       }
-      this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
-      try {
-        if (this._fetcher) {
-          await this._fetcher.fetch()
-        }
-        this.config.logger.debug(`Fetcher finished fetching...`)
-        resolveSync()
-      } catch (error: any) {
-        this.config.logger.error(
-          `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
-        )
-        this.clearFetcher()
-        reject(error)
-      }
-    })
+      this.config.logger.debug(`Fetcher finished fetching...`)
+      resolveSync()
+      return true
+    } catch (error: any) {
+      this.config.logger.error(
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+      )
+      this.clearFetcher()
+      throw error
+    }
   }
 
   /**
