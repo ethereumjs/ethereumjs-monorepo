@@ -582,6 +582,27 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
+    const items = this._codeCache2!.flush()
+    for (const item of items) {
+      const addr = Address.fromString(`0x${item[0]}`)
+
+      const code = item[1].code
+      if (code === undefined) {
+        throw new Error('Cannot delete preexisting code for an account')
+      }
+
+      // update code in database
+      const codeHash = keccak256(code)
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._trie.database().put(key, code)
+
+      // update code root of associated account
+      if ((await this.getAccount(addr)) === undefined) {
+        await this.putAccount(addr, new Account())
+      }
+      await this.modifyAccountFields(addr, { codeHash })
+    }
+
     if (!this._storageCacheSettings.deactivate) {
       const items = this._storageCache!.flush()
       for (const item of items) {
@@ -611,28 +632,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
           await trie.put(addressBytes, elem.accountRLP)
         }
       }
-    }
-    const items = this._codeCache2!.flush()
-    for (const item of items) {
-      const addressHex = item[0]
-      const addressBytes = unprefixedHexToBytes(addressHex)
-
-      const code = item[1].code
-      if (code === undefined) {
-        throw new Error('Cannot delete preexisting code for an account')
-      }
-
-      // update code in database
-      const codeHash = keccak256(code)
-      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-      await this._trie.database().put(key, code)
-
-      // update code root of associated account
-      const addr = new Address(addressBytes)
-      if ((await this.getAccount(addr)) === undefined) {
-        await this.putAccount(addr, new Account())
-      }
-      await this.modifyAccountFields(addr, { codeHash })
     }
   }
 
