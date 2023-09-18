@@ -19,12 +19,14 @@ import { DBKey, MetaDBManager } from '../util/metaDBManager'
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
 import type { Hardfork } from '@ethereumjs/common'
 
-// Thanks to go-ethereum for the skeleton design
+const INVALID_PARAMS = -32602
 
 type SkeletonStatus = {
   progress: SkeletonProgress
   linked: boolean
   canonicalHeadReset: boolean
+  safe: bigint
+  finalized: bigint
 }
 
 /**
@@ -107,9 +109,21 @@ export class Skeleton extends MetaDBManager {
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
 
+  /**
+   * safeBlock as indicated by engine api, set
+   */
+  public safeBlock?: Block
+  public finalizedBlock?: Block
+
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
-    this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: false }
+    this.status = {
+      progress: { subchains: [] },
+      linked: false,
+      canonicalHeadReset: false,
+      safe: BIGINT_0,
+      finalized: BIGINT_0,
+    }
     this.started = 0
   }
 
@@ -153,7 +167,13 @@ export class Skeleton extends MetaDBManager {
       throw Error(`skeleton reset called before being opened`)
     }
     await this.runWithLock<void>(async () => {
-      this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: false }
+      // retain safe,finalized from the progress as that is not bound to change
+      this.status = {
+        ...this.status,
+        progress: { subchains: [] },
+        linked: false,
+        canonicalHeadReset: false,
+      }
       await this.writeSyncStatus()
     })
   }
@@ -255,7 +275,11 @@ export class Skeleton extends MetaDBManager {
         `Skeleton empty, comparing against genesis tail=0 head=0 newHead=${number}`
       )
       // set the lastchain to genesis for comparison in following conditions
-      lastchain = { head: BIGINT_0, tail: BIGINT_0, next: zeroBlockHash }
+      lastchain = {
+        head: BIGINT_0,
+        tail: BIGINT_0,
+        next: zeroBlockHash,
+      }
     }
 
     if (lastchain.tail > number) {
@@ -392,6 +416,8 @@ export class Skeleton extends MetaDBManager {
           const s = {
             head: head.header.number,
             tail: head.header.number,
+            safe: BIGINT_0,
+            finalized: BIGINT_0,
             next: head.header.parentHash,
           }
           this.status.progress.subchains.unshift(s)
@@ -445,6 +471,115 @@ export class Skeleton extends MetaDBManager {
     })
   }
 
+  async forkchoiceUpdate(
+    headBlock: Block,
+    {
+      safeBlockHash,
+      finalizedBlockHash,
+    }: { safeBlockHash?: Uint8Array; finalizedBlockHash?: Uint8Array }
+  ): Promise<{ reorged: boolean; safeBlock?: Block; finalizedBlock?: Block }> {
+    // setHead locks independently and between setHead unlocking and locking below, there should be no break of
+    // continuity
+    const reorged = await this.setHead(headBlock, true)
+    await this.blockingFillWithCutoff(this.chain.config.engineNewpayloadMaxExecute)
+
+    // set/update safe and finalized
+    let safeBlock: Block | undefined
+    let finalizedBlock: Block | undefined
+
+    await this.runWithLock<void>(async () => {
+      const lookupOps = [
+        { name: 'safe', prevBlock: this.safeBlock, updateToHash: safeBlockHash },
+        { name: 'finalized', prevBlock: this.finalizedBlock, updateToHash: finalizedBlockHash },
+      ]
+      const results = await Promise.all(
+        lookupOps.map(async ({ name, prevBlock, updateToHash }) => {
+          if (updateToHash !== undefined && !equalsBytes(updateToHash, zeroBlockHash)) {
+            // try getting canonical block
+            const newBlock =
+              prevBlock !== undefined && equalsBytes(updateToHash, prevBlock.hash())
+                ? prevBlock
+                : equalsBytes(updateToHash, headBlock.hash())
+                ? headBlock
+                : await this.getBlockByHash(updateToHash, true)
+            if (newBlock === undefined) {
+              // if skeleton is linked, the block should have been found
+              if (this.status.linked) {
+                throw {
+                  code: INVALID_PARAMS,
+                  message: `${name} block not available in canonical chain`,
+                }
+              }
+
+              try {
+                const newBlockInChain = await this.chain.getBlock(updateToHash)
+                // if this block 's number has been synced its not canonical
+                const subchain0 = this.status.progress.subchains[0]
+                if (subchain0 !== undefined && newBlockInChain.header.number >= subchain0.tail) {
+                  throw {
+                    code: INVALID_PARAMS,
+                    message: `${name} block not in canonical chain`,
+                  }
+                }
+              } catch (_e) {
+                // eslint-disable-next-line no-empty
+              }
+            } else {
+              if (newBlock.header.number < (prevBlock?.header.number ?? BIGINT_0)) {
+                throw Error(
+                  `Invalid ${name}Block number=${newBlock.header.number} current ${name}Block=${prevBlock?.header.number}`
+                )
+              }
+            }
+            return newBlock
+          }
+        })
+      )
+
+      safeBlock = results[0]
+      finalizedBlock = results[1]
+
+      this.safeBlock = safeBlock ?? this.safeBlock
+      this.finalizedBlock = finalizedBlock ?? this.finalizedBlock
+    })
+
+    return { reorged, safeBlock, finalizedBlock }
+  }
+
+  async updateSnapStatus(snapStatus: {
+    syncedHash: Uint8Array
+    syncedHeight: bigint
+  }): Promise<boolean> {
+    const { syncedHash, syncedHeight } = snapStatus
+    return this.runWithLock<boolean>(async () => {
+      // check if the synced state's block is canonical and <= current safe and chain has synced till
+      const syncedBlock = await this.getBlock(
+        syncedHeight
+        // need to debug why this flag causes to return undefined when chain gets synced
+        //, true
+      )
+      console.log('updateSnapStatus', {
+        syncedHeight,
+        syncedBlock: syncedBlock?.header.number,
+        safeBlock: this.safeBlock?.header.number,
+      })
+      if (
+        syncedBlock !== undefined &&
+        syncedBlock.header.number <= this.chain.blocks.height &&
+        ((this.safeBlock !== undefined &&
+          syncedBlock.header.number <= this.safeBlock.header.number) ||
+          syncedBlock.header.number <= this.chain.blocks.height - BigInt(20))
+      ) {
+        console.log('-----------------setting iteator ----', syncedBlock?.header.number)
+        await this.chain.blockchain.setIteratorHead('vm', syncedHash)
+        await this.chain.update(false)
+        return true
+      } else {
+        return false
+      }
+    })
+  }
+
   /**
    * Setup the skeleton to init sync with head
    * @params head - The block with which we want to init the skeleton head
@@ -462,6 +597,16 @@ export class Skeleton extends MetaDBManager {
    */
   bounds(): SkeletonSubchain {
     return this.status.progress.subchains[0]
+  }
+
+  async headHash(): Promise<Uint8Array | undefined> {
+    const subchain = this.bounds()
+    if (subchain !== undefined) {
+      const headBlock = await this.getBlock(subchain.head)
+      if (headBlock) {
+        return headBlock.hash()
+      }
+    }
   }
 
   private async trySubChainsMerge(): Promise<boolean> {
@@ -550,6 +695,7 @@ export class Skeleton extends MetaDBManager {
     return this.runWithLock<number>(async () => {
       // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
+        console.log('putBlocks-----------', { progress: this.status.progress })
         throw Error(`Skeleton no subchain set for sync`)
       }
       if (this.status.linked) {
@@ -698,6 +844,7 @@ export class Skeleton extends MetaDBManager {
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
   async fillCanonicalChain() {
+    console.log('fillCanonicalChain', { filling: this.filling })
     if (this.filling) return
     this.filling = true
 
@@ -768,6 +915,7 @@ export class Skeleton extends MetaDBManager {
       try {
         numBlocksInserted = await this.chain.putBlocks([block], true)
       } catch (e) {
+        console.log(e)
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
         if (oldHead !== null && oldHead.header.number >= block.header.number) {
           // Put original canonical head block back if reorg fails
@@ -921,7 +1069,7 @@ export class Skeleton extends MetaDBManager {
       }
     }
 
-    if (onlySkeleton === true) {
+    if (onlySkeleton === true && !this.status.linked) {
       return undefined
     } else {
       try {
@@ -1132,7 +1280,7 @@ export class Skeleton extends MetaDBManager {
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
         } else {
-          logInfo = `${logInfo} cl=${chainHead}`
+          logInfo = `${logInfo} cl=${chainHead} s=${this.status.safe} f=${this.status.finalized}`
         }
       }
       peers = peers !== undefined ? `${peers}` : 'na'
@@ -1179,6 +1327,11 @@ export class Skeleton extends MetaDBManager {
     if (!rawStatus) return
     const status = this.statusRLPtoObject(rawStatus)
     this.status = status
+
+    const { safe, finalized } = this.status
+    this.safeBlock = await this.getBlock(safe, true)
+    this.finalizedBlock = await this.getBlock(finalized, true)
+
     return status
   }
 
@@ -1197,6 +1350,9 @@ export class Skeleton extends MetaDBManager {
       intToBytes(this.status.linked ? 1 : 0),
       // canonocalHeadReset
       intToBytes(this.status.canonicalHeadReset ? 1 : 0),
+      // safe and finalized
+      bigIntToBytes(this.status.safe),
+      bigIntToBytes(this.status.finalized),
     ])
   }
 
@@ -1208,9 +1364,14 @@ export class Skeleton extends MetaDBManager {
       progress: { subchains: [] },
       linked: false,
       canonicalHeadReset: true,
+      safe: BIGINT_0,
+      finalized: BIGINT_0,
     }
     const rawStatus = RLP.decode(serializedStatus) as unknown as [
       SkeletonSubchainRLP[],
+      Uint8Array,
+      Uint8Array,
+      // safe and finalized
       Uint8Array,
       Uint8Array
     ]
@@ -1222,6 +1383,8 @@ export class Skeleton extends MetaDBManager {
     status.progress.subchains = subchains
     status.linked = bytesToInt(rawStatus[1]) === 1
     status.canonicalHeadReset = bytesToInt(rawStatus[2]) === 1
+    status.safe = bytesToBigInt(rawStatus[3])
+    status.finalized = bytesToBigInt(rawStatus[4])
     return status
   }
 }

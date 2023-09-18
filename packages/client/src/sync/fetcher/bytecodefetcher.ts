@@ -1,5 +1,4 @@
 import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   bytesToHex,
@@ -15,7 +14,8 @@ import { Fetcher } from './fetcher'
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
-import type { BatchDBOp } from '@ethereumjs/util'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -27,7 +27,7 @@ type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Uint8Array[]
-  trie: Trie
+  stateManager: DefaultStateManager
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -40,10 +40,10 @@ export type JobTask = {
 
 export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
+  stateManager: DefaultStateManager
+  codeDB: DB
 
   hashes: Uint8Array[]
-
-  trie: Trie
 
   /**
    * Create new block fetcher
@@ -51,7 +51,9 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.trie = options.trie ?? new Trie({ useKeyHashing: true })
+    this.stateManager = options.stateManager
+    this.codeDB = this.stateManager['_getCodeDB']()
+
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
@@ -171,7 +173,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       })
       storeCount += 1
     }
-    await this.trie.batch(ops as BatchDBOp[])
+    await this.codeDB.batch(ops as BatchDBOp[])
 
     this.debug(`Stored ${storeCount} bytecode in code trie`)
   }

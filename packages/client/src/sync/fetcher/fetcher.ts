@@ -502,6 +502,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       this.writer = null
     }
     if (this.syncErrored) throw this.syncErrored
+    return true
   }
 
   /**

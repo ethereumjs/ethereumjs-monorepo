@@ -178,6 +178,12 @@ export class VMExecution extends Execution {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
 
+    console.log('runWithoutSetHead--------', {
+      running: this.running,
+      blocking,
+      started: this.started,
+    })
+
     await this.runWithLock<void>(async () => {
       try {
         // running should be false here because running is always changed inside the lock and switched
@@ -230,8 +236,10 @@ export class VMExecution extends Execution {
   async setHead(
     blocks: Block[],
     { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {}
-  ): Promise<void> {
-    return this.runWithLock<void>(async () => {
+  ): Promise<boolean> {
+    if (!this.started || this.config.shutdown) return false
+
+    return this.runWithLock<boolean>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
       const chainPointers: [string, Block][] = [
         ['vmHeadBlock', vmHeadBlock],
@@ -293,6 +301,7 @@ export class VMExecution extends Execution {
         await this.chain.blockchain.setIteratorHead('finalized', finalizedBlock.hash())
       }
       await this.chain.update(true)
+      return true
     })
   }
 

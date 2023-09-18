@@ -168,14 +168,20 @@ export abstract class Synchronizer {
    * @returns when sync is completed
    */
   async sync(): Promise<boolean> {
+    console.log('----------finding -best peer---------------------')
     let peer = await this.best()
     let numAttempts = 1
+    console.log({ numAttempts })
     while (!peer && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await wait(5000)
+      console.log('-------------trying for best again------------')
       peer = await this.best()
       numAttempts += 1
+      console.log('rertied', { numAttempts })
     }
+
+    console.log(`------------peer: ${peer?.id}----------- opened=${this.opened}`)
 
     if (!(await this.syncWithPeer(peer))) return false
     const syncEvent: Promise<boolean> = new Promise((resolve) => {

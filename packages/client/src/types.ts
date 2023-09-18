@@ -4,7 +4,7 @@ import type { SyncMode } from '.'
 import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Trie } from '@ethereumjs/trie'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from 'multiaddr'
 
@@ -40,7 +40,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
-  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, accountTrie: Trie]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: DefaultStateManager]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
@@ -152,9 +152,8 @@ export interface ClientOpts {
   dev?: boolean | string
   minerCoinbase?: Address
   saveReceipts?: boolean
-  disableBeaconSync?: boolean
-  forceSnapSync?: boolean
   prefixStorageTrieKeys?: boolean
+  enableSnapSync?: boolean
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
