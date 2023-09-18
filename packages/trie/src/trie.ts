@@ -3,11 +3,13 @@ import {
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
+  bytesToHex,
   bytesToUnprefixedHex,
   bytesToUtf8,
   equalsBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
@@ -38,6 +40,7 @@ import type {
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
 
 interface Path {
   node: TrieNode | null
@@ -66,6 +69,11 @@ export class Trie {
   protected _lock = new Lock()
   protected _root: Uint8Array
 
+  /** Debug logging */
+  protected DEBUG: boolean
+  protected _debug: Debugger = debug('trie')
+  protected debug: (...args: any) => void
+
   /**
    * Creates a new trie.
    * @param opts Options for instantiating the trie
@@ -77,6 +85,17 @@ export class Trie {
       this._opts = { ...this._opts, ...opts }
     }
 
+    this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
+    this.debug = this.DEBUG
+      ? (message: string, namespaces: string[] = []) => {
+          let log = this._debug
+          for (const name of namespaces) {
+            log = log.extend(name)
+          }
+          log(message)
+        }
+      : (..._: any) => {}
+
     this.database(opts?.db ?? new MapDB<string, string>())
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
@@ -86,6 +105,14 @@ export class Trie {
     if (opts?.root) {
       this.root(opts.root)
     }
+    this.DEBUG &&
+      this.debug(`Trie created:
+    || Root: ${bytesToHex(this.root())}
+    || Secure: ${this._opts.useKeyHashing}
+    || Persistent: ${this._opts.useRootPersistence}
+    || Pruning: ${this._opts.useNodePruning}
+    || CacheSize: ${this._opts.cacheSize}
+    || ----------------`)
   }
 
   static async create(opts?: TrieOpts) {
@@ -133,14 +160,13 @@ export class Trie {
       if (value === null) {
         value = this.EMPTY_TRIE_ROOT
       }
-
+      this.DEBUG && this.debug(`Setting root to ${bytesToHex(value)}`)
       if (value.length !== this._hashLen) {
         throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
       }
 
       this._root = value
     }
-
     return this._root
   }
 
@@ -167,11 +193,13 @@ export class Trie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['GET'])
     const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
     let value: Uint8Array | null = null
     if (node && remaining.length === 0) {
       value = node.value()
     }
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(value)}`, ['GET'])
     return value
   }
 
@@ -187,6 +215,8 @@ export class Trie {
     value: Uint8Array | null,
     skipKeyTransform: boolean = false
   ): Promise<void> {
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
+    this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
@@ -244,6 +274,7 @@ export class Trie {
    * @returns A Promise that resolves once value is deleted.
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+    this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['DEL'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
@@ -284,6 +315,7 @@ export class Trie {
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
     const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
+    this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
@@ -295,15 +327,43 @@ export class Trie {
         return
       }
 
+      this.DEBUG &&
+        this.debug(
+          `${node.constructor.name} FOUND${'_nibbles' in node ? `: [${node._nibbles}]` : ''}`,
+          ['FIND_PATH', keyProgress.toString()]
+        )
+
       const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
+      this.DEBUG && this.debug(`[${keyRemainder}] Remaining`, ['FIND_PATH', keyProgress.toString()])
       stack.push(node)
+      this.DEBUG &&
+        this.debug(
+          `Adding ${node.constructor.name} to STACK (size: ${stack.length}) ${stack.map(
+            (e, i) => `${i === stack.length - 1 ? '\n|| +' : '\n|| '}` + e.constructor.name
+          )}`,
+          ['FIND_PATH']
+        )
 
       if (node instanceof BranchNode) {
         if (keyRemainder.length === 0) {
           result = { node, remaining: [], stack }
         } else {
           const branchIndex = keyRemainder[0]
+          this.DEBUG &&
+            this.debug(`Looking for node on branch index: [${branchIndex}]`, [
+              'FIND_PATH',
+              'BranchNode',
+            ])
           const branchNode = node.getBranch(branchIndex)
+          this.DEBUG &&
+            this.debug(
+              branchNode === null
+                ? 'NULL'
+                : branchNode instanceof Uint8Array
+                ? `NodeHash: ${bytesToHex(branchNode)}`
+                : `Raw_Node: ${branchNode.toString()}`,
+              ['FIND_PATH', 'BranchNode', branchIndex.toString()]
+            )
           if (!branchNode) {
             result = { node: null, remaining: keyRemainder, stack }
           } else {
@@ -317,16 +377,29 @@ export class Trie {
           result = { node: null, remaining: keyRemainder, stack }
         }
       } else if (node instanceof ExtensionNode) {
+        this.DEBUG &&
+          this.debug(
+            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${keyRemainder.slice(
+              0,
+              node.key().length
+            )}]\n|| Matching: [${
+              keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
+            }]
+            `,
+            ['FIND_PATH', 'ExtensionNode']
+          )
         const matchingLen = matchingNibbleLength(keyRemainder, node.key())
         if (matchingLen !== node.key().length) {
           result = { node: null, remaining: keyRemainder, stack }
         } else {
+          this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
           walkController.allChildren(node, keyProgress)
         }
       }
     }
 
     try {
+      this.DEBUG && this.debug(`Walking trie from root: ${bytesToHex(this.root())}`, ['FIND_PATH'])
       await this.walkTrie(this.root(), onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
@@ -337,7 +410,23 @@ export class Trie {
     if (result === null) {
       result = { node: null, remaining: [], stack }
     }
+    this.DEBUG &&
+      this.debug(
+        result.node !== null
+          ? `Target Node FOUND for ${bytesToNibbles(key)}`
+          : `Target Node NOT FOUND`,
+        ['FIND_PATH']
+      )
 
+    this.DEBUG &&
+      this.debug(
+        `Result: \n|| Node: ${
+          result.node === null ? 'null' : result.node.constructor.name
+        }\n|| Remaining: [${result.remaining}]\n|| Stack: ${result.stack
+          .map((e) => e.constructor.name)
+          .join(', ')}`,
+        ['FIND_PATH']
+      )
     return result
   }
 
@@ -400,8 +489,11 @@ export class Trie {
    */
   async lookupNode(node: Uint8Array | Uint8Array[]): Promise<TrieNode> {
     if (isRawNode(node)) {
-      return decodeRawNode(node)
+      const decoded = decodeRawNode(node)
+      this.DEBUG && this.debug(`${decoded.constructor.name}`, ['LOOKUP_NODE', 'RAW_NODE'])
+      return decoded
     }
+    this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['LOOKUP_NODE', 'BY_HASH'])
     const value = (await this._db.get(node)) ?? null
 
     if (value === null) {
@@ -409,7 +501,9 @@ export class Trie {
       throw new Error('Missing node in DB')
     }
 
-    return decodeNode(value)
+    const decoded = decodeNode(value)
+    this.DEBUG && this.debug(`${decoded.constructor.name} found in DB`, ['LOOKUP_NODE', 'BY_HASH'])
+    return decoded
   }
 
   /**
@@ -762,6 +856,7 @@ export class Trie {
    * @param proof
    */
   async fromProof(proof: Proof): Promise<void> {
+    this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       return {
         type: 'put',
@@ -775,6 +870,7 @@ export class Trie {
       opStack[0] !== undefined &&
       opStack[0] !== null
     ) {
+      this.DEBUG && this.debug(`Setting Trie root from Proof Node 0`, ['FROM_PROOF'])
       this.root(opStack[0].key)
     }
 
@@ -788,10 +884,12 @@ export class Trie {
    * @param key
    */
   async createProof(key: Uint8Array): Promise<Proof> {
+    this.DEBUG && this.debug(`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
     const { stack } = await this.findPath(this.appliedKey(key))
     const p = stack.map((stackElem) => {
       return stackElem.serialize()
     })
+    this.DEBUG && this.debug(`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
     return p
   }
 
@@ -808,6 +906,14 @@ export class Trie {
     key: Uint8Array,
     proof: Proof
   ): Promise<Uint8Array | null> {
+    this.DEBUG &&
+      this.debug(
+        `Verifying Proof:\n|| Key: ${bytesToHex(key)}\n|| Root: ${bytesToHex(
+          rootHash
+        )}\n|| Proof: (${proof.length}) nodes
+    `,
+        ['VERIFY_PROOF']
+      )
     const proofTrie = new Trie({
       root: rootHash,
       useKeyHashingFunction: this._opts.useKeyHashingFunction,
@@ -818,7 +924,12 @@ export class Trie {
       throw new Error('Invalid proof nodes given')
     }
     try {
+      this.DEBUG &&
+        this.debug(`Verifying proof by retrieving key: ${bytesToHex(key)} from proof trie`, [
+          'VERIFY_PROOF',
+        ])
       const value = await proofTrie.get(this.appliedKey(key), true)
+      this.DEBUG && this.debug(`PROOF VERIFIED`, ['VERIFY_PROOF'])
       return value
     } catch (err: any) {
       if (err.message === 'Missing node in DB') {
@@ -943,6 +1054,13 @@ export class Trie {
    */
   async persistRoot() {
     if (this._opts.useRootPersistence) {
+      this.DEBUG &&
+        this.debug(
+          `Persisting root: \n|| RootHash: ${bytesToHex(this.root())}\n|| RootKey: ${bytesToHex(
+            this.appliedKey(ROOT_DB_KEY)
+          )}`,
+          ['PERSIST_ROOT']
+        )
       await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
     }
   }
@@ -994,6 +1112,7 @@ export class Trie {
    * After this is called, all changes can be reverted until `commit` is called.
    */
   checkpoint() {
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['CHECKPOINT'])
     this._db.checkpoint(this.root())
   }
 
@@ -1006,7 +1125,7 @@ export class Trie {
     if (!this.hasCheckpoints()) {
       throw new Error('trying to commit when not checkpointed')
     }
-
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['COMMIT'])
     await this._lock.acquire()
     await this._db.commit()
     await this.persistRoot()
@@ -1023,16 +1142,20 @@ export class Trie {
       throw new Error('trying to revert when not checkpointed')
     }
 
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'BEFORE'])
     await this._lock.acquire()
     this.root(await this._db.revert())
     await this.persistRoot()
     this._lock.release()
+    this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['REVERT', 'AFTER'])
   }
 
   /**
    * Flushes all checkpoints, restoring the initial checkpoint state.
    */
   flushCheckpoints() {
+    this.DEBUG &&
+      this.debug(`Deleting ${this._db.checkpoints.length} checkpoints.`, ['FLUSH_CHECKPOINTS'])
     this._db.checkpoints = []
   }
 }

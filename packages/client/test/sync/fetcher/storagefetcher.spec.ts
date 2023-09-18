@@ -258,10 +258,10 @@ describe('[StorageFetcher]', async () => {
       storageRequests: [
         {
           accountHash: hexToBytes(
-            '0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'
+            '0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'
           ),
           storageRoot: hexToBytes(
-            '0x69522138e4770e642ec8d7bd5e2b71a23fb732bb447cd4faf838b45cfe3b2a92'
+            '0x4431bd7d69241190bb930b74485c1e31ff75552f67d758d0b6612e7bd9226121'
           ),
           first: BigInt(0),
           count: BigInt(2) ** BigInt(256) - BigInt(1),
