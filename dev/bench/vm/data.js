@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695049600644,
+  "lastUpdate": 1695070211689,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6f8ad2283d1a8772ffdae83f0782b9bc57c1f03e",
-          "message": "Clean up logging in vm/evm (#2970)\n\n* Fix logging output\r\n\r\n* Cleanup more logging 0xs",
-          "timestamp": "2023-08-22T17:53:43+02:00",
-          "tree_id": "568c889196182969d35ee73bc43a28abf29d58be",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6f8ad2283d1a8772ffdae83f0782b9bc57c1f03e"
-        },
-        "date": 1692719834019,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31171,
-            "range": "±6.12%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30671,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30921,
-            "range": "±3.13%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25816,
-            "range": "±10.99%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29264,
-            "range": "±3.61%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±4.22%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "73707a55d40f76e83da9f824de811099895aa010",
+          "message": "Trie: Debug logging (#3019)\n\n* trie: add debugger to Trie class\r\n\r\n* trie: setup optional debug skipping\r\n\r\n* trie: log Trie creation\r\n\r\n* trie: log details of trie creation\r\n\r\n* trie: debug log root change\r\n\r\n* trie: reverse parameter order in debug function\r\n\r\n* trie: add debug logging for get\r\n\r\n* trie: add debug logging to findPath\r\n\r\n* trie: add debug logging for lookupNode\r\n\r\n* trie: add debug logs to proof methods\r\n\r\n* trie: debug logging for checkpoint methods\r\n\r\n* trie: improve logging display\r\n\r\n* trie: add test that touches DEBUG lines\r\n\r\n* trie: include persistRoot in test coverage\r\n\r\n* trie: cover DEBUG code with test\r\n\r\n* trie: remove ethjs from trie debugger namespace\r\n\r\n* trie: add README instructions for debug control\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-09-18T22:45:34+02:00",
+          "tree_id": "c666b5e5e134147696418c4ac9cad11a7b97185a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/73707a55d40f76e83da9f824de811099895aa010"
+        },
+        "date": 1695070210395,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19839,
+            "range": "±6.34%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19823,
+            "range": "±3.79%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19120,
+            "range": "±3.61%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18340,
+            "range": "±4.06%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18331,
+            "range": "±4.03%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
