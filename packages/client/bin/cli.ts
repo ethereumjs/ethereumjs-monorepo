@@ -362,6 +362,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
 
