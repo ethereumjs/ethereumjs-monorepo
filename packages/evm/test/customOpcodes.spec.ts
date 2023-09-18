@@ -20,7 +20,7 @@ describe('VM: custom opcodes', () => {
       return gas + logicFee
     },
     logicFunction(runState: RunState) {
-      runState.stack.push(BigInt(stackPush))
+      runState.stack.pushBigInt(BigInt(stackPush))
     },
   }
 
@@ -40,7 +40,7 @@ describe('VM: custom opcodes', () => {
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
+    assert.ok(res.runState!.stack.peekBigInt(1)[0] === stackPush, 'successfully ran opcode logic')
     assert.ok(correctOpcodeName, 'successfully set opcode name')
   })
 
@@ -97,7 +97,7 @@ describe('VM: custom opcodes', () => {
       gasLimit: BigInt(gas),
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
+    assert.ok(res.runState!.stack.peekBigInt(1)[0] === stackPush, 'successfully ran opcode logic')
   })
 
   it('should pass the correct EVM options when copying the EVM', async () => {
@@ -109,7 +109,7 @@ describe('VM: custom opcodes', () => {
       opcodeName: 'TEST',
       baseFee: fee,
       logicFunction(runState: RunState) {
-        runState.stack.push(BigInt(stackPush))
+        runState.stack.pushBigInt(BigInt(stackPush))
       },
     }
 
