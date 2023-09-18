@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1694815071687,
+  "lastUpdate": 1695049600644,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4d699053dc935313411144112c1e2ea85939fafe",
-          "message": "Update ethereum tests to 12.3 (#2971)\n\n* Update ethereum tests to 12.3\r\n\r\n* Add Cancun to `selectedForks` CI\r\n\r\n* Update CI for VM PR job\r\n\r\n* Adjust expected test counts\r\n\r\n* Extend timeout period for miner test\r\n\r\n* vm/ci: add cancun blockchain tests, fix test amount\r\n\r\n* vm/ci: fix cancun blockchain tests\r\n\r\n* skip ethash pow test\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-08-22T17:16:39+02:00",
-          "tree_id": "ec8e0926dda9376b38fbde84135e23603a1deb0b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4d699053dc935313411144112c1e2ea85939fafe"
-        },
-        "date": 1692717627128,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 26620,
-            "range": "±5.63%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 24328,
-            "range": "±3.67%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 24410,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24482,
-            "range": "±3.76%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18680,
-            "range": "±11.63%",
-            "unit": "ops/sec",
-            "extra": "64 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.30%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c13f6b411554b3abe5b4e420abb2d5c5a5f27745",
+          "message": "EVM: Initialize memory with CONTAINER_SIZE bytes (#3032)",
+          "timestamp": "2023-09-18T17:02:06+02:00",
+          "tree_id": "9448d905caa77b2882cbf65f0551933fdc6d75d7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c13f6b411554b3abe5b4e420abb2d5c5a5f27745"
+        },
+        "date": 1695049599212,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19483,
+            "range": "±6.69%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20331,
+            "range": "±3.74%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20977,
+            "range": "±3.43%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19460,
+            "range": "±3.91%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18540,
+            "range": "±4.22%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
           }
         ]
       }
