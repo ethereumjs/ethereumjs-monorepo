@@ -21,6 +21,8 @@ import type { Common } from '@ethereumjs/common'
 
 const BIGINT_0 = BigInt(0)
 const BIGINT_1 = BigInt(1)
+const BIGINT_31 = BigInt(31)
+const BIGINT_32 = BigInt(32)
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas
@@ -67,7 +69,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [offset, length] = runState.stack.peek(2)
         gas += subMemUsage(runState, offset, length, common)
-        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BigInt(32))
+        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BIGINT_32)
         return gas
       },
     ],
@@ -91,7 +93,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -104,7 +106,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -135,7 +137,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -153,7 +155,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
         if (dataLength !== BIGINT_0) {
-          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BigInt(32))
+          gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
         }
         return gas
       },
@@ -175,7 +177,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x51,
       async function (runState, gas, common): Promise<bigint> {
         const pos = runState.stack.peek()[0]
-        gas += subMemUsage(runState, pos, BigInt(32), common)
+        gas += subMemUsage(runState, pos, BIGINT_32, common)
         return gas
       },
     ],
@@ -184,7 +186,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x52,
       async function (runState, gas, common): Promise<bigint> {
         const offset = runState.stack.peek()[0]
-        gas += subMemUsage(runState, offset, BigInt(32), common)
+        gas += subMemUsage(runState, offset, BIGINT_32, common)
         return gas
       },
     ],
@@ -269,7 +271,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x5e,
       async function (runState, gas, common): Promise<bigint> {
         const [dst, src, length] = runState.stack.peek(3)
-        const wordsCopied = (length + BigInt(31)) / BigInt(32)
+        const wordsCopied = (length + BIGINT_31) / BIGINT_32
         gas += BigInt(3) * wordsCopied
         gas += subMemUsage(runState, src, length, common)
         gas += subMemUsage(runState, dst, length, common)
@@ -313,8 +315,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(3860) === true) {
-          gas +=
-            ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
+          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordCost')
         }
 
         gas += subMemUsage(runState, offset, length, common)
@@ -488,11 +489,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         if (common.isActivatedEIP(3860) === true) {
-          gas +=
-            ((length + BigInt(31)) / BigInt(32)) * common.param('gasPrices', 'initCodeWordCost')
+          gas += ((length + BIGINT_31) / BIGINT_32) * common.param('gasPrices', 'initCodeWordCost')
         }
 
-        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BigInt(32))
+        gas += common.param('gasPrices', 'keccak256Word') * divCeil(length, BIGINT_32)
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
