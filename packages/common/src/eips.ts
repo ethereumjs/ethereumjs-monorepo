@@ -471,4 +471,17 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
   },
+  7516: {
+    comment: 'BLOBBASEFEE opcode',
+    url: 'https://eips.ethereum.org/EIPS/eip-7516',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [4844],
+    gasPrices: {
+      blobbasefee: {
+        v: 2,
+        d: 'Gas cost of the BLOBBASEFEE opcode',
+      },
+    },
+  },
 }

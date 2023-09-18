@@ -966,7 +966,7 @@ export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   }
 }
 
-function defaultBlock(): Block {
+export function defaultBlock(): Block {
   return {
     header: {
       number: BigInt(0),
@@ -977,6 +977,7 @@ function defaultBlock(): Block {
       prevRandao: zeros(32),
       gasLimit: BigInt(0),
       baseFeePerGas: undefined,
+      getBlobGasPrice: () => undefined,
     },
   }
 }
