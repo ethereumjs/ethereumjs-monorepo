@@ -1055,7 +1055,7 @@ export class Engine {
     // It is possible that newPayload didn't start beacon sync as the payload it was asked to
     // evaluate didn't require syncing beacon. This can happen if the EL<>CL starts and CL
     // starts from a bit behind like how lodestar does
-    if (!this.service.beaconSync && !this.config.disableBeaconSync) {
+    if (!this.service.beaconSync) {
       await this.service.switchToBeaconSync()
     }
 

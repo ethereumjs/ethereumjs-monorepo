@@ -1,5 +1,4 @@
 import { Common } from '@ethereumjs/common'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Address,
   bytesToHex,
@@ -27,7 +26,7 @@ import {
 
 import type { EthereumClient } from '../../src/client'
 import type { RlpxServer } from '../../src/net/server'
-import type { Trie } from '@ethereumjs/trie'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 const client = Client.http({ port: 8545 })
 
@@ -44,7 +43,7 @@ let senderBalance = BigInt(customGenesisState[sender][0])
 let ejsClient: EthereumClient | null = null
 let beaconSyncRelayer: any = null
 let snapCompleted: Promise<unknown> | undefined = undefined
-let syncedTrie: Trie | undefined = undefined
+let stateManager: DefaultStateManager | undefined = undefined
 
 // This account doesn't exist in the genesis so starting balance is zero
 const EOATransferToAccount = '0x3dA33B9A0894b908DdBb00d96399e506515A1009'
@@ -168,7 +167,7 @@ describe('simple mainnet test run', async () => {
       if (ejsClient !== null && snapCompleted !== undefined && beaconSyncRelayer !== null) {
         // node should be in syncing or valid state, when snap sync fully implemented should just
         // check for VALID
-        const beaconSyncPromise = beaconSyncRelayer.start({ waitForStates: ['SYNCING', 'VALID'] })
+        const beaconSyncPromise = beaconSyncRelayer.start({ waitForStates: ['VALID'] })
         // wait on the sync promise to complete if it has been called independently
         const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 8 * 60_000))
         let syncedSnapRoot: Uint8Array | undefined = undefined
@@ -177,15 +176,15 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           await Promise.race([
-            snapCompleted.then(([root, trie]) => {
+            snapCompleted.then(([root, syncedStateManager]) => {
               syncedSnapRoot = root
-              syncedTrie = trie
+              stateManager = syncedStateManager
             }),
             snapSyncTimeout,
           ])
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
-          await ejsClient.stop()
+          // await ejsClient.stop()
           assert.ok(true, 'completed snap sync')
         } catch (e) {
           assert.fail('could not complete snap sync in 8 minutes')
@@ -202,7 +201,7 @@ describe('simple mainnet test run', async () => {
     10 * 60_000
   )
 
-  it.skipIf(syncedTrie !== undefined)('should match entire state', async () => {
+  it.skipIf(stateManager !== undefined)('should match entire state', async () => {
     // update customGenesisState to reflect latest changes and match entire customGenesisState
     if (process.env.ADD_EOA_STATE !== undefined) {
       customGenesisState[EOATransferToAccount] = [
@@ -213,8 +212,6 @@ describe('simple mainnet test run', async () => {
       ]
       customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
     }
-
-    const stateManager = new DefaultStateManager({ trie: syncedTrie })
 
     for (const addressString of Object.keys(customGenesisState)) {
       const address = Address.fromString(addressString)
@@ -258,7 +255,8 @@ async function createSnapClient(
     discDns: false,
     discV4: false,
     port: 30304,
-    forceSnapSync: true,
+    enableSnapSync: true,
+    // syncmode: 'none',
     // Keep the single job sync range high as the state is not big
     maxAccountRange: (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10),
     maxFetcherJobs: 10,
@@ -267,8 +265,10 @@ async function createSnapClient(
     config.events.once(Event.PEER_CONNECTED, (peer: any) => resolve(peer))
   })
   const snapSyncCompletedPromise = new Promise((resolve) => {
-    config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: Uint8Array, trie: Trie) =>
-      resolve([stateRoot, trie])
+    config.events.once(
+      Event.SYNC_SNAPSYNC_COMPLETE,
+      (stateRoot: Uint8Array, stateManager: DefaultStateManager) =>
+        resolve([stateRoot, stateManager])
     )
   })
 

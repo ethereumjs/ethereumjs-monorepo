@@ -457,6 +457,16 @@ export class Skeleton extends MetaDBManager {
     return this.status.progress.subchains[0]
   }
 
+  async headHash(): Promise<Uint8Array | undefined> {
+    const subchain = this.bounds()
+    if (subchain !== undefined) {
+      const headBlock = await this.getBlock(subchain.head)
+      if (headBlock) {
+        return headBlock.hash()
+      }
+    }
+  }
+
   private async trySubChainsMerge(): Promise<boolean> {
     let merged = false
     let edited = false
@@ -543,6 +553,7 @@ export class Skeleton extends MetaDBManager {
     return this.runWithLock<number>(async () => {
       // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
+        console.log('putBlocks-----------', { progress: this.status.progress })
         throw Error(`Skeleton no subchain set for sync`)
       }
       if (this.status.linked) {
@@ -690,6 +701,7 @@ export class Skeleton extends MetaDBManager {
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
   async fillCanonicalChain() {
+    console.log('fillCanonicalChain', { filling: this.filling })
     if (this.filling) return
     this.filling = true
 
@@ -760,6 +772,7 @@ export class Skeleton extends MetaDBManager {
       try {
         numBlocksInserted = await this.chain.putBlocks([block], true)
       } catch (e) {
+        console.log(e)
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
         if (oldHead !== null && oldHead.header.number >= block.header.number) {
           // Put original canonical head block back if reorg fails

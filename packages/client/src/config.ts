@@ -43,22 +43,11 @@ export interface ConfigOptions {
   syncmode?: SyncMode
 
   /**
-   * Whether to disable beacon (optimistic) sync if CL provides
-   * blocks at the head of chain.
+   * Whether to enable and run snapSync, currently experimental
    *
    * Default: false
    */
-  disableBeaconSync?: boolean
-
-  /**
-   * Whether to test and run snapSync. When fully ready, this needs to
-   * be replaced by a more sophisticated condition based on how far back we are
-   * from the head, and how to run it in conjunction with the beacon sync
-   * blocks at the head of chain.
-   *
-   * Default: false
-   */
-  forceSnapSync?: boolean
+  enableSnapSync?: boolean
 
   /**
    * A temporary option to offer backward compatibility with already-synced databases that are
@@ -329,6 +318,7 @@ export interface ConfigOptions {
    */
   maxInvalidBlocksErrorCache?: number
   pruneEngineCache?: boolean
+  snapAvailabilityDepth?: bigint
 }
 
 export class Config {
@@ -375,6 +365,7 @@ export class Config {
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
   // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
   public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -421,18 +412,21 @@ export class Config {
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
   public readonly engineNewpayloadMaxTxsExecute: number
+  public readonly snapAvailabilityDepth: bigint
 
-  public readonly disableBeaconSync: boolean
-  public readonly forceSnapSync: boolean
-  // Just a development only flag, will/should be removed
-  public readonly disableSnapSync: boolean = false
   public readonly prefixStorageTrieKeys: boolean
+  // Defaulting to false as experimental as of now
+  public readonly enableSnapSync: boolean
 
   public synchronized: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
   public syncTargetHeight?: bigint
+  /** for snapsync */
+  public snapTargetHeight?: bigint
+  public snapTargetRoot?: Uint8Array
+  public snapTargetHash?: Uint8Array
   /** Client is in the process of shutting down */
   public shutdown: boolean = false
 
@@ -503,10 +497,10 @@ export class Config {
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
       options.engineNewpayloadMaxTxsExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE
+    this.snapAvailabilityDepth = options.snapAvailabilityDepth ?? Config.SNAP_AVAILABILITY_DEPTH
 
-    this.disableBeaconSync = options.disableBeaconSync ?? false
-    this.forceSnapSync = options.forceSnapSync ?? false
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
+    this.enableSnapSync = options.enableSnapSync ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine

@@ -174,6 +174,12 @@ export class VMExecution extends Execution {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
 
+    console.log('runWithoutSetHead--------', {
+      running: this.running,
+      blocking,
+      started: this.started,
+    })
+
     await this.runWithLock<void>(async () => {
       try {
         // running should be false here because running is always changed inside the lock and switched

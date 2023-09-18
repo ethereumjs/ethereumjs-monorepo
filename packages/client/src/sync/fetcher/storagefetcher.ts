@@ -8,7 +8,6 @@ import {
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
-  bytesToUnprefixedHex,
   compareBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -22,6 +21,7 @@ import type { Peer } from '../../net/peer'
 import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job } from './types'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -56,7 +56,7 @@ export interface StorageFetcherOptions extends FetcherOptions {
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  accountToStorageTrie?: Map<String, Trie>
+  stateManager: DefaultStateManager
 }
 
 export type JobTask = {
@@ -65,22 +65,16 @@ export type JobTask = {
 
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
+  root: Uint8Array
+  stateManager: DefaultStateManager
 
   private _proofTrie: Trie
-
-  /**
-   * The stateRoot for the fetcher which sorts of pin it to a snapshot.
-   * This might eventually be removed as the snapshots are moving and not static
-   */
-  root: Uint8Array
 
   /** The accounts to fetch storage data for */
   storageRequests: StorageRequest[]
 
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[]
-
-  accountToStorageTrie: Map<String, Trie>
 
   accountToHighestKnownHash: Map<String, Uint8Array>
 
@@ -92,8 +86,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this._proofTrie = new Trie()
     this.fragmentedRequests = []
     this.root = options.root
+    this.stateManager = options.stateManager
     this.storageRequests = options.storageRequests ?? []
-    this.accountToStorageTrie = options.accountToStorageTrie ?? new Map()
     this.accountToHighestKnownHash = new Map<String, Uint8Array>()
     this.debug = createDebugLogger('client:StorageFetcher')
     if (this.storageRequests.length > 0) {
@@ -420,15 +414,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       const storagePromises: Promise<unknown>[] = []
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
-        const storageTrie =
-          this.accountToStorageTrie.get(bytesToUnprefixedHex(accountHash)) ??
-          new Trie({ useKeyHashing: true })
+        const storageTrie = this.stateManager['_getStorageTrie'](accountHash)
         for (const slot of slotArray as any) {
           slotCount++
           // what we have is hashed account and not its pre-image, so we skipKeyTransform
           storagePromises.push(storageTrie.put(slot.hash, slot.body, true))
         }
-        this.accountToStorageTrie.set(bytesToUnprefixedHex(accountHash), storageTrie)
       })
       await Promise.all(storagePromises)
       this.debug(`Stored ${slotCount} slot(s)`)

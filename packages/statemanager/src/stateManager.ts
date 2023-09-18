@@ -413,16 +413,24 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  protected _getStorageTrie(address: Address, account: Account): Trie {
+  // TODO PR: have a better interface for hashed address pull?
+  protected _getStorageTrie(addressOrHash: Address | Uint8Array, account?: Account): Trie {
     // from storage cache
-    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(
+      addressOrHash instanceof Address ? addressOrHash.bytes : addressOrHash
+    )
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
       const keyPrefix = this._prefixStorageTrieKeys
-        ? keccak256(address.bytes).slice(0, 7)
+        ? (addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash).slice(
+            0,
+            7
+          )
         : undefined
       const storageTrie = this._trie.shallowCopy(false, { keyPrefix })
-      storageTrie.root(account.storageRoot)
+      if (account !== undefined) {
+        storageTrie.root(account.storageRoot)
+      }
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
       return storageTrie
