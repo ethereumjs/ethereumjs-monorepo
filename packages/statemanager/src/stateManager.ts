@@ -30,7 +30,7 @@ import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { StorageRange } from '@ethereumjs/common/src'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -342,7 +342,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-    await this._trie.database().put(key, value)
+    await this._getCodeDB().put(key, value)
 
     const keyHex = bytesToUnprefixedHex(key)
     this._codeCache[keyHex] = value
@@ -378,7 +378,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
-      const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
+      const code = (await this._getCodeDB().get(key)) ?? new Uint8Array(0)
       this._codeCache[keyHex] = code
       return code
     }
@@ -389,7 +389,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  protected async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
+  protected _getStorageTrie(address: Address, account: Account): Trie {
     // from storage cache
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
@@ -404,6 +404,24 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       return storageTrie
     }
     return storageTrie
+  }
+
+  /**
+   * Gets the storage trie for an account from the storage
+   * cache or does a lookup.
+   * @private
+   */
+  protected _getAccountTrie(): Trie {
+    return this._trie
+  }
+
+  /**
+   * Gets the storage trie for an account from the storage
+   * cache or does a lookup.
+   * @private
+   */
+  protected _getCodeDB(): DB {
+    return this._trie.database()
   }
 
   /**
@@ -431,7 +449,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error('getContractStorage() called on non-existing account')
     }
-    const trie = await this._getStorageTrie(address, account)
+    const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache?.put(address, key, value ?? hexToBytes('0x80'))
@@ -453,7 +471,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
-      const storageTrie = await this._getStorageTrie(address, account)
+      const storageTrie = this._getStorageTrie(address, account)
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
@@ -654,7 +672,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       (p) => bytesToHex(p)
     )
     const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address, account)
+    const storageTrie = this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
@@ -802,23 +820,21 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
+    const trie = this._getStorageTrie(address, account)
 
     return new Promise((resolve, reject) => {
-      this._getStorageTrie(address, account)
-        .then((trie) => {
-          const storage: StorageDump = {}
-          const stream = trie.createReadStream()
+      const storage: StorageDump = {}
+      const stream = trie.createReadStream()
 
-          stream.on('data', (val: any) => {
-            storage[bytesToHex(val.key)] = bytesToHex(val.value)
-          })
-          stream.on('end', () => {
-            resolve(storage)
-          })
-        })
-        .catch((e) => {
-          reject(e)
-        })
+      stream.on('data', (val: any) => {
+        storage[bytesToHex(val.key)] = bytesToHex(val.value)
+      })
+      stream.on('end', () => {
+        resolve(storage)
+      })
+      stream.on('error', (e) => {
+        reject(e)
+      })
     })
   }
 
@@ -841,48 +857,44 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`Account does not exist.`)
     }
+    const trie = this._getStorageTrie(address, account)
 
     return new Promise((resolve, reject) => {
-      this._getStorageTrie(address, account)
-        .then((trie) => {
-          let inRange = false
-          let i = 0
+      let inRange = false
+      let i = 0
 
-          /** Object conforming to {@link StorageRange.storage}. */
-          const storageMap: StorageRange['storage'] = {}
-          const stream = trie.createReadStream()
+      /** Object conforming to {@link StorageRange.storage}. */
+      const storageMap: StorageRange['storage'] = {}
+      const stream = trie.createReadStream()
 
-          stream.on('data', (val: any) => {
-            if (!inRange) {
-              // Check if the key is already in the correct range.
-              if (bytesToBigInt(val.key) >= startKey) {
-                inRange = true
-              } else {
-                return
-              }
-            }
+      stream.on('data', (val: any) => {
+        if (!inRange) {
+          // Check if the key is already in the correct range.
+          if (bytesToBigInt(val.key) >= startKey) {
+            inRange = true
+          } else {
+            return
+          }
+        }
 
-            if (i < limit) {
-              storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-              i++
-            } else if (i === limit) {
-              resolve({
-                storage: storageMap,
-                nextKey: bytesToHex(val.key),
-              })
-            }
+        if (i < limit) {
+          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
+          i++
+        } else if (i === limit) {
+          resolve({
+            storage: storageMap,
+            nextKey: bytesToHex(val.key),
           })
+        }
+      })
 
-          stream.on('end', () => {
-            resolve({
-              storage: storageMap,
-              nextKey: null,
-            })
-          })
+      stream.on('end', () => {
+        resolve({
+          storage: storageMap,
+          nextKey: null,
         })
-        .catch((e) => {
-          reject(e)
-        })
+      })
+      stream.on('error', (e) => reject(e))
     })
   }
 
