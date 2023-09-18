@@ -61,6 +61,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Network ID',
     choices: networks.map((n) => parseInt(n[0])),
     default: undefined,
+    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
   .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
@@ -79,10 +80,12 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('customChain', {
     describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customGenesisState',
   })
   .option('customGenesisState', {
     describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customChain',
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
@@ -97,6 +100,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
     boolean: true,
     default: true,
+    implies: 'gethGenesis',
   })
   .option('transports', {
     describe: 'Network transports',
@@ -741,24 +745,12 @@ async function run() {
   }
 
   // Configure common based on args given
-  if (
-    (typeof args.customChain === 'string' ||
-      typeof args.customGenesisState === 'string' ||
-      typeof args.gethGenesis === 'string') &&
-    (args.network !== 'mainnet' || args.networkId !== undefined)
-  ) {
-    console.error('cannot specify both custom chain parameters and preset network ID')
-    process.exit()
-  }
+
   // Use custom chain parameters file if specified
   if (typeof args.customChain === 'string') {
-    if (args.customGenesisState === undefined) {
-      console.error('cannot have custom chain parameters without genesis state')
-      process.exit()
-    }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
-      customGenesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
+      customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
         customChains: [customChainParams],
