@@ -336,6 +336,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       this._debug(`Update codeHash (-> ${short(codeHash)}) for account ${address}`)
     }
 
+    if ((await this.getAccount(address)) === undefined) {
+      await this.putAccount(address, new Account())
+    }
+    await this.modifyAccountFields(address, { codeHash })
+
     this._codeCache2?.put(address, value)
   }
 
