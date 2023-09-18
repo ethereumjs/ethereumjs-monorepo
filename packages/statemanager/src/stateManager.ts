@@ -624,9 +624,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       // throw new Error(`getProof() can only be called for an existing account`)
       const returnValue: Proof = {
         address: address.toString(),
-        balance: '0x',
+        balance: '0x0',
         codeHash: KECCAK256_NULL_S,
-        nonce: '0x',
+        nonce: '0x0',
         storageHash: KECCAK256_RLP_S,
         accountProof: (await this._trie.createProof(address.bytes)).map((p) => bytesToHex(p)),
         storageProof: [],
