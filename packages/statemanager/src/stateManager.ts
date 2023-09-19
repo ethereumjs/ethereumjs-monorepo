@@ -327,6 +327,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+    this._codeCache2?.put(address, value)
     const codeHash = keccak256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
@@ -340,8 +341,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       await this.putAccount(address, new Account())
     }
     await this.modifyAccountFields(address, { codeHash })
-
-    this._codeCache2?.put(address, value)
   }
 
   /**
