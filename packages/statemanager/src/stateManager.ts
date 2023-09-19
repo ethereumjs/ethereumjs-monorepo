@@ -950,6 +950,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
+    const prefixStorageTrieKeys = this._prefixStorageTrieKeys
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
@@ -962,6 +963,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     return new DefaultStateManager({
       common,
       trie,
+      prefixStorageTrieKeys,
       prefixCodeHashes,
       accountCacheOpts,
       storageCacheOpts,
