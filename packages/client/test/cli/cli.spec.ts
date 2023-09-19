@@ -277,7 +277,7 @@ describe('[CLI]', () => {
   }, 30000)
   // client rpc tests
   it('should start HTTP RPC on custom port and address', async () => {
-    const cliArgs = ['--rpc', '--rpcPort=8562', '--dev=poa', `--rpcAddr="0.0.0.0"`]
+    const cliArgs = ['--rpc', '--rpcPort=8562', '--dev=poa', `--rpcAddr="0.0.0.0"`, '--port=19657']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -477,6 +477,7 @@ describe('[CLI]', () => {
       '--dnsAddr=8.8.8.8',
       '--dev=poa',
       '--rpcPort=8573',
+      '--port=31051',
     ]
     const onData = async (
       message: string,
