@@ -28,6 +28,34 @@ describe('ProofStateManager', () => {
     assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
   })
 
+  it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
+    const address = Address.zero()
+    const key = zeros(32)
+    const stateManager = new DefaultStateManager()
+
+    const account = new Account()
+    await stateManager.putAccount(address, account)
+
+    const proof = await stateManager.getProof(address, [key])
+    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+
+    account.balance = BigInt(1)
+    await stateManager.putAccount(address, account)
+
+    const proof2 = await stateManager.getProof(address, [key])
+    assert.equal(proof2.balance, '0x1', 'Balance correctly encoded')
+    assert.equal(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+
+    account.balance = BigInt(0)
+    account.nonce = BigInt(1)
+    await stateManager.putAccount(address, account)
+
+    const proof3 = await stateManager.getProof(address, [key])
+    assert.equal(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.equal(proof3.nonce, '0x1', 'Nonce is correctly encoded')
+  })
+
   it(`should get and verify EIP 1178 proofs`, async () => {
     const address = Address.zero()
     const key = zeros(32)
