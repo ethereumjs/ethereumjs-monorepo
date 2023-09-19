@@ -118,8 +118,7 @@ export interface HeaderData {
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
   /**
-   * Verkle Proof Data (experimental)
-   * Fake-EIP 999001 (see Common library)
+   * EIP-6800: Verkle Proof Data (experimental)
    */
   executionWitness?: VerkleExecutionWitness
 }

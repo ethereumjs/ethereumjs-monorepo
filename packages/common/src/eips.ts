@@ -471,9 +471,9 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
   },
-  999001: {
-    comment: 'Verkle Proof Support (Fake EIP)',
-    url: 'https://github.com/gballet/verkle-block-sample',
+  6800: {
+    comment: 'Ethereum state using a unified verkle tree',
+    url: 'https://github.com/ethereum/EIPs/pull/6800',
     status: Status.Draft,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],

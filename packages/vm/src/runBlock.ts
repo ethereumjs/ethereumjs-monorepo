@@ -103,7 +103,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       debug(`Apply DAO hardfork`)
     }
 
-    if (this.common.isActivatedEIP(999001)) {
+    if (this.common.isActivatedEIP(6800)) {
       ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
         block.header.executionWitness!
       )
@@ -163,7 +163,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else if (this.common.isActivatedEIP(999001) === false) {
+  } else if (this.common.isActivatedEIP(6800) === false) {
     // Only validate the following headers if verkle blocks aren't activated
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {

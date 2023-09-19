@@ -11,7 +11,7 @@ import * as verkleBlockJSON from './testdata/verkleKaustinenBlock1.json'
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
     chain: 'customChain',
-    eips: [999001],
+    eips: [6800],
   })
   const block = Block.fromBlockData(verkleBlockJSON, { common })
 

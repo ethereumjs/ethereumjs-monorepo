@@ -64,8 +64,7 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   /**
-   * Verkle Proof Data (experimental)
-   * Fake-EIP 999001 (see Common library)
+   * EIP-6800: Verkle Proof Data (experimental)
    */
   public readonly executionWitness?: VerkleExecutionWitness
 
@@ -228,7 +227,7 @@ export class BlockHeader {
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
     }
 
-    if (this.common.isActivatedEIP(999001)) {
+    if (this.common.isActivatedEIP(6800)) {
       if (executionWitness === undefined) {
         executionWitness = {
           stateDiff: [],
@@ -404,7 +403,7 @@ export class BlockHeader {
 
     // Validation for Verkle blocks
     // Unnecessary in this implementation since we're providing defaults if those fields are undefined
-    if (this.common.isActivatedEIP(999001)) {
+    if (this.common.isActivatedEIP(6800)) {
       if (this.executionWitness === undefined) {
         throw new Error(`Invalid block: verkle executionWitness missing`)
       }

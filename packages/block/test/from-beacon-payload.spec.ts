@@ -74,10 +74,10 @@ describe('[fromExecutionPayloadJson]: kaustinen', () => {
   // safely change chainId without modifying undelying json
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
     chain: network,
-    eips: [999001],
+    eips: [6800],
   })
   it('reconstruct kaustinen block', async () => {
-    assert.ok(common.isActivatedEIP(999001), 'verkle eip should be activated')
+    assert.ok(common.isActivatedEIP(6800), 'verkle eip should be activated')
     const block = await Block.fromBeaconPayloadJson(payloadKaustinen, { common })
     // the witness object in payload has camel casing for now
     // the current block hash doesn't include witness data so deep match is required

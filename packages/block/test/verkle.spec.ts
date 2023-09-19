@@ -6,10 +6,10 @@ import { Block } from '../src/index.js'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinenBlock1.json'
 
-describe('[VerkleBlock]: Verkle Block Functionality (FakeEIP-999001)', () => {
+describe('[VerkleBlock]: Verkle Block Functionality (EIP-6800)', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
     chain: 'customChain',
-    eips: [999001],
+    eips: [6800],
   })
   const verkleBlock = Block.fromBlockData(verkleBlockJSON, { common })
 

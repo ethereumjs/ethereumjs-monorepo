@@ -17,7 +17,7 @@ import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/util
 import * as wasm from 'rust-verkle-wasm'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
-import { OriginalStorageCache } from './cache/originalStorageCache'
+import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { VerkleExecutionWitness, VerkleProof } from '@ethereumjs/block'
 import type {
@@ -26,6 +26,7 @@ import type {
   EVMStateManagerInterface,
   Proof,
   StorageDump,
+  StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
@@ -535,7 +536,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Both are represented as hex strings without the `0x` prefix.
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
-    return { test: 'test' }
+    throw Error('not implemented')
+  }
+
+  dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+    throw Error('not implemented')
   }
 
   /**

@@ -14,7 +14,7 @@ describe('Verkle-enabled VM', async () => {
   it('should run verkle blocks (kaustinen)', async () => {
     const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
       chain: 'customChain',
-      eips: [999001],
+      eips: [6800],
     })
 
     for (const [index, blockJSON] of [block1JSON, block2JSON, block3JSON].entries()) {
