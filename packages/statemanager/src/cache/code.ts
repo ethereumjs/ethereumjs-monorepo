@@ -57,7 +57,7 @@ export class CodeCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem)
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: undefined })
     }
   }
 
