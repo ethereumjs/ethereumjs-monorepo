@@ -287,6 +287,11 @@ export class VM {
     if (logs.length === 0) {
       return
     }
+
+    let calls = 0
+    let totalMs = 0
+    let totalGas = 0
+
     const colOrder = [
       'tag',
       'calls',
@@ -297,6 +302,7 @@ export class VM {
       'gasUsed',
       'staticGas',
       'millionGasPerSecond',
+      'blocksPerSlot',
     ]
     const colNames = [
       'tag',
@@ -308,7 +314,9 @@ export class VM {
       'total (s+d)',
       'static fee',
       'Mgas/s',
+      'BpS',
     ]
+
     function padStr(str: string | number, leftpad: number) {
       return ' ' + str.toString().padStart(leftpad, ' ') + ' '
     }
@@ -327,6 +335,17 @@ export class VM {
           //@ts-ignore
           colLength[ins] = Math.max(colLength[ins] ?? 0, strLen(entry[key]))
           ins++
+          switch (key) {
+            case 'calls':
+              calls += entry[key]
+              break
+            case 'totalTime':
+              totalMs += entry[key]
+              break
+            case 'gasUsed':
+              totalGas += entry[key]
+              break
+          }
         }
       }
     }
@@ -336,8 +355,25 @@ export class VM {
     }
 
     const headerLength = colLength.reduce((pv, cv) => pv + cv, 0) + colLength.length * 3 - 1
+
+    const blockGasLimit = 30_000_000 // Block gas limit
+    const slotTime = 12000 // Time in milliseconds per slot
+
+    // Normalize constant to check if execution time is above one block per slot (>=1) or not (<1)
+    const bpsNormalizer = blockGasLimit / slotTime
+
+    const avgGas = totalGas / totalMs
+    const mGasSAvg = Math.round(avgGas) / 1e3
+    const bpSAvg = Math.round((avgGas / bpsNormalizer) * 1e3) / 1e3
+
     // eslint-disable-next-line
     console.log('+== ' + profileTitle + ' ==+')
+    // eslint-disable-next-line
+    console.log(
+      `+== Calls: ${calls}, Total time: ${
+        Math.round(totalMs * 1e3) / 1e3
+      }ms, Total gas: ${totalGas}, MGas/s: ${mGasSAvg}, Blocks per Slot (BpS): ${bpSAvg} ==+`
+    )
 
     const header = '|' + '-'.repeat(headerLength) + '|'
     // eslint-disable-next-line
