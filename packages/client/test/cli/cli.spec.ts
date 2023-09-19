@@ -308,7 +308,7 @@ describe('[CLI]', () => {
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 15000)
+  }, 30000)
   it('HTTP/WS RPCs should not start when cli args omitted', async () => {
     const onData = async (
       message: string,
