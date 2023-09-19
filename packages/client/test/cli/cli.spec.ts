@@ -710,7 +710,7 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
 
-  it('should not start client with unknown paramaters', async () => {
+  it('should not start client with unknown parameters', async () => {
     const cliArgs = ['--datadir=fake/path']
     const onData = async (
       message: string,
@@ -719,6 +719,21 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('Unknown argument: datadir')) {
         assert.ok(true, 'correctly errors on unknown arguments')
+      }
+      child.kill(9)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
+  it('should not start client with conflicting parameters', async () => {
+    const cliArgs = ['--networkId', '--gethGenesis']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Arguments networkId and gethGenesis are mutually exclusive')) {
+        assert.ok(true, 'correctly errors on conflicting arguments')
       }
       child.kill(9)
       resolve(undefined)
