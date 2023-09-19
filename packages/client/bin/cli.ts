@@ -21,7 +21,7 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import readline from 'readline'
-import yargs from 'yargs'
+import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../src/client'

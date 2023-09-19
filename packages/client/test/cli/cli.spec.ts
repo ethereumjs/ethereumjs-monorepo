@@ -10,14 +10,15 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 
 export function clientRunHelper(
   cliArgs: string[],
-  onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void
+  onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void,
+  shouldError = false
 ) {
   const file = require.resolve('../../dist/bin/cli.js')
   const child = spawn(process.execPath, [file, ...cliArgs])
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
       const message: string = data.toString()
-      onData(message, child, resolve)
+      if (!shouldError) onData(message, child, resolve)
       if (message.toLowerCase().includes('error')) {
         child.kill(9)
         assert.fail(`client encountered error: ${message}`)
@@ -25,7 +26,8 @@ export function clientRunHelper(
     })
     child.stderr.on('data', (data) => {
       const message: string = data.toString()
-      assert.fail(`stderr: ${message}`)
+      if (shouldError) onData(message, child, resolve)
+      else assert.fail(`stderr: ${message}`)
     })
     child.on('close', (code) => {
       if (typeof code === 'number' && code > 0) {
@@ -707,4 +709,20 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+
+  it('should not start client with unknown paramaters', async () => {
+    const cliArgs = ['--datadir=fake/path']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Unknown argument: datadir')) {
+        assert.ok(true, 'correctly errors on unknown arguments')
+      }
+      child.kill(9)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
 })
