@@ -60,6 +60,7 @@ export class VMExecution extends Execution {
       this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
       const stateManager = new DefaultStateManager({
         trie,
+        prefixStorageTrieKeys: true,
         accountCacheOpts: {
           deactivate: false,
           type: CacheType.LRU,
