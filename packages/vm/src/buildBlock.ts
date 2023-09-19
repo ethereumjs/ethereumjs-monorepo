@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
@@ -85,7 +85,11 @@ export class BlockBuilder {
       this.vm.common.isActivatedEIP(1559) === true &&
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
-      this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+      if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
+        this.headerData.baseFeePerGas = vm.common.param('gasConfig', 'initialBaseFee')
+      } else {
+        this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+      }
     }
 
     if (
