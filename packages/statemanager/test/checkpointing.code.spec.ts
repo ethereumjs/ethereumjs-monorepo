@@ -1,5 +1,4 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
-import { bytesToHex } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { DefaultStateManager } from '../src/index.js'

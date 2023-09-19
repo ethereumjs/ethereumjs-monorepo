@@ -1,5 +1,4 @@
-import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { CacheType, CodeCache } from '../../src/cache/index.js'
