@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695070211689,
+  "lastUpdate": 1695103013018,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "26c51791a1794e39c75f51f5454324ac6a5beef6",
-          "message": "client: fixes for new engine api method validations for hive pr-834 (#2973)\n\n* client: fixes for new engine api method validations for hive pr-834\r\n\r\n* fix spec\r\n\r\n* handle null values hive sends\r\n\r\n* fix remaining errors\r\n\r\n* return blobs of already build payload\r\n\r\n* fix client spec\r\n\r\n* small fix\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-08-22T18:29:00+02:00",
-          "tree_id": "7ab22d29c9761543727f0f763ad0a4da21cb15a3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/26c51791a1794e39c75f51f5454324ac6a5beef6"
-        },
-        "date": 1692721941865,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32624,
-            "range": "±4.48%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31919,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31993,
-            "range": "±2.55%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27693,
-            "range": "±8.93%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 30349,
-            "range": "±2.68%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±4.03%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bd705441699d433db1540208ce8ba1c796262605",
+          "message": "Snap storage fetcher tests (#3018)\n\n* Increase test coverage for storage fetcher\r\n\r\n* Refactor storagefetcher requests over to using vi instead of td for mocking\r\n\r\n* Fix linting errors\r\n\r\n* Update root",
+          "timestamp": "2023-09-19T11:22:44+05:30",
+          "tree_id": "3c2f6ab1a28c630829022150adbd54c378341e48",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bd705441699d433db1540208ce8ba1c796262605"
+        },
+        "date": 1695103011700,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 24968,
+            "range": "±5.99%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25012,
+            "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 24970,
+            "range": "±3.50%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 24531,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 19498,
+            "range": "±11.67%",
+            "unit": "ops/sec",
+            "extra": "68 samples"
           }
         ]
       }
