@@ -97,7 +97,7 @@ export class PendingBlock {
     withdrawals?: WithdrawalData[]
   ) {
     const number = parentBlock.header.number + BigInt(1)
-    const { timestamp, mixHash } = headerData
+    const { timestamp, mixHash, parentBeaconBlockRoot } = headerData
     const { gasLimit } = parentBlock.header
 
     // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
@@ -105,11 +105,19 @@ export class PendingBlock {
     const timestampBuf = bigIntToUnpaddedBytes(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
     const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
+    const parentBeaconBlockRootBuf =
+      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+
     const payloadIdBytes = toBytes(
-      keccak256(concatBytes(parentBlock.hash(), mixHashBuf, timestampBuf, gasLimitBuf)).subarray(
-        0,
-        8
-      )
+      keccak256(
+        concatBytes(
+          parentBlock.hash(),
+          mixHashBuf,
+          timestampBuf,
+          gasLimitBuf,
+          parentBeaconBlockRootBuf
+        )
+      ).subarray(0, 8)
     )
     const payloadId = bytesToHex(payloadIdBytes)
 
@@ -217,7 +225,12 @@ export class PendingBlock {
     }
     const blockStatus = builder.getStatus()
     if (blockStatus.status === BuildStatus.Build) {
-      return [blockStatus.block, builder.transactionReceipts, builder.minerValue]
+      return [
+        blockStatus.block,
+        builder.transactionReceipts,
+        builder.minerValue,
+        this.blobsBundles.get(payloadId),
+      ]
     }
     const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
 

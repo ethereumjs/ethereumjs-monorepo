@@ -3,7 +3,7 @@ import { bigIntToHex } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseRequest, params, setupChain } from '../helpers'
@@ -42,7 +42,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
 
     const req = params(method, [validBlock, [], parentBeaconBlockRoot])
     const expectRes = checkError(
-      INVALID_PARAMS,
+      UNSUPPORTED_FORK,
       'NewPayloadV{1|2} MUST be used before Cancun is activated'
     )
     await baseRequest(server, req, 200, expectRes)
@@ -63,8 +63,8 @@ describe(`${method}: call with executionPayloadV3`, () => {
       withdrawals: [],
       blobGasUsed: '0x0',
       excessBlobGas: '0x0',
-      blockHash: '0x6ec6f32e6931199f8f84faf46a59bc9a1e65a23aa73ca21278b5cb48aa2d059d',
-      stateRoot: '0x454a9db6943b17a5f88aea507d0c3f4420d533d143b4eb5194cc7589d721b024',
+      blockHash: '0x80d8858cfe4387e29e1853ad6e028cd9c8a40739416c93c2ae0c04410ebeee3c',
+      stateRoot: '0x3c49a0c1f34b6e0ad9b04deb44bcc459f1c8d994214ce907ff2682ffe779a31a',
     }
     let expectRes, req
 

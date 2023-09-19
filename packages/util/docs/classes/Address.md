@@ -12,14 +12,14 @@ Handling and generating Ethereum addresses
 
 ### Properties
 
-- [buf](Address.md#buf)
+- [bytes](Address.md#bytes)
 
 ### Methods
 
 - [equals](Address.md#equals)
 - [isPrecompileOrSystemAddress](Address.md#isprecompileorsystemaddress)
 - [isZero](Address.md#iszero)
-- [toBuffer](Address.md#tobuffer)
+- [toBytes](Address.md#tobytes)
 - [toString](Address.md#tostring)
 - [fromPrivateKey](Address.md#fromprivatekey)
 - [fromPublicKey](Address.md#frompublickey)
@@ -32,13 +32,13 @@ Handling and generating Ethereum addresses
 
 ### constructor
 
-• **new Address**(`buf`)
+• **new Address**(`bytes`)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `buf` | `Buffer` |
+| `bytes` | `Uint8Array` |
 
 #### Defined in
 
@@ -46,9 +46,9 @@ Handling and generating Ethereum addresses
 
 ## Properties
 
-### buf
+### bytes
 
-• `Readonly` **buf**: `Buffer`
+• `Readonly` **bytes**: `Uint8Array`
 
 #### Defined in
 
@@ -111,15 +111,15 @@ Is address zero.
 
 ___
 
-### toBuffer
+### toBytes
 
-▸ **toBuffer**(): `Buffer`
+▸ **toBytes**(): `Uint8Array`
 
-Returns Buffer representation of address.
+Returns a new Uint8Array representation of address.
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
@@ -153,7 +153,7 @@ Returns an address for a given private key.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `privateKey` | `Buffer` | A private key must be 256 bits wide |
+| `privateKey` | `Uint8Array` | A private key must be 256 bits wide |
 
 #### Returns
 
@@ -175,7 +175,7 @@ Returns an address for a given public key.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `pubKey` | `Buffer` | The two points of an uncompressed key |
+| `pubKey` | `Uint8Array` | The two points of an uncompressed key |
 
 #### Returns
 
@@ -243,8 +243,8 @@ Generates an address for a contract created using CREATE2.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `from` | [`Address`](Address.md) | The address which is creating this new address |
-| `salt` | `Buffer` | A salt |
-| `initCode` | `Buffer` | The init code of the contract being created |
+| `salt` | `Uint8Array` | A salt |
+| `initCode` | `Uint8Array` | The init code of the contract being created |
 
 #### Returns
 

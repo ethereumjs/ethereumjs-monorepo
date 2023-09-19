@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/trie",
-  "version": "6.0.0-rc.1",
+  "version": "6.0.0",
   "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": [
     "merkle",
@@ -38,7 +38,7 @@
     "benchmarks": "node -r ts-node/register --max-old-space-size=8024 benchmarks",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- trie",
     "lint": "../../config/cli/lint.sh",
@@ -52,17 +52,18 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "5.0.0-rc.1",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
     "@types/readable-stream": "^2.3.13",
     "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.1.2",
     "readable-stream": "^3.6.0"
   },
   "devDependencies": {
-    "@ethereumjs/genesis": "0.1.0-rc.1",
+    "@ethereumjs/genesis": "^0.1.0",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",
+    "debug": "^4.3.4",
     "level": "^8.0.0",
     "level-legacy": "npm:level@^7.0.0",
     "level-mem": "^6.0.1",

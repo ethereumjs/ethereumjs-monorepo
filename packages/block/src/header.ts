@@ -270,11 +270,11 @@ export class BlockHeader {
     }
 
     if (!this.common.isActivatedEIP(4844)) {
-      if (headerData.blobGasUsed !== undefined) {
+      if (blobGasUsed !== undefined) {
         throw new Error('blob gas used can only be provided with EIP4844 activated')
       }
 
-      if (headerData.excessBlobGas !== undefined) {
+      if (excessBlobGas !== undefined) {
         throw new Error('excess blob gas can only be provided with EIP4844 activated')
       }
     }
@@ -445,14 +445,13 @@ export class BlockHeader {
    */
   protected _consensusFormatValidation() {
     const { nonce, uncleHash, difficulty, extraData, number } = this
-    const hardfork = this.common.hardfork()
 
     // Consensus type dependent checks
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
         number > BigInt(0) &&
-        this.extraData.length > this.common.paramByHardfork('vm', 'maxExtraDataSize', hardfork)
+        this.extraData.length > this.common.param('vm', 'maxExtraDataSize')
       ) {
         // Check length of data on all post-genesis blocks
         const msg = this._errorMsg('invalid amount of extra data')
@@ -547,10 +546,8 @@ export class BlockHeader {
       parentGasLimit = parentGasLimit * elasticity
     }
     const gasLimit = this.gasLimit
-    const hardfork = this.common.hardfork()
 
-    const a =
-      parentGasLimit / this.common.paramByHardfork('gasConfig', 'gasLimitBoundDivisor', hardfork)
+    const a = parentGasLimit / this.common.param('gasConfig', 'gasLimitBoundDivisor')
     const maxGasLimit = parentGasLimit + a
     const minGasLimit = parentGasLimit - a
 
@@ -564,10 +561,8 @@ export class BlockHeader {
       throw new Error(msg)
     }
 
-    if (gasLimit < this.common.paramByHardfork('gasConfig', 'minGasLimit', hardfork)) {
-      const msg = this._errorMsg(
-        `gas limit decreased below minimum gas limit for hardfork=${hardfork}`
-      )
+    if (gasLimit < this.common.param('gasConfig', 'minGasLimit')) {
+      const msg = this._errorMsg(`gas limit decreased below minimum gas limit`)
       throw new Error(msg)
     }
   }
@@ -710,7 +705,6 @@ export class BlockHeader {
       }
       return this.cache.hash
     }
-
     return keccak256(RLP.encode(this.raw()))
   }
 
@@ -746,18 +740,16 @@ export class BlockHeader {
       )
       throw new Error(msg)
     }
-    const hardfork = this.common.hardfork()
     const blockTs = this.timestamp
     const { timestamp: parentTs, difficulty: parentDif } = parentBlockHeader
-    const minimumDifficulty = this.common.paramByHardfork('pow', 'minimumDifficulty', hardfork)
-    const offset =
-      parentDif / this.common.paramByHardfork('pow', 'difficultyBoundDivisor', hardfork)
+    const minimumDifficulty = this.common.param('pow', 'minimumDifficulty')
+    const offset = parentDif / this.common.param('pow', 'difficultyBoundDivisor')
     let num = this.number
 
     // We use a ! here as TS cannot follow this hardfork-dependent logic, but it always gets assigned
     let dif!: bigint
 
-    if (this.common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
       // max((2 if len(parent.uncles) else 1) - ((timestamp - parent.timestamp) // 9), -99) (EIP100)
       const uncleAddend = equalsBytes(parentBlockHeader.uncleHash, KECCAK256_RLP_ARRAY) ? 1 : 2
       let a = BigInt(uncleAddend) - (blockTs - parentTs) / BigInt(9)
@@ -769,13 +761,13 @@ export class BlockHeader {
       dif = parentDif + offset * a
     }
 
-    if (this.common.hardforkGteHardfork(hardfork, Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
       // Get delay as parameter from common
       num = num - this.common.param('pow', 'difficultyBombDelay')
       if (num < BigInt(0)) {
         num = BigInt(0)
       }
-    } else if (this.common.hardforkGteHardfork(hardfork, Hardfork.Homestead) === true) {
+    } else if (this.common.gteHardfork(Hardfork.Homestead) === true) {
       // 1 - (block_timestamp - parent_timestamp) // 10
       let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
@@ -786,7 +778,7 @@ export class BlockHeader {
       dif = parentDif + offset * a
     } else {
       // pre-homestead
-      if (parentTs + this.common.paramByHardfork('pow', 'durationLimit', hardfork) > blockTs) {
+      if (parentTs + this.common.param('pow', 'durationLimit') > blockTs) {
         dif = offset + parentDif
       } else {
         dif = parentDif - offset

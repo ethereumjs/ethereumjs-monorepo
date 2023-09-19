@@ -6,6 +6,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.0 - 2023-08-09
+
+Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
+
+See [RC1 release notes](https://github.com/ethereumjs/ethereumjs-monorepo/releases/tag/%40ethereumjs%2Fdevp2p%406.0.0-rc.1) for the main change description.
+
+Following additional changes since RC1:
+
+### Event Emitter Refactor
+
+We have reworked the `EventEmitter` integration for the library and switched away from the structure where all central classes (like e.g. `RLPx`) directly inherit from `EventEmitter`. Instead, we now have the `EventEmitter` in a dedicated `events` property associated with the respective class, see PR [#2893](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2893). This aligns with how event emitters are implemented in other libraries (e.g. the VM or the client), leads to a cleaner API usage (autocomplete in an IDE now only shows the relevant methods) and allows for an easier customization of the library.
+
+Event usage has to be adopted as follows:
+
+```typescript
+rlpx.on('peer:added', (peer) => { // old
+  // Do something
+}
+
+rlpx.events.on('peer:added', (peer) => { // new
+  // Do something
+}
+```
+
+Event emitter logic in the following components from the public API has been reworked:
+
+- `DPT`
+- `RLPx`
+- `ETH`
+- `LES`
+- `SNAP` (in development)
+
+### Other Changes
+
+- Address security vulnerabilities, PR [#2912](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2912)
+
 ## 6.0.0-rc.1 - 2023-07-18
 
 This is the release candidate (RC1) for the upcoming breaking releases on the various EthereumJS libraries. The associated release notes below are the main source of information on the changeset, also for the upcoming final releases, where we'll just provide change addition summaries + references to these RC1 notes.

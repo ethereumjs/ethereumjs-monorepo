@@ -9,6 +9,7 @@ import {
   KECCAK256_RLP,
   KECCAK256_RLP_S,
   bigIntToHex,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
@@ -28,6 +29,7 @@ import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { StorageRange } from '@ethereumjs/common/src'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -156,6 +158,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _checkpointCount: number
 
+  protected _proofTrie: Trie
+
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -177,6 +181,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
+    this._proofTrie = new Trie({ useKeyHashing: true })
+
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 
     this._checkpointCount = 0
@@ -189,7 +195,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
     this._accountCacheSettings = {
-      deactivate: opts.accountCacheOpts?.deactivate ?? false,
+      deactivate:
+        (opts.accountCacheOpts?.deactivate === true || opts.accountCacheOpts?.size === 0) ?? false,
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.accountCacheOpts?.size ?? 100000,
     }
@@ -202,7 +209,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     this._storageCacheSettings = {
-      deactivate: opts.storageCacheOpts?.deactivate ?? false,
+      deactivate:
+        (opts.storageCacheOpts?.deactivate === true || opts.storageCacheOpts?.size === 0) ?? false,
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.storageCacheOpts?.size ?? 20000,
     }
@@ -667,7 +675,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await new Trie({ useKeyHashing: true }).verifyProof(rootHash, key, accountProof)
+    const value = await this._proofTrie.verifyProof(rootHash, key, accountProof)
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -713,11 +721,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await new Trie({ useKeyHashing: true }).verifyProof(
-        storageRoot,
-        storageKey,
-        storageProof
-      )
+      const proofValue = await this._proofTrie.verifyProof(storageRoot, storageKey, storageProof)
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
@@ -802,6 +806,70 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   }
 
   /**
+   Dumps a limited number of RLP-encoded storage values for an account specified by `address`,
+   starting from `startKey` or greater.
+   @param address - The address of the `account` to return storage for.
+   @param startKey - The bigint representation of the smallest storage key that will be returned.
+   @param limit - The maximum number of storage values that will be returned.
+   @returns {Promise<StorageRange>} - A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
+   The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
+   */
+  async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+    if (!Number.isSafeInteger(limit) || limit < 0) {
+      throw new Error(`Limit is not a proper uint.`)
+    }
+
+    await this.flush()
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`Account does not exist.`)
+    }
+
+    return new Promise((resolve, reject) => {
+      this._getStorageTrie(address, account)
+        .then((trie) => {
+          let inRange = false
+          let i = 0
+
+          /** Object conforming to {@link StorageRange.storage}. */
+          const storageMap: StorageRange['storage'] = {}
+          const stream = trie.createReadStream()
+
+          stream.on('data', (val: any) => {
+            if (!inRange) {
+              // Check if the key is already in the correct range.
+              if (bytesToBigInt(val.key) >= startKey) {
+                inRange = true
+              } else {
+                return
+              }
+            }
+
+            if (i < limit) {
+              storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
+              i++
+            } else if (i === limit) {
+              resolve({
+                storage: storageMap,
+                nextKey: bytesToHex(val.key),
+              })
+            }
+          })
+
+          stream.on('end', () => {
+            resolve({
+              storage: storageMap,
+              nextKey: null,
+            })
+          })
+        })
+        .catch((e) => {
+          reject(e)
+        })
+    })
+  }
+
+  /**
    * Initializes the provided genesis state into the state trie.
    * Will error if there are uncommitted checkpoints on the instance.
    * @param initState address -> balance | [balance, code, storage]
@@ -860,6 +928,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * 2. Cache values are generally not copied along
    */
   shallowCopy(): DefaultStateManager {
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
+
     const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
     let accountCacheOpts = { ...this._accountCacheSettings }
@@ -872,6 +943,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     return new DefaultStateManager({
+      common,
       trie,
       prefixCodeHashes,
       accountCacheOpts,

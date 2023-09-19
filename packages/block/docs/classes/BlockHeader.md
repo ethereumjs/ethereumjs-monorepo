@@ -13,11 +13,11 @@ An object that represents the block header.
 ### Properties
 
 - [baseFeePerGas](BlockHeader.md#basefeepergas)
+- [blobGasUsed](BlockHeader.md#blobgasused)
 - [coinbase](BlockHeader.md#coinbase)
 - [common](BlockHeader.md#common)
-- [dataGasUsed](BlockHeader.md#datagasused)
 - [difficulty](BlockHeader.md#difficulty)
-- [excessDataGas](BlockHeader.md#excessdatagas)
+- [excessBlobGas](BlockHeader.md#excessblobgas)
 - [extraData](BlockHeader.md#extradata)
 - [gasLimit](BlockHeader.md#gaslimit)
 - [gasUsed](BlockHeader.md#gasused)
@@ -42,7 +42,7 @@ An object that represents the block header.
 
 - [calcDataFee](BlockHeader.md#calcdatafee)
 - [calcNextBaseFee](BlockHeader.md#calcnextbasefee)
-- [calcNextExcessDataGas](BlockHeader.md#calcnextexcessdatagas)
+- [calcNextExcessBlobGas](BlockHeader.md#calcnextexcessblobgas)
 - [cliqueEpochTransitionSigners](BlockHeader.md#cliqueepochtransitionsigners)
 - [cliqueExtraSeal](BlockHeader.md#cliqueextraseal)
 - [cliqueExtraVanity](BlockHeader.md#cliqueextravanity)
@@ -52,7 +52,7 @@ An object that represents the block header.
 - [cliqueVerifySignature](BlockHeader.md#cliqueverifysignature)
 - [errorStr](BlockHeader.md#errorstr)
 - [ethashCanonicalDifficulty](BlockHeader.md#ethashcanonicaldifficulty)
-- [getDataGasPrice](BlockHeader.md#getdatagasprice)
+- [getBlobGasPrice](BlockHeader.md#getblobgasprice)
 - [hash](BlockHeader.md#hash)
 - [isGenesis](BlockHeader.md#isgenesis)
 - [raw](BlockHeader.md#raw)
@@ -99,6 +99,16 @@ varying data types. For a default empty header, use [fromHeaderData](BlockHeader
 
 ___
 
+### blobGasUsed
+
+• `Optional` `Readonly` **blobGasUsed**: `bigint`
+
+#### Defined in
+
+[header.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L57)
+
+___
+
 ### coinbase
 
 • `Readonly` **coinbase**: `Address`
@@ -119,16 +129,6 @@ ___
 
 ___
 
-### dataGasUsed
-
-• `Optional` `Readonly` **dataGasUsed**: `bigint`
-
-#### Defined in
-
-[header.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header.ts#L57)
-
-___
-
 ### difficulty
 
 • `Readonly` **difficulty**: `bigint`
@@ -139,9 +139,9 @@ ___
 
 ___
 
-### excessDataGas
+### excessBlobGas
 
-• `Optional` `Readonly` **excessDataGas**: `bigint`
+• `Optional` `Readonly` **excessBlobGas**: `bigint`
 
 #### Defined in
 
@@ -355,9 +355,9 @@ Calculates the base fee for a potential next block
 
 ___
 
-### calcNextExcessDataGas
+### calcNextExcessBlobGas
 
-▸ **calcNextExcessDataGas**(): `bigint`
+▸ **calcNextExcessBlobGas**(): `bigint`
 
 Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
 
@@ -538,9 +538,9 @@ Returns the canonical difficulty for this block.
 
 ___
 
-### getDataGasPrice
+### getBlobGasPrice
 
-▸ **getDataGasPrice**(): `bigint`
+▸ **getBlobGasPrice**(): `bigint`
 
 Returns the price per unit of blob gas for a blob transaction in the current/pending block
 

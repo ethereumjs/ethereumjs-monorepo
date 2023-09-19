@@ -28,7 +28,7 @@
 - [GenesisBlockConfig](interfaces/GenesisBlockConfig.md)
 - [GethConfigOpts](interfaces/GethConfigOpts.md)
 - [HardforkByOpts](interfaces/HardforkByOpts.md)
-- [HardforkConfig](interfaces/HardforkConfig.md)
+- [HardforkTransitionConfig](interfaces/HardforkTransitionConfig.md)
 - [StateManagerInterface](interfaces/StateManagerInterface.md)
 - [StorageDump](interfaces/StorageDump.md)
 
@@ -41,7 +41,9 @@
 - [AccountFields](README.md#accountfields)
 - [CasperConfig](README.md#casperconfig)
 - [CliqueConfig](README.md#cliqueconfig)
+- [EIPConfig](README.md#eipconfig)
 - [EthashConfig](README.md#ethashconfig)
+- [HardforkConfig](README.md#hardforkconfig)
 - [Proof](README.md#proof)
 - [StorageProof](README.md#storageproof)
 
@@ -61,7 +63,7 @@
 
 #### Defined in
 
-[interfaces.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L39)
+[interfaces.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L43)
 
 ___
 
@@ -71,7 +73,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L38)
+[interfaces.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L42)
 
 ___
 
@@ -81,7 +83,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L37)
+[interfaces.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L41)
 
 ___
 
@@ -98,7 +100,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L29)
+[interfaces.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L33)
 
 ___
 
@@ -108,7 +110,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L7)
+[interfaces.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L11)
 
 ___
 
@@ -139,6 +141,16 @@ ___
 
 ___
 
+### EIPConfig
+
+Ƭ **EIPConfig**: { `minimumHardfork`: [`Hardfork`](enums/Hardfork.md) ; `requiredEIPs`: `number`[]  } & `EIPOrHFConfig`
+
+#### Defined in
+
+[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
+
+___
+
 ### EthashConfig
 
 Ƭ **EthashConfig**: `Object`
@@ -146,6 +158,16 @@ ___
 #### Defined in
 
 [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L16)
+
+___
+
+### HardforkConfig
+
+Ƭ **HardforkConfig**: { `consensus?`: `ConsensusConfig` ; `eips?`: `number`[] ; `name`: `string`  } & `EIPOrHFConfig`
+
+#### Defined in
+
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L162)
 
 ___
 
@@ -167,7 +189,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L15)
+[interfaces.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L19)
 
 ___
 
@@ -185,7 +207,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L9)
+[interfaces.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L13)
 
 ## Variables
 
@@ -226,11 +248,11 @@ parsed params
 | `bootstrapNodes` | `never`[] |
 | `chainId` | `number` |
 | `consensus` | { `algorithm`: `string` = 'clique'; `clique`: { `epoch`: `any` ; `period`: `any`  } ; `ethash`: `undefined` = {}; `type`: `string` = 'poa' } \| { `algorithm`: `string` = 'ethash'; `clique`: `undefined` ; `ethash`: {} = {}; `type`: `string` = 'pow' } |
-| `genesis` | { `baseFeePerGas`: `string` ; `coinbase`: `string` ; `difficulty`: `string` ; `excessDataGas`: `string` ; `extraData`: `string` ; `gasLimit`: `string` ; `mixHash`: `string` ; `nonce`: `string` ; `timestamp`: `string`  } |
+| `genesis` | { `baseFeePerGas`: `string` ; `coinbase`: `string` ; `difficulty`: `string` ; `excessBlobGas`: `string` ; `extraData`: `string` ; `gasLimit`: `string` ; `mixHash`: `string` ; `nonce`: `string` ; `timestamp`: `string`  } |
 | `genesis.baseFeePerGas` | `string` |
 | `genesis.coinbase` | `string` |
 | `genesis.difficulty` | `string` |
-| `genesis.excessDataGas` | `string` |
+| `genesis.excessBlobGas` | `string` |
 | `genesis.extraData` | `string` |
 | `genesis.gasLimit` | `string` |
 | `genesis.mixHash` | `string` |

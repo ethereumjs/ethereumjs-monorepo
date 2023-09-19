@@ -27,6 +27,7 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { AccessList, AccessListItem } from '@ethereumjs/common'
+import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
@@ -162,6 +163,19 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
+    if (this._opts.profilerOpts?.reportAfterTx === true) {
+      const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
+      // eslint-disable-next-line
+      console.log(title)
+      const logs = (<EVM>this.evm).getPerformanceLogs()
+      if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+        // eslint-disable-next-line
+        console.log('No precompile or opcode execution.')
+      }
+      this.emitEVMProfile(logs.precompiles, 'Precompile performance')
+      this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
+      ;(<EVM>this.evm).clearPerformanceLogs()
+    }
   }
 }
 
@@ -296,7 +310,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
     totalblobGas = castTx.common.param('gasConfig', 'blobGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalblobGas * castTx.maxFeePerblobGas
+    maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
     // 4844 minimum blobGas price check
     if (opts.block === undefined) {
@@ -309,9 +323,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw new Error(msg)
     }
     blobGasPrice = opts.block.header.getBlobGasPrice()
-    if (castTx.maxFeePerblobGas < blobGasPrice) {
+    if (castTx.maxFeePerBlobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerblobGas ${castTx.maxFeePerblobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
+        `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         this,
         block,
         tx
@@ -399,7 +413,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
-      } value=${value} data=0x${short(data)}`
+      } value=${value} data=${short(data)}`
     )
   }
 
@@ -424,7 +438,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
         exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
-      } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
+      } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
   }
 

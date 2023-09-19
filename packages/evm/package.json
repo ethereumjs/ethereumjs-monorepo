@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "2.0.0-rc.2",
+  "version": "2.0.0",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": [
     "ethereum",
@@ -36,7 +36,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "coverage:test": "npm run test:node && cd ../vm && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- evm",
@@ -52,10 +52,10 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "4.0.0-rc.1",
-    "@ethereumjs/statemanager": "2.0.0-rc.1",
-    "@ethereumjs/tx": "5.0.0-rc.1",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/common": "^4.0.0",
+    "@ethereumjs/statemanager": "^2.0.0",
+    "@ethereumjs/tx": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "rustbn-wasm": "^0.2.0"

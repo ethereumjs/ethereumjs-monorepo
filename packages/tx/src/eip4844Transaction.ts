@@ -9,21 +9,21 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   computeVersionedHash,
-  concatBytes,
-  ecrecover,
   equalsBytes,
   getBlobs,
-  hexToBytes,
   kzg,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as EIP1559 from './capabilities/eip1559.js'
+import * as EIP2718 from './capabilities/eip2718.js'
+import * as EIP2930 from './capabilities/eip2930.js'
+import * as Legacy from './capabilities/legacy.js'
 import { LIMIT_BLOBS_PER_TX } from './constants.js'
 import { TransactionType } from './types.js'
-import { AccessLists } from './util.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -38,10 +38,6 @@ import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
-
-const TRANSACTION_TYPE_BYTES = hexToBytes(
-  '0x' + TransactionType.BlobEIP4844.toString(16).padStart(2, '0')
-)
 
 const validateBlobTransactionNetworkWrapper = (
   versionedHashes: Uint8Array[],
@@ -87,7 +83,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   public readonly AccessListJSON: AccessList
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
-  public readonly maxFeePerblobGas: bigint
+  public readonly maxFeePerBlobGas: bigint
 
   public readonly common: Common
   public versionedHashes: Uint8Array[]
@@ -104,7 +100,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
     super({ ...txData, type: TransactionType.BlobEIP4844 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerblobGas } = txData
+    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas, maxFeePerBlobGas } = txData
 
     this.common = this._getCommon(opts.common, chainId)
     this.chainId = this.common.chainId()
@@ -149,22 +145,20 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw new Error(msg)
     }
 
-    this.maxFeePerblobGas = bytesToBigInt(
-      toBytes((maxFeePerblobGas ?? '') === '' ? '0x' : maxFeePerblobGas)
+    this.maxFeePerBlobGas = bytesToBigInt(
+      toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas)
     )
 
     this.versionedHashes = (txData.versionedHashes ?? []).map((vh) => toBytes(vh))
-    this._validateYParity()
-    this._validateHighS()
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
 
     for (const hash of this.versionedHashes) {
       if (hash.length !== 32) {
         const msg = this._errorMsg('versioned hash is invalid length')
         throw new Error(msg)
       }
-      if (
-        BigInt(hash[0]) !== this.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844)
-      ) {
+      if (BigInt(hash[0]) !== this.common.param('sharding', 'blobCommitmentVersionKzg')) {
         const msg = this._errorMsg('versioned hash does not start with KZG commitment version')
         throw new Error(msg)
       }
@@ -216,7 +210,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @param opts - dictionary of {@link TxOptions}
    * @returns the "minimal" representation of a BlobEIP4844Transaction (i.e. transaction object minus blobs and kzg commitments)
    */
-  public static minimalFromNetworkWrapper(txData: BlobEIP4844Transaction, opts?: TxOptions) {
+  public static minimalFromNetworkWrapper(
+    txData: BlobEIP4844Transaction,
+    opts?: TxOptions
+  ): BlobEIP4844Transaction {
     const tx = BlobEIP4844Transaction.fromTxData(
       {
         ...txData,
@@ -234,7 +231,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
           TransactionType.BlobEIP4844
@@ -274,7 +273,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       value,
       data,
       accessList,
-      maxFeePerblobGas,
+      maxFeePerBlobGas,
       versionedHashes,
       v,
       r,
@@ -288,7 +287,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxFeePerGas,
       gasLimit,
       value,
-      maxFeePerblobGas,
+      maxFeePerBlobGas,
       v,
       r,
       s,
@@ -305,7 +304,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         value,
         data,
         accessList: accessList ?? [],
-        maxFeePerblobGas,
+        maxFeePerBlobGas,
         versionedHashes,
         v: v !== undefined ? bytesToBigInt(v) : undefined, // EIP2930 supports v's with value 0 (empty Uint8Array)
         r,
@@ -330,7 +329,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw new Error('common instance required to validate versioned hashes')
     }
 
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-4844 transaction (wrong tx type, expected: ${
           TransactionType.BlobEIP4844
@@ -352,7 +353,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       throw Error('BlobEIP4844Transaction can not be send without a valid `to`')
     }
 
-    const version = Number(opts.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
+    const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
     validateBlobTransactionNetworkWrapper(
       decodedTx.versionedHashes,
       blobs,
@@ -376,15 +377,18 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   }
 
   /**
+   * The amount of gas paid for the data in this tx
+   */
+  getDataFee(): bigint {
+    return EIP2930.getDataFee(this)
+  }
+
+  /**
    * The up front amount that an account must have for this transaction to be valid
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
-    const prio = this.maxPriorityFeePerGas
-    const maxBase = this.maxFeePerGas - baseFee
-    const inclusionFeePerGas = prio < maxBase ? prio : maxBase
-    const gasPrice = inclusionFeePerGas + baseFee
-    return this.gasLimit * gasPrice + this.value
+    return EIP1559.getUpfrontCost(this, baseFee)
   }
 
   /**
@@ -411,7 +415,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       bigIntToUnpaddedBytes(this.value),
       this.data,
       this.accessList,
-      bigIntToUnpaddedBytes(this.maxFeePerblobGas),
+      bigIntToUnpaddedBytes(this.maxFeePerBlobGas),
       this.versionedHashes,
       this.v !== undefined ? bigIntToUnpaddedBytes(this.v) : new Uint8Array(0),
       this.r !== undefined ? bigIntToUnpaddedBytes(this.r) : new Uint8Array(0),
@@ -430,8 +434,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    const base = this.raw()
-    return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
+    return EIP2718.serialize(this)
   }
 
   /**
@@ -448,11 +451,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       )
     }
 
-    const tx_payload = this.raw()
-    return concatBytes(
-      TRANSACTION_TYPE_BYTES,
-      RLP.encode([tx_payload, this.blobs, this.kzgCommitments, this.kzgProofs])
-    )
+    return EIP2718.serialize(this, [this.raw(), this.blobs, this.kzgCommitments, this.kzgProofs])
   }
 
   /**
@@ -467,9 +466,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * ```
    */
   getMessageToSign(): Uint8Array {
-    const base = this.raw().slice(0, 11)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return message
+    return EIP2718.serialize(this, this.raw().slice(0, 11))
   }
 
   /**
@@ -480,7 +477,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return keccak256(this.getMessageToSign())
+    return EIP2718.getHashedMessageToSign(this)
   }
 
   /**
@@ -490,19 +487,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Use {@link BlobEIP4844Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = keccak256(this.serialize())
-      }
-      return this.cache.hash
-    }
-
-    return keccak256(this.serialize())
+    return Legacy.hash(this)
   }
 
   getMessageToVerifySignature(): Uint8Array {
@@ -513,27 +498,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    const msgHash = this.getMessageToVerifySignature()
-    const { v, r, s } = this
-
-    this._validateHighS()
-
-    try {
-      return ecrecover(
-        msgHash,
-        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBytes(r!),
-        bigIntToUnpaddedBytes(s!)
-      )
-    } catch (e: any) {
-      const msg = this._errorMsg('Invalid Signature')
-      throw new Error(msg)
-    }
+    return Legacy.getSenderPublicKey(this)
   }
 
   toJSON(): JsonTx {
@@ -546,7 +511,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       maxPriorityFeePerGas: bigIntToHex(this.maxPriorityFeePerGas),
       maxFeePerGas: bigIntToHex(this.maxFeePerGas),
       accessList: accessListJSON,
-      maxFeePerblobGas: bigIntToHex(this.maxFeePerblobGas),
+      maxFeePerBlobGas: bigIntToHex(this.maxFeePerBlobGas),
       versionedHashes: this.versionedHashes.map((hash) => bytesToHex(hash)),
     }
   }
@@ -568,7 +533,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
-        maxFeePerblobGas: this.maxFeePerblobGas,
+        maxFeePerBlobGas: this.maxFeePerBlobGas,
         versionedHashes: this.versionedHashes,
         blobs: this.blobs,
         kzgCommitments: this.kzgCommitments,
@@ -593,13 +558,13 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`
+    return Legacy.errorMsg(this, msg)
   }
 
   /**
    * @returns the number of blobs included with this transaction
    */
-  public numBlobs() {
+  public numBlobs(): number {
     return this.versionedHashes.length
   }
 }

@@ -37,10 +37,21 @@
 
 ### Functions
 
+- [byteTypeToNibbleType](README.md#bytetypetonibbletype)
+- [bytesToNibbles](README.md#bytestonibbles)
+- [compactBytesToNibbles](README.md#compactbytestonibbles)
 - [decodeNode](README.md#decodenode)
 - [decodeRawNode](README.md#decoderawnode)
 - [genesisStateRoot](README.md#genesisstateroot)
+- [hasTerminator](README.md#hasterminator)
+- [hexToKeybytes](README.md#hextokeybytes)
 - [isRawNode](README.md#israwnode)
+- [mergeAndFormatKeyPaths](README.md#mergeandformatkeypaths)
+- [nibbleTypeToByteType](README.md#nibbletypetobytetype)
+- [nibbleTypeToPackedBytes](README.md#nibbletypetopackedbytes)
+- [nibblesToBytes](README.md#nibblestobytes)
+- [nibblesToCompactBytes](README.md#nibblestocompactbytes)
+- [pathToHexKey](README.md#pathtohexkey)
 - [verifyRangeProof](README.md#verifyrangeproof)
 
 ## Type Aliases
@@ -173,6 +184,70 @@ ___
 
 ## Functions
 
+### byteTypeToNibbleType
+
+▸ **byteTypeToNibbleType**(`key`): [`Nibbles`](README.md#nibbles)
+
+Turns each byte into a single nibble, only extracting the lower nibble of each byte
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `key` | `Uint8Array` | Uint8Array typed byte array |
+
+#### Returns
+
+[`Nibbles`](README.md#nibbles)
+
+Nibble typed nibble array
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L144)
+
+___
+
+### bytesToNibbles
+
+▸ **bytesToNibbles**(`str`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `str` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L77)
+
+___
+
+### compactBytesToNibbles
+
+▸ **compactBytesToNibbles**(`compact`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `compact` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L91)
+
+___
+
 ### decodeNode
 
 ▸ **decodeNode**(`raw`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
@@ -235,6 +310,49 @@ Derives the stateRoot of the genesis block based on genesis allocations
 
 ___
 
+### hasTerminator
+
+▸ **hasTerminator**(`nibbles`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nibbles` | `Uint8Array` |
+
+#### Returns
+
+`boolean`
+
+boolean indicating if input hex nibble sequence has terminator indicating leaf-node
+         terminator is represented with 16 because a nibble ranges from 0 - 15(f)
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L31)
+
+___
+
+### hexToKeybytes
+
+▸ **hexToKeybytes**(`hex`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `hex` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L41)
+
+___
+
 ### isRawNode
 
 ▸ **isRawNode**(`n`): `boolean`
@@ -252,6 +370,141 @@ ___
 #### Defined in
 
 [packages/trie/src/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L32)
+
+___
+
+### mergeAndFormatKeyPaths
+
+▸ **mergeAndFormatKeyPaths**(`pathStrings`): `Uint8Array`[][]
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `pathStrings` | `string`[] |
+
+#### Returns
+
+`Uint8Array`[][]
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L175)
+
+___
+
+### nibbleTypeToByteType
+
+▸ **nibbleTypeToByteType**(`arr`): `Uint8Array`
+
+Converts each nibble into a single byte
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `arr` | [`Nibbles`](README.md#nibbles) | Nibble typed nibble array |
+
+#### Returns
+
+`Uint8Array`
+
+Uint8Array typed byte array
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L128)
+
+___
+
+### nibbleTypeToPackedBytes
+
+▸ **nibbleTypeToPackedBytes**(`arr`): `Uint8Array`
+
+Packs every two nibbles into a single byte
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `arr` | [`Nibbles`](README.md#nibbles) | Nibble typed nibble array |
+
+#### Returns
+
+`Uint8Array`
+
+Uint8Array typed byte array
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L112)
+
+___
+
+### nibblesToBytes
+
+▸ **nibblesToBytes**(`nibbles`, `bytes`): `void`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nibbles` | `Uint8Array` |
+| `bytes` | `Uint8Array` |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L35)
+
+___
+
+### nibblesToCompactBytes
+
+▸ **nibblesToCompactBytes**(`nibbles`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `nibbles` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L55)
+
+___
+
+### pathToHexKey
+
+▸ **pathToHexKey**(`path`, `extension`, `retType`): `Uint8Array`
+
+Takes a string path and extends it by the given extension nibbles
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `path` | `string` | String node path |
+| `extension` | [`Nibbles`](README.md#nibbles) | nibbles to extend by |
+| `retType` | `string` | string indicating whether to return the key in "keybyte" or "hex" encoding |
+
+#### Returns
+
+`Uint8Array`
+
+hex-encoded key
+
+#### Defined in
+
+[packages/trie/src/util/encoding.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/encoding.ts#L164)
 
 ___
 

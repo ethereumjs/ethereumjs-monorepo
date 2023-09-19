@@ -194,6 +194,33 @@ export const validators = {
   },
 
   /**
+   * Validator to ensure a valid integer [0, Number.MAX_SAFE_INTEGER], represented as a `number`.
+   * @returns A validator function with parameters:
+   *   - @param params Parameters of the method.
+   *   - @param index The index of the parameter.
+   */
+  get unsignedInteger() {
+    return (params: any[], index: number) => {
+      // This check guards against non-number types, decimal numbers,
+      // numbers that are too large (or small) to be represented exactly,
+      // NaN, null, and undefined.
+      if (!Number.isSafeInteger(params[index])) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be an integer`,
+        }
+      }
+
+      if (params[index] < 0) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be larger than 0`,
+        }
+      }
+    }
+  },
+
+  /**
    * hex validator to validate block hash
    * @param params parameters of method
    * @param index index of parameter

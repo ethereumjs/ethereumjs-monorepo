@@ -1,22 +1,22 @@
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { LightSynchronizer } from '../sync/lightsync'
 
-import { EthereumService } from './ethereumservice'
+import { Service } from './service'
 
 import type { Peer } from '../net/peer/peer'
-import type { EthereumServiceOptions } from './ethereumservice'
+import type { ServiceOptions } from './service'
 
 /**
  * Light Ethereum service
  * @memberof module:service
  */
-export class LightEthereumService extends EthereumService {
+export class LightEthereumService extends Service {
   public synchronizer: LightSynchronizer
 
   /**
    * Create new LES service
    */
-  constructor(options: EthereumServiceOptions) {
+  constructor(options: ServiceOptions) {
     super(options)
 
     this.config.logger.info('Light sync mode')
@@ -49,4 +49,16 @@ export class LightEthereumService extends EthereumService {
    * @param peer peer
    */
   async handle(_message: any, _protocol: string, _peer: Peer) {}
+
+  /**
+   * Stop service
+   */
+  async stop(): Promise<boolean> {
+    if (!this.running) {
+      return false
+    }
+    await this.synchronizer?.stop()
+    await super.stop()
+    return true
+  }
 }

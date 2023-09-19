@@ -6,8 +6,6 @@
 [![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 | Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
@@ -64,6 +62,23 @@ test()
 ```
 
 When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Etheruem production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+
+### Walking a Trie
+
+Starting with the v6 release there is a new API for walking and iterating a trie by using an async walk generator, which now enables to walk tries without altering the walk controller and also now enables to walk a sparse (not completely filled) trie.
+
+The new walk functionality can be used like the following:
+
+```typescript
+import { Trie } from '@ethereumjs/trie'
+
+const trie = await Trie.create()
+const walk = trie.walkTrieIterable(trie.root())
+
+for await (const { node, currentKey } of walk) {
+  // ... do something i.e. console.log( { node, currentKey } )
+}
+```
 
 ### `Trie` Configuration Options
 
@@ -249,6 +264,62 @@ npm run profiling
 ```
 
 0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
+
+## Debugging
+
+The `Trie` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
+The following options are available:
+
+| Logger            | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `trie`            | minimal info logging for all trie methods      |
+| `trie:<METHOD>`   | debug logging for specific trie method         |
+| `trie:<METHOD>:*` | verbose debug logging for specific trie method |
+| `trie:*`          | verbose debug logging for all trie methods     |
+
+To observe the logging in action at different levels:
+
+Run with minimal logging:
+
+```shell
+DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
+```
+
+Run with **put** method logging:
+
+```shell
+DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
+```
+
+Run with **trie** + **put**/**get**/**del** logging:
+
+```shell
+DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** debug logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** verbose logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
+```
+
+Run with max logging:
+
+```shell
+DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
+```
 
 ## References
 

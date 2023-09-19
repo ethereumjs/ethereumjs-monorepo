@@ -3,7 +3,6 @@ import {
   Address,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
@@ -19,21 +18,13 @@ import { checkMaxInitCodeSize } from './util.js'
 import type {
   JsonTx,
   Transaction,
+  TransactionCache,
   TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
-
-interface TransactionCache {
-  hash: Uint8Array | undefined
-  dataFee?: {
-    value: bigint
-    hardfork: string | Hardfork
-  }
-}
 
 /**
  * This base class will likely be subject to further
@@ -59,9 +50,10 @@ export abstract class BaseTransaction<T extends TransactionType>
 
   public readonly common!: Common
 
-  protected cache: TransactionCache = {
+  public cache: TransactionCache = {
     hash: undefined,
     dataFee: undefined,
+    senderPubKey: undefined,
   }
 
   protected readonly txOptions: TxOptions
@@ -175,28 +167,6 @@ export abstract class BaseTransaction<T extends TransactionType>
     const errors = this.getValidationErrors()
 
     return errors.length === 0
-  }
-
-  protected _validateYParity() {
-    const { v } = this
-    if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
-      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
-      throw new Error(msg)
-    }
-  }
-
-  /**
-   * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
-   * Reasoning: https://ethereum.stackexchange.com/a/55728
-   */
-  protected _validateHighS() {
-    const { s } = this
-    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
   }
 
   /**

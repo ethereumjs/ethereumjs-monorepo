@@ -5,18 +5,18 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  concatBytes,
-  ecrecover,
   equalsBytes,
-  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as EIP1559 from './capabilities/eip1559.js'
+import * as EIP2718 from './capabilities/eip2718.js'
+import * as EIP2930 from './capabilities/eip2930.js'
+import * as Legacy from './capabilities/legacy.js'
 import { TransactionType } from './types.js'
-import { AccessLists } from './util.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -31,10 +31,6 @@ import type { Common } from '@ethereumjs/common'
 type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
 
-const TRANSACTION_TYPE_BYTES = hexToBytes(
-  '0x' + TransactionType.FeeMarketEIP1559.toString(16).padStart(2, '0')
-)
-
 /**
  * Typed transaction with a new gas fee market mechanism
  *
@@ -42,6 +38,7 @@ const TRANSACTION_TYPE_BYTES = hexToBytes(
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
 export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
+  // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
   public readonly chainId: bigint
   public readonly accessList: AccessListBytes
   public readonly AccessListJSON: AccessList
@@ -71,7 +68,10 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * accessList, signatureYParity, signatureR, signatureS])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.FeeMarketEIP1559)) ===
+      false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${
           TransactionType.FeeMarketEIP1559
@@ -188,8 +188,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
       throw new Error(msg)
     }
 
-    this._validateYParity()
-    this._validateHighS()
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -201,21 +201,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    let cost = super.getDataFee()
-    cost += BigInt(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: cost,
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return cost
+    return EIP2930.getDataFee(this)
   }
 
   /**
@@ -223,11 +209,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */
   getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
-    const prio = this.maxPriorityFeePerGas
-    const maxBase = this.maxFeePerGas - baseFee
-    const inclusionFeePerGas = prio < maxBase ? prio : maxBase
-    const gasPrice = inclusionFeePerGas + baseFee
-    return this.gasLimit * gasPrice + this.value
+    return EIP1559.getUpfrontCost(this, baseFee)
   }
 
   /**
@@ -271,8 +253,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    const base = this.raw()
-    return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
+    return EIP2718.serialize(this)
   }
 
   /**
@@ -287,9 +268,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * ```
    */
   getMessageToSign(): Uint8Array {
-    const base = this.raw().slice(0, 9)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return message
+    return EIP2718.serialize(this, this.raw().slice(0, 9))
   }
 
   /**
@@ -300,7 +279,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return keccak256(this.getMessageToSign())
+    return EIP2718.getHashedMessageToSign(this)
   }
 
   /**
@@ -310,19 +289,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Use {@link FeeMarketEIP1559Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = keccak256(this.serialize())
-      }
-      return this.cache.hash
-    }
-
-    return keccak256(this.serialize())
+    return Legacy.hash(this)
   }
 
   /**
@@ -336,27 +303,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    const msgHash = this.getMessageToVerifySignature()
-    const { v, r, s } = this
-
-    this._validateHighS()
-
-    try {
-      return ecrecover(
-        msgHash,
-        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBytes(r!),
-        bigIntToUnpaddedBytes(s!)
-      )
-    } catch (e: any) {
-      const msg = this._errorMsg('Invalid Signature')
-      throw new Error(msg)
-    }
+    return Legacy.getSenderPublicKey(this)
   }
 
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
@@ -413,6 +360,6 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`
+    return Legacy.errorMsg(this, msg)
   }
 }

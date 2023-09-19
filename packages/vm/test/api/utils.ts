@@ -97,7 +97,7 @@ export function getTransaction(
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
-    txParams['maxFeePerblobGas'] = BigInt(100)
+    txParams['maxFeePerBlobGas'] = BigInt(100)
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(txParams['blobs'])
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>

@@ -6,8 +6,6 @@
 [![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 | Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
 | ------------------------------------------------------------------- |
 
@@ -75,6 +73,8 @@ docker build . -f Dockerfile.fromSource --tag ethereumjs:latest
 ```
 
 You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
+
+Also, in your `docker run` command, be sure to include the `--init` flag so that the container will properly handle kernel signals (like SIGINT and SIGTERM). Not doing so can lead to unexpected behaviour [(as documented here)](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals)
 
 ## General Usage
 

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "3.0.0-rc.1",
+  "version": "3.0.0",
   "description": "An implementation of the Ethash consensus algorithm in JavaScript",
   "keywords": [
     "ethash",
@@ -33,7 +33,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- ethash",
     "lint": "../../config/cli/lint.sh",
@@ -44,14 +44,14 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "5.0.0-rc.1",
-    "@ethereumjs/rlp": "5.0.0-rc.1",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/block": "^5.0.0",
+    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
     "bigint-crypto-utils": "^3.2.2",
     "ethereum-cryptography": "^2.1.2"
   },
   "devDependencies": {
-    "@ethereumjs/common": "4.0.0-rc.1"
+    "@ethereumjs/common": "^4.0.0"
   },
   "engines": {
     "node": ">=18"

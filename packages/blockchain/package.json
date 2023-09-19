@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "7.0.0-rc.1",
+  "version": "7.0.0",
   "description": "A module to store and interact with blocks",
   "keywords": [
     "ethereum",
@@ -32,7 +32,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- blockchain",
     "lint": "../../config/cli/lint.sh",
@@ -45,13 +45,13 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "5.0.0-rc.1",
-    "@ethereumjs/common": "4.0.0-rc.1",
-    "@ethereumjs/ethash": "3.0.0-rc.1",
-    "@ethereumjs/rlp": "5.0.0-rc.1",
-    "@ethereumjs/trie": "6.0.0-rc.1",
-    "@ethereumjs/tx": "5.0.0-rc.1",
-    "@ethereumjs/util": "9.0.0-rc.1",
+    "@ethereumjs/block": "^5.0.0",
+    "@ethereumjs/common": "^4.0.0",
+    "@ethereumjs/ethash": "^3.0.0",
+    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/trie": "^6.0.0",
+    "@ethereumjs/tx": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "lru-cache": "^10.0.0"

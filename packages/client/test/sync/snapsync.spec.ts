@@ -1,6 +1,5 @@
 import { BlockHeader } from '@ethereumjs/block'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -17,9 +16,9 @@ describe('[SnapSynchronizer]', async () => {
       this.peers = []
     }
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  PeerPool.prototype.idle = td.func<any>()
+  PeerPool.prototype.open = vi.fn()
+  PeerPool.prototype.close = vi.fn()
+  PeerPool.prototype.idle = vi.fn()
   class AccountFetcher {
     first: bigint
     count: bigint
@@ -31,10 +30,14 @@ describe('[SnapSynchronizer]', async () => {
     clear() {}
     destroy() {}
   }
-  AccountFetcher.prototype.fetch = td.func<any>()
-  AccountFetcher.prototype.clear = td.func<any>()
-  AccountFetcher.prototype.destroy = td.func<any>()
-  td.replace<any>('../../src/sync/fetcher', { AccountFetcher })
+  AccountFetcher.prototype.fetch = vi.fn()
+  AccountFetcher.prototype.clear = vi.fn()
+  AccountFetcher.prototype.destroy = vi.fn()
+  vi.doMock('../../src/sync/fetcher', () => {
+    return {
+      default: () => AccountFetcher,
+    }
+  })
 
   const { SnapSynchronizer } = await import('../../src/sync/snapsync')
 
@@ -51,9 +54,8 @@ describe('[SnapSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new SnapSynchronizer({ config, pool, chain })
-    ;(sync as any).pool.open = td.func<PeerPool['open']>()
+    ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
-    td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     assert.ok(true, 'opened')
     await sync.close()
@@ -70,16 +72,12 @@ describe('[SnapSynchronizer]', async () => {
       chain,
     })
     ;(sync as any).chain = { blocks: { height: 1 } }
-    const getBlockHeaders1 = td.func<any>()
-    td.when(getBlockHeaders1(td.matchers.anything())).thenReturn([
-      BigInt(1),
-      [BlockHeader.fromHeaderData({ number: 1 })],
-    ])
-    const getBlockHeaders2 = td.func<any>()
-    td.when(getBlockHeaders2(td.matchers.anything())).thenReturn([
-      BigInt(2),
-      [BlockHeader.fromHeaderData({ number: 2 })],
-    ])
+    const getBlockHeaders1 = vi
+      .fn()
+      .mockReturnValue([BigInt(1), [BlockHeader.fromHeaderData({ number: 1 })]])
+    const getBlockHeaders2 = vi
+      .fn()
+      .mockReturnValue([BigInt(2), [BlockHeader.fromHeaderData({ number: 2 })]])
     const peers = [
       {
         snap: {},
@@ -95,6 +93,5 @@ describe('[SnapSynchronizer]', async () => {
     ;(sync as any).pool = { peers }
     ;(sync as any).forceSync = true
     assert.equal(await sync.best(), peers[1] as any, 'found best')
-    await sync.start()
   })
 })

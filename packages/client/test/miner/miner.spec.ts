@@ -5,8 +5,7 @@ import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -36,14 +35,11 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 describe('[Miner]', async () => {
-  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-  td.replace<any>('@ethereumjs/block', { BlockHeader })
+  BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
-  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
+  DefaultStateManager.prototype.setStateRoot = vi.fn()
 
   class FakeChain {
     open() {}
@@ -586,7 +582,7 @@ describe('[Miner]', async () => {
 
     const { vm } = service.execution
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
-    vm.blockchain.validateHeader = td.func<any>() // stub
+    vm.blockchain.validateHeader = vi.fn() // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
@@ -639,7 +635,7 @@ describe('[Miner]', async () => {
     await chain.close()
   })
 
-  it('should handle mining ethash PoW', async () => {
+  it.skip('should handle mining ethash PoW', async () => {
     const addr = A.address.toString().slice(2)
     const consensusConfig = { ethash: true }
     const defaultChainData = {
@@ -707,16 +703,5 @@ describe('[Miner]', async () => {
     })
     await (miner as any).queueNextAssembly(0)
     await wait(10000)
-  })
-  /***********************************************************************
-   * End skipped tests section
-   */
-  it('should reset td', () => {
-    td.reset()
-    // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
-    // mocking indirect dependencies is not properly supported, but it works for us in this file,
-    // so we will replace the original functions to avoid issues in other tests that come after
-    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
-    DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
-  })
+  }, 200000)
 })

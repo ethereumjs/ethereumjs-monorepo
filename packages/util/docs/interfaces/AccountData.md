@@ -19,17 +19,17 @@
 
 #### Defined in
 
-[packages/util/src/account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
+[packages/util/src/account.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L26)
 
 ___
 
 ### codeHash
 
-• `Optional` **codeHash**: [`BufferLike`](../README.md#bufferlike)
+• `Optional` **codeHash**: [`BytesLike`](../README.md#byteslike)
 
 #### Defined in
 
-[packages/util/src/account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)
+[packages/util/src/account.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L28)
 
 ___
 
@@ -39,14 +39,14 @@ ___
 
 #### Defined in
 
-[packages/util/src/account.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L24)
+[packages/util/src/account.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L25)
 
 ___
 
 ### storageRoot
 
-• `Optional` **storageRoot**: [`BufferLike`](../README.md#bufferlike)
+• `Optional` **storageRoot**: [`BytesLike`](../README.md#byteslike)
 
 #### Defined in
 
-[packages/util/src/account.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L26)
+[packages/util/src/account.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L27)

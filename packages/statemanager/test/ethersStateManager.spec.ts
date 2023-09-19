@@ -5,6 +5,8 @@ import {
   Account,
   Address,
   bigIntToBytes,
+  bytesToHex,
+  bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
   setLengthLeft,
@@ -12,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { EthersStateManager } from '../src/ethersStateManager.js'
 
@@ -84,10 +86,9 @@ describe('Ethers State Manager API tests', () => {
       )
 
       assert.ok(retrievedVitalikAccount.nonce > 0n, 'Vitalik.eth is stored in cache')
-      const doesThisAccountExist =
-        (await state.getAccount(
-          Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
-        )) === undefined
+      const doesThisAccountExist = await state.accountExists(
+        Address.fromString('0xccAfdD642118E5536024675e776d32413728DD07')
+      )
       assert.ok(!doesThisAccountExist, 'getAccount returns undefined for non-existent account')
 
       assert.ok(state.getAccount(vitalikDotEth) !== undefined, 'vitalik.eth does exist')
@@ -111,6 +112,13 @@ describe('Ethers State Manager API tests', () => {
       )
       assert.ok(storageSlot.length > 0, 'was able to retrieve storage slot 1 for the UNI contract')
 
+      await expect(async () => {
+        await state.getContractStorage(
+          UNIerc20ContractAddress,
+          setLengthLeft(bigIntToBytes(1n), 31)
+        )
+      }).rejects.toThrowError('Storage key must be 32 bytes long')
+
       await state.putContractStorage(
         UNIerc20ContractAddress,
         setLengthLeft(bigIntToBytes(2n), 32),
@@ -121,6 +129,14 @@ describe('Ethers State Manager API tests', () => {
         setLengthLeft(bigIntToBytes(2n), 32)
       )
       assert.ok(equalsBytes(slotValue, utf8ToBytes('abcd')), 'should retrieve slot 2 value')
+
+      const dumpedStorage = await state.dumpStorage(UNIerc20ContractAddress)
+      assert.deepEqual(dumpedStorage, {
+        [bytesToUnprefixedHex(setLengthLeft(bigIntToBytes(1n), 32))]: '0xabcd',
+        [bytesToUnprefixedHex(setLengthLeft(bigIntToBytes(2n), 32))]: bytesToHex(
+          utf8ToBytes('abcd')
+        ),
+      })
 
       // Verify that provider is not called for cached data
       ;(provider as any).getStorageAt = function () {
@@ -191,6 +207,16 @@ describe('Ethers State Manager API tests', () => {
         4,
         'slot deleted since last checkpoint should exist in storage cache after revert'
       )
+
+      const cacheStorage = await state.dumpStorage(UNIerc20ContractAddress)
+      assert.equal(
+        2,
+        Object.keys(cacheStorage).length,
+        'should have 2 storage slots in cache before clear'
+      )
+      await state.clearContractStorage(UNIerc20ContractAddress)
+      const clearedStorage = await state.dumpStorage(UNIerc20ContractAddress)
+      assert.deepEqual({}, clearedStorage, 'storage cache should be empty after clear')
 
       try {
         await Block.fromJsonRpcProvider(provider, 'fakeBlockTag', {} as any)

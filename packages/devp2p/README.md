@@ -6,8 +6,6 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-Note: this README has been updated containing the changes from our next breaking release round [UNRELEASED] targeted for Summer 2023. See the README files from the [maintenance-v6](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6/) branch for documentation matching our latest releases.
-
 ## Introduction
 
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
@@ -19,13 +17,13 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 ## Usage
 
-All components of this library are implemented as Node `EventEmitter` objects
+All components of this library have a public `events` property containing a Node.js `EventEmitter` object
 and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
 
 ```typescript
-dpt.on('peer:added', (peer) => {
+dpt.events.on('peer:added', (peer) => {
   // Do something...
 })
 ```
@@ -219,7 +217,7 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```typescript
-eth.once('status', () => {
+eth.events.once('status', () => {
   // Send an initial message
   eth.sendMessage()
 })
@@ -228,7 +226,7 @@ eth.once('status', () => {
 Wait for follow-up messages to arrive, send your responses.
 
 ```typescript
-eth.on('message', async (code, payload) => {
+eth.events.on('message', async (code, payload) => {
   if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
     // Do something with your new block hashes :-)
   }
@@ -288,7 +286,7 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```typescript
-les.once('status', () => {
+les.events.once('status', () => {
   // Send an initial message
   les.sendMessage()
 })
@@ -297,7 +295,7 @@ les.once('status', () => {
 Wait for follow-up messages to arrive, send your responses.
 
 ```typescript
-les.on('message', async (code, payload) => {
+les.events.on('message', async (code, payload) => {
   if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
     // Do something with your new block headers :-)
   }

@@ -9,10 +9,10 @@ An object with the block header's data represented as strings.
 ### Properties
 
 - [baseFeePerGas](JsonHeader.md#basefeepergas)
+- [blobGasUsed](JsonHeader.md#blobgasused)
 - [coinbase](JsonHeader.md#coinbase)
-- [dataGasUsed](JsonHeader.md#datagasused)
 - [difficulty](JsonHeader.md#difficulty)
-- [excessDataGas](JsonHeader.md#excessdatagas)
+- [excessBlobGas](JsonHeader.md#excessblobgas)
 - [extraData](JsonHeader.md#extradata)
 - [gasLimit](JsonHeader.md#gaslimit)
 - [gasUsed](JsonHeader.md#gasused)
@@ -41,6 +41,16 @@ An object with the block header's data represented as strings.
 
 ___
 
+### blobGasUsed
+
+• `Optional` **blobGasUsed**: `string`
+
+#### Defined in
+
+[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
+
+___
+
 ### coinbase
 
 • `Optional` **coinbase**: `string`
@@ -48,16 +58,6 @@ ___
 #### Defined in
 
 [types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L145)
-
-___
-
-### dataGasUsed
-
-• `Optional` **dataGasUsed**: `string`
-
-#### Defined in
-
-[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
 
 ___
 
@@ -71,9 +71,9 @@ ___
 
 ___
 
-### excessDataGas
+### excessBlobGas
 
-• `Optional` **excessDataGas**: `string`
+• `Optional` **excessBlobGas**: `string`
 
 #### Defined in
 

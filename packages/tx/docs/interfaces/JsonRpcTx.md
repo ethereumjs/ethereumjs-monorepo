@@ -15,8 +15,8 @@
 - [gasPrice](JsonRpcTx.md#gasprice)
 - [hash](JsonRpcTx.md#hash)
 - [input](JsonRpcTx.md#input)
-- [maxFeePerDataGas](JsonRpcTx.md#maxfeeperdatagas)
 - [maxFeePerGas](JsonRpcTx.md#maxfeepergas)
+- [maxFeePerblobGas](JsonRpcTx.md#maxfeeperblobgas)
 - [maxPriorityFeePerGas](JsonRpcTx.md#maxpriorityfeepergas)
 - [nonce](JsonRpcTx.md#nonce)
 - [r](JsonRpcTx.md#r)
@@ -120,16 +120,6 @@ ___
 
 ___
 
-### maxFeePerDataGas
-
-• `Optional` **maxFeePerDataGas**: `string`
-
-#### Defined in
-
-[tx/src/types.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L430)
-
-___
-
 ### maxFeePerGas
 
 • `Optional` **maxFeePerGas**: `string`
@@ -137,6 +127,16 @@ ___
 #### Defined in
 
 [tx/src/types.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L416)
+
+___
+
+### maxFeePerblobGas
+
+• `Optional` **maxFeePerblobGas**: `string`
+
+#### Defined in
+
+[tx/src/types.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L430)
 
 ___
 

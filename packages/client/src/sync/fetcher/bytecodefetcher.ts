@@ -45,7 +45,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.trie = options.trie ?? new Trie({ useKeyHashing: false })
+    this.trie = options.trie ?? new Trie({ useKeyHashing: true })
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>

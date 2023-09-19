@@ -246,10 +246,9 @@ export class TxPool {
 
     if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
       const minblobGasFee =
-        (existingTx.maxFeePerblobGas *
-          (existingTx.maxFeePerblobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
-        BigInt(100)
-      if (addedTx.maxFeePerblobGas < minblobGasFee) {
+        existingTx.maxFeePerBlobGas +
+        (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
+      if (addedTx.maxFeePerBlobGas < minblobGasFee) {
         throw new Error('replacement blob gas too low')
       }
     }
@@ -446,7 +445,7 @@ export class TxPool {
    * @param txHashes Array with transactions to send
    * @param peers
    */
-  async sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
+  sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
     const txHashes = txs[2]
     for (const peer of peers) {
       // Make sure data structure is initialized
@@ -464,15 +463,16 @@ export class TxPool {
           peer.eth['versions'].includes(68)
         ) {
           // If peer supports eth/68, send eth/68 formatted message (tx_types[], tx_sizes[], hashes[])
-          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []] as any
+          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []]
           for (const hash of hashesToSend) {
             const index = txs[2].findIndex((el) => equalsBytes(el, hash))
             txsToSend[0].push(txs[0][index])
             txsToSend[1].push(txs[1][index])
             txsToSend[2].push(hash)
           }
+
           try {
-            await peer.eth?.request('NewPooledTransactionHashes', txsToSend)
+            peer.eth?.send('NewPooledTransactionHashes', txsToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
           }
@@ -480,7 +480,9 @@ export class TxPool {
         // If peer doesn't support eth/68, just send tx hashes
         else
           try {
-            await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
+            // We `send` this directly instead of using devp2p's async `request` since NewPooledTransactionHashes has no response and is just sent to peers
+            // and this requires no tracking of a peer's response
+            peer.eth?.send('NewPooledTransactionHashes', hashesToSend.slice(0, 4096))
           } catch (e) {
             this.markFailedSends(peer, hashesToSend, e as Error)
           }
@@ -556,7 +558,7 @@ export class TxPool {
     const numPeers = peers.length
     const sendFull = Math.max(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
     this.sendTransactions(txs, peers.slice(0, sendFull))
-    await this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
+    this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
   }
 
   /**
@@ -614,7 +616,7 @@ export class TxPool {
       newTxHashes[1].push(tx.serialize().length)
       newTxHashes[2].push(tx.hash())
     }
-    await this.sendNewTxHashes(newTxHashes, peerPool.peers)
+    this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }
 
   /**

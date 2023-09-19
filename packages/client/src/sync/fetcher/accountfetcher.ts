@@ -6,18 +6,19 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  compareBytes,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import { LevelDB } from '../../execution/level'
 import { Event } from '../../types'
 import { short } from '../../util'
 
 import { ByteCodeFetcher } from './bytecodefetcher'
 import { Fetcher } from './fetcher'
 import { StorageFetcher } from './storagefetcher'
+import { TrieNodeFetcher } from './trienodefetcher'
 
 import type { Peer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
@@ -60,14 +61,17 @@ export type FetcherDoneFlags = {
   storageFetcherDone: boolean
   accountFetcherDone: boolean
   byteCodeFetcherDone: boolean
+  trieNodeFetcherDone: boolean
   eventBus?: EventBusType | undefined
   stateRoot?: Uint8Array | undefined
+  stateTrie?: Trie | undefined
 }
 
 export function snapFetchersCompleted(
   fetcherDoneFlags: FetcherDoneFlags,
   fetcherType: Object,
   root?: Uint8Array,
+  trie?: Trie,
   eventBus?: EventBusType
 ) {
   switch (fetcherType) {
@@ -75,6 +79,7 @@ export function snapFetchersCompleted(
     case AccountFetcher:
       fetcherDoneFlags.accountFetcherDone = true
       fetcherDoneFlags.stateRoot = root
+      fetcherDoneFlags.stateTrie = trie
       fetcherDoneFlags.eventBus = eventBus
       break
     case StorageFetcher:
@@ -83,13 +88,21 @@ export function snapFetchersCompleted(
     case ByteCodeFetcher:
       fetcherDoneFlags.byteCodeFetcherDone = true
       break
+    case TrieNodeFetcher:
+      fetcherDoneFlags.trieNodeFetcherDone = true
+      break
   }
   if (
     fetcherDoneFlags.accountFetcherDone &&
     fetcherDoneFlags.storageFetcherDone &&
-    fetcherDoneFlags.byteCodeFetcherDone
+    fetcherDoneFlags.byteCodeFetcherDone &&
+    fetcherDoneFlags.trieNodeFetcherDone
   ) {
-    fetcherDoneFlags.eventBus!.emit(Event.SYNC_SNAPSYNC_COMPLETE, fetcherDoneFlags.stateRoot!)
+    fetcherDoneFlags.eventBus!.emit(
+      Event.SYNC_SNAPSYNC_COMPLETE,
+      fetcherDoneFlags.stateRoot!,
+      fetcherDoneFlags.stateTrie!
+    )
   }
 }
 
@@ -108,21 +121,26 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /** The range to eventually, by default should be set at BigInt(2) ** BigInt(256) + BigInt(1) - first */
   count: bigint
 
-  /** Contains known bytecodes */
-  trie: Trie
-
   storageFetcher: StorageFetcher
 
   byteCodeFetcher: ByteCodeFetcher
+
+  trieNodeFetcher: TrieNodeFetcher
 
   accountTrie: Trie
 
   accountToStorageTrie: Map<String, Trie>
 
+  highestKnownHash: Uint8Array | undefined
+
+  /** Contains known bytecodes */
+  codeTrie: Trie
+
   fetcherDoneFlags: FetcherDoneFlags = {
     storageFetcherDone: false,
     accountFetcherDone: false,
     byteCodeFetcherDone: false,
+    trieNodeFetcherDone: false,
   }
 
   /**
@@ -133,8 +151,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
-    this.trie = new Trie({ useKeyHashing: false })
-    this.accountTrie = new Trie({ useKeyHashing: false })
+    this.codeTrie = new Trie({ useKeyHashing: true })
+    this.accountTrie = new Trie({ useKeyHashing: true })
     this.accountToStorageTrie = new Map()
     this.debug = createDebugLogger('client:AccountFetcher')
     this.storageFetcher = new StorageFetcher({
@@ -157,10 +175,25 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       pool: this.pool,
       hashes: [],
       destroyWhenDone: false,
-      trie: this.trie,
+      trie: this.codeTrie,
     })
     this.byteCodeFetcher.fetch().then(
       () => snapFetchersCompleted(this.fetcherDoneFlags, ByteCodeFetcher),
+      () => {
+        throw Error('Snap fetcher failed to exit')
+      }
+    )
+    this.trieNodeFetcher = new TrieNodeFetcher({
+      config: this.config,
+      pool: this.pool,
+      root: this.root,
+      accountTrie: this.accountTrie,
+      codeTrie: this.codeTrie,
+      accountToStorageTrie: this.accountToStorageTrie,
+      destroyWhenDone: false,
+    })
+    this.trieNodeFetcher.fetch().then(
+      () => snapFetchersCompleted(this.fetcherDoneFlags, TrieNodeFetcher),
       () => {
         throw Error('Snap fetcher failed to exit')
       }
@@ -203,7 +236,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie({ db: new LevelDB() })
+    const trie = new Trie()
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
@@ -256,6 +289,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { peer } = job
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
+
+    if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
+      // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
+      return Object.assign([], [{ skipped: true }], { completed: true })
+    }
 
     const rangeResult = await peer!.snap!.getAccountRange({
       root: this.root,
@@ -316,7 +354,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     result: AccountDataResponse
   ): AccountData[] | undefined {
     const fullResult = (job.partialResult ?? []).concat(result)
-    job.partialResult = undefined
+
+    // update highest known hash
+    const highestReceivedhash = result.at(-1)?.hash as Uint8Array
+    if (this.highestKnownHash) {
+      if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
+        this.highestKnownHash = highestReceivedhash
+      }
+    } else {
+      this.highestKnownHash = highestReceivedhash
+    }
+
     if (result.completed === true) {
       return fullResult
     } else {
@@ -332,27 +380,34 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   async store(result: AccountData[]): Promise<void> {
     this.debug(`Stored ${result.length} accounts in account trie`)
 
-    // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
+    if (JSON.stringify(result[0]) === JSON.stringify({ skipped: true })) {
+      // return without storing to skip this task
+      return
+    }
     if (JSON.stringify(result[0]) === JSON.stringify(Object.create(null))) {
+      // TODO fails to handle case where there is a proof of non existence and returned accounts for last requested range
       this.debug('Final range received with no elements remaining to the right')
 
-      // TODO include stateRoot in emission once moved over to using MPT's
       await this.accountTrie.persistRoot()
       snapFetchersCompleted(
         this.fetcherDoneFlags,
         AccountFetcher,
         this.accountTrie.root(),
+        this.accountTrie,
         this.config.events
       )
 
+      // TODO It's possible that we should never destroy these fetchers since they will be needed to continually heal tries
       this.byteCodeFetcher.setDestroyWhenDone()
+      this.trieNodeFetcher.setDestroyWhenDone()
 
       return
     }
     const storageFetchRequests = new Set()
     const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {
-      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body))
+      // what we have is hashed account and not its pre-image, so we skipKeyTransform
+      await this.accountTrie.put(account.hash, accountBodyToRLP(account.body), true)
 
       // build record of accounts that need storage slots to be fetched
       const storageRoot: Uint8Array = account.body[2]

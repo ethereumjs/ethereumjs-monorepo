@@ -39,7 +39,7 @@ then
           echo "geth requires NETWORKID to be passed in env, exiting..."
           exit;
         fi;
-        ELCLIENT_IMAGE="ethereum/client-go:stable"
+        ELCLIENT_IMAGE="ethereum/client-go:v1.12.2"
         echo "ELCLIENT=$ELCLIENT using ELCLIENT_IMAGE=$ELCLIENT_IMAGE NETWORKID=$NETWORKID"
         ;;
       *)
@@ -233,8 +233,13 @@ then
     done;
   fi
 
+  if [ ! -n "$GENESIS_DELAY" ]
+  then
+    GENESIS_DELAY=30
+  fi;
+
   genTime="$(date +%s)"
-  genTime=$((genTime + 30))
+  genTime=$((genTime + $GENESIS_DELAY))
   echo $genTime > "$origDataDir/genesisTime"
   echo $GENESIS_HASH > "$origDataDir/genesisHash"
 else

@@ -2,8 +2,7 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -179,14 +178,11 @@ describe('[Skeleton] / initSync', async () => {
     // header. We expect the old subchain to be truncated and a new chain
     // be created for the dangling head.
     {
-      name: 'The old subchain to be truncated and a new chain be created for the dangling head',
+      name: 'The old subchains to be truncated/cleared and a new chain be created for the dangling head',
       blocks: [block49B],
       oldState: [{ head: BigInt(100), tail: BigInt(5) }],
       head: block50,
-      newState: [
-        { head: BigInt(50), tail: BigInt(50) },
-        { head: BigInt(49), tail: BigInt(5) },
-      ],
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
     },
   ]
   for (const [testCaseIndex, testCase] of testCases.entries()) {
@@ -194,7 +190,7 @@ describe('[Skeleton] / initSync', async () => {
       const config = new Config({
         common,
         transports: [],
-        logger: getLogger({ loglevel: 'debug' }),
+        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -310,7 +306,7 @@ describe('[Skeleton] / setHead', async () => {
       const config = new Config({
         common,
         transports: [],
-        logger: getLogger({ loglevel: 'debug' }),
+        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -494,7 +490,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common, transports: [], logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -820,7 +816,7 @@ describe('[Skeleton] / setHead', async () => {
     const config = new Config({
       transports: [],
       common,
-      logger: getLogger({ loglevel: 'debug' }),
+      logger: getLogger({ logLevel: 'debug' }),
       accountCache: 10000,
       storageCache: 1000,
     })
@@ -839,8 +835,8 @@ describe('[Skeleton] / setHead', async () => {
     }
 
     const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-    td.replace<any>('@ethereumjs/block', { BlockHeader })
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+    vi.doMock('@ethereumjs/block', () => BlockHeader)
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
@@ -895,6 +891,5 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
   })
 })
