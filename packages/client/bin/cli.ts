@@ -328,6 +328,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Force a snap sync run (for testing and development purposes)',
     boolean: true,
   })
+  .option('prefixStorageTrieKeys', {
+    describe:
+      'Enable/Disable storage trie prefixes (specify `false` for backward compatibility with previous states synced without prefixes)',
+    boolean: true,
+    default: true,
+    deprecated:
+      'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with prefixStorageTrieKeys enabled',
+  })
   .option('txLookupLimit', {
     describe:
       'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
@@ -835,6 +843,7 @@ async function run() {
     syncmode: args.sync,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
+    prefixStorageTrieKeys: args.prefixStorageTrieKeys,
     transports: args.transports,
     txLookupLimit: args.txLookupLimit,
   })
