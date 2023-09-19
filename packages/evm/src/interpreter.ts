@@ -761,6 +761,18 @@ export class Interpreter {
   }
 
   /**
+   * Returns the Blob Base Fee of the block as proposed in [EIP-7516](https;//eips.etheruem.org/EIPS/eip-7516)
+   */
+  getBlobBaseFee(): bigint {
+    const blobBaseFee = this._env.block.header.getBlobGasPrice()
+    if (blobBaseFee === undefined) {
+      // Sanity check
+      throw new Error('Block has no Blob Base Fee')
+    }
+    return blobBaseFee
+  }
+
+  /**
    * Returns the chain ID for current chain. Introduced for the
    * CHAINID opcode proposed in [EIP-1344](https://eips.ethereum.org/EIPS/eip-1344).
    */
