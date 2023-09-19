@@ -100,7 +100,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
     boolean: true,
     default: true,
-    implies: 'gethGenesis',
   })
   .option('transports', {
     describe: 'Network transports',
@@ -303,14 +302,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('dev', {
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-    choices: [undefined, false, true, 'poa', 'pow'],
-  })
-  .check((argv) => {
-    if ('dev' in argv && argv['dev'] === undefined) {
-      throw Error('If the "dev" option is used it must be assigned a value')
-    } else {
-      return true
-    }
+    choices: ['false', 'true', 'poa', 'pow'],
   })
   .option('minerCoinbase', {
     describe:
@@ -828,7 +820,7 @@ async function run() {
     syncmode: args.sync,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
-    transports: args.transports,
+    transports: args.transports?.length === 0 ? args.transports : undefined,
     txLookupLimit: args.txLookupLimit,
   })
   config.events.setMaxListeners(50)
