@@ -162,7 +162,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780,
+      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -966,7 +966,7 @@ export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
   }
 }
 
-function defaultBlock(): Block {
+export function defaultBlock(): Block {
   return {
     header: {
       number: BigInt(0),
@@ -977,6 +977,7 @@ function defaultBlock(): Block {
       prevRandao: zeros(32),
       gasLimit: BigInt(0),
       baseFeePerGas: undefined,
+      getBlobGasPrice: () => undefined,
     },
   }
 }

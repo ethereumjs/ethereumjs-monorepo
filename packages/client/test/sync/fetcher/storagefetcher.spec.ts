@@ -1,8 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -14,13 +13,17 @@ import { _accountRangeRLP } from './accountfetcher.spec'
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
 
+;(BigInt.prototype as any).toJSON = function () {
+  return this.toString()
+}
+
 describe('[StorageFetcher]', async () => {
   class PeerPool {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
+  PeerPool.prototype.idle = vi.fn()
+  PeerPool.prototype.ban = vi.fn()
 
   const { StorageFetcher } = await import('../../../src/sync/fetcher/storagefetcher')
 
@@ -271,11 +274,17 @@ describe('[StorageFetcher]', async () => {
       resData
     )
     const { reqId, slots, proof } = res
-    const mockedGetStorageRanges = td.func<any>()
-    td.when(mockedGetStorageRanges(td.matchers.anything())).thenReturn({
-      reqId,
-      slots,
-      proof,
+    const mockedGetStorageRanges = vi.fn((input) => {
+      const expected = {
+        root: utf8ToBytes(''),
+        accounts: [
+          hexToBytes('0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'),
+        ],
+        origin: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+        limit: hexToBytes('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
+        bytes: BigInt(50000),
+      }
+      if (JSON.stringify(input) !== JSON.stringify(expected)) throw Error('input not as expected')
     })
     const peer = {
       snap: { getStorageRanges: mockedGetStorageRanges },
@@ -284,17 +293,33 @@ describe('[StorageFetcher]', async () => {
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getStorageRanges({
-        root: utf8ToBytes(''),
-        accounts: [
-          hexToBytes('0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'),
-        ],
-        origin: td.matchers.anything(),
-        limit: td.matchers.anything(),
-        bytes: BigInt(50000),
-      })
+
+    peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId,
+      slots: [],
+      proof: [new Uint8Array()],
+    })
+    let ret = await fetcher.request(job as any)
+    assert.ok(
+      ret?.completed === true,
+      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
     )
+
+    peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId,
+      slots: slots + [new Uint8Array()],
+      proof,
+    })
+    ret = await fetcher.request(job as any)
+    assert.notOk(ret, "Reject the response if the hash sets and slot sets don't match")
+
+    peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId,
+      slots: [],
+      proof: [],
+    })
+    ret = await fetcher.request(job as any)
+    assert.notOk(ret, 'Should stop requesting from peer that rejected storage request')
   })
 
   it('should verify proof correctly', async () => {
@@ -334,8 +359,7 @@ describe('[StorageFetcher]', async () => {
       resData
     )
     const { reqId, slots, proof } = res
-    const mockedGetStorageRanges = td.func<any>()
-    td.when(mockedGetStorageRanges(td.matchers.anything())).thenReturn({
+    const mockedGetStorageRanges = vi.fn().mockReturnValueOnce({
       reqId,
       slots,
       proof,
@@ -404,11 +428,7 @@ describe('[StorageFetcher]', async () => {
       first: BigInt(1),
       count: BigInt(10),
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
+    ;(fetcher as any).pool.idle = vi.fn(() => 'peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

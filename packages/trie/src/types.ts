@@ -54,6 +54,14 @@ export interface TrieOpts {
   useKeyHashingFunction?: HashKeysFunction
 
   /**
+   * Add a prefix to the trie node keys
+   *
+   * (potential performance benefits if multiple tries are stored within the same DB,
+   * e.g. all storage tries being stored in the outer account state DB)
+   */
+  keyPrefix?: Uint8Array
+
+  /**
    * Store the root inside the database after every `write` operation
    */
   useRootPersistence?: boolean
