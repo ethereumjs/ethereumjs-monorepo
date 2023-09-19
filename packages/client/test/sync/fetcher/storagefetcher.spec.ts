@@ -278,7 +278,7 @@ describe('[StorageFetcher]', async () => {
       const expected = {
         root: utf8ToBytes(''),
         accounts: [
-          hexToBytes('0xe9a5016cb1a53dbc750d06e725514ac164231d71853cafdcbff42f5adb6ca6f1'),
+          hexToBytes('0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'),
         ],
         origin: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
         limit: hexToBytes('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
