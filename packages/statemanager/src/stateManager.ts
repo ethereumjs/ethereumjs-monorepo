@@ -380,7 +380,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const keyPrefix = keccak256(address.bytes).slice(0, 4)
+      const keyPrefix = keccak256(address.bytes).slice(0, 7)
       const storageTrie = this._trie.shallowCopy(false, keyPrefix)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
