@@ -18,6 +18,16 @@ import * as ropsten_nonexistentAccount from './testdata/ropsten_nonexistentAccou
 import * as ropsten_validAccount from './testdata/ropsten_validAccount.json'
 
 describe('ProofStateManager', () => {
+  it(`should return quantity-encoded RPC representation`, async () => {
+    const address = Address.zero()
+    const key = zeros(32)
+    const stateManager = new DefaultStateManager()
+
+    const proof = await stateManager.getProof(address, [key])
+    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+  })
+
   it(`should get and verify EIP 1178 proofs`, async () => {
     const address = Address.zero()
     const key = zeros(32)
