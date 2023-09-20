@@ -749,7 +749,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
+   * Returns the Base Fee of the block as proposed in [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198)
    */
   getBlockBaseFee(): bigint {
     const baseFee = this._env.block.header.baseFeePerGas
@@ -761,7 +761,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the Blob Base Fee of the block as proposed in [EIP-7516](https;//eips.etheruem.org/EIPS/eip-7516)
+   * Returns the Blob Base Fee of the block as proposed in [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516)
    */
   getBlobBaseFee(): bigint {
     const blobBaseFee = this._env.block.header.getBlobGasPrice()
