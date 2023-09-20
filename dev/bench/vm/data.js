@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695236168681,
+  "lastUpdate": 1695239704740,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d6d9391f1fdfc259baf3150523ecd7f27d2a9373",
-          "message": "Common: Cache Parameter Values + activated EIPs for current Hardfork / SM copy() fix (#2994)\n\n* VM: add total test time tracking to blockchain test runner\r\n\r\n* Simplify on paramByHardfork(), paramByEIP() reads, replace with param() usage\r\n\r\n* Common: make private members protected for some greater flexibility for users on sub-classing\r\n\r\n* Common: new _buildParamsCache() methods + entrypoint calls, new _paramsCache member\r\n\r\n* Common: add _buildParamsCache() implementation, replace param() code with direct _paramsCache() access\r\n\r\n* Small fix\r\n\r\n* VM: fix precompile activation API test\r\n\r\n* StateManager: fix Common not properly copied within shallowCopy() method\r\n\r\n* Common: add additional param() test for copied/original Common\r\n\r\n* Common: fix cache initialization in params cache build method\r\n\r\n* Common: add activated EIPs cache\r\n\r\n* Apply review suggestions",
-          "timestamp": "2023-08-30T16:22:33+02:00",
-          "tree_id": "fe65b0e4b474013fdf9a23776d5ea475ef21ad43",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d6d9391f1fdfc259baf3150523ecd7f27d2a9373"
-        },
-        "date": 1693405572764,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30972,
-            "range": "±5.88%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30418,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30779,
-            "range": "±3.27%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25663,
-            "range": "±10.51%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29152,
-            "range": "±3.56%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.70%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9389082adeed736774249a995b24c5e0d7d15f28",
+          "message": "client: add a cli option for backward compatibility with non prefixed storage tries (#3042)\n\n* client: add a cli option for backward compatibility with non prefixed storage tries\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Fix comment\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-09-20T15:37:49-04:00",
+          "tree_id": "febeeaf4f93485eb11ae70aa8113c80972164235",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9389082adeed736774249a995b24c5e0d7d15f28"
+        },
+        "date": 1695239703264,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25393,
+            "range": "±6.34%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25043,
+            "range": "±3.39%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 25490,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25103,
+            "range": "±3.60%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20316,
+            "range": "±10.48%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
           }
         ]
       }
