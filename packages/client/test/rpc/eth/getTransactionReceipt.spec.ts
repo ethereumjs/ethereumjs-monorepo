@@ -114,11 +114,11 @@ describe(method, () => {
 
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(blobs)
-      const versionedHashes = commitmentsToVersionedHashes(commitments)
+      const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
       const tx = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
