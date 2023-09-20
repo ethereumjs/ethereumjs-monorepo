@@ -237,12 +237,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     const trie = new Trie()
-    // if (accounts.length === 0) {
-    //   // no-elements proof to check if final range is truly empty
-    //   this.debug('dbg200')
-    //   return trie.verifyRangeProof(stateRoot, origin, null, [], [], <any>proof)
-    // }
-
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
@@ -315,7 +309,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       rangeResult.accounts.length === 0 ||
       equalsBytes(limit, bigIntToBytes(BigInt(2) ** BigInt(256))) === true
     ) {
-      // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
+      // check zero-element proof
       if (rangeResult.proof.length > 0) {
         const trie = new Trie()
         try {
@@ -327,9 +321,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             [],
             <any>rangeResult.proof
           )
-          this.debug(isMissingRightRange)
+          // if proof is false, reject corrupt peer
+          if (isMissingRightRange !== false) return undefined
         } catch (e) {
           this.debug(e)
+          // if proof is false, reject corrupt peer
+          return undefined
         }
 
         this.debug(`Data for last range has been received`)
