@@ -568,7 +568,7 @@ export class EVM implements EVMInterface {
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
-      versionedHashes: message.versionedHashes ?? [],
+      blobVersionedHashes: message.blobVersionedHashes ?? [],
       createdAddresses: message.createdAddresses,
     }
 
@@ -668,7 +668,7 @@ export class EVM implements EVMInterface {
         selfdestruct: opts.selfdestruct ?? new Set(),
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
-        versionedHashes: opts.versionedHashes,
+        blobVersionedHashes: opts.blobVersionedHashes,
       })
     }
 
@@ -783,7 +783,7 @@ export class EVM implements EVMInterface {
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
-      versionedHashes: opts.versionedHashes,
+      blobVersionedHashes: opts.blobVersionedHashes,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })

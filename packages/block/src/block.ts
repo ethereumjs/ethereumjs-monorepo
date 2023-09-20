@@ -590,7 +590,7 @@ export class Block {
             )
           }
 
-          blobGasUsed += BigInt(tx.versionedHashes.length) * blobGasPerBlob
+          blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
           if (blobGasUsed > blobGasLimit) {
             throw new Error(

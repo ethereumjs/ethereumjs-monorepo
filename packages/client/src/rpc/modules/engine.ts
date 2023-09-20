@@ -462,7 +462,7 @@ export class Engine {
           [validators.array(validators.bytes32)],
           [validators.bytes32],
         ],
-        ['executionPayload', 'versionedHashes', 'parentBeaconBlockRoot']
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -573,7 +573,7 @@ export class Engine {
   private async newPayload(
     params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?]
   ): Promise<PayloadStatusV1> {
-    const [payload, versionedHashes, parentBeaconBlockRoot] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -600,29 +600,29 @@ export class Engine {
 
     if (block.common.isActivatedEIP(4844)) {
       let validationError: string | null = null
-      if (versionedHashes === undefined || versionedHashes === null) {
-        validationError = `Error verifying versionedHashes: received none`
+      if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
+        validationError = `Error verifying blobVersionedHashes: received none`
       } else {
         // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
         const txVersionedHashes = []
         for (const tx of block.transactions) {
           if (tx instanceof BlobEIP4844Transaction) {
-            for (const vHash of tx.versionedHashes) {
+            for (const vHash of tx.blobVersionedHashes) {
               txVersionedHashes.push(vHash)
             }
           }
         }
 
-        if (versionedHashes.length !== txVersionedHashes.length) {
-          validationError = `Error verifying versionedHashes: expected=${txVersionedHashes.length} received=${versionedHashes.length}`
+        if (blobVersionedHashes.length !== txVersionedHashes.length) {
+          validationError = `Error verifying blobVersionedHashes: expected=${txVersionedHashes.length} received=${blobVersionedHashes.length}`
         } else {
           // match individual hashes
-          for (let vIndex = 0; vIndex < versionedHashes.length; vIndex++) {
+          for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
             // if mismatch, record error and break
-            if (!equalsBytes(hexToBytes(versionedHashes[vIndex]), txVersionedHashes[vIndex])) {
-              validationError = `Error verifying versionedHashes: mismatch at index=${vIndex} expected=${short(
+            if (!equalsBytes(hexToBytes(blobVersionedHashes[vIndex]), txVersionedHashes[vIndex])) {
+              validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
                 txVersionedHashes[vIndex]
-              )} received=${short(versionedHashes[vIndex])}`
+              )} received=${short(blobVersionedHashes[vIndex])}`
               break
             }
           }
@@ -636,8 +636,8 @@ export class Engine {
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
-    } else if (versionedHashes !== undefined && versionedHashes !== null) {
-      const validationError = `Invalid versionedHashes before EIP-4844 is activated`
+    } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
+      const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return response

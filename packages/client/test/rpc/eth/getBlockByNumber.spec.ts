@@ -1,22 +1,49 @@
 import { Block } from '@ethereumjs/block'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { hexToBytes } from '@ethereumjs/util'
+import { Common } from '@ethereumjs/common'
+import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
+import { hexToBytes, initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { baseRequest, createClient, createManager, dummy, params, startRPC } from '../helpers'
 import { checkError } from '../util'
 
+try {
+  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+  // eslint-disable-next-line
+} catch {}
+
+const common = Common.custom({ chainId: 1 })
+common.setHardfork('cancun')
 const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
 const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
+const mockedBlobTx3 = BlobEIP4844Transaction.fromTxData(
+  { nonce: 2, blobsData: ['0x1234'] },
+  { common }
+).sign(dummy.privKey)
+const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
+const transactions = [mockedTx1]
+const transactions2 = [mockedTx2]
 
-function createChain() {
+const block = {
+  hash: () => blockHash,
+  header: {
+    number: BigInt(1),
+    hash: () => blockHash,
+  },
+  toJSON: () => ({
+    ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
+    transactions: transactions2,
+  }),
+  transactions: transactions2,
+  uncleHeaders: [],
+}
+
+function createChain(headBlock = block) {
   const genesisBlockHash = hexToBytes(
     '0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5'
   )
-  const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
-  const transactions = [mockedTx1]
-  const transactions2 = [mockedTx2]
   const genesisBlock = {
     hash: () => genesisBlockHash,
     header: {
@@ -26,19 +53,7 @@ function createChain() {
     transactions,
     uncleHeaders: [],
   }
-  const block = {
-    hash: () => blockHash,
-    header: {
-      number: BigInt(1),
-      hash: () => blockHash,
-    },
-    toJSON: () => ({
-      ...Block.fromBlockData({ header: { number: 1 } }).toJSON(),
-      transactions: transactions2,
-    }),
-    transactions: transactions2,
-    uncleHeaders: [],
-  }
+  const block = headBlock
   return {
     blocks: { latest: block },
     getBlock: () => genesisBlock,
@@ -163,6 +178,31 @@ describe(method, async () => {
 
     const expectRes = (res: any) => {
       assert.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
+    }
+    await baseRequest(server, req, 200, expectRes)
+  })
+})
+
+describe('call with block with blob txs', () => {
+  it('retrieves a block with a blob tx in it', async () => {
+    const genesisBlock = Block.fromBlockData({ header: { number: 0 } })
+    const block1 = Block.fromBlockData(
+      {
+        header: { number: 1, parentHash: genesisBlock.header.hash() },
+        transactions: [mockedBlobTx3],
+      },
+      { common }
+    )
+    const manager = createManager(createClient({ chain: createChain(block1 as any) }))
+    const server = startRPC(manager.getMethods())
+    const req = params(method, ['latest', true])
+
+    const expectRes = (res: any) => {
+      assert.equal(
+        res.body.result.transactions[0].blobVersionedHashes.length,
+        1,
+        'block body contains a transaction with the blobVersionedHashes field'
+      )
     }
     await baseRequest(server, req, 200, expectRes)
   })

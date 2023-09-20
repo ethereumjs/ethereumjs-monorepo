@@ -384,9 +384,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // EIP-4844 tx
-  let versionedHashes
+  let blobVersionedHashes
   if (tx instanceof BlobEIP4844Transaction) {
-    versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
+    blobVersionedHashes = (tx as BlobEIP4844Transaction).blobVersionedHashes
   }
 
   // Update from account's balance
@@ -425,7 +425,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     to,
     value,
     data,
-    versionedHashes,
+    blobVersionedHashes,
   })) as RunTxResult
 
   if (this.DEBUG) {
