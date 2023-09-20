@@ -147,7 +147,7 @@ export abstract class Synchronizer {
     let numAttempts = 1
     while (!peer && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      await wait(5000)
       peer = await this.best()
       numAttempts += 1
     }
