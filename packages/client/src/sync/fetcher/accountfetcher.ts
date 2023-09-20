@@ -237,6 +237,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     const trie = new Trie()
+    // if (accounts.length === 0) {
+    //   // no-elements proof to check if final range is truly empty
+    //   this.debug('dbg200')
+    //   return trie.verifyRangeProof(stateRoot, origin, null, [], [], <any>proof)
+    // }
+
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
@@ -311,6 +317,23 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
+        this.debug('dbg100')
+        const t = new Trie()
+        try {
+          const isMissingRightRange = await t.verifyRangeProof(
+            this.root,
+            origin,
+            null,
+            [],
+            [],
+            <any>rangeResult.proof
+          )
+        } catch (e) {
+          console.error(e)
+        }
+
+        this.debug(isMissingRightRange)
+
         this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
         return Object.assign([], [Object.create(null)], { completed: true })
