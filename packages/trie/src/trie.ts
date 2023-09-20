@@ -6,6 +6,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   bytesToUtf8,
+  concatBytes,
   equalsBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -55,6 +56,7 @@ export class Trie {
   protected readonly _opts: TrieOptsWithDefaults = {
     useKeyHashing: false,
     useKeyHashingFunction: keccak256,
+    keyPrefix: undefined,
     useRootPersistence: false,
     useNodePruning: false,
     cacheSize: 0,
@@ -120,6 +122,9 @@ export class Trie {
 
     if (opts?.useKeyHashing === true) {
       key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
+    }
+    if (opts?.keyPrefix !== undefined) {
+      key = concatBytes(opts.keyPrefix, key)
     }
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
@@ -246,9 +251,10 @@ export class Trie {
           // stack should be updated as well, so that it points to the right key/value pairs of the path
           const deleteHashes = stack.map((e) => this.hash(e.serialize()))
           ops = deleteHashes.map((e) => {
+            const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
             return {
               type: 'del',
-              key: e,
+              key,
               opts: {
                 keyEncoding: KeyEncoding.Bytes,
               },
@@ -286,9 +292,10 @@ export class Trie {
       // Just as with `put`, the stack items all will have their keyhashes updated
       // So after deleting the node, one can safely delete these from the DB
       ops = deleteHashes.map((e) => {
+        const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
         return {
           type: 'del',
-          key: e,
+          key,
           opts: {
             keyEncoding: KeyEncoding.Bytes,
           },
@@ -480,7 +487,9 @@ export class Trie {
 
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
-    await this._db.put(this.root(), encoded)
+    let rootKey = this.root()
+    rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
+    await this._db.put(rootKey, encoded)
     await this.persistRoot()
   }
 
@@ -494,7 +503,8 @@ export class Trie {
       return decoded
     }
     this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['LOOKUP_NODE', 'BY_HASH'])
-    const value = (await this._db.get(node)) ?? null
+    const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, node) : node
+    const value = (await this._db.get(key)) ?? null
 
     if (value === null) {
       // Dev note: this error message text is used for error checking in `checkRoot`, `verifyProof`, and `findPath`
@@ -800,24 +810,25 @@ export class Trie {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
-      const hashRoot = this.hash(encoded)
+      const lastRoot = this.hash(encoded)
+      const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, lastRoot) : lastRoot
 
       if (remove) {
         if (this._opts.useNodePruning) {
           opStack.push({
             type: 'del',
-            key: hashRoot,
+            key,
           })
         }
       } else {
         opStack.push({
           type: 'put',
-          key: hashRoot,
+          key,
           value: encoded,
         })
       }
 
-      return hashRoot
+      return lastRoot
     }
 
     return node.raw()
@@ -858,9 +869,11 @@ export class Trie {
   async fromProof(proof: Proof): Promise<void> {
     this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
+      let key = Uint8Array.from(this.hash(nodeValue))
+      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
       return {
         type: 'put',
-        key: Uint8Array.from(this.hash(nodeValue)),
+        key,
         value: nodeValue,
       } as PutBatch
     })
@@ -1036,11 +1049,12 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true): Trie {
+  shallowCopy(includeCheckpoints = true, keyPrefix?: Uint8Array): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
+      keyPrefix: keyPrefix ?? this._opts.keyPrefix,
       cacheSize: 0,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
@@ -1061,7 +1075,9 @@ export class Trie {
           )}`,
           ['PERSIST_ROOT']
         )
-      await this._db.put(this.appliedKey(ROOT_DB_KEY), this.root())
+      let key = this.appliedKey(ROOT_DB_KEY)
+      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
+      await this._db.put(key, this.root())
     }
   }
 

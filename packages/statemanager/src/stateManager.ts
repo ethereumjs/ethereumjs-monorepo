@@ -119,6 +119,18 @@ export interface DefaultStateManagerOpts {
    */
   prefixCodeHashes?: boolean
 
+  /**
+   * Option to prefix the keys for the storage tries with the first 7 bytes from the
+   * associated account address. Activating this option gives a noticeable performance
+   * boost for storage DB reads when operating on larger tries.
+   *
+   * Note: Activating/deactivating this option causes continued state reads to be
+   * incompatible with existing databases.
+   *
+   * Default: false (for backwards compatibility reasons)
+   */
+  prefixStorageTrieKeys?: boolean
+
   accountCacheOpts?: CacheOptions
 
   storageCacheOpts?: CacheOptions
@@ -151,6 +163,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _codeCache: { [key: string]: Uint8Array }
 
   protected readonly _prefixCodeHashes: boolean
+  protected readonly _prefixStorageTrieKeys: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
 
@@ -194,6 +207,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
+    this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
     this._accountCacheSettings = {
       deactivate:
         (opts.accountCacheOpts?.deactivate === true || opts.accountCacheOpts?.size === 0) ?? false,
@@ -380,7 +394,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const storageTrie = this._trie.shallowCopy(false)
+      const keyPrefix = this._prefixStorageTrieKeys
+        ? keccak256(address.bytes).slice(0, 7)
+        : undefined
+      const storageTrie = this._trie.shallowCopy(false, keyPrefix)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
@@ -624,9 +641,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       // throw new Error(`getProof() can only be called for an existing account`)
       const returnValue: Proof = {
         address: address.toString(),
-        balance: '0x',
+        balance: '0x0',
         codeHash: KECCAK256_NULL_S,
-        nonce: '0x',
+        nonce: '0x0',
         storageHash: KECCAK256_RLP_S,
         accountProof: (await this._trie.createProof(address.bytes)).map((p) => bytesToHex(p)),
         storageProof: [],
@@ -933,6 +950,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
+    const prefixStorageTrieKeys = this._prefixStorageTrieKeys
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
@@ -945,6 +963,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     return new DefaultStateManager({
       common,
       trie,
+      prefixStorageTrieKeys,
       prefixCodeHashes,
       accountCacheOpts,
       storageCacheOpts,
