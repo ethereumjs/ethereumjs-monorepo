@@ -334,7 +334,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
     deprecated:
-      'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with prefixStorageTrieKeys enabled',
+      'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
   })
   .option('txLookupLimit', {
     describe:

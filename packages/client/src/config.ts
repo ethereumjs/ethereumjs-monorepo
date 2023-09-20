@@ -61,8 +61,8 @@ export interface ConfigOptions {
   forceSnapSync?: boolean
 
   /**
-   * A temporary option to offer backward compatibility with state already synced
-   * with prefixed storage tries
+   * A temporary option to offer backward compatibility with already-synced databases that are
+using non-prefixed keys for storage tries
    *
    * Default: true
    */
