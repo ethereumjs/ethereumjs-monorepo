@@ -62,7 +62,7 @@ export interface ConfigOptions {
 
   /**
    * A temporary option to offer backward compatibility with already-synced databases that are
-using non-prefixed keys for storage tries
+   * using non-prefixed keys for storage tries
    *
    * Default: true
    */
