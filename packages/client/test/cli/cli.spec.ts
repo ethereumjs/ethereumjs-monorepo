@@ -471,13 +471,12 @@ describe('[CLI]', () => {
   it('should start client with custom network parameters', async () => {
     const cliArgs = [
       '--rpc',
-      '--port=2100',
+      '--port=65000',
       '--extIP=0.0.0.0',
       '--rpcCors=https://foo.example',
       '--dnsAddr=8.8.8.8',
       '--dev=poa',
       '--rpcPort=8573',
-      '--port=31051',
     ]
     const onData = async (
       message: string,
@@ -491,7 +490,7 @@ describe('[CLI]', () => {
           ?.split(':')
           .map((e) => e.trim()) as string[]
         assert.ok(ip === '0.0.0.0', 'custom input for address is being used')
-        assert.ok(port === '2100', 'custom input for port is being used')
+        assert.ok(port === '65000', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
         await wait(600)
@@ -504,7 +503,7 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it('should start client with custom network parameters', async () => {
+  it('should start client with custom DNS network parameters', async () => {
     const cliArgs = [
       '--rpc',
       '--rpcPort=8593',
