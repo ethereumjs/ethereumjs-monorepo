@@ -1,5 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address, BIGINT_0, BIGINT_1, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Address,
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_3,
+  BIGINT_31,
+  BIGINT_32,
+  bigIntToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 import { ERROR } from '../exceptions.js'
 
@@ -18,9 +27,6 @@ import {
 
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
-
-const BIGINT_31 = BigInt(31)
-const BIGINT_32 = BigInt(32)
 
 /**
  * This file returns the dynamic parts of opcodes which have dynamic gas
@@ -270,7 +276,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [dst, src, length] = runState.stack.peek(3)
         const wordsCopied = (length + BIGINT_31) / BIGINT_32
-        gas += BigInt(3) * wordsCopied
+        gas += BIGINT_3 * wordsCopied
         gas += subMemUsage(runState, src, length, common)
         gas += subMemUsage(runState, dst, length, common)
         return gas

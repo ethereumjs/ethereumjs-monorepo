@@ -2,7 +2,21 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_128,
+  BIGINT_160,
   BIGINT_2,
+  BIGINT_224,
+  BIGINT_255,
+  BIGINT_256,
+  BIGINT_27,
+  BIGINT_2EXP160,
+  BIGINT_2EXP224,
+  BIGINT_2EXP96,
+  BIGINT_31,
+  BIGINT_32,
+  BIGINT_7,
+  BIGINT_8,
+  BIGINT_96,
   MAX_INTEGER_BIGINT,
   SECP256K1_ORDER_DIV_2,
   TWO_POW256,
@@ -38,13 +52,6 @@ import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
 const EIP3074MAGIC = hexToBytes('0x03')
-
-const BIGINT_96 = BigInt(96)
-const BIGINT_160 = BigInt(160)
-const BIGINT_224 = BigInt(224)
-const BIGINT_2EXP96 = BigInt(79228162514264337593543950336)
-const BIGINT_2EXP160 = BigInt(1461501637330902918203684832716283019655932542976)
-const BIGINT_2EXP224 = BigInt(26959946667150639794667015087019630673637144422540572481103610249216)
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -213,8 +220,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       /* eslint-disable-next-line prefer-const */
       let [k, val] = runState.stack.popN(2)
-      if (k < BigInt(31)) {
-        const signBit = k * BigInt(8) + BigInt(7)
+      if (k < BIGINT_31) {
+        const signBit = k * BIGINT_8 + BIGINT_7
         const mask = (BIGINT_1 << signBit) - BIGINT_1
         if ((val >> signBit) & BIGINT_1) {
           val = val | BigInt.asUintN(256, ~mask)
@@ -321,12 +328,12 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x1a,
     function (runState) {
       const [pos, word] = runState.stack.popN(2)
-      if (pos > BigInt(32)) {
+      if (pos > BIGINT_32) {
         runState.stack.push(BIGINT_0)
         return
       }
 
-      const r = (word >> ((BigInt(31) - pos) * BigInt(8))) & BigInt(0xff)
+      const r = (word >> ((BIGINT_31 - pos) * BIGINT_8)) & BIGINT_255
       runState.stack.push(r)
     },
   ],
@@ -335,7 +342,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x1b,
     function (runState) {
       const [a, b] = runState.stack.popN(2)
-      if (a > BigInt(256)) {
+      if (a > BIGINT_256) {
         runState.stack.push(BIGINT_0)
         return
       }
@@ -379,7 +386,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const c = b >> a
       if (isSigned) {
-        const shiftedOutWidth = BigInt(255) - a
+        const shiftedOutWidth = BIGINT_255 - a
         const mask = (MAX_INTEGER_BIGINT >> shiftedOutWidth) << shiftedOutWidth
         r = c | mask
       } else {
@@ -457,7 +464,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       loaded = loaded.length ? loaded : Uint8Array.from([0])
       let r = bytesToBigInt(loaded)
       if (loaded.length < 32) {
-        r = r << (BigInt(8) * BigInt(32 - loaded.length))
+        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
       }
       runState.stack.push(r)
     },
@@ -591,7 +598,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       const diff = runState.interpreter.getBlockNumber() - number
       // block lookups must be within the past 256 blocks
-      if (diff > BigInt(256) || diff <= BIGINT_0) {
+      if (diff > BIGINT_256 || diff <= BIGINT_0) {
         runState.stack.push(BIGINT_0)
         return
       }
@@ -713,7 +720,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const [offset, byte] = runState.stack.popN(2)
 
-      const buf = bigIntToBytes(byte & BigInt(0xff))
+      const buf = bigIntToBytes(byte & BIGINT_255)
       const offsetNum = Number(offset)
       runState.memory.write(offsetNum, 1, buf)
     },
@@ -796,7 +803,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x59,
     function (runState) {
-      runState.stack.push(runState.memoryWordCount * BigInt(32))
+      runState.stack.push(runState.memoryWordCount * BIGINT_32)
     },
   ],
   // 0x5a: GAS
@@ -1089,8 +1096,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       // eslint-disable-next-line prefer-const
       let [authority, memOffset, memLength] = runState.stack.popN(3)
 
-      if (memLength > BigInt(128)) {
-        memLength = BigInt(128)
+      if (memLength > BIGINT_128) {
+        memLength = BIGINT_128
       }
 
       let mem = runState.memory.read(Number(memOffset), Number(memLength))
@@ -1114,7 +1121,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       let recover
       try {
-        recover = ecrecover(msgHash, yParity + BigInt(27), r, s)
+        recover = ecrecover(msgHash, yParity + BIGINT_27, r, s)
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BIGINT_0)

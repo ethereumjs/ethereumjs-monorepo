@@ -2,7 +2,11 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_1,
+  BIGINT_160,
   BIGINT_2,
+  BIGINT_32,
+  BIGINT_64,
+  BIGINT_NEG1,
   bigIntToBytes,
   bytesToHex,
   equalsBytes,
@@ -17,7 +21,7 @@ import type { ERROR } from '../exceptions.js'
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const MASK_160 = (BIGINT_1 << BigInt(160)) - BIGINT_1
+const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
@@ -153,7 +157,7 @@ export function maxCallGas(
   common: Common
 ): bigint {
   if (common.gteHardfork(Hardfork.TangerineWhistle)) {
-    const gasAllowed = gasLeft - gasLeft / BigInt(64)
+    const gasAllowed = gasLeft - gasLeft / BIGINT_64
     return gasLimit > gasAllowed ? gasAllowed : gasLimit
   } else {
     return gasLimit
@@ -167,7 +171,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   // YP (225): access with zero length will not extend the memory
   if (length === BIGINT_0) return BIGINT_0
 
-  const newMemoryWordCount = divCeil(offset + length, BigInt(32))
+  const newMemoryWordCount = divCeil(offset + length, BIGINT_32)
   if (newMemoryWordCount <= runState.memoryWordCount) return BIGINT_0
 
   const words = newMemoryWordCount
@@ -255,7 +259,7 @@ export function abs(a: bigint) {
   if (a > 0) {
     return a
   }
-  return a * BigInt(-1)
+  return a * BIGINT_NEG1
 }
 
 const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
