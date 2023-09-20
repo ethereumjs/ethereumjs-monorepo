@@ -24,6 +24,7 @@ import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
 import { LevelDB } from '../../src/execution/level'
 import { RPCManager } from '../../src/rpc'
+import { Event } from '../../src/types'
 
 import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
@@ -479,16 +480,16 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
 
   // possible values: STARTED, PAUSED, ERRORED, SYNCING, VALID
   let syncState = 'PAUSED'
-  let pollInterval = null
+  let pollInterval: any | null = null
   let waitForStates = ['VALID']
   let errorMessage = ''
-  const updateState = (newState) => {
+  const updateState = (newState: string) => {
     if (syncState !== 'PAUSED') {
       syncState = newState
     }
   }
 
-  const playUpdate = async (payload, finalizedBlockHash, version) => {
+  const playUpdate = async (payload: any, finalizedBlockHash: string, version: string) => {
     if (version !== 'capella') {
       throw Error('only capella replay supported yet')
     }
@@ -525,8 +526,8 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     }
   }
 
-  // ignoring the actual even, just using it as trigger to feed
-  eventSource.addEventListener(topics[0], (async (_event: MessageEvent) => {
+  // ignoring the actual event, just using it as trigger to feed
+  eventSource.addEventListener(topics[0], async (_event: MessageEvent) => {
     if (syncState === 'PAUSED' || syncState === 'CLOSED') return
     try {
       // just fetch finalized updated, it has all relevant hashes for fcU
@@ -555,7 +556,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
       updateState('ERRORED')
       errorMessage = (e as Error).message
     }
-  }) as EventListener)
+  })
 
   const cleanUpPoll = () => {
     if (pollInterval !== null) {
@@ -564,7 +565,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     }
   }
 
-  const start = (opts: { waitForStates?: string } = {}) => {
+  const start = (opts: { waitForStates?: string[] } = {}) => {
     waitForStates = opts.waitForStates ?? ['VALID']
     if (pollInterval !== null) {
       throw Error('Already waiting on sync')

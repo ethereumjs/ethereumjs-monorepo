@@ -220,7 +220,7 @@ describe('simple mainnet test run', async () => {
       const address = Address.fromString(addressString)
       const account = await stateManager.getAccount(address)
       assert.equal(
-        account.balance,
+        account?.balance,
         BigInt(customGenesisState[addressString][0]),
         `${addressString} balance should match`
       )
