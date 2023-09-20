@@ -580,7 +580,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes('0x60004960005260206000F3'),
-      versionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: [hexToBytes('0xab')],
     }
     const res = await evm.runCall(runCallArgs)
     assert.equal(
@@ -594,7 +594,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
       data: hexToBytes('0x60014960005260206000F3'),
-      versionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: [hexToBytes('0xab')],
     }
     const res2 = await evm.runCall(runCall2Args)
     assert.equal(

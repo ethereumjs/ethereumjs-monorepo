@@ -105,7 +105,7 @@ describe(method, () => {
     const tx = TransactionFactory.fromTxData(
       {
         type: 0x03,
-        versionedHashes: txVersionedHashes,
+        blobVersionedHashes: txVersionedHashes,
         blobs: txBlobs,
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
