@@ -448,26 +448,26 @@ export async function verifyRangeProof(
     return false
   }
 
-  if (proof === null || firstKey === null || lastKey === null) {
-    throw new Error(
-      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
-    )
-  }
-
   // Zero element proof
   if (keys.length === 0) {
     const { trie, value } = await verifyProof(
       rootHash,
-      nibblestoBytes(firstKey),
-      proof,
+      nibblestoBytes(firstKey as any),
+      proof as any,
       useKeyHashingFunction
     )
 
-    if (value !== null || (await hasRightElement(trie, firstKey))) {
+    if (value !== null || (await hasRightElement(trie, firstKey as any))) {
       throw new Error('invalid zero element proof: value mismatch')
     }
 
     return false
+  }
+
+  if (proof === null || firstKey === null || lastKey === null) {
+    throw new Error(
+      'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
+    )
   }
 
   // One element proof
