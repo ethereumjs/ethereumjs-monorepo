@@ -643,8 +643,8 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x49,
     function (runState) {
       const index = runState.stack.pop()
-      if (runState.env.versionedHashes.length > Number(index)) {
-        runState.stack.push(bytesToBigInt(runState.env.versionedHashes[Number(index)]))
+      if (runState.env.blobVersionedHashes.length > Number(index)) {
+        runState.stack.push(bytesToBigInt(runState.env.blobVersionedHashes[Number(index)]))
       } else {
         runState.stack.push(BigInt(0))
       }

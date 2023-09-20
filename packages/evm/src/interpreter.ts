@@ -63,7 +63,7 @@ export interface Env {
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
   containerCode?: Uint8Array /** Full container code for EOF1 contracts */
-  versionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
+  blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
 }
 
@@ -749,7 +749,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the Base Fee of the block as proposed in [EIP-3198](https;//eips.etheruem.org/EIPS/eip-3198)
+   * Returns the Base Fee of the block as proposed in [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198)
    */
   getBlockBaseFee(): bigint {
     const baseFee = this._env.block.header.baseFeePerGas
@@ -761,7 +761,7 @@ export class Interpreter {
   }
 
   /**
-   * Returns the Blob Base Fee of the block as proposed in [EIP-7516](https;//eips.etheruem.org/EIPS/eip-7516)
+   * Returns the Blob Base Fee of the block as proposed in [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516)
    */
   getBlobBaseFee(): bigint {
     const blobBaseFee = this._env.block.header.getBlobGasPrice()
@@ -792,7 +792,7 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
     })
 
     return this._baseCall(msg)
@@ -816,7 +816,7 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
       authcallOrigin: this._env.address,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
     })
 
     return this._baseCall(msg)
@@ -840,7 +840,7 @@ export class Interpreter {
       data,
       isStatic: this._env.isStatic,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
     })
 
     return this._baseCall(msg)
@@ -865,7 +865,7 @@ export class Interpreter {
       data,
       isStatic: true,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
     })
 
     return this._baseCall(msg)
@@ -891,7 +891,7 @@ export class Interpreter {
       isStatic: this._env.isStatic,
       delegatecall: true,
       depth: this._env.depth + 1,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
     })
 
     return this._baseCall(msg)
@@ -1018,7 +1018,7 @@ export class Interpreter {
       depth,
       selfdestruct,
       gasRefund: this._runState.gasRefund,
-      versionedHashes: this._env.versionedHashes,
+      blobVersionedHashes: this._env.blobVersionedHashes,
     })
 
     let createdAddresses: Set<string>

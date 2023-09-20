@@ -235,7 +235,7 @@ export class BlockBuilder {
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {
       const txData = tx as BlobEIP4844Transaction
-      this.blobGasUsed += BigInt(txData.versionedHashes.length) * blobGasPerBlob
+      this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
       tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
       })

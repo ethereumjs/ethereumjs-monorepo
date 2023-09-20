@@ -2,6 +2,7 @@ import { Hardfork } from '@ethereumjs/common'
 
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
+import { wait } from '../util/wait'
 
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
@@ -128,7 +129,7 @@ export abstract class Synchronizer {
       } catch (error: any) {
         this.config.events.emit(Event.SYNC_ERROR, error)
       }
-      await new Promise((resolve) => setTimeout(resolve, this.interval))
+      await wait(this.interval)
     }
     this.running = false
     clearTimeout(timeout)
@@ -137,6 +138,29 @@ export abstract class Synchronizer {
   abstract best(): Promise<Peer | undefined>
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
+
+  resolveSync(height?: number) {
+    this.clearFetcher()
+    const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
+    this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
+    return true
+  }
+
+  async syncWithFetcher() {
+    try {
+      if (this._fetcher) {
+        await this._fetcher.fetch()
+      }
+      this.config.logger.debug(`Fetcher finished fetching...`)
+      return this.resolveSync()
+    } catch (error: any) {
+      this.config.logger.error(
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+      )
+      this.clearFetcher()
+      throw error
+    }
+  }
 
   /**
    * Fetch all blocks from current height up to highest found amongst peers
@@ -147,36 +171,24 @@ export abstract class Synchronizer {
     let numAttempts = 1
     while (!peer && this.opened) {
       this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      await wait(5000)
       peer = await this.best()
       numAttempts += 1
     }
 
     if (!(await this.syncWithPeer(peer))) return false
-
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      const resolveSync = (height?: number) => {
-        this.clearFetcher()
+    const syncEvent: Promise<boolean> = new Promise((resolve) => {
+      // This event listener listens for other instances of the fetcher that might be syncing from a different peer
+      // and reach the head of the chain before the current fetcher.
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
+        this.resolveSync(height)
         resolve(true)
-        const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
-        this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
-      }
-      this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
-      try {
-        if (this._fetcher) {
-          await this._fetcher.fetch()
-        }
-        this.config.logger.debug(`Fetcher finished fetching...`)
-        resolveSync()
-      } catch (error: any) {
-        this.config.logger.error(
-          `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
-        )
-        this.clearFetcher()
-        reject(error)
-      }
+      })
     })
+
+    // This "race" ensures that either the current fetcher (or any other fetcher that happens to be syncing)
+    // resolve this current call to `sync` so we don't have orphan processes running in the background
+    return Promise.race([this.syncWithFetcher(), syncEvent])
   }
 
   /**
