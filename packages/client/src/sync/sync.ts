@@ -144,6 +144,23 @@ export abstract class Synchronizer {
     this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
     return true
   }
+
+  async syncWithFetcher() {
+    try {
+      if (this._fetcher) {
+        await this._fetcher.fetch()
+      }
+      this.config.logger.debug(`Fetcher finished fetching...`)
+      return this.resolveSync()
+    } catch (error: any) {
+      this.config.logger.error(
+        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
+      )
+      this.clearFetcher()
+      throw error
+    }
+  }
+
   /**
    * Fetch all blocks from current height up to highest found amongst peers
    * @returns when sync is completed
