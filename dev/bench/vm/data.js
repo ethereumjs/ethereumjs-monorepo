@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695170252191,
+  "lastUpdate": 1695194590089,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "35ec012473efcf4d3134c02bdacfdd19e7ff1e07",
-          "message": "common: update the shanghai hf schedule for holesky (#2989)",
-          "timestamp": "2023-08-24T20:43:08+02:00",
-          "tree_id": "0422a26bbd9d86bebcd428fe2f4f033e59e6ca28",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/35ec012473efcf4d3134c02bdacfdd19e7ff1e07"
-        },
-        "date": 1692902832596,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 24125,
-            "range": "±6.35%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25109,
-            "range": "±3.28%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 24871,
-            "range": "±3.81%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24386,
-            "range": "±3.98%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19991,
-            "range": "±11.51%",
-            "unit": "ops/sec",
-            "extra": "67 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.54%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fb4a05a62d2f97460dce8ecc121bcd9bfc3ee84b",
+          "message": "statemanager: small refactor to get storage objects for snapsync (#3033)",
+          "timestamp": "2023-09-20T09:19:46+02:00",
+          "tree_id": "b578331b5ea2479bc0995f330769d45277f63dbc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fb4a05a62d2f97460dce8ecc121bcd9bfc3ee84b"
+        },
+        "date": 1695194589331,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32193,
+            "range": "±4.28%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31500,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31267,
+            "range": "±2.58%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27090,
+            "range": "±9.52%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29426,
+            "range": "±2.69%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
