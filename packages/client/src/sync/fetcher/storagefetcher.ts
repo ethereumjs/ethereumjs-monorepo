@@ -244,6 +244,17 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       // TODO have to check proof of nonexistence since we are statically partitioning ranges --
       // as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
+        this.debug('dbg100')
+        const isMissingRightRange = await this._proofTrie.verifyRangeProof(
+          task.storageRequests[0].storageRoot,
+          origin,
+          null,
+          [],
+          [],
+          <any>rangeResult.proof
+        )
+        this.debug(isMissingRightRange)
+
         this.debug(`Empty range was requested - Terminating task`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
         return Object.assign([], [Object.create(null) as any], { completed: true })
