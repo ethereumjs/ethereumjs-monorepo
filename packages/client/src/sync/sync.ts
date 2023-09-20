@@ -1,5 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 
+import { wait } from '../../test/integration/util'
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
 
@@ -176,26 +177,13 @@ export abstract class Synchronizer {
     }
 
     if (!(await this.syncWithPeer(peer))) return false
-    const resolveSync = (height?: number) => {
-      this.clearFetcher()
-      const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
-      this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
-    }
-    this.config.events.once(Event.SYNC_SYNCHRONIZED, resolveSync)
-    try {
-      if (this._fetcher) {
-        await this._fetcher.fetch()
-      }
-      this.config.logger.debug(`Fetcher finished fetching...`)
-      resolveSync()
-      return true
-    } catch (error: any) {
-      this.config.logger.error(
-        `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`
-      )
-      this.clearFetcher()
-      throw error
-    }
+    const syncEvent: Promise<boolean> = new Promise((resolve) => {
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
+        this.resolveSync(height)
+        resolve(true)
+      })
+    })
+    return Promise.race([this.syncWithFetcher(), syncEvent])
   }
 
   /**
