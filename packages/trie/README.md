@@ -265,6 +265,62 @@ npm run profiling
 
 0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
 
+## Debugging
+
+The `Trie` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
+The following options are available:
+
+| Logger            | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `trie`            | minimal info logging for all trie methods      |
+| `trie:<METHOD>`   | debug logging for specific trie method         |
+| `trie:<METHOD>:*` | verbose debug logging for specific trie method |
+| `trie:*`          | verbose debug logging for all trie methods     |
+
+To observe the logging in action at different levels:
+
+Run with minimal logging:
+
+```shell
+DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
+```
+
+Run with **put** method logging:
+
+```shell
+DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
+```
+
+Run with **trie** + **put**/**get**/**del** logging:
+
+```shell
+DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** debug logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** verbose logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
+```
+
+Run with max logging:
+
+```shell
+DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
+```
+
 ## References
 
 - Wiki
