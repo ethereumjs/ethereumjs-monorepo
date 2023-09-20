@@ -154,6 +154,7 @@ export interface ClientOpts {
   saveReceipts?: boolean
   disableBeaconSync?: boolean
   forceSnapSync?: boolean
+  prefixStorageTrieKeys?: boolean
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
