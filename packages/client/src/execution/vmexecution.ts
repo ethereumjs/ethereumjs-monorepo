@@ -8,7 +8,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -134,7 +134,7 @@ export class VMExecution extends Execution {
       this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-      if (number === BigInt(0)) {
+      if (number === BIGINT_0) {
         const genesisState =
           this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
         if (!genesisState) {
@@ -190,7 +190,7 @@ export class VMExecution extends Execution {
         // Bypass updating head by using blockchain db directly
         const [hash, num] = [block.hash(), block.header.number]
         const td =
-          (await this.chain.getTd(block.header.parentHash, block.header.number - BigInt(1))) +
+          (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
           block.header.difficulty
 
         await this.chain.blockchain.dbManager.batch([

@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { concatBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, concatBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { txTypeBytes } from '../util.js'
@@ -19,7 +19,7 @@ export function serialize(tx: EIP2718CompatibleTx, base?: Input): Uint8Array {
 
 export function validateYParity(tx: EIP2718CompatibleTx) {
   const { v } = tx
-  if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
+  if (v !== undefined && v !== BIGINT_0 && v !== BIGINT_1) {
     const msg = errorMsg(tx, 'The y-parity of the transaction should either be 0 or 1')
     throw new Error(msg)
   }

@@ -1,16 +1,16 @@
-import { Address } from '@ethereumjs/util'
+import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 
 const defaults = {
-  value: BigInt(0),
+  value: BIGINT_0,
   caller: Address.zero(),
   data: new Uint8Array(0),
   depth: 0,
   isStatic: false,
   isCompiled: false,
   delegatecall: false,
-  gasRefund: BigInt(0),
+  gasRefund: BIGINT_0,
 }
 
 interface MessageOpts {

@@ -72,3 +72,11 @@ export const RLP_EMPTY_STRING = Uint8Array.from([0x80])
 export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
 
 export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'
+
+/**
+ * BigInt constants
+ */
+
+export const BIGINT_0 = BigInt(0)
+export const BIGINT_1 = BigInt(1)
+export const BIGINT_2 = BigInt(2)

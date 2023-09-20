@@ -1,5 +1,8 @@
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
   MAX_INTEGER_BIGINT,
   SECP256K1_ORDER_DIV_2,
   TWO_POW256,
@@ -36,9 +39,6 @@ import type { Common } from '@ethereumjs/common'
 
 const EIP3074MAGIC = hexToBytes('0x03')
 
-const BIGINT_0 = BigInt(0)
-const BIGINT_1 = BigInt(1)
-const BIGINT_2 = BigInt(2)
 const BIGINT_96 = BigInt(96)
 const BIGINT_160 = BigInt(160)
 const BIGINT_224 = BigInt(224)

@@ -1,6 +1,8 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
+  BIGINT_0,
+  BIGINT_1,
   MAX_UINT64,
   bigIntToHex,
   bytesToBigInt,
@@ -156,8 +158,8 @@ export class Interpreter {
       programCounter: 0,
       opCode: 0xfe, // INVALID opcode
       memory: new Memory(),
-      memoryWordCount: BigInt(0),
-      highestMemCost: BigInt(0),
+      memoryWordCount: BIGINT_0,
+      highestMemCost: BIGINT_0,
       stack: new Stack(),
       returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
@@ -459,8 +461,8 @@ export class Interpreter {
       }
       debugGas(`${tstr}used ${amount} gas (-> ${this._runState.gasLeft})`)
     }
-    if (this._runState.gasLeft < BigInt(0)) {
-      this._runState.gasLeft = BigInt(0)
+    if (this._runState.gasLeft < BIGINT_0) {
+      this._runState.gasLeft = BIGINT_0
       trap(ERROR.OUT_OF_GAS)
     }
   }
@@ -495,8 +497,8 @@ export class Interpreter {
       )
     }
     this._runState.gasRefund -= amount
-    if (this._runState.gasRefund < BigInt(0)) {
-      this._runState.gasRefund = BigInt(0)
+    if (this._runState.gasRefund < BIGINT_0) {
+      this._runState.gasRefund = BIGINT_0
       trap(ERROR.REFUND_EXHAUSTED)
     }
   }
@@ -918,7 +920,7 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
-      return BigInt(0)
+      return BIGINT_0
     }
 
     let timer: Timer
@@ -962,7 +964,7 @@ export class Interpreter {
         throw new Error('could not read contract account')
       }
       this._env.contract = account
-      this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
+      this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
     }
 
     return this._getReturnCode(results)
@@ -989,15 +991,15 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('vm', 'stackLimit')) ||
       this._env.contract.balance < value
     ) {
-      return BigInt(0)
+      return BIGINT_0
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
-      return BigInt(0)
+      return BIGINT_0
     }
 
-    this._env.contract.nonce += BigInt(1)
+    this._env.contract.nonce += BIGINT_1
     await this.journal.putAccount(this._env.address, this._env.contract)
 
     if (this.common.isActivatedEIP(3860)) {
@@ -1005,7 +1007,7 @@ export class Interpreter {
         data.length > Number(this.common.param('vm', 'maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
-        return BigInt(0)
+        return BIGINT_0
       }
     }
 
@@ -1070,7 +1072,7 @@ export class Interpreter {
         throw new Error('could not read contract account')
       }
       this._env.contract = account
-      this._runState.gasRefund = results.execResult.gasRefund ?? BigInt(0)
+      this._runState.gasRefund = results.execResult.gasRefund ?? BIGINT_0
       if (results.createdAddress) {
         // push the created address to the stack
         return bytesToBigInt(results.createdAddress.bytes)
@@ -1141,7 +1143,7 @@ export class Interpreter {
     // Set contract balance to 0
     if (doModify) {
       await this._stateManager.modifyAccountFields(this._env.address, {
-        balance: BigInt(0),
+        balance: BIGINT_0,
       })
     }
 
@@ -1166,9 +1168,9 @@ export class Interpreter {
 
   private _getReturnCode(results: EVMResult) {
     if (results.execResult.exceptionError) {
-      return BigInt(0)
+      return BIGINT_0
     } else {
-      return BigInt(1)
+      return BIGINT_1
     }
   }
 }

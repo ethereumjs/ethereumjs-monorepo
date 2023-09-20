@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { Address, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
+import { Address, BIGINT_0, BIGINT_1, bigIntToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { ERROR } from '../exceptions.js'
 
@@ -19,8 +19,6 @@ import {
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const BIGINT_0 = BigInt(0)
-const BIGINT_1 = BigInt(1)
 const BIGINT_31 = BigInt(31)
 const BIGINT_32 = BigInt(32)
 

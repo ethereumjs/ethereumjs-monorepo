@@ -2,6 +2,8 @@ import { Chain, Common, ConsensusAlgorithm, ConsensusType, Hardfork } from '@eth
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
@@ -158,11 +160,11 @@ export class BlockHeader {
       transactionsTrie: KECCAK256_RLP,
       receiptTrie: KECCAK256_RLP,
       logsBloom: zeros(256),
-      difficulty: BigInt(0),
-      number: BigInt(0),
+      difficulty: BIGINT_0,
+      number: BIGINT_0,
       gasLimit: DEFAULT_GAS_LIMIT,
-      gasUsed: BigInt(0),
-      timestamp: BigInt(0),
+      gasUsed: BIGINT_0,
+      timestamp: BIGINT_0,
       extraData: new Uint8Array(0),
       mixHash: zeros(32),
       nonce: zeros(8),
@@ -210,8 +212,8 @@ export class BlockHeader {
           : BigInt(7)
         : undefined,
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      blobGasUsed: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
-      excessBlobGas: this.common.isActivatedEIP(4844) ? BigInt(0) : undefined,
+      blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
+      excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
     }
 
@@ -358,7 +360,7 @@ export class BlockHeader {
       const londonHfBlock = this.common.hardforkBlock(Hardfork.London)
       if (
         typeof londonHfBlock === 'bigint' &&
-        londonHfBlock !== BigInt(0) &&
+        londonHfBlock !== BIGINT_0 &&
         this.number === londonHfBlock
       ) {
         const initialBaseFee = this.common.param('gasConfig', 'initialBaseFee')
@@ -409,7 +411,7 @@ export class BlockHeader {
     if (this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash) {
       // PoW/Ethash
       if (
-        number > BigInt(0) &&
+        number > BIGINT_0 &&
         this.extraData.length > this.common.param('vm', 'maxExtraDataSize')
       ) {
         // Check length of data on all post-genesis blocks
@@ -461,9 +463,9 @@ export class BlockHeader {
         )})`
         error = true
       }
-      if (number !== BigInt(0)) {
+      if (number !== BIGINT_0) {
         // Skip difficulty, nonce, and extraData check for PoS genesis block as genesis block may have non-zero difficulty (if TD is > 0)
-        if (difficulty !== BigInt(0)) {
+        if (difficulty !== BIGINT_0) {
           errorMsg += `, difficulty: ${difficulty} (expected: 0)`
           error = true
         }
@@ -498,7 +500,7 @@ export class BlockHeader {
     const londonHardforkBlock = this.common.hardforkBlock(Hardfork.London)
     if (
       typeof londonHardforkBlock === 'bigint' &&
-      londonHardforkBlock !== BigInt(0) &&
+      londonHardforkBlock !== BIGINT_0 &&
       this.number === londonHardforkBlock
     ) {
       const elasticity = this.common.param('gasConfig', 'elasticityMultiplier')
@@ -551,8 +553,7 @@ export class BlockHeader {
 
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
-      nextBaseFee =
-        (calculatedDelta > BigInt(1) ? calculatedDelta : BigInt(1)) + this.baseFeePerGas!
+      nextBaseFee = (calculatedDelta > BIGINT_1 ? calculatedDelta : BIGINT_1) + this.baseFeePerGas!
     } else {
       const gasUsedDelta = parentGasTarget - this.gasUsed
       const baseFeeMaxChangeDenominator = this.common.param(
@@ -563,9 +564,9 @@ export class BlockHeader {
       const calculatedDelta =
         (this.baseFeePerGas! * gasUsedDelta) / parentGasTarget / baseFeeMaxChangeDenominator
       nextBaseFee =
-        this.baseFeePerGas! - calculatedDelta > BigInt(0)
+        this.baseFeePerGas! - calculatedDelta > BIGINT_0
           ? this.baseFeePerGas! - calculatedDelta
-          : BigInt(0)
+          : BIGINT_0
     }
     return nextBaseFee
   }
@@ -604,11 +605,11 @@ export class BlockHeader {
    */
   public calcNextExcessBlobGas(): bigint {
     // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
-    const targetGasConsumed = (this.excessBlobGas ?? BigInt(0)) + (this.blobGasUsed ?? BigInt(0))
+    const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
     const targetBlobGasPerBlock = this.common.param('gasConfig', 'targetBlobGasPerBlock')
 
     if (targetGasConsumed <= targetBlobGasPerBlock) {
-      return BigInt(0)
+      return BIGINT_0
     } else {
       return targetGasConsumed - targetBlobGasPerBlock
     }
@@ -630,7 +631,7 @@ export class BlockHeader {
       bigIntToUnpaddedBytes(this.number),
       bigIntToUnpaddedBytes(this.gasLimit),
       bigIntToUnpaddedBytes(this.gasUsed),
-      bigIntToUnpaddedBytes(this.timestamp ?? BigInt(0)),
+      bigIntToUnpaddedBytes(this.timestamp ?? BIGINT_0),
       this.extraData,
       this.mixHash,
       this.nonce,
@@ -671,7 +672,7 @@ export class BlockHeader {
    * Checks if the block header is a genesis header.
    */
   isGenesis(): boolean {
-    return this.number === BigInt(0)
+    return this.number === BIGINT_0
   }
 
   protected _requireClique(name: string) {
@@ -723,12 +724,12 @@ export class BlockHeader {
     if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
       // Get delay as parameter from common
       num = num - this.common.param('pow', 'difficultyBombDelay')
-      if (num < BigInt(0)) {
-        num = BigInt(0)
+      if (num < BIGINT_0) {
+        num = BIGINT_0
       }
     } else if (this.common.gteHardfork(Hardfork.Homestead) === true) {
       // 1 - (block_timestamp - parent_timestamp) // 10
-      let a = BigInt(1) - (blockTs - parentTs) / BigInt(10)
+      let a = BIGINT_1 - (blockTs - parentTs) / BigInt(10)
       const cutoff = BigInt(-99)
       // MAX(cutoff, a)
       if (cutoff > a) {
@@ -775,7 +776,7 @@ export class BlockHeader {
     const epoch = BigInt((this.common.consensusConfig() as CliqueConfig).epoch)
     // Epoch transition block if the block number has no
     // remainder on the division by the epoch length
-    return this.number % epoch === BigInt(0)
+    return this.number % epoch === BIGINT_0
   }
 
   /**

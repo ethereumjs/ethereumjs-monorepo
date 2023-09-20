@@ -5,6 +5,7 @@ import {
   hexToBytes as _unprefixedHexToBytes,
 } from 'ethereum-cryptography/utils.js'
 
+import { BIGINT_0 } from './constants.js'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
@@ -47,7 +48,7 @@ export const bytesToHex = (bytes: Uint8Array): string => {
 export const bytesToBigInt = (bytes: Uint8Array): bigint => {
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
-    return BigInt(0)
+    return BIGINT_0
   }
   return BigInt(hex)
 }
@@ -267,7 +268,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
   }
 
   if (typeof v === 'bigint') {
-    if (v < BigInt(0)) {
+    if (v < BIGINT_0) {
       throw new Error(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
     }
     let n = v.toString(16)

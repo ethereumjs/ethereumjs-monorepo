@@ -1,6 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  BIGINT_1,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
@@ -97,7 +98,7 @@ export class PendingBlock {
     headerData: Partial<HeaderData> = {},
     withdrawals?: WithdrawalData[]
   ) {
-    const number = parentBlock.header.number + BigInt(1)
+    const number = parentBlock.header.number + BIGINT_1
     const { timestamp, mixHash, parentBeaconBlockRoot } = headerData
     let { gasLimit } = parentBlock.header
 

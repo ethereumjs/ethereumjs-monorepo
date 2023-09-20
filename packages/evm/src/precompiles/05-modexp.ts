@@ -1,4 +1,7 @@
 import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -16,15 +19,15 @@ function multComplexity(x: bigint): bigint {
   let fac1
   let fac2
   if (x <= BigInt(64)) {
-    return x ** BigInt(2)
+    return x ** BIGINT_2
   } else if (x <= BigInt(1024)) {
     // return Math.floor(Math.pow(x, 2) / 4) + 96 * x - 3072
-    fac1 = x ** BigInt(2) / BigInt(4)
+    fac1 = x ** BIGINT_2 / BigInt(4)
     fac2 = x * BigInt(96)
     return fac1 + fac2 - BigInt(3072)
   } else {
     // return Math.floor(Math.pow(x, 2) / 16) + 480 * x - 199680
-    fac1 = x ** BigInt(2) / BigInt(16)
+    fac1 = x ** BIGINT_2 / BigInt(16)
     fac2 = x * BigInt(480)
     return fac1 + fac2 - BigInt(199680)
   }
@@ -54,13 +57,13 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   firstExpBigInt = firstExpBigInt >> (BigInt(8) * BigInt(Math.max(max32expLen, 0)))
 
   let bitLen = -1
-  while (firstExpBigInt > BigInt(0)) {
+  while (firstExpBigInt > BIGINT_0) {
     bitLen = bitLen + 1
-    firstExpBigInt = firstExpBigInt >> BigInt(1)
+    firstExpBigInt = firstExpBigInt >> BIGINT_1
   }
   let expLenMinus32OrZero = expLen - BigInt(32)
-  if (expLenMinus32OrZero < BigInt(0)) {
-    expLenMinus32OrZero = BigInt(0)
+  if (expLenMinus32OrZero < BIGINT_0) {
+    expLenMinus32OrZero = BIGINT_0
   }
   const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BigInt(8)
   let adjustedExpLen = eightTimesExpLenMinus32OrZero
@@ -71,14 +74,14 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
 }
 
 export function expmod(a: bigint, power: bigint, modulo: bigint) {
-  if (power === BigInt(0)) {
-    return BigInt(1) % modulo
+  if (power === BIGINT_0) {
+    return BIGINT_1 % modulo
   }
-  let res = BigInt(1)
-  while (power > BigInt(0)) {
-    if (power & BigInt(1)) res = (res * a) % modulo
+  let res = BIGINT_1
+  while (power > BIGINT_0) {
+    if (power & BIGINT_1) res = (res * a) % modulo
     a = (a * a) % modulo
-    power >>= BigInt(1)
+    power >>= BIGINT_1
   }
   return res
 }
@@ -87,8 +90,8 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const data = opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
-  if (adjustedELen < BigInt(1)) {
-    adjustedELen = BigInt(1)
+  if (adjustedELen < BIGINT_1) {
+    adjustedELen = BIGINT_1
   }
 
   const bLen = bytesToBigInt(data.subarray(0, 32))
@@ -132,14 +135,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BigInt(0)) {
+  if (bLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
-      returnValue: setLengthLeft(bigIntToBytes(BigInt(0)), Number(mLen)),
+      returnValue: setLengthLeft(bigIntToBytes(BIGINT_0), Number(mLen)),
     }
   }
 
-  if (mLen === BigInt(0)) {
+  if (mLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
       returnValue: new Uint8Array(0),
@@ -168,8 +171,8 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   }
 
   let R
-  if (M === BigInt(0)) {
-    R = BigInt(0)
+  if (M === BIGINT_0) {
+    R = BIGINT_0
   } else {
     R = expmod(B, E, M)
   }
