@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695232854387,
+  "lastUpdate": 1695236168681,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fcc910e3ac06525d67ed7425bf3638b290430bee",
-          "message": "common: unschedule Cancun for holesky (#2997)",
-          "timestamp": "2023-08-30T17:29:42+05:30",
-          "tree_id": "50aa1a845ff2919065a71d5c970b4894a9f9c1d3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fcc910e3ac06525d67ed7425bf3638b290430bee"
-        },
-        "date": 1693397053196,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 20654,
-            "range": "±5.17%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20924,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20325,
-            "range": "±3.28%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20156,
-            "range": "±3.64%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19941,
-            "range": "±3.49%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.48%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2b13ccade5e02df4460ebfe38f82fec3a942cc97",
+          "message": "client/sync: return Promise.race() instead of async-promise-executor (#3030)\n\n* client/sync: use async/await directly instead of async-promise-generator\r\n\r\n* client/sync: use wait for timeout\r\n\r\n* client/sync: externalize resolveSync()\r\n\r\n* client/sync: externalize fetcher sync\r\n\r\n* client:sync: return promise.race\r\n\r\n* client/sync: move wait() to utils\r\n\r\n* Add explanatory comments\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-09-20T12:50:00-06:00",
+          "tree_id": "25187b2284bf314e0a1b36d749fe520e9f79d791",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2b13ccade5e02df4460ebfe38f82fec3a942cc97"
+        },
+        "date": 1695236167071,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 32282,
+            "range": "±4.04%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 31272,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 31187,
+            "range": "±2.54%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 26691,
+            "range": "±10.40%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29715,
+            "range": "±2.70%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
