@@ -1,8 +1,8 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { wait } from '../../test/integration/util'
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
+import { wait } from '../util/wait'
 
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
