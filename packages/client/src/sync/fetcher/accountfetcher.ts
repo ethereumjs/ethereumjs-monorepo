@@ -317,10 +317,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
-        this.debug('dbg100')
-        const t = new Trie()
+        const trie = new Trie()
         try {
-          const isMissingRightRange = await t.verifyRangeProof(
+          const isMissingRightRange = await trie.verifyRangeProof(
             this.root,
             origin,
             null,
@@ -328,11 +327,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             [],
             <any>rangeResult.proof
           )
+          this.debug(isMissingRightRange)
         } catch (e) {
-          console.error(e)
+          this.debug(e)
         }
-
-        this.debug(isMissingRightRange)
 
         this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
