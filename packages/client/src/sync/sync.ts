@@ -138,6 +138,12 @@ export abstract class Synchronizer {
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
+  resolveSync(height?: number) {
+    this.clearFetcher()
+    const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
+    this.config.logger.info(`Finishing up sync with the current fetcher ${heightStr}`)
+    return true
+  }
   /**
    * Fetch all blocks from current height up to highest found amongst peers
    * @returns when sync is completed
