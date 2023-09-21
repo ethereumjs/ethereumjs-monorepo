@@ -61,6 +61,14 @@ export interface ConfigOptions {
   forceSnapSync?: boolean
 
   /**
+   * A temporary option to offer backward compatibility with already-synced databases that are
+   * using non-prefixed keys for storage tries
+   *
+   * Default: true
+   */
+  prefixStorageTrieKeys?: boolean
+
+  /**
    * Provide a custom VM instance to process blocks
    *
    * Default: VM instance created by client
@@ -402,6 +410,7 @@ export class Config {
   public readonly forceSnapSync: boolean
   // Just a development only flag, will/should be removed
   public readonly disableSnapSync: boolean = false
+  public readonly prefixStorageTrieKeys: boolean
 
   public synchronized: boolean
   /** lastSyncDate in ms */
@@ -473,6 +482,7 @@ export class Config {
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
+    this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine

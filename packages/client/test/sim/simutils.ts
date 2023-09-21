@@ -330,7 +330,7 @@ export const runBlobTx = async (
     blobs,
     kzgCommitments: commitments,
     kzgProofs: proofs,
-    versionedHashes: hashes,
+    blobVersionedHashes: hashes,
     maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -401,7 +401,7 @@ export const createBlobTxs = async (
       blobs,
       kzgCommitments: commitments,
       kzgProofs: proofs,
-      versionedHashes: hashes,
+      blobVersionedHashes: hashes,
       nonce: BigInt(x),
       gas: undefined,
     }

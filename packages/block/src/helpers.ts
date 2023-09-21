@@ -88,7 +88,7 @@ export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {
     if (tx instanceof BlobEIP4844Transaction) {
-      numBlobs += tx.versionedHashes.length
+      numBlobs += tx.blobVersionedHashes.length
     }
   }
   return numBlobs

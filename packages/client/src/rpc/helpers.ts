@@ -32,7 +32,7 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     r: txJSON.r!,
     s: txJSON.s!,
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
-    versionedHashes: txJSON.versionedHashes,
+    blobVersionedHashes: txJSON.blobVersionedHashes,
   }
 }
 
