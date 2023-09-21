@@ -1,3 +1,4 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   TypeOutput,
@@ -98,7 +99,25 @@ export class PendingBlock {
   ) {
     const number = parentBlock.header.number + BigInt(1)
     const { timestamp, mixHash, parentBeaconBlockRoot } = headerData
-    const { gasLimit } = parentBlock.header
+    let { gasLimit } = parentBlock.header
+
+    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
+    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
+    vm.common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
+
+    const baseFeePerGas = parentBlock.header.common.isActivatedEIP(1559)
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
+
+    if (number === vm.common.hardforkBlock(Hardfork.London)) {
+      gasLimit = gasLimit * BigInt(2)
+    }
 
     // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
     // potentially included in the fcU in future and can be safely added in uniqueness calc
@@ -128,20 +147,6 @@ export class PendingBlock {
 
     // Prune the builders and blobsbundles
     this.pruneSetToMax(MAX_PAYLOAD_CACHE)
-
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm.common.setHardforkBy({
-      blockNumber: number,
-      td,
-      timestamp,
-    })
-
-    const baseFeePerGas = vm.common.isActivatedEIP(1559)
-      ? parentBlock.header.calcNextBaseFee()
-      : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state
