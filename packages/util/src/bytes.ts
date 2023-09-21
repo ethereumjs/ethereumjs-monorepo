@@ -43,7 +43,7 @@ export const bytesToHex = (bytes: Uint8Array): string => {
 
 // BigInt cache for the numbers 0 - 255 (one-byte bytes)
 const BIGINT_CACHE: bigint[] = []
-for (let i = 0; i <= 255; i++) {
+for (let i = 0; i <= 255 * 255; i++) {
   BIGINT_CACHE[i] = BigInt(i)
 }
 
@@ -60,6 +60,9 @@ export const bytesToBigInt = (bytes: Uint8Array): bigint => {
   if (hex.length === 4) {
     // If the byte length is 1 (this is faster than checking `bytes.length === 1`)
     return BIGINT_CACHE[bytes[0]]
+  }
+  if (hex.length === 6) {
+    return BIGINT_CACHE[bytes[0] * 256 + bytes[1]]
   }
   return BigInt(hex)
 }
