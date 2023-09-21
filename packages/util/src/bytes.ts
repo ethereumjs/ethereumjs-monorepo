@@ -5,11 +5,12 @@ import {
   hexToBytes as _unprefixedHexToBytes,
 } from 'ethereum-cryptography/utils.js'
 
-import { BIGINT_0 } from './constants.js'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
 import type { PrefixedHexString, TransformabletoBytes } from './types.js'
+
+const BIGINT_0 = BigInt(0) // Cannot import from `./constants.js`, otherwise have a circular dependency
 
 /**
  * @deprecated
