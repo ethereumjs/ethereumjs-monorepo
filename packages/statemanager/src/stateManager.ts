@@ -324,6 +324,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (this.DEBUG) {
       this._debug(`Delete account ${address}`)
     }
+
+    this._codeCache2?.del(address)
+
     if (this._accountCacheSettings.deactivate) {
       await this._trie.del(address.bytes)
     } else {
@@ -637,13 +640,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
       const code = item[1].code
       if (code === undefined) {
-        throw new Error('Cannot delete preexisting code for an account')
+        continue
       }
 
       // update code in database
       const codeHash = keccak256(code)
       const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-      await this._trie.database().put(key, code)
+      await this._getCodeDB().put(key, code)
 
       // update code root of associated account
       if ((await this.getAccount(addr)) === undefined) {
