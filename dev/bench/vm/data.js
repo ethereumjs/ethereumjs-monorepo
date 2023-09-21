@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695239704740,
+  "lastUpdate": 1695279080118,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f5c6769fa95239a104119b0d43ab39cae19f2917",
-          "message": "tx: consolidate generic tx capabilities (#2993)\n\n* tx: consolidate generic tx capabilities\r\n\r\n* tx: refactor highS and YParity validation into generic\r\n\r\n* tx: refactor getDataFee\r\n\r\n* tx: refactor getUpfrontCost capability\r\n\r\n* tx: refactor getHashedMessageToSign and serialize methods\r\n\r\n* tx: refactor usage of this",
-          "timestamp": "2023-08-30T15:56:00-04:00",
-          "tree_id": "947f6ff0ca4a63bdb8be4100c50d0d8a8948373e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f5c6769fa95239a104119b0d43ab39cae19f2917"
-        },
-        "date": 1693425866590,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25299,
-            "range": "±5.58%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25713,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 25705,
-            "range": "±3.28%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25696,
-            "range": "±3.41%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20213,
-            "range": "±11.60%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.48%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9d62bb47102e06e02034a88c07b2f8eeadd4b1ea",
+          "message": "client/vm: fix block builder london transition (#3039)\n\n* client/vm: fix block builder london transition\r\n\r\n* handle london gas limit if undefined in buildblock\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: harkamal <gajinder@g11.in>",
+          "timestamp": "2023-09-21T12:17:46+05:30",
+          "tree_id": "2e16bbf0424bb3d0fa32c8a9b3b7ef91e68ec6f2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9d62bb47102e06e02034a88c07b2f8eeadd4b1ea"
+        },
+        "date": 1695279078870,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30698,
+            "range": "±5.54%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30154,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29901,
+            "range": "±3.22%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25492,
+            "range": "±10.33%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 29114,
+            "range": "±3.16%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
