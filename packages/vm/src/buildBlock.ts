@@ -1,5 +1,5 @@
 import { Block } from '@ethereumjs/block'
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
@@ -76,7 +76,6 @@ export class BlockBuilder {
       ...opts.headerData,
       parentHash: opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
-      gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
@@ -85,7 +84,19 @@ export class BlockBuilder {
       this.vm.common.isActivatedEIP(1559) === true &&
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
-      this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+      if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
+        this.headerData.baseFeePerGas = vm.common.param('gasConfig', 'initialBaseFee')
+      } else {
+        this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+      }
+    }
+
+    if (typeof this.headerData.gasLimit === 'undefined') {
+      if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
+        this.headerData.gasLimit = opts.parentBlock.header.gasLimit * BigInt(2)
+      } else {
+        this.headerData.gasLimit = opts.parentBlock.header.gasLimit
+      }
     }
 
     if (
