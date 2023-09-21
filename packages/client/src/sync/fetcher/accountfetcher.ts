@@ -3,6 +3,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  BIGINT_256,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
@@ -153,7 +154,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     super(options)
     this.root = options.root
     this.first = options.first
-    this.count = options.count ?? BIGINT_2 ** BigInt(256) - this.first
+    this.count = options.count ?? BIGINT_2 ** BIGINT_256 - this.first
     this.codeTrie = new Trie({ useKeyHashing: true })
     this.accountTrie = new Trie({ useKeyHashing: true })
     this.accountToStorageTrie = new Map()
@@ -310,7 +311,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (
       rangeResult.accounts.length === 0 ||
-      equalsBytes(limit, bigIntToBytes(BIGINT_2 ** BigInt(256))) === true
+      equalsBytes(limit, bigIntToBytes(BIGINT_2 ** BIGINT_256)) === true
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
@@ -419,7 +420,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           accountHash: account.hash,
           storageRoot,
           first: BIGINT_0,
-          count: BIGINT_2 ** BigInt(256) - BIGINT_1,
+          count: BIGINT_2 ** BIGINT_256 - BIGINT_1,
         })
       }
       // build record of accounts that need bytecode to be fetched

@@ -2,6 +2,8 @@ import { Trie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
+  BIGINT_256,
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
@@ -23,7 +25,7 @@ import type { Job } from './types'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BIGINT_1
+const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 
 type StorageDataResponse = StorageData[][] & { completed?: boolean }
 

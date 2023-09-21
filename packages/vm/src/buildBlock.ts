@@ -7,6 +7,7 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
   GWEI_TO_WEI,
   TypeOutput,
   Withdrawal,
@@ -96,7 +97,7 @@ export class BlockBuilder {
 
     if (typeof this.headerData.gasLimit === 'undefined') {
       if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
-        this.headerData.gasLimit = opts.parentBlock.header.gasLimit * BigInt(2)
+        this.headerData.gasLimit = opts.parentBlock.header.gasLimit * BIGINT_2
       } else {
         this.headerData.gasLimit = opts.parentBlock.header.gasLimit
       }

@@ -11,6 +11,7 @@ import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
+  BIGINT_8,
   KECCAK256_RLP,
   Lock,
   MapDB,
@@ -589,7 +590,7 @@ export class Blockchain implements BlockchainInterface {
     if (height !== undefined) {
       const dif = height - parentHeader.number
 
-      if (!(dif < BigInt(8) && dif > BIGINT_1)) {
+      if (!(dif < BIGINT_8 && dif > BIGINT_1)) {
         throw new Error(
           `uncle block has a parent that is too old or too young ${header.errorStr()}`
         )

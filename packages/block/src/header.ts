@@ -4,6 +4,9 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_2,
+  BIGINT_27,
+  BIGINT_7,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   TypeOutput,
@@ -209,7 +212,7 @@ export class BlockHeader {
       baseFeePerGas: this.common.isActivatedEIP(1559)
         ? number === this.common.hardforkBlock(Hardfork.London)
           ? this.common.param('gasConfig', 'initialBaseFee')
-          : BigInt(7)
+          : BIGINT_7
         : undefined,
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
@@ -745,9 +748,9 @@ export class BlockHeader {
       }
     }
 
-    const exp = num / BigInt(100000) - BigInt(2)
+    const exp = num / BigInt(100000) - BIGINT_2
     if (exp >= 0) {
-      dif = dif + BigInt(2) ** exp
+      dif = dif + BIGINT_2 ** exp
     }
 
     if (dif < minimumDifficulty) {
@@ -806,11 +809,7 @@ export class BlockHeader {
     this._requireClique('cliqueSealBlock')
 
     const signature = ecsign(this.cliqueSigHash(), privateKey)
-    const signatureB = concatBytes(
-      signature.r,
-      signature.s,
-      bigIntToBytes(signature.v - BigInt(27))
-    )
+    const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
 
     const extraDataWithoutSeal = this.extraData.subarray(
       0,
@@ -874,7 +873,7 @@ export class BlockHeader {
     }
     const r = extraSeal.subarray(0, 32)
     const s = extraSeal.subarray(32, 64)
-    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BigInt(27)
+    const v = bytesToBigInt(extraSeal.subarray(64, 65)) + BIGINT_27
     const pubKey = ecrecover(this.cliqueSigHash(), v, r, s)
     return Address.fromPublicKey(pubKey)
   }

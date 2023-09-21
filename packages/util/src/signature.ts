@@ -14,6 +14,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  BIGINT_27,
   SECP256K1_ORDER,
   SECP256K1_ORDER_DIV_2,
 } from './constants.js'
@@ -53,7 +54,7 @@ function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   if (v === BIGINT_0 || v === BIGINT_1) return v
 
   if (chainId === undefined) {
-    return v - BigInt(27)
+    return v - BIGINT_27
   }
   return v - (chainId * BIGINT_2 + BigInt(35))
 }
@@ -160,7 +161,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
 
   // support both versions of `eth_sign` responses
   if (v < 27) {
-    v = v + BigInt(27)
+    v = v + BIGINT_27
   }
 
   return {

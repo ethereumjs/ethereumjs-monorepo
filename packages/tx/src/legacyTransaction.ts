@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_2,
+  BIGINT_8,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -273,7 +274,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    */
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      v += this.common.chainId() * BIGINT_2 + BigInt(8)
+      v += this.common.chainId() * BIGINT_2 + BIGINT_8
     }
 
     const opts = { ...this.txOptions, common: this.common }

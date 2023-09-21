@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
-import { type Address, BIGINT_0, BIGINT_1 } from '@ethereumjs/util'
+import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
 import { Level } from 'level'
 
 import { getLogger } from './logging'
@@ -354,10 +354,9 @@ export class Config {
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE =
-    (BigInt(2) ** BigInt(256) - BIGINT_1) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
-  public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BIGINT_1) / BigInt(10)
+  public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128

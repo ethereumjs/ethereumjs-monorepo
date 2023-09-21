@@ -7,6 +7,7 @@ import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_8,
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
@@ -451,7 +452,7 @@ function calculateOmmerReward(
   minerReward: bigint
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
-  let reward = ((BigInt(8) - heightDiff) * minerReward) / BigInt(8)
+  let reward = ((BIGINT_8 - heightDiff) * minerReward) / BIGINT_8
   if (reward < BIGINT_0) {
     reward = BIGINT_0
   }

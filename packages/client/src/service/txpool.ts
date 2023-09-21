@@ -10,6 +10,7 @@ import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_2,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -302,7 +303,7 @@ export class TxPool {
     }
     const block = await this.service.chain.getCanonicalHeadHeader()
     if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
-      if (currentGasPrice.maxFee < block.baseFeePerGas / BigInt(2) && !isLocalTransaction) {
+      if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
         throw new Error(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
         )
