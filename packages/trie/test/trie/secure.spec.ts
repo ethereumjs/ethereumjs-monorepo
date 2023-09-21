@@ -28,6 +28,13 @@ describe('SecureTrie', () => {
     const t = trie.shallowCopy()
     const res = await t.get(k)
     assert.ok(equalsBytes(v, res!))
+    assert.isUndefined(t['_opts']['keyPrefix'])
+  })
+
+  it('copy trie (new key prefix)', async () => {
+    const prefix = hexToBytes('0x1234')
+    const t = trie.shallowCopy(true, prefix)
+    assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, prefix))
   })
 })
 

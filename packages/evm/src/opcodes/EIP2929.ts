@@ -1,6 +1,7 @@
+import { type Address, BIGINT_0 } from '@ethereumjs/util'
+
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 
 /**
  * Adds address to accessedAddresses set if not already included.
@@ -19,7 +20,7 @@ export function accessAddressEIP2929(
   chargeGas = true,
   isSelfdestructOrAuthcall = false
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return BigInt(0)
+  if (common.isActivatedEIP(2929) === false) return BIGINT_0
 
   const addressStr = address.bytes
 
@@ -36,7 +37,7 @@ export function accessAddressEIP2929(
   } else if (chargeGas && !isSelfdestructOrAuthcall) {
     return common.param('gasPrices', 'warmstorageread')
   }
-  return BigInt(0)
+  return BIGINT_0
 }
 
 /**
@@ -53,7 +54,7 @@ export function accessStorageEIP2929(
   isSstore: boolean,
   common: Common
 ): bigint {
-  if (common.isActivatedEIP(2929) === false) return BigInt(0)
+  if (common.isActivatedEIP(2929) === false) return BIGINT_0
 
   const address = runState.interpreter.getAddress().bytes
   const slotIsCold = !runState.interpreter.journal.isWarmedStorage(address, key)
@@ -65,7 +66,7 @@ export function accessStorageEIP2929(
   } else if (!isSstore) {
     return common.param('gasPrices', 'warmstorageread')
   }
-  return BigInt(0)
+  return BIGINT_0
 }
 
 /**
