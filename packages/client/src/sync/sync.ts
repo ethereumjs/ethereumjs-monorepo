@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BIGINT_0 } from '@ethereumjs/util'
 
 import { FlowControl } from '../net/protocol'
 import { Event } from '../types'
@@ -63,7 +64,7 @@ export abstract class Synchronizer {
     this.opened = false
     this.running = false
     this.forceSync = false
-    this.startingBlock = BigInt(0)
+    this.startingBlock = BIGINT_0
 
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {

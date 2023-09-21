@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
+import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
 import { INVALID_PARAMS } from './error-code'
 
@@ -52,7 +52,7 @@ export const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 
   switch (blockOpt) {
     case 'earliest':
-      block = await chain.getBlock(BigInt(0))
+      block = await chain.getBlock(BIGINT_0)
       break
     case 'latest':
       block = latest
