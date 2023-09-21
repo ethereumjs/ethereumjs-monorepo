@@ -1,6 +1,8 @@
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
   TypeOutput,
   bigIntToHex,
   bytesToHex,
@@ -342,7 +344,7 @@ export class Eth {
    * @param params An empty array
    */
   async blockNumber(_params = []) {
-    return bigIntToHex(this._chain.headers.latest?.number ?? BigInt(0))
+    return bigIntToHex(this._chain.headers.latest?.number ?? BIGINT_0)
   }
 
   /**
@@ -795,7 +797,7 @@ export class Eth {
       }
     } else {
       if (fromBlock === 'earliest') {
-        from = await this._chain.getBlock(BigInt(0))
+        from = await this._chain.getBlock(BIGINT_0)
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
         from = this._chain.blocks.latest!
       } else {
@@ -882,10 +884,10 @@ export class Eth {
     }
     const common = this.client.config.chainCommon.copy()
     const chainHeight = this.client.chain.headers.height
-    let txTargetHeight = syncTargetHeight ?? BigInt(0)
+    let txTargetHeight = syncTargetHeight ?? BIGINT_0
     // Following step makes sure txTargetHeight > 0
     if (txTargetHeight <= chainHeight) {
-      txTargetHeight = chainHeight + BigInt(1)
+      txTargetHeight = chainHeight + BIGINT_1
     }
     common.setHardforkBy({
       blockNumber: txTargetHeight,
@@ -1009,7 +1011,7 @@ export class Eth {
     const startingBlock = bigIntToHex(synchronizer.startingBlock)
 
     let highestBlock
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
+    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BIGINT_0) {
       highestBlock = bigIntToHex(syncTargetHeight)
     } else {
       const bestPeer = await synchronizer.best()
@@ -1051,11 +1053,11 @@ export class Eth {
    */
   async gasPrice() {
     const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
-    let gasPrice = BigInt(0)
+    let gasPrice = BIGINT_0
     const latest = await this._chain.getCanonicalHeadHeader()
     if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
       const baseFee = latest.calcNextBaseFee()
-      let priorityFee = BigInt(0)
+      let priorityFee = BIGINT_0
       const block = await this._chain.getBlock(latest.number)
       for (const tx of block.transactions) {
         const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
@@ -1063,13 +1065,13 @@ export class Eth {
       }
 
       priorityFee =
-        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
+        priorityFee !== BIGINT_0 ? priorityFee / BigInt(block.transactions.length) : BIGINT_1
       gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
       // blocks to get an average gas price.
       const blockIterations = 20 < latest.number ? 20 : latest.number
-      let txCount = BigInt(0)
+      let txCount = BIGINT_0
       for (let i = 0; i < blockIterations; i++) {
         const block = await this._chain.getBlock(latest.number - BigInt(i))
         if (block.transactions.length === 0) {

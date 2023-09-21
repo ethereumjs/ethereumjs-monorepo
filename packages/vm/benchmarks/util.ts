@@ -1,4 +1,4 @@
-import { Account, Address, equalsBytes, toBytes } from '@ethereumjs/util'
+import { Account, Address, BIGINT_0, equalsBytes, toBytes } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -68,7 +68,7 @@ export const verifyResult = (block: Block, result: RunBlockResult) => {
     // check if there are receipts
     const { receipts } = result
     if (receipts) {
-      let cumGasUsed = BigInt(0)
+      let cumGasUsed = BIGINT_0
       for (let index = 0; index < receipts.length; index++) {
         let gasUsedExpected = receipts[index].cumulativeBlockGasUsed
         let cumGasUsedActual = receipts[index].cumulativeBlockGasUsed

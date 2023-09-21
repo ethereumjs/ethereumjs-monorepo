@@ -2,6 +2,9 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
   TypeOutput,
   bigIntToBytes,
   bytesToBigInt,
@@ -29,9 +32,9 @@ const CLIQUE_VOTES_KEY = 'CliqueVotes'
 const CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY = 'CliqueBlockSignersSnapshot'
 
 // Block difficulty for in-turn signatures
-export const CLIQUE_DIFF_INTURN = BigInt(2)
+export const CLIQUE_DIFF_INTURN = BIGINT_2
 // Block difficulty for out-of-turn signatures
-export const CLIQUE_DIFF_NOTURN = BigInt(1)
+export const CLIQUE_DIFF_NOTURN = BIGINT_1
 
 // Clique Signer State
 type CliqueSignerState = [blockNumber: bigint, signers: Address[]]
@@ -193,7 +196,7 @@ export class CliqueConsensus implements Consensus {
     const { header } = block
     const commonAncestorNumber = commonAncestor?.number
     if (commonAncestorNumber !== undefined) {
-      await this._cliqueDeleteSnapshots(commonAncestorNumber + BigInt(1))
+      await this._cliqueDeleteSnapshots(commonAncestorNumber + BIGINT_1)
       for (let number = commonAncestorNumber + BigInt(1); number <= header.number; number++) {
         const canonicalHeader = await this.blockchain!.getCanonicalHeader(number)
         await this._cliqueBuildSnapshots(canonicalHeader)
@@ -208,7 +211,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
-      BigInt(0),
+      BIGINT_0,
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)

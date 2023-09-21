@@ -2,7 +2,13 @@ import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
+import {
+  Address,
+  BIGINT_1,
+  KECCAK256_RLP,
+  hexToBytes,
+  parseGethGenesisState,
+} from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
@@ -282,7 +288,7 @@ export async function runBlockWithTxs(
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {
-      timestamp: parentBlock.header.timestamp + BigInt(1),
+      timestamp: parentBlock.header.timestamp + BIGINT_1,
     },
     blockOpts: {
       calcDifficultyFromHeader: parentBlock.header,

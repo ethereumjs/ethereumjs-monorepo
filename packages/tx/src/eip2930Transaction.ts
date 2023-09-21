@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_27,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -292,7 +293,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: v - BIGINT_27, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },

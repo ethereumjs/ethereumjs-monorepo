@@ -282,7 +282,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
   }
 
   if (typeof v === 'bigint') {
-    if (v < BigInt(0)) {
+    if (v < BIGINT_0) {
       throw new Error(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
     }
     let n = v.toString(16)

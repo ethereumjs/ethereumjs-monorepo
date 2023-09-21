@@ -1,6 +1,7 @@
 import { Chain, Common } from '@ethereumjs/common'
 import {
   Address,
+  BIGINT_0,
   MAX_INTEGER,
   MAX_UINT64,
   bigIntToHex,
@@ -190,7 +191,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
-    let cost = BigInt(0)
+    let cost = BIGINT_0
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
