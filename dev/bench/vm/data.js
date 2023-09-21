@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695311622321,
+  "lastUpdate": 1695328140669,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6319b87eb2558c942b5747e600305ddb45ae727d",
-          "message": "vm: update the beacon block root contract address (#3003)\n\n* vm: update the beacon block root contract address\r\n\r\n* fix spec",
-          "timestamp": "2023-09-01T14:18:55+02:00",
-          "tree_id": "63f233c78c14d774c9e24d9a4d83ff1447bfe613",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6319b87eb2558c942b5747e600305ddb45ae727d"
-        },
-        "date": 1693570943555,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30999,
-            "range": "±4.89%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30572,
-            "range": "±2.92%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30410,
-            "range": "±3.15%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25957,
-            "range": "±9.10%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29419,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.26%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c373fddd2634bc4d4c3f05acec4175bce66c08ca",
+          "message": "common: update the holesky genesis for the relaunch (#3049)\n\n* common: update the holesky genesis for the relaunch\r\n\r\n* blockchain: edit holesky genesis hash\r\n\r\n* blockchain: edit url\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-09-21T22:22:39+02:00",
+          "tree_id": "25a5c09db81b324a3fecc78ad94cdb36768ee50d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c373fddd2634bc4d4c3f05acec4175bce66c08ca"
+        },
+        "date": 1695328139152,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 31663,
+            "range": "±4.89%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30802,
+            "range": "±2.44%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30484,
+            "range": "±2.60%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28589,
+            "range": "±6.21%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 25522,
+            "range": "±10.43%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
