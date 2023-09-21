@@ -10,6 +10,8 @@ import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './interna
 
 import type { PrefixedHexString, TransformabletoBytes } from './types.js'
 
+const BIGINT_0 = BigInt(0)
+
 /**
  * @deprecated
  */
@@ -39,6 +41,12 @@ export const bytesToHex = (bytes: Uint8Array): string => {
   return hex
 }
 
+// BigInt cache for the numbers 0 - 255 (one-byte bytes)
+const BIGINT_CACHE: bigint[] = []
+for (let i = 0; i <= 255; i++) {
+  BIGINT_CACHE[i] = BigInt(i)
+}
+
 /**
  * Converts a {@link Uint8Array} to a {@link bigint}
  * @param {Uint8Array} bytes the bytes to convert
@@ -47,7 +55,11 @@ export const bytesToHex = (bytes: Uint8Array): string => {
 export const bytesToBigInt = (bytes: Uint8Array): bigint => {
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
-    return BigInt(0)
+    return BIGINT_0
+  }
+  if (hex.length === 4) {
+    // If the byte length is 1 (this is faster than checking `bytes.length === 1`)
+    return BIGINT_CACHE[bytes[0]]
   }
   return BigInt(hex)
 }
