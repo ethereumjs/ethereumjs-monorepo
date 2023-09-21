@@ -1,4 +1,4 @@
-import { bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
+import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
 import { INVALID_PARAMS } from './error-code'
 
@@ -32,7 +32,7 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     r: txJSON.r!,
     s: txJSON.s!,
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
-    versionedHashes: txJSON.versionedHashes,
+    blobVersionedHashes: txJSON.blobVersionedHashes,
   }
 }
 
@@ -52,7 +52,7 @@ export const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 
   switch (blockOpt) {
     case 'earliest':
-      block = await chain.getBlock(BigInt(0))
+      block = await chain.getBlock(BIGINT_0)
       break
     case 'latest':
       block = latest

@@ -4,6 +4,8 @@ import {
   Account,
   Address,
   AsyncEventEmitter,
+  BIGINT_0,
+  BIGINT_1,
   KECCAK256_NULL,
   MAX_INTEGER,
   bigIntToBytes,
@@ -265,7 +267,7 @@ export class EVM implements EVMInterface {
       return {
         execResult: {
           gasRefund: message.gasRefund,
-          executionGasUsed: BigInt(0),
+          executionGasUsed: BIGINT_0,
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: new Uint8Array(0),
         },
@@ -350,7 +352,7 @@ export class EVM implements EVMInterface {
 
     // Check for collision
     if (
-      (toAccount.nonce && toAccount.nonce > BigInt(0)) ||
+      (toAccount.nonce && toAccount.nonce > BIGINT_0) ||
       !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
     ) {
       if (this.DEBUG) {
@@ -382,7 +384,7 @@ export class EVM implements EVMInterface {
     }
     // EIP-161 on account creation and CREATE execution
     if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
-      toAccount.nonce += BigInt(1)
+      toAccount.nonce += BIGINT_1
     }
 
     // Add tx value to the `to` account
@@ -410,7 +412,7 @@ export class EVM implements EVMInterface {
       return {
         createdAddress: message.to,
         execResult: {
-          executionGasUsed: BigInt(0),
+          executionGasUsed: BIGINT_0,
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
@@ -425,7 +427,7 @@ export class EVM implements EVMInterface {
     let result = await this.runInterpreter(message)
     // fee for size of the return value
     let totalGas = result.executionGasUsed
-    let returnFee = BigInt(0)
+    let returnFee = BIGINT_0
     if (!result.exceptionError) {
       returnFee =
         BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
@@ -557,7 +559,7 @@ export class EVM implements EVMInterface {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
       callData: message.data ?? Uint8Array.from([0]),
-      callValue: message.value ?? BigInt(0),
+      callValue: message.value ?? BIGINT_0,
       code: message.code as Uint8Array,
       isStatic: message.isStatic ?? false,
       depth: message.depth ?? 0,
@@ -568,7 +570,7 @@ export class EVM implements EVMInterface {
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
-      versionedHashes: message.versionedHashes ?? [],
+      blobVersionedHashes: message.blobVersionedHashes ?? [],
       createdAddresses: message.createdAddresses,
     }
 
@@ -636,12 +638,12 @@ export class EVM implements EVMInterface {
     if (!message) {
       this._block = opts.block ?? defaultBlock()
       this._tx = {
-        gasPrice: opts.gasPrice ?? BigInt(0),
+        gasPrice: opts.gasPrice ?? BIGINT_0,
         origin: opts.origin ?? opts.caller ?? Address.zero(),
       }
       const caller = opts.caller ?? Address.zero()
 
-      const value = opts.value ?? BigInt(0)
+      const value = opts.value ?? BIGINT_0
       if (opts.skipBalance === true) {
         callerAccount = await this.stateManager.getAccount(caller)
         if (!callerAccount) {
@@ -668,7 +670,7 @@ export class EVM implements EVMInterface {
         selfdestruct: opts.selfdestruct ?? new Set(),
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
-        versionedHashes: opts.versionedHashes,
+        blobVersionedHashes: opts.blobVersionedHashes,
       })
     }
 
@@ -737,7 +739,7 @@ export class EVM implements EVMInterface {
     if (err && err.error !== ERROR.CODESTORE_OUT_OF_GAS) {
       result.execResult.selfdestruct = new Set()
       result.execResult.createdAddresses = new Set()
-      result.execResult.gasRefund = BigInt(0)
+      result.execResult.gasRefund = BIGINT_0
     }
     if (
       err &&
@@ -769,7 +771,7 @@ export class EVM implements EVMInterface {
     this._block = opts.block ?? defaultBlock()
 
     this._tx = {
-      gasPrice: opts.gasPrice ?? BigInt(0),
+      gasPrice: opts.gasPrice ?? BIGINT_0,
       origin: opts.origin ?? opts.caller ?? Address.zero(),
     }
 
@@ -783,7 +785,7 @@ export class EVM implements EVMInterface {
       depth: opts.depth,
       selfdestruct: opts.selfdestruct ?? new Set(),
       isStatic: opts.isStatic,
-      versionedHashes: opts.versionedHashes,
+      blobVersionedHashes: opts.blobVersionedHashes,
     })
 
     return this.runInterpreter(message, { pc: opts.pc })
@@ -848,7 +850,7 @@ export class EVM implements EVMInterface {
       if (!acc) {
         acc = new Account()
       }
-      const newNonce = acc.nonce - BigInt(1)
+      const newNonce = acc.nonce - BIGINT_1
       addr = generateAddress(message.caller.bytes, bigIntToBytes(newNonce))
     }
     return new Address(addr)
@@ -856,7 +858,7 @@ export class EVM implements EVMInterface {
 
   protected async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
     account.balance -= message.value
-    if (account.balance < BigInt(0)) {
+    if (account.balance < BIGINT_0) {
       throw new EvmError(ERROR.INSUFFICIENT_BALANCE)
     }
     const result = this.journal.putAccount(message.authcallOrigin ?? message.caller, account)
@@ -969,13 +971,13 @@ export function EvmErrorResult(error: EvmError, gasUsed: bigint): ExecResult {
 export function defaultBlock(): Block {
   return {
     header: {
-      number: BigInt(0),
+      number: BIGINT_0,
       cliqueSigner: () => Address.zero(),
       coinbase: Address.zero(),
-      timestamp: BigInt(0),
-      difficulty: BigInt(0),
+      timestamp: BIGINT_0,
+      difficulty: BIGINT_0,
       prevRandao: zeros(32),
-      gasLimit: BigInt(0),
+      gasLimit: BIGINT_0,
       baseFeePerGas: undefined,
       getBlobGasPrice: () => undefined,
     },

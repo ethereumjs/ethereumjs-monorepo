@@ -1,10 +1,13 @@
 import { Block } from '@ethereumjs/block'
-import { ConsensusType } from '@ethereumjs/common'
+import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
   GWEI_TO_WEI,
   TypeOutput,
   Withdrawal,
@@ -40,16 +43,16 @@ export class BlockBuilder {
   /**
    * The cumulative gas used by the transactions added to the block.
    */
-  gasUsed = BigInt(0)
+  gasUsed = BIGINT_0
   /**
    *  The cumulative blob gas used by the blobs in a block
    */
-  blobGasUsed = BigInt(0)
+  blobGasUsed = BIGINT_0
   /**
    * Value of the block, represented by the final transaction fees
    * acruing to the miner.
    */
-  private _minerValue = BigInt(0)
+  private _minerValue = BIGINT_0
 
   private readonly vm: VM
   private blockOpts: BuilderOpts
@@ -75,7 +78,7 @@ export class BlockBuilder {
     this.headerData = {
       ...opts.headerData,
       parentHash: opts.parentBlock.hash(),
-      number: opts.headerData?.number ?? opts.parentBlock.header.number + BigInt(1),
+      number: opts.headerData?.number ?? opts.parentBlock.header.number + BIGINT_1,
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
@@ -85,7 +88,19 @@ export class BlockBuilder {
       this.vm.common.isActivatedEIP(1559) === true &&
       typeof this.headerData.baseFeePerGas === 'undefined'
     ) {
-      this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+      if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
+        this.headerData.baseFeePerGas = vm.common.param('gasConfig', 'initialBaseFee')
+      } else {
+        this.headerData.baseFeePerGas = opts.parentBlock.header.calcNextBaseFee()
+      }
+    }
+
+    if (typeof this.headerData.gasLimit === 'undefined') {
+      if (this.headerData.number === vm.common.hardforkBlock(Hardfork.London)) {
+        this.headerData.gasLimit = opts.parentBlock.header.gasLimit * BIGINT_2
+      } else {
+        this.headerData.gasLimit = opts.parentBlock.header.gasLimit
+      }
     }
 
     if (
@@ -235,7 +250,7 @@ export class BlockBuilder {
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof BlobEIP4844Transaction) {
       const txData = tx as BlobEIP4844Transaction
-      this.blobGasUsed += BigInt(txData.versionedHashes.length) * blobGasPerBlob
+      this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
       tx = BlobEIP4844Transaction.minimalFromNetworkWrapper(txData, {
         common: this.blockOpts.common,
       })
@@ -289,7 +304,7 @@ export class BlockBuilder {
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
     // timestamp should already be set in constructor
-    const timestamp = this.headerData.timestamp ?? BigInt(0)
+    const timestamp = this.headerData.timestamp ?? BIGINT_0
 
     let blobGasUsed = undefined
     if (this.vm.common.isActivatedEIP(4844) === true) {

@@ -3,6 +3,7 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
   Address,
+  BIGINT_1,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -330,7 +331,7 @@ export const runBlobTx = async (
     blobs,
     kzgCommitments: commitments,
     kzgProofs: proofs,
-    versionedHashes: hashes,
+    blobVersionedHashes: hashes,
     maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -340,7 +341,7 @@ export const runBlobTx = async (
   }
 
   txData.maxFeePerGas = '0xff'
-  txData.maxPriorityFeePerGas = BigInt(1)
+  txData.maxPriorityFeePerGas = BIGINT_1
   txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
@@ -401,7 +402,7 @@ export const createBlobTxs = async (
       blobs,
       kzgCommitments: commitments,
       kzgProofs: proofs,
-      versionedHashes: hashes,
+      blobVersionedHashes: hashes,
       nonce: BigInt(x),
       gas: undefined,
     }

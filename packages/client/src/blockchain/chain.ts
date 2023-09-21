@@ -1,7 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
 import { LevelDB } from '../execution/level'
 import { Event } from '../types'
@@ -125,8 +125,8 @@ export class Chain {
     finalized: null,
     safe: null,
     vm: null,
-    td: BigInt(0),
-    height: BigInt(0),
+    td: BIGINT_0,
+    height: BIGINT_0,
   }
 
   private _blocks: ChainBlocks = {
@@ -134,8 +134,8 @@ export class Chain {
     finalized: null,
     safe: null,
     vm: null,
-    td: BigInt(0),
-    height: BigInt(0),
+    td: BIGINT_0,
+    height: BIGINT_0,
   }
 
   /**
@@ -189,16 +189,16 @@ export class Chain {
       finalized: null,
       safe: null,
       vm: null,
-      td: BigInt(0),
-      height: BigInt(0),
+      td: BIGINT_0,
+      height: BIGINT_0,
     }
     this._blocks = {
       latest: null,
       finalized: null,
       safe: null,
       vm: null,
-      td: BigInt(0),
-      height: BigInt(0),
+      td: BIGINT_0,
+      height: BIGINT_0,
     }
   }
 
@@ -280,16 +280,16 @@ export class Chain {
       finalized: null,
       safe: null,
       vm: null,
-      td: BigInt(0),
-      height: BigInt(0),
+      td: BIGINT_0,
+      height: BIGINT_0,
     }
     const blocks: ChainBlocks = {
       latest: null,
       finalized: null,
       safe: null,
       vm: null,
-      td: BigInt(0),
-      height: BigInt(0),
+      td: BIGINT_0,
+      height: BIGINT_0,
     }
 
     headers.latest = await this.getCanonicalHeadHeader()
@@ -323,7 +323,7 @@ export class Chain {
     // Check and log if this is a terminal block and next block could be merge
     if (!this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       const nextBlockHf = this.config.chainCommon.getHardforkBy({
-        blockNumber: headers.height + BigInt(1),
+        blockNumber: headers.height + BIGINT_1,
         td: headers.td,
       })
       if (this.config.chainCommon.hardforkGteHardfork(nextBlockHf, Hardfork.Paris)) {
@@ -346,7 +346,7 @@ export class Chain {
         this.config.logger.info('*'.repeat(85))
         this.config.logger.info(
           `Transitioning to PoS! First block for CL-framed execution: block=${
-            headers.height + BigInt(1)
+            headers.height + BIGINT_1
           }`
         )
       }
