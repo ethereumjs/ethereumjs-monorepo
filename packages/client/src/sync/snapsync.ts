@@ -1,5 +1,5 @@
 import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex } from '@ethereumjs/util'
+import { BIGINT_0, bytesToHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 
@@ -132,7 +132,7 @@ export class SnapSynchronizer extends Synchronizer {
       pool: this.pool,
       root: stateRoot,
       // This needs to be determined from the current state of the MPT dump
-      first: BigInt(0),
+      first: BIGINT_0,
     })
 
     return true

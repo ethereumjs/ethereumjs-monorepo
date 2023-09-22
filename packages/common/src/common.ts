@@ -1,4 +1,5 @@
 import {
+  BIGINT_0,
   TypeOutput,
   bytesToHex,
   concatBytes,
@@ -685,7 +686,7 @@ export class Common {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const hfBlock = this.hardforkBlock(hardfork)
-    if (typeof hfBlock === 'bigint' && hfBlock !== BigInt(0) && blockNumber >= hfBlock) {
+    if (typeof hfBlock === 'bigint' && hfBlock !== BIGINT_0 && blockNumber >= hfBlock) {
       return true
     }
     return false

@@ -2,6 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
+  BIGINT_1,
   bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -317,7 +319,7 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
   // In case the Genesis block has td >= ttd it is the terminal block
   if (block.isGenesis()) return blockTd >= ttd
 
-  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BigInt(1))
+  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
   return blockTd >= ttd && parentBlockTd < ttd
 }
 
@@ -969,7 +971,7 @@ export class Engine {
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
+    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BIGINT_0) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
@@ -1092,7 +1094,7 @@ export class Engine {
       if (timestampBigInt <= headBlock.header.timestamp) {
         throw {
           message: `invalid timestamp in payloadAttributes, got ${timestampBigInt}, need at least ${
-            headBlock.header.timestamp + BigInt(1)
+            headBlock.header.timestamp + BIGINT_1
           }`,
           code: INVALID_PARAMS,
         }
@@ -1403,7 +1405,7 @@ export class Engine {
       }
     }
 
-    if (count < BigInt(1) || start < BigInt(1)) {
+    if (count < BIGINT_1 || start < BIGINT_1) {
       throw {
         code: INVALID_PARAMS,
         message: 'Start and Count parameters cannot be less than 1',
@@ -1415,7 +1417,7 @@ export class Engine {
     }
 
     if (start + count > currentChainHeight) {
-      count = currentChainHeight - start + BigInt(1)
+      count = currentChainHeight - start + BIGINT_1
     }
     const blocks = await this.chain.getBlocks(start, Number(count))
     const payloads: (ExecutionPayloadBodyV1 | null)[] = []
