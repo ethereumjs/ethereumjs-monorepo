@@ -8,7 +8,12 @@ import { Config } from '../../../src/config'
 import { SnapProtocol } from '../../../src/net/protocol'
 import { wait } from '../../integration/util'
 
-import { _accountRangeRLP } from './accountfetcher.spec'
+import {
+  _accountRangeRLP,
+  _zeroElementProof,
+  _zeroElementProofOrigin,
+  _zeroElementProofRoot,
+} from './accountfetcher.spec'
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
@@ -296,21 +301,10 @@ describe('[StorageFetcher]', async () => {
 
     peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
       reqId,
-      slots: [],
-      proof: [new Uint8Array()],
-    })
-    let ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === true,
-      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
-    )
-
-    peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
-      reqId,
       slots: slots + [new Uint8Array()],
       proof,
     })
-    ret = await fetcher.request(job as any)
+    let ret = await fetcher.request(job as any)
     assert.notOk(ret, "Reject the response if the hash sets and slot sets don't match")
 
     peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
@@ -320,6 +314,43 @@ describe('[StorageFetcher]', async () => {
     })
     ret = await fetcher.request(job as any)
     assert.notOk(ret, 'Should stop requesting from peer that rejected storage request')
+  })
+
+  it('should verify zero-element proof correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new StorageFetcher({
+      config,
+      pool,
+      root: _zeroElementProofRoot,
+    })
+    const task = {
+      storageRequests: [
+        {
+          accountHash: hexToBytes('0x0'),
+          storageRoot: _zeroElementProofRoot,
+          first: _zeroElementProofOrigin,
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        },
+      ],
+    }
+    const mockedGetStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId: BigInt(1),
+      slots: [],
+      proof: _zeroElementProof,
+    })
+    const peer = {
+      snap: { getStorageRanges: mockedGetStorageRanges },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, task }
+
+    const ret = await fetcher.request(job as any)
+    assert.ok(
+      ret?.completed === true,
+      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
+    )
   })
 
   it('should verify proof correctly', async () => {
