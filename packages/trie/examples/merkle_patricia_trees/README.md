@@ -40,98 +40,94 @@ Let's begin right away with a simple example. Don't worry if things aren't too c
 
 ```jsx
 const { Trie } = require('@ethereumjs/trie') // We import the library required to create a basic Merkle Patricia Tree
+const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 ```
 
-and then store and retrieve a single key-value pair within it. Note that we needed to convert the strings (`testKey` and `testValue`) to buffers, as that is what the Trie methods expect:
+and then store and retrieve a single key-value pair within it. Note that we needed to convert the strings (`testKey` and `testValue`) to bytes, as that is what the Trie methods expect:
 
 ```jsx
 async function test() {
-  const key = Buffer.from('testKey')
-  const value = Buffer.from('testValue')
+  const key = utf8ToBytes('testKey')
+  const value = utf8ToBytes('testValue')
   await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const retrievedValue = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (Bytes): ', retrievedValue)
-  console.log('Value (String): ', retrievedValue.toString())
-  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
+  console.log('Value (Bytes): ', bytesToHex(retrievedValue))
+  console.log('Value (String): ', bytesToUtf8(retrievedValue))
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
 test()
 
 // RESULT
-Empty trie root (Bytes):  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
-Value (Bytes):  <Buffer 74 65 73 74 56 61 6c 75 65>
+Empty trie root (Bytes):  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+Value (Bytes):  0x7465737456616c7565
 Value (String):  testValue
-Updated trie root: <Buffer 8e 81 43 67 21 33 dd 5a b0 0d fc 4b 01 14 60 ea 2a 7b 00 d9 10 dc 42 78 94 2a e9 10 5c b6 20 74>
+Updated trie root: 0x8e8143672133dd5ab00dfc4b011460ea2a7b00d910dc4278942ae9105cb62074
 ```
 
 Quite simple. As expected, we can retrieve our value using the key. We can also note that the root hash of the tree has automatically been updated. We'll explore what tree roots stand for later; for now, simply know that each distinct tree will have a distinct root (we can therefore quickly verify if two trees are identical by comparing their roots!).
 
 However, the example above does not reflect exactly how key-value pairs are stored and retrieved in Ethereum's Merkle Patricia Trees. Here are some things to keep in mind:
 
-- As mentioned, keys and values are stored and retrieved as raw bytes. We already covered that in the previous example by converting our strings to buffers using `Buffer.from()`.
+- As mentioned, keys and values are stored and retrieved as raw bytes. We already covered that in the previous example by converting our strings to bytes using `utf8ToBytes`.
 - Values undergo an additional transformation before they are stored. They are encoded using the [Recursive Length Prefix encoding function](https://github.com/ethereum/wiki/wiki/RLP). This allows the serialization of strings and arrays. The "Trie" class does that automatically.
 - Last but not least: in Ethereum, the keys also undergo another transformation: they are converted using a hash function (keccak256). The Trie class **does not** do this.
 
 ### Example 1b - Manually Creating and Updating a Secure Trie
 
-Let's retry the example above while respecting the rules we just mentioned. We will therefore use the keccak256 hash of the key instead of the key itself (using the "@ethereumjs/util" package).
+Let's retry the example above while respecting the rules we just mentioned. We will therefore use the keccak256 hash of the key instead of the key itself.
 
 Here's what this looks like:
 
 ```jsx
-const { Trie } = require('@ethereumjs/trie')
-const { keccak256 } = require('@ethereumjs/util')
-
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {
-  await trie.put(keccak256(Buffer.from('testKey')), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair hash("testKey"): "testValue"
-  const value = await trie.get(keccak256(Buffer.from('testKey'))) // We retrieve (using "get") the value at hash("testKey"_
-  console.log('Value (Bytes): ', value)
-  console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
+  await trie.put(keccak256(utf8ToBytes('testKey')), utf8ToBytes('testValue')) // We update (using "put") the trie with the key-value pair hash("testKey"): "testValue"
+  const value = await trie.get(keccak256(utf8ToBytes('testKey'))) // We retrieve (using "get") the value at hash("testKey")
+  console.log('Value (Bytes): ', bytesToHex(value))
+  console.log('Value (String): ', bytesToUtf8(value))
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
 test()
 
 // RESULT
-Empty trie root (Bytes):  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
-Value (Bytes):  <Buffer 74 65 73 74 56 61 6c 75 65>
+Empty trie root (Bytes):  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+Value (Bytes):  0x7465737456616c7565
 Value (String):  testValue
-Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb>
+Updated trie root: 0xbeade913ab37dca0dca2e42924b918c2a1cac457833bd82b9e3245decb87d0fb
 ```
 
-Nothing spectacular: only the root hash of the tree has changed, as the key has changed from Buffer.from("testKey") to keccak256(Buffer.from("testKey")).
+Nothing spectacular: only the root hash of the tree has changed, as the key has changed from hexToBytes("testKey") to keccak256(hexToBytes("testKey")).
 
 ### Example 1c - Automatically Creating and Updating a Secure Trie
 
 Fortunately, we also have an option called "useKeyHashing" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
 
 ```jsx
-const { Trie } = require('@ethereumjs/trie')// We import the class required to create a secure Merkle Patricia Tree
-
-const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
+const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree with key hashing enabled
+console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {
-  await trie.put(Buffer.from('testKey'), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
-  const value = await trie.get(Buffer.from('testKey')) // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (Bytes): ', value)
-  console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
+  await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue')) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
+  const value = await trie.get(utf8ToBytes('testKey')) // We retrieve (using "get") the value at key "testKey"
+  console.log('Value (Bytes): ', bytesToHex(value))
+  console.log('Value (String): ', bytesToUtf8(value))
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
 test()
 
 // RESULT
-Empty trie root (Bytes):  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
-Value (Bytes):  <Buffer 74 65 73 74 56 61 6c 75 65>
+Empty trie root (Bytes):  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+Value (Bytes):  0x7465737456616c7565
 Value (String):  testValue
-Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb> // Same hash!
+Updated trie root: 0xbeade913ab37dca0dca2e42924b918c2a1cac457833bd82b9e3245decb87d0fb // Same hash as the previous example.
 ```
 
 To make the examples easier to follow, we won't be using the keccak256 of the keys (or the `useKeyHashing` option) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
@@ -142,27 +138,27 @@ In addition to retrieving (using the method `get`) and adding (using the method 
 
 ```jsx
 async function test() {
-  const key = Buffer.from('testKey')
-  const value = Buffer.from('testValue')
+  const key = utf8ToBytes('testKey')
+  const value = utf8ToBytes('testValue')
   await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const valuePre = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (String): ', valuePre.toString()) // We retrieve our value
-  console.log('Updated trie root:', trie.root()) // The new trie root
+  console.log('Value (String): ', bytesToUtf8(valuePre)) // We retrieve our value
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root
 
   await trie.del(key)
   const valuePost = await trie.get(key) // We try to retrieve the value at (deleted) key "testKey"
   console.log('Value at key "testKey": ', valuePost) // Key not found. Value is therefore null.
-  console.log('Trie root after deletion:', trie.root()) // Our trie root is back to its initial value
+  console.log('Trie root after deletion:', bytesToHex(trie.root())) // Our trie root is back to its initial value
 }
 
 test()
 
 // RESULT
-Empty trie root:  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
+Empty trie root:  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
 Value (String):  testValue
-Updated trie root: <Buffer 8e 81 43 67 21 33 dd 5a b0 0d fc 4b 01 14 60 ea 2a 7b 00 d9 10 dc 42 78 94 2a e9 10 5c b6 20 74>
+Updated trie root: 0x8e8143672133dd5ab00dfc4b011460ea2a7b00d910dc4278942ae9105cb62074
 Value at key "testKey":  null
-Trie root after deletion: <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
+Trie root after deletion: 0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
 ```
 
 Quite simple, isn't it? Notice that our tree root after deletion is the same as our initial tree root. This is exactly what we should expect: having deleted the only value-key pair from our tree, we are left with an empty tree!
@@ -272,7 +268,7 @@ await trie.put(Buffer.from('testKeyA'), Buffer.from('testValueA'))
 const node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
 console.log('Node: ', node1.node) // A branch node!
 
-console.log('Node value: ', node1.node._value) // The branch node's value, in this case an empty buffer since the key "testValue" isn't assigned a value
+console.log('Node value: ', node1.node._value) // The branch node's value, in this case an empty byte array since the key "testValue" isn't assigned a value
 
 // RESULT
 Node:  BranchNode {
@@ -343,7 +339,7 @@ Going back to the branches above, we see that our two branches (at index `3` and
 [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ] // going down the path of "testKeyA"
 ```
 
-I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two "buffers" (buffers are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second buffer is the value at that path. We can confirm that the values are what we'd expect:
+I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two "bytes" (bytes are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second bytes array is the value at that path. We can confirm that the values are what we'd expect:
 
 ```jsx
 console.log('Value of branch at index 3: ', node1.node._branches[3][1].toString())
