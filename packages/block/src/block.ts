@@ -3,6 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
   KECCAK256_RLP,
   Withdrawal,
   bigIntToHex,
@@ -468,7 +469,7 @@ export class Block {
    */
   getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
-    let blobGasUsed = BigInt(0)
+    let blobGasUsed = BIGINT_0
     const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
     const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
 
@@ -568,7 +569,7 @@ export class Block {
     if (this.common.isActivatedEIP(4844)) {
       const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
       const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
-      let blobGasUsed = BigInt(0)
+      let blobGasUsed = BIGINT_0
 
       const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
@@ -590,7 +591,7 @@ export class Block {
             )
           }
 
-          blobGasUsed += BigInt(tx.versionedHashes.length) * blobGasPerBlob
+          blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
           if (blobGasUsed > blobGasLimit) {
             throw new Error(

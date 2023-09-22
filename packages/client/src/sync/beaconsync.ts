@@ -1,4 +1,4 @@
-import { bytesToHex } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, bytesToHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -236,7 +236,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const height = latest.number
     if (
       typeof this.config.syncTargetHeight !== 'bigint' ||
-      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight === BIGINT_0 ||
       this.config.syncTargetHeight < latest.number
     ) {
       this.config.syncTargetHeight = height
@@ -244,7 +244,7 @@ export class BeaconSynchronizer extends Synchronizer {
     }
 
     const { tail } = this.skeleton.bounds()
-    const first = tail - BigInt(1)
+    const first = tail - BIGINT_1
 
     let count
     if (first <= this.chain.blocks.height) {
@@ -253,7 +253,7 @@ export class BeaconSynchronizer extends Synchronizer {
       count = BigInt(this.config.skeletonSubchainMergeMinimum)
     } else {
       // We sync one less because tail's next should be pointing to the block in chain
-      count = tail - this.chain.blocks.height - BigInt(1)
+      count = tail - this.chain.blocks.height - BIGINT_1
     }
 
     // Do not try syncing blocks on/pre genesis
@@ -261,7 +261,7 @@ export class BeaconSynchronizer extends Synchronizer {
       count = first
     }
 
-    if (count > BigInt(0) && (this.fetcher === null || this.fetcher.syncErrored !== undefined)) {
+    if (count > BIGINT_0 && (this.fetcher === null || this.fetcher.syncErrored !== undefined)) {
       this.config.logger.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${
           peer?.id
@@ -315,7 +315,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.skeleton.bounds() !== undefined &&
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
-    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
+    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BIGINT_0) {
       void this.execution.run(true, shouldRunOnlyBatched)
     }
   }
