@@ -1,7 +1,7 @@
 // Example 2c - Creating and looking up a leaf node
 
 const { Trie } = require('../../dist/cjs') // We import the library required to create a basic Merkle Patricia Tree
-const { bytesToUtf8, utf8ToBytes } = require('../../../util/dist/cjs')
+const { bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
 const trie = new Trie()
 

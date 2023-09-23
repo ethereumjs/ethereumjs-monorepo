@@ -1,9 +1,9 @@
 // Example 2d - Creating and looking up an extension node
 
 const { Trie } = require('../../dist/cjs') // We import the library required to create a basic Merkle Patricia Tree
-const { bytesToHex, utf8ToBytes } = require('../../../util/dist/cjs')
+const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new Trie()
 
 async function test() {
   console.log(bytesToHex(utf8ToBytes('testKey')))

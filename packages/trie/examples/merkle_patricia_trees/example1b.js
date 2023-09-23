@@ -1,10 +1,10 @@
 /* Example 1b - Manually Creating and Updating a Secure Trie*/
 
 const { Trie } = require('../../dist/cjs') // We import the library required to create a basic Merkle Patricia Tree
-const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('../../../util/dist/cjs')
+const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
 
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new Trie()
 console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {

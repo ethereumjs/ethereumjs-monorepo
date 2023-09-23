@@ -1,9 +1,9 @@
 /* Example 1d - Deleting a Key-Value Pair from a Trie*/
 
 const { Trie } = require('../../dist/cjs')
-const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('../../../util/dist/cjs')
+const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new Trie()
 console.log('Empty trie root: ', bytesToHex(trie.root())) // The trie root
 
 async function test() {

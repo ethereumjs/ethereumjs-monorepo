@@ -1,7 +1,7 @@
 // Example 2b - Creating and looking up a branch node
 
 const { Trie } = require('../../dist/cjs')
-const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('../../../util/dist/cjs')
+const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
 const trie = new Trie()
 
