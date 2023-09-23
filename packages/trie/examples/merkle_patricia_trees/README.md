@@ -548,40 +548,45 @@ So, how is are hashes calculated in Ethereum?
 We saw in our example above that our extension node was referenced to by its hash. In this example, we'll try to manually compute its hash from its value. First, we look at the extension node's hash and its value.
 
 ```jsx
-const node1 = await trie.findPath(Buffer.from('testKey'))
-console.log('Extension node hash: ', node1.node._branches[3])
+const node1 = await trie.findPath(utf8ToBytes('testKey'))
+console.log('Extension node hash: ', bytesToHex(node1.node._branches[3]))
 
-const node2 = await trie.lookupNode(Buffer.from(node1.node._branches[3]))
-console.log('Value of extension node: ', node2)
+const node2 = await trie.lookupNode(node1.node._branches[3])
+console.log('Extension node: ', node2)
 
 // RESULT
-Extension node hash:  <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>
+Extension node hash: 0x391d4830de00875746984c4fd3ef5a0cf7ca7b40f9c28acee2ba224984418f6b
 
-Value of extension node:  ExtensionNode {
+Extension node: ExtensionNode {
   _nibbles: [ 0, 3, 0, 3, 0 ],
-  _value: <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+  _value: Uint8Array(32) [
+    112, 179, 208,  32, 173, 133, 143, 214,
+      0,  40, 164,  35, 233, 143,  29, 153,
+    197,  55, 205, 185,  31,  39,  73,  22,
+     64,   6, 111, 234, 199, 156,  47, 114
+  ],
+  _terminator: false
 }
 ```
 
 As we learned, we should first use the [Recursive Length Prefix encoding function](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) on the node to serialize the values of the extension node. RLP-encoding the "raw" version (as an array of bytes) of our node gives us:
 
 ```jsx
-
-console.log(rlp.encode(node2.raw()))
+console.log(bytesToHex(rlp.encode(node2.raw())))
 
 // RESULT
-<Buffer e5 83 10 30 30 a0 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+0xe583103030a070b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72
 ```
 
 A neatly serialized sequence of bytes! Our last step is simply to take the hash of this RLP output (and convert it to bytes):
 
 ```jsx
-console.log('Our computed hash:       ', Buffer.from(keccak256(rlp.encode(node2.raw()))))
-console.log('The extension node hash: ', node1.node._branches[3])
+console.log('Our computed hash:       ', bytesToHex(keccak256(rlp.encode(node2.raw()))))
+console.log('The extension node hash: ', bytesToHex(node1.node._branches[3]))
 
 // RESULT
-Our computed hash:        <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>
-The extension node hash:  <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>
+Our computed hash:        0x391d4830de00875746984c4fd3ef5a0cf7ca7b40f9c28acee2ba224984418f6b
+The extension node hash:  0x391d4830de00875746984c4fd3ef5a0cf7ca7b40f9c28acee2ba224984418f6b
 ```
 
 Easy, wasn't it?
@@ -591,38 +596,58 @@ Easy, wasn't it?
 Merkle trees allow us to verify the integrity of their data contained without requiring us to download the full tree. To demonstrate this we will re-use the example above. As we saw, we had an extension node that pointed to a branch node:
 
 ```jsx
-console.log('Value of extension node: ', node2)
+console.log('Extension node: ', node2)
 
-const node3 = await trie.lookupNode(Buffer.from(node2._value))
-  console.log(node3)
+const node3 = await trie.lookupNode(node2._value)
+console.log(node3)
 
 // RESULT
 
-Value of extension node:  ExtensionNode {
+Extension node: ExtensionNode {
   _nibbles: [ 0, 3, 0, 3, 0 ],
-  _value: <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+  _value: Uint8Array(32) [
+    112, 179, 208,  32, 173, 133, 143, 214,
+      0,  40, 164,  35, 233, 143,  29, 153,
+    197,  55, 205, 185,  31,  39,  73,  22,
+     64,   6, 111, 234, 199, 156,  47, 114
+  ],
+  _terminator: false
 }
 
 BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 31> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  [
+    Uint8Array(1) [ 49 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  49
+    ]
   ],
-  _value: <Buffer >
+  [
+    Uint8Array(1) [ 49 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  65
+    ]
+  ],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) []
+],
+  _value: Uint8Array(0) []
 }
 
 ```
@@ -630,9 +655,9 @@ BranchNode {
 Now let's suppose that I'm provided with various pieces of information, some that I trust, and some that I don't. Here's what I know from a trustworthy source:
 
 - The tree contains key-value pair "testKey": "testValue"
-- There also exists a branch node with hash: `<Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>`.
+- There also exists a branch node with hash (the value of the extension node in hex): `0x70b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72`.
 - The path corresponding to this branch node is "testKey000".
-- This branch node contains at least one valid branch. This branch is located at index 4, with value [ `<Buffer 31>`, `<Buffer 74 65 73 74 56 61 6c 75 65 31>` ] (equivalent to key-value pair "testKey0001": "testValue1")
+- This branch node contains at least one valid branch. This branch is located at index 4, with value [ `path: 0x31 | value: 0x7465737456616c756541` ] (equivalent to key-value pair "testKey0001": "testValue1")
 
 Now, I'm getting conflicting information from two other shady sources:
 
@@ -642,26 +667,26 @@ Now, I'm getting conflicting information from two other shady sources:
 How can I determine who's telling the truth? Simple: by computing the branch node hash for each possibility, and comparing them with our trusted branch node hash!
 
 ```jsx
-await trie1.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie1.put(Buffer.from('testKey0001'), Buffer.from('testValue1'))
-await trie1.put(Buffer.from('testKey000A'), Buffer.from('testValueA')) // What Marie claims
+  await trie1.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+  await trie1.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue1'))
+  await trie1.put(utf8ToBytes('testKey000A'), utf8ToBytes('testValueA'))
 
-await trie2.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie2.put(Buffer.from('testKey0001'), Buffer.from('testValue1'))
-await trie2.put(Buffer.from('testKey000z'), Buffer.from('testValuez')) // What John claims
+  await trie2.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+  await trie2.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue1'))
+  await trie2.put(utf8ToBytes('testKey000z'), utf8ToBytes('testValuez'))
 
-const temp1 = await trie1.findPath(Buffer.from('testKey'))
-const temp2 = await trie2.findPath(Buffer.from('testKey'))
+  const temp1 = await trie1.findPath(utf8ToBytes('testKey'))
+  const temp2 = await trie2.findPath(utf8ToBytes('testKey'))
 
-const node1 = await trie1.lookupNode(Buffer.from(temp1.node._branches[3]))
-const node2 = await trie2.lookupNode(Buffer.from(temp2.node._branches[3]))
+  const node1 = await trie1.lookupNode(temp1.node._branches[3])
+  const node2 = await trie2.lookupNode(temp2.node._branches[3])
 
-console.log('Branch node 1 hash: ', node1._value)
-console.log('Branch node 2 hash: ', node2._value)
+  console.log('Branch node 1 hash: ', bytesToHex(node1._value))
+  console.log('Branch node 2 hash: ', bytesToHex(node2._value))
 
 // Result
-Branch node 1 hash:  <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
-Branch node 2 hash:  <Buffer 72 2a cc 1b 73 61 09 1c 9a 5e 33 15 4b e4 ac 9e d8 a8 b9 33 72 06 9b 09 53 da 40 9d a1 5a 20 c9>
+Branch node 1 hash: 0x70b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72
+Branch node 2 hash: 0x722acc1b7361091c9a5e33154be4ac9ed8a8b93372069b0953da409da15a20c9
 ```
 
 Using our already trusted information, we can be confident that Marie (node 1) is telling the truth, since the hash computed from her information is valid.
@@ -672,8 +697,8 @@ Note that we also could have compared the root hashes of the trees and compared 
 console.log(trie1.root())
 console.log(trie2.root())
 
-<Buffer 46 7a 64 dd e5 de 0a 37 0a 35 75 03 42 a5 2d 80 1f 0b 9b 22 59 03 10 b4 1d 0b ab 7d 3d e0 a3 5e>
-<Buffer 38 b0 a5 74 1a f3 61 14 1e 7a 29 b6 f2 9d ab 22 75 7b 7d 64 73 90 f6 e3 55 e5 2e 2b ea c1 e3 04>
+Root of trie 1:  0x467a64dde5de0a370a35750342a52d801f0b9b22590310b41d0bab7d3de0a35e
+Root of trie 2:  0x38b0a5741af361141e7a29b6f29dab22757b7d647390f6e355e52e2beac1e304
 ```
 
 Ethereum takes advantage of the uniqueness of each hash to efficiently secure the network. Without Merkle Trees, each Ethereum client would need to store the full history of the blockchain to verify any piece of information, and doing so would be extremely inefficient. With Merkle Trees, clients can verify that a transaction is valid given that they're provided with the minimal information required to re-compute the trusted root hash.
