@@ -726,10 +726,10 @@ The purpose of the transactions tree is to record transaction requests. It can a
 
 ```jsx
 const rlp = require('@ethereumjs/rlp')
-console.log('RLP encoding of 127: ', rlp.encode('127'))
+console.log('RLP encoding of 127: ', bytesToHex(rlp.encode('127')))
 
 // RESULT
-RLP encoding of 127:  <Buffer 83 31 32 37>
+RLP encoding of '127':  0x83313237
 ```
 
 We would, therefore, follow the path `8 → 3 → 3 → 1 → 3 → 2 → 3 → 7` and reach our destination.
@@ -746,30 +746,54 @@ A lot of confusion can arise from the fact that various distinct things are labe
 Let's look at an individual transaction on the Ethereum blockchain. I've chosen a recent transaction from Vitalik that you can look up here: [https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074](https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074). We can retrieve the transaction information with a eth_getTransactionByHash JSON-RPC API call. The [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) is a standardized way of interacting with an Ethereum node:
 
 ```jsx
+// Example 4a - Retrieving a Transaction from the Ethereum Blockchain
+
 const INFURA_ENDPOINT = require('./infura_endpoint')
-const request = require('request')
+const https = require('https')
 
 // Looking up an individual transaction
 function lookupTransaction(transactionHash) {
-  request(
-    INFURA_ENDPOINT,
-    {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: `{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params": ["${transactionHash}"],"id":1}`,
+  const data = JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'eth_getTransactionByHash',
+    params: [transactionHash],
+    id: 1,
+  })
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length,
     },
-    (error, response) => console.log('Transaction: ', JSON.parse(response.body))
-  )
+  }
+
+  const req = https.request(INFURA_ENDPOINT, options, (res) => {
+    let responseData = ''
+
+    res.on('data', (chunk) => {
+      responseData += chunk
+    })
+
+    res.on('end', () => {
+      console.log('Transaction:', JSON.parse(responseData))
+    })
+  })
+
+  req.write(data)
+  req.end()
 }
+
 lookupTransaction('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
 
 // RESULT
-Transaction:  {
+Transaction: {
   jsonrpc: '2.0',
   id: 1,
   result: {
     blockHash: '0x5ed2752bb54dc705a8b71f49566ccc4d5aaee1224a83c7938d9545db98dd0beb',
     blockNumber: '0x939ec7',
+    chainId: '0x1',
     from: '0xf8db1ee1be12b28aa12477fc66b296dccfa66609',
     gas: '0x5208',
     gasPrice: '0x1dcd65000',
@@ -793,15 +817,30 @@ The previous transaction output contains all the information from the transactio
 
 ```jsx
 function recomputeTransactionHash(transactionHash) {
-  request(
-    INFURA_ENDPOINT,
-    {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: `{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params": ["${transactionHash}"],"id":1}`,
+  const data = JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'eth_getTransactionByHash',
+    params: [transactionHash],
+    id: 1,
+  })
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length,
     },
-    (_, response) => {
-      const transaction = JSON.parse(response.body).result
+  }
+
+  const req = https.request(INFURA_ENDPOINT, options, (res) => {
+    let responseData = ''
+
+    res.on('data', (chunk) => {
+      responseData += chunk
+    })
+
+    res.on('end', () => {
+      const transaction = JSON.parse(responseData).result
       const transactionData = [
         transaction.nonce,
         transaction.gasPrice,
@@ -814,9 +853,12 @@ function recomputeTransactionHash(transactionHash) {
         transaction.s,
       ]
       console.log('Transaction data: ', transactionData)
-      console.log('Transaction hash: ', Buffer.from(keccak256(rlp.encode(transactionData))))
-    }
-  )
+      console.log('Transaction hash: ', bytesToHex(keccak256(rlp.encode(transactionData))))
+    })
+  })
+
+  req.write(data)
+  req.end()
 }
 
 recomputeTransactionHash('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
@@ -834,15 +876,16 @@ Transaction data:  [
   '0xe15616dfdf4a2af23f84322387f374db8c3c28656860e28ef66fea8a16980167',
   '0x75efdb2c06664e7a28c49e14ef0797ea964eac07c3e0f72e03e955068a93e79d'
 ]
+Transaction hash:  0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074
 ```
 
 We're only one step away from generating the hash:
 
 ```jsx
-console.log('Transaction hash: ', Buffer.from(keccak256(rlp.encode(transactionNode))))
+console.log('Transaction hash: ', bytesToHex(keccak256(rlp.encode(transactionData))))
 
 // RESULT
-Transaction hash:  <Buffer 2f 81 c5 9f b4 f0 c3 14 64 83 e7 2c 13 15 83 3a f7 9b 6e a9 32 3b 64 71 01 64 5d c7 eb e0 40 74>
+Transaction hash: 0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074
 ```
 
 Awesome! This is the transaction hash we started with!
