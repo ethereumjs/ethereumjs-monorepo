@@ -1,6 +1,6 @@
 // Example 3a - Generating a hash
 
-const { Trie } = require('../../dist/cjs') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist/cjs')
 const rlp = require('@ethereumjs/rlp')
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')

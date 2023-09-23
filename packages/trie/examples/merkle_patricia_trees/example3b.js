@@ -1,6 +1,6 @@
 // Example 3b - Verification using a hash
 
-const { Trie } = require('../../dist/cjs') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist/cjs')
 const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 const trie1 = new Trie()
 const trie2 = new Trie()
