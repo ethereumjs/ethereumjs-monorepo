@@ -186,7 +186,7 @@ This first example is quite straightforward. We'll simply look up a node (using 
 
 ```jsx
 async function test() {
-  const node1 = await trie.findPath(Buffer.from('testKey')) // We attempt to retrieve the node using the key "testKey"
+  const node1 = await trie.findPath(utf8ToBytes('testKey')) // We attempt to retrieve the node using our key "testKey"
   console.log('Node 1: ', node1.node) // null
 }
 
@@ -205,97 +205,65 @@ Creating a branch node is a bit more complicated. For a branch to exist, we need
 First, notice how similar the following keys are (specifically, look at the bytes):
 
 ```jsx
-console.log(Buffer.from('testKey'))
-console.log(Buffer.from('testKey0'))
-console.log(Buffer.from('testKeyA'))
+console.log(bytesToHex(utf8ToBytes('testKey')))
+console.log(bytesToHex(utf8ToBytes('testKey0')))
+console.log(bytesToHex(utf8ToBytes('testKeyA')))
 
 // RESULT (BYTES)
-<Buffer 74 65 73 74 4b 65 79>
-<Buffer 74 65 73 74 4b 65 79 30>
-<Buffer 74 65 73 74 4b 65 79 41>
+0x746573744b6579
+0x746573744b657930
+0x746573744b657941
 ```
 
-We can see that the bytes representations of our keys branch off at byte `<79>`. This makes sense: `<79>` stands for the letter `y`. Let's now add those keys to our trie.
+We can see that the bytes representations of our keys branch off at byte `79`. This makes sense: `79` stands for the letter `y`. Let's now add those keys to our trie.
 
 ```jsx
 // Add a key-value pair to the trie for each key
-await trie.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie.put(Buffer.from('testKey0'), Buffer.from('testValue0'))
-await trie.put(Buffer.from('testKeyA'), Buffer.from('testValueA'))
+await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+await trie.put(utf8ToBytes('testKey0'), utf8ToBytes('testValue0'))
+await trie.put(utf8ToBytes('testKeyA'), utf8ToBytes('testValueA'))
 
-const node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
+const node1 = await trie.findPath(utf8ToBytes('testKey')) // We retrieve the node at the "branching" off of the keys
 console.log('Node: ', node1.node) // A branch node!
 
 // RESULTS
-Node:  BranchNode {
+Node 1: BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    [ [Uint8Array], [Uint8Array] ],
+    [ [Uint8Array], [Uint8Array] ],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) []
   ],
-  _value: <Buffer 74 65 73 74 56 61 6c 75 65>
+  _value: Uint8Array(9) [
+    116, 101, 115, 116,
+     86,  97, 108, 117,
+    101
+  ]
 }
 ```
 
 And indeed, the node at path "testKey" is a branch, containing 16 branches and a value. Let's first look at the value located at the branch itself.
 
 ```jsx
-console.log('Node value: ', node1.node._value.toString()) // The branch node's value
+console.log('Node value: ', bytesToUtf8(node1.node._value)) // The branch node's value
 
 // RESULT
 Node 1 value:  testValue
 ```
 
-Note that it's possible for a branch node to not have a value itself, but only branches. This would simply mean that the keys (i.e. the paths) branch off at a certain point, but that there is no end-value assigned at that specific point. See for example:
-
-```jsx
-await trie.put(Buffer.from('testKey0'), Buffer.from('testValue0'))
-await trie.put(Buffer.from('testKeyA'), Buffer.from('testValueA'))
-
-const node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
-console.log('Node: ', node1.node) // A branch node!
-
-console.log('Node value: ', node1.node._value) // The branch node's value, in this case an empty byte array since the key "testValue" isn't assigned a value
-
-// RESULT
-Node:  BranchNode {
-  _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
-  ],
-  _value: <Buffer >
-}
-Node value:  <Buffer >
-```
-
-In this example, there is no value assigned to the key (path) "testKey" (an empty `<Buffer >`). However, the node at "testKey" is still a branch node, containing two branches (one leading to "testValue0", the other leading to "testValueA").
+Note that it's possible for a branch node to not have a value itself, but only branches. This would simply mean that the keys (i.e. the paths) branch off at a certain point, but that there is no end-value assigned at that specific point.
 
 Let's take a closer look at the branches of our branch node.
 
@@ -303,47 +271,63 @@ Let's take a closer look at the branches of our branch node.
 console.log('Node branches: ', node1.node._branches)
 
 // RESULT
-Node branches:  [
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  [ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ],
-  [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >
+Node 1 branches:  [
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  [
+    Uint8Array(1) [ 48 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  48
+    ]
+  ],
+  [
+    Uint8Array(1) [ 49 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  65
+    ]
+  ],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) []
 ]
 ```
 
-14/16 of its branches are empty (`<Buffer >`). Only the branches at indexes `3` and `4` contain values. Now here's an important point. These indexes are not determined at random: **they correspond to the next hex-value of the path of our two keys (hex values `3` and `4`)**. This makes sense, as this is the value at which our keys diverge:
+14/16 of its branches are empty (`Uint8Array`s). Only the branches at indexes `3` and `4` contain values. Now here's an important point. These indexes are not determined at random: **they correspond to the next hex-value of the path of our two keys (hex values `3` and `4`)**. This makes sense, as this is the value at which our keys diverge (converted to hex for easier comparison):
 
 ```jsx
-//      <------ same ------> <-> (different)
-<Buffer 74 65 73 74 4b 65 79 30>           // "testKey0", "0" = 30 in bytes
-<Buffer 74 65 73 74 4b 65 79 41>           // "testKeyA", "A" = 41 in bytes
+// <---- same----> <-> (different)
+0x7465737456616c756530 // "testKey0", "0" = 30 in bytes
+0x7465737456616c756541 // "testKeyA", "A" = 41 in bytes
 ```
 
-Going back to the branches above, we see that our two branches (at index `3` and `4`) are:
+Going back to the branches above, we see that our two branches (at index `3` and `4`) are (converted to hex again for better readability):
+
+Node 1 branch 3 (hex): 0x30 - 0x7465737456616c756530
+Node 1 branch 4 (hex): 0x31 - 0x7465737456616c756541
 
 ```jsx
-// <--path-->  <------------- value ----------------->
-[ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ] // going down the path of "testKey0"
-[ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ] // going down the path of "testKeyA"
+[path:  0x30  | value:  0x7465737456616c756530] // going down the path of "testKey0"
+[path:  0x31  | value:  0x7465737456616c756541] // going down the path of "testKeyA"
 ```
 
 I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two "bytes" (bytes are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second bytes array is the value at that path. We can confirm that the values are what we'd expect:
 
 ```jsx
-console.log('Value of branch at index 3: ', node1.node._branches[3][1].toString())
-console.log('Value of branch at index 4: ', node1.node._branches[4][1].toString())
+console.log('Value of branch at index 3: ', bytesToUtf8(node1.node._branches[3][1]))
+console.log('Value of branch at index 4: ', bytesToUtf8(node1.node._branches[4][1]))
 
 // RESULT
 Value of branch at index 3:  testValue0
@@ -355,8 +339,8 @@ Now here's a question for you:
 **What type of node do you think exists at path "testKe"?** After all, this is also a common path, the first part of our 3 keys. Let's try it:
 
 ```jsx
-const node2 = await trie.findPath(Buffer.from('testKe')) // We retrieve the node at "testKe"
-console.log('Node 2: ', node2.node)
+  const node2 = await trie.findPath(utf8ToBytes('testKe')) // We retrieve the node at "testKe"
+  console.log('Node 2: ', node2.node)
 
 // RESULT
 Node 2:  null
@@ -364,19 +348,18 @@ Node 2:  null
 
 A null node! Did you expect a branch node?
 
-This reveals a **key difference between standard ("Radix") tries and Patricia tries**. In standards tries, each step of the "path" would be a branch itself (i.e. branch node at `<7>`, `<74>`, `<74 6>`, `<74 65>`, and so on). However, creating a branch node for every step of the path is inefficient when there is only one valid "branch" for many of those steps. This is inefficient because each branch is a 17-item array, so using them to store only one non-null value is wasteful. Patricia tries avoid these unnecessary `branch` nodes by creating `extension` nodes at the beginning of the common path to act as "shortcuts". This explains why there is no branch node at key "testKe": it's bypassed by an extension node that begins higher-up (i.e. earlier in the path) in the trie.
+This reveals a **key difference between standard ("Radix") tries and Patricia tries**. In standards tries, each step of the "path" would be a branch itself (i.e. branch node at `0x7>`, `0x74`, `0x746`, `0x7465`, and so on). However, creating a branch node for every step of the path is inefficient when there is only one valid "branch" for many of those steps. This is inefficient because each branch is a 17-item array, so using them to store only one non-null value is wasteful. Patricia tries avoid these unnecessary `branch` nodes by creating `extension` nodes at the beginning of the common path to act as "shortcuts". This explains why there is no branch node at key "testKe": it's bypassed by an extension node that begins higher-up (i.e. earlier in the path) in the trie.
 
 ### The Encoded Path in Leaf and Extension Nodes
 
 We saw in one of our previous examples that the individual branches were in fact pointing to leaf nodes:
 
 ```jsx
-// <--path-->  <------------- value ----------------->
-[ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ] // leaf node down the path of "testKey0"
-[ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ] // leaf node down the path of "testKeyA"
+[path:  0x30  | value:  0x7465737456616c756530] // leaf node down the path of "testKey0"
+[path:  0x31  | value:  0x7465737456616c756541] // leaf node down the path of "testKeyA"
 ```
 
-As we said above, leaf nodes are arrays that contain two items: `[ remainingPath, value ]`. We can see in the code above that the "remainingPath" of our first leaf node is `<30>`, while the second is `<31>`. What does this mean?
+As we said above, leaf nodes are arrays that contain two items: `[ remainingPath, value ]`. We can see in the code above that the "remainingPath" of our first leaf node is `0x30`, while the second is `0x31`. What does this mean?
 
 The first hex character `3` indicates whether the node is a leaf node, or an extension node (this is to prevent ambiguity, as both nodes have a similar 2-item structure). This first hex character also indicates whether or not the remaining path is of "odd" or "even" length (required to write complete bytes: this indicates if the first hex character is appended with a `0`).
 
@@ -391,15 +374,7 @@ hex char    bits    |        node type         path length
    3        0011    |          leaf                odd
 ```
 
-In our code above, the first hexadecimal characters for the encodedPath of both nodes (`<30>` and `<31>`) was `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `<0>` and `<1>` respectively) indicates the last part of the path (the last hex character of our key).
-
-```jsx
-//      <------ same ------> <-> (different)
-<Buffer 74 65 73 74 4b 65 79 30>           // "testKey0", note that "0" = 30 in bytes
-<Buffer 74 65 73 74 4b 65 79 41>           // "testKeyA", note that "A" = 41 in bytes
-```
-
-But what happened with the second to last hex character (`3` and `4` respectively)? Recall that these are not necessary: **they were already provided by the indexes of the previous branch node!**
+In our code above, the first hexadecimal characters for the encodedPath of both nodes (`0x30` and `0x31`) was `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `0x0` and `0x1` respectively) indicates the last part of the path (the last hex character of our key).
 
 With this in mind, let's take a closer look at leaf and extension nodes.
 
@@ -408,80 +383,99 @@ With this in mind, let's take a closer look at leaf and extension nodes.
 In the last example, we inferred that the two branches of our branch node (at key/path "testKey") pointed to leaf nodes. We can confirm this by looking one of them up directly
 
 ```jsx
-const node1 = await trie.findPath(Buffer.from('testKey0')) // We retrieve one of the leaf nodes
-console.log('Node 1: ', node1.node) // A leaf node! We can see that it contains 2 items: the encodedPath (nibbles) and the value
-console.log('Node 1 value: ', node1.node._value.toString()) // The leaf node's value
+const node1 = await trie.findPath(utf8ToBytes('testKey0')) // We retrieve one of the leaf nodes
+console.log('Node 1: ', node1.node) // A leaf node! We can see that it contains 2 items: the nibbles and the value
+console.log('Node 1 value: ', bytesToUtf8(node1.node._value)) // The leaf node's value
 
 // RESULT
 Node 1:  LeafNode {
   _nibbles: [ 0 ],
-  _value: <Buffer 74 65 73 74 56 61 6c 75 65 30>
+  _value: Uint8Array(10) [
+    116, 101, 115, 116,
+     86,  97, 108, 117,
+    101,  48
+  ],
+  _terminator: true
 }
 Node 1 value:  testValue0
 ```
 
-Indeed! A leaf node with value "testValue0". The "nibble" indicates the last hex character(s) that differentiate this leaf from the parent branch. Since our branch node was "testKey" (in bytes = `<74 65 73 74 56 61 6c 75 65>`) , and since we took the branch corresponding to hex value `3`, we only need the last `0` to complete our full key/path of "testKey0" (in bytes = `<74 65 73 74 56 61 6c 75 65 30>`).
+Indeed! A leaf node with value "testValue0". The "nibble" indicates the last hex character(s) that differentiate this leaf from the parent branch. Since our branch node was "testKey" (in bytes = `0x7465737456616c7565`) , and since we took the branch corresponding to hex value `3`, we only need the last `0` to complete our full key/path of "testKey0" (in bytes = `0x7465737456616c756530`).
 
 ### Example 2d - Creating and Looking Up an Extension Node
 
 To create an extension node, we need to slightly change our keys. We'll keep our branch node at path "testKey", but we'll change the two other keys so that they lead down a lengthy common path.
 
 ```jsx
-console.log(Buffer.from('testKey'))
-console.log(Buffer.from('testKey0001'))
-console.log(Buffer.from('testKey000A'))
+console.log(bytesToHex(utf8ToBytes('testKey')))
+console.log(bytesToHex(utf8ToBytes('testKey0001')))
+console.log(bytesToHex(utf8ToBytes('testKey000A')))
 
 // RESULT
-<Buffer 74 65 73 74 4b 65 79>
-<Buffer 74 65 73 74 4b 65 79 30 30 30 31>
-<Buffer 74 65 73 74 4b 65 79 30 30 30 41>
+0x746573744b6579
+0x746573744b657930303031
+0x746573744b657930303041
 ```
 
-As you can see, the bytes `<30 30 30>` (standing for `000`> are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
+As you can see, the bytes `303030>` (standing for `000`> are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
 
 ```jsx
-await trie.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie.put(Buffer.from('testKey0001'), Buffer.from('testValue0'))
-await trie.put(Buffer.from('testKey000A'), Buffer.from('testValueA'))
+await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+await trie.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue0'))
+await trie.put(utf8ToBytes('testKey000A'), utf8ToBytes('testValueA'))
 
-const node1 = await trie.findPath(Buffer.from('testKey')) // Looking up our branch node
+const node1 = await trie.findPath(utf8ToBytes('testKey')) // Looking up our branch node
 console.log(node1.node) // The branch node
 
 // RESULT
-
 BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(32) [
+       57,  29,  72, 48, 222,   0, 135,  87,
+       70, 152,  76, 79, 211, 239,  90,  12,
+      247, 202, 123, 64, 249, 194, 138, 206,
+      226, 186,  34, 73, 132,  65, 143, 107
+    ],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) []
   ],
-  _value: <Buffer 74 65 73 74 56 61 6c 75 65>
+  _value: Uint8Array(9) [
+    116, 101, 115, 116,
+     86,  97, 108, 117,
+    101
+  ]
 }
 ```
 
 As we should expect, there is a branch at index `3`. The branch contains a hash that we can use to lookup the child node:
 
 ```jsx
- const node2 = await trie.lookupNode(Buffer.from(node1.node._branches[3])) // Looking up the child node from its hash (using lookupNode)
+ const node2 = await trie.lookupNode(node1.node._branches[3]) // Looking up the child node from its hash (using lookupNode)
  console.log(node2) // An extension node!
 
 // RESULT
 ExtensionNode {
   _nibbles: [ 0, 3, 0, 3, 0 ],
-  _value: <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+  _value: Uint8Array(32) [
+    112, 179, 208,  32, 173, 133, 143, 214,
+      0,  40, 164,  35, 233, 143,  29, 153,
+    197,  55, 205, 185,  31,  39,  73,  22,
+     64,   6, 111, 234, 199, 156,  47, 114
+  ],
+  _terminator: false
 }
 ```
 
@@ -492,43 +486,43 @@ You might have noticed that this child node is a "hash", while in the previous e
 Similarly to leaf nodes, extension nodes are two-item arrays: `[ encodedPath, hash ]` . The encodedPath (denoted above as "\_nibbles") stands for the "remaining path". In the case of extension nodes this is the path that we "shortcut". Recall our two keys:
 
 ```jsx
-console.log(Buffer.from('testKey0001'))
-console.log(Buffer.from('testKey000A'))
+console.log(bytesToHex(utf8ToBytes('testKey0001')))
+console.log(bytesToHex(utf8ToBytes('testKey000A')))
 
 // RESULT
-<Buffer 74 65 73 74 4b 65 79 30 30 30 31>
-<Buffer 74 65 73 74 4b 65 79 30 30 30 41>
+0x746573744b657930303031
+0x746573744b657930303041
 ```
 
-The first part of the path ("testKey" = `<74 65 73 74 4b 65 79>`) led us to the branch node. Next, taking the branch at index `3` (for hex value `<3>`) led us to our extension node, which automatically leads us down the path `[ 0, 3, 0, 3, 0 ]`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `<30 30 30>` part of the path! With a standard trie, this would have required 6 successive branch nodes!
+The first part of the path ("testKey" = `0x746573744b6579`) led us to the branch node. Next, taking the branch at index `3` (for hex value `3`) led us to our extension node, which automatically leads us down the path `03030`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `303030>` part of the path! With a standard trie, this would have required 6 successive branch nodes!
 
 Again, the value of the extension node leads us down to another node... can you guess what it will be?
 
 ```jsx
-const node3 = await trie.lookupNode(Buffer.from(node2._value))
-  console.log(node3)
+const node3 = await trie.lookupNode(node2._value)
+console.log(node3)
 
 // RESULT
 BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 31> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    [ [Uint8Array], [Uint8Array] ],
+    [ [Uint8Array], [Uint8Array] ],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) []
   ],
-  _value: <Buffer >
+  _value: Uint8Array(0) []
 }
 ```
 
