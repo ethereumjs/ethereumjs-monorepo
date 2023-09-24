@@ -209,6 +209,7 @@ export class Eth {
   private receiptsManager: ReceiptsManager | undefined
   private _chain: Chain
   private _vm: VM | undefined
+  private _rpcDebug: boolean
   public ethVersion: number
 
   /**
@@ -221,6 +222,7 @@ export class Eth {
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
+    this._rpcDebug = true
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
@@ -368,12 +370,12 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.shallowCopy()
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
-
-    const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
-
     try {
+      const vm = await this._vm.shallowCopy()
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
+
+      const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
+
       const runCallOpts = {
         caller: from !== undefined ? Address.fromString(from) : undefined,
         to: to !== undefined ? Address.fromString(to) : undefined,
@@ -385,10 +387,12 @@ export class Eth {
       const { execResult } = await vm.evm.runCall(runCallOpts)
       return bytesToHex(execResult.returnValue)
     } catch (error: any) {
-      throw {
+      const response: any = {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -398,7 +402,16 @@ export class Eth {
    * @returns The chain ID.
    */
   async chainId(_params = []) {
-    const chainId = this._chain.config.chainCommon.chainId()
+    let chainId
+    try {
+      chainId = this._chain.config.chainCommon.chainId()
+    } catch (error: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: error.message,
+        trace: error.stack,
+      }
+    }
     return bigIntToHex(chainId)
   }
 
@@ -426,39 +439,38 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.shallowCopy()
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
-
-    if (transaction.gas === undefined) {
-      // If no gas limit is specified use the last block gas limit as an upper bound.
-      const latest = await this._chain.getCanonicalHeadHeader()
-      transaction.gas = latest.gasLimit as any
-    }
-
-    if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
-      // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
-      if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
-        transaction.maxFeePerGas = '0x' + block.header.baseFeePerGas?.toString(16)
-      } else if (block.header.baseFeePerGas !== undefined) {
-        transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
-      }
-    }
-
-    const txData = {
-      ...transaction,
-      gasLimit: transaction.gas,
-    }
-
-    const tx = TransactionFactory.fromTxData(txData, { common: vm.common, freeze: false })
-
-    // set from address
-    const from =
-      transaction.from !== undefined ? Address.fromString(transaction.from) : Address.zero()
-    tx.getSenderAddress = () => {
-      return from
-    }
-
     try {
+      const vm = await this._vm.shallowCopy()
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
+
+      if (transaction.gas === undefined) {
+        // If no gas limit is specified use the last block gas limit as an upper bound.
+        const latest = await this._chain.getCanonicalHeadHeader()
+        transaction.gas = latest.gasLimit as any
+      }
+
+      if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
+        // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
+        if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
+          transaction.maxFeePerGas = '0x' + block.header.baseFeePerGas?.toString(16)
+        } else if (block.header.baseFeePerGas !== undefined) {
+          transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
+        }
+      }
+
+      const txData = {
+        ...transaction,
+        gasLimit: transaction.gas,
+      }
+
+      const tx = TransactionFactory.fromTxData(txData, { common: vm.common, freeze: false })
+
+      // set from address
+      const from =
+        transaction.from !== undefined ? Address.fromString(transaction.from) : Address.zero()
+      tx.getSenderAddress = () => {
+        return from
+      }
       const { totalGasSpent } = await vm.runTx({
         tx,
         skipNonce: true,
@@ -468,10 +480,12 @@ export class Eth {
       })
       return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
-      throw {
+      const response: any = {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -490,13 +504,22 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.shallowCopy()
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
-    const account = await vm.stateManager.getAccount(address)
-    if (account === undefined) {
-      return '0x0'
+    try {
+      const vm = await this._vm.shallowCopy()
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
+      const account = await vm.stateManager.getAccount(address)
+      if (account === undefined) {
+        return '0x0'
+      }
+      return bigIntToHex(account.balance)
+    } catch (error: any) {
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
-    return bigIntToHex(account.balance)
   }
 
   /**
@@ -562,12 +585,21 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.shallowCopy()
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
+    try {
+      const vm = await this._vm.shallowCopy()
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
-    const code = await vm.stateManager.getContractCode(address)
-    return bytesToHex(code)
+      const address = Address.fromString(addressHex)
+      const code = await vm.stateManager.getContractCode(address)
+      return bytesToHex(code)
+    } catch (error: any) {
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
+    }
   }
 
   /**
@@ -590,21 +622,30 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.shallowCopy()
-    // TODO: this needs more thought, keep on latest for now
-    const block = await getBlockByOption(blockOpt, this._chain)
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
+    try {
+      const vm = await this._vm.shallowCopy()
+      // TODO: this needs more thought, keep on latest for now
+      const block = await getBlockByOption(blockOpt, this._chain)
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
-    const account = await vm.stateManager.getAccount(address)
-    if (account === undefined) {
-      return EMPTY_SLOT
+      const address = Address.fromString(addressHex)
+      const account = await vm.stateManager.getAccount(address)
+      if (account === undefined) {
+        return EMPTY_SLOT
+      }
+      const key = setLengthLeft(hexToBytes(keyHex), 32)
+      const storage = await vm.stateManager.getContractStorage(address, key)
+      return storage !== null && storage !== undefined
+        ? bytesToHex(setLengthLeft(Uint8Array.from(storage) as Uint8Array, 32))
+        : EMPTY_SLOT
+    } catch (error: any) {
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
-    const key = setLengthLeft(hexToBytes(keyHex), 32)
-    const storage = await vm.stateManager.getContractStorage(address, key)
-    return storage !== null && storage !== undefined
-      ? bytesToHex(setLengthLeft(Uint8Array.from(storage) as Uint8Array, 32))
-      : EMPTY_SLOT
   }
 
   /**
@@ -649,10 +690,12 @@ export class Eth {
       const tx = block.transactions[txIndex]
       return jsonRpcTx(tx, block, txIndex)
     } catch (error: any) {
-      throw {
+      const response: any = {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -670,15 +713,24 @@ export class Eth {
       throw new Error('missing vm')
     }
 
-    const vm = await this._vm.shallowCopy()
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
+    try {
+      const vm = await this._vm.shallowCopy()
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
 
-    const address = Address.fromString(addressHex)
-    const account = await vm.stateManager.getAccount(address)
-    if (account === undefined) {
-      return '0x0'
+      const address = Address.fromString(addressHex)
+      const account = await vm.stateManager.getAccount(address)
+      if (account === undefined) {
+        return '0x0'
+      }
+      return bigIntToHex(account.nonce)
+    } catch (error: any) {
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
-    return bigIntToHex(account.nonce)
   }
 
   /**
