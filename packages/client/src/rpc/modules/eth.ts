@@ -363,14 +363,14 @@ export class Eth {
    * @returns The return value of the executed contract.
    */
   async call(params: [RpcTx, string]) {
-    const [transaction, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
-    }
-
     try {
+      const [transaction, blockOpt] = params
+      const block = await getBlockByOption(blockOpt, this._chain)
+
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
+
       const vm = await this._vm.shallowCopy()
       await vm.stateManager.setStateRoot(block.header.stateRoot)
 
@@ -434,13 +434,12 @@ export class Eth {
    */
   async estimateGas(params: [RpcTx, string?]) {
     const [transaction, blockOpt] = params
-    const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
-
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
-    }
-
     try {
+      const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
+
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
       const vm = await this._vm.shallowCopy()
       await vm.stateManager.setStateRoot(block.header.stateRoot)
 
@@ -499,13 +498,13 @@ export class Eth {
   async getBalance(params: [string, string]) {
     const [addressHex, blockOpt] = params
     const address = Address.fromString(addressHex)
-    const block = await getBlockByOption(blockOpt, this._chain)
-
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
-    }
-
     try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
+
       const vm = await this._vm.shallowCopy()
       await vm.stateManager.setStateRoot(block.header.stateRoot)
       const account = await vm.stateManager.getAccount(address)
@@ -553,8 +552,17 @@ export class Eth {
    */
   async getBlockByNumber(params: [string, boolean]) {
     const [blockOpt, includeTransactions] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-    return jsonRpcBlock(block, this._chain, includeTransactions)
+    try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+      return await jsonRpcBlock(block, this._chain, includeTransactions)
+    } catch (error: any) {
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
+    }
   }
 
   /**
@@ -584,13 +592,13 @@ export class Eth {
    */
   async getCode(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
-    }
-
     try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
+
       const vm = await this._vm.shallowCopy()
       await vm.stateManager.setStateRoot(block.header.stateRoot)
 
@@ -617,17 +625,17 @@ export class Eth {
   async getStorageAt(params: [string, string, string]) {
     const [addressHex, keyHex, blockOpt] = params
 
-    if (blockOpt === 'pending') {
-      throw {
-        code: INVALID_PARAMS,
-        message: '"pending" is not yet supported',
-      }
-    }
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
-    }
-
     try {
+      if (blockOpt === 'pending') {
+        throw {
+          code: INVALID_PARAMS,
+          message: '"pending" is not yet supported',
+        }
+      }
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
+
       const vm = await this._vm.shallowCopy()
       // TODO: this needs more thought, keep on latest for now
       const block = await getBlockByOption(blockOpt, this._chain)
@@ -660,10 +668,18 @@ export class Eth {
    *   2. an integer of the transaction index position encoded as a hexadecimal.
    */
   async getTransactionByBlockHashAndIndex(params: [string, string]) {
+    let txIndex, block
     try {
       const [blockHash, txIndexHex] = params
-      const txIndex = parseInt(txIndexHex, 16)
-      const block = await this._chain.getBlock(hexToBytes(blockHash))
+      txIndex = parseInt(txIndexHex, 16)
+      try {
+        block = await this._chain.getBlock(hexToBytes(blockHash))
+      } catch (error: any) {
+        throw {
+          code: INVALID_PARAMS,
+          message: error.message.toString(),
+        }
+      }
       if (block.transactions.length <= txIndex) {
         return null
       }
@@ -671,10 +687,12 @@ export class Eth {
       const tx = block.transactions[txIndex]
       return jsonRpcTx(tx, block, txIndex)
     } catch (error: any) {
-      throw {
-        code: INVALID_PARAMS,
-        message: error.message.toString(),
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
       }
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -712,13 +730,13 @@ export class Eth {
    */
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
-    }
-
     try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
+
       const vm = await this._vm.shallowCopy()
       await vm.stateManager.setStateRoot(block.header.stateRoot)
 
@@ -753,9 +771,8 @@ export class Eth {
    */
   async getUncleCountByBlockNumber(params: [string]) {
     const [blockNumberHex] = params
-    const blockNumber = BigInt(blockNumberHex)
-
     try {
+      const blockNumber = BigInt(blockNumberHex)
       const latest =
         this._chain.headers.latest?.number ?? (await this._chain.getCanonicalHeadHeader()).number
 
@@ -847,14 +864,15 @@ export class Eth {
    */
   async getLogs(params: [GetLogsParams]) {
     const { fromBlock, toBlock, blockHash, address, topics } = params[0]
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
-    if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
-      throw {
-        code: INVALID_PARAMS,
-        message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
-      }
-    }
     try {
+      if (!this.receiptsManager) throw new Error('missing receiptsManager')
+      if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
+        throw {
+          code: INVALID_PARAMS,
+          message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
+        }
+      }
+
       let from: Block, to: Block
       if (blockHash !== undefined) {
         try {
