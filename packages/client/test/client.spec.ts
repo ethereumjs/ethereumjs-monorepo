@@ -1,3 +1,4 @@
+import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
 import { EthereumClient } from '../src/client'
@@ -50,7 +51,7 @@ describe('[EthereumClient]', async () => {
   it('should open', async () => {
     const servers = [new RlpxServer({ config: new Config() })]
     const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
 
     await client.open()
     assert.ok(client.opened, 'opened')
@@ -60,7 +61,7 @@ describe('[EthereumClient]', async () => {
   it('should start/stop', async () => {
     const servers = [new Server()] as any
     const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
     await client.start()
     assert.ok(client.started, 'started')
     assert.equal(await client.start(), false, 'already started')
