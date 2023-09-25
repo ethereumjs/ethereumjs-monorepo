@@ -387,13 +387,12 @@ export class Eth {
       const { execResult } = await vm.evm.runCall(runCallOpts)
       return bytesToHex(execResult.returnValue)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -407,13 +406,12 @@ export class Eth {
     try {
       chainId = this._chain.config.chainCommon.chainId()
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
     return bigIntToHex(chainId)
   }
@@ -483,13 +481,12 @@ export class Eth {
       })
       return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -517,13 +514,12 @@ export class Eth {
       }
       return bigIntToHex(account.balance)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -540,13 +536,12 @@ export class Eth {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -572,13 +567,12 @@ export class Eth {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -604,13 +598,12 @@ export class Eth {
       const code = await vm.stateManager.getContractCode(address)
       return bytesToHex(code)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -651,13 +644,12 @@ export class Eth {
         ? bytesToHex(setLengthLeft(Uint8Array.from(storage) as Uint8Array, 32))
         : EMPTY_SLOT
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -703,13 +695,12 @@ export class Eth {
       const tx = block.transactions[txIndex]
       return jsonRpcTx(tx, block, txIndex)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -738,13 +729,12 @@ export class Eth {
       }
       return bigIntToHex(account.nonce)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -779,13 +769,12 @@ export class Eth {
       const block = await this._chain.getBlock(blockNumber)
       return block.uncleHeaders.length
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -842,13 +831,12 @@ export class Eth {
         blobGasPrice
       )
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -941,13 +929,12 @@ export class Eth {
         )
       )
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -1043,13 +1030,12 @@ export class Eth {
 
       return bytesToHex(tx.hash())
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -1083,13 +1069,12 @@ export class Eth {
       const proof = await vm.stateManager.getProof!(address, slots)
       return proof
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -1141,13 +1126,12 @@ export class Eth {
 
       return { startingBlock, currentBlock, highestBlock }
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -1163,13 +1147,12 @@ export class Eth {
       const block = await getBlockByOption(blockOpt, this._chain)
       return intToHex(block.transactions.length)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -1224,13 +1207,12 @@ export class Eth {
 
       return bigIntToHex(gasPrice)
     } catch (error: any) {
-      if (error.code !== undefined) throw error
-      const response: any = {
-        code: INTERNAL_ERROR,
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
-      if (this._rpcDebug === true) response['trace'] = error.stack
-      throw response
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 }
