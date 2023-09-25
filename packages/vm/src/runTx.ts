@@ -4,6 +4,7 @@ import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs
 import {
   Account,
   Address,
+  BIGINT_0,
   KECCAK256_NULL,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -291,8 +292,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check balance against max potential cost (for EIP 1559 and 4844)
   let maxCost = tx.value
-  let blobGasPrice = BigInt(0)
-  let totalblobGas = BigInt(0)
+  let blobGasPrice = BIGINT_0
+  let totalblobGas = BIGINT_0
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
@@ -384,9 +385,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // EIP-4844 tx
-  let versionedHashes
+  let blobVersionedHashes
   if (tx instanceof BlobEIP4844Transaction) {
-    versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
+    blobVersionedHashes = (tx as BlobEIP4844Transaction).blobVersionedHashes
   }
 
   // Update from account's balance
@@ -394,8 +395,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const blobGasCost = totalblobGas * blobGasPrice
   fromAccount.balance -= txCost
   fromAccount.balance -= blobGasCost
-  if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
-    fromAccount.balance = BigInt(0)
+  if (opts.skipBalance === true && fromAccount.balance < BIGINT_0) {
+    fromAccount.balance = BIGINT_0
   }
   await this.evm.journal.putAccount(caller, fromAccount)
   if (this.DEBUG) {
@@ -425,7 +426,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     to,
     value,
     data,
-    versionedHashes,
+    blobVersionedHashes,
   })) as RunTxResult
 
   if (this.DEBUG) {
@@ -463,10 +464,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? BigInt(0)
+  let gasRefund = results.execResult.gasRefund ?? BIGINT_0
   results.gasRefund = gasRefund
   const maxRefundQuotient = this.common.param('gasConfig', 'maxRefundQuotient')
-  if (gasRefund !== BigInt(0)) {
+  if (gasRefund !== BIGINT_0) {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
     gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
     results.totalGasSpent -= gasRefund

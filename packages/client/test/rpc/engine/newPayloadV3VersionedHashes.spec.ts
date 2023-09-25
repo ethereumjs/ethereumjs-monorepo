@@ -29,7 +29,7 @@ export const batchBlocks = async (server: HttpServer) => {
 }
 
 describe(`${method}: Cancun validations`, () => {
-  it('versionedHashes', async () => {
+  it('blobVersionedHashes', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
     const parentBeaconBlockRoot =
@@ -52,7 +52,7 @@ describe(`${method}: Cancun validations`, () => {
       assert.equal(res.body.result.status, 'INVALID')
       assert.equal(
         res.body.result.validationError,
-        'Error verifying versionedHashes: expected=0 received=2'
+        'Error verifying blobVersionedHashes: expected=0 received=2'
       )
     }
 
@@ -77,7 +77,10 @@ describe(`${method}: Cancun validations`, () => {
       },
     ]
     req = params(method, blockDataNoneHashes)
-    expectRes = checkError(INVALID_PARAMS, 'missing value for required argument versionedHashes')
+    expectRes = checkError(
+      INVALID_PARAMS,
+      'missing value for required argument blobVersionedHashes'
+    )
     await baseRequest(server, req, 200, expectRes, false)
 
     const blockDataMissingParentBeaconRoot = [
@@ -119,7 +122,7 @@ describe(`${method}: Cancun validations`, () => {
       assert.equal(res.body.result.status, 'INVALID')
       assert.equal(
         res.body.result.validationError,
-        'Error verifying versionedHashes: expected=2 received=1'
+        'Error verifying blobVersionedHashes: expected=2 received=1'
       )
     }
     await baseRequest(server, req, 200, expectRes, false)
@@ -143,7 +146,7 @@ describe(`${method}: Cancun validations`, () => {
       assert.equal(res.body.result.status, 'INVALID')
       assert.equal(
         res.body.result.validationError,
-        'Error verifying versionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…'
+        'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…'
       )
     }
     await baseRequest(server, req, 200, expectRes, false)

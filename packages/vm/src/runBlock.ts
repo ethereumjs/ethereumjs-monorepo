@@ -6,6 +6,8 @@ import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  BIGINT_0,
+  BIGINT_8,
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
@@ -353,7 +355,7 @@ export async function accumulateParentBeaconBlockRoot(
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
-  let gasUsed = BigInt(0)
+  let gasUsed = BIGINT_0
   const receiptTrie = new Trie()
   const receipts = []
   const txResults = []
@@ -460,9 +462,9 @@ function calculateOmmerReward(
   minerReward: bigint
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
-  let reward = ((BigInt(8) - heightDiff) * minerReward) / BigInt(8)
-  if (reward < BigInt(0)) {
-    reward = BigInt(0)
+  let reward = ((BIGINT_8 - heightDiff) * minerReward) / BIGINT_8
+  if (reward < BIGINT_0) {
+    reward = BIGINT_0
   }
   return reward
 }
@@ -538,7 +540,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
-    account.balance = BigInt(0)
+    account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
   }
 

@@ -1,6 +1,12 @@
 import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  concatBytes,
+  equalsBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -242,7 +248,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    const stepBack = BigInt(0)
+    const stepBack = BIGINT_0
     const destroyFetcher =
       !(error.message as string).includes(`InvalidRangeProof`) &&
       !(error.message as string).includes(`InvalidAccountRange`)

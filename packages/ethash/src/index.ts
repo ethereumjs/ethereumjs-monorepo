@@ -1,6 +1,7 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   KeyEncoding,
   TWO_POW256,
   ValueEncoding,
@@ -69,7 +70,7 @@ export class Miner {
     } else {
       throw new Error('unsupported mineObject')
     }
-    this.currentNonce = BigInt(0)
+    this.currentNonce = BIGINT_0
     this.ethash = ethash
     this.stopMining = false
   }
