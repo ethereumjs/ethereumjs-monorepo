@@ -2,6 +2,7 @@ import { bytesToHex, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { getClientVersion } from '../../util'
+import { INTERNAL_ERROR } from '../error-code'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -14,7 +15,7 @@ import type { Service } from '../../service'
  */
 export class Web3 {
   private _chain?: Chain
-
+  private _rpcDebug: boolean
   /**
    * Create web3_* RPC module
    * @param client Client to which the module binds
@@ -22,7 +23,7 @@ export class Web3 {
   constructor(client: EthereumClient) {
     const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
-
+    this._rpcDebug = true
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
 
     this.sha3 = middleware(this.sha3.bind(this), 1, [[validators.hex]])
@@ -41,7 +42,16 @@ export class Web3 {
    * @param params The data to convert into a SHA3 hash
    */
   sha3(params: string[]) {
-    const hexEncodedDigest = bytesToHex(keccak256(toBytes(params[0])))
-    return hexEncodedDigest
+    try {
+      const hexEncodedDigest = bytesToHex(keccak256(toBytes(params[0])))
+      return hexEncodedDigest
+    } catch (error: any) {
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
+    }
   }
 }
