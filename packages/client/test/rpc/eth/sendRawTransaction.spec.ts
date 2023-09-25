@@ -240,12 +240,12 @@ describe(method, () => {
     })
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
     const pk = randomBytes(32)
     const tx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes,
+        blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,
@@ -260,7 +260,7 @@ describe(method, () => {
 
     const replacementTx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes,
+        blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,

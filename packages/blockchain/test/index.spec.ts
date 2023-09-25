@@ -40,6 +40,18 @@ describe('blockchain test', () => {
     )
   })
 
+  it('should initialize holesky correctly', async () => {
+    // Taken from: https://github.com/eth-clients/holesky/blob/f1d14b9a80085c3f0cb9d729fea9172cde445588/README.md#hole%C5%A1ky-hole%C5%A1ovice-testnet
+    const holeskyHash = '0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'
+    const common = new Common({ chain: Chain.Holesky })
+    const blockchain = await Blockchain.create({
+      common,
+    })
+    const genesisHash = blockchain.genesisBlock.hash()
+
+    assert.deepEqual(bytesToHex(genesisHash), holeskyHash, 'correct genesis hash for holesky')
+  })
+
   it('should initialize correctly with Blockchain.fromBlocksData()', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await Blockchain.fromBlocksData(blocksData, {

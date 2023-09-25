@@ -61,7 +61,7 @@ async function test() {
 test()
 ```
 
-When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Etheruem production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
 ### Walking a Trie
 
@@ -92,7 +92,7 @@ If you want to use an alternative database, you can integrate your own by writin
 
 ##### LevelDB
 
-As an example, to leveage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
+As an example, to leverage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
 ```typescript
 import { Trie } from '@ethereumjs/trie'
@@ -264,6 +264,62 @@ npm run profiling
 ```
 
 0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
+
+## Debugging
+
+The `Trie` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
+The following options are available:
+
+| Logger            | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `trie`            | minimal info logging for all trie methods      |
+| `trie:<METHOD>`   | debug logging for specific trie method         |
+| `trie:<METHOD>:*` | verbose debug logging for specific trie method |
+| `trie:*`          | verbose debug logging for all trie methods     |
+
+To observe the logging in action at different levels:
+
+Run with minimal logging:
+
+```shell
+DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
+```
+
+Run with **put** method logging:
+
+```shell
+DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
+```
+
+Run with **trie** + **put**/**get**/**del** logging:
+
+```shell
+DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** debug logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** verbose logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
+```
+
+Run with max logging:
+
+```shell
+DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
+```
 
 ## References
 

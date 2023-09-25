@@ -106,7 +106,7 @@ async function run(data: any) {
     chainId: '0x1',
     blobs,
     kzgCommitments: commitments,
-    versionedHashes: hashes,
+    blobVersionedHashes: hashes,
     maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,

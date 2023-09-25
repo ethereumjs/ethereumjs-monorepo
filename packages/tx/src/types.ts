@@ -4,7 +4,7 @@ import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
 import type { LegacyTransaction } from './legacyTransaction.js'
-import type { AccessList, AccessListBytes, Common } from '@ethereumjs/common'
+import type { AccessList, AccessListBytes, Common, Hardfork } from '@ethereumjs/common'
 import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
 export type {
   AccessList,
@@ -14,7 +14,7 @@ export type {
 } from '@ethereumjs/common'
 
 /**
- * Can be used in conjunction with {@link Transaction.supports}
+ * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
  */
 export enum Capability {
@@ -93,6 +93,15 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
+export interface TransactionCache {
+  hash?: Uint8Array
+  dataFee?: {
+    value: bigint
+    hardfork: string | Hardfork
+  }
+  senderPubKey?: Uint8Array
+}
+
 /**
  * Encompassing type for all transaction types.
  */
@@ -128,9 +137,19 @@ export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transact
   return tx.type === TransactionType.BlobEIP4844
 }
 
-export interface TransactionInterface<T extends TransactionType> {
+export interface TransactionInterface<T extends TransactionType = TransactionType> {
+  readonly common: Common
+  readonly nonce: bigint
+  readonly gasLimit: bigint
+  readonly to?: Address
+  readonly value: bigint
+  readonly data: Uint8Array
+  readonly v?: bigint
+  readonly r?: bigint
+  readonly s?: bigint
+  readonly cache: TransactionCache
   supports(capability: Capability): boolean
-  type: number
+  type: TransactionType
   getBaseFee(): bigint
   getDataFee(): bigint
   getUpfrontCost(): bigint
@@ -150,6 +169,38 @@ export interface TransactionInterface<T extends TransactionType> {
   sign(privateKey: Uint8Array): Transaction[T]
   toJSON(): JsonTx
   errorStr(): string
+}
+
+export interface LegacyTxInterface<T extends TransactionType = TransactionType>
+  extends TransactionInterface<T> {}
+
+export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType>
+  extends TransactionInterface<T> {
+  readonly chainId: bigint
+  getMessageToSign(): Uint8Array
+}
+
+export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP2718CompatibleTx<T> {
+  readonly accessList: AccessListBytes
+  readonly AccessListJSON: AccessList
+}
+
+export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP2930CompatibleTx<T> {
+  readonly maxPriorityFeePerGas: bigint
+  readonly maxFeePerGas: bigint
+}
+
+export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP1559CompatibleTx<T> {
+  readonly maxFeePerBlobGas: bigint
+  blobVersionedHashes: Uint8Array[]
+  blobs?: Uint8Array[]
+  kzgCommitments?: Uint8Array[]
+  kzgProofs?: Uint8Array[]
+  serializeNetworkWrapper(): Uint8Array
+  numBlobs(): number
 }
 
 export interface TxData {
@@ -278,7 +329,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  versionedHashes?: BytesLike[]
+  blobVersionedHashes?: BytesLike[]
   /**
    * The maximum fee per blob gas paid for the transaction
    */
@@ -401,7 +452,7 @@ export interface JsonTx {
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
   maxFeePerBlobGas?: string
-  versionedHashes?: string[]
+  blobVersionedHashes?: string[]
 }
 
 /*
@@ -428,5 +479,5 @@ export interface JsonRpcTx {
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
   maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
-  versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
+  blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }

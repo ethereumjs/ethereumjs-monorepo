@@ -1,7 +1,9 @@
+import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
   Address,
+  BIGINT_1,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -16,10 +18,12 @@ import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
 import * as net from 'node:net'
+import qs from 'qs'
 
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
 import { LevelDB } from '../../src/execution/level'
+import { RPCManager } from '../../src/rpc'
 
 import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
@@ -27,6 +31,23 @@ import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { Client } from 'jayson/promise'
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+// This function switches between the native web implementation and a nodejs implementation
+export async function getEventSource(): Promise<typeof EventSource> {
+  if (globalThis.EventSource !== undefined) {
+    return EventSource
+  } else {
+    return (await import('eventsource')).default as unknown as typeof EventSource
+  }
+}
+
+/**
+ * Ethereum Beacon API requires the query with format:
+ * - arrayFormat: repeat `topic=topic1&topic=topic2`
+ */
+export function stringifyQuery(query: unknown): string {
+  return qs.stringify(query, { arrayFormat: 'repeat' })
+}
+
 // Initialize the kzg object with the kzg library
 initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
 
@@ -310,7 +331,7 @@ export const runBlobTx = async (
     blobs,
     kzgCommitments: commitments,
     kzgProofs: proofs,
-    versionedHashes: hashes,
+    blobVersionedHashes: hashes,
     maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
@@ -320,7 +341,7 @@ export const runBlobTx = async (
   }
 
   txData.maxFeePerGas = '0xff'
-  txData.maxPriorityFeePerGas = BigInt(1)
+  txData.maxPriorityFeePerGas = BIGINT_1
   txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(1000000)
   const nonce = await client.request('eth_getTransactionCount', [sender.toString(), 'latest'], 2.0)
@@ -381,7 +402,7 @@ export const createBlobTxs = async (
       blobs,
       kzgCommitments: commitments,
       kzgProofs: proofs,
-      versionedHashes: hashes,
+      blobVersionedHashes: hashes,
       nonce: BigInt(x),
       gas: undefined,
     }
@@ -407,9 +428,13 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
   return txnHashes
 }
 
-export async function createInlineClient(config: any, common: any, customGenesisState: any) {
+export async function createInlineClient(
+  config: any,
+  common: any,
+  customGenesisState: any,
+  datadir: any = Config.DATADIR_DEFAULT
+) {
   config.events.setMaxListeners(50)
-  const datadir = Config.DATADIR_DEFAULT
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`
   )
@@ -440,6 +465,130 @@ export async function createInlineClient(config: any, common: any, customGenesis
   await inlineClient.open()
   await inlineClient.start()
   return inlineClient
+}
+
+export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconUrl: string) {
+  // track head
+  const topics = ['head']
+  const EventSource = await getEventSource()
+  const query = stringifyQuery({ topics })
+  console.log({ query })
+  const eventSource = new EventSource(`${peerBeaconUrl}/eth/v1/events?${query}`)
+  const manager = new RPCManager(client, client.config)
+  const engineMethods = manager.getMethods(true)
+
+  // possible values: STARTED, PAUSED, ERRORED, SYNCING, VALID
+  let syncState = 'PAUSED'
+  let pollInterval = null
+  let errorMessage = ''
+  const updateState = (newState) => {
+    if (syncState !== 'PAUSED') {
+      syncState = newState
+    }
+  }
+
+  const playUpdate = async (payload, finalizedBlockHash, version) => {
+    if (version !== 'capella') {
+      throw Error('only capella replay supported yet')
+    }
+    const fcUState = {
+      headBlockHash: payload.blockHash,
+      safeBlockHash: finalizedBlockHash,
+      finalizedBlockHash,
+    }
+    console.log('playUpdate', fcUState)
+
+    try {
+      const newPayloadRes = await engineMethods['engine_newPayloadV2']([payload])
+      if (
+        newPayloadRes.status === undefined ||
+        !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
+      ) {
+        throw Error(
+          `newPayload error: status${newPayloadRes.status} validationError=${newPayloadRes.validationError} error=${newPayloadRes.error}`
+        )
+      }
+
+      const fcuRes = await engineMethods['engine_forkchoiceUpdatedV2']([fcUState])
+      if (
+        fcuRes.payloadStatus === undefined ||
+        !['SYNCING', 'VALID', 'ACCEPTED'].includes(newPayloadRes.status)
+      ) {
+        throw Error(`fcU error: error:${fcuRes.error} message=${fcuRes.message}`)
+      } else {
+        updateState(fcuRes.payloadStatus.status)
+      }
+    } catch (e) {
+      console.log('playUpdate error', e)
+      updateState('ERRORED')
+    }
+  }
+
+  // ignoring the actual even, just using it as trigger to feed
+  eventSource.addEventListener(topics[0], (async (_event: MessageEvent) => {
+    if (syncState === 'PAUSED') return
+    try {
+      // just fetch finalized updated, it has all relevant hashes for fcU
+      const beaconFinalized = await (
+        await fetch(`${peerBeaconUrl}/eth/v1/beacon/light_client/finality_update`)
+      ).json()
+      if (beaconFinalized.error !== undefined) {
+        if (beaconFinalized.message?.includes('No finality update available') === true) {
+          // waiting for finality
+          return
+        } else {
+          throw Error(beaconFinalized.message ?? 'finality update fetch error')
+        }
+      }
+
+      const beaconHead = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/head`)).json()
+
+      const payload = executionPayloadFromBeaconPayload(
+        beaconHead.data.message.body.execution_payload
+      )
+      const finalizedBlockHash = beaconFinalized.data.finalized_header.execution.block_hash
+
+      await playUpdate(payload, finalizedBlockHash, beaconHead.version)
+    } catch (e) {
+      console.log('update fetch error', e)
+      updateState('ERRORED')
+      errorMessage = (e as Error).message
+    }
+  }) as EventListener)
+
+  const start = () => {
+    if (pollInterval !== null) {
+      throw Error('Already waiting on sync')
+    }
+    if (syncState === 'PAUSED') syncState = 'STARTED'
+    return new Promise((resolve, reject) => {
+      const resolveOnSynced = () => {
+        console.log('resolve sync check', { syncState })
+        if (syncState === 'VALID') {
+          resolve({ syncState })
+          pollInterval = null
+        } else if (syncState === 'INVALID') {
+          console.log('rejected sync', { syncState })
+          reject(Error(errorMessage))
+          pollInterval = null
+        }
+      }
+
+      pollInterval = setInterval(resolveOnSynced, 6000)
+      client.config.events.on(Event.CHAIN_UPDATED, resolveOnSynced)
+    })
+  }
+  const pause = () => {
+    syncState = 'PAUSED'
+  }
+
+  return {
+    syncState,
+    playUpdate,
+    eventSource,
+    start,
+    pause,
+  }
 }
 
 // To minimise noise on the spec run, selective filteration is applied to let the important events

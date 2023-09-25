@@ -53,6 +53,9 @@ export async function runTx(data: string, to?: string, value?: bigint) {
 }
 
 describe('simple mainnet test run', async () => {
+  if (process.env.EXTRA_CL_PARAMS === undefined) {
+    process.env.EXTRA_CL_PARAMS = '--params.CAPELLA_FORK_EPOCH 0'
+  }
   // Better add it as a option in startnetwork
   process.env.NETWORKID = `${common.networkId()}`
   const { teardownCallBack, result } = await startNetwork(network, client, {
@@ -145,7 +148,7 @@ describe('simple mainnet test run', async () => {
     60_000
   )
 
-  it(
+  it.skipIf(process.env.SNAP_SYNC === undefined)(
     'should snap sync and finish',
     async () => {
       if (ejsClient !== null && snapCompleted !== undefined) {

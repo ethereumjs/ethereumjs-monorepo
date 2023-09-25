@@ -182,7 +182,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
    * Both are represented as `0x` prefixed hex strings.
    */
   dumpStorage(address: Address): Promise<StorageDump> {
-    const storageMap = this._storageCache._lruCache?.get(address.toString())
+    const storageMap = this._storageCache.dump(address)
     const dump: StorageDump = {}
     if (storageMap !== undefined) {
       for (const slot of storageMap) {

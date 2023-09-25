@@ -1,4 +1,6 @@
 import {
+  BIGINT_27,
+  BIGINT_28,
   bytesToBigInt,
   bytesToHex,
   ecrecover,
@@ -39,7 +41,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
   // Guard against util's `ecrecover`: without providing chainId this will return
   // a signature in most of the cases in the cases that `v=0` or `v=1`
   // However, this should throw, only 27 and 28 is allowed as input
-  if (vBigInt !== BigInt(27) && vBigInt !== BigInt(28)) {
+  if (vBigInt !== BIGINT_27 && vBigInt !== BIGINT_28) {
     if (opts._debug !== undefined) {
       opts._debug(`ECRECOVER (0x01) failed: v neither 27 nor 28`)
     }

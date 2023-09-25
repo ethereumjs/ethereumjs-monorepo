@@ -2,6 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
+  BIGINT_1,
   bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -13,7 +15,14 @@ import {
 
 import { PendingBlock } from '../../miner'
 import { short } from '../../util'
-import { INTERNAL_ERROR, INVALID_PARAMS, TOO_LARGE_REQUEST, UNSUPPORTED_FORK } from '../error-code'
+import {
+  INTERNAL_ERROR,
+  INVALID_PARAMS,
+  TOO_LARGE_REQUEST,
+  UNKNOWN_PAYLOAD,
+  UNSUPPORTED_FORK,
+  validEngineCodes,
+} from '../error-code'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -24,6 +33,7 @@ import type { VMExecution } from '../../execution'
 import type { BlobsBundle } from '../../miner'
 import type { FullEthereumService } from '../../service'
 import type { ExecutionPayload } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
@@ -103,7 +113,7 @@ type ExecutionPayloadBodyV1 = {
 
 const EngineError = {
   UnknownPayload: {
-    code: -32001,
+    code: UNKNOWN_PAYLOAD,
     message: 'Unknown payload',
   },
 }
@@ -309,7 +319,7 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
   // In case the Genesis block has td >= ttd it is the terminal block
   if (block.isGenesis()) return blockTd >= ttd
 
-  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BigInt(1))
+  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
   return blockTd >= ttd && parentBlockTd < ttd
 }
 
@@ -357,6 +367,34 @@ const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
   return {
     transactions,
     withdrawals,
+  }
+}
+
+function validateHardforkRange(
+  chainCommon: Common,
+  methodVersion: number,
+  checkNotBeforeHf: Hardfork | null,
+  checkNotAfterHf: Hardfork | null,
+  timestamp: bigint
+) {
+  if (checkNotBeforeHf !== null) {
+    const hfTimeStamp = chainCommon.hardforkTimestamp(checkNotBeforeHf)
+    if (hfTimeStamp !== null && timestamp < hfTimeStamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: `V${methodVersion} cannot be called pre-${checkNotBeforeHf}`,
+      }
+    }
+  }
+
+  if (checkNotAfterHf !== null) {
+    const nextHFTimestamp = chainCommon.nextHardforkBlockOrTimestamp(checkNotAfterHf)
+    if (nextHFTimestamp !== null && timestamp >= nextHFTimestamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: `V${methodVersion + 1} MUST be called post-${checkNotAfterHf}`,
+      }
+    }
   }
 }
 
@@ -426,7 +464,7 @@ export class Engine {
           [validators.array(validators.bytes32)],
           [validators.bytes32],
         ],
-        ['executionPayload', 'versionedHashes', 'parentBeaconBlockRoot']
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -537,7 +575,7 @@ export class Engine {
   private async newPayload(
     params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?]
   ): Promise<PayloadStatusV1> {
-    const [payload, versionedHashes, parentBeaconBlockRoot] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -564,29 +602,29 @@ export class Engine {
 
     if (block.common.isActivatedEIP(4844)) {
       let validationError: string | null = null
-      if (versionedHashes === undefined || versionedHashes === null) {
-        validationError = `Error verifying versionedHashes: received none`
+      if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
+        validationError = `Error verifying blobVersionedHashes: received none`
       } else {
         // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
         const txVersionedHashes = []
         for (const tx of block.transactions) {
           if (tx instanceof BlobEIP4844Transaction) {
-            for (const vHash of tx.versionedHashes) {
+            for (const vHash of tx.blobVersionedHashes) {
               txVersionedHashes.push(vHash)
             }
           }
         }
 
-        if (versionedHashes.length !== txVersionedHashes.length) {
-          validationError = `Error verifying versionedHashes: expected=${txVersionedHashes.length} received=${versionedHashes.length}`
+        if (blobVersionedHashes.length !== txVersionedHashes.length) {
+          validationError = `Error verifying blobVersionedHashes: expected=${txVersionedHashes.length} received=${blobVersionedHashes.length}`
         } else {
           // match individual hashes
-          for (let vIndex = 0; vIndex < versionedHashes.length; vIndex++) {
+          for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
             // if mismatch, record error and break
-            if (!equalsBytes(hexToBytes(versionedHashes[vIndex]), txVersionedHashes[vIndex])) {
-              validationError = `Error verifying versionedHashes: mismatch at index=${vIndex} expected=${short(
+            if (!equalsBytes(hexToBytes(blobVersionedHashes[vIndex]), txVersionedHashes[vIndex])) {
+              validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
                 txVersionedHashes[vIndex]
-              )} received=${short(versionedHashes[vIndex])}`
+              )} received=${short(blobVersionedHashes[vIndex])}`
               break
             }
           }
@@ -600,8 +638,8 @@ export class Engine {
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
-    } else if (versionedHashes !== undefined && versionedHashes !== null) {
-      const validationError = `Invalid versionedHashes before EIP-4844 is activated`
+    } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
+      const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return response
@@ -933,7 +971,7 @@ export class Engine {
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
+    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BIGINT_0) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
@@ -1056,7 +1094,7 @@ export class Engine {
       if (timestampBigInt <= headBlock.header.timestamp) {
         throw {
           message: `invalid timestamp in payloadAttributes, got ${timestampBigInt}, need at least ${
-            headBlock.header.timestamp + BigInt(1)
+            headBlock.header.timestamp + BIGINT_1
           }`,
           code: INVALID_PARAMS,
         }
@@ -1090,6 +1128,26 @@ export class Engine {
   private async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
+    const payloadAttributes = params[1]
+    if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 3
+      ) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV1 MUST be used for forkchoiceUpdatedV2',
+        }
+      }
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        1,
+        null,
+        Hardfork.Paris,
+        BigInt(payloadAttributes.timestamp)
+      )
+    }
+
     return this.forkchoiceUpdated(params)
   }
 
@@ -1101,6 +1159,24 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 4
+      ) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV{1|2} MUST be used for forkchoiceUpdatedV2',
+        }
+      }
+
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        2,
+        null,
+        Hardfork.Shanghai,
+        BigInt(payloadAttributes.timestamp)
+      )
+
       const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
       const ts = BigInt(payloadAttributes.timestamp)
       const withdrawals = (payloadAttributes as PayloadAttributesV2).withdrawals
@@ -1137,14 +1213,24 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const payloadAttributes = params[1]
     if (payloadAttributes !== undefined && payloadAttributes !== null) {
-      const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
-      const ts = BigInt(payloadAttributes.timestamp)
-      if (ts < cancunTimestamp!) {
+      if (
+        Object.values(payloadAttributes).filter((attr) => attr !== null && attr !== undefined)
+          .length > 5
+      ) {
         throw {
-          code: UNSUPPORTED_FORK,
-          message: 'PayloadAttributesV{1|2} MUST be used before Cancun is activated',
+          code: INVALID_PARAMS,
+          message: 'PayloadAttributesV3 MUST be used for forkchoiceUpdatedV3',
         }
       }
+
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        3,
+        Hardfork.Cancun,
+        // this could be valid post cancun as well, if not then update the valid till hf here
+        null,
+        BigInt(payloadAttributes.timestamp)
+      )
     }
 
     return this.forkchoiceUpdated(params)
@@ -1158,7 +1244,7 @@ export class Engine {
    *   1. payloadId: DATA, 8 bytes - identifier of the payload building process
    * @returns Instance of {@link ExecutionPayloadV1} or an error
    */
-  private async getPayload(params: [Bytes8], payloadVersion?: number) {
+  private async getPayload(params: [Bytes8], payloadVersion: number) {
     const payloadId = params[0]
     try {
       const built = await this.pendingBlock.build(payloadId)
@@ -1178,22 +1264,40 @@ export class Engine {
       this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       const executionPayload = blockToExecutionPayload(block, value, blobs)
 
-      if (payloadVersion === 3) {
-        const cancunTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
-        if (
-          cancunTimestamp !== null &&
-          BigInt(executionPayload.executionPayload.timestamp) < cancunTimestamp
-        ) {
-          throw {
-            code: UNSUPPORTED_FORK,
-            message: 'getPayloadV3 cannot be called on payloads pre-Cancun',
-          }
-        }
+      let checkNotBeforeHf: Hardfork | null
+      let checkNotAfterHf: Hardfork | null
+
+      switch (payloadVersion) {
+        case 3:
+          checkNotBeforeHf = Hardfork.Cancun
+          checkNotAfterHf = Hardfork.Cancun
+          break
+
+        case 2:
+          // no checks to be done for before as valid till paris
+          checkNotBeforeHf = null
+          checkNotAfterHf = Hardfork.Shanghai
+          break
+
+        case 1:
+          checkNotBeforeHf = null
+          checkNotAfterHf = Hardfork.Paris
+          break
+
+        default:
+          throw Error(`Invalid payloadVersion=${payloadVersion}`)
       }
 
+      validateHardforkRange(
+        this.chain.config.chainCommon,
+        payloadVersion,
+        checkNotBeforeHf,
+        checkNotAfterHf,
+        BigInt(executionPayload.executionPayload.timestamp)
+      )
       return executionPayload
     } catch (error: any) {
-      if (error === EngineError.UnknownPayload) throw error
+      if (validEngineCodes.includes(error.code)) throw error
       throw {
         code: INTERNAL_ERROR,
         message: error.message ?? error,
@@ -1202,12 +1306,12 @@ export class Engine {
   }
 
   async getPayloadV1(params: [Bytes8]) {
-    const { executionPayload } = await this.getPayload(params)
+    const { executionPayload } = await this.getPayload(params, 1)
     return executionPayload
   }
 
   async getPayloadV2(params: [Bytes8]) {
-    const { executionPayload, blockValue } = await this.getPayload(params)
+    const { executionPayload, blockValue } = await this.getPayload(params, 2)
     return { executionPayload, blockValue }
   }
 
@@ -1301,7 +1405,7 @@ export class Engine {
       }
     }
 
-    if (count < BigInt(1) || start < BigInt(1)) {
+    if (count < BIGINT_1 || start < BIGINT_1) {
       throw {
         code: INVALID_PARAMS,
         message: 'Start and Count parameters cannot be less than 1',
@@ -1313,7 +1417,7 @@ export class Engine {
     }
 
     if (start + count > currentChainHeight) {
-      count = currentChainHeight - start + BigInt(1)
+      count = currentChainHeight - start + BIGINT_1
     }
     const blocks = await this.chain.getBlocks(start, Number(count))
     const payloads: (ExecutionPayloadBodyV1 | null)[] = []

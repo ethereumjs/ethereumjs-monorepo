@@ -7,7 +7,7 @@ import {
   mergeAndFormatKeyPaths,
   pathToHexKey,
 } from '@ethereumjs/trie'
-import { Account, KECCAK256_NULL, KECCAK256_RLP } from '@ethereumjs/util'
+import { Account, BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from '@ethereumjs/util'
 import { debug as createDebugLogger } from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
@@ -443,7 +443,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    const stepBack = BigInt(0)
+    const stepBack = BIGINT_0
     const destroyFetcher =
       !(error.message as string).includes(`InvalidRangeProof`) &&
       !(error.message as string).includes(`InvalidAccountRange`)

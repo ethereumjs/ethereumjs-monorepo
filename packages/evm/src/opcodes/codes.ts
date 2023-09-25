@@ -14,8 +14,10 @@ export class Opcode {
   readonly name: string
   readonly fullName: string
   readonly fee: number
+  readonly feeBigInt: bigint
   readonly isAsync: boolean
   readonly dynamicGas: boolean
+  readonly isInvalid: boolean
 
   constructor({
     code,
@@ -36,8 +38,10 @@ export class Opcode {
     this.name = name
     this.fullName = fullName
     this.fee = fee
+    this.feeBigInt = BigInt(fee)
     this.isAsync = isAsync
     this.dynamicGas = dynamicGas
+    this.isInvalid = this.name === 'INVALID'
 
     // Opcode isn't subject to change, thus all further modifications are prevented.
     Object.freeze(this)
@@ -309,6 +313,12 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0x5e: { name: 'MCOPY', isAsync: false, dynamicGas: true },
     },
   },
+  {
+    eip: 7516,
+    opcodes: {
+      0x4a: { name: 'BLOBBASEFEE', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**
@@ -338,7 +348,15 @@ type OpcodeContext = {
   dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler>
   handlers: Map<number, OpHandler>
   opcodes: OpcodeList
+  opcodeMap: OpcodeMap
 }
+
+export type OpcodeMapEntry = {
+  opcodeInfo: Opcode
+  opHandler: OpHandler
+  gasHandler: AsyncDynamicGasHandler | SyncDynamicGasHandler
+}
+export type OpcodeMap = OpcodeMapEntry[]
 
 /**
  * Get suitable opcodes for the required hardfork.
@@ -393,6 +411,7 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
           isAsync: true,
           dynamicGas: code.gasFunction !== undefined,
           fee: code.baseFee,
+          feeBigInt: BigInt(code.baseFee),
         },
       }
       opcodeBuilder = { ...opcodeBuilder, ...entry }
@@ -404,9 +423,34 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
     }
   }
 
+  //const dynamicGasHandlers = dynamicGasHandlersCopy
+  //const handlers = handlersCopy
+  const ops = createOpcodes(opcodeBuilder)
+
+  const opcodeMap: OpcodeMap = []
+
+  for (const [opNumber, op] of ops) {
+    const dynamicGas = dynamicGasHandlersCopy.get(opNumber)!
+    const handler = handlersCopy.get(opNumber)!
+    opcodeMap[opNumber] = {
+      opcodeInfo: op,
+      opHandler: handler,
+      gasHandler: dynamicGas,
+    }
+  }
+
+  const INVALID = opcodeMap[0xfe]
+
+  for (let i = 0x0; i <= 0xff; i++) {
+    if (opcodeMap[i] === undefined) {
+      opcodeMap[i] = INVALID
+    }
+  }
+
   return {
     dynamicGasHandlers: dynamicGasHandlersCopy,
     handlers: handlersCopy,
-    opcodes: createOpcodes(opcodeBuilder),
+    opcodes: ops,
+    opcodeMap,
   }
 }
