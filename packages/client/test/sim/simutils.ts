@@ -24,6 +24,7 @@ import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
 import { LevelDB } from '../../src/execution/level'
 import { RPCManager } from '../../src/rpc'
+import { Event } from '../../src/types'
 
 import type { Common } from '@ethereumjs/common'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
@@ -479,15 +480,16 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
 
   // possible values: STARTED, PAUSED, ERRORED, SYNCING, VALID
   let syncState = 'PAUSED'
-  let pollInterval = null
+  let pollInterval: any | null = null
+  let waitForStates = ['VALID']
   let errorMessage = ''
-  const updateState = (newState) => {
+  const updateState = (newState: string) => {
     if (syncState !== 'PAUSED') {
       syncState = newState
     }
   }
 
-  const playUpdate = async (payload, finalizedBlockHash, version) => {
+  const playUpdate = async (payload: any, finalizedBlockHash: string, version: string) => {
     if (version !== 'capella') {
       throw Error('only capella replay supported yet')
     }
@@ -524,9 +526,9 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     }
   }
 
-  // ignoring the actual even, just using it as trigger to feed
-  eventSource.addEventListener(topics[0], (async (_event: MessageEvent) => {
-    if (syncState === 'PAUSED') return
+  // ignoring the actual event, just using it as trigger to feed
+  eventSource.addEventListener(topics[0], async (_event: MessageEvent) => {
+    if (syncState === 'PAUSED' || syncState === 'CLOSED') return
     try {
       // just fetch finalized updated, it has all relevant hashes for fcU
       const beaconFinalized = await (
@@ -554,23 +556,34 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
       updateState('ERRORED')
       errorMessage = (e as Error).message
     }
-  }) as EventListener)
+  })
 
-  const start = () => {
+  const cleanUpPoll = () => {
+    if (pollInterval !== null) {
+      clearInterval(pollInterval)
+      pollInterval = null
+    }
+  }
+
+  const start = (opts: { waitForStates?: string[] } = {}) => {
+    waitForStates = opts.waitForStates ?? ['VALID']
     if (pollInterval !== null) {
       throw Error('Already waiting on sync')
     }
     if (syncState === 'PAUSED') syncState = 'STARTED'
+
     return new Promise((resolve, reject) => {
       const resolveOnSynced = () => {
-        console.log('resolve sync check', { syncState })
-        if (syncState === 'VALID') {
+        if (waitForStates.includes(syncState)) {
+          console.log('resolving sync', { syncState })
+          cleanUpPoll()
+          client.config.events.removeListener(Event.CHAIN_UPDATED, resolveOnSynced)
           resolve({ syncState })
-          pollInterval = null
-        } else if (syncState === 'INVALID') {
-          console.log('rejected sync', { syncState })
-          reject(Error(errorMessage))
-          pollInterval = null
+        } else if (syncState === 'INVALID' || syncState === 'CLOSED') {
+          console.log('rejecting sync', { syncState })
+          cleanUpPoll()
+          client.config.events.removeListener(Event.CHAIN_UPDATED, resolveOnSynced)
+          reject(Error(errorMessage ?? `exiting syncState check syncState=${syncState}`))
         }
       }
 
@@ -582,12 +595,17 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
     syncState = 'PAUSED'
   }
 
+  const close = () => {
+    syncState = 'CLOSED'
+  }
+
   return {
     syncState,
     playUpdate,
     eventSource,
     start,
     pause,
+    close,
   }
 }
 

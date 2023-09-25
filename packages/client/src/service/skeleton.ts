@@ -1,5 +1,4 @@
 import { Block } from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
@@ -18,7 +17,7 @@ import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { Hardfork } from '@ethereumjs/common'
 
 // Thanks to go-ethereum for the skeleton design
 
@@ -89,17 +88,11 @@ export class Skeleton extends MetaDBManager {
   private fillLogIndex = 0
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
-  private chainTTD: BigIntLike
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
     this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: true }
     this.started = 0
-    const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
-    if (chainTTD === undefined || chainTTD === null) {
-      throw Error('Cannot create skeleton as merge not set')
-    }
-    this.chainTTD = chainTTD
   }
 
   /**
@@ -807,16 +800,19 @@ export class Skeleton extends MetaDBManager {
   async getBlockByHash(hash: Uint8Array, onlySkeleton?: boolean): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
     if (number) {
-      return this.getBlock(bytesToBigInt(number), onlySkeleton)
+      const block = await this.getBlock(bytesToBigInt(number), onlySkeleton)
+      if (block !== undefined && equalsBytes(block.hash(), hash)) {
+        return block
+      }
+    }
+
+    if (onlySkeleton === true) {
+      return undefined
     } else {
-      if (onlySkeleton === true || !this.status.linked) {
+      try {
+        return await this.chain.getBlock(hash)
+      } catch (e) {
         return undefined
-      } else {
-        try {
-          return await this.chain.getBlock(hash)
-        } catch (e) {
-          return undefined
-        }
       }
     }
   }
