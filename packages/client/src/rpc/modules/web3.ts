@@ -20,10 +20,10 @@ export class Web3 {
    * Create web3_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
-    this._rpcDebug = true
+    this._rpcDebug = rpcDebug
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
 
     this.sha3 = middleware(this.sha3.bind(this), 1, [[validators.hex]])

@@ -85,11 +85,11 @@ export class Debug {
    * Create debug_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
-    this._rpcDebug = true
+    this._rpcDebug = rpcDebug
     this.traceTransaction = middleware(this.traceTransaction.bind(this), 1, [[validators.hex]])
     this.traceCall = middleware(this.traceCall.bind(this), 2, [
       [validators.transaction()],
