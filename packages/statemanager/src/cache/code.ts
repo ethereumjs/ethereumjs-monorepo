@@ -1,4 +1,4 @@
-import { bytesToUnprefixedHex } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, equalsBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { OrderedMap } from 'js-sdsl'
 import { LRUCache } from 'lru-cache'
@@ -48,7 +48,11 @@ export class CodeCache extends Cache {
     this._debug = createDebugLogger('statemanager:cache:code')
   }
 
-  _saveCachePreState(cacheKeyHex: string, currentCode?: Uint8Array | undefined) {
+  _saveCachePreState(
+    cacheKeyHex: string,
+    currentPutCode?: Uint8Array | undefined,
+    currentCode?: Uint8Array | undefined
+  ) {
     const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
     if (it === undefined) {
       let oldElem: CodeCacheElement | undefined
@@ -57,7 +61,14 @@ export class CodeCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: currentCode })
+
+      let val
+      if (currentCode !== undefined && equalsBytes(currentCode, new Uint8Array())) {
+        val = undefined
+      } else {
+        val = currentPutCode
+      }
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: val })
     }
   }
 
@@ -66,9 +77,9 @@ export class CodeCache extends Cache {
    * @param codeHash - Hash of the code.
    * @param code - Bytecode or undefined if code doesn't exist.
    */
-  put(address: Address, code: Uint8Array | undefined): void {
+  put(address: Address, code: Uint8Array | undefined, currentCode: Uint8Array | undefined): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
-    this._saveCachePreState(addressHex, code)
+    this._saveCachePreState(addressHex, code, currentCode)
     const elem = {
       code,
     }

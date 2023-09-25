@@ -344,7 +344,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    this._codeCache2?.put(address, value)
+    const currentCode = await this.getContractCode(address)
+    this._codeCache2?.put(address, value, currentCode)
     const codeHash = keccak256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
