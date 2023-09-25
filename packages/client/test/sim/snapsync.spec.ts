@@ -20,6 +20,7 @@ import {
   filterKeywords,
   filterOutWords,
   runTxHelper,
+  setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
 } from './simutils'
@@ -41,6 +42,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 let senderBalance = BigInt(customGenesisState[sender][0])
 
 let ejsClient: EthereumClient | null = null
+let beaconSyncRelayer: any = null
 let snapCompleted: Promise<unknown> | undefined = undefined
 let syncedTrie: Trie | undefined = undefined
 
@@ -119,17 +121,29 @@ describe('simple mainnet test run', async () => {
   it.skipIf(process.env.SNAP_SYNC === undefined)(
     'setup snap sync',
     async () => {
-      // start client inline here for snap sync, no need for beacon
-      const { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise } =
+      // start client inline here for snap sync while playing updates from peer beacon
+      const peerBeaconUrl = 'http://127.0.0.1:9596'
+
+      const {
+        ejsInlineClient,
+        peerConnectedPromise,
+        snapSyncCompletedPromise,
+        beaconSyncRelayer: relayer,
+      } =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (await createSnapClient(common, customGenesisState, [nodeInfo.enode]).catch((e) => {
-          console.log(e)
-          return null
-        })) ?? {
+        (await createSnapClient(common, customGenesisState, [nodeInfo.enode], peerBeaconUrl).catch(
+          (e) => {
+            console.log(e)
+            return null
+          }
+        )) ?? {
           ejsInlineClient: null,
           peerConnectedPromise: Promise.reject('Client creation error'),
+          beaconSyncRelayer: null,
         }
+
       ejsClient = ejsInlineClient
+      beaconSyncRelayer = relayer
       snapCompleted = snapSyncCompletedPromise
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
@@ -151,7 +165,10 @@ describe('simple mainnet test run', async () => {
   it.skipIf(process.env.SNAP_SYNC === undefined)(
     'should snap sync and finish',
     async () => {
-      if (ejsClient !== null && snapCompleted !== undefined) {
+      if (ejsClient !== null && snapCompleted !== undefined && beaconSyncRelayer !== null) {
+        // node should be in syncing or valid state, when snap sync fully implemented should just
+        // check for VALID
+        const beaconSyncPromise = beaconSyncRelayer.start({ waitForStates: ['SYNCING', 'VALID'] })
         // wait on the sync promise to complete if it has been called independently
         const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 8 * 60_000))
         let syncedSnapRoot: Uint8Array | undefined = undefined
@@ -166,6 +183,8 @@ describe('simple mainnet test run', async () => {
             }),
             snapSyncTimeout,
           ])
+
+          await Promise.race([beaconSyncPromise, snapSyncTimeout])
           await ejsClient.stop()
           assert.ok(true, 'completed snap sync')
         } catch (e) {
@@ -201,7 +220,7 @@ describe('simple mainnet test run', async () => {
       const address = Address.fromString(addressString)
       const account = await stateManager.getAccount(address)
       assert.equal(
-        account.balance,
+        account?.balance,
         BigInt(customGenesisState[addressString][0]),
         `${addressString} balance should match`
       )
@@ -210,6 +229,7 @@ describe('simple mainnet test run', async () => {
 
   it('network cleanup', async () => {
     try {
+      beaconSyncRelayer?.close()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
     } catch (e) {
@@ -218,7 +238,13 @@ describe('simple mainnet test run', async () => {
   }, 60_000)
 })
 
-async function createSnapClient(common: any, customGenesisState: any, bootnodes: any) {
+async function createSnapClient(
+  common: any,
+  customGenesisState: any,
+  bootnodes: any,
+  peerBeaconUrl: any,
+  datadir: any
+) {
   // Turn on `debug` logs, defaults to all client logging
   debug.enable(process.env.DEBUG_SNAP ?? '')
   const logger = getLogger({ logLevel: 'debug' })
@@ -247,8 +273,10 @@ async function createSnapClient(common: any, customGenesisState: any, bootnodes:
     )
   })
 
-  const ejsInlineClient = await createInlineClient(config, common, customGenesisState)
-  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise }
+  const ejsInlineClient = await createInlineClient(config, common, customGenesisState, datadir)
+  const beaconSyncRelayer = await setupEngineUpdateRelay(ejsInlineClient, peerBeaconUrl)
+
+  return { ejsInlineClient, peerConnectedPromise, snapSyncCompletedPromise, beaconSyncRelayer }
 }
 
 process.on('uncaughtException', (err, origin) => {

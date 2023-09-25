@@ -57,7 +57,7 @@ NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth ADD_EOA_STATE=true SNAP_SYNC=tru
 1. Test syncing genesis state from geth:
 
 ```bash
-NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth SNAP_SYNC=true DEBUG_SNAP=client:*  DATADIR=/usr/app/ethereumjs/packages/client/data npx vitest test/sim/snapsync.spec.ts
+rm -rf ./datadir; NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth SNAP_SYNC=true DEBUG_SNAP=client:*  DATADIR=/usr/app/ethereumjs/packages/client/data npx vitest run test/sim/snapsync.spec.ts
 ```
 
 2. Add some EOA account states to geth (just add `ADD_EOA_STATE=true` flag to the command)
