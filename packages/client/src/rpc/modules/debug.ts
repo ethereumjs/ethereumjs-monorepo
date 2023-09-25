@@ -80,6 +80,7 @@ export class Debug {
   private service: FullEthereumService
   private chain: Chain
   private vm: VM
+  private _rpcDebug: boolean
   /**
    * Create debug_* RPC module
    * @param client Client to which the module binds
@@ -88,6 +89,7 @@ export class Debug {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
+    this._rpcDebug = true
     this.traceTransaction = middleware(this.traceTransaction.bind(this), 1, [[validators.hex]])
     this.traceCall = middleware(this.traceCall.bind(this), 2, [
       [validators.transaction()],
@@ -111,17 +113,17 @@ export class Debug {
   async traceTransaction(params: [string, tracerOpts]) {
     const [txHash, config] = params
 
-    // Validate configuration and parameters
-    if (!this.service.execution.receiptsManager) {
-      throw {
-        message: 'missing receiptsManager',
-        code: INTERNAL_ERROR,
-      }
-    }
-
-    const opts = validateTracerConfig(config)
-
     try {
+      // Validate configuration and parameters
+      if (!this.service.execution.receiptsManager) {
+        throw {
+          message: 'missing receiptsManager',
+          code: INTERNAL_ERROR,
+        }
+      }
+
+      const opts = validateTracerConfig(config)
+
       const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
         hexToBytes(txHash)
       )
@@ -185,11 +187,13 @@ export class Debug {
       trace.failed = res.execResult.exceptionError !== undefined
       trace.returnValue = bytesToHex(res.execResult.returnValue)
       return trace
-    } catch (err: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: err.message.toString(),
+    } catch (error: any) {
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
       }
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -204,86 +208,90 @@ export class Debug {
    */
   async traceCall(params: [RpcTx, string, tracerOpts]) {
     const [callArgs, blockOpt, tracerOpts] = params
-    // Validate configuration and parameters
-    if (!this.service.execution.receiptsManager) {
-      throw {
-        message: 'missing receiptsManager',
-        code: INTERNAL_ERROR,
-      }
-    }
 
-    if (this.vm === undefined) {
-      throw new Error('missing vm')
-    }
-
-    const opts = validateTracerConfig(tracerOpts)
-
-    const block = await getBlockByOption(blockOpt, this.chain)
-    const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
-
-    const vm = await this.vm.shallowCopy()
-    await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
-    const { from, to, gas: gasLimit, gasPrice, value, data } = callArgs
-
-    const trace = {
-      gas: '',
-      returnValue: '',
-      failed: false,
-      structLogs: [] as structLog[],
-    }
-    vm.evm.events?.on('step', async (step, next) => {
-      const memory = []
-      let storage = {}
-      if (opts.disableStorage === false) {
-        storage = await vm.stateManager.dumpStorage(step.address)
-      }
-      if (opts.enableMemory === true) {
-        for (let x = 0; x < step.memoryWordCount; x++) {
-          const word = bytesToHex(step.memory.slice(x * 32, 32))
-          memory.push(word)
+    try {
+      // Validate configuration and parameters
+      if (!this.service.execution.receiptsManager) {
+        throw {
+          message: 'missing receiptsManager',
+          code: INTERNAL_ERROR,
         }
       }
-      const log = {
-        pc: step.pc,
-        op: step.opcode.name,
-        gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
-        gas: Number(step.gasLeft),
-        depth: step.depth,
-        error: null,
-        stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
-        storage,
-        memory,
-        returnData: undefined,
-      }
-      trace.structLogs.push(log)
-      next?.()
-    })
 
-    vm.evm.events?.on('afterMessage', (data, next) => {
-      if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
-        // Mark last opcode trace as error if exception occurs
-        trace.structLogs[trace.structLogs.length - 1].error = true
+      if (this.vm === undefined) {
+        throw new Error('missing vm')
       }
-      next?.()
-    })
-    const runCallOpts = {
-      caller: from !== undefined ? Address.fromString(from) : undefined,
-      to: to !== undefined ? Address.fromString(to) : undefined,
-      gasLimit: toType(gasLimit, TypeOutput.BigInt),
-      gasPrice: toType(gasPrice, TypeOutput.BigInt),
-      value: toType(value, TypeOutput.BigInt),
-      data: data !== undefined ? hexToBytes(data) : undefined,
-    }
-    const res = await vm.evm.runCall(runCallOpts)
-    trace.gas = bigIntToHex(res.execResult.executionGasUsed)
-    trace.failed = res.execResult.exceptionError !== undefined
-    trace.returnValue = bytesToHex(res.execResult.returnValue)
-    return trace
-  }
-  catch(err: any) {
-    throw {
-      code: INTERNAL_ERROR,
-      message: err.message.toString(),
+
+      const opts = validateTracerConfig(tracerOpts)
+
+      const block = await getBlockByOption(blockOpt, this.chain)
+      const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
+
+      const vm = await this.vm.shallowCopy()
+      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+      const { from, to, gas: gasLimit, gasPrice, value, data } = callArgs
+
+      const trace = {
+        gas: '',
+        returnValue: '',
+        failed: false,
+        structLogs: [] as structLog[],
+      }
+      vm.evm.events?.on('step', async (step, next) => {
+        const memory = []
+        let storage = {}
+        if (opts.disableStorage === false) {
+          storage = await vm.stateManager.dumpStorage(step.address)
+        }
+        if (opts.enableMemory === true) {
+          for (let x = 0; x < step.memoryWordCount; x++) {
+            const word = bytesToHex(step.memory.slice(x * 32, 32))
+            memory.push(word)
+          }
+        }
+        const log = {
+          pc: step.pc,
+          op: step.opcode.name,
+          gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
+          gas: Number(step.gasLeft),
+          depth: step.depth,
+          error: null,
+          stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
+          storage,
+          memory,
+          returnData: undefined,
+        }
+        trace.structLogs.push(log)
+        next?.()
+      })
+
+      vm.evm.events?.on('afterMessage', (data, next) => {
+        if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
+          // Mark last opcode trace as error if exception occurs
+          trace.structLogs[trace.structLogs.length - 1].error = true
+        }
+        next?.()
+      })
+      const runCallOpts = {
+        caller: from !== undefined ? Address.fromString(from) : undefined,
+        to: to !== undefined ? Address.fromString(to) : undefined,
+        gasLimit: toType(gasLimit, TypeOutput.BigInt),
+        gasPrice: toType(gasPrice, TypeOutput.BigInt),
+        value: toType(value, TypeOutput.BigInt),
+        data: data !== undefined ? hexToBytes(data) : undefined,
+      }
+      const res = await vm.evm.runCall(runCallOpts)
+      trace.gas = bigIntToHex(res.execResult.executionGasUsed)
+      trace.failed = res.execResult.exceptionError !== undefined
+      trace.returnValue = bytesToHex(res.execResult.returnValue)
+      return trace
+    } catch (error: any) {
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 
@@ -301,29 +309,29 @@ export class Debug {
   async storageRangeAt(params: [string, number, string, string, number]) {
     const [blockHash, txIndex, account, startKey, limit] = params
 
-    if (this.vm === undefined) {
-      throw new Error('Missing VM.')
-    }
-
-    let block: Block
     try {
-      // Validator already verified that `blockHash` is properly formatted.
-      block = await this.chain.getBlock(hexToBytes(blockHash))
-    } catch (err: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: 'Could not get requested block hash.',
+      if (this.vm === undefined) {
+        throw new Error('Missing VM.')
       }
-    }
 
-    if (txIndex >= block.transactions.length) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: 'txIndex cannot be larger than the number of transactions in the block.',
+      let block: Block
+      try {
+        // Validator already verified that `blockHash` is properly formatted.
+        block = await this.chain.getBlock(hexToBytes(blockHash))
+      } catch (err: any) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: 'Could not get requested block hash.',
+        }
       }
-    }
 
-    try {
+      if (txIndex >= block.transactions.length) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: 'txIndex cannot be larger than the number of transactions in the block.',
+        }
+      }
+
       const parentBlock = await this.chain.getBlock(block.header.parentHash)
       // Copy the VM and run transactions including the relevant transaction.
       const vmCopy = await this.vm.shallowCopy()
@@ -339,11 +347,13 @@ export class Debug {
         BigInt(startKey),
         limit
       )
-    } catch (err: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: err.message.toString(),
+    } catch (error: any) {
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
       }
+      if (this._rpcDebug === true) e['trace'] = error.stack
+      throw e
     }
   }
 }
