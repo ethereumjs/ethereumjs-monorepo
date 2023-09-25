@@ -387,6 +387,7 @@ export class Eth {
       const { execResult } = await vm.evm.runCall(runCallOpts)
       return bytesToHex(execResult.returnValue)
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -406,11 +407,13 @@ export class Eth {
     try {
       chainId = this._chain.config.chainCommon.chainId()
     } catch (error: any) {
-      throw {
+      if (error.code !== undefined) throw error
+      const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
-        trace: error.stack,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
     return bigIntToHex(chainId)
   }
@@ -480,6 +483,7 @@ export class Eth {
       })
       return `0x${totalGasSpent.toString(16)}`
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -513,6 +517,7 @@ export class Eth {
       }
       return bigIntToHex(account.balance)
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -534,11 +539,14 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await jsonRpcBlock(block, this._chain, includeTransactions)
-    } catch (error) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'Unknown block',
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -563,11 +571,14 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
-    } catch (error) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'Unknown block',
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -593,6 +604,7 @@ export class Eth {
       const code = await vm.stateManager.getContractCode(address)
       return bytesToHex(code)
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -639,6 +651,7 @@ export class Eth {
         ? bytesToHex(setLengthLeft(Uint8Array.from(storage) as Uint8Array, 32))
         : EMPTY_SLOT
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -690,6 +703,7 @@ export class Eth {
       const tx = block.transactions[txIndex]
       return jsonRpcTx(tx, block, txIndex)
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -724,6 +738,7 @@ export class Eth {
       }
       return bigIntToHex(account.nonce)
     } catch (error: any) {
+      if (error.code !== undefined) throw error
       const response: any = {
         code: INTERNAL_ERROR,
         message: error.message,
@@ -749,18 +764,29 @@ export class Eth {
   async getUncleCountByBlockNumber(params: [string]) {
     const [blockNumberHex] = params
     const blockNumber = BigInt(blockNumberHex)
-    const latest =
-      this._chain.headers.latest?.number ?? (await this._chain.getCanonicalHeadHeader()).number
 
-    if (blockNumber > latest) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'specified block greater than current height',
+    try {
+      const latest =
+        this._chain.headers.latest?.number ?? (await this._chain.getCanonicalHeadHeader()).number
+
+      if (blockNumber > latest) {
+        throw {
+          code: INVALID_PARAMS,
+          message: 'specified block greater than current height',
+        }
       }
-    }
 
-    const block = await this._chain.getBlock(blockNumber)
-    return block.uncleHeaders.length
+      const block = await this._chain.getBlock(blockNumber)
+      return block.uncleHeaders.length
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
+    }
   }
 
   /**
@@ -816,10 +842,13 @@ export class Eth {
         blobGasPrice
       )
     } catch (error: any) {
-      throw {
+      if (error.code !== undefined) throw error
+      const response: any = {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -837,56 +866,57 @@ export class Eth {
         message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
       }
     }
-    let from: Block, to: Block
-    if (blockHash !== undefined) {
-      try {
-        from = to = await this._chain.getBlock(hexToBytes(blockHash))
-      } catch (error: any) {
+    try {
+      let from: Block, to: Block
+      if (blockHash !== undefined) {
+        try {
+          from = to = await this._chain.getBlock(hexToBytes(blockHash))
+        } catch (error: any) {
+          throw {
+            code: INVALID_PARAMS,
+            message: 'unknown blockHash',
+          }
+        }
+      } else {
+        if (fromBlock === 'earliest') {
+          from = await this._chain.getBlock(BIGINT_0)
+        } else if (fromBlock === 'latest' || fromBlock === undefined) {
+          from = this._chain.blocks.latest!
+        } else {
+          const blockNum = BigInt(fromBlock)
+          if (blockNum > this._chain.headers.height) {
+            throw {
+              code: INVALID_PARAMS,
+              message: 'specified `fromBlock` greater than current height',
+            }
+          }
+          from = await this._chain.getBlock(blockNum)
+        }
+        if (toBlock === fromBlock) {
+          to = from
+        } else if (toBlock === 'latest' || toBlock === undefined) {
+          to = this._chain.blocks.latest!
+        } else {
+          const blockNum = BigInt(toBlock)
+          if (blockNum > this._chain.headers.height) {
+            throw {
+              code: INVALID_PARAMS,
+              message: 'specified `toBlock` greater than current height',
+            }
+          }
+          to = await this._chain.getBlock(blockNum)
+        }
+      }
+      if (
+        to.header.number - from.header.number >
+        BigInt(this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT)
+      ) {
         throw {
           code: INVALID_PARAMS,
-          message: 'unknown blockHash',
+          message: `block range limit is ${this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT} blocks`,
         }
       }
-    } else {
-      if (fromBlock === 'earliest') {
-        from = await this._chain.getBlock(BIGINT_0)
-      } else if (fromBlock === 'latest' || fromBlock === undefined) {
-        from = this._chain.blocks.latest!
-      } else {
-        const blockNum = BigInt(fromBlock)
-        if (blockNum > this._chain.headers.height) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'specified `fromBlock` greater than current height',
-          }
-        }
-        from = await this._chain.getBlock(blockNum)
-      }
-      if (toBlock === fromBlock) {
-        to = from
-      } else if (toBlock === 'latest' || toBlock === undefined) {
-        to = this._chain.blocks.latest!
-      } else {
-        const blockNum = BigInt(toBlock)
-        if (blockNum > this._chain.headers.height) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'specified `toBlock` greater than current height',
-          }
-        }
-        to = await this._chain.getBlock(blockNum)
-      }
-    }
-    if (
-      to.header.number - from.header.number >
-      BigInt(this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT)
-    ) {
-      throw {
-        code: INVALID_PARAMS,
-        message: `block range limit is ${this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT} blocks`,
-      }
-    }
-    try {
+
       const formattedTopics = topics?.map((t) => {
         if (t === null) {
           return null
@@ -911,10 +941,13 @@ export class Eth {
         )
       )
     } catch (error: any) {
-      throw {
+      if (error.code !== undefined) throw error
+      const response: any = {
         code: INTERNAL_ERROR,
-        message: error.message.toString(),
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
   }
 
@@ -928,85 +961,96 @@ export class Eth {
     const [serializedTx] = params
 
     const { syncTargetHeight } = this.client.config
-    if (!this.client.config.synchronized) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: `client is not aware of the current chain height yet (give sync some more time)`,
-      }
-    }
-    const common = this.client.config.chainCommon.copy()
-    const chainHeight = this.client.chain.headers.height
-    let txTargetHeight = syncTargetHeight ?? BIGINT_0
-    // Following step makes sure txTargetHeight > 0
-    if (txTargetHeight <= chainHeight) {
-      txTargetHeight = chainHeight + BIGINT_1
-    }
-    common.setHardforkBy({
-      blockNumber: txTargetHeight,
-      timestamp: Math.floor(Date.now() / 1000),
-    })
 
-    let tx
     try {
-      const txBuf = hexToBytes(serializedTx)
-      if (txBuf[0] === 0x03) {
-        // Blob Transactions sent over RPC are expected to be in Network Wrapper format
-        tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
-
-        const blobGasLimit = common.param('gasConfig', 'maxblobGasPerBlock')
-        const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
-
-        if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
-          throw Error(
-            `tx blobs=${(tx.blobs ?? []).length} exceeds block limit=${
-              blobGasLimit / blobGasPerBlob
-            }`
-          )
+      if (!this.client.config.synchronized) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: `client is not aware of the current chain height yet (give sync some more time)`,
         }
-      } else {
-        tx = TransactionFactory.fromSerializedData(txBuf, { common })
       }
-    } catch (e: any) {
-      throw {
-        code: PARSE_ERROR,
-        message: `serialized tx data could not be parsed (${e.message})`,
+      const common = this.client.config.chainCommon.copy()
+      const chainHeight = this.client.chain.headers.height
+      let txTargetHeight = syncTargetHeight ?? BIGINT_0
+      // Following step makes sure txTargetHeight > 0
+      if (txTargetHeight <= chainHeight) {
+        txTargetHeight = chainHeight + BIGINT_1
       }
-    }
+      common.setHardforkBy({
+        blockNumber: txTargetHeight,
+        timestamp: Math.floor(Date.now() / 1000),
+      })
 
-    if (!tx.isSigned()) {
-      throw {
-        code: INVALID_PARAMS,
-        message: `tx needs to be signed`,
+      let tx
+      try {
+        const txBuf = hexToBytes(serializedTx)
+        if (txBuf[0] === 0x03) {
+          // Blob Transactions sent over RPC are expected to be in Network Wrapper format
+          tx = BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(txBuf, { common })
+
+          const blobGasLimit = common.param('gasConfig', 'maxblobGasPerBlock')
+          const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
+
+          if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
+            throw Error(
+              `tx blobs=${(tx.blobs ?? []).length} exceeds block limit=${
+                blobGasLimit / blobGasPerBlob
+              }`
+            )
+          }
+        } else {
+          tx = TransactionFactory.fromSerializedData(txBuf, { common })
+        }
+      } catch (e: any) {
+        throw {
+          code: PARSE_ERROR,
+          message: `serialized tx data could not be parsed (${e.message})`,
+        }
       }
-    }
 
-    // Add the tx to own tx pool
-    const { txPool, pool } = this.service as FullEthereumService
+      if (!tx.isSigned()) {
+        throw {
+          code: INVALID_PARAMS,
+          message: `tx needs to be signed`,
+        }
+      }
 
-    try {
-      await txPool.add(tx, true)
-      txPool.sendNewTxHashes([[tx.type], [tx.serialize().byteLength], [tx.hash()]], pool.peers)
+      // Add the tx to own tx pool
+      const { txPool, pool } = this.service as FullEthereumService
+
+      try {
+        await txPool.add(tx, true)
+        txPool.sendNewTxHashes([[tx.type], [tx.serialize().byteLength], [tx.hash()]], pool.peers)
+      } catch (error: any) {
+        throw {
+          code: INVALID_PARAMS,
+          message: error.message ?? error.toString(),
+        }
+      }
+
+      const peerPool = this.service.pool
+      if (
+        peerPool.peers.length === 0 &&
+        !this.client.config.mine &&
+        this.client.config.isSingleNode === false
+      ) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: `no peer connection available`,
+        }
+      }
+      txPool.sendTransactions([tx], peerPool.peers)
+
+      return bytesToHex(tx.hash())
     } catch (error: any) {
-      throw {
-        code: INVALID_PARAMS,
-        message: error.message ?? error.toString(),
-      }
-    }
-
-    const peerPool = this.service.pool
-    if (
-      peerPool.peers.length === 0 &&
-      !this.client.config.mine &&
-      this.client.config.isSingleNode === false
-    ) {
-      throw {
+      if (error.code !== undefined) throw error
+      const response: any = {
         code: INTERNAL_ERROR,
-        message: `no peer connection available`,
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
-    txPool.sendTransactions([tx], peerPool.peers)
-
-    return bytesToHex(tx.hash())
   }
 
   /**
@@ -1019,23 +1063,34 @@ export class Eth {
    */
   async getProof(params: [string, string[], string]): Promise<Proof> {
     const [addressHex, slotsHex, blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
 
-    if (this._vm === undefined) {
-      throw new Error('missing vm')
+    try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+
+      if (this._vm === undefined) {
+        throw new Error('missing vm')
+      }
+
+      const vm = await this._vm.shallowCopy()
+
+      if (!('getProof' in vm.stateManager)) {
+        throw new Error('getProof RPC method not supported with the StateManager provided')
+      }
+      await vm.stateManager.setStateRoot(block.header.stateRoot)
+
+      const address = Address.fromString(addressHex)
+      const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
+      const proof = await vm.stateManager.getProof!(address, slots)
+      return proof
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
-
-    const vm = await this._vm.shallowCopy()
-
-    if (!('getProof' in vm.stateManager)) {
-      throw new Error('getProof RPC method not supported with the StateManager provided')
-    }
-    await vm.stateManager.setStateRoot(block.header.stateRoot)
-
-    const address = Address.fromString(addressHex)
-    const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
-    const proof = await vm.stateManager.getProof!(address, slots)
-    return proof
   }
 
   /**
@@ -1051,39 +1106,49 @@ export class Eth {
       return false
     }
 
-    const currentBlockHeader =
-      this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
-    const currentBlock = bigIntToHex(currentBlockHeader.number)
+    try {
+      const currentBlockHeader =
+        this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
+      const currentBlock = bigIntToHex(currentBlockHeader.number)
 
-    const synchronizer = this.client.services[0].synchronizer
-    if (!synchronizer) {
-      return false
-    }
-    const { syncTargetHeight } = this.client.config
-    const startingBlock = bigIntToHex(synchronizer.startingBlock)
-
-    let highestBlock
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BIGINT_0) {
-      highestBlock = bigIntToHex(syncTargetHeight)
-    } else {
-      const bestPeer = await synchronizer.best()
-      if (!bestPeer) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: `no peer available for synchronization`,
-        }
+      const synchronizer = this.client.services[0].synchronizer
+      if (!synchronizer) {
+        return false
       }
-      const highestBlockHeader = await synchronizer.latest(bestPeer)
-      if (!highestBlockHeader) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: `highest block header unavailable`,
-        }
-      }
-      highestBlock = bigIntToHex(highestBlockHeader.number)
-    }
+      const { syncTargetHeight } = this.client.config
+      const startingBlock = bigIntToHex(synchronizer.startingBlock)
 
-    return { startingBlock, currentBlock, highestBlock }
+      let highestBlock
+      if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BIGINT_0) {
+        highestBlock = bigIntToHex(syncTargetHeight)
+      } else {
+        const bestPeer = await synchronizer.best()
+        if (!bestPeer) {
+          throw {
+            code: INTERNAL_ERROR,
+            message: `no peer available for synchronization`,
+          }
+        }
+        const highestBlockHeader = await synchronizer.latest(bestPeer)
+        if (!highestBlockHeader) {
+          throw {
+            code: INTERNAL_ERROR,
+            message: `highest block header unavailable`,
+          }
+        }
+        highestBlock = bigIntToHex(highestBlockHeader.number)
+      }
+
+      return { startingBlock, currentBlock, highestBlock }
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
+    }
   }
 
   /**
@@ -1093,8 +1158,19 @@ export class Eth {
    */
   async getBlockTransactionCountByNumber(params: [string]) {
     const [blockOpt] = params
-    const block = await getBlockByOption(blockOpt, this._chain)
-    return intToHex(block.transactions.length)
+
+    try {
+      const block = await getBlockByOption(blockOpt, this._chain)
+      return intToHex(block.transactions.length)
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
+    }
   }
 
   /**
@@ -1104,47 +1180,57 @@ export class Eth {
    * @returns a hex code of an integer representing the suggested gas price in wei.
    */
   async gasPrice() {
-    const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
-    let gasPrice = BIGINT_0
-    const latest = await this._chain.getCanonicalHeadHeader()
-    if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
-      const baseFee = latest.calcNextBaseFee()
-      let priorityFee = BIGINT_0
-      const block = await this._chain.getBlock(latest.number)
-      for (const tx of block.transactions) {
-        const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-        priorityFee += maxPriorityFeePerGas
-      }
-
-      priorityFee =
-        priorityFee !== BIGINT_0 ? priorityFee / BigInt(block.transactions.length) : BIGINT_1
-      gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
-    } else {
-      // For chains that don't support EIP-1559 we iterate over the last 20
-      // blocks to get an average gas price.
-      const blockIterations = 20 < latest.number ? 20 : latest.number
-      let txCount = BIGINT_0
-      for (let i = 0; i < blockIterations; i++) {
-        const block = await this._chain.getBlock(latest.number - BigInt(i))
-        if (block.transactions.length === 0) {
-          continue
-        }
-
+    try {
+      const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
+      let gasPrice = BIGINT_0
+      const latest = await this._chain.getCanonicalHeadHeader()
+      if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
+        const baseFee = latest.calcNextBaseFee()
+        let priorityFee = BIGINT_0
+        const block = await this._chain.getBlock(latest.number)
         for (const tx of block.transactions) {
-          const txGasPrice = (tx as LegacyTransaction).gasPrice
-          gasPrice += txGasPrice
-          txCount++
+          const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+          priorityFee += maxPriorityFeePerGas
+        }
+
+        priorityFee =
+          priorityFee !== BIGINT_0 ? priorityFee / BigInt(block.transactions.length) : BIGINT_1
+        gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
+      } else {
+        // For chains that don't support EIP-1559 we iterate over the last 20
+        // blocks to get an average gas price.
+        const blockIterations = 20 < latest.number ? 20 : latest.number
+        let txCount = BIGINT_0
+        for (let i = 0; i < blockIterations; i++) {
+          const block = await this._chain.getBlock(latest.number - BigInt(i))
+          if (block.transactions.length === 0) {
+            continue
+          }
+
+          for (const tx of block.transactions) {
+            const txGasPrice = (tx as LegacyTransaction).gasPrice
+            gasPrice += txGasPrice
+            txCount++
+          }
+        }
+
+        if (txCount > 0) {
+          const avgGasPrice = gasPrice / txCount
+          gasPrice = avgGasPrice > minGasPrice ? avgGasPrice : minGasPrice
+        } else {
+          gasPrice = minGasPrice
         }
       }
 
-      if (txCount > 0) {
-        const avgGasPrice = gasPrice / txCount
-        gasPrice = avgGasPrice > minGasPrice ? avgGasPrice : minGasPrice
-      } else {
-        gasPrice = minGasPrice
+      return bigIntToHex(gasPrice)
+    } catch (error: any) {
+      if (error.code !== undefined) throw error
+      const response: any = {
+        code: INTERNAL_ERROR,
+        message: error.message,
       }
+      if (this._rpcDebug === true) response['trace'] = error.stack
+      throw response
     }
-
-    return bigIntToHex(gasPrice)
   }
 }
