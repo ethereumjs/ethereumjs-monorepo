@@ -384,19 +384,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
 
-    // TODO need to change to first check cache before looking up in db, similare to bellow commented code
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
-    this._codeCache2!.put(address, code)
+    this._codeCache2!.put(address, code, undefined)
     return code
-
-    // const keyHex = bytesToUnprefixedHex(key)
-    // if (keyHex in this._codeCache) {
-    //   return this._codeCache[keyHex]
-    // } else {
-    //   const code = (await this._getCodeDB().get(key)) ?? new Uint8Array(0)
-    //   this._codeCache[keyHex] = code
-    //   return code
-    // }
   }
 
   /**
