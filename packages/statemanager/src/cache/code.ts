@@ -48,7 +48,7 @@ export class CodeCache extends Cache {
     this._debug = createDebugLogger('statemanager:cache:code')
   }
 
-  _saveCachePreState(cacheKeyHex: string) {
+  _saveCachePreState(cacheKeyHex: string, currentCode?: Uint8Array | undefined) {
     const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
     if (it === undefined) {
       let oldElem: CodeCacheElement | undefined
@@ -57,7 +57,7 @@ export class CodeCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: undefined })
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: currentCode })
     }
   }
 
@@ -68,7 +68,7 @@ export class CodeCache extends Cache {
    */
   put(address: Address, code: Uint8Array | undefined): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
-    this._saveCachePreState(addressHex)
+    this._saveCachePreState(addressHex, code)
     const elem = {
       code,
     }
