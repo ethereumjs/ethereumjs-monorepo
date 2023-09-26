@@ -155,13 +155,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _debug: Debugger
   protected _accountCache?: AccountCache
   protected _storageCache?: StorageCache
-  protected _codeCache2?: CodeCache
+  protected _codeCache?: CodeCache
 
   originalStorageCache: OriginalStorageCache
 
   protected _trie: Trie
   protected _storageTries: { [key: string]: Trie }
-  protected _codeCache: { [key: string]: Uint8Array }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _prefixStorageTrieKeys: boolean
@@ -203,7 +202,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
     this._storageTries = {}
-    this._codeCache = {}
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
@@ -237,7 +235,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       })
     }
 
-    this._codeCache2 = new CodeCache({
+    this._codeCache = new CodeCache({
       size: 20000,
       type: CacheType.ORDERED_MAP,
     })
@@ -325,7 +323,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       this._debug(`Delete account ${address}`)
     }
 
-    this._codeCache2?.del(address)
+    this._codeCache?.del(address)
 
     if (this._accountCacheSettings.deactivate) {
       await this._trie.del(address.bytes)
@@ -345,7 +343,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     const currentCode = await this.getContractCode(address)
-    this._codeCache2?.put(address, value, currentCode)
+    this._codeCache?.put(address, value, currentCode)
     const codeHash = keccak256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
@@ -368,7 +366,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
-    const elem = this._codeCache2?.get(address)
+    const elem = this._codeCache?.get(address)
     if (elem !== undefined) {
       return elem.code ?? new Uint8Array(0)
     }
@@ -385,7 +383,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       : account.codeHash
 
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
-    this._codeCache2!.put(address, code, undefined)
+    this._codeCache!.put(address, code, undefined)
     return code
   }
 
@@ -573,7 +571,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._trie.checkpoint()
     this._storageCache?.checkpoint()
     this._accountCache?.checkpoint()
-    this._codeCache2?.checkpoint()
+    this._codeCache?.checkpoint()
     this._checkpointCount++
   }
 
@@ -586,7 +584,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this._trie.commit()
     this._storageCache?.commit()
     this._accountCache?.commit()
-    this._codeCache2?.commit()
+    this._codeCache?.commit()
     this._checkpointCount--
 
     if (this._checkpointCount === 0) {
@@ -608,10 +606,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     await this._trie.revert()
     this._storageCache?.revert()
     this._accountCache?.revert()
-    this._codeCache2?.revert()
+    this._codeCache?.revert()
 
     this._storageTries = {}
-    this._codeCache = {}
 
     this._checkpointCount--
 
@@ -625,7 +622,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    const items = this._codeCache2!.flush()
+    const items = this._codeCache!.flush()
     for (const item of items) {
       const addr = Address.fromString(`0x${item[0]}`)
 
@@ -833,11 +830,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (this._storageCache !== undefined && clearCache) {
       this._storageCache.clear()
     }
-    if (this._codeCache2 !== undefined && clearCache) {
-      this._codeCache2!.clear()
+    if (this._codeCache !== undefined && clearCache) {
+      this._codeCache!.clear()
     }
     this._storageTries = {}
-    this._codeCache = {}
   }
 
   /**
@@ -1021,6 +1017,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   clearCaches() {
     this._accountCache?.clear()
     this._storageCache?.clear()
-    this._codeCache2?.clear()
+    this._codeCache?.clear()
   }
 }
