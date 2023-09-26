@@ -32,9 +32,9 @@ describe('SecureTrie', () => {
   })
 
   it('copy trie (new key prefix)', async () => {
-    const prefix = hexToBytes('0x1234')
-    const t = trie.shallowCopy(true, prefix)
-    assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, prefix))
+    const keyPrefix = hexToBytes('0x1234')
+    const t = trie.shallowCopy(true, { keyPrefix })
+    assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, keyPrefix))
   })
 })
 

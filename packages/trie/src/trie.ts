@@ -38,6 +38,7 @@ import type {
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
+  TrieShallowCopyOpts,
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
@@ -1049,13 +1050,13 @@ export class Trie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true, keyPrefix?: Uint8Array): Trie {
+  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
-      keyPrefix: keyPrefix ?? this._opts.keyPrefix,
       cacheSize: 0,
+      ...(opts ?? {}),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
       trie._db.setCheckpoints(this._db.checkpoints)
