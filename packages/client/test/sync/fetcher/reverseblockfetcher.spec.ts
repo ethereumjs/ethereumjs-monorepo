@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'
 import { getLogger } from '../../../src/logging'
-import { Skeleton } from '../../../src/sync'
+import { Skeleton } from '../../../src/service/skeleton'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
