@@ -494,7 +494,7 @@ console.log(bytesToHex(utf8ToBytes('testKey000A')))
 0x746573744b657930303041
 ```
 
-The first part of the path ("testKey" = `0x746573744b6579`) led us to the branch node. Next, taking the branch at index `3` (for hex value `3`) led us to our extension node, which automatically leads us down the path `03030`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `303030>` part of the path! With a standard trie, this would have required 6 successive branch nodes!
+The first part of the path ("testKey" = `0x746573744b6579`) led us to the branch node. Next, taking the branch at index `3` (for hex value `3`) led us to our extension node, which automatically leads us down the path `03030`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `303030` part of the path! With a standard trie, this would have required 6 successive branch nodes!
 
 Again, the value of the extension node leads us down to another node... can you guess what it will be?
 
