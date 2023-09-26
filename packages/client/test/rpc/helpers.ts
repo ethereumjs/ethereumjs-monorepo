@@ -19,6 +19,7 @@ import { VMExecution } from '../../src/execution'
 import { getLogger } from '../../src/logging'
 import { RlpxServer } from '../../src/net/server/rlpxserver'
 import { RPCManager as Manager } from '../../src/rpc'
+import { Skeleton } from '../../src/service/skeleton'
 import { TxPool } from '../../src/service/txpool'
 import { Event } from '../../src/types'
 import { createRPCServerListener, createWsRPCServerListener } from '../../src/util'
@@ -141,6 +142,8 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
     peers = []
   }
 
+  const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+
   const client: any = {
     synchronized: false,
     config,
@@ -149,6 +152,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
       {
         name: 'eth',
         chain,
+        skeleton,
         pool: { peers },
         protocols: [
           {

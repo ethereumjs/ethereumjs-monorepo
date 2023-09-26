@@ -323,7 +323,7 @@ Node 1 branch 4 (hex): 0x31 - 0x7465737456616c756541
 [path:  0x31  | value:  0x7465737456616c756541] // going down the path of "testKeyA"
 ```
 
-I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two "bytes" (bytes are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second bytes array is the value at that path. We can confirm that the values are what we'd expect:
+I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two byte arrays (byte arrays are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second byte array is the value at that path. We can confirm that the values are what we'd expect:
 
 ```jsx
 console.log('Value of branch at index 3: ', bytesToUtf8(node1.node._branches[3][1]))
@@ -374,7 +374,7 @@ hex char    bits    |        node type         path length
    3        0011    |          leaf                odd
 ```
 
-In our code above, the first hexadecimal characters for the encodedPath of both nodes (`0x30` and `0x31`) was `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `0x0` and `0x1` respectively) indicates the last part of the path (the last hex character of our key).
+In our code above, the first hexadecimal character for the encodedPath of both nodes (`0x30` and `0x31`) is `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `0x0` and `0x1` respectively) indicates the last part of the path (the last hex character of our key).
 
 With this in mind, let's take a closer look at leaf and extension nodes.
 
@@ -417,7 +417,7 @@ console.log(bytesToHex(utf8ToBytes('testKey000A')))
 0x746573744b657930303041
 ```
 
-As you can see, the bytes `303030>` (standing for `000`> are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
+As you can see, the bytes `303030` (standing for `000` are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
 
 ```jsx
 await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
@@ -494,7 +494,7 @@ console.log(bytesToHex(utf8ToBytes('testKey000A')))
 0x746573744b657930303041
 ```
 
-The first part of the path ("testKey" = `0x746573744b6579`) led us to the branch node. Next, taking the branch at index `3` (for hex value `3`) led us to our extension node, which automatically leads us down the path `03030`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `303030>` part of the path! With a standard trie, this would have required 6 successive branch nodes!
+The first part of the path ("testKey" = `0x746573744b6579`) led us to the branch node. Next, taking the branch at index `3` (for hex value `3`) led us to our extension node, which automatically leads us down the path `03030`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `303030` part of the path! With a standard trie, this would have required 6 successive branch nodes!
 
 Again, the value of the extension node leads us down to another node... can you guess what it will be?
 
