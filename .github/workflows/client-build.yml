@@ -91,8 +91,4 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
+      - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
