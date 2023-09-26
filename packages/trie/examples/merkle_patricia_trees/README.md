@@ -655,7 +655,7 @@ BranchNode {
 Now let's suppose that I'm provided with various pieces of information, some that I trust, and some that I don't. Here's what I know from a trustworthy source:
 
 - The tree contains key-value pair "testKey": "testValue"
-- There also exists a branch node with hash (the value of the extension node in hex): `0x70b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72`.
+- There also exists a branch node with the following hash (the hash of the branch node corresponds to the \_value field of the extension node above [\_value: Uint8Array(32) [ 112, 179, 208, ... ]]. I've converted it to hex here for ease of reading): `0x70b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72`.
 - The path corresponding to this branch node is "testKey000".
 - This branch node contains at least one valid branch. This branch is located at index 4, with value [ `path: 0x31 | value: 0x7465737456616c756541` ] (equivalent to key-value pair "testKey0001": "testValue1")
 
