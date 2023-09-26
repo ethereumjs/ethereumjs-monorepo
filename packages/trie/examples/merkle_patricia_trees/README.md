@@ -323,7 +323,7 @@ Node 1 branch 4 (hex): 0x31 - 0x7465737456616c756541
 [path:  0x31  | value:  0x7465737456616c756541] // going down the path of "testKeyA"
 ```
 
-I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two "bytes" (bytes are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second bytes array is the value at that path. We can confirm that the values are what we'd expect:
+I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two byte arrays (byte arrays are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second byte array is the value at that path. We can confirm that the values are what we'd expect:
 
 ```jsx
 console.log('Value of branch at index 3: ', bytesToUtf8(node1.node._branches[3][1]))
