@@ -31,10 +31,11 @@ describe('SecureTrie', () => {
     assert.isUndefined(t['_opts']['keyPrefix'])
   })
 
-  it('copy trie (new key prefix)', async () => {
+  it('copy trie (new key prefix / default 0 size cache)', async () => {
     const keyPrefix = hexToBytes('0x1234')
     const t = trie.shallowCopy(true, { keyPrefix })
     assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, keyPrefix))
+    assert.equal(t['_opts']['cacheSize'] as number, 0)
   })
 })
 
