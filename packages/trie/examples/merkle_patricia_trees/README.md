@@ -374,7 +374,7 @@ hex char    bits    |        node type         path length
    3        0011    |          leaf                odd
 ```
 
-In our code above, the first hexadecimal characters for the encodedPath of both nodes (`0x30` and `0x31`) was `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `0x0` and `0x1` respectively) indicates the last part of the path (the last hex character of our key).
+In our code above, the first hexadecimal character for the encodedPath of both nodes (`0x30` and `0x31`) is `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `0x0` and `0x1` respectively) indicates the last part of the path (the last hex character of our key).
 
 With this in mind, let's take a closer look at leaf and extension nodes.
 
