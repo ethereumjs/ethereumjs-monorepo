@@ -417,7 +417,7 @@ console.log(bytesToHex(utf8ToBytes('testKey000A')))
 0x746573744b657930303041
 ```
 
-As you can see, the bytes `303030>` (standing for `000`> are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
+As you can see, the bytes `303030` (standing for `000` are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
 
 ```jsx
 await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
