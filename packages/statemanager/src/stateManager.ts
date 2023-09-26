@@ -342,8 +342,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    const currentCode = await this.getContractCode(address)
-    this._codeCache?.put(address, value, currentCode)
+    const codeExists = !equalsBytes(await this.getContractCode(address), new Uint8Array())
+    this._codeCache?.put(address, value, codeExists)
     const codeHash = keccak256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
@@ -383,7 +383,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       : account.codeHash
 
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
-    this._codeCache!.put(address, code, undefined)
+    this._codeCache!.put(address, code)
     return code
   }
 
