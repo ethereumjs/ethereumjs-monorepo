@@ -3,6 +3,7 @@ import {
   Account,
   Address,
   MAX_UINT64,
+  bytesToBigInt,
   bytesToHex,
   concatBytes,
   hexToBytes,
@@ -13,6 +14,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
+import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
 import { EVM } from '../src/index.js'
 
@@ -578,7 +580,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes('0x60004960005260206000F3'),
-      versionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: [hexToBytes('0xab')],
     }
     const res = await evm.runCall(runCallArgs)
     assert.equal(
@@ -592,7 +594,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
       data: hexToBytes('0x60014960005260206000F3'),
-      versionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: [hexToBytes('0xab')],
     }
     const res2 = await evm.runCall(runCall2Args)
     assert.equal(
@@ -600,6 +602,42 @@ describe('RunCall tests', () => {
       '0x',
       'retrieved no versionedHash when specified versionedHash does not exist in runState'
     )
+  })
+
+  it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
+    // setup the evm
+    const common = Common.fromGethGenesis(genesisJSON, {
+      chain: 'custom',
+      hardfork: Hardfork.Cancun,
+    })
+    const evm = new EVM({
+      common,
+    })
+
+    const BLOBBASEFEE_OPCODE = 0x4a
+    assert.equal(
+      evm.getActiveOpcodes().get(BLOBBASEFEE_OPCODE)!.name,
+      'BLOBBASEFEE',
+      'Opcode 0x4a named BLOBBASEFEE'
+    )
+
+    const block = defaultBlock()
+    block.header.getBlobGasPrice = () => BigInt(119)
+
+    // setup the call arguments
+    const runCallArgs: EVMRunCallOpts = {
+      gasLimit: BigInt(0xffffffffff),
+      // calldata -- retrieves the blobgas and returns it from memory
+      data: hexToBytes('0x4a60005260206000F3'),
+      block,
+    }
+    const res = await evm.runCall(runCallArgs)
+    assert.equal(
+      bytesToBigInt(unpadBytes(res.execResult.returnValue)),
+      BigInt(119),
+      'retrieved correct gas fee'
+    )
+    assert.equal(res.execResult.executionGasUsed, BigInt(6417), 'correct blob gas fee (2) charged')
   })
 
   it('step event: ensure EVM memory and not internal memory gets reported', async () => {

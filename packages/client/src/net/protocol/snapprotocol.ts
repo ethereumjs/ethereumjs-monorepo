@@ -1,4 +1,5 @@
 import {
+  BIGINT_0,
   accountBodyFromSlim,
   accountBodyToSlim,
   bigIntToUnpaddedBytes,
@@ -99,7 +100,7 @@ export class SnapProtocol extends Protocol {
   private chain: Chain
   /** If to convert slim body received of an account to normal */
   private convertSlimBody?: boolean
-  private nextReqId = BigInt(0)
+  private nextReqId = BIGINT_0
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [

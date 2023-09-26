@@ -1,4 +1,4 @@
-import { hexToBytes } from '@ethereumjs/util'
+import { BIGINT_0, hexToBytes } from '@ethereumjs/util'
 
 export enum Chain {
   Mainnet = 1,
@@ -23,19 +23,19 @@ type GenesisState = {
  */
 export const ChainGenesis: Record<Chain, GenesisState> = {
   [Chain.Mainnet]: {
-    blockNumber: BigInt(0),
+    blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'),
   },
   [Chain.Goerli]: {
-    blockNumber: BigInt(0),
+    blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008'),
   },
   [Chain.Sepolia]: {
-    blockNumber: BigInt(0),
+    blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494'),
   },
   [Chain.Holesky]: {
-    blockNumber: BigInt(0),
+    blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
   },
 }

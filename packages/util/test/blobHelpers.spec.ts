@@ -31,10 +31,10 @@ describe('blob helper tests', () => {
 
   it('commitmentsToVersionedHashes should return an array of versioned hashes', () => {
     const commitments = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])]
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
-    assert(Array.isArray(versionedHashes))
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
+    assert(Array.isArray(blobVersionedHashes))
 
-    for (const versionedHash of versionedHashes) {
+    for (const versionedHash of blobVersionedHashes) {
       assert(versionedHash instanceof Uint8Array)
       assert.lengthOf(versionedHash, 32)
     }

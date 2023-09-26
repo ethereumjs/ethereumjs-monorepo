@@ -215,7 +215,7 @@ describe('[Common]: Hardfork logic', () => {
       ],
       [
         Chain.Holesky,
-        hexToBytes('0xff9006519a8ce843ac9c28549d24211420b546e12ce2d170c77a8cca7964f23d'),
+        hexToBytes('0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'),
       ],
     ]
 

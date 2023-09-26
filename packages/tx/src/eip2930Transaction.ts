@@ -1,22 +1,22 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_27,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  concatBytes,
   equalsBytes,
-  hexToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
 
 import { BaseTransaction } from './baseTransaction.js'
+import * as EIP2718 from './capabilities/eip2718.js'
 import * as EIP2930 from './capabilities/eip2930.js'
-import * as Generic from './capabilities/generic.js'
+import * as Legacy from './capabilities/legacy.js'
 import { TransactionType } from './types.js'
-import { AccessLists } from './util.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -30,10 +30,6 @@ import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
-
-const TRANSACTION_TYPE_BYTES = hexToBytes(
-  '0x' + TransactionType.AccessListEIP2930.toString(16).padStart(2, '0')
-)
 
 /**
  * Typed transaction with optional access lists
@@ -70,7 +66,10 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * signatureYParity (v), signatureR (r), signatureS (s)])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.AccessListEIP2930)) ===
+      false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${
           TransactionType.AccessListEIP2930
@@ -165,8 +164,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
       throw new Error(msg)
     }
 
-    Generic.validateYParity(this)
-    Generic.validateHighS(this)
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -228,7 +227,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    return EIP2930.serialize(this)
+    return EIP2718.serialize(this)
   }
 
   /**
@@ -243,9 +242,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * ```
    */
   getMessageToSign(): Uint8Array {
-    const base = this.raw().slice(0, 8)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return message
+    return EIP2718.serialize(this, this.raw().slice(0, 8))
   }
 
   /**
@@ -256,7 +253,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * serialized and doesn't need to be RLP encoded any more.
    */
   getHashedMessageToSign(): Uint8Array {
-    return EIP2930.getHashedMessageToSign(this)
+    return EIP2718.getHashedMessageToSign(this)
   }
 
   /**
@@ -266,7 +263,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    return Generic.hash(this)
+    return Legacy.hash(this)
   }
 
   /**
@@ -280,7 +277,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this)
   }
 
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
@@ -296,7 +293,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: v - BIGINT_27, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
@@ -336,6 +333,6 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg)
   }
 }

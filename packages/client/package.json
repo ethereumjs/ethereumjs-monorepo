@@ -98,6 +98,7 @@
     "@types/yargs": "^17.0.24",
     "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
+    "eventsource": "^2.0.2",
     "file-replace-loader": "^1.2.0",
     "it-pair": "^1.0.0",
     "it-pushable": "^1.4.2",

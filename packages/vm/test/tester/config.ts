@@ -401,7 +401,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 0,
     HomesteadToEIP150At5: 0,
     BerlinToLondonAt5: 0,
-    Cancun: 1,
+    Cancun: 0,
   },
 }
 

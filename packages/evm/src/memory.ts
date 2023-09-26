@@ -19,7 +19,7 @@ export class Memory {
   _store: Uint8Array
 
   constructor() {
-    this._store = new Uint8Array(0)
+    this._store = new Uint8Array(CONTAINER_SIZE)
   }
 
   /**
@@ -34,10 +34,8 @@ export class Memory {
     const newSize = ceil(offset + size, 32)
     const sizeDiff = newSize - this._store.length
     if (sizeDiff > 0) {
-      this._store = concatBytes(
-        this._store,
-        new Uint8Array(Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE)
-      )
+      const expandBy = Math.ceil(sizeDiff / CONTAINER_SIZE) * CONTAINER_SIZE
+      this._store = concatBytes(this._store, new Uint8Array(expandBy))
     }
   }
 

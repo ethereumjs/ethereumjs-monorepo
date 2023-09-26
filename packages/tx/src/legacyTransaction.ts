@@ -1,5 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_2,
+  BIGINT_8,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -11,7 +13,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { BaseTransaction } from './baseTransaction.js'
-import * as Generic from './capabilities/generic.js'
+import * as Legacy from './capabilities/legacy.js'
 import { Capability, TransactionType } from './types.js'
 
 import type {
@@ -229,18 +231,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: super.getDataFee(),
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return super.getDataFee()
+    return Legacy.getDataFee(this)
   }
 
   /**
@@ -257,7 +248,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Uint8Array {
-    return Generic.hash(this)
+    return Legacy.hash(this)
   }
 
   /**
@@ -275,7 +266,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Returns the public key of the sender
    */
   getSenderPublicKey(): Uint8Array {
-    return Generic.getSenderPublicKey(this)
+    return Legacy.getSenderPublicKey(this)
   }
 
   /**
@@ -283,7 +274,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    */
   protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      v += this.common.chainId() * BigInt(2) + BigInt(8)
+      v += this.common.chainId() * BIGINT_2 + BIGINT_8
     }
 
     const opts = { ...this.txOptions, common: this.common }
@@ -355,7 +346,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
           numSub = 36
         }
         // Use derived chain ID to create a proper Common
-        chainIdBigInt = BigInt(v - numSub) / BigInt(2)
+        chainIdBigInt = BigInt(v - numSub) / BIGINT_2
       }
     }
     return this._getCommon(common, chainIdBigInt)
@@ -377,6 +368,6 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return Generic.errorMsg(this, msg)
+    return Legacy.errorMsg(this, msg)
   }
 }

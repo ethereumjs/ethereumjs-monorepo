@@ -1,6 +1,7 @@
 import { Chain, Common } from '@ethereumjs/common'
 import {
   Address,
+  BIGINT_0,
   MAX_INTEGER,
   MAX_UINT64,
   bigIntToHex,
@@ -18,22 +19,13 @@ import { checkMaxInitCodeSize } from './util.js'
 import type {
   JsonTx,
   Transaction,
+  TransactionCache,
   TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
 } from './types.js'
-import type { Hardfork } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
-
-interface TransactionCache {
-  hash?: Uint8Array
-  dataFee?: {
-    value: bigint
-    hardfork: string | Hardfork
-  }
-  senderPubKey?: Uint8Array
-}
 
 /**
  * This base class will likely be subject to further
@@ -59,7 +51,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
   public readonly common!: Common
 
-  protected cache: TransactionCache = {
+  public cache: TransactionCache = {
     hash: undefined,
     dataFee: undefined,
     senderPubKey: undefined,
@@ -199,7 +191,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
-    let cost = BigInt(0)
+    let cost = BIGINT_0
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
