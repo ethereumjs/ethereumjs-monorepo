@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695658890448,
+  "lastUpdate": 1695747924761,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8ca49a1c346eb7aa61acf550f8fe213445ef71ab",
-          "message": "ethersStateManager: dumpStorage fix / test (#3009)\n\n* statemanager: add test for uncovered dumpStorage method\r\n\r\n* statemanager: add internal account dump method\r\nto storage cache class.\r\n\r\n* statemanager:  ethersStateManager:\r\ncall `_storageCache.dump` in `dumpStorage`",
-          "timestamp": "2023-09-08T17:08:08+02:00",
-          "tree_id": "3c58ea7da19f92134b2d111a99aeb3e08a616bdf",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8ca49a1c346eb7aa61acf550f8fe213445ef71ab"
-        },
-        "date": 1694185903936,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30283,
-            "range": "±5.58%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29928,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29554,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24998,
-            "range": "±10.88%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 28875,
-            "range": "±3.45%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.85%",
             "unit": "ops/sec",
             "extra": "71 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "35dad1afa28ee5259b79c8f69b423bbfa21acc4e",
+          "message": "trie: update mpt tutorial (#3056)\n\n* trie: update first module of examples\r\n\r\n* trie: update module 2 of mpt examples\r\n\r\n* trie: update module 3 of mpt examples\r\n\r\n* trie: simplify imports of mpt examples\r\n\r\n* trie: update module 4 of mpt examples\r\n\r\n* trie: remove redundant comments from code examples\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* trie: clarify sentence\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
+          "timestamp": "2023-09-26T10:01:08-07:00",
+          "tree_id": "85d0743d5995d1843c2a6e0e412b729e2bec58c4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/35dad1afa28ee5259b79c8f69b423bbfa21acc4e"
+        },
+        "date": 1695747923319,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 25496,
+            "range": "±6.46%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 25594,
+            "range": "±3.27%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 25176,
+            "range": "±3.64%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 25050,
+            "range": "±3.69%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20354,
+            "range": "±13.08%",
+            "unit": "ops/sec",
+            "extra": "70 samples"
           }
         ]
       }
