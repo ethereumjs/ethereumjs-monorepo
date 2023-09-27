@@ -57,6 +57,7 @@ export class VMExecution extends Execution {
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
       this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
+      this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
       this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
       const stateManager = new DefaultStateManager({
         trie,
@@ -70,6 +71,11 @@ export class VMExecution extends Execution {
           deactivate: false,
           type: CacheType.LRU,
           size: this.config.storageCache,
+        },
+        codeCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.codeCache,
         },
       })
 
@@ -687,6 +693,10 @@ export class VMExecution extends Execution {
       stats = (vm.stateManager as any)._storageCache.stats()
       this.config.logger.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      stats = (vm.stateManager as any)._codeCache.stats()
+      this.config.logger.info(
+        `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
       const tStats = ((vm.stateManager as any)._trie as Trie).database().stats()
       this.config.logger.info(

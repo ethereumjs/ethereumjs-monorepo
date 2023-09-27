@@ -77,7 +77,7 @@ type CacheOptions = {
   /**
    * Size of the cache (only for LRU cache)
    *
-   * Default: 100000 (account cache) / 20000 (storage cache)
+   * Default: 100000 (account cache) / 20000 (storage cache) / 20000 (code cache)
    *
    * Note: the cache/trie interplay mechanism is designed in a way that
    * the theoretical number of max modified accounts between two flush operations
@@ -135,6 +135,8 @@ export interface DefaultStateManagerOpts {
 
   storageCacheOpts?: CacheOptions
 
+  codeCacheOpts?: CacheOptions
+
   /**
    * The common to use
    */
@@ -166,6 +168,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected readonly _prefixStorageTrieKeys: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
+  protected readonly _codeCacheSettings: CacheSettings
 
   public readonly common: Common
 
@@ -235,10 +238,19 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       })
     }
 
-    this._codeCache = new CodeCache({
-      size: 20000,
-      type: CacheType.ORDERED_MAP,
-    })
+    this._codeCacheSettings = {
+      deactivate:
+        (opts.codeCacheOpts?.deactivate === true || opts.codeCacheOpts?.size === 0) ?? false,
+      type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.codeCacheOpts?.size ?? 20000,
+    }
+
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache = new CodeCache({
+        size: this._codeCacheSettings.size,
+        type: this._codeCacheSettings.type,
+      })
+    }
   }
 
   /**
@@ -342,11 +354,17 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    const codeExists = !equalsBytes(await this.getContractCode(address), new Uint8Array())
-    this._codeCache?.put(address, value, codeExists)
     const codeHash = keccak256(value)
+    if (!this._codeCacheSettings.deactivate) {
+      const codeExists = !equalsBytes(await this.getContractCode(address), new Uint8Array())
+      this._codeCache?.put(address, value, codeExists)
+    }
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
+    }
+    if (this._codeCacheSettings.deactivate) {
+      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+      await this._getCodeDB().put(key, value)
     }
 
     if (this.DEBUG) {
@@ -366,11 +384,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
-    const elem = this._codeCache?.get(address)
-    if (elem !== undefined) {
-      return elem.code ?? new Uint8Array(0)
+    if (!this._codeCacheSettings.deactivate) {
+      const elem = this._codeCache?.get(address)
+      if (elem !== undefined) {
+        return elem.code ?? new Uint8Array(0)
+      }
     }
-
     const account = await this.getAccount(address)
     if (!account) {
       return new Uint8Array(0)
@@ -381,9 +400,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const key = this._prefixCodeHashes
       ? concatBytes(CODEHASH_PREFIX, account.codeHash)
       : account.codeHash
-
     const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
-    this._codeCache!.put(address, code)
+
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache!.put(address, code)
+    }
     return code
   }
 
@@ -622,27 +643,28 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    const items = this._codeCache!.flush()
-    for (const item of items) {
-      const addr = Address.fromString(`0x${item[0]}`)
+    if (!this._storageCacheSettings.deactivate) {
+      const items = this._codeCache!.flush()
+      for (const item of items) {
+        const addr = Address.fromString(`0x${item[0]}`)
 
-      const code = item[1].code
-      if (code === undefined) {
-        continue
+        const code = item[1].code
+        if (code === undefined) {
+          continue
+        }
+
+        // update code in database
+        const codeHash = keccak256(code)
+        const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
+        await this._getCodeDB().put(key, code)
+
+        // update code root of associated account
+        if ((await this.getAccount(addr)) === undefined) {
+          await this.putAccount(addr, new Account())
+        }
+        await this.modifyAccountFields(addr, { codeHash })
       }
-
-      // update code in database
-      const codeHash = keccak256(code)
-      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-      await this._getCodeDB().put(key, code)
-
-      // update code root of associated account
-      if ((await this.getAccount(addr)) === undefined) {
-        await this.putAccount(addr, new Account())
-      }
-      await this.modifyAccountFields(addr, { codeHash })
     }
-
     if (!this._storageCacheSettings.deactivate) {
       const items = this._storageCache!.flush()
       for (const item of items) {
@@ -1000,6 +1022,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!this._storageCacheSettings.deactivate) {
       storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
     }
+    let codeCacheOpts = { ...this._codeCacheSettings }
+    if (!this._codeCacheSettings.deactivate) {
+      codeCacheOpts = { ...codeCacheOpts, type: CacheType.ORDERED_MAP }
+    }
 
     return new DefaultStateManager({
       common,
@@ -1008,6 +1034,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       prefixCodeHashes,
       accountCacheOpts,
       storageCacheOpts,
+      codeCacheOpts,
     })
   }
 
