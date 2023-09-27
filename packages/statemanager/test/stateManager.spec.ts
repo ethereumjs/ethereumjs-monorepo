@@ -45,8 +45,8 @@ describe('StateManager -> General', () => {
 
     let smCopy = sm.shallowCopy()
     assert.equal(
-      (smCopy as any)._prefixCodeHashes,
-      (sm as any)._prefixCodeHashes,
+      smCopy['_prefixCodeHashes'],
+      sm['_prefixCodeHashes'],
       'should retain non-default values'
     )
 
@@ -62,30 +62,30 @@ describe('StateManager -> General', () => {
 
     smCopy = sm.shallowCopy()
     assert.equal(
-      (smCopy as any)._accountCacheSettings.type,
+      smCopy['_accountCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()'
     )
     assert.equal(
-      (smCopy as any)._storageCacheSettings.type,
+      smCopy['_storageCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )
-    assert.equal((smCopy as any)._trie._opts.cacheSize, 0, 'should set trie cache size to 0')
+    assert.equal(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
 
     smCopy = sm.shallowCopy(false)
     assert.equal(
-      (smCopy as any)._accountCacheSettings.type,
+      smCopy['_accountCacheSettings'].type,
       CacheType.LRU,
       'should retain account cache type when deactivate cache downleveling'
     )
     assert.equal(
-      (smCopy as any)._storageCacheSettings.type,
+      smCopy['_storageCacheSettings'].type,
       CacheType.LRU,
       'should retain storage cache type when deactivate cache downleveling'
     )
     assert.equal(
-      (smCopy as any)._trie._opts.cacheSize,
+      smCopy['_trie']['_opts'].cacheSize,
       1000,
       'should retain trie cache size when deactivate cache downleveling'
     )
