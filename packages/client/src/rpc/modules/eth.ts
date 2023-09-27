@@ -517,8 +517,16 @@ export class Eth {
    */
   async getBlockByHash(params: [string, boolean]) {
     const [blockHash, includeTransactions] = params
-    const block = await this._chain.getBlock(hexToBytes(blockHash))
-    return jsonRpcBlock(block, this._chain, includeTransactions)
+
+    try {
+      const block = await this._chain.getBlock(hexToBytes(blockHash))
+      return await jsonRpcBlock(block, this._chain, includeTransactions)
+    } catch (error) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Unknown block',
+      }
+    }
   }
 
   /**
@@ -539,8 +547,15 @@ export class Eth {
    */
   async getBlockTransactionCountByHash(params: [string]) {
     const [blockHash] = params
-    const block = await this._chain.getBlock(hexToBytes(blockHash))
-    return intToHex(block.transactions.length)
+    try {
+      const block = await this._chain.getBlock(hexToBytes(blockHash))
+      return intToHex(block.transactions.length)
+    } catch (error) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Unknown block',
+      }
+    }
   }
 
   /**
@@ -609,23 +624,22 @@ export class Eth {
    *   2. an integer of the transaction index position encoded as a hexadecimal.
    */
   async getTransactionByBlockHashAndIndex(params: [string, string]) {
-    const [blockHash, txIndexHex] = params
-    const txIndex = parseInt(txIndexHex, 16)
-    let block
     try {
-      block = await this._chain.getBlock(hexToBytes(blockHash))
+      const [blockHash, txIndexHex] = params
+      const txIndex = parseInt(txIndexHex, 16)
+      const block = await this._chain.getBlock(hexToBytes(blockHash))
+      if (block.transactions.length <= txIndex) {
+        return null
+      }
+
+      const tx = block.transactions[txIndex]
+      return jsonRpcTx(tx, block, txIndex)
     } catch (error: any) {
       throw {
         code: INVALID_PARAMS,
         message: error.message.toString(),
       }
     }
-    if (block.transactions.length <= txIndex) {
-      return null
-    }
-
-    const tx = block.transactions[txIndex]
-    return jsonRpcTx(tx, block, txIndex)
   }
 
   /**
@@ -653,6 +667,7 @@ export class Eth {
   async getTransactionCount(params: [string, string]) {
     const [addressHex, blockOpt] = params
     const block = await getBlockByOption(blockOpt, this._chain)
+
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
@@ -851,7 +866,6 @@ export class Eth {
     const [serializedTx] = params
 
     const { syncTargetHeight } = this.client.config
-
     if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
@@ -943,7 +957,6 @@ export class Eth {
    */
   async getProof(params: [string, string[], string]): Promise<Proof> {
     const [addressHex, slotsHex, blockOpt] = params
-
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
