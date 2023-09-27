@@ -15,7 +15,8 @@ type RpcError = {
 export function callWithStackTrace(handler: Function, debug: boolean) {
   return async (...args: any) => {
     try {
-      await handler(...args)
+      const res = await handler(...args)
+      return res
     } catch (error: any) {
       const e: RpcError = {
         code: error.code ?? INTERNAL_ERROR,
