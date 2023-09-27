@@ -1,7 +1,7 @@
 import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { getBlockByOption } from '../helpers'
+import { callWithStackTrace, getBlockByOption } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -90,18 +90,26 @@ export class Debug {
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
     this._rpcDebug = rpcDebug
-    this.traceTransaction = middleware(this.traceTransaction.bind(this), 1, [[validators.hex]])
-    this.traceCall = middleware(this.traceCall.bind(this), 2, [
+    this.traceTransaction = middleware(
+      callWithStackTrace(this.traceTransaction.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
+    this.traceCall = middleware(callWithStackTrace(this.traceCall.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
       [validators.blockOption],
     ])
-    this.storageRangeAt = middleware(this.storageRangeAt.bind(this), 5, [
-      [validators.blockHash],
-      [validators.unsignedInteger],
-      [validators.address],
-      [validators.uint256],
-      [validators.unsignedInteger],
-    ])
+    this.storageRangeAt = middleware(
+      callWithStackTrace(this.storageRangeAt.bind(this), this._rpcDebug),
+      5,
+      [
+        [validators.blockHash],
+        [validators.unsignedInteger],
+        [validators.address],
+        [validators.uint256],
+        [validators.unsignedInteger],
+      ]
+    )
   }
 
   /**
@@ -113,88 +121,79 @@ export class Debug {
   async traceTransaction(params: [string, tracerOpts]) {
     const [txHash, config] = params
 
-    try {
-      // Validate configuration and parameters
-      if (!this.service.execution.receiptsManager) {
-        throw {
-          message: 'missing receiptsManager',
-          code: INTERNAL_ERROR,
-        }
+    // Validate configuration and parameters
+    if (!this.service.execution.receiptsManager) {
+      throw {
+        message: 'missing receiptsManager',
+        code: INTERNAL_ERROR,
       }
-
-      const opts = validateTracerConfig(config)
-
-      const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-        hexToBytes(txHash)
-      )
-      if (!result) return null
-      const [_, blockHash, txIndex] = result
-      const block = await this.service.chain.getBlock(blockHash)
-      const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
-      const tx = block.transactions[txIndex]
-
-      // Copy VM so as to not modify state when running transactions being traced
-      const vmCopy = await this.service.execution.vm.shallowCopy()
-      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-      for (let x = 0; x < txIndex; x++) {
-        // Run all txns in the block prior to the traced transaction
-        await vmCopy.runTx({ tx: block.transactions[x], block })
-      }
-
-      const trace = {
-        gas: '',
-        returnValue: '',
-        failed: false,
-        structLogs: [] as structLog[],
-      }
-      vmCopy.evm.events?.on('step', async (step, next) => {
-        const memory = []
-        let storage = {}
-        if (opts.disableStorage === false) {
-          storage = await vmCopy.stateManager.dumpStorage(step.address)
-        }
-        if (opts.enableMemory === true) {
-          for (let x = 0; x < step.memoryWordCount; x++) {
-            const word = bytesToHex(step.memory.slice(x * 32, 32))
-            memory.push(word)
-          }
-        }
-        const log = {
-          pc: step.pc,
-          op: step.opcode.name,
-          gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
-          gas: Number(step.gasLeft),
-          depth: step.depth,
-          error: null,
-          stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
-          storage,
-          memory,
-          returnData: undefined,
-        }
-        trace.structLogs.push(log)
-        next?.()
-      })
-
-      vmCopy.evm.events?.on('afterMessage', (data, next) => {
-        if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
-          // Mark last opcode trace as error if exception occurs
-          trace.structLogs[trace.structLogs.length - 1].error = true
-        }
-        next?.()
-      })
-      const res = await vmCopy.runTx({ tx, block })
-      trace.gas = bigIntToHex(res.totalGasSpent)
-      trace.failed = res.execResult.exceptionError !== undefined
-      trace.returnValue = bytesToHex(res.execResult.returnValue)
-      return trace
-    } catch (error: any) {
-      const e: any = {
-        code: error.code ?? INTERNAL_ERROR,
-        message: error.message,
-      }
-      if (this._rpcDebug === true) e['trace'] = error.stack
-      throw e
     }
+
+    const opts = validateTracerConfig(config)
+
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
+      hexToBytes(txHash)
+    )
+    if (!result) return null
+    const [_, blockHash, txIndex] = result
+    const block = await this.service.chain.getBlock(blockHash)
+    const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
+    const tx = block.transactions[txIndex]
+
+    // Copy VM so as to not modify state when running transactions being traced
+    const vmCopy = await this.service.execution.vm.shallowCopy()
+    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    for (let x = 0; x < txIndex; x++) {
+      // Run all txns in the block prior to the traced transaction
+      await vmCopy.runTx({ tx: block.transactions[x], block })
+    }
+
+    const trace = {
+      gas: '',
+      returnValue: '',
+      failed: false,
+      structLogs: [] as structLog[],
+    }
+    vmCopy.evm.events?.on('step', async (step, next) => {
+      const memory = []
+      let storage = {}
+      if (opts.disableStorage === false) {
+        storage = await vmCopy.stateManager.dumpStorage(step.address)
+      }
+      if (opts.enableMemory === true) {
+        for (let x = 0; x < step.memoryWordCount; x++) {
+          const word = bytesToHex(step.memory.slice(x * 32, 32))
+          memory.push(word)
+        }
+      }
+      const log = {
+        pc: step.pc,
+        op: step.opcode.name,
+        gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
+        gas: Number(step.gasLeft),
+        depth: step.depth,
+        error: null,
+        stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
+        storage,
+        memory,
+        returnData: undefined,
+      }
+      trace.structLogs.push(log)
+      next?.()
+    })
+
+    vmCopy.evm.events?.on('afterMessage', (data, next) => {
+      if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
+        // Mark last opcode trace as error if exception occurs
+        trace.structLogs[trace.structLogs.length - 1].error = true
+      }
+      next?.()
+    })
+    const res = await vmCopy.runTx({ tx, block })
+    trace.gas = bigIntToHex(res.totalGasSpent)
+    trace.failed = res.execResult.exceptionError !== undefined
+    trace.returnValue = bytesToHex(res.execResult.returnValue)
+    return trace
   }
 
   /**
@@ -209,90 +208,81 @@ export class Debug {
   async traceCall(params: [RpcTx, string, tracerOpts]) {
     const [callArgs, blockOpt, tracerOpts] = params
 
-    try {
-      // Validate configuration and parameters
-      if (!this.service.execution.receiptsManager) {
-        throw {
-          message: 'missing receiptsManager',
-          code: INTERNAL_ERROR,
-        }
+    // Validate configuration and parameters
+    if (!this.service.execution.receiptsManager) {
+      throw {
+        message: 'missing receiptsManager',
+        code: INTERNAL_ERROR,
       }
-
-      if (this.vm === undefined) {
-        throw new Error('missing vm')
-      }
-
-      const opts = validateTracerConfig(tracerOpts)
-
-      const block = await getBlockByOption(blockOpt, this.chain)
-      const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
-
-      const vm = await this.vm.shallowCopy()
-      await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
-      const { from, to, gas: gasLimit, gasPrice, value, data } = callArgs
-
-      const trace = {
-        gas: '',
-        returnValue: '',
-        failed: false,
-        structLogs: [] as structLog[],
-      }
-      vm.evm.events?.on('step', async (step, next) => {
-        const memory = []
-        let storage = {}
-        if (opts.disableStorage === false) {
-          storage = await vm.stateManager.dumpStorage(step.address)
-        }
-        if (opts.enableMemory === true) {
-          for (let x = 0; x < step.memoryWordCount; x++) {
-            const word = bytesToHex(step.memory.slice(x * 32, 32))
-            memory.push(word)
-          }
-        }
-        const log = {
-          pc: step.pc,
-          op: step.opcode.name,
-          gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
-          gas: Number(step.gasLeft),
-          depth: step.depth,
-          error: null,
-          stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
-          storage,
-          memory,
-          returnData: undefined,
-        }
-        trace.structLogs.push(log)
-        next?.()
-      })
-
-      vm.evm.events?.on('afterMessage', (data, next) => {
-        if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
-          // Mark last opcode trace as error if exception occurs
-          trace.structLogs[trace.structLogs.length - 1].error = true
-        }
-        next?.()
-      })
-      const runCallOpts = {
-        caller: from !== undefined ? Address.fromString(from) : undefined,
-        to: to !== undefined ? Address.fromString(to) : undefined,
-        gasLimit: toType(gasLimit, TypeOutput.BigInt),
-        gasPrice: toType(gasPrice, TypeOutput.BigInt),
-        value: toType(value, TypeOutput.BigInt),
-        data: data !== undefined ? hexToBytes(data) : undefined,
-      }
-      const res = await vm.evm.runCall(runCallOpts)
-      trace.gas = bigIntToHex(res.execResult.executionGasUsed)
-      trace.failed = res.execResult.exceptionError !== undefined
-      trace.returnValue = bytesToHex(res.execResult.returnValue)
-      return trace
-    } catch (error: any) {
-      const e: any = {
-        code: error.code ?? INTERNAL_ERROR,
-        message: error.message,
-      }
-      if (this._rpcDebug === true) e['trace'] = error.stack
-      throw e
     }
+
+    if (this.vm === undefined) {
+      throw new Error('missing vm')
+    }
+
+    const opts = validateTracerConfig(tracerOpts)
+
+    const block = await getBlockByOption(blockOpt, this.chain)
+    const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
+
+    const vm = await this.vm.shallowCopy()
+    await vm.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    const { from, to, gas: gasLimit, gasPrice, value, data } = callArgs
+
+    const trace = {
+      gas: '',
+      returnValue: '',
+      failed: false,
+      structLogs: [] as structLog[],
+    }
+    vm.evm.events?.on('step', async (step, next) => {
+      const memory = []
+      let storage = {}
+      if (opts.disableStorage === false) {
+        storage = await vm.stateManager.dumpStorage(step.address)
+      }
+      if (opts.enableMemory === true) {
+        for (let x = 0; x < step.memoryWordCount; x++) {
+          const word = bytesToHex(step.memory.slice(x * 32, 32))
+          memory.push(word)
+        }
+      }
+      const log = {
+        pc: step.pc,
+        op: step.opcode.name,
+        gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
+        gas: Number(step.gasLeft),
+        depth: step.depth,
+        error: null,
+        stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
+        storage,
+        memory,
+        returnData: undefined,
+      }
+      trace.structLogs.push(log)
+      next?.()
+    })
+
+    vm.evm.events?.on('afterMessage', (data, next) => {
+      if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
+        // Mark last opcode trace as error if exception occurs
+        trace.structLogs[trace.structLogs.length - 1].error = true
+      }
+      next?.()
+    })
+    const runCallOpts = {
+      caller: from !== undefined ? Address.fromString(from) : undefined,
+      to: to !== undefined ? Address.fromString(to) : undefined,
+      gasLimit: toType(gasLimit, TypeOutput.BigInt),
+      gasPrice: toType(gasPrice, TypeOutput.BigInt),
+      value: toType(value, TypeOutput.BigInt),
+      data: data !== undefined ? hexToBytes(data) : undefined,
+    }
+    const res = await vm.evm.runCall(runCallOpts)
+    trace.gas = bigIntToHex(res.execResult.executionGasUsed)
+    trace.failed = res.execResult.exceptionError !== undefined
+    trace.returnValue = bytesToHex(res.execResult.returnValue)
+    return trace
   }
 
   /**
@@ -309,51 +299,42 @@ export class Debug {
   async storageRangeAt(params: [string, number, string, string, number]) {
     const [blockHash, txIndex, account, startKey, limit] = params
 
-    try {
-      if (this.vm === undefined) {
-        throw new Error('Missing VM.')
-      }
-
-      let block: Block
-      try {
-        // Validator already verified that `blockHash` is properly formatted.
-        block = await this.chain.getBlock(hexToBytes(blockHash))
-      } catch (err: any) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: 'Could not get requested block hash.',
-        }
-      }
-
-      if (txIndex >= block.transactions.length) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: 'txIndex cannot be larger than the number of transactions in the block.',
-        }
-      }
-
-      const parentBlock = await this.chain.getBlock(block.header.parentHash)
-      // Copy the VM and run transactions including the relevant transaction.
-      const vmCopy = await this.vm.shallowCopy()
-      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-      for (let i = 0; i <= txIndex; i++) {
-        await vmCopy.runTx({ tx: block.transactions[i], block })
-      }
-
-      // await here so that any error can be handled in the catch below for proper response
-      return await vmCopy.stateManager.dumpStorageRange(
-        // Validator already verified that `account` and `startKey` are properly formatted.
-        Address.fromString(account),
-        BigInt(startKey),
-        limit
-      )
-    } catch (error: any) {
-      const e: any = {
-        code: error.code ?? INTERNAL_ERROR,
-        message: error.message,
-      }
-      if (this._rpcDebug === true) e['trace'] = error.stack
-      throw e
+    if (this.vm === undefined) {
+      throw new Error('Missing VM.')
     }
+
+    let block: Block
+    try {
+      // Validator already verified that `blockHash` is properly formatted.
+      block = await this.chain.getBlock(hexToBytes(blockHash))
+    } catch (err: any) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'Could not get requested block hash.',
+      }
+    }
+
+    if (txIndex >= block.transactions.length) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'txIndex cannot be larger than the number of transactions in the block.',
+      }
+    }
+
+    const parentBlock = await this.chain.getBlock(block.header.parentHash)
+    // Copy the VM and run transactions including the relevant transaction.
+    const vmCopy = await this.vm.shallowCopy()
+    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    for (let i = 0; i <= txIndex; i++) {
+      await vmCopy.runTx({ tx: block.transactions[i], block })
+    }
+
+    // await here so that any error can be handled in the catch below for proper response
+    return vmCopy.stateManager.dumpStorageRange(
+      // Validator already verified that `account` and `startKey` are properly formatted.
+      Address.fromString(account),
+      BigInt(startKey),
+      limit
+    )
   }
 }
