@@ -1,10 +1,28 @@
 import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
-import { INVALID_PARAMS } from './error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from './error-code'
 
 import type { Chain } from '../blockchain'
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+
+export function callWithStackTrace(handler: Function, debug: boolean) {
+  return async (...args: any) => {
+    try {
+      await handler(...args)
+    } catch (error: any) {
+      const e: any = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (debug === true) {
+        e['trace'] = error.trace
+      }
+
+      throw e
+    }
+  }
+}
 
 /**
  * Returns tx formatted to the standard JSON-RPC fields
