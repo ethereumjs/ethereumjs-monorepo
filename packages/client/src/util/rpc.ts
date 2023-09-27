@@ -107,11 +107,11 @@ export function createRPCServer(
   }
 
   let methods
-  const ethMethods = manager.getMethods()
+  const ethMethods = manager.getMethods(false, rpcDebug)
 
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...ethMethods, ...manager.getMethods(true) }
+      methods = { ...ethMethods, ...manager.getMethods(true, rpcDebug) }
       break
     case MethodConfig.WithoutEngine:
       methods = { ...ethMethods }
