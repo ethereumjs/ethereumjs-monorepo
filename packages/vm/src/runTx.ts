@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
@@ -40,7 +41,6 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
-// Generic reporting activated if one of the profiler opts is set
 let enableProfiler = false
 
 /**
@@ -64,18 +64,13 @@ function execHardfork(
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
-  if (
-    this._opts.profilerOpts?.reportAfterBlock === true ||
-    this._opts.profilerOpts?.reportAfterTx === true
-  ) {
+  if (this._opts.profilerOpts?.reportAfterTx === true) {
     enableProfiler = true
   }
 
   if (enableProfiler) {
     const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
-    // eslint-disable-next-line
     console.log(title)
-    // eslint-disable-next-line no-console
     console.time('tx initialization')
   }
 
@@ -165,7 +160,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   if (enableProfiler) {
-    // eslint-disable-next-line no-console
     console.timeEnd('tx initialization')
   }
 
@@ -187,7 +181,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
-    if (this._opts.profilerOpts?.reportAfterTx === true) {
+    if (enableProfiler) {
       const logs = (<EVM>this.evm).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
         // eslint-disable-next-line

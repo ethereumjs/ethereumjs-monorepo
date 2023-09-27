@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -42,17 +43,13 @@ const parentBeaconBlockRootAddress = Address.fromString(
   '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
 )
 
-// Generic reporting activated if one of the profiler opts is set
 let enableProfiler = false
 
 /**
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
-  if (
-    this._opts.profilerOpts?.reportAfterBlock === true ||
-    this._opts.profilerOpts?.reportAfterTx === true
-  ) {
+  if (this._opts.profilerOpts?.reportAfterBlock === true) {
     enableProfiler = true
   }
 
@@ -67,7 +64,6 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
       block.transactions.length
     } txs`
-    // eslint-disable-next-line
     console.log(title)
   }
 
@@ -244,10 +240,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     )
   }
 
-  if (this._opts.profilerOpts?.reportAfterBlock === true) {
+  if (enableProfiler) {
     const logs = (<EVM>this.evm).getPerformanceLogs()
     if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
-      // eslint-disable-next-line
       console.log('No block txs with precompile or opcode execution.')
     }
 
