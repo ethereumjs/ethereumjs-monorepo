@@ -6,17 +6,23 @@ import type { Chain } from '../blockchain'
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
 
+type RpcError = {
+  code: number
+  message: string
+  trace?: string
+}
+
 export function callWithStackTrace(handler: Function, debug: boolean) {
   return async (...args: any) => {
     try {
       await handler(...args)
     } catch (error: any) {
-      const e: any = {
+      const e: RpcError = {
         code: error.code ?? INTERNAL_ERROR,
         message: error.message,
       }
       if (debug === true) {
-        e['trace'] = error.trace
+        e['trace'] = error.trace ?? 'Stack trace is not available'
       }
 
       throw e
