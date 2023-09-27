@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
@@ -42,10 +41,11 @@ const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
 let enableProfiler = false
-let initLabel = ''
-let balanceNonceLabel = ''
-let logsGasBalanceLabel = ''
-let cleanupAndReceiptsLabel = ''
+const initLabel = 'EVM journal init, address/slot warming, fee validation'
+const balanceNonceLabel = 'Balance/Nonce checks and update'
+const logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
+const cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+const entireTxLabel = 'Entire tx'
 
 /**
  * Returns the hardfork excluding the merge hf which has
@@ -74,9 +74,12 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
+    // eslint-disable-next-line no-console
     console.log(title)
-    initLabel = 'EVM journal init, address/slot warming, fee validation'
+    // eslint-disable-next-line no-console
     console.time(initLabel)
+    // eslint-disable-next-line no-console
+    console.time(entireTxLabel)
   }
 
   // create a reasonable default if no block is given
@@ -183,9 +186,11 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     this.evm.stateManager.originalStorageCache.clear()
     if (enableProfiler) {
+      // eslint-disable-next-line no-console
+      console.timeEnd(entireTxLabel)
       const logs = (<EVM>this.evm).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
-        // eslint-disable-next-line
+        // eslint-disable-next-line no-console
         console.log('No precompile or opcode execution.')
       }
       this.emitEVMProfile(logs.precompiles, 'Precompile performance')
@@ -267,8 +272,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(initLabel)
-    balanceNonceLabel = 'Balance/Nonce checks and update'
+    // eslint-disable-next-line no-console
     console.time(balanceNonceLabel)
   }
 
@@ -423,7 +429,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(balanceNonceLabel)
+    // eslint-disable-next-line no-console
     console.log('[ For execution see detailed table output ]')
   }
 
@@ -454,7 +462,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (enableProfiler) {
-    logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
+    // eslint-disable-next-line no-console
     console.time(logsGasBalanceLabel)
   }
 
@@ -553,8 +561,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(logsGasBalanceLabel)
-    cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+    // eslint-disable-next-line no-console
     console.time(cleanupAndReceiptsLabel)
   }
 
@@ -611,6 +620,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   )
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(cleanupAndReceiptsLabel)
   }
 

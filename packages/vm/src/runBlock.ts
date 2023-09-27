@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
@@ -44,9 +43,10 @@ const parentBeaconBlockRootAddress = Address.fromString(
 )
 
 let enableProfiler = false
-let stateRootCPLabel = ''
-let processTxsLabel = ''
-let withdrawalsRewardsCommitLabel = ''
+const stateRootCPLabel = 'New state root, DAO HF, checkpoints, block validation'
+const processTxsLabel = 'Tx processing [ use per-tx profiler for more details ]'
+const withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
+const entireBlockLabel = 'Entire block'
 
 /**
  * @ignore
@@ -54,6 +54,8 @@ let withdrawalsRewardsCommitLabel = ''
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   if (this._opts.profilerOpts?.reportAfterBlock === true) {
     enableProfiler = true
+    // eslint-disable-next-line no-console
+    console.time(entireBlockLabel)
   }
 
   const state = this.stateManager
@@ -67,8 +69,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
       block.transactions.length
     } txs`
+    // eslint-disable-next-line no-console
     console.log(title)
-    stateRootCPLabel = 'New state root, DAO HF, checkpoints, block validation'
+    // eslint-disable-next-line no-console
     console.time(stateRootCPLabel)
   }
 
@@ -151,6 +154,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       debug(`block checkpoint reverted`)
     }
     if (enableProfiler) {
+      // eslint-disable-next-line no-console
       console.timeEnd(withdrawalsRewardsCommitLabel)
     }
     throw err
@@ -222,6 +226,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(withdrawalsRewardsCommitLabel)
   }
 
@@ -253,8 +258,11 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(entireBlockLabel)
     const logs = (<EVM>this.evm).getPerformanceLogs()
     if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+      // eslint-disable-next-line no-console
       console.log('No block txs with precompile or opcode execution.')
     }
 
@@ -306,6 +314,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(stateRootCPLabel)
   }
 
@@ -316,7 +325,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   const blockResults = await applyTransactions.bind(this)(block, opts)
 
   if (enableProfiler) {
-    withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
+    // eslint-disable-next-line no-console
     console.time(withdrawalsRewardsCommitLabel)
   }
 
@@ -374,7 +383,7 @@ export async function accumulateParentBeaconBlockRoot(
  */
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
-    processTxsLabel = 'Tx processing [ use per-tx profiler for more details ]'
+    // eslint-disable-next-line no-console
     console.time(processTxsLabel)
   }
 
@@ -435,7 +444,10 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   }
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
     console.timeEnd(processTxsLabel)
+    // eslint-disable-next-line no-console
+    console.timeEnd(entireBlockLabel)
   }
 
   return {
