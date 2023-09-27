@@ -40,6 +40,9 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
+// Generic reporting activated if one of the profiler opts is set
+let enableProfiler = false
+
 /**
  * Returns the hardfork excluding the merge hf which has
  * no effect on the vm execution capabilities.
@@ -61,6 +64,21 @@ function execHardfork(
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+  if (
+    this._opts.profilerOpts?.reportAfterBlock === true ||
+    this._opts.profilerOpts?.reportAfterTx === true
+  ) {
+    enableProfiler = true
+  }
+
+  if (enableProfiler) {
+    const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
+    // eslint-disable-next-line
+    console.log(title)
+    // eslint-disable-next-line no-console
+    console.time('tx initialization')
+  }
+
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: this.common })
 
@@ -146,6 +164,11 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd('tx initialization')
+  }
+
   try {
     const result = await _runTx.bind(this)(opts)
     await this.evm.journal.commit()
@@ -165,9 +188,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     this.evm.stateManager.originalStorageCache.clear()
     if (this._opts.profilerOpts?.reportAfterTx === true) {
-      const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
-      // eslint-disable-next-line
-      console.log(title)
       const logs = (<EVM>this.evm).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
         // eslint-disable-next-line

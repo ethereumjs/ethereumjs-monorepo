@@ -42,16 +42,34 @@ const parentBeaconBlockRootAddress = Address.fromString(
   '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
 )
 
+// Generic reporting activated if one of the profiler opts is set
+let enableProfiler = false
+
 /**
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  if (
+    this._opts.profilerOpts?.reportAfterBlock === true ||
+    this._opts.profilerOpts?.reportAfterTx === true
+  ) {
+    enableProfiler = true
+  }
+
   const state = this.stateManager
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
+
+  if (enableProfiler) {
+    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
+      block.transactions.length
+    } txs`
+    // eslint-disable-next-line
+    console.log(title)
+  }
 
   /**
    * The `beforeBlock` event.
@@ -227,11 +245,6 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   if (this._opts.profilerOpts?.reportAfterBlock === true) {
-    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
-      block.transactions.length
-    } txs`
-    // eslint-disable-next-line
-    console.log(title)
     const logs = (<EVM>this.evm).getPerformanceLogs()
     if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
       // eslint-disable-next-line
