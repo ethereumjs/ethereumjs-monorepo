@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695747924761,
+  "lastUpdate": 1695836766675,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c1e2f955ad768784868b9e508e2f3f1182086a1a",
-          "message": "trie: include null as possilbe value type in PUT (#3020)",
-          "timestamp": "2023-09-12T16:53:58-07:00",
-          "tree_id": "7e9966ea75e57def161b54758132723360fcc973",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1e2f955ad768784868b9e508e2f3f1182086a1a"
-        },
-        "date": 1694563039975,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31501,
-            "range": "±4.81%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31288,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31444,
-            "range": "±2.36%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26881,
-            "range": "±9.45%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29526,
-            "range": "±2.71%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±13.08%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "243c386f6a2253f90efc26d3b95e65d80749d3fa",
+          "message": "Add Option to Return Actual Caught Error Message and Stack Trace when RPC Call Fails (#3059)\n\n* Add stack trace to error response for eth rpc module\r\n\r\n* Add error handling to all rpc handlers for eth module\r\n\r\n* Do not overwrite error code\r\n\r\n* Cover as much of handler code as possible for error handling\r\n\r\n* Add stack trace and error handling to debug rpc module\r\n\r\n* Add stack trace and error handling to web3 rpc module\r\n\r\n* Use config value for rpcDebug for enabling stack traces\r\n\r\n* Create helper for catching errors in rpc handlers\r\n\r\n* Use helper for catching errors in eth module\r\n\r\n* Use helper for catching errors in debug module\r\n\r\n* Use helper for catching errors in web3 module\r\n\r\n* Catch invalid param errors\r\n\r\n* Add type for rpc error\r\n\r\n* Use stack instead of trace\r\n\r\n* Add tests for callWithStackTrace\r\n\r\n* Resolve handler result before returning\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-09-27T13:41:29-04:00",
+          "tree_id": "643e549de9d2c8f84a24aec01cc9b9072eef3f44",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/243c386f6a2253f90efc26d3b95e65d80749d3fa"
+        },
+        "date": 1695836765415,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 20122,
+            "range": "±5.42%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 20240,
+            "range": "±3.32%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19632,
+            "range": "±3.46%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18917,
+            "range": "±3.65%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18425,
+            "range": "±4.37%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
