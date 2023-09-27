@@ -22,7 +22,7 @@ export function callWithStackTrace(handler: Function, debug: boolean) {
         message: error.message,
       }
       if (debug === true) {
-        e['trace'] = error.trace ?? 'Stack trace is not available'
+        e['trace'] = error.stack ?? 'Stack trace is not available'
       }
 
       throw e
