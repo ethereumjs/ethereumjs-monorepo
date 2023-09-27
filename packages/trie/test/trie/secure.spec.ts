@@ -36,12 +36,14 @@ describe('SecureTrie', () => {
     const t = trie.shallowCopy(true, { keyPrefix })
     assert.ok(equalsBytes(t['_opts']['keyPrefix'] as Uint8Array, keyPrefix))
     assert.equal(t['_opts']['cacheSize'] as number, 0)
+    assert.equal(trie['_opts']['cacheSize'] as number, 0)
   })
 
   it('copy trie (new cache size)', async () => {
     const cacheSize = 1000
     const t = trie.shallowCopy(true, { cacheSize })
     assert.equal(t['_opts']['cacheSize'] as number, cacheSize)
+    assert.equal(trie['_opts']['cacheSize'] as number, 0)
   })
 })
 
