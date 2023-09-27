@@ -42,6 +42,10 @@ const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
 let enableProfiler = false
+let initLabel = ''
+let balanceNonceLabel = ''
+let logsGasBalanceLabel = ''
+let cleanupAndReceiptsLabel = ''
 
 /**
  * Returns the hardfork excluding the merge hf which has
@@ -71,7 +75,8 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (enableProfiler) {
     const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
     console.log(title)
-    console.time('tx initialization')
+    initLabel = 'EVM journal init, address/slot warming, fee validation'
+    console.time(initLabel)
   }
 
   // create a reasonable default if no block is given
@@ -157,10 +162,6 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
         this.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
       }
     }
-  }
-
-  if (enableProfiler) {
-    console.timeEnd('tx initialization')
   }
 
   try {
@@ -264,6 +265,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
+  }
+  if (enableProfiler) {
+    console.timeEnd(initLabel)
+    balanceNonceLabel = 'Balance/Nonce checks and update'
+    console.time(balanceNonceLabel)
   }
 
   // Check from account's balance and nonce
@@ -416,6 +422,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
+  if (enableProfiler) {
+    console.timeEnd(balanceNonceLabel)
+    console.log('[ For execution see detailed table output ]')
+  }
 
   /*
    * Execute message
@@ -442,6 +452,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     data,
     blobVersionedHashes,
   })) as RunTxResult
+
+  if (enableProfiler) {
+    logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
+    console.time(logsGasBalanceLabel)
+  }
 
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) nonce (-> ${fromAccount.nonce})`)
@@ -537,6 +552,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
 
+  if (enableProfiler) {
+    console.timeEnd(logsGasBalanceLabel)
+    cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+    console.time(cleanupAndReceiptsLabel)
+  }
+
   /*
    * Cleanup accounts
    */
@@ -588,6 +609,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     totalblobGas,
     blobGasPrice
   )
+
+  if (enableProfiler) {
+    console.timeEnd(cleanupAndReceiptsLabel)
+  }
 
   /**
    * The `afterTx` event
