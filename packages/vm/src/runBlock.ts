@@ -44,6 +44,9 @@ const parentBeaconBlockRootAddress = Address.fromString(
 )
 
 let enableProfiler = false
+let stateRootCPLabel = ''
+let processTxsLabel = ''
+let withdrawalsRewardsCommitLabel = ''
 
 /**
  * @ignore
@@ -65,6 +68,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       block.transactions.length
     } txs`
     console.log(title)
+    stateRootCPLabel = 'New state root, DAO HF, checkpoints, block validation'
+    console.time(stateRootCPLabel)
   }
 
   /**
@@ -145,6 +150,9 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`block checkpoint reverted`)
     }
+    if (enableProfiler) {
+      console.timeEnd(withdrawalsRewardsCommitLabel)
+    }
     throw err
   }
 
@@ -211,6 +219,10 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       const msg = _errorMsg('invalid block stateRoot', this, block)
       throw new Error(msg)
     }
+  }
+
+  if (enableProfiler) {
+    console.timeEnd(withdrawalsRewardsCommitLabel)
   }
 
   const results: RunBlockResult = {
@@ -293,11 +305,21 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     )
   }
 
+  if (enableProfiler) {
+    console.timeEnd(stateRootCPLabel)
+  }
+
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
+
+  if (enableProfiler) {
+    withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
+    console.time(withdrawalsRewardsCommitLabel)
+  }
+
   if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
@@ -351,6 +373,11 @@ export async function accumulateParentBeaconBlockRoot(
  * @param {RunBlockOpts} opts
  */
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
+  if (enableProfiler) {
+    processTxsLabel = 'Tx processing [ use per-tx profiler for more details ]'
+    console.time(processTxsLabel)
+  }
+
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
@@ -405,6 +432,10 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
     await receiptTrie.put(RLP.encode(txIdx), encodedReceipt)
+  }
+
+  if (enableProfiler) {
+    console.timeEnd(processTxsLabel)
   }
 
   return {
