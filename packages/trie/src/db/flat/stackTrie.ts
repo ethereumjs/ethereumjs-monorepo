@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, addHexPrefix, bytesToHex } from '@ethereumjs/util'
+import { KECCAK256_RLP, bytesToHex } from '@ethereumjs/util'
 import * as assert from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -7,6 +7,23 @@ import { nibbleTypeToPackedBytes } from '../../util/index.js'
 import { bytesToNibbles, matchingNibbleLength, nibblestoBytes } from '../../util/nibbles.js'
 
 import type { Nibbles } from '../../index.js'
+
+function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
+  // odd
+  if (key.length % 2) {
+    key.unshift(1)
+  } else {
+    // even
+    key.unshift(0)
+    key.unshift(0)
+  }
+
+  if (terminator) {
+    key[0] += 2
+  }
+
+  return key
+}
 
 abstract class BaseNode {
   abstract insert(key: Nibbles, value: Uint8Array): BaseNode
@@ -22,7 +39,7 @@ abstract class BaseNode {
 export class EmptyNode extends BaseNode {
   insert(key: Nibbles, value: Uint8Array): BaseNode {
     //eslint-disable-next-line
-    return new LeafNode(key, value)
+    return new STLeafNode(key, value)
   }
 
   raw(): any {
@@ -38,7 +55,7 @@ export class EmptyNode extends BaseNode {
   }
 }
 
-export class LeafNode extends BaseNode {
+export class STLeafNode extends BaseNode {
   _key: Nibbles
   _value: Uint8Array
 
@@ -50,12 +67,12 @@ export class LeafNode extends BaseNode {
 
   insert(key: Nibbles, value: Uint8Array): BaseNode {
     const commonLen = matchingNibbleLength(this._key, key)
-    assert(commonLen < this._key.length, 'replacing leaf is not supported')
+    assert.ok(commonLen < this._key.length, 'replacing leaf is not supported')
 
-    const newLeaf = new LeafNode(key.slice(commonLen + 1), value)
+    const newLeaf = new STLeafNode(key.slice(commonLen + 1), value)
 
     //eslint-disable-next-line
-    const branch = new BranchNode()
+    const branch = new STBranchNode()
     branch.setChild(key[commonLen], newLeaf)
     branch.setChild(this._key[commonLen], this)
 
@@ -63,7 +80,7 @@ export class LeafNode extends BaseNode {
     // Need extension node for common path
     if (commonLen > 0) {
       //eslint-disable-next-line
-      root = new ExtensionNode(this._key.slice(0, commonLen), branch)
+      root = new STExtensionNode(this._key.slice(0, commonLen), branch)
     }
 
     // Slice common part from current leaf's key
@@ -74,13 +91,12 @@ export class LeafNode extends BaseNode {
 
   raw(): [Uint8Array, Uint8Array] {
     const val: Nibbles = this._key.slice(0)
-    val.push(16)
-    const encodedKey = addHexPrefix(val) // add terminator value to end of key
+    const encodedKey = addHexPrefix(val, true) // add terminator value to end of key
     return [nibbleTypeToPackedBytes(encodedKey), this._value]
   }
 }
 
-export class ExtensionNode extends BaseNode {
+export class STExtensionNode extends BaseNode {
   _key: Nibbles
   _child: BaseNode
 
@@ -99,10 +115,10 @@ export class ExtensionNode extends BaseNode {
     }
 
     // Otherwise we'll need a new leaf, a branch and possibly an extension
-    const newLeaf = new LeafNode(key.slice(commonLen + 1), value)
+    const newLeaf = new STLeafNode(key.slice(commonLen + 1), value)
 
     //eslint-disable-next-line
-    const branch = new BranchNode()
+    const branch = new STBranchNode()
     branch.setChild(key[commonLen], newLeaf)
 
     if (commonLen < this._key.length - 1) {
@@ -115,7 +131,7 @@ export class ExtensionNode extends BaseNode {
     let root: BaseNode = branch
     // Need extension for common prefix
     if (commonLen > 0) {
-      root = new ExtensionNode(key.slice(0, commonLen), branch)
+      root = new STExtensionNode(key.slice(0, commonLen), branch)
     }
 
     return root
@@ -125,7 +141,7 @@ export class ExtensionNode extends BaseNode {
     const childRaw = this._child.raw()
     const childSerialized = RLP.encode(childRaw)
     const value = childSerialized.length < 32 ? childRaw : keccak256(childSerialized)
-    const encodedKey = addHexPrefix(this._key.slice(0))
+    const encodedKey = addHexPrefix(this._key.slice(0), false)
     return [nibbleTypeToPackedBytes(encodedKey), value]
   }
 }
@@ -163,7 +179,7 @@ export class HashNode extends BaseNode {
     return keccak256(this._serialized)
   }
 }
-export class BranchNode extends BaseNode {
+export class STBranchNode extends BaseNode {
   _children: (BaseNode | null)[]
   _value: Uint8Array | null
 
