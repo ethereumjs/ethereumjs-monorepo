@@ -241,9 +241,11 @@ export class VM {
    *
    * Note that the returned copy will share the same db as the original for the blockchain and the statemanager.
    *
-   * Associated state and trie caches will be deleted and caches will be re-initialized for a more short-term
-   * focused usage, being less memory intense. To fine-tune this behavior (if the shallow copy has a longer life
-   * span e.g.) you can set the `downlevelCaches` option to `false`.
+   * Associated caches will be deleted and caches will be re-initialized for a more short-term focused
+   * usage, being less memory intense (the statemanager caches will switch to using an ORDERED_MAP cache
+   * datastructure more suitable for short-term usage, the trie node LRU cache will not be activated at all).
+   * To fine-tune this behavior (if the shallow-copy-returned object has a longer life span e.g.) you can set
+   * the `downlevelCaches` option to `false`.
    *
    * @param downlevelCaches Downlevel (so: adopted for short-term usage) associated state caches (default: true)
    */

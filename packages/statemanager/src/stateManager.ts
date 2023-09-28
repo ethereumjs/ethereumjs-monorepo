@@ -962,7 +962,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Both adoptions can be deactivated by setting `downlevelCaches` to
    * `false`.
    *
-   * Cache values are generally not copied along.
+   * Cache values are generally not copied along regardless of the
+   * `downlevelCaches` setting.
    */
   shallowCopy(downlevelCaches = true): DefaultStateManager {
     const common = this.common.copy()
