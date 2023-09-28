@@ -127,11 +127,9 @@ export interface ConfigOptions {
 
   /**
    * Transport servers (RLPx)
-   * Use `transports` option, only used for testing purposes
-   *
-   * Default: servers created from `transports` option
+   * Only used for testing purposes
    */
-  servers?: RlpxServer[]
+  server?: RlpxServer
 
   /**
    * Save tx receipts and logs in the meta db (default: false)
@@ -421,7 +419,7 @@ export class Config {
   public readonly chainCommon: Common
   public readonly execCommon: Common
 
-  public readonly servers: RlpxServer[] = []
+  public readonly server: RlpxServer | undefined = undefined
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
@@ -497,14 +495,14 @@ export class Config {
 
     this.logger.info(`Sync Mode ${options.syncmode}`)
     if (options.syncmode !== SyncMode.None) {
-      if (options.servers) {
-        this.servers = options.servers
+      if (options.server !== undefined) {
+        this.server = options.server
       } else if (isBrowser() !== true) {
         // Otherwise parse transports from transports option
         const bootnodes: MultiaddrLike =
           this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
         const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
-        this.servers = [new RlpxServer({ config: this, bootnodes, dnsNetworks })]
+        this.server = new RlpxServer({ config: this, bootnodes, dnsNetworks })
       }
     }
 

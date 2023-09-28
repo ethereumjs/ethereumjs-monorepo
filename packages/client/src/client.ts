@@ -148,13 +148,10 @@ export class EthereumClient {
     this.config.logger.info('Setup networking and services.')
 
     await Promise.all(this.services.map((s) => s.start()))
-    await Promise.all(this.config.servers.map((s) => s.start()))
-    await Promise.all(
-      this.config.servers.map(async (s) => {
-        // Only call bootstrap if servers are actually started
-        if (s.started) await s.bootstrap()
-      })
-    )
+    this.config.server && (await this.config.server.start())
+    // Only call bootstrap if servers are actually started
+    this.config.server && this.config.server.started && (await this.config.server.bootstrap())
+
     this.started = true
   }
 
@@ -167,7 +164,7 @@ export class EthereumClient {
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
     await Promise.all(this.services.map((s) => s.stop()))
-    await Promise.all(this.config.servers.map((s) => s.stop()))
+    this.config.server && this.config.server.started && (await this.config.server.stop())
     this.started = false
   }
 
@@ -177,13 +174,5 @@ export class EthereumClient {
    */
   service(name: string) {
     return this.services.find((s) => s.name === name)
-  }
-
-  /**
-   * Returns the server with the specified name.
-   * @param name name of server
-   */
-  server(name: string) {
-    return this.config.servers.find((s) => s.name === name)
   }
 }
