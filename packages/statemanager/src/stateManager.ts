@@ -30,7 +30,7 @@ import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { StorageRange } from '@ethereumjs/common/src'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { DB, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -119,6 +119,18 @@ export interface DefaultStateManagerOpts {
    */
   prefixCodeHashes?: boolean
 
+  /**
+   * Option to prefix the keys for the storage tries with the first 7 bytes from the
+   * associated account address. Activating this option gives a noticeable performance
+   * boost for storage DB reads when operating on larger tries.
+   *
+   * Note: Activating/deactivating this option causes continued state reads to be
+   * incompatible with existing databases.
+   *
+   * Default: false (for backwards compatibility reasons)
+   */
+  prefixStorageTrieKeys?: boolean
+
   accountCacheOpts?: CacheOptions
 
   storageCacheOpts?: CacheOptions
@@ -151,6 +163,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _codeCache: { [key: string]: Uint8Array }
 
   protected readonly _prefixCodeHashes: boolean
+  protected readonly _prefixStorageTrieKeys: boolean
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
 
@@ -194,8 +207,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._prefixCodeHashes = opts.prefixCodeHashes ?? true
+    this._prefixStorageTrieKeys = opts.prefixStorageTrieKeys ?? false
     this._accountCacheSettings = {
-      deactivate: opts.accountCacheOpts?.deactivate ?? false,
+      deactivate:
+        (opts.accountCacheOpts?.deactivate === true || opts.accountCacheOpts?.size === 0) ?? false,
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.accountCacheOpts?.size ?? 100000,
     }
@@ -208,7 +223,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     this._storageCacheSettings = {
-      deactivate: opts.storageCacheOpts?.deactivate ?? false,
+      deactivate:
+        (opts.storageCacheOpts?.deactivate === true || opts.storageCacheOpts?.size === 0) ?? false,
       type: opts.storageCacheOpts?.type ?? CacheType.ORDERED_MAP,
       size: opts.storageCacheOpts?.size ?? 20000,
     }
@@ -326,7 +342,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-    await this._trie.database().put(key, value)
+    await this._getCodeDB().put(key, value)
 
     const keyHex = bytesToUnprefixedHex(key)
     this._codeCache[keyHex] = value
@@ -362,7 +378,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (keyHex in this._codeCache) {
       return this._codeCache[keyHex]
     } else {
-      const code = (await this._trie.database().get(key)) ?? new Uint8Array(0)
+      const code = (await this._getCodeDB().get(key)) ?? new Uint8Array(0)
       this._codeCache[keyHex] = code
       return code
     }
@@ -373,18 +389,39 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  protected async _getStorageTrie(address: Address, account: Account): Promise<Trie> {
+  protected _getStorageTrie(address: Address, account: Account): Trie {
     // from storage cache
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
-      const storageTrie = this._trie.shallowCopy(false)
+      const keyPrefix = this._prefixStorageTrieKeys
+        ? keccak256(address.bytes).slice(0, 7)
+        : undefined
+      const storageTrie = this._trie.shallowCopy(false, keyPrefix)
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
       return storageTrie
     }
     return storageTrie
+  }
+
+  /**
+   * Gets the storage trie for an account from the storage
+   * cache or does a lookup.
+   * @private
+   */
+  protected _getAccountTrie(): Trie {
+    return this._trie
+  }
+
+  /**
+   * Gets the storage trie for an account from the storage
+   * cache or does a lookup.
+   * @private
+   */
+  protected _getCodeDB(): DB {
+    return this._trie.database()
   }
 
   /**
@@ -412,7 +449,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error('getContractStorage() called on non-existing account')
     }
-    const trie = await this._getStorageTrie(address, account)
+    const trie = this._getStorageTrie(address, account)
     const value = await trie.get(key)
     if (!this._storageCacheSettings.deactivate) {
       this._storageCache?.put(address, key, value ?? hexToBytes('0x80'))
@@ -434,7 +471,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
-      const storageTrie = await this._getStorageTrie(address, account)
+      const storageTrie = this._getStorageTrie(address, account)
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
@@ -622,9 +659,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       // throw new Error(`getProof() can only be called for an existing account`)
       const returnValue: Proof = {
         address: address.toString(),
-        balance: '0x',
+        balance: '0x0',
         codeHash: KECCAK256_NULL_S,
-        nonce: '0x',
+        nonce: '0x0',
         storageHash: KECCAK256_RLP_S,
         accountProof: (await this._trie.createProof(address.bytes)).map((p) => bytesToHex(p)),
         storageProof: [],
@@ -635,7 +672,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       (p) => bytesToHex(p)
     )
     const storageProof: StorageProof[] = []
-    const storageTrie = await this._getStorageTrie(address, account)
+    const storageTrie = this._getStorageTrie(address, account)
 
     for (const storageKey of storageSlots) {
       const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
@@ -783,23 +820,21 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
+    const trie = this._getStorageTrie(address, account)
 
     return new Promise((resolve, reject) => {
-      this._getStorageTrie(address, account)
-        .then((trie) => {
-          const storage: StorageDump = {}
-          const stream = trie.createReadStream()
+      const storage: StorageDump = {}
+      const stream = trie.createReadStream()
 
-          stream.on('data', (val: any) => {
-            storage[bytesToHex(val.key)] = bytesToHex(val.value)
-          })
-          stream.on('end', () => {
-            resolve(storage)
-          })
-        })
-        .catch((e) => {
-          reject(e)
-        })
+      stream.on('data', (val: any) => {
+        storage[bytesToHex(val.key)] = bytesToHex(val.value)
+      })
+      stream.on('end', () => {
+        resolve(storage)
+      })
+      stream.on('error', (e) => {
+        reject(e)
+      })
     })
   }
 
@@ -822,48 +857,44 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     if (!account) {
       throw new Error(`Account does not exist.`)
     }
+    const trie = this._getStorageTrie(address, account)
 
     return new Promise((resolve, reject) => {
-      this._getStorageTrie(address, account)
-        .then((trie) => {
-          let inRange = false
-          let i = 0
+      let inRange = false
+      let i = 0
 
-          /** Object conforming to {@link StorageRange.storage}. */
-          const storageMap: StorageRange['storage'] = {}
-          const stream = trie.createReadStream()
+      /** Object conforming to {@link StorageRange.storage}. */
+      const storageMap: StorageRange['storage'] = {}
+      const stream = trie.createReadStream()
 
-          stream.on('data', (val: any) => {
-            if (!inRange) {
-              // Check if the key is already in the correct range.
-              if (bytesToBigInt(val.key) >= startKey) {
-                inRange = true
-              } else {
-                return
-              }
-            }
+      stream.on('data', (val: any) => {
+        if (!inRange) {
+          // Check if the key is already in the correct range.
+          if (bytesToBigInt(val.key) >= startKey) {
+            inRange = true
+          } else {
+            return
+          }
+        }
 
-            if (i < limit) {
-              storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-              i++
-            } else if (i === limit) {
-              resolve({
-                storage: storageMap,
-                nextKey: bytesToHex(val.key),
-              })
-            }
+        if (i < limit) {
+          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
+          i++
+        } else if (i === limit) {
+          resolve({
+            storage: storageMap,
+            nextKey: bytesToHex(val.key),
           })
+        }
+      })
 
-          stream.on('end', () => {
-            resolve({
-              storage: storageMap,
-              nextKey: null,
-            })
-          })
+      stream.on('end', () => {
+        resolve({
+          storage: storageMap,
+          nextKey: null,
         })
-        .catch((e) => {
-          reject(e)
-        })
+      })
+      stream.on('error', (e) => reject(e))
     })
   }
 
@@ -926,8 +957,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * 2. Cache values are generally not copied along
    */
   shallowCopy(): DefaultStateManager {
+    const common = this.common.copy()
+    common.setHardfork(this.common.hardfork())
+
     const trie = this._trie.shallowCopy(false)
     const prefixCodeHashes = this._prefixCodeHashes
+    const prefixStorageTrieKeys = this._prefixStorageTrieKeys
     let accountCacheOpts = { ...this._accountCacheSettings }
     if (!this._accountCacheSettings.deactivate) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
@@ -938,7 +973,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
 
     return new DefaultStateManager({
+      common,
       trie,
+      prefixStorageTrieKeys,
       prefixCodeHashes,
       accountCacheOpts,
       storageCacheOpts,

@@ -213,6 +213,10 @@ describe('[Common]: Hardfork logic', () => {
         Chain.Sepolia,
         hexToBytes('0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9'),
       ],
+      [
+        Chain.Holesky,
+        hexToBytes('0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'),
+      ],
     ]
 
     let c = new Common({ chain: Chain.Mainnet })

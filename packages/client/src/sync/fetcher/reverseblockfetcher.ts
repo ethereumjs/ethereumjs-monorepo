@@ -1,9 +1,11 @@
+import { BIGINT_0 } from '@ethereumjs/util'
+
+import { errSyncMerged } from '../../service/skeleton'
 import { Event } from '../../types'
-import { errSyncMerged } from '../skeleton'
 
 import { BlockFetcher } from './blockfetcher'
 
-import type { Skeleton } from '../skeleton'
+import type { Skeleton } from '../../service/skeleton'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import type { Block } from '@ethereumjs/block'
 
@@ -62,7 +64,7 @@ export class ReverseBlockFetcher extends BlockFetcher {
     error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    const stepBack = BigInt(0)
+    const stepBack = BIGINT_0
     const destroyFetcher = !(error.message as string).includes(
       `Blocks don't extend canonical subchain`
     )

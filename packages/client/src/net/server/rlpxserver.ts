@@ -223,7 +223,11 @@ export class RlpxServer extends Server {
         dnsAddr: this.config.dnsAddr,
       })
 
-      this.dpt.events.on('error', (e: Error) => this.error(e))
+      this.dpt.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
       this.dpt.events.on('listening', () => {
         resolve()
@@ -292,7 +296,11 @@ export class RlpxServer extends Server {
         this.error(error)
       )
 
-      this.rlpx.events.on('error', (e: Error) => this.error(e))
+      this.rlpx.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
       this.rlpx.events.on('listening', () => {
         this.config.events.emit(Event.SERVER_LISTENING, {

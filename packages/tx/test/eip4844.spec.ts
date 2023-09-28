@@ -37,7 +37,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
     if (isBrowser() === false) {
       const txData = {
         type: 0x03,
-        versionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
         maxFeePerBlobGas: 1n,
       }
       const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
@@ -81,7 +81,7 @@ describe('fromTxData using from a json', () => {
         chainId: '0x28757b3',
         accessList: null,
         maxFeePerBlobGas: '0xb2d05e00',
-        versionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
+        blobVersionedHashes: ['0x01b0a4cdd5f55589f5c5b4d46c76704bb6ce95c0a8c09f77f197a57808dded28'],
       }
       const txMeta = {
         hash: '0xe5e02be0667b6d31895d1b5a8b916a6761cbc9865225c6144a3e2c50936d173e',
@@ -134,13 +134,13 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
         maxFeePerBlobGas: 1n,
       }
       const shortVersionHash = {
-        versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
+        blobVersionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
       }
       const invalidVersionHash = {
-        versionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(31))],
+        blobVersionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(31))],
       }
       const tooManyBlobs = {
-        versionedHashes: [
+        blobVersionedHashes: [
           concatBytes(new Uint8Array([1]), randomBytes(31)),
           concatBytes(new Uint8Array([1]), randomBytes(31)),
           concatBytes(new Uint8Array([1]), randomBytes(31)),
@@ -179,11 +179,11 @@ describe('Network wrapper tests', () => {
     if (isBrowser() === false) {
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(blobs)
-      const versionedHashes = commitmentsToVersionedHashes(commitments)
+      const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobsToProofs(blobs, commitments)
       const unsignedTx = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
@@ -234,8 +234,8 @@ describe('Network wrapper tests', () => {
       )
 
       assert.equal(
-        bytesToHex(unsignedTx.versionedHashes[0]),
-        bytesToHex(simpleBlobTx.versionedHashes[0]),
+        bytesToHex(unsignedTx.blobVersionedHashes[0]),
+        bytesToHex(simpleBlobTx.blobVersionedHashes[0]),
         'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes'
       )
 
@@ -278,7 +278,7 @@ describe('Network wrapper tests', () => {
           BlobEIP4844Transaction.fromTxData(
             {
               blobsData: ['hello world'],
-              versionedHashes: ['0x01cd'],
+              blobVersionedHashes: ['0x01cd'],
               maxFeePerBlobGas: 100000000n,
               gasLimit: 0xffffffn,
               to: randomBytes(20),
@@ -309,7 +309,7 @@ describe('Network wrapper tests', () => {
 
       const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes: [],
+          blobVersionedHashes: [],
           blobs: [],
           kzgCommitments: [],
           kzgProofs: [],
@@ -333,7 +333,7 @@ describe('Network wrapper tests', () => {
 
       const txWithMissingBlob = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs: blobs.slice(1),
           kzgCommitments: commitments,
           kzgProofs: proofs,
@@ -350,7 +350,7 @@ describe('Network wrapper tests', () => {
           BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithMissingBlob, {
             common,
           }),
-        'Number of versionedHashes, blobs, and commitments not all equal',
+        'Number of blobVersionedHashes, blobs, and commitments not all equal',
         undefined,
         'throws when blobs/commitments/hashes mismatch'
       )
@@ -360,7 +360,7 @@ describe('Network wrapper tests', () => {
       commitments[0][0] = 154
       const txWithInvalidCommitment = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
@@ -385,12 +385,12 @@ describe('Network wrapper tests', () => {
         'throws when kzg proof cant be verified'
       )
 
-      versionedHashes[0][1] = 2
+      blobVersionedHashes[0][1] = 2
       commitments[0][0] = mangledValue
 
       const txWithInvalidVersionedHashes = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs,
           kzgCommitments: commitments,
           kzgProofs: proofs,
@@ -426,7 +426,7 @@ describe('hash() and signature verification', () => {
         {
           chainId: 1,
           nonce: 1,
-          versionedHashes: [
+          blobVersionedHashes: [
             hexToBytes('0x01624652859a6e98ffc1608e2af0147ca4e86e1ce27672d8d3f3c9d4ffd6ef7e'),
           ],
           maxFeePerBlobGas: 10000000n,
@@ -479,7 +479,7 @@ describe('Network wrapper deserialization test', () => {
         chainId: '0x1',
         accessList: [],
         maxFeePerBlobGas: '0x5f5e100',
-        versionedHashes: ['0x0172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb9520'],
+        blobVersionedHashes: ['0x0172f7e05f83dde3e36fb3de430f65c09efb9dbbbf53826e1c1c9780b8fb9520'],
       }
       const txMeta = {
         sender: '0x5b638bee5a4e8ff43701747afc023f906abe0636',
@@ -549,7 +549,7 @@ describe('Network wrapper deserialization test', () => {
         'Transaction should be correctly deserialized'
       )
       assert.equal(
-        bytesToHex(deserializedTxNethermind.versionedHashes[0]),
+        bytesToHex(deserializedTxNethermind.blobVersionedHashes[0]),
         '0x0126b24ad77fd0d2a6b63f903ef0ee8105c34aa035e0f67e7e6c21abb94da817',
         'versioned hash should match'
       )

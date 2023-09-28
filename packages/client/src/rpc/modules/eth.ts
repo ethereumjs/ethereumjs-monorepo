@@ -1,6 +1,8 @@
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
+  BIGINT_0,
+  BIGINT_1,
   TypeOutput,
   bigIntToHex,
   bytesToHex,
@@ -12,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../error-code'
-import { getBlockByOption, jsonRpcTx } from '../helpers'
+import { callWithStackTrace, getBlockByOption, jsonRpcTx } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -207,96 +209,114 @@ export class Eth {
   private receiptsManager: ReceiptsManager | undefined
   private _chain: Chain
   private _vm: VM | undefined
+  private _rpcDebug: boolean
   public ethVersion: number
 
   /**
    * Create eth_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
+    this._rpcDebug = rpcDebug
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
 
-    this.blockNumber = middleware(this.blockNumber.bind(this), 0)
+    this.blockNumber = middleware(
+      callWithStackTrace(this.blockNumber.bind(this), this._rpcDebug),
+      0
+    )
 
-    this.call = middleware(this.call.bind(this), 2, [
+    this.call = middleware(callWithStackTrace(this.call.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
       [validators.blockOption],
     ])
 
-    this.chainId = middleware(this.chainId.bind(this), 0, [])
+    this.chainId = middleware(callWithStackTrace(this.chainId.bind(this), this._rpcDebug), 0, [])
 
-    this.estimateGas = middleware(this.estimateGas.bind(this), 1, [
-      [validators.transaction()],
-      [validators.blockOption],
-    ])
+    this.estimateGas = middleware(
+      callWithStackTrace(this.estimateGas.bind(this), this._rpcDebug),
+      1,
+      [[validators.transaction()], [validators.blockOption]]
+    )
 
-    this.getBalance = middleware(this.getBalance.bind(this), 2, [
-      [validators.address],
-      [validators.blockOption],
-    ])
+    this.getBalance = middleware(
+      callWithStackTrace(this.getBalance.bind(this), this._rpcDebug),
+      2,
+      [[validators.address], [validators.blockOption]]
+    )
 
-    this.getBlockByNumber = middleware(this.getBlockByNumber.bind(this), 2, [
-      [validators.blockOption],
-      [validators.bool],
-    ])
+    this.getBlockByNumber = middleware(
+      callWithStackTrace(this.getBlockByNumber.bind(this), this._rpcDebug),
+      2,
+      [[validators.blockOption], [validators.bool]]
+    )
 
-    this.getBlockByHash = middleware(this.getBlockByHash.bind(this), 2, [
-      [validators.hex, validators.blockHash],
-      [validators.bool],
-    ])
+    this.getBlockByHash = middleware(
+      callWithStackTrace(this.getBlockByHash.bind(this), this._rpcDebug),
+      2,
+      [[validators.hex, validators.blockHash], [validators.bool]]
+    )
 
     this.getBlockTransactionCountByHash = middleware(
-      this.getBlockTransactionCountByHash.bind(this),
+      callWithStackTrace(this.getBlockTransactionCountByHash.bind(this), this._rpcDebug),
       1,
       [[validators.hex, validators.blockHash]]
     )
 
-    this.getCode = middleware(this.getCode.bind(this), 2, [
+    this.getCode = middleware(callWithStackTrace(this.getCode.bind(this), this._rpcDebug), 2, [
       [validators.address],
       [validators.blockOption],
     ])
 
-    this.getUncleCountByBlockNumber = middleware(this.getUncleCountByBlockNumber.bind(this), 1, [
-      [validators.hex],
-    ])
+    this.getUncleCountByBlockNumber = middleware(
+      callWithStackTrace(this.getUncleCountByBlockNumber.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
 
-    this.getStorageAt = middleware(this.getStorageAt.bind(this), 3, [
-      [validators.address],
-      [validators.hex],
-      [validators.blockOption],
-    ])
+    this.getStorageAt = middleware(
+      callWithStackTrace(this.getStorageAt.bind(this), this._rpcDebug),
+      3,
+      [[validators.address], [validators.hex], [validators.blockOption]]
+    )
 
     this.getTransactionByBlockHashAndIndex = middleware(
-      this.getTransactionByBlockHashAndIndex.bind(this),
+      callWithStackTrace(this.getTransactionByBlockHashAndIndex.bind(this), this._rpcDebug),
       2,
       [[validators.hex, validators.blockHash], [validators.hex]]
     )
 
-    this.getTransactionByHash = middleware(this.getTransactionByHash.bind(this), 1, [
-      [validators.hex],
-    ])
+    this.getTransactionByHash = middleware(
+      callWithStackTrace(this.getTransactionByHash.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
 
-    this.getTransactionCount = middleware(this.getTransactionCount.bind(this), 2, [
-      [validators.address],
-      [validators.blockOption],
-    ])
+    this.getTransactionCount = middleware(
+      callWithStackTrace(this.getTransactionCount.bind(this), this._rpcDebug),
+      2,
+      [[validators.address], [validators.blockOption]]
+    )
 
-    this.getTransactionReceipt = middleware(this.getTransactionReceipt.bind(this), 1, [
-      [validators.hex],
-    ])
+    this.getTransactionReceipt = middleware(
+      callWithStackTrace(this.getTransactionReceipt.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
 
-    this.getUncleCountByBlockNumber = middleware(this.getUncleCountByBlockNumber.bind(this), 1, [
-      [validators.hex],
-    ])
+    this.getUncleCountByBlockNumber = middleware(
+      callWithStackTrace(this.getUncleCountByBlockNumber.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
 
-    this.getLogs = middleware(this.getLogs.bind(this), 1, [
+    this.getLogs = middleware(callWithStackTrace(this.getLogs.bind(this), this._rpcDebug), 1, [
       [
         validators.object({
           fromBlock: validators.optional(validators.blockOption),
@@ -316,25 +336,33 @@ export class Eth {
       ],
     ])
 
-    this.sendRawTransaction = middleware(this.sendRawTransaction.bind(this), 1, [[validators.hex]])
+    this.sendRawTransaction = middleware(
+      callWithStackTrace(this.sendRawTransaction.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
 
-    this.protocolVersion = middleware(this.protocolVersion.bind(this), 0, [])
+    this.protocolVersion = middleware(
+      callWithStackTrace(this.protocolVersion.bind(this), this._rpcDebug),
+      0,
+      []
+    )
 
-    this.syncing = middleware(this.syncing.bind(this), 0, [])
+    this.syncing = middleware(callWithStackTrace(this.syncing.bind(this), this._rpcDebug), 0, [])
 
-    this.getProof = middleware(this.getProof.bind(this), 3, [
+    this.getProof = middleware(callWithStackTrace(this.getProof.bind(this), this._rpcDebug), 3, [
       [validators.address],
       [validators.array(validators.hex)],
       [validators.blockOption],
     ])
 
     this.getBlockTransactionCountByNumber = middleware(
-      this.getBlockTransactionCountByNumber.bind(this),
+      callWithStackTrace(this.getBlockTransactionCountByNumber.bind(this), this._rpcDebug),
       1,
       [[validators.blockOption]]
     )
 
-    this.gasPrice = middleware(this.gasPrice.bind(this), 0, [])
+    this.gasPrice = middleware(callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug), 0, [])
   }
 
   /**
@@ -342,7 +370,7 @@ export class Eth {
    * @param params An empty array
    */
   async blockNumber(_params = []) {
-    return bigIntToHex(this._chain.headers.latest?.number ?? BigInt(0))
+    return bigIntToHex(this._chain.headers.latest?.number ?? BIGINT_0)
   }
 
   /**
@@ -371,23 +399,16 @@ export class Eth {
 
     const { from, to, gas: gasLimit, gasPrice, value, data } = transaction
 
-    try {
-      const runCallOpts = {
-        caller: from !== undefined ? Address.fromString(from) : undefined,
-        to: to !== undefined ? Address.fromString(to) : undefined,
-        gasLimit: toType(gasLimit, TypeOutput.BigInt),
-        gasPrice: toType(gasPrice, TypeOutput.BigInt),
-        value: toType(value, TypeOutput.BigInt),
-        data: data !== undefined ? hexToBytes(data) : undefined,
-      }
-      const { execResult } = await vm.evm.runCall(runCallOpts)
-      return bytesToHex(execResult.returnValue)
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
-      }
+    const runCallOpts = {
+      caller: from !== undefined ? Address.fromString(from) : undefined,
+      to: to !== undefined ? Address.fromString(to) : undefined,
+      gasLimit: toType(gasLimit, TypeOutput.BigInt),
+      gasPrice: toType(gasPrice, TypeOutput.BigInt),
+      value: toType(value, TypeOutput.BigInt),
+      data: data !== undefined ? hexToBytes(data) : undefined,
     }
+    const { execResult } = await vm.evm.runCall(runCallOpts)
+    return bytesToHex(execResult.returnValue)
   }
 
   /**
@@ -423,7 +444,6 @@ export class Eth {
     if (this._vm === undefined) {
       throw new Error('missing vm')
     }
-
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
@@ -455,22 +475,14 @@ export class Eth {
     tx.getSenderAddress = () => {
       return from
     }
-
-    try {
-      const { totalGasSpent } = await vm.runTx({
-        tx,
-        skipNonce: true,
-        skipBalance: true,
-        skipBlockGasLimitValidation: true,
-        block,
-      })
-      return `0x${totalGasSpent.toString(16)}`
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
-      }
-    }
+    const { totalGasSpent } = await vm.runTx({
+      tx,
+      skipNonce: true,
+      skipBalance: true,
+      skipBlockGasLimitValidation: true,
+      block,
+    })
+    return `0x${totalGasSpent.toString(16)}`
   }
 
   /**
@@ -637,21 +649,13 @@ export class Eth {
    */
   async getTransactionByHash(params: [string]) {
     const [txHash] = params
-
-    try {
-      if (!this.receiptsManager) throw new Error('missing receiptsManager')
-      const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
-      if (!result) return null
-      const [_receipt, blockHash, txIndex] = result
-      const block = await this._chain.getBlock(blockHash)
-      const tx = block.transactions[txIndex]
-      return jsonRpcTx(tx, block, txIndex)
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
-      }
-    }
+    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
+    if (!result) return null
+    const [_receipt, blockHash, txIndex] = result
+    const block = await this._chain.getBlock(blockHash)
+    const tx = block.transactions[txIndex]
+    return jsonRpcTx(tx, block, txIndex)
   }
 
   /**
@@ -721,52 +725,45 @@ export class Eth {
   async getTransactionReceipt(params: [string]) {
     const [txHash] = params
 
-    try {
-      if (!this.receiptsManager) throw new Error('missing receiptsManager')
-      const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
-      if (!result) return null
-      const [receipt, blockHash, txIndex, logIndex] = result
-      const block = await this._chain.getBlock(blockHash)
-      const parentBlock = await this._chain.getBlock(block.header.parentHash)
-      const tx = block.transactions[txIndex]
-      const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
-        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-          (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
-          ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-          : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
-            block.header.baseFeePerGas! +
-            block.header.baseFeePerGas!
-        : (tx as LegacyTransaction).gasPrice
+    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
+    if (!result) return null
+    const [receipt, blockHash, txIndex, logIndex] = result
+    const block = await this._chain.getBlock(blockHash)
+    const parentBlock = await this._chain.getBlock(block.header.parentHash)
+    const tx = block.transactions[txIndex]
+    const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)
+      ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
+        (tx as FeeMarketEIP1559Transaction).maxFeePerGas - block.header.baseFeePerGas!
+        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
+        : (tx as FeeMarketEIP1559Transaction).maxFeePerGas -
+          block.header.baseFeePerGas! +
+          block.header.baseFeePerGas!
+      : (tx as LegacyTransaction).gasPrice
 
-      const vmCopy = await this._vm!.shallowCopy()
-      vmCopy.common.setHardfork(tx.common.hardfork())
-      // Run tx through copied vm to get tx gasUsed and createdAddress
-      const runBlockResult = await vmCopy.runBlock({
-        block,
-        root: parentBlock.header.stateRoot,
-        skipBlockValidation: true,
-      })
+    const vmCopy = await this._vm!.shallowCopy()
+    vmCopy.common.setHardfork(tx.common.hardfork())
+    // Run tx through copied vm to get tx gasUsed and createdAddress
+    const runBlockResult = await vmCopy.runBlock({
+      block,
+      root: parentBlock.header.stateRoot,
+      skipBlockValidation: true,
+    })
 
-      const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
-      const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
-      return await jsonRpcReceipt(
-        receipt,
-        totalGasSpent,
-        effectiveGasPrice,
-        block,
-        tx,
-        txIndex,
-        logIndex,
-        createdAddress,
-        blobGasUsed,
-        blobGasPrice
-      )
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
-      }
-    }
+    const { totalGasSpent, createdAddress } = runBlockResult.results[txIndex]
+    const { blobGasPrice, blobGasUsed } = runBlockResult.receipts[txIndex] as EIP4844BlobTxReceipt
+    return jsonRpcReceipt(
+      receipt,
+      totalGasSpent,
+      effectiveGasPrice,
+      block,
+      tx,
+      txIndex,
+      logIndex,
+      createdAddress,
+      blobGasUsed,
+      blobGasPrice
+    )
   }
 
   /**
@@ -783,6 +780,7 @@ export class Eth {
         message: `Can only specify a blockHash if fromBlock or toBlock are not provided`,
       }
     }
+
     let from: Block, to: Block
     if (blockHash !== undefined) {
       try {
@@ -795,7 +793,7 @@ export class Eth {
       }
     } else {
       if (fromBlock === 'earliest') {
-        from = await this._chain.getBlock(BigInt(0))
+        from = await this._chain.getBlock(BIGINT_0)
       } else if (fromBlock === 'latest' || fromBlock === undefined) {
         from = this._chain.blocks.latest!
       } else {
@@ -832,36 +830,30 @@ export class Eth {
         message: `block range limit is ${this.receiptsManager.GET_LOGS_BLOCK_RANGE_LIMIT} blocks`,
       }
     }
-    try {
-      const formattedTopics = topics?.map((t) => {
-        if (t === null) {
-          return null
-        } else if (Array.isArray(t)) {
-          return t.map((x) => hexToBytes(x))
-        } else {
-          return hexToBytes(t)
-        }
-      })
-      let addrs
-      if (address !== undefined) {
-        if (Array.isArray(address)) {
-          addrs = address.map((a) => hexToBytes(a))
-        } else {
-          addrs = [hexToBytes(address)]
-        }
+
+    const formattedTopics = topics?.map((t) => {
+      if (t === null) {
+        return null
+      } else if (Array.isArray(t)) {
+        return t.map((x) => hexToBytes(x))
+      } else {
+        return hexToBytes(t)
       }
-      const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
-      return await Promise.all(
-        logs.map(({ log, block, tx, txIndex, logIndex }) =>
-          jsonRpcLog(log, block, tx, txIndex, logIndex)
-        )
-      )
-    } catch (error: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: error.message.toString(),
+    })
+    let addrs
+    if (address !== undefined) {
+      if (Array.isArray(address)) {
+        addrs = address.map((a) => hexToBytes(a))
+      } else {
+        addrs = [hexToBytes(address)]
       }
     }
+    const logs = await this.receiptsManager.getLogs(from, to, addrs, formattedTopics)
+    return Promise.all(
+      logs.map(({ log, block, tx, txIndex, logIndex }) =>
+        jsonRpcLog(log, block, tx, txIndex, logIndex)
+      )
+    )
   }
 
   /**
@@ -882,10 +874,10 @@ export class Eth {
     }
     const common = this.client.config.chainCommon.copy()
     const chainHeight = this.client.chain.headers.height
-    let txTargetHeight = syncTargetHeight ?? BigInt(0)
+    let txTargetHeight = syncTargetHeight ?? BIGINT_0
     // Following step makes sure txTargetHeight > 0
     if (txTargetHeight <= chainHeight) {
-      txTargetHeight = chainHeight + BigInt(1)
+      txTargetHeight = chainHeight + BIGINT_1
     }
     common.setHardforkBy({
       blockNumber: txTargetHeight,
@@ -1009,7 +1001,7 @@ export class Eth {
     const startingBlock = bigIntToHex(synchronizer.startingBlock)
 
     let highestBlock
-    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BigInt(0)) {
+    if (typeof syncTargetHeight === 'bigint' && syncTargetHeight !== BIGINT_0) {
       highestBlock = bigIntToHex(syncTargetHeight)
     } else {
       const bestPeer = await synchronizer.best()
@@ -1051,11 +1043,11 @@ export class Eth {
    */
   async gasPrice() {
     const minGasPrice: bigint = this._chain.config.chainCommon.param('gasConfig', 'minPrice')
-    let gasPrice = BigInt(0)
+    let gasPrice = BIGINT_0
     const latest = await this._chain.getCanonicalHeadHeader()
     if (this._vm !== undefined && this._vm.common.isActivatedEIP(1559)) {
       const baseFee = latest.calcNextBaseFee()
-      let priorityFee = BigInt(0)
+      let priorityFee = BIGINT_0
       const block = await this._chain.getBlock(latest.number)
       for (const tx of block.transactions) {
         const maxPriorityFeePerGas = (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
@@ -1063,13 +1055,13 @@ export class Eth {
       }
 
       priorityFee =
-        priorityFee !== BigInt(0) ? priorityFee / BigInt(block.transactions.length) : BigInt(1)
+        priorityFee !== BIGINT_0 ? priorityFee / BigInt(block.transactions.length) : BIGINT_1
       gasPrice = baseFee + priorityFee > minGasPrice ? baseFee + priorityFee : minGasPrice
     } else {
       // For chains that don't support EIP-1559 we iterate over the last 20
       // blocks to get an average gas price.
       const blockIterations = 20 < latest.number ? 20 : latest.number
-      let txCount = BigInt(0)
+      let txCount = BIGINT_0
       for (let i = 0; i < blockIterations; i++) {
         const block = await this._chain.getBlock(latest.number - BigInt(i))
         if (block.transactions.length === 0) {

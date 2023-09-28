@@ -363,14 +363,18 @@ describe('[PendingBlock]', async () => {
 
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(blobs, commitments)
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
       const txA01 = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes: [...versionedHashes, ...versionedHashes, ...versionedHashes],
+          blobVersionedHashes: [
+            ...blobVersionedHashes,
+            ...blobVersionedHashes,
+            ...blobVersionedHashes,
+          ],
           blobs: [...blobs, ...blobs, ...blobs],
           kzgCommitments: [...commitments, ...commitments, ...commitments],
           kzgProofs: [...proofs, ...proofs, ...proofs],
@@ -438,13 +442,13 @@ describe('[PendingBlock]', async () => {
 
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
     const missingBlobTx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes,
+        blobVersionedHashes,
         kzgCommitments: commitments,
         kzgProofs: proofs,
         maxFeePerBlobGas: 100000000n,

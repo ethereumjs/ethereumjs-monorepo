@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
+import { BIGINT_0 } from '@ethereumjs/util'
 
 import { bytesBE8 } from './constants.js'
 import { DBOp, DBTarget } from './operation.js'
@@ -40,7 +41,7 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
     })
   )
 
-  const isGenesis = header.number === BigInt(0)
+  const isGenesis = header.number === BIGINT_0
 
   if (
     isGenesis ||

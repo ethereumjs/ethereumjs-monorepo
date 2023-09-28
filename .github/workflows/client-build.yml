@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -59,7 +59,7 @@ jobs:
         uses: docker/setup-qemu-action@v1
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Build from npm
         run: >
           docker buildx build .
@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
@@ -91,8 +91,4 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
+      - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli

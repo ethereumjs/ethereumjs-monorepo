@@ -242,7 +242,7 @@ Note that this feature is in `beta` and shouldn't be used with accounts holding 
 The client provides a quick way to get a local instance of a blockchain up and running using the `--dev` command. This will start up a private PoA clique network with a prefunded account that mines block on 10 second intervals. The prefunded account and its private key are printed to the screen when the client starts. When paired with the `--rpc` command, you have a ready-made environment for local development.
 
 ```shell
-ethereumjs --dev --rpc
+ethereumjs --dev=poa --rpc
 
 ==================================================
 Account generated for mining blocks:
@@ -257,14 +257,41 @@ Please **heed** the warning and do not use the provided account/private key for 
 This can also be paired with the `--unlock` command if you would like to specify the miner/prefunded account:
 
 ```shell
-ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
+ethereumjs --dev=poa --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 ```
 
-Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
+Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev=poa` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
 
 To explicitly set the miner coinbase (etherbase) specify `--minerCoinbase=[ADDRESS]` - otherwise this will default to the primary account.
 
-The `--dev` command defaults to `--dev=poa`. If you would like to use PoW ethash with CPU miner (warning: slow) then pass `--dev=pow`.
+The `--dev` command must be passed with a value (either 'poa' or 'pow') or you will receive an error.
+
+### CLI Parameter Autocompletion (experimental)
+
+The client supports a primitive form of autocompletion for CLI parameters. To enable, first ensure you have built the client (or installed from NPM).
+
+Then, configure the client to use autocompletion. This works with either `bash` or `zsh` shells.
+
+Set up the autocompletion script.
+
+```
+dist/bin/cli.js completion >> ~/.zshrc
+```
+
+Close and reopen the your terminal window (or else run `source ~/.zshrc`).
+When you next type `dist/bin/cli.js --d` and then press `tab`, you should see something like:
+
+```sh
+dist/bin/cli.js --d
+--dataDir            -- Data directory for the blockchain
+--debugCode          -- Generate code for local debugging (internal usage mostly)
+--dev                -- Start an ephemeral PoA blockchain with a single miner and prefunded accounts
+--disableBeaconSync  -- Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain
+--discDns            -- Query EIP-1459 DNS TXT records for peer discovery
+--discV4             -- Use v4 ("findneighbour" node requests) for peer discovery
+--dnsAddr            -- IPv4 address of DNS server to use when acquiring peer discovery targets
+--dnsNetworks        -- EIP-1459 ENR tree urls to query for peer discovery targets
+```
 
 ## API
 

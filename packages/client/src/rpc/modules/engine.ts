@@ -2,6 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
+  BIGINT_1,
   bigIntToHex,
   bytesToHex,
   bytesToUnprefixedHex,
@@ -29,7 +31,7 @@ import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
 import type { BlobsBundle } from '../../miner'
-import type { FullEthereumService } from '../../service'
+import type { FullEthereumService, Skeleton } from '../../service'
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VM } from '@ethereumjs/vm'
@@ -317,7 +319,7 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
   // In case the Genesis block has td >= ttd it is the terminal block
   if (block.isGenesis()) return blockTd >= ttd
 
-  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BigInt(1))
+  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
   return blockTd >= ttd && parentBlockTd < ttd
 }
 
@@ -403,6 +405,7 @@ function validateHardforkRange(
 export class Engine {
   private client: EthereumClient
   private execution: VMExecution
+  private skeleton: Skeleton
   private service: FullEthereumService
   private chain: Chain
   private config: Config
@@ -424,11 +427,18 @@ export class Engine {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
+
     if (this.service.execution === undefined) {
       throw Error('execution required for engine module')
     }
     this.execution = this.service.execution
     this.vm = this.execution.vm
+
+    if (this.service.skeleton === undefined) {
+      throw Error('skeleton required for engine module')
+    }
+    this.skeleton = this.service.skeleton
+
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
@@ -462,7 +472,7 @@ export class Engine {
           [validators.array(validators.bytes32)],
           [validators.bytes32],
         ],
-        ['executionPayload', 'versionedHashes', 'parentBeaconBlockRoot']
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot']
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
@@ -573,7 +583,7 @@ export class Engine {
   private async newPayload(
     params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?]
   ): Promise<PayloadStatusV1> {
-    const [payload, versionedHashes, parentBeaconBlockRoot] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -600,29 +610,29 @@ export class Engine {
 
     if (block.common.isActivatedEIP(4844)) {
       let validationError: string | null = null
-      if (versionedHashes === undefined || versionedHashes === null) {
-        validationError = `Error verifying versionedHashes: received none`
+      if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
+        validationError = `Error verifying blobVersionedHashes: received none`
       } else {
         // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
         const txVersionedHashes = []
         for (const tx of block.transactions) {
           if (tx instanceof BlobEIP4844Transaction) {
-            for (const vHash of tx.versionedHashes) {
+            for (const vHash of tx.blobVersionedHashes) {
               txVersionedHashes.push(vHash)
             }
           }
         }
 
-        if (versionedHashes.length !== txVersionedHashes.length) {
-          validationError = `Error verifying versionedHashes: expected=${txVersionedHashes.length} received=${versionedHashes.length}`
+        if (blobVersionedHashes.length !== txVersionedHashes.length) {
+          validationError = `Error verifying blobVersionedHashes: expected=${txVersionedHashes.length} received=${blobVersionedHashes.length}`
         } else {
           // match individual hashes
-          for (let vIndex = 0; vIndex < versionedHashes.length; vIndex++) {
+          for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
             // if mismatch, record error and break
-            if (!equalsBytes(hexToBytes(versionedHashes[vIndex]), txVersionedHashes[vIndex])) {
-              validationError = `Error verifying versionedHashes: mismatch at index=${vIndex} expected=${short(
+            if (!equalsBytes(hexToBytes(blobVersionedHashes[vIndex]), txVersionedHashes[vIndex])) {
+              validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
                 txVersionedHashes[vIndex]
-              )} received=${short(versionedHashes[vIndex])}`
+              )} received=${short(blobVersionedHashes[vIndex])}`
               break
             }
           }
@@ -636,8 +646,8 @@ export class Engine {
         const response = { status: Status.INVALID, latestValidHash, validationError }
         return response
       }
-    } else if (versionedHashes !== undefined && versionedHashes !== null) {
-      const validationError = `Invalid versionedHashes before EIP-4844 is activated`
+    } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
+      const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       return response
@@ -659,7 +669,10 @@ export class Engine {
     // been initialized here but a batch of blocks new payloads arrive, most likely during sync
     // We still can't switch to beacon sync here especially if the chain is pre merge and there
     // is pow block which this client would like to mint and attempt proposing it
-    const optimisticLookup = await this.service.beaconSync?.extendChain(block)
+    //
+    // call skeleton setHead without forcing head change to return if its reorged or not
+    // and flip it go get lookup flag
+    const optimisticLookup = !(await this.skeleton.setHead(block, false))
 
     // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
@@ -680,7 +693,7 @@ export class Engine {
       // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
       // to run basic validations based on parent
       const parent =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
+        (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
         (await this.chain.getBlock(hexToBytes(parentHash)))
 
@@ -787,7 +800,7 @@ export class Engine {
         // eslint-disable-next-line no-empty
       } catch {}
       try {
-        await this.service.beaconSync?.skeleton.deleteBlock(lastBlock!)
+        await this.skeleton.deleteBlock(lastBlock!)
         // eslint-disable-next-line no-empty
       } catch {}
       return response
@@ -935,7 +948,7 @@ export class Engine {
       const head = toBytes(headBlockHash)
       headBlock =
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
-        (await this.service.beaconSync?.skeleton.getBlockByHash(head, true)) ??
+        (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
     } catch (error) {
       this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
@@ -965,11 +978,15 @@ export class Engine {
         headBlock.hash()
       )}`
     )
-    await this.service.beaconSync?.setHead(headBlock)
+
+    // call skeleton sethead with force head change and reset beacon sync if reorg
+    const reorged = await this.skeleton.setHead(headBlock, true)
+    if (reorged) await this.service.beaconSync?.reorged(headBlock)
+
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
-    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BigInt(0)) {
+    if (!headBlock.common.gteHardfork(Hardfork.Paris) && headBlock.header.difficulty > BIGINT_0) {
       const validTerminalBlock = await validateTerminalBlock(headBlock, this.chain)
       if (!validTerminalBlock) {
         const response = {
@@ -1010,8 +1027,7 @@ export class Engine {
           // Right now only check if the block is available, canonicality check is done
           // in setHead after chain.putBlocks so as to reflect latest canonical chain
           safeBlock =
-            (await this.service.beaconSync?.skeleton.getBlockByHash(safe, true)) ??
-            (await this.chain.getBlock(safe))
+            (await this.skeleton.getBlockByHash(safe, true)) ?? (await this.chain.getBlock(safe))
         } catch (_error: any) {
           throw {
             code: INVALID_PARAMS,
@@ -1028,7 +1044,7 @@ export class Engine {
         // Right now only check if the block is available, canonicality check is done
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
         finalizedBlock =
-          (await this.service.beaconSync?.skeleton.getBlockByHash(finalized, true)) ??
+          (await this.skeleton.getBlockByHash(finalized, true)) ??
           (await this.chain.getBlock(finalized))
       } catch (error: any) {
         throw {
@@ -1079,6 +1095,17 @@ export class Engine {
       if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
       }
+    } else {
+      // even if the vmHead is same still validations need to be done regarding the correctness
+      // of the sequence and canonical-ity
+      try {
+        await this.execution.setHead([headBlock], { safeBlock, finalizedBlock })
+      } catch (e) {
+        throw {
+          message: (e as Error).message,
+          code: INVALID_PARAMS,
+        }
+      }
     }
 
     // prepare valid response
@@ -1092,7 +1119,7 @@ export class Engine {
       if (timestampBigInt <= headBlock.header.timestamp) {
         throw {
           message: `invalid timestamp in payloadAttributes, got ${timestampBigInt}, need at least ${
-            headBlock.header.timestamp + BigInt(1)
+            headBlock.header.timestamp + BIGINT_1
           }`,
           code: INVALID_PARAMS,
         }
@@ -1403,7 +1430,7 @@ export class Engine {
       }
     }
 
-    if (count < BigInt(1) || start < BigInt(1)) {
+    if (count < BIGINT_1 || start < BIGINT_1) {
       throw {
         code: INVALID_PARAMS,
         message: 'Start and Count parameters cannot be less than 1',
@@ -1415,7 +1442,7 @@ export class Engine {
     }
 
     if (start + count > currentChainHeight) {
-      count = currentChainHeight - start + BigInt(1)
+      count = currentChainHeight - start + BIGINT_1
     }
     const blocks = await this.chain.getBlocks(start, Number(count))
     const payloads: (ExecutionPayloadBodyV1 | null)[] = []

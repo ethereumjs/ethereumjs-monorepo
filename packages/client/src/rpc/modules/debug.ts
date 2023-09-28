@@ -1,7 +1,7 @@
 import { Address, TypeOutput, bigIntToHex, bytesToHex, hexToBytes, toType } from '@ethereumjs/util'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code'
-import { getBlockByOption } from '../helpers'
+import { callWithStackTrace, getBlockByOption } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -80,26 +80,36 @@ export class Debug {
   private service: FullEthereumService
   private chain: Chain
   private vm: VM
+  private _rpcDebug: boolean
   /**
    * Create debug_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
-    this.traceTransaction = middleware(this.traceTransaction.bind(this), 1, [[validators.hex]])
-    this.traceCall = middleware(this.traceCall.bind(this), 2, [
+    this._rpcDebug = rpcDebug
+    this.traceTransaction = middleware(
+      callWithStackTrace(this.traceTransaction.bind(this), this._rpcDebug),
+      1,
+      [[validators.hex]]
+    )
+    this.traceCall = middleware(callWithStackTrace(this.traceCall.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
       [validators.blockOption],
     ])
-    this.storageRangeAt = middleware(this.storageRangeAt.bind(this), 5, [
-      [validators.blockHash],
-      [validators.unsignedInteger],
-      [validators.address],
-      [validators.uint256],
-      [validators.unsignedInteger],
-    ])
+    this.storageRangeAt = middleware(
+      callWithStackTrace(this.storageRangeAt.bind(this), this._rpcDebug),
+      5,
+      [
+        [validators.blockHash],
+        [validators.unsignedInteger],
+        [validators.address],
+        [validators.uint256],
+        [validators.unsignedInteger],
+      ]
+    )
   }
 
   /**
@@ -121,76 +131,69 @@ export class Debug {
 
     const opts = validateTracerConfig(config)
 
-    try {
-      const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-        hexToBytes(txHash)
-      )
-      if (!result) return null
-      const [_, blockHash, txIndex] = result
-      const block = await this.service.chain.getBlock(blockHash)
-      const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
-      const tx = block.transactions[txIndex]
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
+      hexToBytes(txHash)
+    )
+    if (!result) return null
+    const [_, blockHash, txIndex] = result
+    const block = await this.service.chain.getBlock(blockHash)
+    const parentBlock = await this.service.chain.getBlock(block.header.parentHash)
+    const tx = block.transactions[txIndex]
 
-      // Copy VM so as to not modify state when running transactions being traced
-      const vmCopy = await this.service.execution.vm.shallowCopy()
-      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-      for (let x = 0; x < txIndex; x++) {
-        // Run all txns in the block prior to the traced transaction
-        await vmCopy.runTx({ tx: block.transactions[x], block })
-      }
-
-      const trace = {
-        gas: '',
-        returnValue: '',
-        failed: false,
-        structLogs: [] as structLog[],
-      }
-      vmCopy.evm.events?.on('step', async (step, next) => {
-        const memory = []
-        let storage = {}
-        if (opts.disableStorage === false) {
-          storage = await vmCopy.stateManager.dumpStorage(step.address)
-        }
-        if (opts.enableMemory === true) {
-          for (let x = 0; x < step.memoryWordCount; x++) {
-            const word = bytesToHex(step.memory.slice(x * 32, 32))
-            memory.push(word)
-          }
-        }
-        const log = {
-          pc: step.pc,
-          op: step.opcode.name,
-          gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
-          gas: Number(step.gasLeft),
-          depth: step.depth,
-          error: null,
-          stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
-          storage,
-          memory,
-          returnData: undefined,
-        }
-        trace.structLogs.push(log)
-        next?.()
-      })
-
-      vmCopy.evm.events?.on('afterMessage', (data, next) => {
-        if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
-          // Mark last opcode trace as error if exception occurs
-          trace.structLogs[trace.structLogs.length - 1].error = true
-        }
-        next?.()
-      })
-      const res = await vmCopy.runTx({ tx, block })
-      trace.gas = bigIntToHex(res.totalGasSpent)
-      trace.failed = res.execResult.exceptionError !== undefined
-      trace.returnValue = bytesToHex(res.execResult.returnValue)
-      return trace
-    } catch (err: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: err.message.toString(),
-      }
+    // Copy VM so as to not modify state when running transactions being traced
+    const vmCopy = await this.service.execution.vm.shallowCopy()
+    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    for (let x = 0; x < txIndex; x++) {
+      // Run all txns in the block prior to the traced transaction
+      await vmCopy.runTx({ tx: block.transactions[x], block })
     }
+
+    const trace = {
+      gas: '',
+      returnValue: '',
+      failed: false,
+      structLogs: [] as structLog[],
+    }
+    vmCopy.evm.events?.on('step', async (step, next) => {
+      const memory = []
+      let storage = {}
+      if (opts.disableStorage === false) {
+        storage = await vmCopy.stateManager.dumpStorage(step.address)
+      }
+      if (opts.enableMemory === true) {
+        for (let x = 0; x < step.memoryWordCount; x++) {
+          const word = bytesToHex(step.memory.slice(x * 32, 32))
+          memory.push(word)
+        }
+      }
+      const log = {
+        pc: step.pc,
+        op: step.opcode.name,
+        gasCost: step.opcode.fee + Number(step.opcode.dynamicFee),
+        gas: Number(step.gasLeft),
+        depth: step.depth,
+        error: null,
+        stack: opts.disableStack !== true ? step.stack.map(bigIntToHex) : undefined,
+        storage,
+        memory,
+        returnData: undefined,
+      }
+      trace.structLogs.push(log)
+      next?.()
+    })
+
+    vmCopy.evm.events?.on('afterMessage', (data, next) => {
+      if (data.execResult.exceptionError !== undefined && trace.structLogs.length > 0) {
+        // Mark last opcode trace as error if exception occurs
+        trace.structLogs[trace.structLogs.length - 1].error = true
+      }
+      next?.()
+    })
+    const res = await vmCopy.runTx({ tx, block })
+    trace.gas = bigIntToHex(res.totalGasSpent)
+    trace.failed = res.execResult.exceptionError !== undefined
+    trace.returnValue = bytesToHex(res.execResult.returnValue)
+    return trace
   }
 
   /**
@@ -204,6 +207,7 @@ export class Debug {
    */
   async traceCall(params: [RpcTx, string, tracerOpts]) {
     const [callArgs, blockOpt, tracerOpts] = params
+
     // Validate configuration and parameters
     if (!this.service.execution.receiptsManager) {
       throw {
@@ -280,12 +284,6 @@ export class Debug {
     trace.returnValue = bytesToHex(res.execResult.returnValue)
     return trace
   }
-  catch(err: any) {
-    throw {
-      code: INTERNAL_ERROR,
-      message: err.message.toString(),
-    }
-  }
 
   /**
    * Returns a limited set of storage keys belonging to an account.
@@ -323,27 +321,20 @@ export class Debug {
       }
     }
 
-    try {
-      const parentBlock = await this.chain.getBlock(block.header.parentHash)
-      // Copy the VM and run transactions including the relevant transaction.
-      const vmCopy = await this.vm.shallowCopy()
-      await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
-      for (let i = 0; i <= txIndex; i++) {
-        await vmCopy.runTx({ tx: block.transactions[i], block })
-      }
-
-      // await here so that any error can be handled in the catch below for proper response
-      return await vmCopy.stateManager.dumpStorageRange(
-        // Validator already verified that `account` and `startKey` are properly formatted.
-        Address.fromString(account),
-        BigInt(startKey),
-        limit
-      )
-    } catch (err: any) {
-      throw {
-        code: INTERNAL_ERROR,
-        message: err.message.toString(),
-      }
+    const parentBlock = await this.chain.getBlock(block.header.parentHash)
+    // Copy the VM and run transactions including the relevant transaction.
+    const vmCopy = await this.vm.shallowCopy()
+    await vmCopy.stateManager.setStateRoot(parentBlock.header.stateRoot)
+    for (let i = 0; i <= txIndex; i++) {
+      await vmCopy.runTx({ tx: block.transactions[i], block })
     }
+
+    // await here so that any error can be handled in the catch below for proper response
+    return vmCopy.stateManager.dumpStorageRange(
+      // Validator already verified that `account` and `startKey` are properly formatted.
+      Address.fromString(account),
+      BigInt(startKey),
+      limit
+    )
   }
 }

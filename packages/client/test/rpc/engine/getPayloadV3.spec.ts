@@ -105,7 +105,7 @@ describe(method, () => {
     const tx = TransactionFactory.fromTxData(
       {
         type: 0x03,
-        versionedHashes: txVersionedHashes,
+        blobVersionedHashes: txVersionedHashes,
         blobs: txBlobs,
         kzgCommitments: txCommitments,
         kzgProofs: txProofs,
@@ -124,7 +124,7 @@ describe(method, () => {
       const { executionPayload, blobsBundle } = res.body.result
       assert.equal(
         executionPayload.blockHash,
-        '0x0a4f946a9dac3f6d2b86d02dfa6cf221b4fe72bbaff51b50cee4c5784156dd52',
+        '0xe085c4203edf3c9437b41ff43dabe4918a0f496d04217768f0f50e501cd0721a',
         'built expected block'
       )
       assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')

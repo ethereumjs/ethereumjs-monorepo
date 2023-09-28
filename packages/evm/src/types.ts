@@ -79,7 +79,7 @@ interface EVMRunOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  versionedHashes?: Uint8Array[]
+  blobVersionedHashes?: Uint8Array[]
 }
 
 export interface EVMRunCodeOpts extends EVMRunOpts {
@@ -156,6 +156,11 @@ export interface EVMInterface {
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: AsyncEventEmitter<EVMEvents>
+}
+
+export type EVMProfilerOpts = {
+  enabled: boolean
+  // extra options here (such as use X hardfork for gas)
 }
 
 /**
@@ -254,6 +259,11 @@ export interface EVMOpts {
    *
    */
   blockchain?: Blockchain
+
+  /**
+   *
+   */
+  profiler?: EVMProfilerOpts
 }
 
 /**
@@ -328,6 +338,7 @@ export type Block = {
     prevRandao: Uint8Array
     gasLimit: bigint
     baseFeePerGas?: bigint
+    getBlobGasPrice(): bigint | undefined
   }
 }
 
