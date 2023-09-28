@@ -485,7 +485,7 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
-    this.logger.info(`Sync Mode ${options.syncmode ?? 'None'}`)
+    this.logger.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
       if (options.server !== undefined) {
         this.server = options.server
