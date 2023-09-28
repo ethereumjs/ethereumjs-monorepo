@@ -1,10 +1,10 @@
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, bytesToHex } from '@ethereumjs/util'
+import { KECCAK256_RLP } from '@ethereumjs/util'
 import * as assert from 'assert'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { nibbleTypeToPackedBytes } from '../../util/index.js'
-import { bytesToNibbles, matchingNibbleLength, nibblestoBytes } from '../../util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength } from '../../util/nibbles.js'
 
 import type { Nibbles } from '../../index.js'
 
