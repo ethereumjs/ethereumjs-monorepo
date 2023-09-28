@@ -686,19 +686,25 @@ export class VMExecution extends Execution {
   stats(vm: VM) {
     this.statsCount += 1
     if (this.statsCount === this.STATS_NUM_BLOCKS) {
-      let stats = (vm.stateManager as any)._accountCache.stats()
+      const sm = vm.stateManager as any
+      const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
+      let stats
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      stats = !sm._accountCacheSettings.deactivate ? sm._accountCache.stats() : disactivatedStats
       this.config.logger.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
-      stats = (vm.stateManager as any)._storageCache.stats()
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      stats = !sm._storageCacheSettings.deactivate ? sm._storageCache.stats() : disactivatedStats
       this.config.logger.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
-      stats = (vm.stateManager as any)._codeCache.stats()
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      stats = !sm._codeCacheSettings.deactivate ? sm._codeCache.stats() : disactivatedStats
       this.config.logger.info(
         `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
-      const tStats = ((vm.stateManager as any)._trie as Trie).database().stats()
+      const tStats = (sm._trie as Trie).database().stats()
       this.config.logger.info(
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
