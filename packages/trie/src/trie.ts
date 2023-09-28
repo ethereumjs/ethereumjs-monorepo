@@ -320,8 +320,9 @@ export class Trie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
+    const keyLen = targetKey.length
+    const stack: TrieNode[] = Array.from({ length: keyLen })
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
