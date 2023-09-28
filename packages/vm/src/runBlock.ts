@@ -39,7 +39,7 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
+  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
 )
 
 let enableProfiler = false
