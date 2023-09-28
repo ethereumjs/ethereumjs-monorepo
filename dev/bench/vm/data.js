@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695914011906,
+  "lastUpdate": 1695931088700,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "91968d7b1e88a3fd19e7491f68337ba3843bd346",
-          "message": "Use trie verifyRangeProof for no-proof range verification (#2977)\n\n* Use trie verifyRangeProof for no-proof range verification\r\n\r\n* Update all-element proof verification\r\n\r\n* Update test\r\n\r\n* Clean up and fix linting issue\r\n\r\n* Keep a single instance of proof trie\r\n\r\n* Reuse proof trie for verifyRangeProof\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: g11tech <gajinder@g11.in>",
-          "timestamp": "2023-09-15T14:39:05-07:00",
-          "tree_id": "55e590842c427bf7e36563f024252db60863d77e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/91968d7b1e88a3fd19e7491f68337ba3843bd346"
-        },
-        "date": 1694815070312,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 20428,
-            "range": "±5.54%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 20309,
-            "range": "±3.23%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19180,
-            "range": "±7.84%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19266,
-            "range": "±7.65%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19537,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.91%",
             "unit": "ops/sec",
             "extra": "71 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f99a295d173d0bfd4bda93146b081d53983241c7",
+          "message": "Update dependency to fix high severity vulnerability (#3070)",
+          "timestamp": "2023-09-28T15:45:03-04:00",
+          "tree_id": "659effe674e38cd84eabf36282a455d589d65a0e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f99a295d173d0bfd4bda93146b081d53983241c7"
+        },
+        "date": 1695931087904,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18713,
+            "range": "±6.42%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19027,
+            "range": "±3.28%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18236,
+            "range": "±3.79%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18267,
+            "range": "±3.69%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18489,
+            "range": "±3.60%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
