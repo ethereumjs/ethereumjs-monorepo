@@ -643,7 +643,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    if (!this._storageCacheSettings.deactivate) {
+    if (!this._codeCacheSettings.deactivate) {
       const items = this._codeCache!.flush()
       for (const item of items) {
         const addr = Address.fromString(`0x${item[0]}`)
