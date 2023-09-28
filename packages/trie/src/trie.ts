@@ -251,7 +251,8 @@ export class Trie {
           // stack should be updated as well, so that it points to the right key/value pairs of the path
           const deleteHashes = stack.map((e) => this.hash(e.serialize()))
           ops = deleteHashes.map((e) => {
-            const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
+            const key =
+              this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, e) : e
             return {
               type: 'del',
               key,
@@ -292,7 +293,7 @@ export class Trie {
       // Just as with `put`, the stack items all will have their keyhashes updated
       // So after deleting the node, one can safely delete these from the DB
       ops = deleteHashes.map((e) => {
-        const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, e) : e
+        const key = this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, e) : e
         return {
           type: 'del',
           key,
@@ -373,11 +374,12 @@ export class Trie {
       } else if (node instanceof ExtensionNode) {
         this.DEBUG &&
           this.debug(
-            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${keyRemainder.slice(
-              0,
-              node.key().length
+            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
+              progress,
+              progress + node.key().length
             )}]\n|| Matching: [${
-              keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
+              targetKey.slice(progress, progress + node.key().length).toString() ===
+              node.key().toString()
             }]
             `,
             ['FIND_PATH', 'ExtensionNode']
@@ -478,7 +480,8 @@ export class Trie {
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
     let rootKey = this.root()
-    rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
+    rootKey =
+      this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
     await this._db.put(rootKey, encoded)
     await this.persistRoot()
   }
@@ -493,7 +496,7 @@ export class Trie {
       return decoded
     }
     this.DEBUG && this.debug(`${`${bytesToHex(node)}`}`, ['LOOKUP_NODE', 'BY_HASH'])
-    const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, node) : node
+    const key = this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, node) : node
     const value = (await this._db.get(key)) ?? null
 
     if (value === null) {
@@ -801,7 +804,8 @@ export class Trie {
 
     if (encoded.length >= 32 || topLevel) {
       const lastRoot = this.hash(encoded)
-      const key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, lastRoot) : lastRoot
+      const key =
+        this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, lastRoot) : lastRoot
 
       if (remove) {
         if (this._opts.useNodePruning) {
@@ -860,7 +864,7 @@ export class Trie {
     this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       let key = Uint8Array.from(this.hash(nodeValue))
-      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
+      key = this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, key) : key
       return {
         type: 'put',
         key,
@@ -1066,7 +1070,7 @@ export class Trie {
           ['PERSIST_ROOT']
         )
       let key = this.appliedKey(ROOT_DB_KEY)
-      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
+      key = this._opts.keyPrefix !== undefined ? concatBytes(this._opts.keyPrefix, key) : key
       await this._db.put(key, this.root())
     }
   }
