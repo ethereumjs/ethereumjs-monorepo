@@ -244,14 +244,15 @@ export class CodeCache extends Cache {
   }
 
   /**
-   * Returns the size of the cache.
-   * @returns The size of the cache.
+   * Returns the size of the cache
+   * @returns
    */
-  size(): number {
+  size() {
     if (this._lruCache) {
-      return this._lruCache.size
+      return this._lruCache!.size
+    } else {
+      return this._orderedMapCache!.size()
     }
-    return 0
   }
 
   /**
