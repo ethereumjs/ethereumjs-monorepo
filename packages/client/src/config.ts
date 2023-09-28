@@ -6,7 +6,7 @@ import { Level } from 'level'
 import { getLogger } from './logging'
 import { RlpxServer } from './net/server'
 import { Event, EventBus } from './types'
-import { isBrowser, parseTransports, short } from './util'
+import { isBrowser, short } from './util'
 
 import type { Logger } from './logging'
 import type { EventBusType, MultiaddrLike } from './types'
@@ -368,7 +368,6 @@ export class Config {
   public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
-  public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly port?: number
   public readonly extIP?: string
@@ -430,7 +429,6 @@ export class Config {
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
-    this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -497,26 +495,17 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
-    if (options.servers) {
-      if (options.transports) {
-        throw new Error(
-          'Config initialization with both servers and transports options not allowed'
-        )
+    this.logger.info(`Sync Mode ${options.syncmode}`)
+    if (options.syncmode !== SyncMode.None) {
+      if (options.servers) {
+        this.servers = options.servers
+      } else if (isBrowser() !== true) {
+        // Otherwise parse transports from transports option
+        const bootnodes: MultiaddrLike =
+          this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
+        const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
+        this.servers = [new RlpxServer({ config: this, bootnodes, dnsNetworks })]
       }
-      // Servers option takes precedence
-      this.servers = options.servers
-    } else if (isBrowser() !== true) {
-      // Otherwise parse transports from transports option
-      this.servers = parseTransports(this.transports).map((t) => {
-        if (t.name === 'rlpx') {
-          const bootnodes: MultiaddrLike =
-            this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
-          const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
-          return new RlpxServer({ config: this, bootnodes, dnsNetworks })
-        } else {
-          throw new Error(`unknown transport: ${t.name}`)
-        }
-      })
     }
 
     this.events.once(Event.CLIENT_SHUTDOWN, () => {
