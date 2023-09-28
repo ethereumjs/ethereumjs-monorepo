@@ -88,6 +88,11 @@ export type TrieOptsWithDefaults = TrieOpts & {
   cacheSize: number
 }
 
+export interface TrieShallowCopyOpts {
+  keyPrefix?: Uint8Array
+  cacheSize?: number
+}
+
 export interface CheckpointDBOpts {
   /**
    * A database instance.
