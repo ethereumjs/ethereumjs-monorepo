@@ -5,7 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'
-import { Skeleton } from '../../../src/sync'
+import { getLogger } from '../../../src/logging'
+import { Skeleton } from '../../../src/service/skeleton'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
@@ -221,6 +222,7 @@ describe('[ReverseBlockFetcher]', async () => {
       accountCache: 10000,
       storageCache: 1000,
       skeletonSubchainMergeMinimum: 0,
+      logger: getLogger({ logLevel: 'debug' }),
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -251,11 +253,24 @@ describe('[ReverseBlockFetcher]', async () => {
       },
       { setHardfork: true }
     )
+    const block4 = Block.fromBlockData(
+      {
+        header: { number: BigInt(4), difficulty: BigInt(1) },
+      },
+      { setHardfork: true }
+    )
+    const block5 = Block.fromBlockData(
+      {
+        header: { number: BigInt(5), difficulty: BigInt(1), parentHash: block4.hash() },
+      },
+      { setHardfork: true }
+    )
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(100), tail: BigInt(50), next: block49.hash() },
-      { head: BigInt(48), tail: BigInt(5) },
+      { head: BigInt(48), tail: BigInt(5), next: block4.hash() },
     ]
     await (skeleton as any).putBlock(block47)
+    await (skeleton as any).putBlock(block5)
     await fetcher.store([block49, block48])
     assert.ok(
       (skeleton as any).status.progress.subchains.length === 1,

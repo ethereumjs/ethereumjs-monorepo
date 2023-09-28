@@ -53,12 +53,7 @@ export class StorageCache extends Cache {
 
   _saveCachePreState(addressHex: string, keyHex: string) {
     const addressStoragePreState = this._diffCache[this._checkpoints].get(addressHex)
-    let diffStorageMap: DiffStorageCacheMap
-    if (addressStoragePreState === undefined) {
-      diffStorageMap = new Map()
-    } else {
-      diffStorageMap = addressStoragePreState
-    }
+    const diffStorageMap: DiffStorageCacheMap = addressStoragePreState ?? new Map()
 
     if (!diffStorageMap.has(keyHex)) {
       let oldStorageMap: StorageCacheMap | undefined
@@ -353,5 +348,20 @@ export class StorageCache extends Cache {
     } else {
       this._orderedMapCache!.clear()
     }
+  }
+
+  /**
+   * Dumps the RLP-encoded storage values for an `account` specified by `address`.
+   * @param address - The address of the `account` to return storage for
+   * @returns {StorageCacheMap | undefined} - The storage values for the `account` or undefined if the `account` is not in the cache
+   */
+  dump(address: Address): StorageCacheMap | undefined {
+    let storageMap
+    if (this._lruCache) {
+      storageMap = this._lruCache!.get(bytesToUnprefixedHex(address.bytes))
+    } else {
+      storageMap = this._orderedMapCache?.getElementByKey(bytesToUnprefixedHex(address.bytes))
+    }
+    return storageMap
   }
 }

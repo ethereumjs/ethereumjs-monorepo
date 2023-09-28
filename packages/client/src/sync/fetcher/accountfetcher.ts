@@ -1,5 +1,9 @@
 import { Trie } from '@ethereumjs/trie'
 import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  BIGINT_256,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
@@ -118,7 +122,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /** The origin to start account fetcher from (including), by default starts from 0 (0x0000...) */
   first: bigint
 
-  /** The range to eventually, by default should be set at BigInt(2) ** BigInt(256) + BigInt(1) - first */
+  /** The range to eventually, by default should be set at BIGINT_2 ** BigInt(256) + BIGINT_1 - first */
   count: bigint
 
   storageFetcher: StorageFetcher
@@ -150,7 +154,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     super(options)
     this.root = options.root
     this.first = options.first
-    this.count = options.count ?? BigInt(2) ** BigInt(256) - this.first
+    this.count = options.count ?? BIGINT_2 ** BIGINT_256 - this.first
     this.codeTrie = new Trie({ useKeyHashing: true })
     this.accountTrie = new Trie({ useKeyHashing: true })
     this.accountToStorageTrie = new Map()
@@ -160,7 +164,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       pool: this.pool,
       root: this.root,
       storageRequests: [],
-      first: BigInt(1),
+      first: BIGINT_1,
       destroyWhenDone: false,
       accountToStorageTrie: this.accountToStorageTrie,
     })
@@ -248,7 +252,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
     const origin = partialResult
-      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BigInt(1))
+      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
       : bigIntToBytes(first)
     return setLengthLeft(origin, 32)
   }
@@ -256,7 +260,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   private getLimit(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
     const { task } = job
     const { first, count } = task
-    const limit = bigIntToBytes(first + BigInt(count) - BigInt(1))
+    const limit = bigIntToBytes(first + BigInt(count) - BIGINT_1)
     return setLengthLeft(limit, 32)
   }
 
@@ -307,7 +311,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (
       rangeResult.accounts.length === 0 ||
-      equalsBytes(limit, bigIntToBytes(BigInt(2) ** BigInt(256))) === true
+      equalsBytes(limit, bigIntToBytes(BIGINT_2 ** BIGINT_256)) === true
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
@@ -415,8 +419,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         storageFetchRequests.add({
           accountHash: account.hash,
           storageRoot,
-          first: BigInt(0),
-          count: BigInt(2) ** BigInt(256) - BigInt(1),
+          first: BIGINT_0,
+          count: BIGINT_2 ** BIGINT_256 - BIGINT_1,
         })
       }
       // build record of accounts that need bytecode to be fetched
@@ -447,7 +451,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const max = this.config.maxAccountRange
     const tasks: JobTask[] = []
     let debugStr = `origin=${short(setLengthLeft(bigIntToBytes(first), 32))}`
-    let pushedCount = BigInt(0)
+    let pushedCount = BIGINT_0
     const startedWith = first
 
     while (count >= BigInt(max) && tasks.length < maxTasks) {
@@ -456,11 +460,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       count -= BigInt(max)
       pushedCount += BigInt(max)
     }
-    if (count > BigInt(0) && tasks.length < maxTasks) {
+    if (count > BIGINT_0 && tasks.length < maxTasks) {
       tasks.push({ first, count })
       first += BigInt(count)
       pushedCount += count
-      count = BigInt(0)
+      count = BIGINT_0
     }
 
     // If we started with where this.first was, i.e. there are no gaps and hence
@@ -471,7 +475,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     debugStr += ` limit=${short(
-      setLengthLeft(bigIntToBytes(startedWith + pushedCount - BigInt(1)), 32)
+      setLengthLeft(bigIntToBytes(startedWith + pushedCount - BIGINT_1), 32)
     )}`
     this.debug(`Created new tasks num=${tasks.length} ${debugStr}`)
     return tasks
@@ -480,7 +484,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   nextTasks(): void {
     if (
       this.in.length === 0 &&
-      this.count > BigInt(0) &&
+      this.count > BIGINT_0 &&
       this.processed - this.finished < this.config.maxFetcherRequests
     ) {
       // pendingRange is for which new tasks need to be generated
@@ -518,7 +522,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    const stepBack = BigInt(0)
+    const stepBack = BIGINT_0
     const destroyFetcher =
       !(error.message as string).includes(`InvalidRangeProof`) &&
       !(error.message as string).includes(`InvalidAccountRange`)

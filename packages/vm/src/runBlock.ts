@@ -6,6 +6,8 @@ import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  BIGINT_0,
+  BIGINT_8,
   GWEI_TO_WEI,
   bigIntToBytes,
   bytesToHex,
@@ -30,14 +32,14 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVM, EVMInterface } from '@ethereumjs/evm'
 
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0x000000000000000000000000000000000000000b'
+  '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
 )
 
 /**
@@ -224,6 +226,23 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     )
   }
 
+  if (this._opts.profilerOpts?.reportAfterBlock === true) {
+    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
+      block.transactions.length
+    } txs`
+    // eslint-disable-next-line
+    console.log(title)
+    const logs = (<EVM>this.evm).getPerformanceLogs()
+    if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+      // eslint-disable-next-line
+      console.log('No block txs with precompile or opcode execution.')
+    }
+
+    this.emitEVMProfile(logs.precompiles, 'Precompile performance')
+    this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
+    ;(<EVM>this.evm).clearPerformanceLogs()
+  }
+
   return results
 }
 
@@ -326,7 +345,7 @@ export async function accumulateParentBeaconBlockRoot(
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
-  let gasUsed = BigInt(0)
+  let gasUsed = BIGINT_0
   const receiptTrie = new Trie()
   const receipts = []
   const txResults = []
@@ -433,9 +452,9 @@ function calculateOmmerReward(
   minerReward: bigint
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
-  let reward = ((BigInt(8) - heightDiff) * minerReward) / BigInt(8)
-  if (reward < BigInt(0)) {
-    reward = BigInt(0)
+  let reward = ((BIGINT_8 - heightDiff) * minerReward) / BIGINT_8
+  if (reward < BIGINT_0) {
+    reward = BIGINT_0
   }
   return reward
 }
@@ -511,7 +530,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
-    account.balance = BigInt(0)
+    account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
   }
 

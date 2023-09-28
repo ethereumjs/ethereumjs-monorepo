@@ -2,7 +2,13 @@ import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { Address, KECCAK256_RLP, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
+import {
+  Address,
+  BIGINT_1,
+  KECCAK256_RLP,
+  hexToBytes,
+  parseGethGenesisState,
+} from '@ethereumjs/util'
 import { Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
@@ -13,6 +19,7 @@ import { VMExecution } from '../../src/execution'
 import { getLogger } from '../../src/logging'
 import { RlpxServer } from '../../src/net/server/rlpxserver'
 import { RPCManager as Manager } from '../../src/rpc'
+import { Skeleton } from '../../src/service/skeleton'
 import { TxPool } from '../../src/service/txpool'
 import { Event } from '../../src/types'
 import { createRPCServerListener, createWsRPCServerListener } from '../../src/util'
@@ -135,6 +142,8 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
     peers = []
   }
 
+  const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+
   const client: any = {
     synchronized: false,
     config,
@@ -143,6 +152,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
       {
         name: 'eth',
         chain,
+        skeleton,
         pool: { peers },
         protocols: [
           {
@@ -282,7 +292,7 @@ export async function runBlockWithTxs(
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
     headerData: {
-      timestamp: parentBlock.header.timestamp + BigInt(1),
+      timestamp: parentBlock.header.timestamp + BIGINT_1,
     },
     blockOpts: {
       calcDifficultyFromHeader: parentBlock.header,

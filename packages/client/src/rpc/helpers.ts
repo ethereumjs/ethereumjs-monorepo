@@ -1,10 +1,35 @@
-import { bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
+import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
-import { INVALID_PARAMS } from './error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from './error-code'
 
 import type { Chain } from '../blockchain'
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+
+type RpcError = {
+  code: number
+  message: string
+  trace?: string
+}
+
+export function callWithStackTrace(handler: Function, debug: boolean) {
+  return async (...args: any) => {
+    try {
+      const res = await handler(...args)
+      return res
+    } catch (error: any) {
+      const e: RpcError = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (debug === true) {
+        e['trace'] = error.stack ?? 'Stack trace is not available'
+      }
+
+      throw e
+    }
+  }
+}
 
 /**
  * Returns tx formatted to the standard JSON-RPC fields
@@ -32,7 +57,7 @@ export const jsonRpcTx = (tx: TypedTransaction, block?: Block, txIndex?: number)
     r: txJSON.r!,
     s: txJSON.s!,
     maxFeePerBlobGas: txJSON.maxFeePerBlobGas,
-    versionedHashes: txJSON.versionedHashes,
+    blobVersionedHashes: txJSON.blobVersionedHashes,
   }
 }
 
@@ -52,7 +77,7 @@ export const getBlockByOption = async (blockOpt: string, chain: Chain) => {
 
   switch (blockOpt) {
     case 'earliest':
-      block = await chain.getBlock(BigInt(0))
+      block = await chain.getBlock(BIGINT_0)
       break
     case 'latest':
       block = latest

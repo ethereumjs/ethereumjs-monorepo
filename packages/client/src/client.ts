@@ -149,7 +149,12 @@ export class EthereumClient {
 
     await Promise.all(this.services.map((s) => s.start()))
     await Promise.all(this.config.servers.map((s) => s.start()))
-    await Promise.all(this.config.servers.map((s) => s.bootstrap()))
+    await Promise.all(
+      this.config.servers.map(async (s) => {
+        // Only call bootstrap if servers are actually started
+        if (s.started) await s.bootstrap()
+      })
+    )
     this.started = true
   }
 

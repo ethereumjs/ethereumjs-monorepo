@@ -21,7 +21,7 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import readline from 'readline'
-import yargs from 'yargs'
+import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../src/client'
@@ -47,20 +47,21 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-// @ts-ignore
+// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.transports, args.bootnodes, etc)
 const args: ClientOpts = yargs(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
   })
   .option('network', {
     describe: 'Network',
-    choices: networks.map((n) => n[1]),
+    choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
     default: 'mainnet',
   })
   .option('networkId', {
     describe: 'Network ID',
-    choices: networks.map((n) => parseInt(n[0])),
+    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
     default: undefined,
+    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
   .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
@@ -79,10 +80,12 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('customChain', {
     describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customGenesisState',
   })
   .option('customGenesisState', {
     describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customChain',
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
@@ -299,14 +302,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('dev', {
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-    choices: [undefined, false, true, 'poa', 'pow'],
-  })
-  .check((argv) => {
-    if ('dev' in argv && argv['dev'] === undefined) {
-      throw Error('If the "dev" option is used it must be assigned a value')
-    } else {
-      return true
-    }
+    choices: ['false', 'true', 'poa', 'pow'],
   })
   .option('minerCoinbase', {
     describe:
@@ -328,6 +324,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'Force a snap sync run (for testing and development purposes)',
     boolean: true,
   })
+  .option('prefixStorageTrieKeys', {
+    describe:
+      'Enable/Disable storage trie prefixes (specify `false` for backward compatibility with previous states synced without prefixes)',
+    boolean: true,
+    default: true,
+    deprecated:
+      'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
+  })
   .option('txLookupLimit', {
     describe:
       'Number of recent blocks to maintain transactions index for (default = about one year, 0 = entire chain)',
@@ -344,10 +348,21 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
     boolean: true,
   })
+  .option('vmProfileBlocks', {
+    describe: 'Report the VM profile after running each block',
+    boolean: true,
+    default: false,
+  })
+  .option('vmProfileTxs', {
+    describe: 'Report the VM profile after running each tx',
+    boolean: true,
+    default: false,
+  })
   .option('loadBlocksFromRlp', {
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
 
@@ -464,27 +479,6 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   })
   await client.open()
 
-  if (typeof args.startBlock === 'number') {
-    await startBlock(client)
-  }
-
-  // update client's sync status and start txpool if synchronized
-  client.config.updateSynchronizedState(client.chain.headers.latest)
-  if (client.config.synchronized === true) {
-    const fullService = client.services.find((s) => s.name === 'eth')
-    // The service might not be FullEthereumService even if we cast it as one,
-    // so txPool might not exist on it
-    ;(fullService as FullEthereumService).txPool?.checkRunState()
-  }
-
-  if (args.executeBlocks !== undefined) {
-    // Special block execution debug mode (does not change any state)
-    await executeBlocks(client)
-  } else {
-    // Regular client start
-    await client.start()
-  }
-
   if (args.loadBlocksFromRlp !== undefined) {
     // Specifically for Hive simulator, preload blocks provided in RLP format
     const blockRlp = readFileSync(args.loadBlocksFromRlp)
@@ -517,10 +511,34 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
       }
 
       await client.chain.putBlocks(blocks)
-      const service = client.service('eth') as FullEthereumService
-      await service.execution.open()
-      await service.execution.run()
     }
+  }
+
+  if (typeof args.startBlock === 'number') {
+    await startBlock(client)
+  }
+
+  // update client's sync status and start txpool if synchronized
+  client.config.updateSynchronizedState(client.chain.headers.latest)
+  if (client.config.synchronized === true) {
+    const fullService = client.services.find((s) => s.name === 'eth')
+    // The service might not be FullEthereumService even if we cast it as one,
+    // so txPool might not exist on it
+    ;(fullService as FullEthereumService).txPool?.checkRunState()
+  }
+
+  if (args.executeBlocks !== undefined) {
+    // Special block execution debug mode (does not change any state)
+    await executeBlocks(client)
+  } else {
+    // Regular client start
+    await client.start()
+  }
+
+  if (args.loadBlocksFromRlp !== undefined && client.chain.opened) {
+    const service = client.service('eth') as FullEthereumService
+    await service.execution.open()
+    await service.execution.run()
   }
   return client
 }
@@ -667,6 +685,14 @@ function generateAccount(): Account {
 const stopClient = async (config: Config, clientStartPromise: any) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
   config.logger.info('(This might take a little longer if client not yet fully started)')
+  let timeoutHandle
+  if (clientStartPromise.toString().includes('Promise') === true)
+    // Client hasn't finished starting up so setting timeout to terminate process if not already shutdown gracefully
+    timeoutHandle = setTimeout(() => {
+      config.logger.warn('Client has become unresponsive while starting up.')
+      config.logger.warn('Check logging output for potential errors.  Exiting...')
+      process.exit(1)
+    }, 30000)
   const clientHandle = await clientStartPromise
   if (clientHandle !== null) {
     config.logger.info('Shutting down the client and the servers...')
@@ -679,7 +705,7 @@ const stopClient = async (config: Config, clientStartPromise: any) => {
   } else {
     config.logger.info('Client did not start properly, exiting ...')
   }
-
+  clearTimeout(timeoutHandle)
   process.exit()
 }
 
@@ -720,24 +746,12 @@ async function run() {
   }
 
   // Configure common based on args given
-  if (
-    (typeof args.customChain === 'string' ||
-      typeof args.customGenesisState === 'string' ||
-      typeof args.gethGenesis === 'string') &&
-    (args.network !== 'mainnet' || args.networkId !== undefined)
-  ) {
-    console.error('cannot specify both custom chain parameters and preset network ID')
-    process.exit()
-  }
+
   // Use custom chain parameters file if specified
   if (typeof args.customChain === 'string') {
-    if (args.customGenesisState === undefined) {
-      console.error('cannot have custom chain parameters without genesis state')
-      process.exit()
-    }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
-      customGenesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
+      customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
         customChains: [customChainParams],
@@ -805,6 +819,8 @@ async function run() {
     mine,
     minerCoinbase: args.minerCoinbase,
     isSingleNode,
+    vmProfileBlocks: args.vmProfileBlocks,
+    vmProfileTxs: args.vmProfileTxs,
     minPeers: args.minPeers,
     multiaddrs,
     port: args.port,
@@ -812,7 +828,8 @@ async function run() {
     syncmode: args.sync,
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
-    transports: args.transports,
+    prefixStorageTrieKeys: args.prefixStorageTrieKeys,
+    transports: args.transports?.length === 0 ? args.transports : undefined,
     txLookupLimit: args.txLookupLimit,
   })
   config.events.setMaxListeners(50)
@@ -857,6 +874,15 @@ async function run() {
 
   process.on('SIGTERM', async () => {
     await stopClient(config, clientStartPromise)
+  })
+
+  process.on('uncaughtException', (err) => {
+    // Handles uncaught exceptions that are thrown in async events/functions and aren't caught in
+    // main client process
+    config.logger.error(`Uncaught error: ${err.message}`)
+    config.logger.error(err)
+
+    void stopClient(config, clientStartPromise)
   })
 }
 

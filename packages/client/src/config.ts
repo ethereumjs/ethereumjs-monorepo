@@ -1,5 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
+import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
 import { Level } from 'level'
 
 import { getLogger } from './logging'
@@ -10,8 +11,7 @@ import { isBrowser, parseTransports, short } from './util'
 import type { Logger } from './logging'
 import type { EventBusType, MultiaddrLike } from './types'
 import type { BlockHeader } from '@ethereumjs/block'
-import type { Address } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
+import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from 'multiaddr'
 
 export enum DataDirectory {
@@ -59,6 +59,14 @@ export interface ConfigOptions {
    * Default: false
    */
   forceSnapSync?: boolean
+
+  /**
+   * A temporary option to offer backward compatibility with already-synced databases that are
+   * using non-prefixed keys for storage tries
+   *
+   * Default: true
+   */
+  prefixStorageTrieKeys?: boolean
 
   /**
    * Provide a custom VM instance to process blocks
@@ -252,6 +260,16 @@ export interface ConfigOptions {
   isSingleNode?: boolean
 
   /**
+   * Whether to profile VM blocks
+   */
+  vmProfileBlocks?: boolean
+
+  /**
+   * Whether to profile VM txs
+   */
+  vmProfileTxs?: boolean
+
+  /**
    * Unlocked accounts of form [address, privateKey]
    * Currently only the first account is used to seal mined PoA blocks
    *
@@ -336,10 +354,9 @@ export class Config {
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE =
-    (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
-  public static readonly MAX_STORAGE_RANGE = (BigInt(2) ** BigInt(256) - BigInt(1)) / BigInt(10)
+  public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
@@ -376,6 +393,7 @@ export class Config {
   public readonly isSingleNode: boolean
   public readonly accounts: [address: Address, privKey: Uint8Array][]
   public readonly minerCoinbase?: Address
+  public readonly vmProfilerOpts?: VMProfilerOpts
 
   public readonly safeReorgDistance: number
   public readonly skeletonFillCanonicalBackStep: number
@@ -391,6 +409,7 @@ export class Config {
   public readonly forceSnapSync: boolean
   // Just a development only flag, will/should be removed
   public readonly disableSnapSync: boolean = false
+  public readonly prefixStorageTrieKeys: boolean
 
   public synchronized: boolean
   /** lastSyncDate in ms */
@@ -434,6 +453,14 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
+
+    if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
+      this.vmProfilerOpts = {
+        reportAfterBlock: options.vmProfileBlocks !== false,
+        reportAfterTx: options.vmProfileTxs !== false,
+      }
+    }
+
     this.accounts = options.accounts ?? []
     this.minerCoinbase = options.minerCoinbase
 
@@ -454,6 +481,7 @@ export class Config {
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
+    this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -504,13 +532,13 @@ export class Config {
   updateSynchronizedState(latest?: BlockHeader | null, emitSyncEvent?: boolean) {
     // If no syncTargetHeight has been discovered from peer and neither the client is set
     // for mining/single run (validator), then sync state can't be updated
-    if ((this.syncTargetHeight ?? BigInt(0)) === BigInt(0) && !this.mine && !this.isSingleNode) {
+    if ((this.syncTargetHeight ?? BIGINT_0) === BIGINT_0 && !this.mine && !this.isSingleNode) {
       return
     }
 
     if (latest !== null && latest !== undefined) {
       const height = latest.number
-      if (height >= (this.syncTargetHeight ?? BigInt(0))) {
+      if (height >= (this.syncTargetHeight ?? BIGINT_0)) {
         this.syncTargetHeight = height
         this.lastSyncDate =
           typeof latest.timestamp === 'bigint' && latest.timestamp > 0n
