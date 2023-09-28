@@ -84,7 +84,7 @@ function beaconrootBlock(
  * Then it returns the data the precompile returns
  */
 
-const BROOT_AddressString = 'bEac00dDB15f3B6d645C48263dC93862413A222D'
+const BROOT_AddressString = '000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
 const CODE =
   '0x365F5F375F5F365F5F' +
   // push broot contract address on stack
