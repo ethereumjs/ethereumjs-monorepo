@@ -26,7 +26,7 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { Lock } from './util/lock.js'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
@@ -419,9 +419,9 @@ export class Trie {
     result.stack = result.stack.filter((e) => e !== undefined)
     this.DEBUG &&
       this.debug(
-        `Result: \n|| Node: ${
-          result.node === null ? 'null' : result.node.constructor.name
-        }\n|| Remaining: [${result.remaining}]\n|| Stack: ${result.stack
+        `Result:
+        || Node: ${result.node === null ? 'null' : result.node.constructor.name}
+        || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
         ['FIND_PATH']
