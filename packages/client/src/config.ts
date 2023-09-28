@@ -36,7 +36,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full' or 'light')
+   * Synchronization mode ('full', 'light', 'none')
    *
    * Default: 'full'
    */
@@ -486,7 +486,7 @@ export class Config {
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
     this.logger.info(`Sync Mode ${options.syncmode ?? 'None'}`)
-    if (options.syncmode !== SyncMode.None) {
+    if (this.syncmode !== SyncMode.None) {
       if (options.server !== undefined) {
         this.server = options.server
       } else if (isBrowser() !== true) {
