@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695896434996,
+  "lastUpdate": 1695903540255,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "67a20de06d965a21ac045c543b533962f4ace859",
-          "message": "tx: improve tx capability handling (#3010)\n\n* tx: TxCapability interfaces and rename generic capability to legacy\r\n\r\n* tx: txTypeBytes helper\r\n\r\n* tx: add missing methods and props to tx interfaces\r\n\r\n* tx: refactor and improve serialize helper\r\n\r\n* tx: implement update serialize helper and txTypeBytes helper\r\n\r\n* tx: refactor getDataFee for use in legacyTransaction\r\n\r\n* tx: remove redundant prop from EIP4844CompatibleTxInterface\r\n\r\n* tx: shorten compatibletxInterface name\r\n\r\n* tx: typedTransaction -> EIP2718CompatibleTx\r\n\r\n* tx: remove implements interface\r\n\r\n* tx: add legacytxinterface and move accesslists props to eip2930 interface",
-          "timestamp": "2023-09-14T21:45:38+02:00",
-          "tree_id": "415609fe0bd3aa0cc67f33d4d7dee384a261c77b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/67a20de06d965a21ac045c543b533962f4ace859"
-        },
-        "date": 1694720950485,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30362,
-            "range": "±5.47%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30208,
-            "range": "±2.92%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30177,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25232,
-            "range": "±10.24%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 28995,
-            "range": "±3.34%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±12.34%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0aaad282669c59b6d3f5ef006535d580fffa1284",
+          "message": "Client: use same Cache Setup for normal and executeBlocks-triggered Execution (#3063)\n\n* Trie: generalize trie shallowCopy() options to allow for more options from the original options to be passed, adopt StateManager usage\r\n\r\n* Trie: add additional cache size default 0 for shallowCopy() test\r\n\r\n* Trie: add adopt cache size on shallowCopy() test\r\n\r\n* StateManager: add downlevelCaches option to shallowCopy(), add tests\r\n\r\n* Add downlevelCaches option in VM shallowCopy(), use option for client when run with --executeBlocks flag\r\n\r\n* replace any usages in StateManager tests to retain typing\r\n\r\n* Apply code review suggestions\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-09-28T14:14:16+02:00",
+          "tree_id": "ac1ce0ebcc7ef4bb04f98df1d1256b64a8b7d0a8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0aaad282669c59b6d3f5ef006535d580fffa1284"
+        },
+        "date": 1695903538727,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19503,
+            "range": "±3.74%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17004,
+            "range": "±7.34%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18275,
+            "range": "±3.73%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18884,
+            "range": "±3.53%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18490,
+            "range": "±3.61%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
