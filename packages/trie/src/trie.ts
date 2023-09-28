@@ -321,15 +321,14 @@ export class Trie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
+    const stack: TrieNode[] = Array.from({ length: targetKey.length })
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     const keyLen = targetKey.length
     let result: Path | null = null
     let progress = 0
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      stack.push(node!)
-
+      stack[progress] = node as TrieNode
       if (node instanceof BranchNode) {
         if (progress === keyLen) {
           result = { node, remaining: [], stack }
@@ -417,11 +416,12 @@ export class Trie {
         ['FIND_PATH']
       )
 
+    result.stack = result.stack.filter((e) => e !== undefined)
     this.DEBUG &&
       this.debug(
-        `Result: \n|| Node: ${
-          result.node === null ? 'null' : result.node.constructor.name
-        }\n|| Remaining: [${result.remaining}]\n|| Stack: ${result.stack
+        `Result: \n
+        || Node: ${result.node === null ? 'null' : result.node.constructor.name}\n
+        || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
         ['FIND_PATH']
