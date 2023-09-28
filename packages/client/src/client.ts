@@ -169,6 +169,13 @@ export class EthereumClient {
   }
 
   /**
+   *
+   * @returns the RLPx server (if it exists)
+   */
+  server() {
+    return this.config.server
+  }
+  /**
    * Returns the service with the specified name.
    * @param name name of service
    */

@@ -250,7 +250,6 @@ async function createSnapClient(
   const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,
-    transports: ['rlpx'],
     bootnodes,
     multiaddrs: [],
     logger,

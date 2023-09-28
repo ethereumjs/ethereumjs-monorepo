@@ -509,7 +509,6 @@ describe('[CLI]', () => {
       '--port=30304',
       '--dev=poa',
       '--bootnodes=enode://abc@127.0.0.1:30303',
-      '--transports=rlpx',
       '--multiaddrs=enode://abc@127.0.0.1:30303',
       '--discDns=false',
       '--discV4=false',

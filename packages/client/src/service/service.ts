@@ -118,6 +118,7 @@ export class Service {
     if (this.opened) {
       return false
     }
+    console.log('openining', this.config.server)
     const protocols = this.protocols
     this.config.server && this.config.server.addProtocols(protocols)
 

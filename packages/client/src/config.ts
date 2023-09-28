@@ -95,13 +95,6 @@ export interface ConfigOptions {
   key?: Uint8Array
 
   /**
-   * Network transports ('rlpx')
-   *
-   * Default: `['rlpx']`
-   */
-  transports?: string[]
-
-  /**
    * Network bootnodes
    * (e.g. abc@18.138.108.67 or /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
@@ -333,7 +326,6 @@ export class Config {
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
-  public static readonly TRANSPORTS_DEFAULT = ['rlpx']
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
@@ -493,12 +485,12 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
-    this.logger.info(`Sync Mode ${options.syncmode}`)
+    this.logger.info(`Sync Mode ${options.syncmode ?? 'None'}`)
     if (options.syncmode !== SyncMode.None) {
       if (options.server !== undefined) {
         this.server = options.server
       } else if (isBrowser() !== true) {
-        // Otherwise parse transports from transports option
+        // Otherwise start server
         const bootnodes: MultiaddrLike =
           this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
         const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()

@@ -106,7 +106,6 @@ export interface ClientOpts {
   gethGenesis?: string
   trustedSetup?: string
   mergeForkIdPostMerge?: boolean
-  transports?: string[]
   bootnodes?: string | string[]
   port?: number
   extIP?: string
