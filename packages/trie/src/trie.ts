@@ -38,6 +38,7 @@ import type {
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
+  TrieShallowCopyOpts,
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
@@ -1043,19 +1044,20 @@ export class Trie {
    * Note on db: the copy will create a reference to the
    * same underlying database.
    *
-   * Note on cache: for memory reasons a copy will not
-   * recreate a new LRU cache but initialize with cache
-   * being deactivated.
+   * Note on cache: for memory reasons a copy will by default
+   * not recreate a new LRU cache but initialize with cache
+   * being deactivated. This behavior can be overwritten by
+   * explicitly setting `cacheSize` as an option on the method.
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true, keyPrefix?: Uint8Array): Trie {
+  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
-      keyPrefix: keyPrefix ?? this._opts.keyPrefix,
       cacheSize: 0,
+      ...(opts ?? {}),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
       trie._db.setCheckpoints(this._db.checkpoints)

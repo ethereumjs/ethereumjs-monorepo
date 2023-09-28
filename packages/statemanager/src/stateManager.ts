@@ -421,7 +421,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       const keyPrefix = this._prefixStorageTrieKeys
         ? keccak256(address.bytes).slice(0, 7)
         : undefined
-      const storageTrie = this._trie.shallowCopy(false, keyPrefix)
+      const storageTrie = this._trie.shallowCopy(false, { keyPrefix })
       storageTrie.root(account.storageRoot)
       storageTrie.flushCheckpoints()
       this._storageTries[addressHex] = storageTrie
@@ -999,27 +999,37 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    *
-   * Note on caches:
+   * Caches are downleveled (so: adopted for short-term usage)
+   * by default.
+   *
+   * This means in particular:
    * 1. For caches instantiated as an LRU cache type
    * the copy() method will instantiate with an ORDERED_MAP cache
    * instead, since copied instantances are mostly used in
    * short-term usage contexts and LRU cache instantation would create
    * a large overhead here.
-   * 2. Cache values are generally not copied along
+   * 2. The underlying trie object is initialized with 0 cache size
+   *
+   * Both adoptions can be deactivated by setting `downlevelCaches` to
+   * `false`.
+   *
+   * Cache values are generally not copied along regardless of the
+   * `downlevelCaches` setting.
    */
-  shallowCopy(): DefaultStateManager {
+  shallowCopy(downlevelCaches = true): DefaultStateManager {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
 
-    const trie = this._trie.shallowCopy(false)
+    const cacheSize = !downlevelCaches ? this._trie['_opts']['cacheSize'] : 0
+    const trie = this._trie.shallowCopy(false, { cacheSize })
     const prefixCodeHashes = this._prefixCodeHashes
     const prefixStorageTrieKeys = this._prefixStorageTrieKeys
     let accountCacheOpts = { ...this._accountCacheSettings }
-    if (!this._accountCacheSettings.deactivate) {
+    if (downlevelCaches && !this._accountCacheSettings.deactivate) {
       accountCacheOpts = { ...accountCacheOpts, type: CacheType.ORDERED_MAP }
     }
     let storageCacheOpts = { ...this._storageCacheSettings }
-    if (!this._storageCacheSettings.deactivate) {
+    if (downlevelCaches && !this._storageCacheSettings.deactivate) {
       storageCacheOpts = { ...storageCacheOpts, type: CacheType.ORDERED_MAP }
     }
     let codeCacheOpts = { ...this._codeCacheSettings }
