@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695893708282,
+  "lastUpdate": 1695896434996,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "04aa4dad54b9e258db8c4e51de5801c9b0680d02",
-          "message": "client: some skeleton improvements from observations on devnet syncs (#3014)\n\n* client: some skeleton improvements from observations on devnet syncs\r\n\r\n* skip filling chain on duplicate sethead\r\n\r\n* apply nits\r\n\r\n* add beacon sync sim for incline client\r\n\r\n* get the beacon sync to resolve\r\n\r\n* fix breaking skeleton spec\r\n\r\n* fix reverse block fetcher\r\n\r\n* apply feeback",
-          "timestamp": "2023-09-14T22:05:28+05:30",
-          "tree_id": "1fe291a8fa53de82a53ce23b8b16e119598d81bb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/04aa4dad54b9e258db8c4e51de5801c9b0680d02"
-        },
-        "date": 1694709694469,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30563,
-            "range": "±5.57%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30281,
-            "range": "±2.87%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30327,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25730,
-            "range": "±10.20%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29412,
-            "range": "±3.10%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.82%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "606285089bc557db4b0284c07536ae112c4b0bd4",
+          "message": "VM: Complement Profiler with out-of-EVM Measurements (#3064)\n\n* VM: first outer profiler output test, generic internal flag for runTx() and runBlock(), move title output to execution start\r\n\r\n* some clean-up, move back to per-option-output\r\n\r\n* EVM -> runTx(): complement profiler with broadly partitioned chunk measurements\r\n\r\n* VM -> runBlock(): complement profiler with broadly partitioned chunk measurements\r\n\r\n* vm: address review\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-09-28T12:16:58+02:00",
+          "tree_id": "cd39d0e2c9b5975f3fa0efb2ca11d0d59a631fc0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/606285089bc557db4b0284c07536ae112c4b0bd4"
+        },
+        "date": 1695896434229,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 30420,
+            "range": "±5.69%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 30300,
+            "range": "±2.99%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 30195,
+            "range": "±3.24%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28580,
+            "range": "±6.03%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23445,
+            "range": "±12.34%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
