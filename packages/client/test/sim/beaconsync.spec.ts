@@ -162,7 +162,11 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           const syncResponse = await Promise.race([beaconSyncPromise, syncTimeout])
-          assert(syncResponse.syncState, 'SYNCED', 'beaconSyncRelayer should have synced client')
+          assert.equal(
+            syncResponse.syncState,
+            'SYNCED',
+            'beaconSyncRelayer should have synced client'
+          )
           await ejsClient.stop()
           assert.ok(true, 'completed beacon sync')
         } catch (e) {
@@ -177,6 +181,7 @@ describe('simple mainnet test run', async () => {
 
   it('network cleanup', async () => {
     try {
+      beaconSyncRelayer?.close()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
     } catch (e) {

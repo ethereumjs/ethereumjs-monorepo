@@ -39,19 +39,41 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0xbEac00dDB15f3B6d645C48263dC93862413A222D'
+  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
 )
+
+let enableProfiler = false
+const stateRootCPLabel = 'New state root, DAO HF, checkpoints, block validation'
+const processTxsLabel = 'Tx processing [ use per-tx profiler for more details ]'
+const withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
+const entireBlockLabel = 'Entire block'
 
 /**
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  if (this._opts.profilerOpts?.reportAfterBlock === true) {
+    enableProfiler = true
+    // eslint-disable-next-line no-console
+    console.time(entireBlockLabel)
+  }
+
   const state = this.stateManager
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
+
+  if (enableProfiler) {
+    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
+      block.transactions.length
+    } txs`
+    // eslint-disable-next-line no-console
+    console.log(title)
+    // eslint-disable-next-line no-console
+    console.time(stateRootCPLabel)
+  }
 
   /**
    * The `beforeBlock` event.
@@ -131,6 +153,10 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`block checkpoint reverted`)
     }
+    if (enableProfiler) {
+      // eslint-disable-next-line no-console
+      console.timeEnd(withdrawalsRewardsCommitLabel)
+    }
     throw err
   }
 
@@ -199,6 +225,11 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     }
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(withdrawalsRewardsCommitLabel)
+  }
+
   const results: RunBlockResult = {
     receipts: result.receipts,
     logsBloom: result.bloom.bitvector,
@@ -226,15 +257,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     )
   }
 
-  if (this._opts.profilerOpts?.reportAfterBlock === true) {
-    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
-      block.transactions.length
-    } txs`
-    // eslint-disable-next-line
-    console.log(title)
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(entireBlockLabel)
     const logs = (<EVM>this.evm).getPerformanceLogs()
     if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-console
       console.log('No block txs with precompile or opcode execution.')
     }
 
@@ -285,11 +313,22 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     )
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(stateRootCPLabel)
+  }
+
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.time(withdrawalsRewardsCommitLabel)
+  }
+
   if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
@@ -343,6 +382,11 @@ export async function accumulateParentBeaconBlockRoot(
  * @param {RunBlockOpts} opts
  */
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.time(processTxsLabel)
+  }
+
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
@@ -397,6 +441,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
     await receiptTrie.put(RLP.encode(txIdx), encodedReceipt)
+  }
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(processTxsLabel)
+    // eslint-disable-next-line no-console
+    console.timeEnd(entireBlockLabel)
   }
 
   return {

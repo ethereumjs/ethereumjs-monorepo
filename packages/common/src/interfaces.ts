@@ -82,7 +82,7 @@ export interface StateManagerInterface {
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void>
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
-  shallowCopy(): StateManagerInterface
+  shallowCopy(downlevelCaches?: boolean): StateManagerInterface
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
@@ -96,5 +96,5 @@ export interface EVMStateManagerInterface extends StateManagerInterface {
   generateCanonicalGenesis(initState: any): Promise<void> // TODO make input more typesafe
   getProof(address: Address, storageSlots?: Uint8Array[]): Promise<Proof>
 
-  shallowCopy(): EVMStateManagerInterface
+  shallowCopy(downlevelCaches?: boolean): EVMStateManagerInterface
 }

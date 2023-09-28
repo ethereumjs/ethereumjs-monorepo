@@ -60,18 +60,10 @@ jobs:
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Build from npm
-        run: >
-          docker buildx build .
-          --tag ethereumjs:local-npm
-          --platform linux/amd64
-          --build-arg COMMIT=$(git rev-parse HEAD)
-        working-directory: ${{github.workspace}}
       - name: Build from source
         run: >
           docker buildx build .
-          -f Dockerfile.fromSource
-          --tag ethereumjs:local-source
+          --tag ethereumjs:local
           --platform linux/amd64
           --build-arg COMMIT=$(git rev-parse HEAD)
         working-directory: ${{github.workspace}}
@@ -91,8 +83,4 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
+      - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
