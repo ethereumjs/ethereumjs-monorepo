@@ -65,11 +65,23 @@ The client can also be easily installed and built from source:
 
 ### Docker
 
-Docker images are not yet published on a regular basis. You can build your own image by going to the repository
+A Docker image is built nightly from the current master branch and can be retrieved via the below command:
+
+```sh
+docker pull ethpandaops/ethereumjs:master
+```
+
+Alternatively, an image from the most recent stable releast can be accessed via:
+
+```sh
+docker pull ethpandaops/ethereumjs:stable
+```
+
+You can also build your own image by going to the repository
 root directory and run:
 
 ```shell
-docker build . -f Dockerfile.fromSource --tag ethereumjs:latest
+docker build . -f Dockerfile --tag ethereumjs:latest
 ```
 
 You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
@@ -84,7 +96,7 @@ You can get the client up and running by going to the shell and run:
 # npm installation
 ethereumjs
 
-# GitHub installation
+# Source installation
 npm run client:start
 ```
 
@@ -94,7 +106,7 @@ And pass in CLI parameters like:
 # npm installation
 ethereumjs --network=goerli
 
-# GitHub installation
+# Source installation
 npm run client:start -- --network=goerli
 ```
 

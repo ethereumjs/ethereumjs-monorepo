@@ -40,6 +40,13 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
 
+let enableProfiler = false
+const initLabel = 'EVM journal init, address/slot warming, fee validation'
+const balanceNonceLabel = 'Balance/Nonce checks and update'
+const logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
+const cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+const entireTxLabel = 'Entire tx'
+
 /**
  * Returns the hardfork excluding the merge hf which has
  * no effect on the vm execution capabilities.
@@ -61,6 +68,20 @@ function execHardfork(
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+  if (this._opts.profilerOpts?.reportAfterTx === true) {
+    enableProfiler = true
+  }
+
+  if (enableProfiler) {
+    const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
+    // eslint-disable-next-line no-console
+    console.log(title)
+    // eslint-disable-next-line no-console
+    console.time(initLabel)
+    // eslint-disable-next-line no-console
+    console.time(entireTxLabel)
+  }
+
   // create a reasonable default if no block is given
   opts.block = opts.block ?? Block.fromBlockData({}, { common: this.common })
 
@@ -164,13 +185,12 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
-    if (this._opts.profilerOpts?.reportAfterTx === true) {
-      const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
-      // eslint-disable-next-line
-      console.log(title)
+    if (enableProfiler) {
+      // eslint-disable-next-line no-console
+      console.timeEnd(entireTxLabel)
       const logs = (<EVM>this.evm).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
-        // eslint-disable-next-line
+        // eslint-disable-next-line no-console
         console.log('No precompile or opcode execution.')
       }
       this.emitEVMProfile(logs.precompiles, 'Precompile performance')
@@ -250,6 +270,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       )
       throw new Error(msg)
     }
+  }
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(initLabel)
+    // eslint-disable-next-line no-console
+    console.time(balanceNonceLabel)
   }
 
   // Check from account's balance and nonce
@@ -402,6 +428,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(balanceNonceLabel)
+    // eslint-disable-next-line no-console
+    console.log('[ For execution see detailed table output ]')
+  }
 
   /*
    * Execute message
@@ -428,6 +460,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     data,
     blobVersionedHashes,
   })) as RunTxResult
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.time(logsGasBalanceLabel)
+  }
 
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) nonce (-> ${fromAccount.nonce})`)
@@ -523,6 +560,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(logsGasBalanceLabel)
+    // eslint-disable-next-line no-console
+    console.time(cleanupAndReceiptsLabel)
+  }
+
   /*
    * Cleanup accounts
    */
@@ -574,6 +618,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     totalblobGas,
     blobGasPrice
   )
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(cleanupAndReceiptsLabel)
+  }
 
   /**
    * The `afterTx` event
