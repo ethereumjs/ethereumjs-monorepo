@@ -8,7 +8,6 @@ import {
   bytesToUtf8,
   concatBytes,
   equalsBytes,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -98,7 +97,7 @@ export class Trie {
         }
       : (..._: any) => {}
 
-    this.database(opts?.db ?? new MapDB<string, string>())
+    this.database(opts?.db ?? new MapDB<string, Uint8Array>())
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -129,15 +128,15 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToUnprefixedHex(key), {
+        const root = await opts?.db.get(bytesToUnprefixedHex(key), {
           keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
+          valueEncoding: ValueEncoding.Bytes,
         })
-        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
+        opts.root = root
       } else {
-        await opts?.db.put(bytesToUnprefixedHex(key), bytesToUnprefixedHex(opts.root), {
+        await opts?.db.put(bytesToUnprefixedHex(key), opts.root, {
           keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
+          valueEncoding: ValueEncoding.Bytes,
         })
       }
     }
@@ -145,7 +144,7 @@ export class Trie {
     return new Trie(opts)
   }
 
-  database(db?: DB<string, string>) {
+  database(db?: DB<string, Uint8Array>) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')

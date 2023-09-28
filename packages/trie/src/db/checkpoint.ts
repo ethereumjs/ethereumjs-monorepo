@@ -15,7 +15,7 @@ import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
  */
 export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
-  public db: DB<string, string>
+  public db: DB<string, Uint8Array>
   public readonly cacheSize: number
 
   // Starting with lru-cache v8 undefined and null are not allowed any more
@@ -27,7 +27,7 @@ export class CheckpointDB implements DB {
   // be some not so clean workaround.
   //
   // (note that @ts-ignore doesn't work since stripped on declaration (.d.ts) files)
-  protected _cache?: LRUCache<string, any>
+  protected _cache?: LRUCache<string, Uint8Array>
   // protected _cache?: LRUCache<string, Uint8Array | undefined>
 
   _stats = {
@@ -160,7 +160,7 @@ export class CheckpointDB implements DB {
     if (valueHex !== undefined) {
       this._stats.db.hits += 1
     }
-    const value = valueHex !== undefined ? unprefixedHexToBytes(valueHex) : undefined
+    const value = valueHex
     this._cache?.set(keyHex, value)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,
@@ -176,12 +176,11 @@ export class CheckpointDB implements DB {
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
     const keyHex = bytesToUnprefixedHex(key)
-    const valueHex = bytesToUnprefixedHex(value)
     if (this.hasCheckpoints()) {
       // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
     } else {
-      await this.db.put(keyHex, valueHex, {
+      await this.db.put(keyHex, value, {
         keyEncoding: KeyEncoding.String,
         valueEncoding: ValueEncoding.String,
       })
@@ -232,11 +231,11 @@ export class CheckpointDB implements DB {
       const convertedOps = opStack.map((op) => {
         const convertedOp = {
           key: bytesToUnprefixedHex(op.key),
-          value: op.type === 'put' ? bytesToUnprefixedHex(op.value) : undefined,
+          value: op.type === 'put' ? op.value : undefined,
           type: op.type,
           opts: op.opts,
         }
-        if (op.type === 'put') return convertedOp as PutBatch<string, string>
+        if (op.type === 'put') return convertedOp as PutBatch<string, Uint8Array>
         else return convertedOp as DelBatch<string>
       })
       await this.db.batch(convertedOps)
