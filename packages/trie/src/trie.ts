@@ -416,6 +416,7 @@ export class Trie {
         ['FIND_PATH']
       )
 
+    result.stack = result.stack.filter((e) => e !== undefined)
     this.DEBUG &&
       this.debug(
         `Result: \n|| Node: ${
