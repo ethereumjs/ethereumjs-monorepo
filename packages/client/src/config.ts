@@ -209,6 +209,11 @@ export interface ConfigOptions {
   storageCache?: number
 
   /**
+   * Size for the code cache (max number of contracts)
+   */
+  codeCache?: number
+
+  /**
    * Size for the trie cache (max number of trie nodes)
    */
   trieCache?: number
@@ -337,6 +342,7 @@ export class Config {
   public static readonly NUM_BLOCKS_PER_ITERATION = 100
   public static readonly ACCOUNT_CACHE = 400000
   public static readonly STORAGE_CACHE = 200000
+  public static readonly CODE_CACHE = 200000
   public static readonly TRIE_CACHE = 200000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
@@ -374,6 +380,7 @@ export class Config {
   public readonly numBlocksPerIteration: number
   public readonly accountCache: number
   public readonly storageCache: number
+  public readonly codeCache: number
   public readonly trieCache: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
@@ -437,6 +444,7 @@ export class Config {
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
     this.storageCache = options.storageCache ?? Config.STORAGE_CACHE
+    this.codeCache = options.codeCache ?? Config.CODE_CACHE
     this.trieCache = options.trieCache ?? Config.TRIE_CACHE
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
