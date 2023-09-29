@@ -33,3 +33,6 @@ export function getTreeKey(address: Address, treeIndex: number, subIndex: number
 
   return treeKey
 }
+
+// TODO: Replace this by the actual value of Point().Identity() from the Go code.
+export const POINT_IDENTITY = new Uint8Array(32).fill(0)

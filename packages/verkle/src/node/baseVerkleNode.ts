@@ -11,9 +11,11 @@ import type { CommitmentPoint } from '../types.js'
 
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
   public commitment: CommitmentPoint
+  public depth: number
 
   constructor(options: VerkleNodeOptions[T]) {
     this.commitment = options.commitment
+    this.depth = options.depth
   }
 
   abstract commit(): CommitmentPoint

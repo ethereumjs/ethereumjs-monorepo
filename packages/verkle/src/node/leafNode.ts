@@ -20,13 +20,9 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     this.c2 = options.c2
   }
 
-  commit(): Uint8Array {
-    throw new Error('Not implemented')
-    // const commit = TODO
-    // this.commit = commit
-  }
+  static create(stem: Uint8Array, values: Uint8Array): LeafNode {}
 
-  static fromRawNode(rawNode: Uint8Array[]): LeafNode {
+  static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {
     const nodeType = rawNode[0][0]
     if (nodeType !== VerkleNodeType.Leaf) {
       throw new Error('Invalid node type')
@@ -43,11 +39,30 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     const c2 = rawNode[4]
     const values = rawNode.slice(5, rawNode.length)
 
-    return new LeafNode({ stem, values, c1, c2, commitment })
+    return new LeafNode({ depth, stem, values, c1, c2, commitment })
+  }
+  commit(): Uint8Array {
+    throw new Error('Not implemented')
+    // const commit = TODO
+    // this.commit = commit
   }
 
   getValue(index: number): Uint8Array | null {
     return this.values?.[index] ?? null
+  }
+
+  insert(key: Uint8Array, value: Uint8Array, nodeResolverFn: () => void): void {
+    const values = new Array<Uint8Array>(NODE_WIDTH)
+    values[key[31]] = value
+    this.insertStem(key.slice(0, 31), values, nodeResolverFn)
+  }
+
+  insertMultiple(key: Uint8Array, values: Uint8Array[]): void {
+    throw new Error('Not implemented')
+  }
+
+  insertStem(key: Uint8Array, value: Uint8Array[], resolver: () => void): void {
+    throw new Error('Not implemented')
   }
 
   // TODO: go-verkle also adds the bitlist to the raw format.

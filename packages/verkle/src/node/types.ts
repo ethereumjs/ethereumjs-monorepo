@@ -23,11 +23,12 @@ export interface VerkleNodeInterface {
 interface BaseVerkleNodeOptions {
   // Value of the commitment
   commitment: CommitmentPoint
+  depth: number
 }
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
-  // List of children node references of this internal node.
-  children: Uint8Array[]
+  // Children nodes of this internal node.
+  children: VerkleNode[]
 
   // Values of the child commitments before the trie is modified by inserts.
   // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
