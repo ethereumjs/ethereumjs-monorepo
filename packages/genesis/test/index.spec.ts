@@ -1,24 +1,31 @@
-import { Chain } from '@ethereumjs/common'
+import { ChainGenesis } from '@ethereumjs/common'
+import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
+import { bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { getGenesis } from '../src/index.js'
 
-const chainToName: Record<Chain, string> = {
-  [Chain.Mainnet]: 'mainnet',
-  [Chain.Goerli]: 'goerli',
-  [Chain.Sepolia]: 'sepolia',
-  [Chain.Holesky]: 'holesky',
-}
+import type { Chain } from '@ethereumjs/common'
 
 describe('genesis test', () => {
   it('tests getGenesis', async () => {
-    const chainIds = Object.keys(chainToName)
+    const chainIds = Object.keys(ChainGenesis)
     for (const chainId of chainIds) {
-      const name = chainToName[chainId as unknown as Chain]
+      const { name, stateRoot: expectedRoot } = ChainGenesis[chainId as unknown as Chain]
 
-      assert.ok(getGenesis(Number(chainId)) !== undefined, `${name} genesis found`)
+      const genesisState = getGenesis(Number(chainId))
+      assert.ok(
+        genesisState !== undefined,
+        `network=${name} chainId=${chainId} genesis should be found`
+      )
+
+      const stateRoot = await genGenesisStateRoot(genesisState)
+      assert.ok(
+        equalsBytes(expectedRoot, stateRoot),
+        `network=${name} chainId=${chainId} stateRoot should match expected=${bytesToHex(
+          expectedRoot
+        )} actual=${bytesToHex(stateRoot)}`
+      )
     }
-
-    assert.ok(getGenesis(2) === undefined, `genesis for chainId 2 not found`)
   })
 })
