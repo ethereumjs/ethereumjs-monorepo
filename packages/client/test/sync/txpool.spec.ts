@@ -19,7 +19,6 @@ import { TxPool } from '../../src/service/txpool'
 
 const setup = () => {
   const config = new Config({
-    transports: [],
     accountCache: 10000,
     storageCache: 1000,
     logger: getLogger({ loglevel: 'info' }),
@@ -44,7 +43,7 @@ const setup = () => {
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 const handleTxs = async (
   txs: any[],

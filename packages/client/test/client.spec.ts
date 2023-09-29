@@ -7,7 +7,7 @@ import { PeerPool } from '../src/net/peerpool'
 import { RlpxServer } from '../src/net/server'
 
 describe('[EthereumClient]', async () => {
-  const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+  const config = new Config({ accountCache: 10000, storageCache: 1000 })
   class FullEthereumService {
     open() {}
     start() {}
@@ -41,7 +41,7 @@ describe('[EthereumClient]', async () => {
   })
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config })
     assert.ok('lightserv' in client.services[0], 'added FullEthereumService')
     assert.ok('execution' in client.services[0], 'added FullEthereumService')
@@ -49,8 +49,8 @@ describe('[EthereumClient]', async () => {
   })
 
   it('should open', async () => {
-    const servers = [new RlpxServer({ config: new Config() })]
-    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
+    const server = new RlpxServer({ config: new Config() })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
 
     await client.open()
@@ -59,8 +59,8 @@ describe('[EthereumClient]', async () => {
   }, 30000)
 
   it('should start/stop', async () => {
-    const servers = [new Server()] as any
-    const config = new Config({ servers, accountCache: 10000, storageCache: 1000 })
+    const server = new Server() as any
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
     await client.start()
     assert.ok(client.started, 'started')
