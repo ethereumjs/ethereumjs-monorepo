@@ -19,7 +19,7 @@ describe('genesis test', () => {
         `network=${name} chainId=${chainId} genesis should be found`
       )
 
-      const stateRoot = await genGenesisStateRoot(genesisState)
+      const stateRoot = await genGenesisStateRoot(genesisState!)
       assert.ok(
         equalsBytes(expectedRoot, stateRoot),
         `network=${name} chainId=${chainId} stateRoot should match expected=${bytesToHex(
