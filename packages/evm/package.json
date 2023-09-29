@@ -73,7 +73,6 @@
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
-    "rollup": "^3.26.3",
     "solc": "^0.8.1"
   },
   "engines": {
