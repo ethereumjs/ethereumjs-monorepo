@@ -29,7 +29,7 @@ describe('[BoundProtocol]', () => {
 
   it('should add methods for messages with a response', () => {
     const sender = new Sender()
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -41,7 +41,7 @@ describe('[BoundProtocol]', () => {
 
   it('should get/set status', () => {
     const sender = new Sender()
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -54,7 +54,7 @@ describe('[BoundProtocol]', () => {
   })
 
   it('should do handshake', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = new EventEmitter() as Sender
     const bound = new BoundProtocol({
       config,
@@ -68,7 +68,7 @@ describe('[BoundProtocol]', () => {
   })
 
   it('should handle incoming without resolver', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -89,7 +89,7 @@ describe('[BoundProtocol]', () => {
   })
 
   it('should perform send', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     sender.sendMessage = td.func<Sender['sendMessage']>()
     const bound = new BoundProtocol({
@@ -105,7 +105,7 @@ describe('[BoundProtocol]', () => {
   })
 
   it('should perform request', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
     const bound = new BoundProtocol({
       config,
@@ -132,7 +132,7 @@ describe('[BoundProtocol]', () => {
   })
 
   it('should timeout request', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = td.object<Sender>('Sender')
     const bound = new BoundProtocol({
       config,

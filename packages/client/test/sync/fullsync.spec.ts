@@ -35,7 +35,7 @@ describe('[FullSynchronizer]', async () => {
   const { FullSynchronizer } = await import('../../src/sync/fullsync')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({ config, pool, chain, txPool, execution })
@@ -43,7 +43,7 @@ describe('[FullSynchronizer]', async () => {
   })
 
   it('should open', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
@@ -61,7 +61,7 @@ describe('[FullSynchronizer]', async () => {
   })
 
   it('should get height', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({ config, pool, chain, txPool, execution })
@@ -82,7 +82,7 @@ describe('[FullSynchronizer]', async () => {
   })
 
   it('should find best', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
@@ -114,7 +114,6 @@ describe('[FullSynchronizer]', async () => {
 
   it('should sync', async () => {
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       safeReorgDistance: 0,
@@ -167,7 +166,7 @@ describe('[FullSynchronizer]', async () => {
   })
 
   it('should send NewBlock/NewBlockHashes to right peers', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
@@ -257,7 +256,7 @@ describe('[FullSynchronizer]', async () => {
   })
 
   it('should process blocks', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new FullSynchronizer({
