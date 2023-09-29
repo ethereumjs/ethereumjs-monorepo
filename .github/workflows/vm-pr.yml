@@ -28,7 +28,7 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - run: npm ci --omit=peer
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
