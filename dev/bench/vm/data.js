@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695982799271,
+  "lastUpdate": 1696006883872,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b6eb3294b0f05e62da043ea6f517c10f11b6c988",
-          "message": "evm: add blobgasfee eip 7516 (#3035)\n\n* evm: add blobgasfee eip 7516\r\n\r\n* Update packages/evm/src/interpreter.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Update packages/common/src/hardforks.ts\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* update min hardfork\r\n\r\n* add to supported eips\r\n\r\n* update minimum hf to cancun\r\n\r\n* update min hf to paris same as 4844\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
-          "timestamp": "2023-09-19T14:22:51+02:00",
-          "tree_id": "99dd9bbe7e582297c33f0fa4a981565156b04007",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b6eb3294b0f05e62da043ea6f517c10f11b6c988"
-        },
-        "date": 1695126438925,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30463,
-            "range": "±5.24%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30232,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29903,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24883,
-            "range": "±11.16%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 28610,
-            "range": "±3.38%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.66%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "95d4439b334610dec146ce7b2d0df75093b2a3ef",
+          "message": "genesis: fix holesky genesis state (#3074)\n\n* genesis: fix holesky genesis state\r\n\r\n* Make typescript happy\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-09-29T22:27:08+05:30",
+          "tree_id": "0791dce52eabbc7ba1fe4457591f736c79d5133c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/95d4439b334610dec146ce7b2d0df75093b2a3ef"
+        },
+        "date": 1696006882328,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 23252,
+            "range": "±6.32%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 23836,
+            "range": "±3.21%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 21971,
+            "range": "±4.47%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 22984,
+            "range": "±3.78%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22271,
+            "range": "±3.79%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
