@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695980318100,
+  "lastUpdate": 1695982799271,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "bd705441699d433db1540208ce8ba1c796262605",
-          "message": "Snap storage fetcher tests (#3018)\n\n* Increase test coverage for storage fetcher\r\n\r\n* Refactor storagefetcher requests over to using vi instead of td for mocking\r\n\r\n* Fix linting errors\r\n\r\n* Update root",
-          "timestamp": "2023-09-19T11:22:44+05:30",
-          "tree_id": "3c2f6ab1a28c630829022150adbd54c378341e48",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/bd705441699d433db1540208ce8ba1c796262605"
-        },
-        "date": 1695103011700,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 24968,
-            "range": "±5.99%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25012,
-            "range": "±3.45%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 24970,
-            "range": "±3.50%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 24531,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19498,
-            "range": "±11.67%",
-            "unit": "ops/sec",
-            "extra": "68 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 19210,
             "range": "±3.54%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "69d9f25305ddff7d2140f487a07d7037f37e3e90",
+          "message": "Implement a more performant code cache (#3022)\n\n* Setup boilerplace code for code cache\r\n\r\n* Fix linting error\r\n\r\n* Export code cache\r\n\r\n* Add tests for code cache\r\n\r\n* Integrate code cache with statemanager\r\n\r\n* Fix code cache integration in state manager\r\n\r\n* Add checkpointing tests for code cache\r\n\r\n* Use address as key for code cache\r\n\r\n* Use bytesToUnprefixedHex\r\n\r\n* Implement put, get, and flush for code cache\r\n\r\n* Flush code cache before other caches in statemanager\r\n\r\n* Update code root of account after putting code\r\n\r\n* Put code into cache even if the code is empty\r\n\r\n* Fix linting issues\r\n\r\n* Fix diffCache state saving\r\n\r\n* Do not throw error on code deletion\r\n\r\n* stateManager: save known prestate\r\n\r\n* Save prestate using current value in db\r\n\r\n* Fix getContractcode\r\n\r\n* Rename variables to be more consistent with naming conventions used in other tests\r\n\r\n* Clarify docs and clean up naming\r\n\r\n* Remove old code cache\r\n\r\n* Simplify _saveCachePreState\r\n\r\n* Fix lint error\r\n\r\n* Add code cache CLI option to client\r\n\r\n* Fix code cache flushing\r\n\r\n* Fix code cache size function\r\n\r\n* Do not call stat function of cache if it is disactivated\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-09-29T12:13:47+02:00",
+          "tree_id": "2009d3a2fb136e630e9b15de2a94b12d3a135ff3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/69d9f25305ddff7d2140f487a07d7037f37e3e90"
+        },
+        "date": 1695982798123,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 22275,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19830,
+            "range": "±6.27%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 20824,
+            "range": "±3.59%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 20616,
+            "range": "±3.48%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 20141,
+            "range": "±3.66%",
             "unit": "ops/sec",
             "extra": "79 samples"
           }
