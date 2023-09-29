@@ -6,7 +6,7 @@ import { Level } from 'level'
 import { getLogger } from './logging'
 import { RlpxServer } from './net/server'
 import { Event, EventBus } from './types'
-import { isBrowser, parseTransports, short } from './util'
+import { isBrowser, short } from './util'
 
 import type { Logger } from './logging'
 import type { EventBusType, MultiaddrLike } from './types'
@@ -36,7 +36,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full' or 'light')
+   * Synchronization mode ('full', 'light', 'none')
    *
    * Default: 'full'
    */
@@ -95,13 +95,6 @@ export interface ConfigOptions {
   key?: Uint8Array
 
   /**
-   * Network transports ('rlpx')
-   *
-   * Default: `['rlpx']`
-   */
-  transports?: string[]
-
-  /**
    * Network bootnodes
    * (e.g. abc@18.138.108.67 or /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
@@ -127,11 +120,9 @@ export interface ConfigOptions {
 
   /**
    * Transport servers (RLPx)
-   * Use `transports` option, only used for testing purposes
-   *
-   * Default: servers created from `transports` option
+   * Only used for testing purposes
    */
-  servers?: RlpxServer[]
+  server?: RlpxServer
 
   /**
    * Save tx receipts and logs in the meta db (default: false)
@@ -340,7 +331,6 @@ export class Config {
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
-  public static readonly TRANSPORTS_DEFAULT = ['rlpx']
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
@@ -374,7 +364,6 @@ export class Config {
   public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
-  public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly port?: number
   public readonly extIP?: string
@@ -429,7 +418,7 @@ export class Config {
   public readonly chainCommon: Common
   public readonly execCommon: Common
 
-  public readonly servers: RlpxServer[] = []
+  public readonly server: RlpxServer | undefined = undefined
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
@@ -437,7 +426,6 @@ export class Config {
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
-    this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -505,26 +493,17 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
-    if (options.servers) {
-      if (options.transports) {
-        throw new Error(
-          'Config initialization with both servers and transports options not allowed'
-        )
+    this.logger.info(`Sync Mode ${this.syncmode}`)
+    if (this.syncmode !== SyncMode.None) {
+      if (options.server !== undefined) {
+        this.server = options.server
+      } else if (isBrowser() !== true) {
+        // Otherwise start server
+        const bootnodes: MultiaddrLike =
+          this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
+        const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
+        this.server = new RlpxServer({ config: this, bootnodes, dnsNetworks })
       }
-      // Servers option takes precedence
-      this.servers = options.servers
-    } else if (isBrowser() !== true) {
-      // Otherwise parse transports from transports option
-      this.servers = parseTransports(this.transports).map((t) => {
-        if (t.name === 'rlpx') {
-          const bootnodes: MultiaddrLike =
-            this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
-          const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
-          return new RlpxServer({ config: this, bootnodes, dnsNetworks })
-        } else {
-          throw new Error(`unknown transport: ${t.name}`)
-        }
-      })
     }
 
     this.events.once(Event.CLIENT_SHUTDOWN, () => {

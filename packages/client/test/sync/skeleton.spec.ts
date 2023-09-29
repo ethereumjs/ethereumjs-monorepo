@@ -189,7 +189,6 @@ describe('[Skeleton] / initSync', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        transports: [],
         logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
@@ -305,7 +304,7 @@ describe('[Skeleton] / setHead', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        transports: [],
+
         logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
@@ -375,7 +374,7 @@ describe('[Skeleton] / setHead', async () => {
       difficulty: '0x1',
     }
     const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     try {
@@ -386,7 +385,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should init/setHead properly from genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -490,7 +489,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to genesis', async () => {
-    const config = new Config({ common, transports: [], logger: getLogger({ logLevel: 'debug' }) })
+    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -562,7 +561,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
 
@@ -648,7 +647,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       accountCache: 10000,
       storageCache: 1000,
@@ -753,7 +751,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       accountCache: 10000,
       storageCache: 1000,
@@ -814,7 +811,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       logger: getLogger({ logLevel: 'debug' }),
       accountCache: 10000,

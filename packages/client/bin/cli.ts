@@ -47,7 +47,7 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.transports, args.bootnodes, etc)
+// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.bootnodes, etc)
 const args: ClientOpts = yargs(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
@@ -100,11 +100,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
     boolean: true,
     default: true,
-  })
-  .option('transports', {
-    describe: 'Network transports',
-    default: Config.TRANSPORTS_DEFAULT,
-    array: true,
   })
   .option('bootnodes', {
     describe: 'Comma-separated list of network bootnodes',
@@ -835,7 +830,6 @@ async function run() {
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
-    transports: args.transports?.length === 0 ? args.transports : undefined,
     txLookupLimit: args.txLookupLimit,
   })
   config.events.setMaxListeners(50)

@@ -5,7 +5,6 @@ import { middleware } from '../validation'
 
 import type { Chain } from '../../blockchain'
 import type { EthereumClient } from '../../client'
-import type { RlpxServer } from '../../net/server'
 import type { Service } from '../../service'
 
 /**
@@ -34,7 +33,7 @@ export class Admin {
    * @param params An empty array
    */
   async nodeInfo(_params: []) {
-    const rlpxInfo = (this._client.server('rlpx') as RlpxServer).getRlpxInfo()
+    const rlpxInfo = this._client.config.server!.getRlpxInfo()
     const { enode, id, ip, listenAddr, ports } = rlpxInfo
     const { discovery, listener } = ports
     const clientName = getClientVersion()

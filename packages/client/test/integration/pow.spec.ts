@@ -56,7 +56,6 @@ async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
 
   const config = new Config({
     common,
-    transports: ['rlpx'],
     bootnodes: [],
     multiaddrs: [],
     discDns: false,

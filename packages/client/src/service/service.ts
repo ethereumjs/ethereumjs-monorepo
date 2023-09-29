@@ -119,7 +119,7 @@ export class Service {
       return false
     }
     const protocols = this.protocols
-    this.config.servers.map((s) => s.addProtocols(protocols))
+    this.config.server && this.config.server.addProtocols(protocols)
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
       this.config.logger.debug(`Peer banned: ${peer}`)
