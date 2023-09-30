@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696022430294,
+  "lastUpdate": 1696072149806,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "acd1bbbcb436f8e3f137e06b7f85271424e5cd09",
-          "message": "Return '0x' values as '0x0' (#3038)\n\n* Return '0x' values as '0x0' since this is a JSON RPC response\r\n\r\n* Add test for checking quantity-encoded RPC representation\r\n\r\n* statemanager: add extra test for edge-case accounts for proofs\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-09-19T19:12:59+02:00",
-          "tree_id": "74a45e121912d9dfe76c7b94454ba55764ca126f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/acd1bbbcb436f8e3f137e06b7f85271424e5cd09"
-        },
-        "date": 1695144601309,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 31966,
-            "range": "±4.41%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31153,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31056,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 26931,
-            "range": "±9.31%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29487,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 18094,
             "range": "±4.11%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c8816e2ddee521a74c38e0c9ad67d866ca841f39",
+          "message": "Make browser binaries optional (#3075)\n\n* Move browser testing deps to optional peers\r\n\r\n* Update package-lock\r\n\r\n* skip peer deps on CI\r\n\r\n* Add rollup as evm devDep\r\n\r\n* update package-lock\r\n\r\n* Revert evm devDep\r\n\r\n* revert changes in vm CI",
+          "timestamp": "2023-09-30T16:34:19+05:30",
+          "tree_id": "041039a5c0f75679cac563842a066e2752969fdc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c8816e2ddee521a74c38e0c9ad67d866ca841f39"
+        },
+        "date": 1696072148374,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18918,
+            "range": "±6.14%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 19669,
+            "range": "±3.34%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 19563,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 19039,
+            "range": "±3.35%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18243,
+            "range": "±3.29%",
             "unit": "ops/sec",
             "extra": "79 samples"
           }
