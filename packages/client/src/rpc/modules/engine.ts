@@ -210,7 +210,8 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
 const pruneCachedBlocks = (
   chain: Chain,
   remoteBlocks: Map<String, Block>,
-  executedBlocks: Map<String, Block>
+  executedBlocks: Map<String, Block>,
+  invalidBlocks: Map<String, Error>
 ) => {
   const finalized = chain.blocks.finalized
   if (finalized !== null) {
@@ -234,6 +235,17 @@ const pruneCachedBlocks = (
           executedBlocks.delete(blockHash)
         }
       }
+    }
+
+    // prune invalidBlocks with some max length
+    const pruneInvalidLength = invalidBlocks.size - chain.config.maxInvalidBlocksErrorCache
+    let pruned = 0
+    for (const blockHash of invalidBlocks.keys()) {
+      if (pruned >= pruneInvalidLength) {
+        break
+      }
+      invalidBlocks.delete(blockHash)
+      pruned++
     }
   }
 }
@@ -413,6 +425,7 @@ export class Engine {
   private pendingBlock: PendingBlock
   private remoteBlocks: Map<String, Block>
   private executedBlocks: Map<String, Block>
+  private invalidBlocks: Map<String, Error>
   private connectionManager: CLConnectionManager
 
   private lastNewPayloadHF: string = ''
@@ -443,6 +456,7 @@ export class Engine {
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
     this.executedBlocks = new Map()
+    this.invalidBlocks = new Map()
 
     this.newPayloadV1 = cmMiddleware(
       middleware(this.newPayloadV1.bind(this), 1, [
@@ -588,6 +602,14 @@ export class Engine {
       this.connectionManager.newPayloadLog()
     }
     const { parentHash, blockHash } = payload
+
+    // we can be strict and return with invalid if this block was previous invalidated in
+    // invalidBlocks cache, but to have a more robust behavior instead:
+    //
+    // we remove this block from invalidBlocks for it to be evaluated again against the
+    // new data/corrections the CL might be calling newPayload with
+    this.invalidBlocks.delete(blockHash.slice(2))
+
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block, error } = await assembleBlock(
       {
@@ -602,9 +624,13 @@ export class Engine {
       if (!response) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(payload.parentHash), this.chain)
+        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
+      this.invalidBlocks.set(
+        blockHash.slice(2),
+        new Error(response.validationError ?? `Error assembling block during init`)
+      )
       return response
     }
 
@@ -644,12 +670,14 @@ export class Engine {
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
         const response = { status: Status.INVALID, latestValidHash, validationError }
+        this.invalidBlocks.set(blockHash.slice(2), new Error(validationError))
         return response
       }
     } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.invalidBlocks.set(blockHash.slice(2), new Error(validationError))
       return response
     }
 
@@ -706,6 +734,10 @@ export class Engine {
             validationError: null,
             latestValidHash: bytesToHex(zeros(32)),
           }
+          this.invalidBlocks.set(
+            blockHash.slice(2),
+            new Error(response.validationError ?? 'Terminal block validation failed')
+          )
           return response
         }
       }
@@ -719,6 +751,7 @@ export class Engine {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
           const response = { status: Status.INVALID, latestValidHash, validationError }
+          this.invalidBlocks.set(blockHash.slice(2), error)
           return response
         }
       }
@@ -798,6 +831,7 @@ export class Engine {
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(block.header.parentHash, this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.invalidBlocks.set(blockHash.slice(2), error as Error)
       try {
         await this.chain.blockchain.delBlock(lastBlock!.hash())
         // eslint-disable-next-line no-empty
@@ -921,6 +955,16 @@ export class Engine {
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
+
+    const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
+    if (prevError !== undefined) {
+      const validationError = `Received block previously marked INVALID: ${prevError.message}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = null
+      const payloadStatus = { status: Status.INVALID, latestValidHash, validationError }
+      const response = { payloadStatus, payloadId: null }
+      return response
+    }
 
     const safe = toBytes(safeBlockHash)
     const finalized = toBytes(finalizedBlockHash)
@@ -1149,7 +1193,7 @@ export class Engine {
     }
 
     // before returning response prune cached blocks based on finalized and vmHead
-    pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks)
+    pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks, this.invalidBlocks)
     return validResponse
   }
 

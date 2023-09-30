@@ -323,6 +323,11 @@ export interface ConfigOptions {
   engineNewpayloadMaxTxsExecute?: number
 
   maxStorageRange?: bigint
+
+  /**
+   * Cache size of invalid block hashes and their errors
+   */
+  maxInvalidBlocksErrorCache?: number
 }
 
 export class Config {
@@ -353,11 +358,15 @@ export class Config {
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
+
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
   public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
+
+  public static readonly MAX_INVALID_BLOCKS_ERROR_CACHE = 128
+
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
@@ -404,6 +413,7 @@ export class Config {
   public readonly maxRangeBytes: number
   public readonly maxAccountRange: bigint
   public readonly maxStorageRange: bigint
+  public readonly maxInvalidBlocksErrorCache: number
   public readonly syncedStateRemovalPeriod: number
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
@@ -473,9 +483,14 @@ export class Config {
       options.skeletonFillCanonicalBackStep ?? Config.SKELETON_FILL_CANONICAL_BACKSTEP
     this.skeletonSubchainMergeMinimum =
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
+
     this.maxRangeBytes = options.maxRangeBytes ?? Config.MAX_RANGE_BYTES
     this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
     this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
+
+    this.maxInvalidBlocksErrorCache =
+      options.maxInvalidBlocksErrorCache ?? Config.MAX_INVALID_BLOCKS_ERROR_CACHE
+
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
