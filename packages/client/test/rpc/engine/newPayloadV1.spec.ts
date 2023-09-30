@@ -299,7 +299,7 @@ describe(method, () => {
     }
 
     // set the newpayload limit to 100 for test
-    chain.config.engineNewpayloadMaxTxsExecute = 100
+    ;(chain.config as any).engineNewpayloadMaxTxsExecute = 100
 
     // newpayload shouldn't execute block but just return either SYNCING or ACCEPTED
     let expectRes = (res: any) => {
@@ -309,7 +309,7 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes, false, false)
 
     // set the newpayload limit to 101 and the block should be executed
-    chain.config.engineNewpayloadMaxTxsExecute = 101
+    ;(chain.config as any).engineNewpayloadMaxTxsExecute = 101
     expectRes = (res: any) => {
       assert.equal(res.body.result.status, 'VALID')
     }
