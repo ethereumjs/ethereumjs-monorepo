@@ -27,7 +27,7 @@ describe('[Synchronizer]', async () => {
   PeerPool.prototype.close = td.func<any>()
 
   it('should sync', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     config.syncTargetHeight = BigInt(1)
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })

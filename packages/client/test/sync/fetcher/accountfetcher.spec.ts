@@ -38,7 +38,7 @@ describe('[AccountFetcher]', async () => {
   )
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -59,7 +59,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should update highest known hash', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -91,7 +91,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should process', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -127,7 +127,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should adopt correctly', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -168,7 +168,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should skip job with limit lower than highest known hash', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -205,7 +205,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -277,7 +277,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should verify proof correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const pool = new PeerPool() as any
@@ -356,7 +356,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,

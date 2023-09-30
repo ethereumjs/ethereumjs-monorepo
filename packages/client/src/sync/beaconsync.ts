@@ -8,7 +8,7 @@ import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from './skeleton'
+import type { Skeleton } from '../service/skeleton'
 import type { SynchronizerOptions } from './sync'
 import type { Block } from '@ethereumjs/block'
 
@@ -167,25 +167,24 @@ export class BeaconSynchronizer extends Synchronizer {
     clearTimeout(timeout)
   }
 
+  async reorged(block: Block): Promise<void> {
+    if (!this.opened) return
+    // Clean the current fetcher, later this.start will start it again
+    await this.stop()
+    this.config.logger.debug(
+      `Beacon sync reorged, new head number=${block.header.number} hash=${short(
+        block.header.hash()
+      )}`
+    )
+    void this.start()
+  }
+
   /**
    * Returns true if the block successfully extends the chain.
    */
   async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
     const reorg = await this.skeleton.setHead(block, false)
-    if (reorg === false) {
-      this.config.logger.debug(
-        `Beacon sync skeleton can be extended number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    } else {
-      this.config.logger.debug(
-        `Block can not extend Beacon sync skeleton number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    }
     return !reorg
   }
 
@@ -199,19 +198,8 @@ export class BeaconSynchronizer extends Synchronizer {
     // from the new head.
     const reorg = await this.skeleton.setHead(block, true, !this.running)
     if (reorg) {
-      // Clean the current fetcher, later this.start will start it again
-      await this.stop()
-      this.config.logger.debug(
-        `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    } else {
-      this.config.logger.debug(
-        `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
-      )
+      await this.reorged(block)
     }
-    void this.start()
     return true
   }
 

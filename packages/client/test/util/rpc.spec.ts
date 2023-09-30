@@ -1,4 +1,5 @@
 import { bytesToHex } from '@ethereumjs/util'
+import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
 import { EthereumClient } from '../../src/client'
@@ -16,8 +17,8 @@ const request = require('supertest')
 
 describe('[Util/RPC]', () => {
   it('should return enabled RPC servers', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
     const manager = new RPCManager(client, config)
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
@@ -57,12 +58,11 @@ describe('[Util/RPC]', () => {
 
 describe('[Util/RPC/Engine eth methods]', async () => {
   const config = new Config({
-    transports: [],
     accountCache: 10000,
     storageCache: 1000,
     saveReceipts: true,
   })
-  const client = await EthereumClient.create({ config })
+  const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
   const manager = new RPCManager(client, config)
   const { server } = createRPCServer(manager, {
     methodConfig: MethodConfig.EngineOnly,

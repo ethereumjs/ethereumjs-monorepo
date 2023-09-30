@@ -64,7 +64,7 @@ describe('[FullEthereumService]', async () => {
   const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
 
@@ -73,12 +73,12 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should get protocols', async () => {
-    let config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    let config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
     assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
     assert.notOk(service.protocols.filter((p) => p.name === 'les').length > 0, 'no light protocol')
-    config = new Config({ transports: [], lightserv: true })
+    config = new Config({ lightserv: true })
     service = new FullEthereumService({ config, chain })
     assert.ok(service.protocols.filter((p) => p.name === 'eth').length > 0, 'full protocol')
     assert.ok(service.protocols.filter((p) => p.name === 'les').length > 0, 'lightserv protocols')
@@ -86,7 +86,7 @@ describe('[FullEthereumService]', async () => {
 
   it('should open', async () => {
     const server = new RlpxServer({} as any)
-    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
 
     const chain = await Chain.create({ config })
     chain.open = vi.fn()
@@ -110,7 +110,7 @@ describe('[FullEthereumService]', async () => {
 
   it('should start/stop', async () => {
     const server = new RlpxServer({} as any)
-    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
 
     const service = new FullEthereumService({ config, chain })
@@ -125,7 +125,7 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should correctly handle GetBlockHeaders', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     vi.unmock('../../src/blockchain')
     await import('../../src/blockchain')
     const chain = await Chain.create({ config })
@@ -174,7 +174,7 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should call handleNewBlock on NewBlock and handleNewBlockHashes on NewBlockHashes', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     await service.handle({ name: 'NewBlock', data: [{}, BigInt(1)] }, 'eth', undefined as any)
@@ -195,7 +195,7 @@ describe('[FullEthereumService]', async () => {
 
   it('should ban peer for sending NewBlock/NewBlockHashes after merge', async () => {
     const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
-    const config = new Config({ common, transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.pool.ban = () => {
@@ -207,7 +207,7 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should send Receipts on GetReceipts', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     const blockHash = new Uint8Array(32).fill(1)
@@ -249,7 +249,7 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should handle Transactions', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxs = async (msg, _peer, _pool) => {
@@ -271,7 +271,7 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should handle NewPooledTransactionHashes', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     service.txPool.handleAnnouncedTxHashes = async (msg, _peer, _pool) => {
@@ -293,7 +293,7 @@ describe('[FullEthereumService]', async () => {
   })
 
   it('should handle GetPooledTransactions', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     ;(service.txPool as any).validate = () => {}
@@ -317,7 +317,7 @@ describe('[FullEthereumService]', async () => {
   it('should handle decoding NewPooledTransactionHashes with eth/68 message format', async () => {
     const txHash = randomBytes(32)
 
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     ;(service.txPool as any).validate = () => {}
@@ -343,7 +343,7 @@ describe('[FullEthereumService]', async () => {
   it('should handle structuring NewPooledTransactionHashes with eth/68 message format', async () => {
     const txHash = randomBytes(32)
 
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new FullEthereumService({ config, chain })
     ;(service.txPool as any).validate = () => {}
@@ -366,11 +366,11 @@ describe('[FullEthereumService]', async () => {
   it('should start on beacon sync when past merge', async () => {
     const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000, common })
+    const config = new Config({ accountCache: 10000, storageCache: 1000, common })
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
     assert.ok(service.beaconSync, 'beacon sync should be available')
-    const configDisableBeaconSync = new Config({ transports: [], common, disableBeaconSync: true })
+    const configDisableBeaconSync = new Config({ common, disableBeaconSync: true })
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
     assert.notOk(service.beaconSync, 'beacon sync should not be available')
   })

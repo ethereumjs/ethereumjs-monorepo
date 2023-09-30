@@ -134,7 +134,7 @@ describe('simple mainnet test run', async () => {
       beaconSyncRelayer = relayer
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
-      const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+      const enode = (ejsClient!.server() as RlpxServer)!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
       assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
@@ -162,7 +162,11 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           const syncResponse = await Promise.race([beaconSyncPromise, syncTimeout])
-          assert(syncResponse.syncState, 'SYNCED', 'beaconSyncRelayer should have synced client')
+          assert.equal(
+            syncResponse.syncState,
+            'SYNCED',
+            'beaconSyncRelayer should have synced client'
+          )
           await ejsClient.stop()
           assert.ok(true, 'completed beacon sync')
         } catch (e) {
@@ -177,6 +181,7 @@ describe('simple mainnet test run', async () => {
 
   it('network cleanup', async () => {
     try {
+      beaconSyncRelayer?.close()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
     } catch (e) {
@@ -197,7 +202,6 @@ async function createBeaconSyncClient(
   const logger = getLogger({ logLevel: 'debug' })
   const config = new Config({
     common,
-    transports: ['rlpx'],
     bootnodes,
     multiaddrs: [],
     logger,

@@ -15,7 +15,7 @@ describe('[Integration:PeerPool]', async () => {
     const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new MockServer({ config: serverConfig }) as any
     server.addProtocols(protocols)
-    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     await server.start()
     const pool = new PeerPool({ config })
     await pool.open()
@@ -64,7 +64,7 @@ describe('[Integration:PeerPool]', async () => {
   })
 
   it('should handle peer messages', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const blockchain = await Blockchain.create({
       validateBlocks: false,
       validateConsensus: false,

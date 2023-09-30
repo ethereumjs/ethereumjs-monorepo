@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'
 import { getLogger } from '../../../src/logging'
-import { Skeleton } from '../../../src/sync'
+import { Skeleton } from '../../../src/service/skeleton'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
@@ -21,7 +21,7 @@ describe('[ReverseBlockFetcher]', async () => {
   const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -48,7 +48,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should generate max tasks', async () => {
-    const config = new Config({ maxPerRequest: 5, maxFetcherJobs: 10, transports: [] })
+    const config = new Config({ maxPerRequest: 5, maxFetcherJobs: 10 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -75,7 +75,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should process', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -96,7 +96,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should adopt correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -124,7 +124,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -141,7 +141,7 @@ describe('[ReverseBlockFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -174,7 +174,7 @@ describe('[ReverseBlockFetcher]', async () => {
 
   it('store()', async () => {
     td.reset()
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -218,7 +218,6 @@ describe('[ReverseBlockFetcher]', async () => {
   it('should restart the fetcher when subchains are merged', async () => {
     td.reset()
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       skeletonSubchainMergeMinimum: 0,

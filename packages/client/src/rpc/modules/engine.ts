@@ -31,7 +31,7 @@ import type { EthereumClient } from '../../client'
 import type { Config } from '../../config'
 import type { VMExecution } from '../../execution'
 import type { BlobsBundle } from '../../miner'
-import type { FullEthereumService } from '../../service'
+import type { FullEthereumService, Skeleton } from '../../service'
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VM } from '@ethereumjs/vm'
@@ -405,6 +405,7 @@ function validateHardforkRange(
 export class Engine {
   private client: EthereumClient
   private execution: VMExecution
+  private skeleton: Skeleton
   private service: FullEthereumService
   private chain: Chain
   private config: Config
@@ -426,11 +427,18 @@ export class Engine {
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
+
     if (this.service.execution === undefined) {
       throw Error('execution required for engine module')
     }
     this.execution = this.service.execution
     this.vm = this.execution.vm
+
+    if (this.service.skeleton === undefined) {
+      throw Error('skeleton required for engine module')
+    }
+    this.skeleton = this.service.skeleton
+
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
     this.remoteBlocks = new Map()
@@ -661,7 +669,10 @@ export class Engine {
     // been initialized here but a batch of blocks new payloads arrive, most likely during sync
     // We still can't switch to beacon sync here especially if the chain is pre merge and there
     // is pow block which this client would like to mint and attempt proposing it
-    const optimisticLookup = await this.service.beaconSync?.extendChain(block)
+    //
+    // call skeleton setHead without forcing head change to return if its reorged or not
+    // and flip it go get lookup flag
+    const optimisticLookup = !(await this.skeleton.setHead(block, false))
 
     // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
@@ -682,7 +693,7 @@ export class Engine {
       // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
       // to run basic validations based on parent
       const parent =
-        (await this.service.beaconSync?.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
+        (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
         (await this.chain.getBlock(hexToBytes(parentHash)))
 
@@ -758,10 +769,13 @@ export class Engine {
             (await validExecutedChainBlock(bHash, this.chain))) !== null
 
         if (!isBlockExecuted) {
-          // Only execute if number of blocks pending to be executed are within limit
+          // Only execute
+          //   i) if number of blocks pending to be executed are within limit
+          //   ii) Txs to execute in blocking call is within the supported limit
           // else return SYNCING/ACCEPTED and let skeleton led chain execution catch up
           const executed =
-            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute
+            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute &&
+            block.transactions.length <= this.chain.config.engineNewpayloadMaxTxsExecute
               ? await this.execution.runWithoutSetHead({
                   block,
                   root: (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
@@ -789,7 +803,7 @@ export class Engine {
         // eslint-disable-next-line no-empty
       } catch {}
       try {
-        await this.service.beaconSync?.skeleton.deleteBlock(lastBlock!)
+        await this.skeleton.deleteBlock(lastBlock!)
         // eslint-disable-next-line no-empty
       } catch {}
       return response
@@ -937,7 +951,7 @@ export class Engine {
       const head = toBytes(headBlockHash)
       headBlock =
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
-        (await this.service.beaconSync?.skeleton.getBlockByHash(head, true)) ??
+        (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
     } catch (error) {
       this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
@@ -967,7 +981,11 @@ export class Engine {
         headBlock.hash()
       )}`
     )
-    await this.service.beaconSync?.setHead(headBlock)
+
+    // call skeleton sethead with force head change and reset beacon sync if reorg
+    const reorged = await this.skeleton.setHead(headBlock, true)
+    if (reorged) await this.service.beaconSync?.reorged(headBlock)
+
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
@@ -1012,8 +1030,7 @@ export class Engine {
           // Right now only check if the block is available, canonicality check is done
           // in setHead after chain.putBlocks so as to reflect latest canonical chain
           safeBlock =
-            (await this.service.beaconSync?.skeleton.getBlockByHash(safe, true)) ??
-            (await this.chain.getBlock(safe))
+            (await this.skeleton.getBlockByHash(safe, true)) ?? (await this.chain.getBlock(safe))
         } catch (_error: any) {
           throw {
             code: INVALID_PARAMS,
@@ -1030,7 +1047,7 @@ export class Engine {
         // Right now only check if the block is available, canonicality check is done
         // in setHead after chain.putBlocks so as to reflect latest canonical chain
         finalizedBlock =
-          (await this.service.beaconSync?.skeleton.getBlockByHash(finalized, true)) ??
+          (await this.skeleton.getBlockByHash(finalized, true)) ??
           (await this.chain.getBlock(finalized))
       } catch (error: any) {
         throw {
@@ -1080,6 +1097,17 @@ export class Engine {
       this.config.updateSynchronizedState(headBlock.header)
       if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
+      }
+    } else {
+      // even if the vmHead is same still validations need to be done regarding the correctness
+      // of the sequence and canonical-ity
+      try {
+        await this.execution.setHead([headBlock], { safeBlock, finalizedBlock })
+      } catch (e) {
+        throw {
+          message: (e as Error).message,
+          code: INVALID_PARAMS,
+        }
       }
     }
 

@@ -554,7 +554,7 @@ export class EVM implements EVMInterface {
     if (!contract) {
       contract = new Account()
     }
-    message.createdAddresses
+
     const env = {
       address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),

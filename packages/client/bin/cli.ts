@@ -21,7 +21,7 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import readline from 'readline'
-import yargs from 'yargs'
+import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../src/client'
@@ -47,20 +47,21 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-// @ts-ignore
+// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.bootnodes, etc)
 const args: ClientOpts = yargs(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
   })
   .option('network', {
     describe: 'Network',
-    choices: networks.map((n) => n[1]),
+    choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
     default: 'mainnet',
   })
   .option('networkId', {
     describe: 'Network ID',
-    choices: networks.map((n) => parseInt(n[0])),
+    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
     default: undefined,
+    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
   .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
@@ -79,10 +80,12 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('customChain', {
     describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customGenesisState',
   })
   .option('customGenesisState', {
     describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customChain',
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
@@ -97,11 +100,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
       'Place mergeForkIdTransition hardfork before (false) or after (true) Merge hardfork in the custom gethGenesis',
     boolean: true,
     default: true,
-  })
-  .option('transports', {
-    describe: 'Network transports',
-    default: Config.TRANSPORTS_DEFAULT,
-    array: true,
   })
   .option('bootnodes', {
     describe: 'Comma-separated list of network bootnodes',
@@ -268,6 +266,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     number: true,
     default: Config.STORAGE_CACHE,
   })
+  .option('codeCache', {
+    describe: 'Size for the code cache (max number of contracts)',
+    number: true,
+    default: Config.CODE_CACHE,
+  })
   .option('trieCache', {
     describe: 'Size for the trie cache (max number of trie nodes)',
     number: true,
@@ -299,14 +302,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('dev', {
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-    choices: [undefined, false, true, 'poa', 'pow'],
-  })
-  .check((argv) => {
-    if ('dev' in argv && argv['dev'] === undefined) {
-      throw Error('If the "dev" option is used it must be assigned a value')
-    } else {
-      return true
-    }
+    choices: ['false', 'true', 'poa', 'pow'],
   })
   .option('minerCoinbase', {
     describe:
@@ -366,6 +362,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
 
@@ -749,24 +746,12 @@ async function run() {
   }
 
   // Configure common based on args given
-  if (
-    (typeof args.customChain === 'string' ||
-      typeof args.customGenesisState === 'string' ||
-      typeof args.gethGenesis === 'string') &&
-    (args.network !== 'mainnet' || args.networkId !== undefined)
-  ) {
-    console.error('cannot specify both custom chain parameters and preset network ID')
-    process.exit()
-  }
+
   // Use custom chain parameters file if specified
   if (typeof args.customChain === 'string') {
-    if (args.customGenesisState === undefined) {
-      console.error('cannot have custom chain parameters without genesis state')
-      process.exit()
-    }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
-      customGenesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
+      customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
         customChains: [customChainParams],
@@ -822,6 +807,7 @@ async function run() {
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,
+    codeCache: args.codeCache,
     trieCache: args.trieCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
@@ -844,7 +830,6 @@ async function run() {
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
-    transports: args.transports,
     txLookupLimit: args.txLookupLimit,
   })
   config.events.setMaxListeners(50)
