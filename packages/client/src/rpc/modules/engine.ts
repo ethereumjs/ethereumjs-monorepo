@@ -769,10 +769,13 @@ export class Engine {
             (await validExecutedChainBlock(bHash, this.chain))) !== null
 
         if (!isBlockExecuted) {
-          // Only execute if number of blocks pending to be executed are within limit
+          // Only execute
+          //   i) if number of blocks pending to be executed are within limit
+          //   ii) Txs to execute in blocking call is within the supported limit
           // else return SYNCING/ACCEPTED and let skeleton led chain execution catch up
           const executed =
-            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute
+            blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute &&
+            block.transactions.length <= this.chain.config.engineNewpayloadMaxTxsExecute
               ? await this.execution.runWithoutSetHead({
                   block,
                   root: (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
