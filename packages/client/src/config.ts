@@ -317,6 +317,11 @@ export interface ConfigOptions {
    */
   engineNewpayloadMaxExecute?: number
 
+  /**
+   * Limit max transactions per block to execute in engine's newPayload for responsive engine api
+   */
+  engineNewpayloadMaxTxsExecute?: number
+
   maxStorageRange?: bigint
 }
 
@@ -357,6 +362,8 @@ export class Config {
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
+  // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
+  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -400,6 +407,7 @@ export class Config {
   public readonly syncedStateRemovalPeriod: number
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
+  public readonly engineNewpayloadMaxTxsExecute: number
 
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
@@ -474,6 +482,8 @@ export class Config {
       options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
+    this.engineNewpayloadMaxTxsExecute =
+      options.engineNewpayloadMaxTxsExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
