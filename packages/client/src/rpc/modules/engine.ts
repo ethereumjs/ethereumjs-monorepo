@@ -808,6 +808,7 @@ export class Engine {
     // call skeleton setHead without forcing head change to return if its reorged or not
     // and flip it go get lookup flag
     const optimisticLookup = !(await this.skeleton.setHead(block, false))
+    this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
 
     // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
@@ -876,6 +877,7 @@ export class Engine {
       const latestValidHash = await validHash(block.header.parentHash, this.chain, this.chainCache)
       const response = { status: Status.INVALID, latestValidHash, validationError }
       this.invalidBlocks.set(blockHash.slice(2), error as Error)
+      this.remoteBlocks.delete(blockHash.slice(2))
       try {
         await this.chain.blockchain.delBlock(lastBlock!.hash())
         // eslint-disable-next-line no-empty
@@ -886,8 +888,6 @@ export class Engine {
       } catch {}
       return response
     }
-
-    this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
 
     const response = {
       status: Status.VALID,
