@@ -670,14 +670,14 @@ export class Engine {
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
         const response = { status: Status.INVALID, latestValidHash, validationError }
-        this.invalidBlocks.set(blockHash.slice(2), new Error(validationError))
+        // skip marking the block invalid as this is more of a data issue from CL
         return response
       }
     } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
       const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
       const response = { status: Status.INVALID, latestValidHash, validationError }
-      this.invalidBlocks.set(blockHash.slice(2), new Error(validationError))
+      // skip marking the block invalid as this is more of a data issue from CL
       return response
     }
 
@@ -956,16 +956,6 @@ export class Engine {
     const { headBlockHash, finalizedBlockHash, safeBlockHash } = params[0]
     const payloadAttributes = params[1]
 
-    const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
-    if (prevError !== undefined) {
-      const validationError = `Received block previously marked INVALID: ${prevError.message}`
-      this.config.logger.debug(validationError)
-      const latestValidHash = null
-      const payloadStatus = { status: Status.INVALID, latestValidHash, validationError }
-      const response = { payloadStatus, payloadId: null }
-      return response
-    }
-
     const safe = toBytes(safeBlockHash)
     const finalized = toBytes(finalizedBlockHash)
 
@@ -985,6 +975,16 @@ export class Engine {
     // starts from a bit behind like how lodestar does
     if (!this.service.beaconSync && !this.config.disableBeaconSync) {
       await this.service.switchToBeaconSync()
+    }
+
+    const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
+    if (prevError !== undefined) {
+      const validationError = `Received block previously marked INVALID: ${prevError.message}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = null
+      const payloadStatus = { status: Status.INVALID, latestValidHash, validationError }
+      const response = { payloadStatus, payloadId: null }
+      return response
     }
 
     /*
@@ -1193,7 +1193,9 @@ export class Engine {
     }
 
     // before returning response prune cached blocks based on finalized and vmHead
-    pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks, this.invalidBlocks)
+    if (this.chain.config.pruneEngineCache) {
+      pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks, this.invalidBlocks)
+    }
     return validResponse
   }
 
@@ -1327,8 +1329,10 @@ export class Engine {
       // value the block
       const [block, receipts, value, blobs] = built
 
-      // do a blocking call even if execution might be busy for the moment
-      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true)
+      // do a blocking call even if execution might be busy for the moment and skip putting
+      // it into chain till CL confirms with full data via new payload like versioned hashes
+      // parent beacon block root
+      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true, true)
       if (!executed) {
         throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
       }

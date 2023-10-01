@@ -328,6 +328,7 @@ export interface ConfigOptions {
    * Cache size of invalid block hashes and their errors
    */
   maxInvalidBlocksErrorCache?: number
+  pruneEngineCache?: boolean
 }
 
 export class Config {
@@ -366,6 +367,7 @@ export class Config {
   public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
 
   public static readonly MAX_INVALID_BLOCKS_ERROR_CACHE = 128
+  public static readonly PRUNE_ENGINE_CACHE = true
 
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
@@ -414,6 +416,7 @@ export class Config {
   public readonly maxAccountRange: bigint
   public readonly maxStorageRange: bigint
   public readonly maxInvalidBlocksErrorCache: number
+  public readonly pruneEngineCache: boolean
   public readonly syncedStateRemovalPeriod: number
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
@@ -490,6 +493,7 @@ export class Config {
 
     this.maxInvalidBlocksErrorCache =
       options.maxInvalidBlocksErrorCache ?? Config.MAX_INVALID_BLOCKS_ERROR_CACHE
+    this.pruneEngineCache = options.pruneEngineCache ?? Config.PRUNE_ENGINE_CACHE
 
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
