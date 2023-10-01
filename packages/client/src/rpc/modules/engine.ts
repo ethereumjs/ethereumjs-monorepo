@@ -111,6 +111,13 @@ type ExecutionPayloadBodyV1 = {
   withdrawals: WithdrawalV1[] | null
 }
 
+type ChainCache = {
+  remoteBlocks: Map<String, Block>
+  executedBlocks: Map<String, Block>
+  invalidBlocks: Map<String, Error>
+  skeleton: Skeleton
+}
+
 const EngineError = {
   UnknownPayload: {
     code: UNKNOWN_PAYLOAD,
@@ -207,12 +214,8 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   return { executionPayload, blockValue: bigIntToHex(value), blobsBundle, shouldOverrideBuilder }
 }
 
-const pruneCachedBlocks = (
-  chain: Chain,
-  remoteBlocks: Map<String, Block>,
-  executedBlocks: Map<String, Block>,
-  invalidBlocks: Map<String, Error>
-) => {
+const pruneCachedBlocks = (chain: Chain, chainCache: ChainCache) => {
+  const { remoteBlocks, executedBlocks, invalidBlocks } = chainCache
   const finalized = chain.blocks.finalized
   if (finalized !== null) {
     // prune remoteBlocks
@@ -305,13 +308,6 @@ const validExecutedChainBlock = async (
   } catch (error: any) {
     return null
   }
-}
-
-type ChainCache = {
-  remoteBlocks: Map<String, Block>
-  executedBlocks: Map<String, Block>
-  invalidBlocks: Map<String, Error>
-  skeleton: Skeleton
 }
 
 /**
@@ -1243,7 +1239,7 @@ export class Engine {
 
     // before returning response prune cached blocks based on finalized and vmHead
     if (this.chain.config.pruneEngineCache) {
-      pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks, this.invalidBlocks)
+      pruneCachedBlocks(this.chain, this.chainCache)
     }
     return validResponse
   }
