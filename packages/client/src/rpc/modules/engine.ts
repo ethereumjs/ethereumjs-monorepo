@@ -737,33 +737,9 @@ export class Engine {
     }
     this.lastNewPayloadHF = hardfork
 
-    // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
-    // been initialized here but a batch of blocks new payloads arrive, most likely during sync
-    // We still can't switch to beacon sync here especially if the chain is pre merge and there
-    // is pow block which this client would like to mint and attempt proposing it
-    //
-    // call skeleton setHead without forcing head change to return if its reorged or not
-    // and flip it go get lookup flag
-    const optimisticLookup = !(await this.skeleton.setHead(block, false))
-
-    // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
-    // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
-    // some pre-executed stateroot can be send
-    const executedBlockExists =
-      this.executedBlocks.get(blockHash.slice(2)) ??
-      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
-    if (executedBlockExists) {
-      const response = {
-        status: Status.VALID,
-        latestValidHash: blockHash,
-        validationError: null,
-      }
-      return response
-    }
-
+    // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
+    // to run basic validations based on parent
     try {
-      // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
-      // to run basic validations based on parent
       const parent =
         (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
@@ -812,6 +788,7 @@ export class Engine {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
     } catch (error: any) {
+      const optimisticLookup = !(await this.skeleton.setHead(block, false))
       const status =
         // If the transitioned to beacon sync and this block can extend beacon chain then
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
@@ -820,6 +797,30 @@ export class Engine {
         this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       }
       const response = { status, validationError: null, latestValidHash: null }
+      return response
+    }
+
+    // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
+    // been initialized here but a batch of blocks new payloads arrive, most likely during sync
+    // We still can't switch to beacon sync here especially if the chain is pre merge and there
+    // is pow block which this client would like to mint and attempt proposing it
+    //
+    // call skeleton setHead without forcing head change to return if its reorged or not
+    // and flip it go get lookup flag
+    const optimisticLookup = !(await this.skeleton.setHead(block, false))
+
+    // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
+    // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
+    // some pre-executed stateroot can be send
+    const executedBlockExists =
+      this.executedBlocks.get(blockHash.slice(2)) ??
+      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
+    if (executedBlockExists) {
+      const response = {
+        status: Status.VALID,
+        latestValidHash: blockHash,
+        validationError: null,
+      }
       return response
     }
 
