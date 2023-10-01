@@ -61,6 +61,6 @@
   "devDependencies": {
     "@ethereumjs/block": "^5.0.0",
     "@ethereumjs/genesis": "^0.1.0",
-    "@types/debug": "^4.1.8"
+    "@types/debug": "^4.1.9"
   }
 }

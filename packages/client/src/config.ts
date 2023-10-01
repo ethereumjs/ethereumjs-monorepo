@@ -6,7 +6,7 @@ import { Level } from 'level'
 import { getLogger } from './logging'
 import { RlpxServer } from './net/server'
 import { Event, EventBus } from './types'
-import { isBrowser, parseTransports, short } from './util'
+import { isBrowser, short } from './util'
 
 import type { Logger } from './logging'
 import type { EventBusType, MultiaddrLike } from './types'
@@ -36,7 +36,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full' or 'light')
+   * Synchronization mode ('full', 'light', 'none')
    *
    * Default: 'full'
    */
@@ -95,13 +95,6 @@ export interface ConfigOptions {
   key?: Uint8Array
 
   /**
-   * Network transports ('rlpx')
-   *
-   * Default: `['rlpx']`
-   */
-  transports?: string[]
-
-  /**
    * Network bootnodes
    * (e.g. abc@18.138.108.67 or /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
@@ -127,11 +120,9 @@ export interface ConfigOptions {
 
   /**
    * Transport servers (RLPx)
-   * Use `transports` option, only used for testing purposes
-   *
-   * Default: servers created from `transports` option
+   * Only used for testing purposes
    */
-  servers?: RlpxServer[]
+  server?: RlpxServer
 
   /**
    * Save tx receipts and logs in the meta db (default: false)
@@ -216,6 +207,11 @@ export interface ConfigOptions {
    * Size for the storage cache (max number of contracts)
    */
   storageCache?: number
+
+  /**
+   * Size for the code cache (max number of contracts)
+   */
+  codeCache?: number
 
   /**
    * Size for the trie cache (max number of trie nodes)
@@ -321,6 +317,11 @@ export interface ConfigOptions {
    */
   engineNewpayloadMaxExecute?: number
 
+  /**
+   * Limit max transactions per block to execute in engine's newPayload for responsive engine api
+   */
+  engineNewpayloadMaxTxsExecute?: number
+
   maxStorageRange?: bigint
 }
 
@@ -335,7 +336,6 @@ export class Config {
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
   public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
-  public static readonly TRANSPORTS_DEFAULT = ['rlpx']
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
   public static readonly MAXFETCHERJOBS_DEFAULT = 100
@@ -347,6 +347,7 @@ export class Config {
   public static readonly NUM_BLOCKS_PER_ITERATION = 100
   public static readonly ACCOUNT_CACHE = 400000
   public static readonly STORAGE_CACHE = 200000
+  public static readonly CODE_CACHE = 200000
   public static readonly TRIE_CACHE = 200000
   public static readonly DEBUGCODE_DEFAULT = false
   public static readonly SAFE_REORG_DISTANCE = 100
@@ -361,6 +362,8 @@ export class Config {
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
+  // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
+  public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -368,7 +371,6 @@ export class Config {
   public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
-  public readonly transports: string[]
   public readonly bootnodes?: Multiaddr[]
   public readonly port?: number
   public readonly extIP?: string
@@ -385,6 +387,7 @@ export class Config {
   public readonly numBlocksPerIteration: number
   public readonly accountCache: number
   public readonly storageCache: number
+  public readonly codeCache: number
   public readonly trieCache: number
   public readonly debugCode: boolean
   public readonly discDns: boolean
@@ -404,6 +407,7 @@ export class Config {
   public readonly syncedStateRemovalPeriod: number
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
+  public readonly engineNewpayloadMaxTxsExecute: number
 
   public readonly disableBeaconSync: boolean
   public readonly forceSnapSync: boolean
@@ -422,7 +426,7 @@ export class Config {
   public readonly chainCommon: Common
   public readonly execCommon: Common
 
-  public readonly servers: RlpxServer[] = []
+  public readonly server: RlpxServer | undefined = undefined
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
@@ -430,7 +434,6 @@ export class Config {
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
     this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
-    this.transports = options.transports ?? Config.TRANSPORTS_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -449,6 +452,7 @@ export class Config {
     this.numBlocksPerIteration = options.numBlocksPerIteration ?? Config.NUM_BLOCKS_PER_ITERATION
     this.accountCache = options.accountCache ?? Config.ACCOUNT_CACHE
     this.storageCache = options.storageCache ?? Config.STORAGE_CACHE
+    this.codeCache = options.codeCache ?? Config.CODE_CACHE
     this.trieCache = options.trieCache ?? Config.TRIE_CACHE
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
@@ -478,6 +482,8 @@ export class Config {
       options.engineParentLookupMaxDepth ?? Config.ENGINE_PARENTLOOKUP_MAX_DEPTH
     this.engineNewpayloadMaxExecute =
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
+    this.engineNewpayloadMaxTxsExecute =
+      options.engineNewpayloadMaxTxsExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE
 
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
@@ -497,26 +503,17 @@ export class Config {
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
-    if (options.servers) {
-      if (options.transports) {
-        throw new Error(
-          'Config initialization with both servers and transports options not allowed'
-        )
+    this.logger.info(`Sync Mode ${this.syncmode}`)
+    if (this.syncmode !== SyncMode.None) {
+      if (options.server !== undefined) {
+        this.server = options.server
+      } else if (isBrowser() !== true) {
+        // Otherwise start server
+        const bootnodes: MultiaddrLike =
+          this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
+        const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
+        this.server = new RlpxServer({ config: this, bootnodes, dnsNetworks })
       }
-      // Servers option takes precedence
-      this.servers = options.servers
-    } else if (isBrowser() !== true) {
-      // Otherwise parse transports from transports option
-      this.servers = parseTransports(this.transports).map((t) => {
-        if (t.name === 'rlpx') {
-          const bootnodes: MultiaddrLike =
-            this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
-          const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
-          return new RlpxServer({ config: this, bootnodes, dnsNetworks })
-        } else {
-          throw new Error(`unknown transport: ${t.name}`)
-        }
-      })
     }
 
     this.events.once(Event.CLIENT_SHUTDOWN, () => {

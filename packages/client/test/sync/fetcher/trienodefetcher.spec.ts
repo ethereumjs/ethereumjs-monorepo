@@ -32,7 +32,7 @@ describe('[TrieNodeFetcher]', async () => {
   const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -58,7 +58,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should process', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -84,7 +84,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -114,7 +114,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should generate child paths for node correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
     const p = new SnapProtocol({ config, chain })
@@ -173,7 +173,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -189,7 +189,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should return an array of tasks with pathStrings and paths', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -212,7 +212,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should return an object with pathStrings', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
