@@ -674,10 +674,7 @@ export class Engine {
         const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
-      this.invalidBlocks.set(
-        blockHash.slice(2),
-        new Error(response.validationError ?? `Error assembling block during init`)
-      )
+      // skip marking the block invalid as this is more of a data issue from CL
       return response
     }
 
@@ -802,7 +799,7 @@ export class Engine {
             this.chainCache
           )
           const response = { status: Status.INVALID, latestValidHash, validationError }
-          this.invalidBlocks.set(blockHash.slice(2), error)
+          // skip marking the block invalid as this is more of a data issue from CL
           return response
         }
       }
