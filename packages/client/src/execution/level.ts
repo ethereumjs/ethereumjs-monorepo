@@ -113,6 +113,30 @@ export class LevelDB<
    * Returns a readable stream for all
    * kv pairs where key starts with `prefix`.
    */
+  async keysByPrefix(prefix: TKey, opts?: EncodingOpts): Promise<TKey[]> {
+    const encodings = getEncodings(opts)
+    const ret: TKey[] = []
+    try {
+      for await (const key of this._leveldb.keys({ gte: prefix, ...encodings })) {
+        // eslint-disable-next-line
+        ret.push(key)
+      }
+    } catch (error: any) {
+      // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
+        throw error
+      }
+    }
+    // eslint-disable-next-line
+    return ret
+  }
+
+  /**
+   * Returns a readable stream for all
+   * kv pairs where key starts with `prefix`.
+   */
   async byPrefix(prefix: TKey, opts?: EncodingOpts): Promise<[TKey, TValue | undefined][]> {
     const encodings = getEncodings(opts)
     const ret: [TKey, TValue][] = []
@@ -140,7 +164,7 @@ export class LevelDB<
    * Returns a readable stream for all
    * kv pairs where key starts with `prefix`.
    */
-  async DelByPrefix(prefix: TKey, opts?: EncodingOpts): Promise<void> {
+  async delByPrefix(prefix: TKey, opts?: EncodingOpts): Promise<void> {
     const encodings = getEncodings(opts)
     await this._leveldb.clear({ gte: prefix, ...encodings })
   }
