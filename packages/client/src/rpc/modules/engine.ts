@@ -666,7 +666,7 @@ export class Engine {
       this.chain,
       this.chainCache
     )
-    if (!block || error) {
+    if (block === undefined || error) {
       let response = error
       if (!response) {
         const validationError = `Error assembling block during init`
@@ -805,8 +805,8 @@ export class Engine {
     // We still can't switch to beacon sync here especially if the chain is pre merge and there
     // is pow block which this client would like to mint and attempt proposing it
     //
-    // call skeleton setHead without forcing head change to return if its reorged or not
-    // and flip it go get lookup flag
+    // Call skeleton.setHead without forcing head change to return if the block is reorged or not
+    // Do optimistic lookup if not reorged
     const optimisticLookup = !(await this.skeleton.setHead(block, false))
     this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
 
