@@ -217,137 +217,106 @@ export class Snapshot extends Cache {
   //   this._stats.dels += 1
   // }
 
-  /**
-   * Flushes cache by returning accounts that have been modified
-   * or deleted and resetting the diff cache (at checkpoint height).
-   */
-  flush(): [string, SnapshotElement][] {
-    if (this.DEBUG) {
-      this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
-    }
-
-    const diffMap = this._diffCache[this._checkpoints]!
-
-    const items: [string, SnapshotElement][] = []
-
-    for (const entry of diffMap.entries()) {
-      const cacheKeyHex = entry[0]
-      let elem: SnapshotElement | undefined
-      if (this._lruCache) {
-        elem = this._lruCache!.get(cacheKeyHex)
-      } else {
-        elem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
-      }
-
-      if (elem !== undefined) {
-        items.push([cacheKeyHex, elem])
-      }
-    }
-    this._diffCache[this._checkpoints] = new Map<string, SnapshotElement | undefined>()
-    return items
-  }
-
-  /**
-   * Revert changes to cache last checkpoint (no effect on trie).
-   */
-  revert(): void {
-    this._checkpoints -= 1
-    if (this.DEBUG) {
-      this._debug(`Revert to checkpoint ${this._checkpoints}`)
-    }
-    const diffMap = this._diffCache.pop()!
-    for (const entry of diffMap.entries()) {
-      const addressHex = entry[0]
-      const elem = entry[1]
-      if (elem === undefined) {
-        if (this._lruCache) {
-          this._lruCache!.delete(addressHex)
-        } else {
-          this._orderedMapCache!.eraseElementByKey(addressHex)
-        }
-      } else {
-        if (this._lruCache) {
-          this._lruCache!.set(addressHex, elem)
-        } else {
-          this._orderedMapCache!.setElement(addressHex, elem)
-        }
-      }
-    }
-  }
-
-  /**
-   * Commits to current state of cache (no effect on trie).
-   */
-  commit(): void {
-    this._checkpoints -= 1
-    if (this.DEBUG) {
-      this._debug(`Commit to checkpoint ${this._checkpoints}`)
-    }
-    const diffMap = this._diffCache.pop()!
-    for (const entry of diffMap.entries()) {
-      const addressHex = entry[0]
-      const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
-      if (!oldEntry) {
-        const elem = entry[1]
-        this._diffCache[this._checkpoints].set(addressHex, elem)
-      }
-    }
-  }
-
-  /**
-   * Marks current state of cache as checkpoint, which can
-   * later on be reverted or committed.
-   */
-  checkpoint(): void {
-    this._checkpoints += 1
-    if (this.DEBUG) {
-      this._debug(`New checkpoint ${this._checkpoints}`)
-    }
-    this._diffCache.push(new Map<string, SnapshotElement | undefined>())
-  }
-
   // /**
-  //  * Returns the size of the cache
-  //  * @returns
+  //  * Flushes cache by returning accounts that have been modified
+  //  * or deleted and resetting the diff cache (at checkpoint height).
   //  */
-  // size() {
-  //   if (this._lruCache) {
-  //     return this._lruCache!.size
-  //   } else {
-  //     return this._orderedMapCache!.size()
+  // flush(): [string, SnapshotElement][] {
+  //   if (this.DEBUG) {
+  //     this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
   //   }
-  // }
 
-  // /**
-  //  * Returns a dict with cache stats
-  //  * @param reset
-  //  */
-  // stats(reset = true) {
-  //   const stats = { ...this._stats }
-  //   stats.size = this.size()
-  //   if (reset) {
-  //     this._stats = {
-  //       size: 0,
-  //       reads: 0,
-  //       hits: 0,
-  //       writes: 0,
-  //       dels: 0,
+  //   const diffMap = this._diffCache[this._checkpoints]!
+
+  //   const items: [string, SnapshotElement][] = []
+
+  //   for (const entry of diffMap.entries()) {
+  //     const cacheKeyHex = entry[0]
+  //     let elem: SnapshotElement | undefined
+  //     if (this._lruCache) {
+  //       elem = this._lruCache!.get(cacheKeyHex)
+  //     } else {
+  //       elem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
+  //     }
+
+  //     if (elem !== undefined) {
+  //       items.push([cacheKeyHex, elem])
   //     }
   //   }
-  //   return stats
+  //   this._diffCache[this._checkpoints] = new Map<string, SnapshotElement | undefined>()
+  //   return items
   // }
 
-  /**
-   * Clears cache.
-   */
-  clear(): void {
-    if (this.DEBUG) {
-      this._debug(`Clear cache`)
-    }
-    if (this._lruCache) {
-      this._lruCache!.clear()
-    } else {
-      this._orderedMapCache!.clear()
-    }
-  }
+  // /**
+  //  * Revert changes to cache last checkpoint (no effect on trie).
+  //  */
+  // revert(): void {
+  //   this._checkpoints -= 1
+  //   if (this.DEBUG) {
+  //     this._debug(`Revert to checkpoint ${this._checkpoints}`)
+  //   }
+  //   const diffMap = this._diffCache.pop()!
+  //   for (const entry of diffMap.entries()) {
+  //     const addressHex = entry[0]
+  //     const elem = entry[1]
+  //     if (elem === undefined) {
+  //       if (this._lruCache) {
+  //         this._lruCache!.delete(addressHex)
+  //       } else {
+  //         this._orderedMapCache!.eraseElementByKey(addressHex)
+  //       }
+  //     } else {
+  //       if (this._lruCache) {
+  //         this._lruCache!.set(addressHex, elem)
+  //       } else {
+  //         this._orderedMapCache!.setElement(addressHex, elem)
+  //       }
+  //     }
+  //   }
+  // }
+
+  // /**
+  //  * Commits to current state of cache (no effect on trie).
+  //  */
+  // commit(): void {
+  //   this._checkpoints -= 1
+  //   if (this.DEBUG) {
+  //     this._debug(`Commit to checkpoint ${this._checkpoints}`)
+  //   }
+  //   const diffMap = this._diffCache.pop()!
+  //   for (const entry of diffMap.entries()) {
+  //     const addressHex = entry[0]
+  //     const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
+  //     if (!oldEntry) {
+  //       const elem = entry[1]
+  //       this._diffCache[this._checkpoints].set(addressHex, elem)
+  //     }
+  //   }
+  // }
+
+  // /**
+  //  * Marks current state of cache as checkpoint, which can
+  //  * later on be reverted or committed.
+  //  */
+  // checkpoint(): void {
+  //   this._checkpoints += 1
+  //   if (this.DEBUG) {
+  //     this._debug(`New checkpoint ${this._checkpoints}`)
+  //   }
+  //   this._diffCache.push(new Map<string, SnapshotElement | undefined>())
+  // }
+
+  // /**
+  //  * Clears cache.
+  //  */
+  // clear(): void {
+  //   if (this.DEBUG) {
+  //     this._debug(`Clear cache`)
+  //   }
+  //   if (this._lruCache) {
+  //     this._lruCache!.clear()
+  //   } else {
+  //     this._orderedMapCache!.clear()
+  //   }
+  // }
 }
