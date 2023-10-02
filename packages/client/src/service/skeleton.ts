@@ -113,10 +113,20 @@ export class Skeleton extends MetaDBManager {
   }
 
   async open() {
+    // make sure to open chain before this can be opened
+    await this.chain.open()
+
     await this.runWithLock<void>(async () => {
       await this.getSyncStatus()
       this.logSyncStatus('Read')
       this.started = new Date().getTime()
+    })
+  }
+
+  async close() {
+    await this.runWithLock<void>(async () => {
+      await this.writeSyncStatus()
+      this.started = 0
     })
   }
 
@@ -312,6 +322,10 @@ export class Skeleton extends MetaDBManager {
    */
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
     return this.runWithLock<boolean>(async () => {
+      if (this.started === 0) {
+        throw Error(`skeleton setHead called before its opened`)
+      }
+
       this.config.logger.debug(
         `New skeleton head announced number=${head.header.number} hash=${short(
           head.hash()
@@ -343,12 +357,12 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(
             `Created new subchain head=${s.head} tail=${s.tail} next=${short(s.next)}`
           )
+          // Reset the filling of canonical head from tail only on tail reorg
+          this.status.canonicalHeadReset = true
         } else {
           // Only the head differed, tail is preserved
           subchain.head = head.header.number
         }
-        // Reset the filling of canonical head from tail on reorg
-        this.status.canonicalHeadReset = true
       }
       // Put this block irrespective of the force
       await this.putBlock(head)
@@ -433,8 +447,8 @@ export class Skeleton extends MetaDBManager {
 
       // subchains are useful if subChain1Head is in skeleton only and its tail correct
       const subChain1Head = await this.getBlock(this.status.progress.subchains[1].head, true)
-      // tail lookup can be from skeleton or chain
-      const subChain1Tail = await this.getBlock(this.status.progress.subchains[1].tail)
+      // tail lookup also needs to be from skeleton because we set resetCanonicalHead true if merged
+      const subChain1Tail = await this.getBlock(this.status.progress.subchains[1].tail, true)
       if (
         subChain1Head === undefined ||
         subChain1Tail === undefined ||
@@ -480,9 +494,14 @@ export class Skeleton extends MetaDBManager {
    */
   async putBlocks(blocks: Block[]): Promise<number> {
     return this.runWithLock<number>(async () => {
+      // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
         throw Error(`Skeleton no subchain set for sync`)
       }
+      if (this.status.linked) {
+        throw Error(`Chain already linked`)
+      }
+
       let merged = false
       let tailUpdated = false
       this.config.logger.debug(
@@ -719,6 +738,7 @@ export class Skeleton extends MetaDBManager {
         })
         break
       }
+
       canonicalHead += BigInt(numBlocksInserted)
       this.fillLogIndex += numBlocksInserted
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked

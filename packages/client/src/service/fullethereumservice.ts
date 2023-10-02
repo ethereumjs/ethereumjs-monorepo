@@ -82,7 +82,9 @@ export class FullEthereumService extends Service {
     } else {
       if (this.config.chainCommon.gteHardfork(Hardfork.Paris) === true) {
         if (!this.config.disableBeaconSync) {
-          void this.switchToBeaconSync()
+          // skip opening the beacon synchronizer before everything else (chain, execution etc)
+          // as it resets and messes up the entire chain
+          void this.switchToBeaconSync(true)
         }
         this.config.logger.info(`Post-merge 🐼 client mode: run with CL client.`)
       } else {
@@ -120,7 +122,7 @@ export class FullEthereumService extends Service {
   /**
    * Helper to switch to {@link BeaconSynchronizer}
    */
-  async switchToBeaconSync() {
+  async switchToBeaconSync(skipOpen: boolean = false) {
     if (this.synchronizer instanceof FullSynchronizer) {
       await this.synchronizer.stop()
       await this.synchronizer.close()
@@ -136,12 +138,13 @@ export class FullEthereumService extends Service {
       execution: this.execution,
       skeleton: this.skeleton!,
     })
-    await this.synchronizer.open()
+    if (!skipOpen) {
+      await this.synchronizer.open()
+    }
   }
 
   async open() {
     if (this.synchronizer !== undefined) {
-      await this.skeleton?.open()
       this.config.logger.info(
         `Preparing for sync using FullEthereumService with ${
           this.synchronizer instanceof BeaconSynchronizer
@@ -170,6 +173,10 @@ export class FullEthereumService extends Service {
       }
       if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer])
     })
+
+    // skeleton needs to be opened before syncronizers are opened
+    // but after chain is opened, which skeleton's open will take care of
+    await this.skeleton?.open()
     await super.open()
     await this.execution.open()
     this.txPool.open()
