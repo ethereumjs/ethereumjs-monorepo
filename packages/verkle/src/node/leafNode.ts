@@ -20,7 +20,64 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     this.c2 = options.c2
   }
 
-  static create(stem: Uint8Array, values: Uint8Array): LeafNode {}
+  static create(stem: Uint8Array, values: Uint8Array[]): LeafNode {
+    throw new Error('Not implemented')
+
+    /*
+    const cfg = GetConfig();
+
+// C1.
+const c1poly: Fr[] = new Array<NodeWidth>();
+const c1: Point = new Point();
+let count: number;
+let err: Error;
+[count, err] = fillSuffixTreePoly(c1poly, values.slice(0, NodeWidth / 2));
+if (err) {
+  return [null, err];
+}
+const containsEmptyCodeHash: boolean =
+  c1poly.length >= EmptyCodeHashSecondHalfIdx &&
+  c1poly[EmptyCodeHashFirstHalfIdx].Equal(EmptyCodeHashFirstHalfValue) &&
+  c1poly[EmptyCodeHashSecondHalfIdx].Equal(EmptyCodeHashSecondHalfValue);
+if (containsEmptyCodeHash) {
+  // Clear out values of the cached point.
+  c1poly[EmptyCodeHashFirstHalfIdx] = FrZero;
+  c1poly[EmptyCodeHashSecondHalfIdx] = FrZero;
+  // Calculate the remaining part of c1 and add to the base value.
+  const partialc1: Point = cfg.CommitToPoly(c1poly, NodeWidth - count - 2);
+  c1.Add(EmptyCodeHashPoint, partialc1);
+} else {
+  c1.Copy(cfg.CommitToPoly(c1poly, NodeWidth - count));
+}
+
+// C2.
+const c2poly: Fr[] = new Array<NodeWidth>();
+[count, err] = fillSuffixTreePoly(c2poly, values.slice(NodeWidth / 2));
+if (err) {
+  return [null, err];
+}
+const c2: Point = cfg.CommitToPoly(c2poly, NodeWidth - count);
+
+// Root commitment preparation for calculation.
+stem = stem.slice(0, StemSize); // enforce a 31-byte length
+const poly: Fr[] = new Array<NodeWidth>();
+poly[0].SetUint64(1);
+err = StemFromBytes(poly[1], stem);
+if (err) {
+  return [null, err];
+}
+toFrMultiple([poly[2], poly[3]], [c1, c2]);
+
+return {
+  // depth will be 0, but the commitment calculation
+  // does not need it, and so it won't be free.
+  values: values,
+  stem: stem,
+  commitment: cfg.CommitToPoly(poly, NodeWidth - 4),
+  c1: c1,
+  c2: c2,
+}; */
+  }
 
   static fromRawNode(rawNode: Uint8Array[], depth: number): LeafNode {
     const nodeType = rawNode[0][0]
@@ -75,5 +132,9 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
       this.c2,
       ...this.values,
     ]
+  }
+
+  setDepth(depth: number): void {
+    this.depth = depth
   }
 }
