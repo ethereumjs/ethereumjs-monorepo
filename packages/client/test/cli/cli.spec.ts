@@ -402,6 +402,21 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it('should start client with custom input for code cache size', async () => {
+    const cliArgs = ['--codeCache=2000', '--port=30313']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('code cache')) {
+        assert.ok(message.includes('2000'), 'code cache option works')
+        child.kill(9)
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)
   it('should start client with custom input for trie cache size', async () => {
     const cliArgs = ['--trieCache=2000', '--port=30312']
     const onData = async (
@@ -509,7 +524,6 @@ describe('[CLI]', () => {
       '--port=30304',
       '--dev=poa',
       '--bootnodes=enode://abc@127.0.0.1:30303',
-      '--transports=rlpx',
       '--multiaddrs=enode://abc@127.0.0.1:30303',
       '--discDns=false',
       '--discV4=false',
