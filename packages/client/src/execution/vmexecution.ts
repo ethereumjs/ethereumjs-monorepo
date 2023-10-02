@@ -162,6 +162,7 @@ export class VMExecution extends Execution {
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
    * @param optional param if runWithoutSetHead should block for execution
+   * @param optional param if runWithoutSetHead should skip putting block into chain
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(

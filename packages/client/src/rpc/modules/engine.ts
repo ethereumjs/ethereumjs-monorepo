@@ -810,9 +810,9 @@ export class Engine {
     const optimisticLookup = !(await this.skeleton.setHead(block, false))
     this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
 
-    // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
+    // we should check if the block exists executed in remoteBlocks or in chain as a check since stateroot
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
-    // some pre-executed stateroot can be send
+    // some pre-executed stateroot can be sent
     const executedBlockExists =
       this.executedBlocks.get(blockHash.slice(2)) ??
       (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
