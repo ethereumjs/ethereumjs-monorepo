@@ -28,11 +28,11 @@ interface BaseVerkleNodeOptions {
 
 interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
-  children: VerkleNode[]
+  children?: VerkleNode[]
 
   // Values of the child commitments before the trie is modified by inserts.
   // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
-  copyOnWrite: Record<string, CommitmentPoint>
+  copyOnWrite?: Record<string, CommitmentPoint>
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
