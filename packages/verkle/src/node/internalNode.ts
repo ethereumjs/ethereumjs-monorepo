@@ -18,8 +18,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   /* TODO: options.children is not actually used here */
   constructor(options: VerkleNodeOptions[VerkleNodeType.Internal]) {
     super(options)
-    this.children = new Array(NODE_WIDTH).fill(null)
-    this.copyOnWrite = options.copyOnWrite
+    this.children = options.children ?? new Array(NODE_WIDTH).fill(null)
+    this.copyOnWrite = options.copyOnWrite ?? {}
   }
 
   commit(): Uint8Array {
@@ -47,14 +47,17 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       throw new Error('Invalid node length')
     }
 
-    const children: VerkleNode[] = [] // rawNode.slice(1, NODE_WIDTH + 2)
     const commitment = rawNode[rawNode.length - 1]
 
-    return new InternalNode({ children, commitment, copyOnWrite: {}, depth })
+    return new InternalNode({ commitment, depth })
   }
 
   static create(depth: number): InternalNode {
-    const node = new InternalNode({ children: [], commitment: POINT_IDENTITY, copyOnWrite, depth })
+    const node = new InternalNode({
+      commitment: POINT_IDENTITY,
+      depth,
+    })
+
     return node
   }
 
@@ -112,6 +115,7 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
 
   // TODO: go-verkle also adds the bitlist to the raw format.
   raw(): Uint8Array[] {
-    return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
+    throw new Error('not implemented yet')
+    // return [new Uint8Array([VerkleNodeType.Internal]), ...this.children, this.commitment]
   }
 }
