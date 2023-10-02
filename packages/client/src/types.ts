@@ -106,7 +106,6 @@ export interface ClientOpts {
   gethGenesis?: string
   trustedSetup?: string
   mergeForkIdPostMerge?: boolean
-  transports?: string[]
   bootnodes?: string | string[]
   port?: number
   extIP?: string
@@ -141,6 +140,7 @@ export interface ClientOpts {
   numBlocksPerIteration?: number
   accountCache?: number
   storageCache?: number
+  codeCache?: number
   trieCache?: number
   dnsNetworks?: string[]
   executeBlocks?: string

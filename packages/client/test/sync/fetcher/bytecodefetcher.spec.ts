@@ -27,7 +27,7 @@ describe('[ByteCodeFetcher]', async () => {
   const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,
@@ -56,7 +56,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should process', () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,
@@ -84,7 +84,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should adopt correctly', () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,
@@ -111,7 +111,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
     const p = new SnapProtocol({ config, chain })
@@ -164,7 +164,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,

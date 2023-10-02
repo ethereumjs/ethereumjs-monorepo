@@ -33,7 +33,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
+      - run: npm ci --omit=peer
         working-directory: ${{github.workspace}}
 
       - uses: nick-fields/retry@v2
