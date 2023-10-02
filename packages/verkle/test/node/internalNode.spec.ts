@@ -1,4 +1,4 @@
-import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { NODE_WIDTH, VerkleNodeType } from '../../src/node/index.js'
