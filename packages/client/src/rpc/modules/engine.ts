@@ -111,6 +111,13 @@ type ExecutionPayloadBodyV1 = {
   withdrawals: WithdrawalV1[] | null
 }
 
+type ChainCache = {
+  remoteBlocks: Map<String, Block>
+  executedBlocks: Map<String, Block>
+  invalidBlocks: Map<String, Error>
+  skeleton: Skeleton
+}
+
 const EngineError = {
   UnknownPayload: {
     code: UNKNOWN_PAYLOAD,
@@ -207,11 +214,8 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   return { executionPayload, blockValue: bigIntToHex(value), blobsBundle, shouldOverrideBuilder }
 }
 
-const pruneCachedBlocks = (
-  chain: Chain,
-  remoteBlocks: Map<String, Block>,
-  executedBlocks: Map<String, Block>
-) => {
+const pruneCachedBlocks = (chain: Chain, chainCache: ChainCache) => {
+  const { remoteBlocks, executedBlocks, invalidBlocks } = chainCache
   const finalized = chain.blocks.finalized
   if (finalized !== null) {
     // prune remoteBlocks
@@ -235,6 +239,17 @@ const pruneCachedBlocks = (
         }
       }
     }
+
+    // prune invalidBlocks with some max length
+    const pruneInvalidLength = invalidBlocks.size - chain.config.maxInvalidBlocksErrorCache
+    let pruned = 0
+    for (const blockHash of invalidBlocks.keys()) {
+      if (pruned >= pruneInvalidLength) {
+        break
+      }
+      invalidBlocks.delete(blockHash)
+      pruned++
+    }
   }
 }
 
@@ -244,12 +259,12 @@ const pruneCachedBlocks = (
 const recursivelyFindParents = async (
   vmHeadHash: Uint8Array,
   parentHash: Uint8Array,
-  chain: Chain,
-  maxDepth: number
+  chain: Chain
 ) => {
   if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
     return []
   }
+  const maxDepth = chain.config.engineParentLookupMaxDepth
 
   const parentBlocks = []
   const block = await chain.getBlock(parentHash)
@@ -267,18 +282,6 @@ const recursivelyFindParents = async (
     }
   }
   return parentBlocks.reverse()
-}
-
-/**
- * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
- */
-const validHash = async (hash: Uint8Array, chain: Chain): Promise<string | null> => {
-  try {
-    await chain.getBlock(hash)
-  } catch (error: any) {
-    return null
-  }
-  return bytesToHex(hash)
 }
 
 /**
@@ -308,6 +311,50 @@ const validExecutedChainBlock = async (
 }
 
 /**
+ * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
+ */
+const validHash = async (
+  hash: Uint8Array,
+  chain: Chain,
+  chainCache: ChainCache
+): Promise<string | null> => {
+  const { remoteBlocks, executedBlocks, invalidBlocks, skeleton } = chainCache
+  const maxDepth = chain.config.engineParentLookupMaxDepth
+
+  try {
+    let validParent: Block | null = null
+    for (let inspectedParents = 0; inspectedParents < maxDepth; inspectedParents++) {
+      const unPrefixedHashStr = bytesToUnprefixedHex(hash)
+      validParent =
+        remoteBlocks.get(unPrefixedHashStr) ??
+        (await skeleton.getBlockByHash(hash, true)) ??
+        (await chain.getBlock(hash))
+
+      // if block is invalid throw error and respond with null validHash
+      if (invalidBlocks.get(unPrefixedHashStr) !== undefined) {
+        throw Error(`References an invalid ancestor`)
+      }
+
+      // if block is executed the return with this hash
+      const isBlockExecuted =
+        (executedBlocks.get(unPrefixedHashStr) ?? (await validExecutedChainBlock(hash, chain))) !==
+        null
+      if (isBlockExecuted) {
+        return bytesToHex(hash)
+      } else {
+        hash = validParent.header.parentHash
+      }
+    }
+  } catch (_error: any) {
+    // ignore error thrown by the loop and return null below
+  }
+
+  // if we are here, either we can't find valid parent till maxDepth or the ancestor was invalid
+  // or there was a lookup error. in all these instances return null
+  return null
+}
+
+/**
  * Validates that the block satisfies post-merge conditions.
  */
 const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
@@ -329,7 +376,8 @@ const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolea
  */
 const assembleBlock = async (
   payload: ExecutionPayload,
-  chain: Chain
+  chain: Chain,
+  chainCache: ChainCache
 ): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
   const { blockNumber, timestamp } = payload
   const { config } = chain
@@ -350,7 +398,7 @@ const assembleBlock = async (
   } catch (error) {
     const validationError = `Error assembling block during from payload: ${error}`
     config.logger.error(validationError)
-    const latestValidHash = await validHash(hexToBytes(payload.parentHash), chain)
+    const latestValidHash = await validHash(hexToBytes(payload.parentHash), chain, chainCache)
     const response = {
       status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
       latestValidHash,
@@ -411,12 +459,16 @@ export class Engine {
   private config: Config
   private vm: VM
   private pendingBlock: PendingBlock
-  private remoteBlocks: Map<String, Block>
-  private executedBlocks: Map<String, Block>
+
   private connectionManager: CLConnectionManager
 
   private lastNewPayloadHF: string = ''
   private lastForkchoiceUpdatedHF: string = ''
+
+  private remoteBlocks: Map<String, Block>
+  private executedBlocks: Map<String, Block>
+  private invalidBlocks: Map<String, Error>
+  private chainCache: ChainCache
 
   /**
    * Create engine_* RPC module
@@ -441,8 +493,16 @@ export class Engine {
 
     this.connectionManager = new CLConnectionManager({ config: this.chain.config })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
+
     this.remoteBlocks = new Map()
     this.executedBlocks = new Map()
+    this.invalidBlocks = new Map()
+    this.chainCache = {
+      remoteBlocks: this.remoteBlocks,
+      executedBlocks: this.executedBlocks,
+      invalidBlocks: this.invalidBlocks,
+      skeleton: this.skeleton,
+    }
 
     this.newPayloadV1 = cmMiddleware(
       middleware(this.newPayloadV1.bind(this), 1, [
@@ -588,6 +648,14 @@ export class Engine {
       this.connectionManager.newPayloadLog()
     }
     const { parentHash, blockHash } = payload
+
+    // we can be strict and return with invalid if this block was previous invalidated in
+    // invalidBlocks cache, but to have a more robust behavior instead:
+    //
+    // we remove this block from invalidBlocks for it to be evaluated again against the
+    // new data/corrections the CL might be calling newPayload with
+    this.invalidBlocks.delete(blockHash.slice(2))
+
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block, error } = await assembleBlock(
       {
@@ -595,16 +663,18 @@ export class Engine {
         // ExecutionPayload only handles undefined
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
       },
-      this.chain
+      this.chain,
+      this.chainCache
     )
-    if (!block || error) {
+    if (block === undefined || error) {
       let response = error
       if (!response) {
         const validationError = `Error assembling block during init`
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(payload.parentHash), this.chain)
+        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
         response = { status: Status.INVALID, latestValidHash, validationError }
       }
+      // skip marking the block invalid as this is more of a data issue from CL
       return response
     }
 
@@ -642,14 +712,16 @@ export class Engine {
       // if there was a validation error return invalid
       if (validationError !== null) {
         this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
+        const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
         const response = { status: Status.INVALID, latestValidHash, validationError }
+        // skip marking the block invalid as this is more of a data issue from CL
         return response
       }
     } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
       const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
+      const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
       const response = { status: Status.INVALID, latestValidHash, validationError }
+      // skip marking the block invalid as this is more of a data issue from CL
       return response
     }
 
@@ -665,33 +737,9 @@ export class Engine {
     }
     this.lastNewPayloadHF = hardfork
 
-    // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
-    // been initialized here but a batch of blocks new payloads arrive, most likely during sync
-    // We still can't switch to beacon sync here especially if the chain is pre merge and there
-    // is pow block which this client would like to mint and attempt proposing it
-    //
-    // call skeleton setHead without forcing head change to return if its reorged or not
-    // and flip it go get lookup flag
-    const optimisticLookup = !(await this.skeleton.setHead(block, false))
-
-    // we should check if the block exits executed in remoteBlocks or in chain as a check that stateroot
-    // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
-    // some pre-executed stateroot can be send
-    const executedBlockExists =
-      this.executedBlocks.get(blockHash.slice(2)) ??
-      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
-    if (executedBlockExists) {
-      const response = {
-        status: Status.VALID,
-        latestValidHash: blockHash,
-        validationError: null,
-      }
-      return response
-    }
-
+    // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
+    // to run basic validations based on parent
     try {
-      // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
-      // to run basic validations based on parent
       const parent =
         (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
@@ -706,6 +754,10 @@ export class Engine {
             validationError: null,
             latestValidHash: bytesToHex(zeros(32)),
           }
+          this.invalidBlocks.set(
+            blockHash.slice(2),
+            new Error(response.validationError ?? 'Terminal block validation failed')
+          )
           return response
         }
       }
@@ -717,8 +769,13 @@ export class Engine {
           block.validateBlobTransactions(parent.header)
         } catch (error: any) {
           const validationError = `Invalid 4844 transactions: ${error}`
-          const latestValidHash = await validHash(hexToBytes(parentHash), this.chain)
+          const latestValidHash = await validHash(
+            hexToBytes(parentHash),
+            this.chain,
+            this.chainCache
+          )
           const response = { status: Status.INVALID, latestValidHash, validationError }
+          // skip marking the block invalid as this is more of a data issue from CL
           return response
         }
       }
@@ -731,6 +788,7 @@ export class Engine {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
     } catch (error: any) {
+      const optimisticLookup = !(await this.skeleton.setHead(block, false))
       const status =
         // If the transitioned to beacon sync and this block can extend beacon chain then
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
@@ -742,16 +800,36 @@ export class Engine {
       return response
     }
 
+    // This optimistic lookup keeps skeleton updated even if for e.g. beacon sync might not have
+    // been initialized here but a batch of blocks new payloads arrive, most likely during sync
+    // We still can't switch to beacon sync here especially if the chain is pre merge and there
+    // is pow block which this client would like to mint and attempt proposing it
+    //
+    // Call skeleton.setHead without forcing head change to return if the block is reorged or not
+    // Do optimistic lookup if not reorged
+    const optimisticLookup = !(await this.skeleton.setHead(block, false))
+    this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
+
+    // we should check if the block exists executed in remoteBlocks or in chain as a check since stateroot
+    // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
+    // some pre-executed stateroot can be sent
+    const executedBlockExists =
+      this.executedBlocks.get(blockHash.slice(2)) ??
+      (await validExecutedChainBlock(hexToBytes(blockHash), this.chain))
+    if (executedBlockExists) {
+      const response = {
+        status: Status.VALID,
+        latestValidHash: blockHash,
+        validationError: null,
+      }
+      return response
+    }
+
     const vmHead = await this.chain.blockchain.getIteratorHead()
     let blocks: Block[]
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
-      blocks = await recursivelyFindParents(
-        vmHead.hash(),
-        block.header.parentHash,
-        this.chain,
-        this.chain.config.engineParentLookupMaxDepth
-      )
+      blocks = await recursivelyFindParents(vmHead.hash(), block.header.parentHash, this.chain)
     } catch (error) {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
@@ -796,8 +874,10 @@ export class Engine {
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`
       this.config.logger.error(validationError)
-      const latestValidHash = await validHash(block.header.parentHash, this.chain)
+      const latestValidHash = await validHash(block.header.parentHash, this.chain, this.chainCache)
       const response = { status: Status.INVALID, latestValidHash, validationError }
+      this.invalidBlocks.set(blockHash.slice(2), error as Error)
+      this.remoteBlocks.delete(blockHash.slice(2))
       try {
         await this.chain.blockchain.delBlock(lastBlock!.hash())
         // eslint-disable-next-line no-empty
@@ -808,8 +888,6 @@ export class Engine {
       } catch {}
       return response
     }
-
-    this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
 
     const response = {
       status: Status.VALID,
@@ -943,6 +1021,16 @@ export class Engine {
       await this.service.switchToBeaconSync()
     }
 
+    const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
+    if (prevError !== undefined) {
+      const validationError = `Received block previously marked INVALID: ${prevError.message}`
+      this.config.logger.debug(validationError)
+      const latestValidHash = null
+      const payloadStatus = { status: Status.INVALID, latestValidHash, validationError }
+      const response = { payloadStatus, payloadId: null }
+      return response
+    }
+
     /*
      * Process head block
      */
@@ -1068,8 +1156,7 @@ export class Engine {
           parentBlocks = await recursivelyFindParents(
             vmHeadHash,
             headBlock.header.parentHash,
-            this.chain,
-            this.chain.config.engineParentLookupMaxDepth
+            this.chain
           )
         } catch (error) {
           const payloadStatus = {
@@ -1139,17 +1226,19 @@ export class Engine {
         },
         withdrawals
       )
-      const latestValidHash = await validHash(headBlock.hash(), this.chain)
+      const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
       validResponse = { payloadStatus, payloadId: bytesToHex(payloadId), headBlock }
     } else {
-      const latestValidHash = await validHash(headBlock.hash(), this.chain)
+      const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
       const payloadStatus = { status: Status.VALID, latestValidHash, validationError: null }
       validResponse = { payloadStatus, payloadId: null, headBlock }
     }
 
     // before returning response prune cached blocks based on finalized and vmHead
-    pruneCachedBlocks(this.chain, this.remoteBlocks, this.executedBlocks)
+    if (this.chain.config.pruneEngineCache) {
+      pruneCachedBlocks(this.chain, this.chainCache)
+    }
     return validResponse
   }
 
@@ -1283,8 +1372,10 @@ export class Engine {
       // value the block
       const [block, receipts, value, blobs] = built
 
-      // do a blocking call even if execution might be busy for the moment
-      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true)
+      // do a blocking call even if execution might be busy for the moment and skip putting
+      // it into chain till CL confirms with full data via new payload like versioned hashes
+      // parent beacon block root
+      const executed = await this.execution.runWithoutSetHead({ block }, receipts, true, true)
       if (!executed) {
         throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
       }
