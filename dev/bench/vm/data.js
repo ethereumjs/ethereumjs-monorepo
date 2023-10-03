@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696082264269,
+  "lastUpdate": 1696296510176,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fb4a05a62d2f97460dce8ecc121bcd9bfc3ee84b",
-          "message": "statemanager: small refactor to get storage objects for snapsync (#3033)",
-          "timestamp": "2023-09-20T09:19:46+02:00",
-          "tree_id": "b578331b5ea2479bc0995f330769d45277f63dbc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fb4a05a62d2f97460dce8ecc121bcd9bfc3ee84b"
-        },
-        "date": 1695194589331,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 32193,
-            "range": "±4.28%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 31500,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 31267,
-            "range": "±2.58%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27090,
-            "range": "±9.52%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29426,
-            "range": "±2.69%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±12.04%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "09601d290a787dc1cd38892feea50fe2a57602ff",
+          "message": "client: track and respond to invalid blocks in engine api and other hive engine-cancun fixes (#3077)\n\n* client: track and respond to invalid blocks in engine api\r\n\r\n* skip adding produced blocks to chain in get payload\r\n\r\n* fix the validHash lookup and fix get payload spec\r\n\r\n* small prunecache cleanup\r\n\r\n* skip marking invalid for block data issues\r\n\r\n* perform parent validations first\r\n\r\n* make payload id unique w.r.t. fee recipient\r\n\r\n* cache remoteblocks early\r\n\r\n* doc updates\r\n\r\n* Nits\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-10-02T21:24:19-04:00",
+          "tree_id": "3fbd98403f48b709d9b8df7e55baafdbd9f31a52",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/09601d290a787dc1cd38892feea50fe2a57602ff"
+        },
+        "date": 1696296509457,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 29876,
+            "range": "±4.92%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 29921,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29621,
+            "range": "±2.55%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 29135,
+            "range": "±2.60%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24602,
+            "range": "±9.52%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
           }
         ]
       }
