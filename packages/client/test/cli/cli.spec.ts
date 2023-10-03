@@ -56,7 +56,9 @@ describe('[CLI]', () => {
   it('should successfully start client with custom inputs for PoW network', async () => {
     const cliArgs = [
       '--rpc',
-      '--dev=pow',
+      '--rpcPort=8562',
+      '--rpcAddr=0.0.0.0',
+      '--dev=poa',
       '--port=30306',
       '--minerCoinbase="abc"',
       '--saveReceipts=false',
@@ -68,15 +70,21 @@ describe('[CLI]', () => {
       resolve: Function
     ) => {
       if (message.includes('http://')) {
+        // if http endpoint startup message detected, call http endpoint with RPC method
         await wait(600)
-        const client = Client.http({ port: 8545 })
+        const client = Client.http({
+          port: 8562,
+          host: '0.0.0.0',
+        })
         const res = await client.request('eth_coinbase', [], 2.0)
         assert.ok(res.result === 'abc', 'correct coinbase address set')
+
         child.kill(9)
         resolve(undefined)
       }
       if (message.includes('Client started successfully')) {
         assert.ok(message, 'Client started successfully with custom inputs for PoW network')
+
         child.kill(9)
         resolve(undefined)
       }
