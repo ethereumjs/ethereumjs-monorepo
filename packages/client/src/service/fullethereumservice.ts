@@ -174,8 +174,8 @@ export class FullEthereumService extends Service {
       if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer])
     })
 
-    // skeleton needs to be opened before syncronizers are opened
-    // but after chain is opened, which skeleton's open will take care of
+    // skeleton needs to be opened before synchronizers are opened
+    // but after chain is opened, which skeleton.open() does internally
     await this.skeleton?.open()
     await super.open()
     await this.execution.open()

@@ -323,7 +323,7 @@ export class Skeleton extends MetaDBManager {
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
     return this.runWithLock<boolean>(async () => {
       if (this.started === 0) {
-        throw Error(`skeleton setHead called before its opened`)
+        throw Error(`skeleton setHead called before being opened`)
       }
 
       this.config.logger.debug(

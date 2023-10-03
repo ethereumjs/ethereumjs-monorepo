@@ -666,7 +666,7 @@ export class Engine {
       this.chain,
       this.chainCache
     )
-    if (headBlock === undefined || error) {
+    if (headBlock === undefined || error !== undefined) {
       let response = error
       if (!response) {
         const validationError = `Error assembling block during init`
