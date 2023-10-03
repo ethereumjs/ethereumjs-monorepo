@@ -162,12 +162,14 @@ export class VMExecution extends Execution {
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
    * @param optional param if runWithoutSetHead should block for execution
+   * @param optional param if runWithoutSetHead should skip putting block into chain
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(
     opts: RunBlockOpts,
     receipts?: TxReceipt[],
-    blocking: boolean = false
+    blocking: boolean = false,
+    skipBlockchain: boolean = false
   ): Promise<boolean> {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
@@ -193,19 +195,22 @@ export class VMExecution extends Execution {
           // Save receipts
           this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
         }
-        // Bypass updating head by using blockchain db directly
-        const [hash, num] = [block.hash(), block.header.number]
-        const td =
-          (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
-          block.header.difficulty
 
-        await this.chain.blockchain.dbManager.batch([
-          DBSetTD(td, num, hash),
-          ...DBSetBlockOrHeader(block),
-          DBSetHashToNumber(hash, num),
-          // Skip the op for number to hash to not alter canonical chain
-          ...DBSaveLookups(hash, num, true),
-        ])
+        if (!skipBlockchain) {
+          // Bypass updating head by using blockchain db directly
+          const [hash, num] = [block.hash(), block.header.number]
+          const td =
+            (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
+            block.header.difficulty
+
+          await this.chain.blockchain.dbManager.batch([
+            DBSetTD(td, num, hash),
+            ...DBSetBlockOrHeader(block),
+            DBSetHashToNumber(hash, num),
+            // Skip the op for number to hash to not alter canonical chain
+            ...DBSaveLookups(hash, num, true),
+          ])
+        }
       } finally {
         this.running = false
       }

@@ -100,7 +100,7 @@ export class PendingBlock {
     withdrawals?: WithdrawalData[]
   ) {
     const number = parentBlock.header.number + BIGINT_1
-    const { timestamp, mixHash, parentBeaconBlockRoot } = headerData
+    const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
     let { gasLimit } = parentBlock.header
 
     if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
@@ -128,6 +128,7 @@ export class PendingBlock {
     const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
     const parentBeaconBlockRootBuf =
       toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+    const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
 
     const payloadIdBytes = toBytes(
       keccak256(
@@ -136,7 +137,8 @@ export class PendingBlock {
           mixHashBuf,
           timestampBuf,
           gasLimitBuf,
-          parentBeaconBlockRootBuf
+          parentBeaconBlockRootBuf,
+          coinbaseBuf
         )
       ).subarray(0, 8)
     )

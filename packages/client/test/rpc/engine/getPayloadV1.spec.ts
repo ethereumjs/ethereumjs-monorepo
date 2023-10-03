@@ -7,6 +7,8 @@ import { checkError } from '../util'
 
 import { validPayload } from './forkchoiceUpdatedV1.spec'
 
+import type { ExecutionPayload } from '@ethereumjs/block'
+
 const method = 'engine_getPayloadV1'
 
 describe(method, () => {
@@ -38,10 +40,31 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
+    let payload: ExecutionPayload | undefined = undefined
     req = params(method, [payloadId])
     expectRes = (res: any) => {
       assert.equal(res.body.result.blockNumber, '0x1')
+      payload = res.body.result
     }
+    await baseRequest(server, req, 200, expectRes, false, false)
+
+    // Without newpayload the fcU response should be syncing or accepted
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
+    }
+    req = params('engine_forkchoiceUpdatedV1', [
+      {
+        ...validPayload[0],
+        headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
+      },
+    ])
+    await baseRequest(server, req, 200, expectRes, false, false)
+
+    // post new payload , the fcu should give valid
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
+    req = params('engine_newPayloadV1', [payload])
     await baseRequest(server, req, 200, expectRes, false, false)
 
     expectRes = (res: any) => {

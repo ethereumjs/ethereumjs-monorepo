@@ -269,9 +269,10 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 
   const { chain } = client
   const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  const { execution } = service
+  const { execution, skeleton } = service
 
   await chain.open()
+  await skeleton?.open()
   await execution?.open()
   await chain.update()
   return { chain, common, execution: execution!, server, service, blockchain }

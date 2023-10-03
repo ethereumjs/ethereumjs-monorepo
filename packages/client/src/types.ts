@@ -161,4 +161,5 @@ export interface ClientOpts {
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
+  pruneEngineCache?: boolean
 }

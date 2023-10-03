@@ -362,6 +362,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .option('pruneEngineCache', {
+    describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
+    boolean: true,
+    default: true,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict().argv
@@ -831,6 +836,7 @@ async function run() {
     forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
     txLookupLimit: args.txLookupLimit,
+    pruneEngineCache: args.pruneEngineCache,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
