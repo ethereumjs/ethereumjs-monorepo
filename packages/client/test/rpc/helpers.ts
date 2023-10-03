@@ -42,6 +42,7 @@ type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 type createClientArgs = {
+  minerCoinbase: string
   includeVM: boolean // Instantiates the VM when creating the test client
   commonChain: Common
   enableMetaDB: boolean
@@ -81,6 +82,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
+    minerCoinbase: clientOpts.minerCoinbase,
     common,
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
