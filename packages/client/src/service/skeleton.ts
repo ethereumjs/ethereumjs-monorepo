@@ -852,8 +852,8 @@ export class Skeleton extends MetaDBManager {
 
   private logSyncStatus(logPrefix: string): void {
     this.config.logger.debug(
-      `${logPrefix} sync status linked=${
-        this.status.linked
+      `${logPrefix} sync status linked=${this.status.linked} canonicalHeadReset=${
+        this.status.canonicalHeadReset
       } subchains=${this.status.progress.subchains
         .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
         .join(',')}`
