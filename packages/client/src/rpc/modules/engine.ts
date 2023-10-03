@@ -657,7 +657,7 @@ export class Engine {
     this.invalidBlocks.delete(blockHash.slice(2))
 
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
-    const { block, error } = await assembleBlock(
+    const { block: headBlock, error } = await assembleBlock(
       {
         ...payload,
         // ExecutionPayload only handles undefined
@@ -666,7 +666,7 @@ export class Engine {
       this.chain,
       this.chainCache
     )
-    if (block === undefined || error) {
+    if (headBlock === undefined || error !== undefined) {
       let response = error
       if (!response) {
         const validationError = `Error assembling block during init`
@@ -678,14 +678,14 @@ export class Engine {
       return response
     }
 
-    if (block.common.isActivatedEIP(4844)) {
+    if (headBlock.common.isActivatedEIP(4844)) {
       let validationError: string | null = null
       if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
         validationError = `Error verifying blobVersionedHashes: received none`
       } else {
         // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
         const txVersionedHashes = []
-        for (const tx of block.transactions) {
+        for (const tx of headBlock.transactions) {
           if (tx instanceof BlobEIP4844Transaction) {
             for (const vHash of tx.blobVersionedHashes) {
               txVersionedHashes.push(vHash)
@@ -725,13 +725,13 @@ export class Engine {
       return response
     }
 
-    this.connectionManager.updatePayloadStats(block)
+    this.connectionManager.updatePayloadStats(headBlock)
 
-    const hardfork = block.common.hardfork()
+    const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
       this.config.logger.info(
-        `Hardfork change along new payload block number=${block.header.number} hash=${short(
-          block.hash()
+        `Hardfork change along new payload block number=${headBlock.header.number} hash=${short(
+          headBlock.hash()
         )} old=${this.lastNewPayloadHF} new=${hardfork}`
       )
     }
@@ -764,9 +764,9 @@ export class Engine {
 
       // validate 4844 transactions and fields as these validations generally happen on putBlocks
       // when parent is confirmed to be in the chain. But we can do it here early
-      if (block.common.isActivatedEIP(4844)) {
+      if (headBlock.common.isActivatedEIP(4844)) {
         try {
-          block.validateBlobTransactions(parent.header)
+          headBlock.validateBlobTransactions(parent.header)
         } catch (error: any) {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
@@ -788,14 +788,13 @@ export class Engine {
         throw new Error(`Parent block not yet executed number=${parent.header.number}`)
       }
     } catch (error: any) {
-      const optimisticLookup = !(await this.skeleton.setHead(block, false))
+      // Stash the block for a potential forced forkchoice update to it later.
+      this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
+
+      const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
       const status =
         // If the transitioned to beacon sync and this block can extend beacon chain then
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
-      if (status === Status.ACCEPTED) {
-        // Stash the block for a potential forced forkchoice update to it later.
-        this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
-      }
       const response = { status, validationError: null, latestValidHash: null }
       return response
     }
@@ -807,8 +806,8 @@ export class Engine {
     //
     // Call skeleton.setHead without forcing head change to return if the block is reorged or not
     // Do optimistic lookup if not reorged
-    const optimisticLookup = !(await this.skeleton.setHead(block, false))
-    this.remoteBlocks.set(bytesToUnprefixedHex(block.hash()), block)
+    const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
+    this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
     // we should check if the block exists executed in remoteBlocks or in chain as a check since stateroot
     // exists in statemanager is not sufficient because an invalid crafted block with valid block hash with
@@ -829,13 +828,13 @@ export class Engine {
     let blocks: Block[]
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
-      blocks = await recursivelyFindParents(vmHead.hash(), block.header.parentHash, this.chain)
+      blocks = await recursivelyFindParents(vmHead.hash(), headBlock.header.parentHash, this.chain)
     } catch (error) {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
     }
 
-    blocks.push(block)
+    blocks.push(headBlock)
 
     let lastBlock: Block
     try {
@@ -861,7 +860,18 @@ export class Engine {
                   setHardfork: this.chain.headers.td,
                 })
               : false
+
+          // if can't be executed then return syncing/accepted
           if (!executed) {
+            this.config.logger.debug(
+              `Skipping block(s) execution for headBlock=${headBlock.header.number} hash=${short(
+                headBlock.hash()
+              )} : pendingBlocks=${blocks.length - i}(limit=${
+                this.chain.config.engineNewpayloadMaxExecute
+              }) transactions=${block.transactions.length}(limit=${
+                this.chain.config.engineNewpayloadMaxTxsExecute
+              }) executionBusy=${this.execution.running}`
+            )
             // determind status to be returned depending on if block could extend chain or not
             const status = optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
             const response = { status, latestValidHash: null, validationError: null }
@@ -874,7 +884,11 @@ export class Engine {
     } catch (error) {
       const validationError = `Error verifying block while running: ${error}`
       this.config.logger.error(validationError)
-      const latestValidHash = await validHash(block.header.parentHash, this.chain, this.chainCache)
+      const latestValidHash = await validHash(
+        headBlock.header.parentHash,
+        this.chain,
+        this.chainCache
+      )
       const response = { status: Status.INVALID, latestValidHash, validationError }
       this.invalidBlocks.set(blockHash.slice(2), error as Error)
       this.remoteBlocks.delete(blockHash.slice(2))
@@ -891,7 +905,7 @@ export class Engine {
 
     const response = {
       status: Status.VALID,
-      latestValidHash: bytesToHex(block.hash()),
+      latestValidHash: bytesToHex(headBlock.hash()),
       validationError: null,
     }
     return response
