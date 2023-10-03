@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696296510176,
+  "lastUpdate": 1696345905012,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "73983677+omahs@users.noreply.github.com",
-            "name": "omahs",
-            "username": "omahs"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "80262b6a7a0c053a1b2d0b03d4912e1942dc4951",
-          "message": "Fix typos (#3048)\n\n* fix typos\r\n\r\n* fix typos",
-          "timestamp": "2023-09-20T10:16:25-04:00",
-          "tree_id": "4f27e0ddbe17c3a683f88b4648a749d16d956e00",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/80262b6a7a0c053a1b2d0b03d4912e1942dc4951"
-        },
-        "date": 1695219784178,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30768,
-            "range": "±4.82%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30355,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29637,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25215,
-            "range": "±11.12%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 28777,
-            "range": "±3.40%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.52%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "05b48dcc13ab80070e79fa47b62ead01dab3f778",
+          "message": "client: fix canonical reset of the chain by the skeleton (#3078)\n\n* client: fix canonical reset of the chain by the skeleton\r\n\r\ncleanup and better logging for newpayload execution skip\r\n\r\nfix caching scenario\r\n\r\nfix the beacon syncronizer and skeleton opening\r\n\r\n* add more info to log\r\n\r\n* nits\r\n\r\n* Add test for skeleton/chain startup\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-10-03T11:08:05-04:00",
+          "tree_id": "d3b7444c0b5ba2f44f023119e000ee49551d3166",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/05b48dcc13ab80070e79fa47b62ead01dab3f778"
+        },
+        "date": 1696345904242,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28873,
+            "range": "±5.68%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28944,
+            "range": "±3.04%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28226,
+            "range": "±3.11%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28002,
+            "range": "±3.20%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22960,
+            "range": "±11.89%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
