@@ -512,7 +512,7 @@ export class Eth {
   }
 
   /**
-   * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
+   * Returns the currently configured coinbase address.
    * @param _params An empty array
    * @returns The chain ID.
    */
