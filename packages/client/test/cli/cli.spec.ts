@@ -64,6 +64,7 @@ describe('[CLI]', () => {
       '--saveReceipts=false',
       '--execution=false',
     ]
+    let count = 2 // only kill process after both checks have completed
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
@@ -78,13 +79,13 @@ describe('[CLI]', () => {
         })
         const res = await client.request('eth_coinbase', [], 2.0)
         assert.ok(res.result === 'abc', 'correct coinbase address set')
-
-        child.kill(9)
-        resolve(undefined)
+        count -= 1
       }
       if (message.includes('Client started successfully')) {
         assert.ok(message, 'Client started successfully with custom inputs for PoW network')
-
+        count -= 1
+      }
+      if (count === 0) {
         child.kill(9)
         resolve(undefined)
       }
