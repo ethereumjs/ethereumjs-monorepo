@@ -383,7 +383,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
 
     if (collision) throw new Error('cannot reuse ports between RPC instances')
-    process.exit(0)
     return true
   }).argv
 
