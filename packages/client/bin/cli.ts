@@ -375,20 +375,13 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     let collision = false
     if (argv.ws === true) {
       usedPorts.add(argv.wsPort)
-      if (usedPorts.has(argv.wsEnginePort)) {
-        collision = true
-      } else {
+      if (!usedPorts.has(argv.wsEnginePort)) {
         usedPorts.add(argv.wsEnginePort)
       }
     }
-    if (argv.rpc === true) {
-      if (usedPorts.has(argv.rpcPort)) collision = true
-      else usedPorts.add(argv.rpcPort)
-    }
-    if (argv.rpcEngine === true) {
-      if (usedPorts.has(argv.rpcEnginePort)) collision = true
-      else usedPorts.add(argv.rpcEnginePort)
-    }
+    if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
+    if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
+
     if (collision) throw new Error('cannot reuse ports between RPC instances')
     process.exit(0)
     return true
