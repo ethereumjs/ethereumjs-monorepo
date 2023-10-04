@@ -110,6 +110,21 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData, true)
   }, 30000)
+  it('should throw error if the same port is assigned to multiple RPC servers', async () => {
+    const cliArgs = ['--ws', '--rpc', '--rpcPort=8546']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('cannot reuse')) {
+        assert.ok(true, 'cannot reuse ports between HTTP and WS RPCs')
+      }
+      child.kill(9)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 30000)
   // engine rpc tests
   it('should start engine rpc and provide endpoint', async () => {
     const cliArgs = ['--rpcEngine', '--port=30310', '--dev=poa']
