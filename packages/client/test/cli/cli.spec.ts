@@ -110,7 +110,7 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData, true)
   }, 30000)
-  it.only('should throw error if the same port is assigned to multiple RPC servers', async () => {
+  it('should throw error if the same port is assigned to multiple RPC servers', async () => {
     const cliArgs = ['--ws', '--rpc', '--rpcPort=8546']
     const onData = async (
       message: string,
