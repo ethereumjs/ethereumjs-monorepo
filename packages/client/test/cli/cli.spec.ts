@@ -56,23 +56,36 @@ describe('[CLI]', () => {
   it('should successfully start client with custom inputs for PoW network', async () => {
     const cliArgs = [
       '--rpc',
-      '--dev=pow',
+      '--rpcPort=8562',
+      '--rpcAddr=0.0.0.0',
+      '--dev=poa',
       '--port=30306',
       '--minerCoinbase="abc"',
       '--saveReceipts=false',
       '--execution=false',
     ]
-    const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
-      // // TODO eth_coinbase rpc endpoint is not yet implemented
-      // if (message.includes('http://')) {
-      //   const client = Client.http({ port: 8545 })
-      //   const res = await client.request('eth_coinbase', [], 2.0)
-      //   assert.ok(res.result === 'abc', 'engine api is responsive without need for auth header')
-      //   child.kill(9)
-      //   resolve(undefined)
-      // }
+    let count = 2 // only kill process after both checks have completed
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('http://')) {
+        // if http endpoint startup message detected, call http endpoint with RPC method
+        await wait(600)
+        const client = Client.http({
+          port: 8562,
+          host: '0.0.0.0',
+        })
+        const res = await client.request('eth_coinbase', [], 2.0)
+        assert.ok(res.result === 'abc', 'correct coinbase address set')
+        count -= 1
+      }
       if (message.includes('Client started successfully')) {
         assert.ok(message, 'Client started successfully with custom inputs for PoW network')
+        count -= 1
+      }
+      if (count === 0) {
         child.kill(9)
         resolve(undefined)
       }
