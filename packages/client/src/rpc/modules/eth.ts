@@ -524,7 +524,7 @@ export class Eth {
         message: 'Coinbase must be explicitly specified',
       }
     }
-    return cb
+    return cb.toString()
   }
 
   /**

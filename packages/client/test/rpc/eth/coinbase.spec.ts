@@ -6,7 +6,7 @@ const method = 'eth_coinbase'
 
 describe(method, () => {
   it('call', async () => {
-    const coinbase: string = 'abc'
+    const coinbase: string = '0xebea8bff2be13d7e5e2b9d8809f7581e65fb0909'
     const { server } = baseSetup({
       minerCoinbase: coinbase,
     })

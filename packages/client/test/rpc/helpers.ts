@@ -82,7 +82,10 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
-    minerCoinbase: clientOpts.minerCoinbase,
+    minerCoinbase:
+      clientOpts.minerCoinbase !== undefined
+        ? Address.fromString(clientOpts.minerCoinbase)
+        : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
