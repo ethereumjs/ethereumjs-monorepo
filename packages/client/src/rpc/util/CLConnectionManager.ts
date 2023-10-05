@@ -273,7 +273,10 @@ export class CLConnectionManager {
       }
     }
 
-    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition) {
+    if (
+      this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
+      !this.config.chainCommon.gteHardfork(Hardfork.Paris)
+    ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
         this.config.logger.warn(
