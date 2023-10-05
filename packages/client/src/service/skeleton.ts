@@ -945,7 +945,7 @@ export class Skeleton extends MetaDBManager {
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
             .join(',')}${subchainLen > 0 ? '…' : ''} will reset chain=${
             this.status.canonicalHeadReset &&
-            (subchain0?.tail ?? BIGINT_0 <= this.chain.blocks.height)
+            (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
         } else {
           logInfo = `${logInfo} cl = ${chainHead}`
