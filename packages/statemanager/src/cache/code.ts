@@ -53,13 +53,8 @@ export class CodeCache extends Cache {
    *
    * @param cacheKeyHex Account key for which code is being modified.
    * @param currentPutCode New value of code that is being saved for the account.
-   * @param codeExists If account codeHash is null or not. Needed in the case of `putContractCode` for checking if the account has a non-null value.
    */
-  _saveCachePreState(
-    cacheKeyHex: string,
-    currentPutCode?: Uint8Array | undefined,
-    codeExists?: boolean | undefined
-  ) {
+  _saveCachePreState(cacheKeyHex: string, currentCode?: Uint8Array | undefined) {
     const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
     if (it === undefined) {
       let oldElem: CodeCacheElement | undefined
@@ -68,16 +63,7 @@ export class CodeCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-
-      // if the account has no code before this modification, save diff value as undefined so that in case
-      // of a revert, the code will be deleted and removed from the account
-      let val
-      if (codeExists !== undefined && codeExists === false) {
-        val = undefined
-      } else {
-        val = currentPutCode
-      }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: val })
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: currentCode })
     }
   }
 
@@ -86,11 +72,10 @@ export class CodeCache extends Cache {
    *
    * @param address - Address of account code is being modified for.
    * @param code - Bytecode or undefined if code doesn't exist.
-   * @param codeExists - If account codeHash is null or not. Needed in the case of `putContractCode` for checking if the account has a non-null value.
    */
-  put(address: Address, code: Uint8Array | undefined, codeExists?: boolean | undefined): void {
+  put(address: Address, code: Uint8Array | undefined): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
-    this._saveCachePreState(addressHex, code, codeExists)
+    this._saveCachePreState(addressHex)
     const elem = {
       code,
     }
