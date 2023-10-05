@@ -911,7 +911,7 @@ export class Skeleton extends MetaDBManager {
         this.status.linked
       } subchains=${this.status.progress.subchains
         // if info log show only first subchain to be succinct
-        .splice(showInfo ? 1 : this.status.progress.subchains.length)
+        .slice(0, showInfo ? 1 : this.status.progress.subchains.length)
         .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
         .join(',')} reset=${this.status.canonicalHeadReset} chain head=${
         this.chain.blocks.latest?.header.number ?? 'na'
