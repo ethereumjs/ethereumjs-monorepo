@@ -51,10 +51,10 @@ export class CLConnectionManager {
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
   /** Default payload log interval (in ms) */
-  private DEFAULT_PAYLOAD_LOG_INTERVAL = 10000
+  private DEFAULT_PAYLOAD_LOG_INTERVAL = 15000
 
   /** Default forkchoice log interval (in ms) */
-  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 10000
+  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 15000
 
   /** Threshold for a disconnected status decision */
   private DISCONNECTED_THRESHOLD = 30000
