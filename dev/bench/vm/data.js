@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696445981744,
+  "lastUpdate": 1696532937161,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9389082adeed736774249a995b24c5e0d7d15f28",
-          "message": "client: add a cli option for backward compatibility with non prefixed storage tries (#3042)\n\n* client: add a cli option for backward compatibility with non prefixed storage tries\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Fix comment\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-09-20T15:37:49-04:00",
-          "tree_id": "febeeaf4f93485eb11ae70aa8113c80972164235",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9389082adeed736774249a995b24c5e0d7d15f28"
-        },
-        "date": 1695239703264,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25393,
-            "range": "±6.34%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25043,
-            "range": "±3.39%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 25490,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25103,
-            "range": "±3.60%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20316,
-            "range": "±10.48%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 23378,
             "range": "±10.86%",
+            "unit": "ops/sec",
+            "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "90a14028088def9f4b7f8520e65f39ee4b4c7c8b",
+          "message": "Client: Small UX Improvements (#3086)\n\n* Client: do not falsely show Merge-happening-soon announcement if mergeForkIdTransition block number >= paris\r\n\r\n* Client: move skeleton-empty-comparison msg to debug level (not so much user info transported, rather repetitive and distracting)\r\n\r\n* Client: fix txsPerType engine API payload logging, improve formatting\r\n\r\n* Client: log the negative consensus client connection case\r\n\r\n* Client: adjust threshold for skeleton canonical chain fill status messages from 20 to 100 (reduce msg output)\r\n\r\n* Client: adjust threshold for skeleton canonical chain fill status messages even more\r\n\r\n* Client: add super messages [TM] so that outstandingly important notifications (transitioning to beacon sync) do not get lost in the noise\r\n\r\n* Client: somewhat reduce payload and forkchoice log intervals\r\n\r\n* Client: make execution HF switch log msg a super message\r\n\r\n* Client: somewhat reduce cache stats output\r\n\r\n* Client: another HF super msg\r\n\r\n* Fixed typing mismatch\r\n\r\n* Add connection status tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-10-05T14:52:13-04:00",
+          "tree_id": "5ab5eaac9cdda72326b161f9f034fac3591a2bf9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/90a14028088def9f4b7f8520e65f39ee4b4c7c8b"
+        },
+        "date": 1696532936358,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28455,
+            "range": "±5.69%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28890,
+            "range": "±2.97%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28567,
+            "range": "±3.41%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28335,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23427,
+            "range": "±9.79%",
             "unit": "ops/sec",
             "extra": "73 samples"
           }
