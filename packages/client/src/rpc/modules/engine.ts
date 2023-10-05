@@ -538,7 +538,7 @@ export class Engine {
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
-    const forkchoiceUpdatedResponseCMHandler = async (
+    const forkchoiceUpdatedResponseCMHandler = (
       [state]: ForkchoiceStateV1[],
       response?: ForkchoiceResponseV1 & { headBlock?: Block },
       error?: string
