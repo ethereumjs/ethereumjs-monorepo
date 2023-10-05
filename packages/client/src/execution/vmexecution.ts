@@ -388,7 +388,7 @@ export class VMExecution extends Execution {
                   })
                   if (hardfork !== this.hardfork) {
                     const hash = short(block.hash())
-                    this.config.logger.info(
+                    this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
