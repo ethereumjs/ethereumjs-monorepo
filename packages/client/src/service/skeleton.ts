@@ -959,7 +959,7 @@ export class Skeleton extends MetaDBManager {
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
             .join(',')}${subchainLen > 0 ? '…' : ''} beaconsync=${beaconsync} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
-          } will reset chain=${
+          } reorg chain=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
@@ -969,6 +969,7 @@ export class Skeleton extends MetaDBManager {
       }
       peers = peers !== undefined ? `${peers}` : 'na'
       this.config.logger.info(`${logPrefix}: ${status} ${logInfo} peers=${peers}`)
+      this.config.logger.info('---------------------------------------')
     } else {
       this.config.logger.debug(
         `${logPrefix} ${status} linked=${
