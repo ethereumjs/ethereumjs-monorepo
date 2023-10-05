@@ -905,7 +905,7 @@ export class Skeleton extends MetaDBManager {
     }
   }
 
-  private logSyncStatus(logPrefix: string, showInfo: boolean = false): void {
+  logSyncStatus(logPrefix: string, showInfo: boolean = false): void {
     const vmHead = this.chain.blocks.vm
     const subchain0 = this.status.progress.subchains[0]
     const isValid =
