@@ -214,7 +214,7 @@ export class Skeleton extends MetaDBManager {
 
     let [lastchain] = this.status.progress.subchains
     if (lastchain === undefined) {
-      this.config.logger.info(
+      this.config.logger.debug(
         `Skeleton empty, comparing against genesis head=0 tail=0 newHead=${number}`
       )
       // set the lastchain to genesis for comparison in following conditions
