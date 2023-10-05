@@ -551,7 +551,7 @@ export class Engine {
         headBlock: response?.headBlock,
         error,
       })
-      const forceShowInfo = Date.now() - this.lastAnnouncementTime > 12_000
+      const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
       if (forceShowInfo) {
         this.lastAnnouncementTime = Date.now()
       }
