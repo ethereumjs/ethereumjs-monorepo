@@ -214,7 +214,7 @@ export class Skeleton extends MetaDBManager {
 
     let [lastchain] = this.status.progress.subchains
     if (lastchain === undefined) {
-      this.config.logger.info(
+      this.config.logger.debug(
         `Skeleton empty, comparing against genesis head=0 tail=0 newHead=${number}`
       )
       // set the lastchain to genesis for comparison in following conditions
@@ -744,7 +744,7 @@ export class Skeleton extends MetaDBManager {
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked
       // it will be fetched from the chain without any issues
       await this.deleteBlock(block)
-      if (this.fillLogIndex >= 20) {
+      if (this.fillLogIndex >= 200) {
         this.config.logger.info(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
