@@ -335,6 +335,7 @@ export class Skeleton extends MetaDBManager {
       const subchain0Head = this.status.progress.subchains[0]?.head ?? BIGINT_0
       const reorg = await this.processNewHead(head, force)
 
+      // see if just the head needs to be updated or a new subchain needs to be created
       if (force && reorg) {
         // It could just be a reorg at this head with previous tail preserved unless
         //   1. parent is not present in skeleton (it could be in chain for whatever reason) or
@@ -357,15 +358,21 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(
             `Created new subchain head=${s.head} tail=${s.tail} next=${short(s.next)}`
           )
-          // Reset the filling of canonical head from tail only on tail reorg
+          // Reset the filling of canonical head from tail only on tail reorg and exit any ongoing fill
           this.status.canonicalHeadReset = true
         } else {
           // Only the head differed, tail is preserved
           subchain.head = head.header.number
         }
       }
-      // Put this block irrespective of the force
-      await this.putBlock(head)
+
+      // Put block if this is forced i.e. fcU update or if this is forward announcement i.e. new blocks
+      // after the current head. putting this block on annoucement i.e force=false on <=current head changes the
+      // skeleton canonical relationship. for > current head, this is treated more like optimistic cache
+      if (force || head.header.number > subchain0Head) {
+        await this.putBlock(head)
+      }
+
       if (init) {
         await this.trySubChainsMerge()
       }
@@ -665,7 +672,11 @@ export class Skeleton extends MetaDBManager {
       )
       canonicalHead = newHead
       await this.chain.resetCanonicalHead(canonicalHead)
-      this.status.canonicalHeadReset = false
+
+      // update in lock so as to not conflict/overwrite sethead/putblock updates
+      await this.runWithLock<void>(async () => {
+        this.status.canonicalHeadReset = false
+      })
     }
 
     const start = canonicalHead
@@ -673,22 +684,35 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `Starting canonical chain fill canonicalHead=${canonicalHead} subchainHead=${subchain.head}`
     )
-    while (this.filling && canonicalHead < subchain.head) {
+
+    // run till it has not been determined that tail reset is required by concurrent setHead calls
+    // filling is switched on and off by fillCanonicalChain only so no need to monitor that
+    while (!this.status.canonicalHeadReset && canonicalHead < subchain.head) {
       // Get next block
       const number = canonicalHead + BIGINT_1
       const block = await this.getBlock(number)
+
       if (block === undefined) {
-        // This shouldn't happen, but if it does because of some issues, we should back step
-        // and fetch again
-        this.config.logger.debug(
-          `fillCanonicalChain block number=${number} not found, backStepping`
-        )
-        await this.runWithLock<void>(async () => {
-          // backstep the subchain from the block that was not found
-          await this.backStep(number)
-        })
+        // This can happen
+        //   i) Only if canonicalHeadReset was flagged on causing skeleton to change its tail canonicality
+        // Else we should back step and fetch again as it indicates some concurrency/db errors
+        if (!this.status.canonicalHeadReset) {
+          this.config.logger.debug(
+            `fillCanonicalChain block number=${number} not found, backStepping...`
+          )
+          await this.runWithLock<void>(async () => {
+            // backstep the subchain from the block that was not found only if the canonicalHeadReset
+            // has not been flagged on, else the chain tail has already been reset by sethead
+            await this.backStep(number)
+          })
+        } else {
+          this.config.logger.debug(
+            `fillCanonicalChain block number=${number} not found canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+          )
+        }
         break
       }
+
       // Insert into chain
       let numBlocksInserted = 0
       try {
@@ -697,10 +721,15 @@ export class Skeleton extends MetaDBManager {
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
         if (oldHead !== null && oldHead.header.number >= block.header.number) {
           // Put original canonical head block back if reorg fails
-          await this.chain.putBlocks([oldHead], true)
+          // UPDATE
+          // not sure we can put oldHead because the oldHead chain might have been partially overwritten
+          // skipping for now, leaving code here for future cleanup/debugging
+          //
+          // await this.chain.putBlocks([oldHead], true)
         }
       }
 
+      // handle insertion failures
       if (numBlocksInserted !== 1) {
         this.config.logger.error(
           `Failed to put block number=${number} fork=${block.common.hardfork()} hash=${short(
@@ -733,8 +762,19 @@ export class Skeleton extends MetaDBManager {
             `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`
           )
         }
+
+        // see if backstepping is required ot this is just canonicalHeadReset
         await this.runWithLock<void>(async () => {
-          await this.backStep(number)
+          if (!this.status.canonicalHeadReset) {
+            this.config.logger.debug(
+              `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`
+            )
+            await this.backStep(number)
+          } else {
+            this.config.logger.debug(
+              `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+            )
+          }
         })
         break
       }
@@ -743,8 +783,13 @@ export class Skeleton extends MetaDBManager {
       this.fillLogIndex += numBlocksInserted
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked
       // it will be fetched from the chain without any issues
-      await this.deleteBlock(block)
-      if (this.fillLogIndex >= 20) {
+      //
+      // however delete it in a lock as the parent lookup of a reorged block in skeleton is used
+      // to determine if the tail is to be reset or now
+      await this.runWithLock<void>(async () => {
+        await this.deleteBlock(block)
+      })
+      if (this.fillLogIndex >= this.config.numBlocksPerIteration) {
         this.config.logger.info(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
