@@ -251,7 +251,7 @@ export class CLConnectionManager {
     if (
       [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
     ) {
-      this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
+      this.config.superMsg('Consensus client connection established', { attentionCL: 'CL' })
     }
     this.connectionStatus = ConnectionStatus.Connected
     this.lastRequestTimestamp = new Date().getTime()

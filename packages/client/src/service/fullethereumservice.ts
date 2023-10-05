@@ -127,7 +127,7 @@ export class FullEthereumService extends Service {
       await this.synchronizer.stop()
       await this.synchronizer.close()
       this.miner?.stop()
-      this.config.logger.info(`Transitioning to beacon sync`)
+      this.config.superMsg(`Transitioning to beacon sync`)
     }
 
     this.synchronizer = new BeaconSynchronizer({
