@@ -946,6 +946,7 @@ export class Skeleton extends MetaDBManager {
           vmHead?.hash() ?? 'na'
         )} executing=${executing}`
 
+        const beaconsync = this.filling?"filling":fetching===true?"fetching":"na"
         // if not synced add subchain info
         if (!isSynced) {
           logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
@@ -956,7 +957,7 @@ export class Skeleton extends MetaDBManager {
             // if info log show only first subchain to be succinct
             .slice(0, forceShowInfo ? 1 : this.status.progress.subchains.length)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-            .join(',')}${subchainLen > 0 ? '…' : ''} fetching=${fetching} ${
+            .join(',')}${subchainLen > 0 ? '…' : ''} beaconsync=${beaconsync} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
           } will reset chain=${
             this.status.canonicalHeadReset &&
