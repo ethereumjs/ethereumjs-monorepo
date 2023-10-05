@@ -57,7 +57,7 @@ export class AccountCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem)
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { accountRLP: undefined })
     }
   }
 
@@ -172,7 +172,7 @@ export class AccountCache extends Cache {
     for (const entry of diffMap.entries()) {
       const addressHex = entry[0]
       const elem = entry[1]
-      if (elem === undefined) {
+      if (elem?.accountRLP === undefined) {
         if (this._lruCache) {
           this._lruCache!.delete(addressHex)
         } else {
