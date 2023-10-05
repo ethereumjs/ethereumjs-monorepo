@@ -960,7 +960,7 @@ export class Skeleton extends MetaDBManager {
             // if info log show only first subchain to be succinct
             .slice(0, forceShowInfo ? 1 : this.status.progress.subchains.length)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-            .join(',')}${subchainLen > 0 ? '…' : ''} beaconsync=${beaconsync} ${
+            .join(',')}${subchainLen > 1 ? '…' : ''} beaconsync=${beaconsync} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
           } reorg chain=${
             this.status.canonicalHeadReset &&
