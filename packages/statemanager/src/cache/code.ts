@@ -52,7 +52,6 @@ export class CodeCache extends Cache {
    * Saves the state of the code cache before making changes to it.
    *
    * @param cacheKeyHex Account key for which code is being modified.
-   * @param currentPutCode New value of code that is being saved for the account.
    */
   _saveCachePreState(cacheKeyHex: string) {
     const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
