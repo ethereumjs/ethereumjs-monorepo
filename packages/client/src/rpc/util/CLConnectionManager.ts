@@ -38,8 +38,8 @@ type ForkchoiceUpdate = {
 
 type PayloadToPayloadStats = {
   blockCount: number
-  minBlockNumber?: BigInt
-  maxBlockNumber?: BigInt
+  minBlockNumber?: bigint
+  maxBlockNumber?: bigint
   txs: { [key: number]: number }
 }
 
