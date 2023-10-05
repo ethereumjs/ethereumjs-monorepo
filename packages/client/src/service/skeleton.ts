@@ -164,6 +164,15 @@ export class Skeleton extends MetaDBManager {
     return this.started > 0
   }
 
+  async isLastAnnoucement(): Promise<boolean> {
+    const subchain0 = this.status.progress.subchains[0]
+    if (subchain0 !== undefined) {
+      return this.getBlock(subchain0.head + BIGINT_1) !== undefined
+    } else {
+      return true
+    }
+  }
+
   /**
    * Try fast forwarding the chain head to the number
    */
@@ -380,7 +389,8 @@ export class Skeleton extends MetaDBManager {
         this.status.linked = await this.checkLinked()
       }
       if (force || init) {
-        await this.writeSyncStatus()
+        const lastAnnoucement = await this.isLastAnnoucement()
+        await this.writeSyncStatus(lastAnnoucement)
       }
       if (force && this.status.linked && head.header.number > subchain0Head) {
         void this.fillCanonicalChain()
@@ -895,21 +905,25 @@ export class Skeleton extends MetaDBManager {
     }
   }
 
-  private logSyncStatus(logPrefix: string): void {
-    this.config.logger.debug(
-      `${logPrefix} sync status linked=${this.status.linked} canonicalHeadReset=${
-        this.status.canonicalHeadReset
+  private logSyncStatus(logPrefix: string, showInfo: boolean = false): void {
+    ;(showInfo ? this.config.logger.info : this.config.logger.debug)(
+      `${logPrefix} sync status linked=${
+        this.status.linked
       } subchains=${this.status.progress.subchains
+        // if info log show only first subchain to be succinct
+        .splice(showInfo ? 1 : this.status.progress.subchains.length)
         .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-        .join(',')}`
+        .join(',')} reset=${this.status.canonicalHeadReset} chain head=${
+        this.chain.blocks.latest?.header.number ?? 'na'
+      } hash=${short(this.chain.blocks.latest?.hash() ?? 'na')}`
     )
   }
 
   /**
    * Writes the {@link SkeletonStatus} to db
    */
-  private async writeSyncStatus(): Promise<boolean> {
-    this.logSyncStatus('Writing')
+  private async writeSyncStatus(showInfo: boolean = false): Promise<boolean> {
+    this.logSyncStatus('Writing', showInfo)
     const encodedStatus = this.statusToRLP()
     await this.put(DBKey.SkeletonStatus, new Uint8Array(0), encodedStatus)
     return true
