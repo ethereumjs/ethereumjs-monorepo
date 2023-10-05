@@ -38,8 +38,8 @@ type ForkchoiceUpdate = {
 
 type PayloadToPayloadStats = {
   blockCount: number
-  minBlockNumber?: BigInt
-  maxBlockNumber?: BigInt
+  minBlockNumber?: bigint
+  maxBlockNumber?: bigint
   txs: { [key: number]: number }
 }
 
@@ -51,10 +51,10 @@ export class CLConnectionManager {
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
   /** Default payload log interval (in ms) */
-  private DEFAULT_PAYLOAD_LOG_INTERVAL = 10000
+  private DEFAULT_PAYLOAD_LOG_INTERVAL = 15000
 
   /** Default forkchoice log interval (in ms) */
-  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 10000
+  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 15000
 
   /** Threshold for a disconnected status decision */
   private DISCONNECTED_THRESHOLD = 30000
@@ -229,6 +229,9 @@ export class CLConnectionManager {
       this._payloadToPayloadStats['maxBlockNumber'] = num
     }
     for (const tx of block.transactions) {
+      if (!(tx.type in this._payloadToPayloadStats['txs'])) {
+        this._payloadToPayloadStats['txs'][tx.type] = 0
+      }
       this._payloadToPayloadStats['txs'][tx.type] += 1
     }
   }
@@ -248,7 +251,7 @@ export class CLConnectionManager {
     if (
       [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
     ) {
-      this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
+      this.config.superMsg('Consensus client connection established', { attentionCL: 'CL' })
     }
     this.connectionStatus = ConnectionStatus.Connected
     this.lastRequestTimestamp = new Date().getTime()
@@ -271,9 +274,16 @@ export class CLConnectionManager {
         this.connectionStatus = ConnectionStatus.Disconnected
         this.config.logger.warn('Consensus client disconnected', { attentionCL: null })
       }
+    } else {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
+        this.config.logger.info('Waiting for consensus client to connect...')
+      }
     }
 
-    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition) {
+    if (
+      this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
+      !this.config.chainCommon.gteHardfork(Hardfork.Paris)
+    ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
         this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
         this.config.logger.warn(
@@ -315,14 +325,14 @@ export class CLConnectionManager {
         const min = this._payloadToPayloadStats['minBlockNumber']
         const max = this._payloadToPayloadStats['maxBlockNumber']
 
-        let txsMsg = ''
+        const txsMsg = []
         for (const [type, count] of Object.entries(this._payloadToPayloadStats['txs'])) {
-          txsMsg += `${count}(${type})`
+          txsMsg.push(`T${type}:${count}`)
         }
 
         this.config.logger.info(
           `Payload stats blocks count=${count} minBlockNum=${min} maxBlockNum=${max} txsPerType=${
-            txsMsg !== '' ? txsMsg : '0'
+            txsMsg.length > 0 ? txsMsg.join('|') : '0'
           }`
         )
         this.clearPayloadStats()

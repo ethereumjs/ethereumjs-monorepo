@@ -653,6 +653,13 @@ export class Config {
     return key
   }
 
+  superMsg(msg: string, meta?: any) {
+    const len = msg.length
+    this.logger.info('-'.repeat(len), meta)
+    this.logger.info(msg, meta)
+    this.logger.info('-'.repeat(len), meta)
+  }
+
   /**
    * Returns specified option or the default setting for whether DNS-based peer discovery
    * is enabled based on chainName. `true` for goerli

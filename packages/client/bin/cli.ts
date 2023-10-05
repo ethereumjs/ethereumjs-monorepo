@@ -881,7 +881,7 @@ async function run() {
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
-      config.logger.info('Client started successfully')
+      config.superMsg('Client started successfully')
       return { client, servers }
     })
     .catch((e) => {
