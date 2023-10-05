@@ -469,6 +469,7 @@ export class Engine {
   private executedBlocks: Map<String, Block>
   private invalidBlocks: Map<String, Error>
   private chainCache: ChainCache
+  private lastAnnouncementTime = Date.now()
 
   /**
    * Create engine_* RPC module
@@ -537,7 +538,7 @@ export class Engine {
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
-    const forkchoiceUpdatedResponseCMHandler = (
+    const forkchoiceUpdatedResponseCMHandler = async (
       [state]: ForkchoiceStateV1[],
       response?: ForkchoiceResponseV1 & { headBlock?: Block },
       error?: string
@@ -547,6 +548,14 @@ export class Engine {
         response,
         headBlock: response?.headBlock,
         error,
+      })
+      void this.skeleton.isLastAnnoucement().then((lastAnnouncement) => {
+        if (lastAnnouncement || Date.now() - this.lastAnnouncementTime > 12_000) {
+          this.lastAnnouncementTime = Date.now()
+          if (lastAnnouncement) {
+            void this.skeleton.logSyncStatus('status', true)
+          }
+        }
       })
       // Remove the headBlock from the response object as headBlock is bundled only for connectionManager
       delete response?.headBlock

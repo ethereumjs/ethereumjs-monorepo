@@ -91,7 +91,7 @@ export class Skeleton extends MetaDBManager {
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
-    this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: true }
+    this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: false }
     this.started = 0
   }
 
@@ -368,7 +368,7 @@ export class Skeleton extends MetaDBManager {
             `Created new subchain head=${s.head} tail=${s.tail} next=${short(s.next)}`
           )
           // Reset the filling of canonical head from tail only on tail reorg and exit any ongoing fill
-          this.status.canonicalHeadReset = true
+          this.status.canonicalHeadReset = s.tail > BIGINT_0
         } else {
           // Only the head differed, tail is preserved
           subchain.head = head.header.number
@@ -388,13 +388,13 @@ export class Skeleton extends MetaDBManager {
       if ((force && reorg) || init) {
         this.status.linked = await this.checkLinked()
       }
-      if (force || init) {
-        const lastAnnoucement = await this.isLastAnnoucement()
-        await this.writeSyncStatus(lastAnnoucement)
-      }
       if (force && this.status.linked && head.header.number > subchain0Head) {
         void this.fillCanonicalChain()
       }
+      if (force || init) {
+        await this.writeSyncStatus()
+      }
+
       // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
       // but it can be handled properly in the calling fn without erroring
       if (reorg && reorgthrow) {
@@ -906,17 +906,56 @@ export class Skeleton extends MetaDBManager {
   }
 
   private logSyncStatus(logPrefix: string, showInfo: boolean = false): void {
-    ;(showInfo ? this.config.logger.info : this.config.logger.debug)(
-      `${logPrefix} sync status linked=${
-        this.status.linked
-      } subchains=${this.status.progress.subchains
-        // if info log show only first subchain to be succinct
-        .slice(0, showInfo ? 1 : this.status.progress.subchains.length)
-        .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-        .join(',')} reset=${this.status.canonicalHeadReset} chain head=${
-        this.chain.blocks.latest?.header.number ?? 'na'
-      } hash=${short(this.chain.blocks.latest?.hash() ?? 'na')}`
-    )
+    const vmHead = this.chain.blocks.vm
+    const subchain0 = this.status.progress.subchains[0]
+    const isValid =
+      vmHead !== undefined &&
+      this.status.linked &&
+      (vmHead?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+    const isSynced =
+      this.status.linked &&
+      (this.chain.blocks.latest?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+    const status = isValid ? 'VALID' : isSynced ? 'SYNCED' : 'SYNCING'
+    const chainHead = `chain head=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
+      this.chain.blocks.latest?.hash() ?? 'na'
+    )}`
+
+    if (showInfo) {
+      let logInfo
+      if (isValid) {
+        logInfo = `vm = cl = ${chainHead}`
+      } else {
+        logInfo = `vm=${vmHead?.header.number} hash=${short(vmHead?.hash() ?? 'na')}`
+
+        // if not synced add subchain info
+        if (!isSynced) {
+          logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
+          const subchainLen = this.status.progress.subchains.length
+          logInfo = `${logInfo} subchains(${subchainLen}) linked=${
+            this.status.linked
+          } ${this.status.progress.subchains
+            // if info log show only first subchain to be succinct
+            .slice(0, showInfo ? 1 : this.status.progress.subchains.length)
+            .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
+            .join(',')}${subchainLen > 0 ? '…' : ''} will reset chain=${
+            this.status.canonicalHeadReset
+          }`
+        } else {
+          logInfo = `${logInfo} cl = ${chainHead}`
+        }
+      }
+      this.config.logger.info(`${logPrefix}: ${status} ${logInfo}`)
+    } else {
+      this.config.logger.debug(
+        `${logPrefix} ${status} linked=${
+          this.status.linked
+        } subchains=${this.status.progress.subchains
+          // if info log show only first subchain to be succinct
+          .slice(0, showInfo ? 1 : this.status.progress.subchains.length)
+          .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
+          .join(',')} reset=${this.status.canonicalHeadReset} ${chainHead}`
+      )
+    }
   }
 
   /**
