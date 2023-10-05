@@ -555,9 +555,14 @@ export class Engine {
       if (forceShowInfo) {
         this.lastAnnouncementTime = Date.now()
       }
+      const fetcher = this.service.beaconSync?.fetcher
+
       this.lastAnnouncementStatus = this.skeleton.logSyncStatus('status', {
         forceShowInfo,
         lastStatus: this.lastAnnouncementStatus,
+        executing: this.execution.started && this.execution.running,
+        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored !== undefined,
+        peers: (this.service.beaconSync as any)?.pool.size,
       })
 
       // void this.skeleton.isLastAnnoucement().then((lastAnnouncement) => {

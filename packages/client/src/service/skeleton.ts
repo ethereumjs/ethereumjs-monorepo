@@ -888,7 +888,19 @@ export class Skeleton extends MetaDBManager {
 
   logSyncStatus(
     logPrefix: string,
-    { forceShowInfo, lastStatus }: { forceShowInfo?: boolean; lastStatus?: string } = {}
+    {
+      forceShowInfo,
+      lastStatus,
+      executing,
+      fetching,
+      peers,
+    }: {
+      forceShowInfo?: boolean
+      lastStatus?: string
+      executing?: boolean
+      fetching?: boolean
+      peers?: number | string
+    } = {}
   ): string {
     const vmHead = this.chain.blocks.vm
     const subchain0 = this.status.progress.subchains[0]
@@ -930,7 +942,9 @@ export class Skeleton extends MetaDBManager {
       if (isValid) {
         logInfo = `vm = cl = ${chainHead}`
       } else {
-        logInfo = `vm=${vmHead?.header.number} hash=${short(vmHead?.hash() ?? 'na')}`
+        logInfo = `vm=${vmHead?.header.number} hash=${short(
+          vmHead?.hash() ?? 'na'
+        )} executing=${executing}`
 
         // if not synced add subchain info
         if (!isSynced) {
@@ -942,7 +956,7 @@ export class Skeleton extends MetaDBManager {
             // if info log show only first subchain to be succinct
             .slice(0, forceShowInfo ? 1 : this.status.progress.subchains.length)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-            .join(',')}${subchainLen > 0 ? '…' : ''} ${
+            .join(',')}${subchainLen > 0 ? '…' : ''} fetching=${fetching} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
           } will reset chain=${
             this.status.canonicalHeadReset &&
@@ -952,7 +966,8 @@ export class Skeleton extends MetaDBManager {
           logInfo = `${logInfo} cl = ${chainHead}`
         }
       }
-      this.config.logger.info(`${logPrefix}: ${status} ${logInfo}`)
+      peers = peers !== undefined ? `${peers}` : 'na'
+      this.config.logger.info(`${logPrefix}: ${status} ${logInfo} peers=${peers}`)
     } else {
       this.config.logger.debug(
         `${logPrefix} ${status} linked=${
