@@ -1,0 +1,160 @@
+[09-20|18:26:31] INFO Reading custom genesis state accounts=1
+[09-20|18:26:31] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:26:31] INFO Full sync mode
+[09-20|18:26:31] INFO Initializing account cache size=400000
+[09-20|18:26:31] INFO Initializing storage cache size=200000
+[09-20|18:26:31] INFO Initializing trie cache size=200000
+[09-20|18:26:31] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:26:31] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:26:31] INFO Latest local block number=0 td=1 hash=0xac3c…aa0a hardfork=london
+[09-20|18:26:31] INFO Initializing VM execution hardfork=london
+[09-20|18:26:31] INFO Setup EVM execution.
+[09-20|18:28:44] INFO Reading custom genesis state accounts=1
+[09-20|18:28:44] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:28:44] INFO Full sync mode
+[09-20|18:28:44] INFO Initializing account cache size=400000
+[09-20|18:28:44] INFO Initializing storage cache size=200000
+[09-20|18:28:44] INFO Initializing trie cache size=200000
+[09-20|18:28:44] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:28:44] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:28:44] INFO Latest local block number=0 td=1 hash=0x9af8…a9f6 hardfork=london
+[09-20|18:28:44] INFO Initializing VM execution hardfork=london
+[09-20|18:28:44] INFO Setup EVM execution.
+[09-20|18:30:29] INFO Reading custom genesis state accounts=1
+[09-20|18:30:29] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:30:29] INFO Full sync mode
+[09-20|18:30:29] INFO Initializing account cache size=400000
+[09-20|18:30:29] INFO Initializing storage cache size=200000
+[09-20|18:30:29] INFO Initializing trie cache size=200000
+[09-20|18:30:29] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:30:29] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:30:29] INFO Latest local block number=0 td=1 hash=0xd99f…8e7e hardfork=london
+[09-20|18:30:29] INFO Initializing VM execution hardfork=london
+[09-20|18:30:29] INFO Setup EVM execution.
+[09-20|18:32:03] INFO Reading custom genesis state accounts=1
+[09-20|18:32:03] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:32:03] INFO Full sync mode
+[09-20|18:32:03] INFO Initializing account cache size=400000
+[09-20|18:32:03] INFO Initializing storage cache size=200000
+[09-20|18:32:03] INFO Initializing trie cache size=200000
+[09-20|18:32:03] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:32:03] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:32:03] INFO Latest local block number=0 td=1 hash=0xb0a6…0e3a hardfork=london
+[09-20|18:32:03] INFO Initializing VM execution hardfork=london
+[09-20|18:32:03] INFO Setup EVM execution.
+[09-20|18:42:47] INFO Reading custom genesis state accounts=1
+[09-20|18:42:47] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:42:47] INFO Full sync mode
+[09-20|18:42:47] INFO Initializing account cache size=400000
+[09-20|18:42:47] INFO Initializing storage cache size=200000
+[09-20|18:42:47] INFO Initializing trie cache size=200000
+[09-20|18:42:47] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:42:47] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:42:47] INFO Latest local block number=0 td=1 hash=0x9e2d…e23e hardfork=london
+[09-20|18:42:47] INFO Initializing VM execution hardfork=london
+[09-20|18:42:47] INFO Setup EVM execution.
+[09-20|18:45:30] INFO Reading custom genesis state accounts=1
+[09-20|18:45:30] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:45:30] INFO Full sync mode
+[09-20|18:45:30] INFO Initializing account cache size=400000
+[09-20|18:45:30] INFO Initializing storage cache size=200000
+[09-20|18:45:30] INFO Initializing trie cache size=200000
+[09-20|18:45:30] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:45:30] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:45:30] INFO Latest local block number=0 td=1 hash=0xe2e8…5449 hardfork=london
+[09-20|18:45:30] INFO Initializing VM execution hardfork=london
+[09-20|18:45:30] INFO Setup EVM execution.
+[09-20|18:47:48] INFO Reading custom genesis state accounts=1
+[09-20|18:47:48] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:47:48] INFO Full sync mode
+[09-20|18:47:48] INFO Initializing account cache size=400000
+[09-20|18:47:48] INFO Initializing storage cache size=200000
+[09-20|18:47:48] INFO Initializing trie cache size=200000
+[09-20|18:47:48] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:47:48] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:47:48] INFO Latest local block number=0 td=1 hash=0x842f…e06e hardfork=london
+[09-20|18:47:48] INFO Initializing VM execution hardfork=london
+[09-20|18:49:55] INFO Reading custom genesis state accounts=1
+[09-20|18:49:55] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:49:55] INFO Full sync mode
+[09-20|18:49:55] INFO Initializing account cache size=400000
+[09-20|18:49:55] INFO Initializing storage cache size=200000
+[09-20|18:49:55] INFO Initializing trie cache size=200000
+[09-20|18:49:55] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:49:55] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:49:55] INFO Latest local block number=0 td=1 hash=0xed52…0e84 hardfork=london
+[09-20|18:49:55] INFO Initializing VM execution hardfork=london
+[09-20|18:49:55] INFO Setup EVM execution.
+[09-20|18:51:31] INFO Reading custom genesis state accounts=1
+[09-20|18:51:31] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:51:31] INFO Full sync mode
+[09-20|18:51:31] INFO Initializing account cache size=400000
+[09-20|18:51:31] INFO Initializing storage cache size=200000
+[09-20|18:51:31] INFO Initializing trie cache size=200000
+[09-20|18:51:31] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:51:31] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:51:31] INFO Latest local block number=0 td=1 hash=0x0448…77ec hardfork=london
+[09-20|18:51:31] INFO Initializing VM execution hardfork=london
+[09-20|18:53:20] INFO Reading custom genesis state accounts=1
+[09-20|18:53:20] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:53:20] INFO Full sync mode
+[09-20|18:53:20] INFO Initializing account cache size=400000
+[09-20|18:53:20] INFO Initializing storage cache size=200000
+[09-20|18:53:20] INFO Initializing trie cache size=200000
+[09-20|18:53:20] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:53:20] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:53:20] INFO Latest local block number=0 td=1 hash=0x96b7…1638 hardfork=london
+[09-20|18:53:20] INFO Initializing VM execution hardfork=london
+[09-20|18:53:20] INFO Setup EVM execution.
+[09-20|18:54:52] INFO Reading custom genesis state accounts=1
+[09-20|18:54:52] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:54:52] INFO Full sync mode
+[09-20|18:54:52] INFO Initializing account cache size=400000
+[09-20|18:54:52] INFO Initializing storage cache size=200000
+[09-20|18:54:52] INFO Initializing trie cache size=200000
+[09-20|18:54:52] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:54:52] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:54:52] INFO Latest local block number=0 td=1 hash=0x4690…8b1b hardfork=london
+[09-20|18:54:52] INFO Initializing VM execution hardfork=london
+[09-20|18:56:39] INFO Reading custom genesis state accounts=1
+[09-20|18:56:39] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:56:39] INFO Full sync mode
+[09-20|18:56:39] INFO Initializing account cache size=400000
+[09-20|18:56:39] INFO Initializing storage cache size=200000
+[09-20|18:56:39] INFO Initializing trie cache size=200000
+[09-20|18:56:39] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:56:39] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:56:39] INFO Latest local block number=0 td=1 hash=0xfc87…2371 hardfork=london
+[09-20|18:56:39] INFO Initializing VM execution hardfork=london
+[09-20|18:56:39] INFO Setup EVM execution.
+[09-20|18:58:13] INFO Reading custom genesis state accounts=1
+[09-20|18:58:13] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|18:58:13] INFO Full sync mode
+[09-20|18:58:13] INFO Initializing account cache size=400000
+[09-20|18:58:13] INFO Initializing storage cache size=200000
+[09-20|18:58:13] INFO Initializing trie cache size=200000
+[09-20|18:58:13] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|18:58:13] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|18:58:13] INFO Latest local block number=0 td=1 hash=0x4439…78cc hardfork=london
+[09-20|18:58:13] INFO Initializing VM execution hardfork=london
+[09-20|18:58:13] INFO Setup EVM execution.
+[09-20|19:02:31] INFO Reading custom genesis state accounts=1
+[09-20|19:02:31] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-20|19:02:31] INFO Full sync mode
+[09-20|19:02:31] INFO Initializing account cache size=400000
+[09-20|19:02:31] INFO Initializing storage cache size=200000
+[09-20|19:02:31] INFO Initializing trie cache size=200000
+[09-20|19:02:31] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-20|19:02:31] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-20|19:02:31] INFO Latest local block number=0 td=1 hash=0xc6f0…1c53 hardfork=london
+[09-20|19:02:31] INFO Initializing VM execution hardfork=london
+[09-23|16:41:32] INFO Reading custom genesis state accounts=1
+[09-23|16:41:32] INFO Data directory: /root/Library/Ethereum/ethereumjs
+[09-23|16:41:32] INFO Full sync mode
+[09-23|16:41:32] INFO Initializing account cache size=400000
+[09-23|16:41:32] INFO Initializing storage cache size=200000
+[09-23|16:41:32] INFO Initializing trie cache size=200000
+[09-23|16:41:32] INFO Initializing Ethereumjs client version=v0.8.1 network=devnet chainId=123456
+[09-23|16:41:32] INFO Preparing for sync using FullEthereumService with FullSynchronizer.
+[09-23|16:41:32] INFO Latest local block number=0 td=1 hash=0x0524…cdf0 hardfork=london
+[09-23|16:41:32] INFO Initializing VM execution hardfork=london
