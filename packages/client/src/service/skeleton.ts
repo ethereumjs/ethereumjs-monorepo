@@ -81,7 +81,6 @@ export class Skeleton extends MetaDBManager {
   private status: SkeletonStatus
 
   private started: number /** Timestamp when the skeleton syncer was created */
-  private logged = 0 /** Timestamp when progress was last logged to user */
   private pulled = BIGINT_0 /** Number of headers downloaded in this run */
   private filling = false /** Whether we are actively filling the canonical chain */
 
@@ -586,24 +585,6 @@ export class Skeleton extends MetaDBManager {
 
       await this.writeSyncStatus()
 
-      // Print a progress report making the UX a bit nicer
-      if (new Date().getTime() - this.logged > this.STATUS_LOG_INTERVAL) {
-        let left = this.bounds().tail - BIGINT_1 - this.chain.blocks.height
-        if (this.status.linked) left = BIGINT_0
-        if (left > BIGINT_0) {
-          this.logged = new Date().getTime()
-          if (this.pulled === BIGINT_0) {
-            this.config.logger.info(`Beacon sync starting left=${left}`)
-          } else {
-            const sinceStarted = (new Date().getTime() - this.started) / 1000
-            const eta = timeDuration((sinceStarted / Number(this.pulled)) * Number(left))
-            this.config.logger.info(
-              `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${eta}`
-            )
-          }
-        }
-      }
-
       if (!this.status.linked) {
         this.status.linked = await this.checkLinked()
       }
@@ -927,6 +908,24 @@ export class Skeleton extends MetaDBManager {
     lastStatus = lastStatus ?? status
 
     if (forceShowInfo || status !== lastStatus) {
+      let beaconSyncETA = 'na'
+      if (!this.status.linked && subchain0 !== undefined) {
+        // Print a progress report making the UX a bit nicer
+        let left = this.bounds().tail - BIGINT_1 - this.chain.blocks.height
+        if (this.status.linked) left = BIGINT_0
+        if (left > BIGINT_0) {
+          if (this.pulled === BIGINT_0) {
+            this.config.logger.info(`Beacon sync starting left=${left}`)
+          } else {
+            const sinceStarted = (new Date().getTime() - this.started) / 1000
+            beaconSyncETA = `${timeDuration((sinceStarted / Number(this.pulled)) * Number(left))}`
+            this.config.logger.debug(
+              `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${beaconSyncETA}`
+            )
+          }
+        }
+      }
+
       let logInfo
       if (isValid) {
         logInfo = `vm = cl = ${chainHead}`
@@ -943,7 +942,9 @@ export class Skeleton extends MetaDBManager {
             // if info log show only first subchain to be succinct
             .slice(0, forceShowInfo ? 1 : this.status.progress.subchains.length)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-            .join(',')}${subchainLen > 0 ? '…' : ''} will reset chain=${
+            .join(',')}${subchainLen > 0 ? '…' : ''} ${
+            beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
+          } will reset chain=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
