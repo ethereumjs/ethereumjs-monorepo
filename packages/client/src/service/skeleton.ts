@@ -393,6 +393,9 @@ export class Skeleton extends MetaDBManager {
       if (force || init) {
         await this.writeSyncStatus()
       }
+      if (init) {
+        this.logSyncStatus('init', { forceShowInfo: true })
+      }
 
       // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
       // but it can be handled properly in the calling fn without erroring
