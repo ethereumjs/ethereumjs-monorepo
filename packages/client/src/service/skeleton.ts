@@ -905,7 +905,10 @@ export class Skeleton extends MetaDBManager {
     }
   }
 
-  logSyncStatus(logPrefix: string, showInfo: boolean = false): void {
+  logSyncStatus(
+    logPrefix: string,
+    { forceShowInfo, lastStatus }: { forceShowInfo?: boolean; lastStatus?: string } = {}
+  ): string {
     const vmHead = this.chain.blocks.vm
     const subchain0 = this.status.progress.subchains[0]
     const isValid =
@@ -920,7 +923,10 @@ export class Skeleton extends MetaDBManager {
       this.chain.blocks.latest?.hash() ?? 'na'
     )}`
 
-    if (showInfo) {
+    forceShowInfo = forceShowInfo ?? false
+    lastStatus = lastStatus ?? status
+
+    if (forceShowInfo || status !== lastStatus) {
       let logInfo
       if (isValid) {
         logInfo = `vm = cl = ${chainHead}`
@@ -935,7 +941,7 @@ export class Skeleton extends MetaDBManager {
             this.status.linked
           } ${this.status.progress.subchains
             // if info log show only first subchain to be succinct
-            .slice(0, showInfo ? 1 : this.status.progress.subchains.length)
+            .slice(0, forceShowInfo ? 1 : this.status.progress.subchains.length)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
             .join(',')}${subchainLen > 0 ? '…' : ''} will reset chain=${
             this.status.canonicalHeadReset
@@ -950,19 +956,18 @@ export class Skeleton extends MetaDBManager {
         `${logPrefix} ${status} linked=${
           this.status.linked
         } subchains=${this.status.progress.subchains
-          // if info log show only first subchain to be succinct
-          .slice(0, showInfo ? 1 : this.status.progress.subchains.length)
           .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
           .join(',')} reset=${this.status.canonicalHeadReset} ${chainHead}`
       )
     }
+    return status
   }
 
   /**
    * Writes the {@link SkeletonStatus} to db
    */
-  private async writeSyncStatus(showInfo: boolean = false): Promise<boolean> {
-    this.logSyncStatus('Writing', showInfo)
+  private async writeSyncStatus(): Promise<boolean> {
+    this.logSyncStatus('Writing')
     const encodedStatus = this.statusToRLP()
     await this.put(DBKey.SkeletonStatus, new Uint8Array(0), encodedStatus)
     return true
