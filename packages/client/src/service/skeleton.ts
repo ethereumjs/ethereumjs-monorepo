@@ -744,7 +744,7 @@ export class Skeleton extends MetaDBManager {
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked
       // it will be fetched from the chain without any issues
       await this.deleteBlock(block)
-      if (this.fillLogIndex >= 100) {
+      if (this.fillLogIndex >= 200) {
         this.config.logger.info(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
