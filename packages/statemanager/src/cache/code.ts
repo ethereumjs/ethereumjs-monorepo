@@ -54,7 +54,7 @@ export class CodeCache extends Cache {
    * @param cacheKeyHex Account key for which code is being modified.
    * @param currentPutCode New value of code that is being saved for the account.
    */
-  _saveCachePreState(cacheKeyHex: string, currentCode?: Uint8Array | undefined) {
+  _saveCachePreState(cacheKeyHex: string) {
     const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
     if (it === undefined) {
       let oldElem: CodeCacheElement | undefined
@@ -63,7 +63,7 @@ export class CodeCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: currentCode })
+      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { code: undefined })
     }
   }
 
@@ -181,7 +181,7 @@ export class CodeCache extends Cache {
     for (const entry of diffMap.entries()) {
       const addressHex = entry[0]
       const elem = entry[1]
-      if (elem === undefined) {
+      if (elem?.code === undefined) {
         if (this._lruCache) {
           this._lruCache.delete(addressHex)
         } else {
