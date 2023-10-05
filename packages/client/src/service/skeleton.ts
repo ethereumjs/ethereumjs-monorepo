@@ -800,7 +800,7 @@ export class Skeleton extends MetaDBManager {
         await this.deleteBlock(block)
       })
       if (this.fillLogIndex >= this.config.numBlocksPerIteration) {
-        this.config.logger.info(
+        this.config.logger.debug(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
         this.fillLogIndex = 0
