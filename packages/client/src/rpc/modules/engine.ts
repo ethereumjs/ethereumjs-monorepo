@@ -561,7 +561,7 @@ export class Engine {
         forceShowInfo,
         lastStatus: this.lastAnnouncementStatus,
         executing: this.execution.started && this.execution.running,
-        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored !== undefined,
+        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
         peers: (this.service.beaconSync as any)?.pool.size,
       })
 
