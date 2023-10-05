@@ -229,6 +229,9 @@ export class CLConnectionManager {
       this._payloadToPayloadStats['maxBlockNumber'] = num
     }
     for (const tx of block.transactions) {
+      if (!(tx.type in this._payloadToPayloadStats['txs'])) {
+        this._payloadToPayloadStats['txs'][tx.type] = 0
+      }
       this._payloadToPayloadStats['txs'][tx.type] += 1
     }
   }
@@ -318,14 +321,14 @@ export class CLConnectionManager {
         const min = this._payloadToPayloadStats['minBlockNumber']
         const max = this._payloadToPayloadStats['maxBlockNumber']
 
-        let txsMsg = ''
+        const txsMsg = []
         for (const [type, count] of Object.entries(this._payloadToPayloadStats['txs'])) {
-          txsMsg += `${count}(${type})`
+          txsMsg.push(`T${type}:${count}`)
         }
 
         this.config.logger.info(
           `Payload stats blocks count=${count} minBlockNum=${min} maxBlockNum=${max} txsPerType=${
-            txsMsg !== '' ? txsMsg : '0'
+            txsMsg.length > 0 ? txsMsg.join('|') : '0'
           }`
         )
         this.clearPayloadStats()
