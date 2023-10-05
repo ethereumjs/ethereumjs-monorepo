@@ -39,7 +39,7 @@ export class VMExecution extends Execution {
   /**
    * Display state cache stats every num blocks
    */
-  private STATS_NUM_BLOCKS = 1000
+  private STATS_NUM_BLOCKS = 1500
   private statsCount = 0
 
   /**
@@ -388,7 +388,7 @@ export class VMExecution extends Execution {
                   })
                   if (hardfork !== this.hardfork) {
                     const hash = short(block.hash())
-                    this.config.logger.info(
+                    this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
