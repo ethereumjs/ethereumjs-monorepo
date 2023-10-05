@@ -274,6 +274,10 @@ export class CLConnectionManager {
         this.connectionStatus = ConnectionStatus.Disconnected
         this.config.logger.warn('Consensus client disconnected', { attentionCL: null })
       }
+    } else {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
+        this.config.logger.info('Waiting for consensus client to connect...')
+      }
     }
 
     if (
