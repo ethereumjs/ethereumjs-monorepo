@@ -1105,6 +1105,7 @@ export class Skeleton extends MetaDBManager {
       peers = peers !== undefined ? `${peers}` : 'na'
 
       // if valid then the status info is short and sweet
+      this.config.logger.info('')
       if (isValid) {
         this.config.logger.info(`${logPrefix}: ${status}${extraStatus} ${logInfo} peers=${peers}`)
       } else {
@@ -1115,7 +1116,7 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(`${logPrefix}: ${subchainLog}`)
         }
       }
-      this.config.logger.info('---------------------------------------')
+      this.config.logger.info('')
     } else {
       this.config.logger.debug(
         `${logPrefix} ${status} linked=${
