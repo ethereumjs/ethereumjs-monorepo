@@ -81,10 +81,22 @@ export class Skeleton extends MetaDBManager {
   private status: SkeletonStatus
 
   private started: number /** Timestamp when the skeleton syncer was created */
-  private lastFcuTime: number = 0
-  private syncstarted: number = 0
+
+  private syncedchain = 0
   private pulled = BIGINT_0 /** Number of headers downloaded in this run */
+
   private filling = false /** Whether we are actively filling the canonical chain */
+  private fillingstarted = 0
+  private lastfilled = BIGINT_0
+
+  private executionstarted = 0
+  private lastexecuted = BIGINT_0
+
+  private fetchingstarted = 0
+  private lastfetched = BIGINT_0
+
+  private lastFcuTime = 0
+  private syncstarted = 0
 
   private fillLogIndex = 0
 
@@ -959,34 +971,75 @@ export class Skeleton extends MetaDBManager {
       }
     }
 
+    if (status !== 'EXECUTING') {
+      this.executionstarted = 0
+    } else {
+      if (this.executionstarted === 0 || this.lastexecuted !== vmHead?.header.number) {
+        this.executionstarted = Date.now()
+      }
+      this.lastexecuted = vmHead?.header.number ?? BIGINT_0
+    }
+
+    if (status !== 'SYNCED') {
+      this.syncedchain = 0
+    } else {
+      if (this.syncedchain === 0) {
+        this.syncedchain = Date.now()
+      }
+    }
+
+    if (fetching === false) {
+      this.fetchingstarted === 0
+    } else if (fetching === true) {
+      if (this.fetchingstarted === 0 || subchain0.tail !== this.lastfetched) {
+        this.fetchingstarted = Date.now()
+      }
+      this.lastfetched = subchain0.tail
+    }
+
+    if (!this.filling) {
+      this.fillingstarted = 0
+    } else {
+      if (this.fillingstarted === 0 || this.lastfilled !== this.chain.blocks.height) {
+        this.fillingstarted = Date.now()
+      }
+      this.lastfilled = this.chain.blocks.height
+    }
+
     let extraStatus
+    let scenario = ''
     switch (status) {
       case 'EXECUTING':
-        extraStatus = ` (vm=${vmHead?.header.number})`
+        scenario = Date.now() - this.executionstarted > 10 * 60_000 ? 'execution stalled?' : ''
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height})`
         break
       case 'SYNCED':
-        extraStatus = ` (head=${this.chain.blocks.height} vm=${vmHead?.header.number})`
+        scenario =
+          Date.now() - this.syncedchain > 10 * 60_000 ? 'execution stalled?' : 'awaiting execution'
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height} )`
         break
       case 'SYNCING':
         if (this.filling) {
-          extraStatus = ` (filling head=${this.chain.blocks.height} cl=${subchain0?.head})`
+          scenario = Date.now() - this.fillingstarted > 10 * 60_000 ? 'filling stalled?' : 'filling'
+          extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
         } else {
           if (fetching === true) {
-            extraStatus = ` (backfilling tail=${subchain0.tail} cl=${subchain0?.head})`
+            scenario =
+              Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
+            extraStatus = ` (${scenario} tail=${subchain0.tail} cl=${subchain0?.head})`
           } else {
-            let peerStatus
             if (peers === undefined || peers === 0) {
-              peerStatus = 'nopeers'
+              scenario = 'nopeers'
             } else {
               if (Date.now() - this.lastFcuTime > 10 * 60_000) {
-                peerStatus = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
+                scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
               } else {
-                peerStatus =
+                scenario =
                   Date.now() - this.syncstarted > 10 * 60_000 ? `sync stalled?` : `awaiting sync`
               }
-              peerStatus = `${peerStatus} peers=${peers}`
+              scenario = `${scenario} peers=${peers}`
             }
-            extraStatus = ` (${peerStatus} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+            extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
           }
         }
         break
@@ -1020,6 +1073,7 @@ export class Skeleton extends MetaDBManager {
       }
 
       let logInfo
+      let subchainLog = ''
       if (isValid) {
         logInfo = `vm = cl = ${chainHead}`
       } else {
@@ -1032,7 +1086,7 @@ export class Skeleton extends MetaDBManager {
         if (!isSynced) {
           logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
           const subchainLen = this.status.progress.subchains.length
-          logInfo = `${logInfo} subchains(${subchainLen}) linked=${
+          subchainLog = `subchains(${subchainLen}) linked=${
             this.status.linked
           } ${this.status.progress.subchains
             // if info log show only first subchain to be succinct
@@ -1040,7 +1094,7 @@ export class Skeleton extends MetaDBManager {
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
             .join(',')}${subchainLen > 1 ? '…' : ''} beaconsync=${beaconsync} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
-          } reorg chain=${
+          } reorgs-head=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
@@ -1049,7 +1103,18 @@ export class Skeleton extends MetaDBManager {
         }
       }
       peers = peers !== undefined ? `${peers}` : 'na'
-      this.config.logger.info(`${logPrefix}: ${status}${extraStatus} ${logInfo} peers=${peers}`)
+
+      // if valid then the status info is short and sweet
+      if (isValid) {
+        this.config.logger.info(`${logPrefix}: ${status}${extraStatus} ${logInfo} peers=${peers}`)
+      } else {
+        // else break into two
+        this.config.logger.info(`${logPrefix}: ${status}${extraStatus} peers=${peers}`)
+        this.config.logger.info(`${logPrefix}: ${logInfo}`)
+        if (!isSynced) {
+          this.config.logger.info(`${logPrefix}: ${subchainLog}`)
+        }
+      }
       this.config.logger.info('---------------------------------------')
     } else {
       this.config.logger.debug(
