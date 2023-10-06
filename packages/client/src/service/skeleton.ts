@@ -1041,7 +1041,7 @@ export class Skeleton extends MetaDBManager {
             extraStatus = ` (${scenario} tail=${subchain0.tail} cl=${subchain0?.head})`
           } else {
             if (peers === undefined || peers === 0) {
-              scenario = 'nopeers'
+              scenario = 'awaiting peers'
             } else {
               if (Date.now() - this.lastFcuTime > 10 * 60_000) {
                 scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
