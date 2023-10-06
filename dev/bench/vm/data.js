@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696532937161,
+  "lastUpdate": 1696554505213,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9d62bb47102e06e02034a88c07b2f8eeadd4b1ea",
-          "message": "client/vm: fix block builder london transition (#3039)\n\n* client/vm: fix block builder london transition\r\n\r\n* handle london gas limit if undefined in buildblock\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-09-21T12:17:46+05:30",
-          "tree_id": "2e16bbf0424bb3d0fa32c8a9b3b7ef91e68ec6f2",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9d62bb47102e06e02034a88c07b2f8eeadd4b1ea"
-        },
-        "date": 1695279078870,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30698,
-            "range": "±5.54%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30154,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29901,
-            "range": "±3.22%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25492,
-            "range": "±10.33%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 29114,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±9.79%",
             "unit": "ops/sec",
             "extra": "73 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "de97e98659828907324d018ff6722d859541e5ba",
+          "message": "client: skeleton reorg head fixes and log improvements (#3085)\n\n* client: skeleton reorg head fixes\r\n\r\n* improve logging\r\n\r\n* logging fix\r\n\r\n* improve log\r\n\r\n* revert\r\n\r\n* revert small change not required\r\n\r\n* fix build\r\n\r\n* improve logging\r\n\r\n* log after 6 secs\r\n\r\n* fix reset chain\r\n\r\n* remove\r\n\r\n* shift fill logs to debug\r\n\r\n* fix condition\r\n\r\n* relocate eta\r\n\r\n* enrich the logs\r\n\r\n* enrich the logs\r\n\r\n* fix\r\n\r\n* log improv\r\n\r\n* init log\r\n\r\n* log fix\r\n\r\n* nits\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-10-05T21:01:54-04:00",
+          "tree_id": "5055807da1be5c66b07e51235949ec7473b97c3a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/de97e98659828907324d018ff6722d859541e5ba"
+        },
+        "date": 1696554503711,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 29939,
+            "range": "±4.92%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 29033,
+            "range": "±2.73%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29299,
+            "range": "±2.71%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28847,
+            "range": "±2.67%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24469,
+            "range": "±9.51%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
           }
         ]
       }
