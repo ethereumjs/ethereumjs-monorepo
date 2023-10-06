@@ -1107,13 +1107,13 @@ export class Skeleton extends MetaDBManager {
       // if valid then the status info is short and sweet
       this.config.logger.info('')
       if (isValid) {
-        this.config.logger.info(`${logPrefix}: ${status}${extraStatus} ${logInfo} peers=${peers}`)
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${logInfo} peers=${peers}`)
       } else {
         // else break into two
-        this.config.logger.info(`${logPrefix}: ${status}${extraStatus} peers=${peers}`)
-        this.config.logger.info(`${logPrefix}: ${logInfo}`)
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} peers=${peers}`)
+        this.config.logger.info(`${logPrefix} ${logInfo}`)
         if (!isSynced) {
-          this.config.logger.info(`${logPrefix}: ${subchainLog}`)
+          this.config.logger.info(`${logPrefix} ${subchainLog}`)
         }
       }
       this.config.logger.info('')

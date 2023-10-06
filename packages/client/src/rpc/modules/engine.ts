@@ -557,7 +557,7 @@ export class Engine {
       }
       const fetcher = this.service.beaconSync?.fetcher
 
-      this.lastAnnouncementStatus = this.skeleton.logSyncStatus('status', {
+      this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
         forceShowInfo,
         lastStatus: this.lastAnnouncementStatus,
         executing: this.execution.started && this.execution.running,
