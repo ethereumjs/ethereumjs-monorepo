@@ -696,7 +696,7 @@ export class Skeleton extends MetaDBManager {
           )
           await this.runWithLock<void>(async () => {
             // backstep the subchain from the block that was not found only if the canonicalHeadReset
-            // has not been flagged on, else the chain tail has already been reset by sethead
+            // has not been flagged or else the chain tail has already been reset by sethead
             await this.backStep(number)
           })
         } else {
@@ -779,7 +779,7 @@ export class Skeleton extends MetaDBManager {
       // it will be fetched from the chain without any issues
       //
       // however delete it in a lock as the parent lookup of a reorged block in skeleton is used
-      // to determine if the tail is to be reset or now
+      // to determine if the tail is to be reset or not
       await this.runWithLock<void>(async () => {
         await this.deleteBlock(block)
       })
