@@ -167,7 +167,30 @@ export class VerkleTrie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
-    throw new Error('Not implemented')
+    // Create the leaf node
+    // const leafNode = new LeafNode({value:} new Map([[key, value]]))
+    await this._db.put(key, value)
+    // const leafKey = getLeafKey(key)
+    // await this.putNode(leafKey, leafNode)
+
+    // Walk up the trie and update internal nodes
+    let currentNode = leafNode
+    let currentKey = leafKey
+    let currentDepth = this.maxKeyLength
+
+    while (currentDepth > 0) {
+      const parentKey = currentKey.slice(0, -1)
+      const parentIndex = currentKey[currentKey.length - 1]
+      const parentNode: VerkleNode[] | null = InternalNode.create()
+      parentNode.children[parentIndex] = currentNode
+      await this.putNode(parentKey, parentNode)
+
+      currentNode = parentNode
+      currentKey = parentKey
+      currentDepth--
+    }
+
+    this.root = currentNode
   }
 
   /**
