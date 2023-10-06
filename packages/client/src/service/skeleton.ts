@@ -143,6 +143,16 @@ export class Skeleton extends MetaDBManager {
     })
   }
 
+  async reset() {
+    if (this.started === 0) {
+      throw Error(`skeleton setHead called before being opened`)
+    }
+    await this.runWithLock<void>(async () => {
+      this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: false }
+      await this.writeSyncStatus()
+    })
+  }
+
   /**
    * Returns true if the skeleton chain is linked to canonical
    */
