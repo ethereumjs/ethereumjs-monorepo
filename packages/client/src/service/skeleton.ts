@@ -81,8 +81,22 @@ export class Skeleton extends MetaDBManager {
   private status: SkeletonStatus
 
   private started: number /** Timestamp when the skeleton syncer was created */
+
+  private syncedchain = 0
   private pulled = BIGINT_0 /** Number of headers downloaded in this run */
+
   private filling = false /** Whether we are actively filling the canonical chain */
+  private fillingstarted = 0
+  private lastfilled = BIGINT_0
+
+  private executionstarted = 0
+  private lastexecuted = BIGINT_0
+
+  private fetchingstarted = 0
+  private lastfetched = BIGINT_0
+
+  private lastFcuTime = 0
+  private syncstarted = 0
 
   private fillLogIndex = 0
 
@@ -333,6 +347,9 @@ export class Skeleton extends MetaDBManager {
       if (this.started === 0) {
         throw Error(`skeleton setHead called before being opened`)
       }
+      if (!init) {
+        this.lastFcuTime = Date.now()
+      }
 
       this.config.logger.debug(
         `New skeleton head announced number=${head.header.number} hash=${short(
@@ -387,7 +404,8 @@ export class Skeleton extends MetaDBManager {
       if ((force && reorg) || init) {
         this.status.linked = await this.checkLinked()
       }
-      if (force && this.status.linked && head.header.number > subchain0Head) {
+      // fill by the fcU will be triggered on its own
+      if (init && this.status.linked && head.header.number > subchain0Head) {
         void this.fillCanonicalChain()
       }
       if (force || init) {
@@ -641,6 +659,24 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
+   * fill the canonical chain from skeleton if there is only a small segment to fill
+   */
+  async blockingFillWithCutoff(cutoffLen: number): Promise<void> {
+    const subchain0 = this.status.progress.subchains[0]
+    if (this.status.linked && subchain0 !== undefined) {
+      const fillPromise = this.fillCanonicalChain().catch((_e) => {})
+      // if subchain0Head is not too ahead, then fill blocking as it gives better sync
+      // log experience else just trigger
+      if (
+        !this.status.canonicalHeadReset &&
+        subchain0.head - BigInt(cutoffLen) < this.chain.blocks.height
+      ) {
+        await fillPromise
+      }
+    }
+  }
+
+  /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
   async fillCanonicalChain() {
@@ -661,12 +697,14 @@ export class Skeleton extends MetaDBManager {
       if (newHead < BIGINT_0) {
         newHead = BIGINT_0
       }
-      this.config.logger.debug(
-        `Resetting canonicalHead for fillCanonicalChain from=${canonicalHead} to=${newHead}`
-      )
-      canonicalHead = newHead
-      await this.chain.resetCanonicalHead(canonicalHead)
 
+      if (canonicalHead > BIGINT_0) {
+        this.config.logger.debug(
+          `Resetting canonicalHead for fillCanonicalChain from=${canonicalHead} to=${newHead}`
+        )
+        canonicalHead = newHead
+        await this.chain.resetCanonicalHead(canonicalHead)
+      }
       // update in lock so as to not conflict/overwrite sethead/putblock updates
       await this.runWithLock<void>(async () => {
         this.status.canonicalHeadReset = false
@@ -914,7 +952,104 @@ export class Skeleton extends MetaDBManager {
     const isSynced =
       this.status.linked &&
       (this.chain.blocks.latest?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
-    const status = isValid ? 'VALID' : isSynced ? 'SYNCED' : 'SYNCING'
+
+    const status = isValid
+      ? 'VALID'
+      : isSynced
+      ? executing === true
+        ? `EXECUTING`
+        : `SYNCED`
+      : `SYNCING`
+
+    if (peers === undefined || peers === 0) {
+      this.syncstarted = 0
+    } else {
+      if (
+        status === 'SYNCING' &&
+        lastStatus !== undefined &&
+        (lastStatus !== status || this.syncstarted === 0)
+      ) {
+        this.syncstarted = Date.now()
+      }
+    }
+
+    if (status !== 'EXECUTING') {
+      this.executionstarted = 0
+    } else {
+      if (this.executionstarted === 0 || this.lastexecuted !== vmHead?.header.number) {
+        this.executionstarted = Date.now()
+      }
+      this.lastexecuted = vmHead?.header.number ?? BIGINT_0
+    }
+
+    if (status !== 'SYNCED') {
+      this.syncedchain = 0
+    } else {
+      if (this.syncedchain === 0) {
+        this.syncedchain = Date.now()
+      }
+    }
+
+    if (fetching === false) {
+      this.fetchingstarted === 0
+    } else if (fetching === true) {
+      if (this.fetchingstarted === 0 || subchain0.tail !== this.lastfetched) {
+        this.fetchingstarted = Date.now()
+      }
+      this.lastfetched = subchain0.tail
+    }
+
+    if (!this.filling) {
+      this.fillingstarted = 0
+    } else {
+      if (this.fillingstarted === 0 || this.lastfilled !== this.chain.blocks.height) {
+        this.fillingstarted = Date.now()
+      }
+      this.lastfilled = this.chain.blocks.height
+    }
+
+    let extraStatus
+    let scenario = ''
+    switch (status) {
+      case 'EXECUTING':
+        scenario = Date.now() - this.executionstarted > 10 * 60_000 ? 'execution stalled?' : ''
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height})`
+        break
+      case 'SYNCED':
+        scenario =
+          Date.now() - this.syncedchain > 10 * 60_000 ? 'execution stalled?' : 'awaiting execution'
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height} )`
+        break
+      case 'SYNCING':
+        if (this.filling) {
+          scenario = Date.now() - this.fillingstarted > 10 * 60_000 ? 'filling stalled?' : 'filling'
+          extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+        } else {
+          if (fetching === true) {
+            scenario =
+              Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
+            extraStatus = ` (${scenario} tail=${subchain0.tail} cl=${subchain0?.head})`
+          } else {
+            if (peers === undefined || peers === 0) {
+              scenario = 'nopeers'
+            } else {
+              if (Date.now() - this.lastFcuTime > 10 * 60_000) {
+                scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
+              } else {
+                scenario =
+                  Date.now() - this.syncstarted > 10 * 60_000 ? `sync stalled?` : `awaiting sync`
+              }
+              scenario = `${scenario} peers=${peers}`
+            }
+            extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+          }
+        }
+        break
+
+      // no additional status is needed on valid
+      default:
+        extraStatus = ''
+    }
     const chainHead = `chain head=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
       this.chain.blocks.latest?.hash() ?? 'na'
     )}`
@@ -929,9 +1064,7 @@ export class Skeleton extends MetaDBManager {
         let left = this.bounds().tail - BIGINT_1 - this.chain.blocks.height
         if (this.status.linked) left = BIGINT_0
         if (left > BIGINT_0) {
-          if (this.pulled === BIGINT_0) {
-            this.config.logger.info(`Beacon sync starting left=${left}`)
-          } else {
+          if (this.pulled !== BIGINT_0 && fetching === true) {
             const sinceStarted = (new Date().getTime() - this.started) / 1000
             beaconSyncETA = `${timeDuration((sinceStarted / Number(this.pulled)) * Number(left))}`
             this.config.logger.debug(
@@ -942,6 +1075,7 @@ export class Skeleton extends MetaDBManager {
       }
 
       let logInfo
+      let subchainLog = ''
       if (isValid) {
         logInfo = `vm = cl = ${chainHead}`
       } else {
@@ -954,15 +1088,15 @@ export class Skeleton extends MetaDBManager {
         if (!isSynced) {
           logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
           const subchainLen = this.status.progress.subchains.length
-          logInfo = `${logInfo} subchains(${subchainLen}) linked=${
+          subchainLog = `subchains(${subchainLen}) linked=${
             this.status.linked
           } ${this.status.progress.subchains
             // if info log show only first subchain to be succinct
-            .slice(0, forceShowInfo ? 1 : this.status.progress.subchains.length)
+            .slice(0, 1)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
             .join(',')}${subchainLen > 1 ? '…' : ''} beaconsync=${beaconsync} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
-          } reorg chain=${
+          } reorgs-head=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
@@ -971,8 +1105,20 @@ export class Skeleton extends MetaDBManager {
         }
       }
       peers = peers !== undefined ? `${peers}` : 'na'
-      this.config.logger.info(`${logPrefix}: ${status} ${logInfo} peers=${peers}`)
-      this.config.logger.info('---------------------------------------')
+
+      // if valid then the status info is short and sweet
+      this.config.logger.info('')
+      if (isValid) {
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${logInfo} peers=${peers}`)
+      } else {
+        // else break into two
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} peers=${peers}`)
+        this.config.logger.info(`${logPrefix} ${logInfo}`)
+        if (!isSynced) {
+          this.config.logger.info(`${logPrefix} ${subchainLog}`)
+        }
+      }
+      this.config.logger.info('')
     } else {
       this.config.logger.debug(
         `${logPrefix} ${status} linked=${
