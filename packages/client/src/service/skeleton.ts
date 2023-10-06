@@ -1009,9 +1009,7 @@ export class Skeleton extends MetaDBManager {
         let left = this.bounds().tail - BIGINT_1 - this.chain.blocks.height
         if (this.status.linked) left = BIGINT_0
         if (left > BIGINT_0) {
-          if (this.pulled === BIGINT_0) {
-            this.config.logger.info(`Beacon sync starting left=${left}`)
-          } else {
+          if (this.pulled !== BIGINT_0 && fetching === true) {
             const sinceStarted = (new Date().getTime() - this.started) / 1000
             beaconSyncETA = `${timeDuration((sinceStarted / Number(this.pulled)) * Number(left))}`
             this.config.logger.debug(
