@@ -288,7 +288,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
-    this.config.logger.info(
+    this.config.logger.debug(
       `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
     )
   }
