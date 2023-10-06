@@ -1111,6 +1111,7 @@ export class Engine {
     // call skeleton sethead with force head change and reset beacon sync if reorg
     const reorged = await this.skeleton.setHead(headBlock, true)
     if (reorged) await this.service.beaconSync?.reorged(headBlock)
+    await this.skeleton.blockingFillWithCutoff(this.chain.config.engineNewpayloadMaxExecute)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
