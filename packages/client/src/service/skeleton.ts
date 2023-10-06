@@ -143,6 +143,16 @@ export class Skeleton extends MetaDBManager {
     })
   }
 
+  async reset() {
+    if (this.started === 0) {
+      throw Error(`skeleton reset called before being opened`)
+    }
+    await this.runWithLock<void>(async () => {
+      this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: false }
+      await this.writeSyncStatus()
+    })
+  }
+
   /**
    * Returns true if the skeleton chain is linked to canonical
    */
@@ -1013,12 +1023,12 @@ export class Skeleton extends MetaDBManager {
     switch (status) {
       case 'EXECUTING':
         scenario = Date.now() - this.executionstarted > 10 * 60_000 ? 'execution stalled?' : ''
-        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height})`
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=head=${this.chain.blocks.height})`
         break
       case 'SYNCED':
         scenario =
           Date.now() - this.syncedchain > 10 * 60_000 ? 'execution stalled?' : 'awaiting execution'
-        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height} )`
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=head=${this.chain.blocks.height} )`
         break
       case 'SYNCING':
         if (this.filling) {
@@ -1028,10 +1038,12 @@ export class Skeleton extends MetaDBManager {
           if (fetching === true) {
             scenario =
               Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
-            extraStatus = ` (${scenario} tail=${subchain0.tail} cl=${subchain0?.head})`
+            extraStatus = ` (${scenario} tail=${subchain0.tail} head=${this.chain.blocks.height} cl=${subchain0?.head})`
           } else {
-            if (peers === undefined || peers === 0) {
-              scenario = 'nopeers'
+            if (subchain0 === undefined) {
+              scenario = 'awaiting fcu'
+            } else if (peers === undefined || peers === 0) {
+              scenario = 'awaiting peers'
             } else {
               if (Date.now() - this.lastFcuTime > 10 * 60_000) {
                 scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
@@ -1050,7 +1062,7 @@ export class Skeleton extends MetaDBManager {
       default:
         extraStatus = ''
     }
-    const chainHead = `chain head=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
+    const chainHead = `head=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
       this.chain.blocks.latest?.hash() ?? 'na'
     )}`
 
@@ -1077,13 +1089,12 @@ export class Skeleton extends MetaDBManager {
       let logInfo
       let subchainLog = ''
       if (isValid) {
-        logInfo = `vm = cl = ${chainHead}`
+        logInfo = `vm=cl=${chainHead}`
       } else {
         logInfo = `vm=${vmHead?.header.number} hash=${short(
           vmHead?.hash() ?? 'na'
         )} executing=${executing}`
 
-        const beaconsync = this.filling ? 'filling' : fetching === true ? 'fetching' : 'na'
         // if not synced add subchain info
         if (!isSynced) {
           logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
@@ -1094,14 +1105,14 @@ export class Skeleton extends MetaDBManager {
             // if info log show only first subchain to be succinct
             .slice(0, 1)
             .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-            .join(',')}${subchainLen > 1 ? '…' : ''} beaconsync=${beaconsync} ${
+            .join(',')}${subchainLen > 1 ? '…' : ''} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
           } reorgs-head=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
         } else {
-          logInfo = `${logInfo} cl = ${chainHead}`
+          logInfo = `${logInfo} cl=${chainHead}`
         }
       }
       peers = peers !== undefined ? `${peers}` : 'na'
