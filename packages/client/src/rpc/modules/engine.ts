@@ -470,6 +470,9 @@ export class Engine {
   private invalidBlocks: Map<String, Error>
   private chainCache: ChainCache
 
+  private lastAnnouncementTime = Date.now()
+  private lastAnnouncementStatus = ''
+
   /**
    * Create engine_* RPC module
    * @param client Client to which the module binds
@@ -548,6 +551,27 @@ export class Engine {
         headBlock: response?.headBlock,
         error,
       })
+      const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
+      if (forceShowInfo) {
+        this.lastAnnouncementTime = Date.now()
+      }
+      const fetcher = this.service.beaconSync?.fetcher
+
+      this.lastAnnouncementStatus = this.skeleton.logSyncStatus('status', {
+        forceShowInfo,
+        lastStatus: this.lastAnnouncementStatus,
+        executing: this.execution.started && this.execution.running,
+        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
+        peers: (this.service.beaconSync as any)?.pool.size,
+      })
+
+      // void this.skeleton.isLastAnnoucement().then((lastAnnouncement) => {
+      //   if (lastAnnouncement || ) {
+      //     if (lastAnnouncement) {
+      //       void this.skeleton.logSyncStatus('status', true)
+      //     }
+      //   }
+      // })
       // Remove the headBlock from the response object as headBlock is bundled only for connectionManager
       delete response?.headBlock
     }
