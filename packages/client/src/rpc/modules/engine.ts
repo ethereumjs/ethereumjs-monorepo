@@ -904,7 +904,14 @@ export class Engine {
         }
       }
     } catch (error) {
-      const validationError = `Error verifying block while running: ${error}`
+      const errorMsg = `${error}`.toLowerCase()
+      if (errorMsg.includes('block') && errorMsg.includes('not found')) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: errorMsg,
+        }
+      }
+      const validationError = `Error verifying block while running: ${errorMsg}`
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(
         headBlock.header.parentHash,
