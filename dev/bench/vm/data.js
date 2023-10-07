@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696616865789,
+  "lastUpdate": 1696715824712,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d6d4b80bff7b1ab3296764688616ff1d5707b6e5",
-          "message": "Bigint constants (#3050)\n\n* monorepo: use cached bigints\r\n\r\n* evm: cache all bigint constants\r\n\r\n* util: fix tests\r\n\r\n* Add remaining instances of bigint constants\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-09-21T17:49:40+02:00",
-          "tree_id": "2d89858cf98087496bc61a6c94b487b21185e462",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d6d4b80bff7b1ab3296764688616ff1d5707b6e5"
-        },
-        "date": 1695311621150,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 24266,
-            "range": "±5.05%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 23354,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 23743,
-            "range": "±3.16%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 23741,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24020,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.48%",
             "unit": "ops/sec",
             "extra": "72 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9a8c597a78d9584f0eede4cf41a2ca26893433af",
+          "message": "monorepo: fix postcss vulnerability (#3095)",
+          "timestamp": "2023-10-07T17:50:37-04:00",
+          "tree_id": "f1a0f5272441cc90b8167b5d7b87d4c56b382e9f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9a8c597a78d9584f0eede4cf41a2ca26893433af"
+        },
+        "date": 1696715823866,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28478,
+            "range": "±6.13%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28853,
+            "range": "±3.02%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28228,
+            "range": "±3.18%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28079,
+            "range": "±3.43%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23120,
+            "range": "±9.96%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
