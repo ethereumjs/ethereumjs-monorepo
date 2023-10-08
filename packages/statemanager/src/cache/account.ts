@@ -49,7 +49,9 @@ export class AccountCache extends Cache {
   }
 
   _saveCachePreState(cacheKeyHex: string) {
-    const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
+    const diffMap = this._diffCache[this._checkpoints]
+    if (diffMap.has(cacheKeyHex)) return // fist check if key exists so that undefined isn't interpreted as the element not existing in the cache
+    const it = diffMap.get(cacheKeyHex)
     if (it === undefined) {
       let oldElem: AccountCacheElement | undefined
       if (this._lruCache) {
@@ -57,7 +59,7 @@ export class AccountCache extends Cache {
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem ?? { accountRLP: undefined })
+      diffMap.set(cacheKeyHex, oldElem)
     }
   }
 
@@ -172,7 +174,7 @@ export class AccountCache extends Cache {
     for (const entry of diffMap.entries()) {
       const addressHex = entry[0]
       const elem = entry[1]
-      if (elem?.accountRLP === undefined) {
+      if (elem === undefined) {
         if (this._lruCache) {
           this._lruCache!.delete(addressHex)
         } else {
