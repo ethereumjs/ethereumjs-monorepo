@@ -551,13 +551,14 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead is set with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
     await wait(200)
+
     assert.equal(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead is set with force=true'
     )
-
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -624,6 +625,8 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
+
     await wait(200)
     assert.equal(
       chain.blocks.height,

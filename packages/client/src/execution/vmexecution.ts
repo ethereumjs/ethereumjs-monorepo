@@ -524,11 +524,14 @@ export class VMExecution extends Execution {
                 this.config.execCommon.gteHardfork(Hardfork.London) === true
                   ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
                   : ''
+
               const tdAdd =
                 this.config.execCommon.gteHardfork(Hardfork.Paris) === true
                   ? ''
                   : `td=${this.chain.blocks.td} `
-              this.config.logger.verbose(
+              ;(this.config.execCommon.gteHardfork(Hardfork.Paris) === true
+                ? this.config.logger.debug
+                : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
               )
             } else {
