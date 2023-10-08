@@ -50,7 +50,7 @@ export class AccountCache extends Cache {
 
   _saveCachePreState(cacheKeyHex: string) {
     const diffMap = this._diffCache[this._checkpoints]
-    if (diffMap.has(cacheKeyHex)) return // fist check if key exists so that undefined isn't interpreted as the element not existing in the cache
+    if (diffMap.has(cacheKeyHex)) return // Check if key exists in map before checking the element to not overwrite undefined values
     const it = diffMap.get(cacheKeyHex)
     if (it === undefined) {
       let oldElem: AccountCacheElement | undefined
