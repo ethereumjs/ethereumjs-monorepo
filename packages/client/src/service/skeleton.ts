@@ -1013,6 +1013,7 @@ export class Skeleton extends MetaDBManager {
       this.fillingstarted = 0
     } else {
       if (this.fillingstarted === 0 || this.lastfilled !== this.chain.blocks.height) {
+        this.config.superMsg('Backfilling subchain completed. Start filling canonical chain.')
         this.fillingstarted = Date.now()
       }
       this.lastfilled = this.chain.blocks.height
