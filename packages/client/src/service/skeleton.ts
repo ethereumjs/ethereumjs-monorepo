@@ -1105,7 +1105,7 @@ export class Skeleton extends MetaDBManager {
             .map((s) => `[tail=${s.tail} head=${s.head} next=${short(s.next)}]`)
             .join(',')}${subchainLen > 1 ? '…' : ''} ${
             beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
-          } reorgs-head=${
+          } reorgsHead=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           }`
