@@ -1033,7 +1033,7 @@ export class Skeleton extends MetaDBManager {
       case 'SYNCING':
         if (this.filling) {
           scenario = Date.now() - this.fillingstarted > 10 * 60_000 ? 'filling stalled?' : 'filling'
-          extraStatus = ` (${scenario} el=${this.chain.blocks.height} cl=${subchain0?.head})`
+          extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`
         } else {
           if (fetching === true) {
             scenario =
@@ -1051,9 +1051,8 @@ export class Skeleton extends MetaDBManager {
                 scenario =
                   Date.now() - this.syncstarted > 10 * 60_000 ? `sync stalled?` : `awaiting sync`
               }
-              scenario = `${scenario} peers=${peers}`
             }
-            extraStatus = ` (${scenario} el=${this.chain.blocks.height} cl=${subchain0?.head})`
+            extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`
           }
         }
         break
