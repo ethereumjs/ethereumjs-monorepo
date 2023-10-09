@@ -493,7 +493,7 @@ export class VMExecution extends Execution {
                 // current block which is trying to be executed and should equal current vmHead
                 if (
                   `${error.toLowerCase()}`.includes('does not contain state root') &&
-                  number > BIGINT_0
+                  number > BIGINT_1
                 ) {
                   // this is a weird case which has been observed, could be because of a forking scenario
                   // or some race condition, but if this happens for now we can try to handle it by
