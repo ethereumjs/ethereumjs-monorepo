@@ -6,30 +6,12 @@ import { assert, describe, it, vi } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, batchBlocks, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import type { HttpServer } from 'jayson'
 
 const method = 'engine_newPayloadV1'
 
 const [blockData] = blocks
-
-/**
- *
- * @param t Test suite
- * @param server HttpServer
- * @param inputBlocks Array of valid ExecutionPayloadV1 data
- */
-export const batchBlocks = async (server: HttpServer, inputBlocks: any[] = blocks) => {
-  for (let i = 0; i < inputBlocks.length; i++) {
-    const req = params('engine_newPayloadV1', [inputBlocks[i]])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
-  }
-}
 
 describe(method, () => {
   it('call with invalid block hash without 0x', async () => {
@@ -112,6 +94,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
+    // should return syncing as block1 would still not be executed
     const state = {
       headBlockHash: blocks[1].blockHash,
       safeBlockHash: blocks[1].blockHash,
@@ -119,9 +102,17 @@ describe(method, () => {
     }
     req = params('engine_forkchoiceUpdatedV1', [state])
     expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
+      console.log(res.body)
+      assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
     }
 
+    await baseRequest(server, req, 200, expectRes, false, false)
+
+    // now block2 should be executed
+    req = params(method, [blocks[1]])
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
     await baseRequest(server, req, 200, expectRes)
   })
 
@@ -320,7 +311,7 @@ describe(method, () => {
   it('re-execute payload and verify that no errors occur', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     let req = params('engine_forkchoiceUpdatedV1', [
       {
