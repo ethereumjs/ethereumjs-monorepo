@@ -624,6 +624,7 @@ export class Skeleton extends MetaDBManager {
 
       // If the sync is finished, start filling the canonical chain.
       if (this.status.linked) {
+        this.config.superMsg('Backfilling subchain completed. Start filling canonical chain.')
         void this.fillCanonicalChain()
       }
 
@@ -957,6 +958,7 @@ export class Skeleton extends MetaDBManager {
   ): string {
     const vmHead = this.chain.blocks.vm
     const subchain0 = this.status.progress.subchains[0]
+
     const isValid =
       vmHead !== undefined &&
       this.status.linked &&
@@ -966,7 +968,10 @@ export class Skeleton extends MetaDBManager {
         this.config.superMsg('Chain validation completed')
       }
       this.lastvalid = Date.now()
+    } else {
+      this.lastvalid = 0
     }
+
     const isSynced =
       this.status.linked &&
       (this.chain.blocks.latest?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
@@ -1009,7 +1014,7 @@ export class Skeleton extends MetaDBManager {
     }
 
     if (fetching === false) {
-      this.fetchingstarted === 0
+      this.fetchingstarted = 0
     } else if (fetching === true) {
       if (this.fetchingstarted === 0 || subchain0.tail !== this.lastfetched) {
         this.fetchingstarted = Date.now()
@@ -1021,7 +1026,6 @@ export class Skeleton extends MetaDBManager {
       this.fillingstarted = 0
     } else {
       if (this.fillingstarted === 0 || this.lastfilled !== this.chain.blocks.height) {
-        this.config.superMsg('Backfilling subchain completed. Start filling canonical chain.')
         this.fillingstarted = Date.now()
       }
       this.lastfilled = this.chain.blocks.height
