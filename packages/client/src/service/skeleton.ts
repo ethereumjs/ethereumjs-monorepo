@@ -1023,22 +1023,22 @@ export class Skeleton extends MetaDBManager {
     switch (status) {
       case 'EXECUTING':
         scenario = Date.now() - this.executionstarted > 10 * 60_000 ? 'execution stalled?' : ''
-        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=head=${this.chain.blocks.height})`
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${this.chain.blocks.height})`
         break
       case 'SYNCED':
         scenario =
           Date.now() - this.syncedchain > 10 * 60_000 ? 'execution stalled?' : 'awaiting execution'
-        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=head=${this.chain.blocks.height} )`
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${this.chain.blocks.height} )`
         break
       case 'SYNCING':
         if (this.filling) {
           scenario = Date.now() - this.fillingstarted > 10 * 60_000 ? 'filling stalled?' : 'filling'
-          extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+          extraStatus = ` (${scenario} el=${this.chain.blocks.height} cl=${subchain0?.head})`
         } else {
           if (fetching === true) {
             scenario =
               Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
-            extraStatus = ` (${scenario} tail=${subchain0.tail} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+            extraStatus = ` (${scenario} tail=${subchain0.tail} el=${this.chain.blocks.height} cl=${subchain0?.head})`
           } else {
             if (subchain0 === undefined) {
               scenario = 'awaiting fcu'
@@ -1053,7 +1053,7 @@ export class Skeleton extends MetaDBManager {
               }
               scenario = `${scenario} peers=${peers}`
             }
-            extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+            extraStatus = ` (${scenario} el=${this.chain.blocks.height} cl=${subchain0?.head})`
           }
         }
         break
@@ -1062,7 +1062,7 @@ export class Skeleton extends MetaDBManager {
       default:
         extraStatus = ''
     }
-    const chainHead = `head=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
+    const chainHead = `el=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
       this.chain.blocks.latest?.hash() ?? 'na'
     )}`
 
@@ -1097,7 +1097,7 @@ export class Skeleton extends MetaDBManager {
 
         // if not synced add subchain info
         if (!isSynced) {
-          logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
+          logInfo = `${logInfo} ${chainHead} cl=${subchain0?.head}`
           const subchainLen = this.status.progress.subchains.length
           subchainLog = `subchains(${subchainLen}) linked=${
             this.status.linked
