@@ -1038,7 +1038,7 @@ export class Skeleton extends MetaDBManager {
           if (fetching === true) {
             scenario =
               Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
-            extraStatus = ` (${scenario} tail=${subchain0.tail} el=${this.chain.blocks.height} cl=${subchain0?.head})`
+            extraStatus = ` (${scenario} tail=${subchain0.tail} | el=${this.chain.blocks.height} cl=${subchain0?.head})`
           } else {
             if (subchain0 === undefined) {
               scenario = 'awaiting fcu'
