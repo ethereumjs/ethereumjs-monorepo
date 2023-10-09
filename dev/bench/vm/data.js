@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1696852499393,
+  "lastUpdate": 1696871370703,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d584ae420497e1f1fb2454e44bc1c4ed641b0ea9",
-          "message": "evm: remove unnecessary line (#3057)",
-          "timestamp": "2023-09-23T22:33:05-04:00",
-          "tree_id": "8733709c5c91b5e0dbfcff068196ee374b726c76",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d584ae420497e1f1fb2454e44bc1c4ed641b0ea9"
-        },
-        "date": 1695522991407,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30659,
-            "range": "±6.19%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30579,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30120,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 29745,
-            "range": "±3.22%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 25047,
-            "range": "±10.54%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.43%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9579e5e0be06e8aba65dd518e5886b9b834e6cf7",
+          "message": "client: fixes regarding beacon sync, vmexecution and further log improvs (#3094)\n\n* client: fix starting beacon sync in init\r\n\r\nsmall imrpov\r\n\r\nfix error language\r\n\r\nprint cl connectected less often and some log improvs\r\n\r\n* handle an edgecase observed in devnet9\r\n\r\n* fix to check if head is executed\r\n\r\n* fix the spec\r\n\r\n* fix new payloadv2\r\n\r\n* Client -> Beacon Sync: tail <-> head flips\r\n\r\n* Client -> Beacon Sync: head -> el renaming to avoid head/tail subchain vs canonical confusion + foster comparison with cl value\r\n\r\n* Client -> Beacon Sync: remove redundant el=... cl=... log info addition\r\n\r\n* Client -> Beacon Sync: add small separator for backfill sync line for readability and association ease\r\n\r\n* Client -> Beacon Sync: small separator additions\r\n\r\n* Client -> Beacon Sync: fix reorgsHead coloring\r\n\r\n* Client -> Beacon Sync: significantly reduce payload/fcu log intervals (eventually replace with stats)\r\n\r\n* backstep vm if for anycase the parent state root is not found in trie\r\n\r\n* improv check\r\n\r\n* Bump test coverage\r\n\r\n* Client -> Beacon Sync: memory/cache stats output reduction\r\n\r\n* fix error msg typo\r\n\r\n* Client -> Beacon Sync: further reduce payload/fcu log output\r\n\r\n* Client -> Beacon Sync: reduce number of newlines\r\n\r\n* Client -> Beacon Sync: make created new subchain super msg\r\n\r\n* Client -> Beacon Sync: make resuming beacon sync super msg\r\n\r\n* Fix test\r\n\r\n* Client -> Beacon Sync: add backfilling -> filling super msg\r\n\r\n* Client -> Beacon Sync: make synchronized blockchain a normal super msg\r\n\r\n* Client -> Beacon Sync: again set cache stats a bit down\r\n\r\n* Client -> Beacon Sync: add chain validation completed super msg\r\n\r\n* fix the backfill to frontfill transition message\r\n\r\n* fix error\r\n\r\n* rename variables for better code comprehension\r\n\r\n* update validation complete condition\r\n\r\n* More clean up\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-10-09T22:35:39+05:30",
+          "tree_id": "0600b6ba6846ec0a665266d4abc224ba4d741dea",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9579e5e0be06e8aba65dd518e5886b9b834e6cf7"
+        },
+        "date": 1696871369272,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28290,
+            "range": "±5.58%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28527,
+            "range": "±3.21%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28329,
+            "range": "±3.34%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 27856,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22127,
+            "range": "±12.91%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
           }
         ]
       }
