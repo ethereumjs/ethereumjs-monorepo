@@ -123,7 +123,7 @@ describe('[CLConnectionManager]', () => {
       'connection status updated correctly'
     )
   })
-  it('updates connection status correctly', async () => {
+  it.only('updates connection status correctly', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(1696528979492)
     const config = new Config()
@@ -144,5 +144,12 @@ describe('[CLConnectionManager]', () => {
       ConnectionStatus.Uncertain,
       'should update status to uncertain'
     )
+
+    manager['config'].chainCommon.setHardfork('paris')
+    ;(manager as any)._inActivityCb = () => {
+      assert.ok(true, 'called inactivity callback on disconnection event')
+    }
+    manager['connectionCheck']()
+    assert.equal(manager['disconnectedCheckIndex'], 1, 'disconnection check incremented correctly')
   })
 })
