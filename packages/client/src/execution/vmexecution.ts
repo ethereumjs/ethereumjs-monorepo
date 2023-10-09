@@ -492,7 +492,7 @@ export class VMExecution extends Execution {
                 // check if the vmHead 's backstepping can resolve this issue, headBlock is parent of the
                 // current block which is trying to be executed and should equal current vmHead
                 if (
-                  (`${error}`).toLowerCase().includes('does not contain state root') &&
+                  `${error}`.toLowerCase().includes('does not contain state root') &&
                   number > BIGINT_1
                 ) {
                   // this is a weird case which has been observed, could be because of a forking scenario

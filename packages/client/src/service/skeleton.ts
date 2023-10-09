@@ -75,6 +75,9 @@ const zeroBlockHash = zeros(32)
  * The Skeleton chain class helps support beacon sync by accepting head blocks
  * while backfill syncing the rest of the chain.
  */
+
+const STALE_WINDOW = 10 * 60_000
+
 export class Skeleton extends MetaDBManager {
   private _lock = new Lock()
 
@@ -86,19 +89,19 @@ export class Skeleton extends MetaDBManager {
   private pulled = BIGINT_0 /** Number of headers downloaded in this run */
 
   private filling = false /** Whether we are actively filling the canonical chain */
-  private fillingstarted = 0
+  private lastfilledAt = 0
   private lastfilled = BIGINT_0
 
-  private executionstarted = 0
+  private lastexecutedAt = 0
   private lastexecuted = BIGINT_0
 
-  private fetchingstarted = 0
+  private lastfetchedAt = 0
   private lastfetched = BIGINT_0
 
   private lastvalid = 0
 
   private lastFcuTime = 0
-  private syncstarted = 0
+  private lastsyncedAt = 0
 
   private fillLogIndex = 0
 
@@ -985,22 +988,22 @@ export class Skeleton extends MetaDBManager {
       : `SYNCING`
 
     if (peers === undefined || peers === 0) {
-      this.syncstarted = 0
+      this.lastsyncedAt = 0
     } else {
       if (
         status === 'SYNCING' &&
         lastStatus !== undefined &&
-        (lastStatus !== status || this.syncstarted === 0)
+        (lastStatus !== status || this.lastsyncedAt === 0)
       ) {
-        this.syncstarted = Date.now()
+        this.lastsyncedAt = Date.now()
       }
     }
 
     if (status !== 'EXECUTING') {
-      this.executionstarted = 0
+      this.lastexecutedAt = 0
     } else {
-      if (this.executionstarted === 0 || this.lastexecuted !== vmHead?.header.number) {
-        this.executionstarted = Date.now()
+      if (this.lastexecutedAt === 0 || this.lastexecuted !== vmHead?.header.number) {
+        this.lastexecutedAt = Date.now()
       }
       this.lastexecuted = vmHead?.header.number ?? BIGINT_0
     }
@@ -1014,19 +1017,19 @@ export class Skeleton extends MetaDBManager {
     }
 
     if (fetching === false) {
-      this.fetchingstarted = 0
+      this.lastfetchedAt = 0
     } else if (fetching === true) {
-      if (this.fetchingstarted === 0 || subchain0.tail !== this.lastfetched) {
-        this.fetchingstarted = Date.now()
+      if (this.lastfetchedAt === 0 || subchain0.tail !== this.lastfetched) {
+        this.lastfetchedAt = Date.now()
       }
       this.lastfetched = subchain0.tail
     }
 
     if (!this.filling) {
-      this.fillingstarted = 0
+      this.lastfilledAt = 0
     } else {
-      if (this.fillingstarted === 0 || this.lastfilled !== this.chain.blocks.height) {
-        this.fillingstarted = Date.now()
+      if (this.lastfilledAt === 0 || this.lastfilled !== this.chain.blocks.height) {
+        this.lastfilledAt = Date.now()
       }
       this.lastfilled = this.chain.blocks.height
     }
@@ -1035,22 +1038,22 @@ export class Skeleton extends MetaDBManager {
     let scenario = ''
     switch (status) {
       case 'EXECUTING':
-        scenario = Date.now() - this.executionstarted > 10 * 60_000 ? 'execution stalled?' : ''
+        scenario = Date.now() - this.lastexecutedAt > STALE_WINDOW ? 'execution stalled?' : ''
         extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${this.chain.blocks.height})`
         break
       case 'SYNCED':
         scenario =
-          Date.now() - this.syncedchain > 10 * 60_000 ? 'execution stalled?' : 'awaiting execution'
+          Date.now() - this.syncedchain > STALE_WINDOW ? 'execution stalled?' : 'awaiting execution'
         extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${this.chain.blocks.height} )`
         break
       case 'SYNCING':
         if (this.filling) {
-          scenario = Date.now() - this.fillingstarted > 10 * 60_000 ? 'filling stalled?' : 'filling'
+          scenario = Date.now() - this.lastfilledAt > STALE_WINDOW ? 'filling stalled?' : 'filling'
           extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`
         } else {
           if (fetching === true) {
             scenario =
-              Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
+              Date.now() - this.lastfetchedAt > STALE_WINDOW ? 'backfill stalled?' : 'backfilling'
             extraStatus = ` (${scenario} tail=${subchain0.tail} | el=${this.chain.blocks.height} cl=${subchain0?.head})`
           } else {
             if (subchain0 === undefined) {
@@ -1058,11 +1061,11 @@ export class Skeleton extends MetaDBManager {
             } else if (peers === undefined || peers === 0) {
               scenario = 'awaiting peers'
             } else {
-              if (Date.now() - this.lastFcuTime > 10 * 60_000) {
+              if (Date.now() - this.lastFcuTime > STALE_WINDOW) {
                 scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
               } else {
                 scenario =
-                  Date.now() - this.syncstarted > 10 * 60_000 ? `sync stalled?` : `awaiting sync`
+                  Date.now() - this.lastsyncedAt > STALE_WINDOW ? `sync stalled?` : `awaiting sync`
               }
             }
             extraStatus = ` (${scenario} | el=${this.chain.blocks.height} cl=${subchain0?.head})`
