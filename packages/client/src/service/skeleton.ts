@@ -1097,7 +1097,6 @@ export class Skeleton extends MetaDBManager {
 
         // if not synced add subchain info
         if (!isSynced) {
-          logInfo = `${logInfo} ${chainHead} cl=${subchain0?.head}`
           const subchainLen = this.status.progress.subchains.length
           subchainLog = `subchains(${subchainLen}) linked=${
             this.status.linked
