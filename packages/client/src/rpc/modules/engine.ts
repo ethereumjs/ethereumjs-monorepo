@@ -396,7 +396,7 @@ const assembleBlock = async (
     await block.validateData()
     return { block }
   } catch (error) {
-    const validationError = `Error assembling block during from payload: ${error}`
+    const validationError = `Error assembling block from payload: ${error}`
     config.logger.error(validationError)
     const latestValidHash = await validHash(hexToBytes(payload.parentHash), chain, chainCache)
     const response = {
