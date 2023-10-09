@@ -966,13 +966,17 @@ export class Skeleton extends MetaDBManager {
       vmHead !== undefined &&
       this.status.linked &&
       (vmHead?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
-    if (isValid) {
-      if (this.lastvalid === 0) {
-        this.config.superMsg('Chain validation completed')
+
+    // track for printing log because validation oscillates between multiple calls
+    if (forceShowInfo === true) {
+      if (isValid) {
+        if (this.lastvalid === 0) {
+          this.config.superMsg('Chain validation completed')
+        }
+        this.lastvalid = Date.now()
+      } else {
+        this.lastvalid = 0
       }
-      this.lastvalid = Date.now()
-    } else {
-      this.lastvalid = 0
     }
 
     const isSynced =
