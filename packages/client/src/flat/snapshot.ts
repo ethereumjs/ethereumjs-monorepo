@@ -13,7 +13,6 @@ import { LevelDB } from '../execution/level'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import type { Level } from 'level'
 
 const ACCOUNT_PREFIX: Uint8Array = hexToBytes('00')
 const STORAGE_PREFIX: Uint8Array = hexToBytes('11')
@@ -25,15 +24,6 @@ const { debug: createDebugLogger } = debugDefault
 type SnapshotElement = {
   data: Uint8Array | undefined
 }
-
-// function concatenateUint8Arrays(array1: Uint8Array, array2: Uint8Array) {
-//   const concatenatedArray = new Uint8Array(array1.length + array2.length)
-
-//   concatenatedArray.set(array1, 0) // Copy array1 to the beginning of concatenatedArray
-//   concatenatedArray.set(array2, array1.length) // Copy array2 after array1 in concatenatedArray
-
-//   return concatenatedArray
-// }
 
 function concatenateUint8Arrays(arrays: Uint8Array[]) {
   const l = arrays.reduce((prev, curr) => prev + curr.length, 0)
@@ -64,9 +54,9 @@ export class Snapshot extends Cache {
    * before.
    */
   _diffCache: Map<string, SnapshotElement | undefined>[] = []
-  constructor(db: Level<string | Uint8Array, string | Uint8Array>) {
+  constructor(db?: LevelDB<Uint8Array, Uint8Array>) {
     super()
-    this._db = new LevelDB<Uint8Array, Uint8Array>(db)
+    this._db = db ?? new LevelDB<Uint8Array, Uint8Array>()
     this._diffCache.push(new Map<string, SnapshotElement | undefined>())
     this._debug = createDebugLogger('client:snapshot')
   }
@@ -96,6 +86,10 @@ export class Snapshot extends Cache {
     const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(addressHex)])
 
     return this._db.get(key)
+  }
+
+  getAccounts(): Promise<[Uint8Array, Uint8Array | undefined][]> {
+    throw Error('Not yet implemented')
   }
 
   async delAccount(address: Address): Promise<void> {
@@ -135,6 +129,10 @@ export class Snapshot extends Cache {
     return this._db.get(key)
   }
 
+  async getStorageSlots(address: Address): Promise<[Uint8Array, Uint8Array | undefined][]> {
+    throw Error('Not yet implemented')
+  }
+
   async delStorageSlot(address: Address, slot: Uint8Array): Promise<void> {
     const key = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot)])
     await this._saveCachePreState(key)
@@ -148,175 +146,81 @@ export class Snapshot extends Cache {
     await this._db.delByPrefix(prefix)
   }
 
-  // /**
-  //  * Puts account to cache under its address.
-  //  * @param address - Address of account
-  //  * @param account - Account or undefined if account doesn't exist in the trie
-  //  */
-  // put(address: Address, account: Account | undefined): void {
-  //   const addressHex = bytesToUnprefixedHex(address.bytes)
-  //   this._saveCachePreState(addressHex)
-  //   const elem = {
-  //     data: account !== undefined ? account.serialize() : undefined,
-  //   }
+  async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
+    throw Error('Not yet implemented')
+  }
 
-  //   if (this.DEBUG) {
-  //     this._debug(`Put account ${addressHex}`)
-  //   }
-  //   if (this._lruCache) {
-  //     this._lruCache!.set(addressHex, elem)
-  //   } else {
-  //     this._orderedMapCache!.setElement(addressHex, elem)
-  //   }
-  //   this._stats.writes += 1
-  // }
+  async putCode(address: Address, code: Uint8Array): Promise<void> {
+    throw Error('Not yet implemented')
+  }
 
-  // /**
-  //  * Returns the queried account or undefined if account doesn't exist
-  //  * @param address - Address of account
-  //  */
-  // get(address: Address): SnapshotElement | undefined {
-  //   const addressHex = bytesToUnprefixedHex(address.bytes)
-  //   if (this.DEBUG) {
-  //     this._debug(`Get account ${addressHex}`)
-  //   }
+  async getCode(address: Address): Promise<Uint8Array | null> {
+    throw Error('Not yet implemented')
+  }
 
-  //   let elem: SnapshotElement | undefined
-  //   if (this._lruCache) {
-  //     elem = this._lruCache!.get(addressHex)
-  //   } else {
-  //     elem = this._orderedMapCache!.getElementByKey(addressHex)
-  //   }
-  //   this._stats.reads += 1
-  //   if (elem) {
-  //     this._stats.hits += 1
-  //   }
-  //   return elem
-  // }
-
-  // /**
-  //  * Marks address as deleted in cache.
-  //  * @param address - Address
-  //  */
-  // del(address: Address): void {
-  //   const addressHex = bytesToUnprefixedHex(address.bytes)
-  //   this._saveCachePreState(addressHex)
-  //   if (this.DEBUG) {
-  //     this._debug(`Delete account ${addressHex}`)
-  //   }
-  //   if (this._lruCache) {
-  //     this._lruCache!.set(addressHex, {
-  //       data: undefined,
-  //     })
-  //   } else {
-  //     this._orderedMapCache!.setElement(addressHex, {
-  //       data: undefined,
-  //     })
-  //   }
-
-  //   this._stats.dels += 1
-  // }
-
-  // /**
-  //  * Flushes cache by returning accounts that have been modified
-  //  * or deleted and resetting the diff cache (at checkpoint height).
-  //  */
-  // flush(): [string, SnapshotElement][] {
-  //   if (this.DEBUG) {
-  //     this._debug(`Flushing cache on checkpoint ${this._checkpoints}`)
-  //   }
-
-  //   const diffMap = this._diffCache[this._checkpoints]!
-
-  //   const items: [string, SnapshotElement][] = []
-
-  //   for (const entry of diffMap.entries()) {
-  //     const cacheKeyHex = entry[0]
-  //     let elem: SnapshotElement | undefined
-  //     if (this._lruCache) {
-  //       elem = this._lruCache!.get(cacheKeyHex)
-  //     } else {
-  //       elem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
-  //     }
-
-  //     if (elem !== undefined) {
-  //       items.push([cacheKeyHex, elem])
-  //     }
-  //   }
-  //   this._diffCache[this._checkpoints] = new Map<string, SnapshotElement | undefined>()
-  //   return items
-  // }
+  async merkleize(): Promise<Uint8Array> {
+    throw Error('Not yet implemented')
+  }
 
   // /**
   //  * Revert changes to cache last checkpoint (no effect on trie).
   //  */
-  // revert(): void {
-  //   this._checkpoints -= 1
-  //   if (this.DEBUG) {
-  //     this._debug(`Revert to checkpoint ${this._checkpoints}`)
-  //   }
-  //   const diffMap = this._diffCache.pop()!
-  //   for (const entry of diffMap.entries()) {
-  //     const addressHex = entry[0]
-  //     const elem = entry[1]
-  //     if (elem === undefined) {
-  //       if (this._lruCache) {
-  //         this._lruCache!.delete(addressHex)
-  //       } else {
-  //         this._orderedMapCache!.eraseElementByKey(addressHex)
-  //       }
-  //     } else {
-  //       if (this._lruCache) {
-  //         this._lruCache!.set(addressHex, elem)
-  //       } else {
-  //         this._orderedMapCache!.setElement(addressHex, elem)
-  //       }
-  //     }
-  //   }
-  // }
+  revert(): void {
+    //   this._checkpoints -= 1
+    //   if (this.DEBUG) {
+    //     this._debug(`Revert to checkpoint ${this._checkpoints}`)
+    //   }
+    //   const diffMap = this._diffCache.pop()!
+    //   for (const entry of diffMap.entries()) {
+    //     const addressHex = entry[0]
+    //     const elem = entry[1]
+    //     if (elem === undefined) {
+    //       if (this._lruCache) {
+    //         this._lruCache!.delete(addressHex)
+    //       } else {
+    //         this._orderedMapCache!.eraseElementByKey(addressHex)
+    //       }
+    //     } else {
+    //       if (this._lruCache) {
+    //         this._lruCache!.set(addressHex, elem)
+    //       } else {
+    //         this._orderedMapCache!.setElement(addressHex, elem)
+    //       }
+    //     }
+    //   }
+    throw Error('Not yet implemented')
+  }
 
   // /**
   //  * Commits to current state of cache (no effect on trie).
   //  */
-  // commit(): void {
-  //   this._checkpoints -= 1
-  //   if (this.DEBUG) {
-  //     this._debug(`Commit to checkpoint ${this._checkpoints}`)
-  //   }
-  //   const diffMap = this._diffCache.pop()!
-  //   for (const entry of diffMap.entries()) {
-  //     const addressHex = entry[0]
-  //     const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
-  //     if (!oldEntry) {
-  //       const elem = entry[1]
-  //       this._diffCache[this._checkpoints].set(addressHex, elem)
-  //     }
-  //   }
-  // }
+  commit(): void {
+    //   this._checkpoints -= 1
+    //   if (this.DEBUG) {
+    //     this._debug(`Commit to checkpoint ${this._checkpoints}`)
+    //   }
+    //   const diffMap = this._diffCache.pop()!
+    //   for (const entry of diffMap.entries()) {
+    //     const addressHex = entry[0]
+    //     const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
+    //     if (!oldEntry) {
+    //       const elem = entry[1]
+    //       this._diffCache[this._checkpoints].set(addressHex, elem)
+    //     }
+    //   }
+    throw Error('Not yet implemented')
+  }
 
   // /**
   //  * Marks current state of cache as checkpoint, which can
   //  * later on be reverted or committed.
   //  */
-  // checkpoint(): void {
-  //   this._checkpoints += 1
-  //   if (this.DEBUG) {
-  //     this._debug(`New checkpoint ${this._checkpoints}`)
-  //   }
-  //   this._diffCache.push(new Map<string, SnapshotElement | undefined>())
-  // }
-
-  // /**
-  //  * Clears cache.
-  //  */
-  // clear(): void {
-  //   if (this.DEBUG) {
-  //     this._debug(`Clear cache`)
-  //   }
-  //   if (this._lruCache) {
-  //     this._lruCache!.clear()
-  //   } else {
-  //     this._orderedMapCache!.clear()
-  //   }
-  // }
+  checkpoint(): void {
+    //   this._checkpoints += 1
+    //   if (this.DEBUG) {
+    //     this._debug(`New checkpoint ${this._checkpoints}`)
+    //   }
+    //   this._diffCache.push(new Map<string, SnapshotElement | undefined>())
+    throw Error('Not yet implemented')
+  }
 }
