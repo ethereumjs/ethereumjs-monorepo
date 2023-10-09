@@ -1127,7 +1127,6 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(`${logPrefix} ${subchainLog}`)
         }
       }
-      this.config.logger.info('')
     } else {
       this.config.logger.debug(
         `${logPrefix} ${status} linked=${

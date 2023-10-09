@@ -358,6 +358,7 @@ export class CLConnectionManager {
       return
     }
     if (!this.config.synchronized) {
+      this.config.logger.info('')
       if (!this._lastPayload) {
         logCLStatus(this.config.logger, 'No consensus payload received yet', logLevel.INFO)
       } else {
