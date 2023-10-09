@@ -29,6 +29,7 @@ Below you can find a list of the packages included in this repository.
 | [@ethereumjs/devp2p][devp2p-package]             | [![NPM Package][devp2p-npm-badge]][devp2p-npm-link]             | [![Devp2p Issues][devp2p-issues-badge]][devp2p-issues-link]                   | [![Actions Status][devp2p-actions-badge]][devp2p-actions-link]             | [![Code Coverage][devp2p-coverage-badge]][devp2p-coverage-link]             |
 | [@ethereumjs/ethash][ethash-package]             | [![NPM Package][ethash-npm-badge]][ethash-npm-link]             | [![Ethash Issues][ethash-issues-badge]][ethash-issues-link]                   | [![Actions Status][ethash-actions-badge]][ethash-actions-link]             | [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]             |
 | [@ethereumjs/evm][evm-package]                   | [![NPM Package][evm-npm-badge]][evm-npm-link]                   | [![EVM Issues][evm-issues-badge]][evm-issues-link]                            | [![Actions Status][evm-actions-badge]][evm-actions-link]                   | [![Code Coverage][evm-coverage-badge]][evm-coverage-link]                   |
+| [@ethereumjs/genesis][genesis-package]           | [![NPM Package][genesis-npm-badge]][genesis-npm-link]           | [![Genesis Issues][genesis-issues-badge]][genesis-issues-link]                | [![Actions Status][genesis-actions-badge]][genesis-actions-link]           | [![Code Coverage][genesis-coverage-badge]][genesis-coverage-link]           |
 | [@ethereumjs/rlp][rlp-package]                   | [![NPM Package][rlp-npm-badge]][rlp-npm-link]                   | [![rlp Issues][rlp-issues-badge]][rlp-issues-link]                            | [![Actions Status][rlp-actions-badge]][rlp-actions-link]                   | [![Code Coverage][rlp-coverage-badge]][rlp-coverage-link]                   |
 | [@ethereumjs/statemanager][statemanager-package] | [![NPM Package][statemanager-npm-badge]][statemanager-npm-link] | [![StateManager Issues][statemanager-issues-badge]][statemanager-issues-link] | [![Actions Status][statemanager-actions-badge]][statemanager-actions-link] | [![Code Coverage][statemanager-coverage-badge]][statemanager-coverage-link] |
 | [@ethereumjs/trie][trie-package]                 | [![NPM Package][trie-npm-badge]][trie-npm-link]                 | [![Trie Issues][trie-issues-badge]][trie-issues-link]                         | [![Actions Status][trie-actions-badge]][trie-actions-link]                 | [![Code Coverage][trie-coverage-badge]][trie-coverage-link]                 |
@@ -86,6 +87,9 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    common --> devp2p
    evm --> vm
    evm --> client
+   genesis --> client
+   genesis --> statemanager
+   genesis --> trie
    tx --> block
    tx --> vm
    vm --> client
@@ -175,6 +179,15 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [evm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22evm%22
 [evm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=evm
 [evm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm
+[genesis-package]: ./packages/genesis
+[genesis-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/genesis.svg
+[genesis-npm-link]: https://www.npmjs.com/package/@ethereumjs/genesis
+[genesis-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20genesis?label=issues
+[genesis-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+genesis"
+[genesis-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/genesis/badge.svg
+[genesis-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22genesis%22
+[genesis-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=genesis
+[genesis-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis
 [gitpoap-badge]: https://public-api.gitpoap.io/v1/repo/ethereumjs/ethereumjs-monorepo/badge
 [gitpoap-link]: https://www.gitpoap.io/gh/ethereumjs/ethereumjs-monorepo
 [tx-package]: ./packages/tx
