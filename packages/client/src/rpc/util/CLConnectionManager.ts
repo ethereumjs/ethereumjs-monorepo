@@ -395,6 +395,7 @@ export class CLConnectionManager {
   public newPayloadLog() {
     if (this._lastPayload) {
       const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+      this.config.logger.info('')
       logCLStatus(
         this.config.logger,
         `New consensus payload received  ${payloadMsg}`,
