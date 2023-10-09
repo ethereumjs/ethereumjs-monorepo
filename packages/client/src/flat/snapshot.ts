@@ -14,10 +14,10 @@ import { LevelDB } from '../execution/level'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-const ACCOUNT_PREFIX: Uint8Array = hexToBytes('00')
-const STORAGE_PREFIX: Uint8Array = hexToBytes('11')
-const CODE_PREFIX: Uint8Array = hexToBytes('22')
-const CHECKPOINT_PREFIX: Uint8Array = hexToBytes('33')
+const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x' + '00')
+const STORAGE_PREFIX: Uint8Array = hexToBytes('0x' + '11')
+const CODE_PREFIX: Uint8Array = hexToBytes('0x' + '22')
+const CHECKPOINT_PREFIX: Uint8Array = hexToBytes('0x' + '33')
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -39,7 +39,7 @@ function concatenateUint8Arrays(arrays: Uint8Array[]) {
 }
 
 // TODO don't extend Cache
-export class Snapshot extends Cache {
+export class Snapshot {
   _db: LevelDB<Uint8Array, Uint8Array>
   _debug: Debugger
   _checkpoints = 0
@@ -55,7 +55,6 @@ export class Snapshot extends Cache {
    */
   _diffCache: Map<string, SnapshotElement | undefined>[] = []
   constructor(db?: LevelDB<Uint8Array, Uint8Array>) {
-    super()
     this._db = db ?? new LevelDB<Uint8Array, Uint8Array>()
     this._diffCache.push(new Map<string, SnapshotElement | undefined>())
     this._debug = createDebugLogger('client:snapshot')
