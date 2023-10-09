@@ -390,7 +390,7 @@ export class Skeleton extends MetaDBManager {
             next: head.header.parentHash,
           }
           this.status.progress.subchains.unshift(s)
-          this.config.logger.info(
+          this.config.superMsg(
             `Created new subchain tail=${s.tail} head=${s.head} next=${short(s.next)}`
           )
           // Reset the filling of canonical head from tail only on tail reorg and exit any ongoing fill
