@@ -102,10 +102,8 @@ describe(method, () => {
     }
     req = params('engine_forkchoiceUpdatedV1', [state])
     expectRes = (res: any) => {
-      console.log(res.body)
       assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
     }
-
     await baseRequest(server, req, 200, expectRes, false, false)
 
     // now block2 should be executed
