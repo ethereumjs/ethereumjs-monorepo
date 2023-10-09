@@ -335,3 +335,19 @@ export const dummy = {
   addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
   privKey: hexToBytes('0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
 }
+
+/**
+ *
+ * @param t Test suite
+ * @param server HttpServer
+ * @param inputBlocks Array of valid ExecutionPayloadV1 data
+ */
+export const batchBlocks = async (server: HttpServer, inputBlocks: any[]) => {
+  for (let i = 0; i < inputBlocks.length; i++) {
+    const req = params('engine_newPayloadV1', [inputBlocks[i]])
+    const expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(server, req, 200, expectRes, false, false)
+  }
+}
