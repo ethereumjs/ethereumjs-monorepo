@@ -4,10 +4,11 @@ import {
   bytesToUnprefixedHex,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types.js'
-import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
+import type { BatchDBOp, DB, DelBatch, EncodingOpts, PutBatch } from '@ethereumjs/util'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -15,8 +16,10 @@ import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
  */
 export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
-  public db: DB<string, Uint8Array>
+  public db: DB<string, string> | DB<string, Uint8Array>
   public readonly cacheSize: number
+  public readonly useBytes: boolean
+  private readonly valueEncoding: ValueEncoding
 
   // Starting with lru-cache v8 undefined and null are not allowed any more
   // as cache values. At the same time our design works well, since undefined
@@ -49,6 +52,8 @@ export class CheckpointDB implements DB {
   constructor(opts: CheckpointDBOpts) {
     this.db = opts.db
     this.cacheSize = opts.cacheSize ?? 0
+    this.useBytes = opts.useBytes ?? false
+    this.valueEncoding = this.useBytes ? ValueEncoding.Bytes : ValueEncoding.String
     // Roots of trie at the moment of checkpoint
     this.checkpoints = []
 
@@ -152,23 +157,23 @@ export class CheckpointDB implements DB {
       }
     }
     // Nothing has been found in diff cache, look up from disk
-    const valueHex = await this.db.get(keyHex, {
+    const value = await this.db.get(keyHex, {
       keyEncoding: KeyEncoding.String,
-      valueEncoding: ValueEncoding.String,
+      valueEncoding: this.valueEncoding,
     })
     this._stats.db.reads += 1
-    if (valueHex !== undefined) {
+    if (value !== undefined) {
       this._stats.db.hits += 1
     }
-    const value = valueHex
-    this._cache?.set(keyHex, value)
+    const returnValue = this.useBytes ? (value as Uint8Array) : hexToBytes(<string>value)
+    this._cache?.set(keyHex, returnValue)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,
       // so future `get` calls will not look the key up again from disk.
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, returnValue)
     }
 
-    return value
+    return returnValue
   }
 
   /**
@@ -180,9 +185,10 @@ export class CheckpointDB implements DB {
       // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
     } else {
-      await this.db.put(keyHex, value, {
+      const valuePut = this.useBytes ? value : bytesToUnprefixedHex(value)
+      await this.db.put(keyHex, <any>valuePut, {
         keyEncoding: KeyEncoding.String,
-        valueEncoding: ValueEncoding.String,
+        valueEncoding: this.valueEncoding,
       })
       this._stats.db.writes += 1
 
@@ -229,16 +235,27 @@ export class CheckpointDB implements DB {
       }
     } else {
       const convertedOps = opStack.map((op) => {
-        const convertedOp = {
+        const convertedOp: {
+          key: string
+          value: Uint8Array | string | undefined
+          type: 'put' | 'del'
+          opts?: EncodingOpts
+        } = {
           key: bytesToUnprefixedHex(op.key),
           value: op.type === 'put' ? op.value : undefined,
           type: op.type,
           opts: op.opts,
         }
-        if (op.type === 'put') return convertedOp as PutBatch<string, Uint8Array>
-        else return convertedOp as DelBatch<string>
+        if (op.type === 'put') {
+          if (this.useBytes) {
+            return convertedOp as PutBatch<string, Uint8Array>
+          } else {
+            convertedOp.value = bytesToUnprefixedHex(<Uint8Array>convertedOp.value)
+            return convertedOp as PutBatch<string, string>
+          }
+        } else return convertedOp as DelBatch<string>
       })
-      await this.db.batch(convertedOps)
+      await this.db.batch(<any>convertedOps)
     }
   }
 

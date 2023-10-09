@@ -27,7 +27,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<string, Uint8Array>
+  db?: DB<string, string> | DB<string, Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
@@ -60,6 +60,12 @@ export interface TrieOpts {
    * e.g. all storage tries being stored in the outer account state DB)
    */
   keyPrefix?: Uint8Array
+
+  /**
+   * Use Uint8Array as value type in the underlying database type
+   * Defaults to: false. (To optimize, use `true` here)
+   */
+  useBytes?: boolean
 
   /**
    * Store the root inside the database after every `write` operation
@@ -97,7 +103,12 @@ export interface CheckpointDBOpts {
   /**
    * A database instance.
    */
-  db: DB<string, Uint8Array>
+  db: DB<string, string> | DB<string, Uint8Array>
+
+  /**
+   * Whether or not the value type `string` (false) or `Uint8Array` is used as value type on the database
+   */
+  useBytes?: boolean
 
   /**
    * Cache size (default: 0)

@@ -8,6 +8,7 @@ import {
   bytesToUtf8,
   concatBytes,
   equalsBytes,
+  hexToBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -59,6 +60,7 @@ export class Trie {
     keyPrefix: undefined,
     useRootPersistence: false,
     useNodePruning: false,
+    useBytes: false,
     cacheSize: 0,
   }
 
@@ -75,6 +77,8 @@ export class Trie {
   protected DEBUG: boolean
   protected _debug: Debugger = debug('trie')
   protected debug: (...args: any) => void
+
+  private readonly valueEncoding: ValueEncoding
 
   /**
    * Creates a new trie.
@@ -98,7 +102,9 @@ export class Trie {
         }
       : (..._: any) => {}
 
-    this.database(opts?.db ?? new MapDB<string, Uint8Array>())
+    this.valueEncoding = opts?.useBytes ? ValueEncoding.Bytes : ValueEncoding.String
+
+    this.database(opts?.db ?? new MapDB<string, string>())
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -120,6 +126,8 @@ export class Trie {
   static async create(opts?: TrieOpts) {
     let key = ROOT_DB_KEY
 
+    const encoding = opts?.useBytes ? ValueEncoding.Bytes : ValueEncoding.String
+
     if (opts?.useKeyHashing === true) {
       key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
     }
@@ -131,21 +139,29 @@ export class Trie {
       if (opts?.root === undefined) {
         const root = await opts?.db.get(bytesToUnprefixedHex(key), {
           keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.Bytes,
+          valueEncoding: encoding,
         })
-        opts.root = root
+        if (typeof root === 'string') {
+          opts.root = hexToBytes(root)
+        } else {
+          opts.root = root
+        }
       } else {
-        await opts?.db.put(bytesToUnprefixedHex(key), opts.root, {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.Bytes,
-        })
+        await opts?.db.put(
+          bytesToUnprefixedHex(key),
+          <any>(opts.useBytes ? opts.root : bytesToHex(opts.root)),
+          {
+            keyEncoding: KeyEncoding.String,
+            valueEncoding: encoding,
+          }
+        )
       }
     }
 
     return new Trie(opts)
   }
 
-  database(db?: DB<string, Uint8Array>) {
+  database(db?: DB<string, string> | DB<string, Uint8Array>) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')
