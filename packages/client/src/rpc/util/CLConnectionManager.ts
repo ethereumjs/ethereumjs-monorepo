@@ -13,6 +13,16 @@ import type {
   PayloadStatusV1,
 } from '../modules/engine'
 import type { Block } from '@ethereumjs/block'
+import type winston from 'winston'
+
+const enginePrefix = '[ CL ] '
+
+enum logLevel {
+  ERROR = 'error',
+  WARN = 'warn',
+  INFO = 'info',
+  DEBUG = 'debug',
+}
 
 export enum ConnectionStatus {
   Connected = 'connected',
@@ -38,11 +48,15 @@ type ForkchoiceUpdate = {
 
 type PayloadToPayloadStats = {
   blockCount: number
-  minBlockNumber?: BigInt
-  maxBlockNumber?: BigInt
+  minBlockNumber?: bigint
+  maxBlockNumber?: bigint
   txs: { [key: number]: number }
 }
 
+const logCLStatus = (logger: winston.Logger, logMsg: string, logLevel: logLevel) => {
+  //@ts-ignore
+  logger[logLevel](enginePrefix + logMsg)
+}
 export class CLConnectionManager {
   private config: Config
   private numberFormatter: Intl.NumberFormat
@@ -51,10 +65,10 @@ export class CLConnectionManager {
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
   /** Default payload log interval (in ms) */
-  private DEFAULT_PAYLOAD_LOG_INTERVAL = 10000
+  private DEFAULT_PAYLOAD_LOG_INTERVAL = 15000
 
   /** Default forkchoice log interval (in ms) */
-  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 10000
+  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 15000
 
   /** Threshold for a disconnected status decision */
   private DISCONNECTED_THRESHOLD = 30000
@@ -195,8 +209,10 @@ export class CLConnectionManager {
     this.updateStatus()
     if (!this._initialForkchoiceUpdate) {
       this._initialForkchoiceUpdate = update
-      this.config.logger.info(
-        `Initial consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(update)}`
+      logCLStatus(
+        this.config.logger,
+        `Initial consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(update)}`,
+        logLevel.INFO
       )
     }
     this._lastForkchoiceUpdate = update
@@ -206,8 +222,10 @@ export class CLConnectionManager {
     this.updateStatus()
     if (!this._initialPayload) {
       this._initialPayload = payload
-      this.config.logger.info(
-        `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`
+      logCLStatus(
+        this.config.logger,
+        `Initial consensus payload received ${this._getPayloadLogMsg(payload)}`,
+        logLevel.INFO
       )
     }
     this._lastPayload = payload
@@ -229,6 +247,9 @@ export class CLConnectionManager {
       this._payloadToPayloadStats['maxBlockNumber'] = num
     }
     for (const tx of block.transactions) {
+      if (!(tx.type in this._payloadToPayloadStats['txs'])) {
+        this._payloadToPayloadStats['txs'][tx.type] = 0
+      }
       this._payloadToPayloadStats['txs'][tx.type] += 1
     }
   }
@@ -248,7 +269,7 @@ export class CLConnectionManager {
     if (
       [ConnectionStatus.Disconnected, ConnectionStatus.Uncertain].includes(this.connectionStatus)
     ) {
-      this.config.logger.info('Consensus client connection established', { attentionCL: 'CL' })
+      this.config.superMsg('Consensus client connection established')
     }
     this.connectionStatus = ConnectionStatus.Connected
     this.lastRequestTimestamp = new Date().getTime()
@@ -265,19 +286,32 @@ export class CLConnectionManager {
       if (timeDiff <= this.DISCONNECTED_THRESHOLD) {
         if (timeDiff > this.UNCERTAIN_THRESHOLD) {
           this.connectionStatus = ConnectionStatus.Uncertain
-          this.config.logger.warn('Losing consensus client connection...', { attentionCL: 'CL ?' })
+          logCLStatus(this.config.logger, 'Losing consensus client connection...', logLevel.WARN)
         }
       } else {
         this.connectionStatus = ConnectionStatus.Disconnected
-        this.config.logger.warn('Consensus client disconnected', { attentionCL: null })
+        logCLStatus(this.config.logger, 'Consensus client disconnected', logLevel.WARN)
+      }
+    } else {
+      if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
+        logCLStatus(this.config.logger, 'Waiting for consensus client to connect...', logLevel.INFO)
       }
     }
 
-    if (this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition) {
+    if (
+      this.config.chainCommon.hardfork() === Hardfork.MergeForkIdTransition &&
+      !this.config.chainCommon.gteHardfork(Hardfork.Paris)
+    ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
-        this.config.logger.warn('CL client connection is needed, Merge HF happening soon')
-        this.config.logger.warn(
-          '(no CL <-> EL communication yet, connection might be in a workable state though)'
+        logCLStatus(
+          this.config.logger,
+          'CL client connection is needed, Merge HF happening soon',
+          logLevel.WARN
+        )
+        logCLStatus(
+          this.config.logger,
+          '(no CL <-> EL communication yet, connection might be in a workable state though)',
+          logLevel.WARN
         )
       }
     }
@@ -287,11 +321,15 @@ export class CLConnectionManager {
       this.config.chainCommon.hardfork() === Hardfork.Paris
     ) {
       if (this.connectionStatus === ConnectionStatus.Disconnected) {
-        this.config.logger.info(
-          'Paris (Merge) HF activated, CL client connection is needed for continued block processing'
+        logCLStatus(
+          this.config.logger,
+          'Paris (Merge) HF activated, CL client connection is needed for continued block processing',
+          logLevel.INFO
         )
-        this.config.logger.info(
-          '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)'
+        logCLStatus(
+          this.config.logger,
+          '(note that CL client might need to be synced up to beacon chain Merge transition slot until communication starts)',
+          logLevel.INFO
         )
       }
       this.oneTimeMergeCLConnectionCheck = true
@@ -307,23 +345,29 @@ export class CLConnectionManager {
     }
     if (!this.config.synchronized) {
       if (!this._lastPayload) {
-        this.config.logger.info('No consensus payload received yet')
+        logCLStatus(this.config.logger, 'No consensus payload received yet', logLevel.INFO)
       } else {
         const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
-        this.config.logger.info(`Last consensus payload received  ${payloadMsg}`)
+        logCLStatus(
+          this.config.logger,
+          `Last consensus payload received  ${payloadMsg}`,
+          logLevel.INFO
+        )
         const count = this._payloadToPayloadStats['blockCount']
         const min = this._payloadToPayloadStats['minBlockNumber']
         const max = this._payloadToPayloadStats['maxBlockNumber']
 
-        let txsMsg = ''
+        const txsMsg = []
         for (const [type, count] of Object.entries(this._payloadToPayloadStats['txs'])) {
-          txsMsg += `${count}(${type})`
+          txsMsg.push(`T${type}:${count}`)
         }
 
-        this.config.logger.info(
+        logCLStatus(
+          this.config.logger,
           `Payload stats blocks count=${count} minBlockNum=${min} maxBlockNum=${max} txsPerType=${
-            txsMsg !== '' ? txsMsg : '0'
-          }`
+            txsMsg.length > 0 ? txsMsg.join('|') : '0'
+          }`,
+          logLevel.DEBUG
         )
         this.clearPayloadStats()
       }
@@ -336,7 +380,11 @@ export class CLConnectionManager {
   public newPayloadLog() {
     if (this._lastPayload) {
       const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
-      this.config.logger.info(`New consensus payload received  ${payloadMsg}`)
+      logCLStatus(
+        this.config.logger,
+        `New consensus payload received  ${payloadMsg}`,
+        logLevel.INFO
+      )
     }
   }
 
@@ -349,12 +397,18 @@ export class CLConnectionManager {
     }
     if (!this.config.synchronized) {
       if (!this._lastForkchoiceUpdate) {
-        this.config.logger.info('No consensus forkchoice update received yet')
+        logCLStatus(
+          this.config.logger,
+          `No consensus forkchoice update received yet`,
+          logLevel.INFO
+        )
       } else {
-        this.config.logger.info(
+        logCLStatus(
+          this.config.logger,
           `Last consensus forkchoice update ${this._getForkchoiceUpdateLogMsg(
             this._lastForkchoiceUpdate
-          )}`
+          )}`,
+          logLevel.INFO
         )
       }
     }
@@ -365,10 +419,12 @@ export class CLConnectionManager {
    */
   public newForkchoiceLog() {
     if (this._lastForkchoiceUpdate) {
-      this.config.logger.info(
+      logCLStatus(
+        this.config.logger,
         `New chain head set (forkchoice update) ${this._getForkchoiceUpdateLogMsg(
           this._lastForkchoiceUpdate
-        )}`
+        )}`,
+        logLevel.INFO
       )
     }
   }

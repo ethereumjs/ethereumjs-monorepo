@@ -56,23 +56,36 @@ describe('[CLI]', () => {
   it('should successfully start client with custom inputs for PoW network', async () => {
     const cliArgs = [
       '--rpc',
-      '--dev=pow',
+      '--rpcPort=8562',
+      '--rpcAddr=0.0.0.0',
+      '--dev=poa',
       '--port=30306',
       '--minerCoinbase="abc"',
       '--saveReceipts=false',
       '--execution=false',
     ]
-    const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
-      // // TODO eth_coinbase rpc endpoint is not yet implemented
-      // if (message.includes('http://')) {
-      //   const client = Client.http({ port: 8545 })
-      //   const res = await client.request('eth_coinbase', [], 2.0)
-      //   assert.ok(res.result === 'abc', 'engine api is responsive without need for auth header')
-      //   child.kill(9)
-      //   resolve(undefined)
-      // }
+    let count = 2 // only kill process after both checks have completed
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('http://')) {
+        // if http endpoint startup message detected, call http endpoint with RPC method
+        await wait(600)
+        const client = Client.http({
+          port: 8562,
+          host: '0.0.0.0',
+        })
+        const res = await client.request('eth_coinbase', [], 2.0)
+        assert.ok(res.result === 'abc', 'correct coinbase address set')
+        count -= 1
+      }
       if (message.includes('Client started successfully')) {
         assert.ok(message, 'Client started successfully with custom inputs for PoW network')
+        count -= 1
+      }
+      if (count === 0) {
         child.kill(9)
         resolve(undefined)
       }
@@ -91,6 +104,21 @@ describe('[CLI]', () => {
           true,
           'client correctly throws error when "dev" option is passed in without a value'
         )
+      }
+      child.kill(9)
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 30000)
+  it('should throw error if the same port is assigned to multiple RPC servers', async () => {
+    const cliArgs = ['--ws', '--rpc', '--rpcPort=8546']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('cannot reuse')) {
+        assert.ok(true, 'cannot reuse ports between HTTP and WS RPCs')
       }
       child.kill(9)
       resolve(undefined)
@@ -402,6 +430,21 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it('should start client with custom input for code cache size', async () => {
+    const cliArgs = ['--codeCache=2000', '--port=30313']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('code cache')) {
+        assert.ok(message.includes('2000'), 'code cache option works')
+        child.kill(9)
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)
   it('should start client with custom input for trie cache size', async () => {
     const cliArgs = ['--trieCache=2000', '--port=30312']
     const onData = async (
@@ -509,7 +552,6 @@ describe('[CLI]', () => {
       '--port=30304',
       '--dev=poa',
       '--bootnodes=enode://abc@127.0.0.1:30303',
-      '--transports=rlpx',
       '--multiaddrs=enode://abc@127.0.0.1:30303',
       '--discDns=false',
       '--discV4=false',

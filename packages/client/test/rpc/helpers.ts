@@ -42,6 +42,7 @@ type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 type createClientArgs = {
+  minerCoinbase: string
   includeVM: boolean // Instantiates the VM when creating the test client
   commonChain: Common
   enableMetaDB: boolean
@@ -81,7 +82,10 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
-    transports: [],
+    minerCoinbase:
+      clientOpts.minerCoinbase !== undefined
+        ? Address.fromString(clientOpts.minerCoinbase)
+        : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
@@ -268,9 +272,10 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 
   const { chain } = client
   const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  const { execution } = service
+  const { execution, skeleton } = service
 
   await chain.open()
+  await skeleton?.open()
   await execution?.open()
   await chain.update()
   return { chain, common, execution: execution!, server, service, blockchain }

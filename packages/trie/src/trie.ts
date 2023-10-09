@@ -25,7 +25,7 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { Lock } from './util/lock.js'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
@@ -320,42 +320,20 @@ export class Trie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
+    const keyLen = targetKey.length
+    const stack: TrieNode[] = Array.from({ length: keyLen })
+    let progress = 0
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      // If we already have a result, exit early
-      if (result) return
-
-      if (node === null) {
-        result = { node: null, remaining: [], stack }
-        return
-      }
-
-      this.DEBUG &&
-        this.debug(
-          `${node.constructor.name} FOUND${'_nibbles' in node ? `: [${node._nibbles}]` : ''}`,
-          ['FIND_PATH', keyProgress.toString()]
-        )
-
-      const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
-      this.DEBUG && this.debug(`[${keyRemainder}] Remaining`, ['FIND_PATH', keyProgress.toString()])
-      stack.push(node)
-      this.DEBUG &&
-        this.debug(
-          `Adding ${node.constructor.name} to STACK (size: ${stack.length}) ${stack.map(
-            (e, i) => `${i === stack.length - 1 ? '\n|| +' : '\n|| '}` + e.constructor.name
-          )}`,
-          ['FIND_PATH']
-        )
-
+      stack[progress] = node as TrieNode
       if (node instanceof BranchNode) {
-        if (keyRemainder.length === 0) {
+        if (progress === keyLen) {
           result = { node, remaining: [], stack }
         } else {
-          const branchIndex = keyRemainder[0]
+          const branchIndex = targetKey[progress]
           this.DEBUG &&
             this.debug(`Looking for node on branch index: [${branchIndex}]`, [
               'FIND_PATH',
@@ -372,36 +350,49 @@ export class Trie {
               ['FIND_PATH', 'BranchNode', branchIndex.toString()]
             )
           if (!branchNode) {
-            result = { node: null, remaining: keyRemainder, stack }
+            result = { node: null, remaining: targetKey.slice(progress), stack }
           } else {
+            progress++
             walkController.onlyBranchIndex(node, keyProgress, branchIndex)
           }
         }
       } else if (node instanceof LeafNode) {
-        if (doKeysMatch(keyRemainder, node.key())) {
-          result = { node, remaining: [], stack }
-        } else {
-          result = { node: null, remaining: keyRemainder, stack }
+        const _progress = progress
+        if (keyLen - progress > node.key().length) {
+          result = { node: null, remaining: targetKey.slice(_progress), stack }
+          return
         }
+        for (const k of node.key()) {
+          if (k !== targetKey[progress]) {
+            result = { node: null, remaining: targetKey.slice(_progress), stack }
+            return
+          }
+          progress++
+        }
+        result = { node, remaining: [], stack }
       } else if (node instanceof ExtensionNode) {
         this.DEBUG &&
           this.debug(
-            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${keyRemainder.slice(
-              0,
-              node.key().length
+            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
+              progress,
+              progress + node.key().length
             )}]\n|| Matching: [${
-              keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
+              targetKey.slice(progress, progress + node.key().length).toString() ===
+              node.key().toString()
             }]
             `,
             ['FIND_PATH', 'ExtensionNode']
           )
-        const matchingLen = matchingNibbleLength(keyRemainder, node.key())
-        if (matchingLen !== node.key().length) {
-          result = { node: null, remaining: keyRemainder, stack }
-        } else {
+        const _progress = progress
+        for (const k of node.key()) {
           this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
-          walkController.allChildren(node, keyProgress)
+          if (k !== targetKey[progress]) {
+            result = { node: null, remaining: targetKey.slice(_progress), stack }
+            return
+          }
+          progress++
         }
+        walkController.allChildren(node, keyProgress)
       }
     }
 
@@ -425,11 +416,12 @@ export class Trie {
         ['FIND_PATH']
       )
 
+    result.stack = result.stack.filter((e) => e !== undefined)
     this.DEBUG &&
       this.debug(
-        `Result: \n|| Node: ${
-          result.node === null ? 'null' : result.node.constructor.name
-        }\n|| Remaining: [${result.remaining}]\n|| Stack: ${result.stack
+        `Result:
+        || Node: ${result.node === null ? 'null' : result.node.constructor.name}
+        || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
         ['FIND_PATH']

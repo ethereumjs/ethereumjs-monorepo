@@ -81,9 +81,22 @@ export class Skeleton extends MetaDBManager {
   private status: SkeletonStatus
 
   private started: number /** Timestamp when the skeleton syncer was created */
-  private logged = 0 /** Timestamp when progress was last logged to user */
+
+  private syncedchain = 0
   private pulled = BIGINT_0 /** Number of headers downloaded in this run */
+
   private filling = false /** Whether we are actively filling the canonical chain */
+  private fillingstarted = 0
+  private lastfilled = BIGINT_0
+
+  private executionstarted = 0
+  private lastexecuted = BIGINT_0
+
+  private fetchingstarted = 0
+  private lastfetched = BIGINT_0
+
+  private lastFcuTime = 0
+  private syncstarted = 0
 
   private fillLogIndex = 0
 
@@ -91,7 +104,7 @@ export class Skeleton extends MetaDBManager {
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
-    this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: true }
+    this.status = { progress: { subchains: [] }, linked: false, canonicalHeadReset: false }
     this.started = 0
   }
 
@@ -113,10 +126,20 @@ export class Skeleton extends MetaDBManager {
   }
 
   async open() {
+    // make sure to open chain before this can be opened
+    await this.chain.open()
+
     await this.runWithLock<void>(async () => {
       await this.getSyncStatus()
       this.logSyncStatus('Read')
       this.started = new Date().getTime()
+    })
+  }
+
+  async close() {
+    await this.runWithLock<void>(async () => {
+      await this.writeSyncStatus()
+      this.started = 0
     })
   }
 
@@ -152,6 +175,15 @@ export class Skeleton extends MetaDBManager {
 
   isStarted() {
     return this.started > 0
+  }
+
+  async isLastAnnoucement(): Promise<boolean> {
+    const subchain0 = this.status.progress.subchains[0]
+    if (subchain0 !== undefined) {
+      return this.getBlock(subchain0.head + BIGINT_1) !== undefined
+    } else {
+      return true
+    }
   }
 
   /**
@@ -204,7 +236,7 @@ export class Skeleton extends MetaDBManager {
 
     let [lastchain] = this.status.progress.subchains
     if (lastchain === undefined) {
-      this.config.logger.info(
+      this.config.logger.debug(
         `Skeleton empty, comparing against genesis head=0 tail=0 newHead=${number}`
       )
       // set the lastchain to genesis for comparison in following conditions
@@ -312,6 +344,13 @@ export class Skeleton extends MetaDBManager {
    */
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
     return this.runWithLock<boolean>(async () => {
+      if (this.started === 0) {
+        throw Error(`skeleton setHead called before being opened`)
+      }
+      if (!init) {
+        this.lastFcuTime = Date.now()
+      }
+
       this.config.logger.debug(
         `New skeleton head announced number=${head.header.number} hash=${short(
           head.hash()
@@ -321,6 +360,7 @@ export class Skeleton extends MetaDBManager {
       const subchain0Head = this.status.progress.subchains[0]?.head ?? BIGINT_0
       const reorg = await this.processNewHead(head, force)
 
+      // see if just the head needs to be updated or a new subchain needs to be created
       if (force && reorg) {
         // It could just be a reorg at this head with previous tail preserved unless
         //   1. parent is not present in skeleton (it could be in chain for whatever reason) or
@@ -343,27 +383,38 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.info(
             `Created new subchain head=${s.head} tail=${s.tail} next=${short(s.next)}`
           )
+          // Reset the filling of canonical head from tail only on tail reorg and exit any ongoing fill
+          this.status.canonicalHeadReset = s.tail > BIGINT_0
         } else {
           // Only the head differed, tail is preserved
           subchain.head = head.header.number
         }
-        // Reset the filling of canonical head from tail on reorg
-        this.status.canonicalHeadReset = true
       }
-      // Put this block irrespective of the force
-      await this.putBlock(head)
+
+      // Put block if this is forced i.e. fcU update or if this is forward announcement i.e. new blocks
+      // after the current head. putting this block on annoucement i.e force=false on <=current head changes the
+      // skeleton canonical relationship. for > current head, this is treated more like optimistic cache
+      if (force || head.header.number > subchain0Head) {
+        await this.putBlock(head)
+      }
+
       if (init) {
         await this.trySubChainsMerge()
       }
       if ((force && reorg) || init) {
         this.status.linked = await this.checkLinked()
       }
+      // fill by the fcU will be triggered on its own
+      if (init && this.status.linked && head.header.number > subchain0Head) {
+        void this.fillCanonicalChain()
+      }
       if (force || init) {
         await this.writeSyncStatus()
       }
-      if (force && this.status.linked && head.header.number > subchain0Head) {
-        void this.fillCanonicalChain()
+      if (init) {
+        this.logSyncStatus('init', { forceShowInfo: true })
       }
+
       // Earlier we were throwing on reorg, essentially for the purposes for killing the reverse fetcher
       // but it can be handled properly in the calling fn without erroring
       if (reorg && reorgthrow) {
@@ -433,8 +484,8 @@ export class Skeleton extends MetaDBManager {
 
       // subchains are useful if subChain1Head is in skeleton only and its tail correct
       const subChain1Head = await this.getBlock(this.status.progress.subchains[1].head, true)
-      // tail lookup can be from skeleton or chain
-      const subChain1Tail = await this.getBlock(this.status.progress.subchains[1].tail)
+      // tail lookup also needs to be from skeleton because we set resetCanonicalHead true if merged
+      const subChain1Tail = await this.getBlock(this.status.progress.subchains[1].tail, true)
       if (
         subChain1Head === undefined ||
         subChain1Tail === undefined ||
@@ -480,9 +531,14 @@ export class Skeleton extends MetaDBManager {
    */
   async putBlocks(blocks: Block[]): Promise<number> {
     return this.runWithLock<number>(async () => {
+      // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
         throw Error(`Skeleton no subchain set for sync`)
       }
+      if (this.status.linked) {
+        throw Error(`Chain already linked`)
+      }
+
       let merged = false
       let tailUpdated = false
       this.config.logger.debug(
@@ -550,24 +606,6 @@ export class Skeleton extends MetaDBManager {
 
       await this.writeSyncStatus()
 
-      // Print a progress report making the UX a bit nicer
-      if (new Date().getTime() - this.logged > this.STATUS_LOG_INTERVAL) {
-        let left = this.bounds().tail - BIGINT_1 - this.chain.blocks.height
-        if (this.status.linked) left = BIGINT_0
-        if (left > BIGINT_0) {
-          this.logged = new Date().getTime()
-          if (this.pulled === BIGINT_0) {
-            this.config.logger.info(`Beacon sync starting left=${left}`)
-          } else {
-            const sinceStarted = (new Date().getTime() - this.started) / 1000
-            const eta = timeDuration((sinceStarted / Number(this.pulled)) * Number(left))
-            this.config.logger.info(
-              `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${eta}`
-            )
-          }
-        }
-      }
-
       if (!this.status.linked) {
         this.status.linked = await this.checkLinked()
       }
@@ -621,6 +659,24 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
+   * fill the canonical chain from skeleton if there is only a small segment to fill
+   */
+  async blockingFillWithCutoff(cutoffLen: number): Promise<void> {
+    const subchain0 = this.status.progress.subchains[0]
+    if (this.status.linked && subchain0 !== undefined) {
+      const fillPromise = this.fillCanonicalChain().catch((_e) => {})
+      // if subchain0Head is not too ahead, then fill blocking as it gives better sync
+      // log experience else just trigger
+      if (
+        !this.status.canonicalHeadReset &&
+        subchain0.head - BigInt(cutoffLen) < this.chain.blocks.height
+      ) {
+        await fillPromise
+      }
+    }
+  }
+
+  /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
   async fillCanonicalChain() {
@@ -641,12 +697,18 @@ export class Skeleton extends MetaDBManager {
       if (newHead < BIGINT_0) {
         newHead = BIGINT_0
       }
-      this.config.logger.debug(
-        `Resetting canonicalHead for fillCanonicalChain from=${canonicalHead} to=${newHead}`
-      )
-      canonicalHead = newHead
-      await this.chain.resetCanonicalHead(canonicalHead)
-      this.status.canonicalHeadReset = false
+
+      if (canonicalHead > BIGINT_0) {
+        this.config.logger.debug(
+          `Resetting canonicalHead for fillCanonicalChain from=${canonicalHead} to=${newHead}`
+        )
+        canonicalHead = newHead
+        await this.chain.resetCanonicalHead(canonicalHead)
+      }
+      // update in lock so as to not conflict/overwrite sethead/putblock updates
+      await this.runWithLock<void>(async () => {
+        this.status.canonicalHeadReset = false
+      })
     }
 
     const start = canonicalHead
@@ -654,22 +716,35 @@ export class Skeleton extends MetaDBManager {
     this.config.logger.debug(
       `Starting canonical chain fill canonicalHead=${canonicalHead} subchainHead=${subchain.head}`
     )
-    while (this.filling && canonicalHead < subchain.head) {
+
+    // run till it has not been determined that tail reset is required by concurrent setHead calls
+    // filling is switched on and off by fillCanonicalChain only so no need to monitor that
+    while (!this.status.canonicalHeadReset && canonicalHead < subchain.head) {
       // Get next block
       const number = canonicalHead + BIGINT_1
       const block = await this.getBlock(number)
+
       if (block === undefined) {
-        // This shouldn't happen, but if it does because of some issues, we should back step
-        // and fetch again
-        this.config.logger.debug(
-          `fillCanonicalChain block number=${number} not found, backStepping`
-        )
-        await this.runWithLock<void>(async () => {
-          // backstep the subchain from the block that was not found
-          await this.backStep(number)
-        })
+        // This can happen
+        //   i) Only if canonicalHeadReset was flagged on causing skeleton to change its tail canonicality
+        // Else we should back step and fetch again as it indicates some concurrency/db errors
+        if (!this.status.canonicalHeadReset) {
+          this.config.logger.debug(
+            `fillCanonicalChain block number=${number} not found, backStepping...`
+          )
+          await this.runWithLock<void>(async () => {
+            // backstep the subchain from the block that was not found only if the canonicalHeadReset
+            // has not been flagged or else the chain tail has already been reset by sethead
+            await this.backStep(number)
+          })
+        } else {
+          this.config.logger.debug(
+            `fillCanonicalChain block number=${number} not found canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+          )
+        }
         break
       }
+
       // Insert into chain
       let numBlocksInserted = 0
       try {
@@ -678,10 +753,15 @@ export class Skeleton extends MetaDBManager {
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
         if (oldHead !== null && oldHead.header.number >= block.header.number) {
           // Put original canonical head block back if reorg fails
-          await this.chain.putBlocks([oldHead], true)
+          // UPDATE
+          // not sure we can put oldHead because the oldHead chain might have been partially overwritten
+          // skipping for now, leaving code here for future cleanup/debugging
+          //
+          // await this.chain.putBlocks([oldHead], true)
         }
       }
 
+      // handle insertion failures
       if (numBlocksInserted !== 1) {
         this.config.logger.error(
           `Failed to put block number=${number} fork=${block.common.hardfork()} hash=${short(
@@ -714,18 +794,35 @@ export class Skeleton extends MetaDBManager {
             `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`
           )
         }
+
+        // see if backstepping is required ot this is just canonicalHeadReset
         await this.runWithLock<void>(async () => {
-          await this.backStep(number)
+          if (!this.status.canonicalHeadReset) {
+            this.config.logger.debug(
+              `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`
+            )
+            await this.backStep(number)
+          } else {
+            this.config.logger.debug(
+              `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+            )
+          }
         })
         break
       }
+
       canonicalHead += BigInt(numBlocksInserted)
       this.fillLogIndex += numBlocksInserted
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked
       // it will be fetched from the chain without any issues
-      await this.deleteBlock(block)
-      if (this.fillLogIndex >= 20) {
-        this.config.logger.info(
+      //
+      // however delete it in a lock as the parent lookup of a reorged block in skeleton is used
+      // to determine if the tail is to be reset or not
+      await this.runWithLock<void>(async () => {
+        await this.deleteBlock(block)
+      })
+      if (this.fillLogIndex >= this.config.numBlocksPerIteration) {
+        this.config.logger.debug(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
         this.fillLogIndex = 0
@@ -830,14 +927,208 @@ export class Skeleton extends MetaDBManager {
     }
   }
 
-  private logSyncStatus(logPrefix: string): void {
-    this.config.logger.debug(
-      `${logPrefix} sync status linked=${
-        this.status.linked
-      } subchains=${this.status.progress.subchains
-        .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
-        .join(',')}`
-    )
+  logSyncStatus(
+    logPrefix: string,
+    {
+      forceShowInfo,
+      lastStatus,
+      executing,
+      fetching,
+      peers,
+    }: {
+      forceShowInfo?: boolean
+      lastStatus?: string
+      executing?: boolean
+      fetching?: boolean
+      peers?: number | string
+    } = {}
+  ): string {
+    const vmHead = this.chain.blocks.vm
+    const subchain0 = this.status.progress.subchains[0]
+    const isValid =
+      vmHead !== undefined &&
+      this.status.linked &&
+      (vmHead?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+    const isSynced =
+      this.status.linked &&
+      (this.chain.blocks.latest?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+
+    const status = isValid
+      ? 'VALID'
+      : isSynced
+      ? executing === true
+        ? `EXECUTING`
+        : `SYNCED`
+      : `SYNCING`
+
+    if (peers === undefined || peers === 0) {
+      this.syncstarted = 0
+    } else {
+      if (
+        status === 'SYNCING' &&
+        lastStatus !== undefined &&
+        (lastStatus !== status || this.syncstarted === 0)
+      ) {
+        this.syncstarted = Date.now()
+      }
+    }
+
+    if (status !== 'EXECUTING') {
+      this.executionstarted = 0
+    } else {
+      if (this.executionstarted === 0 || this.lastexecuted !== vmHead?.header.number) {
+        this.executionstarted = Date.now()
+      }
+      this.lastexecuted = vmHead?.header.number ?? BIGINT_0
+    }
+
+    if (status !== 'SYNCED') {
+      this.syncedchain = 0
+    } else {
+      if (this.syncedchain === 0) {
+        this.syncedchain = Date.now()
+      }
+    }
+
+    if (fetching === false) {
+      this.fetchingstarted === 0
+    } else if (fetching === true) {
+      if (this.fetchingstarted === 0 || subchain0.tail !== this.lastfetched) {
+        this.fetchingstarted = Date.now()
+      }
+      this.lastfetched = subchain0.tail
+    }
+
+    if (!this.filling) {
+      this.fillingstarted = 0
+    } else {
+      if (this.fillingstarted === 0 || this.lastfilled !== this.chain.blocks.height) {
+        this.fillingstarted = Date.now()
+      }
+      this.lastfilled = this.chain.blocks.height
+    }
+
+    let extraStatus
+    let scenario = ''
+    switch (status) {
+      case 'EXECUTING':
+        scenario = Date.now() - this.executionstarted > 10 * 60_000 ? 'execution stalled?' : ''
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height})`
+        break
+      case 'SYNCED':
+        scenario =
+          Date.now() - this.syncedchain > 10 * 60_000 ? 'execution stalled?' : 'awaiting execution'
+        extraStatus = ` (${scenario} vm=${vmHead?.header.number} head=${this.chain.blocks.height} )`
+        break
+      case 'SYNCING':
+        if (this.filling) {
+          scenario = Date.now() - this.fillingstarted > 10 * 60_000 ? 'filling stalled?' : 'filling'
+          extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+        } else {
+          if (fetching === true) {
+            scenario =
+              Date.now() - this.fetchingstarted > 10 * 60_000 ? 'backfill stalled?' : 'backfilling'
+            extraStatus = ` (${scenario} tail=${subchain0.tail} cl=${subchain0?.head})`
+          } else {
+            if (peers === undefined || peers === 0) {
+              scenario = 'nopeers'
+            } else {
+              if (Date.now() - this.lastFcuTime > 10 * 60_000) {
+                scenario = this.lastFcuTime === 0 ? `awaiting fcu` : `cl stalled?`
+              } else {
+                scenario =
+                  Date.now() - this.syncstarted > 10 * 60_000 ? `sync stalled?` : `awaiting sync`
+              }
+              scenario = `${scenario} peers=${peers}`
+            }
+            extraStatus = ` (${scenario} head=${this.chain.blocks.height} cl=${subchain0?.head})`
+          }
+        }
+        break
+
+      // no additional status is needed on valid
+      default:
+        extraStatus = ''
+    }
+    const chainHead = `chain head=${this.chain.blocks.latest?.header.number ?? 'na'} hash=${short(
+      this.chain.blocks.latest?.hash() ?? 'na'
+    )}`
+
+    forceShowInfo = forceShowInfo ?? false
+    lastStatus = lastStatus ?? status
+
+    if (forceShowInfo || status !== lastStatus) {
+      let beaconSyncETA = 'na'
+      if (!this.status.linked && subchain0 !== undefined) {
+        // Print a progress report making the UX a bit nicer
+        let left = this.bounds().tail - BIGINT_1 - this.chain.blocks.height
+        if (this.status.linked) left = BIGINT_0
+        if (left > BIGINT_0) {
+          if (this.pulled !== BIGINT_0 && fetching === true) {
+            const sinceStarted = (new Date().getTime() - this.started) / 1000
+            beaconSyncETA = `${timeDuration((sinceStarted / Number(this.pulled)) * Number(left))}`
+            this.config.logger.debug(
+              `Syncing beacon headers downloaded=${this.pulled} left=${left} eta=${beaconSyncETA}`
+            )
+          }
+        }
+      }
+
+      let logInfo
+      let subchainLog = ''
+      if (isValid) {
+        logInfo = `vm = cl = ${chainHead}`
+      } else {
+        logInfo = `vm=${vmHead?.header.number} hash=${short(
+          vmHead?.hash() ?? 'na'
+        )} executing=${executing}`
+
+        const beaconsync = this.filling ? 'filling' : fetching === true ? 'fetching' : 'na'
+        // if not synced add subchain info
+        if (!isSynced) {
+          logInfo = `${logInfo} cl=${subchain0?.head} ${chainHead}`
+          const subchainLen = this.status.progress.subchains.length
+          subchainLog = `subchains(${subchainLen}) linked=${
+            this.status.linked
+          } ${this.status.progress.subchains
+            // if info log show only first subchain to be succinct
+            .slice(0, 1)
+            .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
+            .join(',')}${subchainLen > 1 ? '…' : ''} beaconsync=${beaconsync} ${
+            beaconSyncETA !== undefined ? 'eta=' + beaconSyncETA : ''
+          } reorgs-head=${
+            this.status.canonicalHeadReset &&
+            (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
+          }`
+        } else {
+          logInfo = `${logInfo} cl = ${chainHead}`
+        }
+      }
+      peers = peers !== undefined ? `${peers}` : 'na'
+
+      // if valid then the status info is short and sweet
+      this.config.logger.info('')
+      if (isValid) {
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${logInfo} peers=${peers}`)
+      } else {
+        // else break into two
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} peers=${peers}`)
+        this.config.logger.info(`${logPrefix} ${logInfo}`)
+        if (!isSynced) {
+          this.config.logger.info(`${logPrefix} ${subchainLog}`)
+        }
+      }
+      this.config.logger.info('')
+    } else {
+      this.config.logger.debug(
+        `${logPrefix} ${status} linked=${
+          this.status.linked
+        } subchains=${this.status.progress.subchains
+          .map((s) => `[head=${s.head} tail=${s.tail} next=${short(s.next)}]`)
+          .join(',')} reset=${this.status.canonicalHeadReset} ${chainHead}`
+      )
+    }
+    return status
   }
 
   /**

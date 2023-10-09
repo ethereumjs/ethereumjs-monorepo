@@ -39,7 +39,7 @@ export class VMExecution extends Execution {
   /**
    * Display state cache stats every num blocks
    */
-  private STATS_NUM_BLOCKS = 1000
+  private STATS_NUM_BLOCKS = 1500
   private statsCount = 0
 
   /**
@@ -57,6 +57,7 @@ export class VMExecution extends Execution {
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
       this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
+      this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
       this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
       const stateManager = new DefaultStateManager({
         trie,
@@ -70,6 +71,11 @@ export class VMExecution extends Execution {
           deactivate: false,
           type: CacheType.LRU,
           size: this.config.storageCache,
+        },
+        codeCacheOpts: {
+          deactivate: false,
+          type: CacheType.LRU,
+          size: this.config.codeCache,
         },
       })
 
@@ -156,12 +162,14 @@ export class VMExecution extends Execution {
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
    * @param optional param if runWithoutSetHead should block for execution
+   * @param optional param if runWithoutSetHead should skip putting block into chain
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(
     opts: RunBlockOpts,
     receipts?: TxReceipt[],
-    blocking: boolean = false
+    blocking: boolean = false,
+    skipBlockchain: boolean = false
   ): Promise<boolean> {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
@@ -187,19 +195,22 @@ export class VMExecution extends Execution {
           // Save receipts
           this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
         }
-        // Bypass updating head by using blockchain db directly
-        const [hash, num] = [block.hash(), block.header.number]
-        const td =
-          (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
-          block.header.difficulty
 
-        await this.chain.blockchain.dbManager.batch([
-          DBSetTD(td, num, hash),
-          ...DBSetBlockOrHeader(block),
-          DBSetHashToNumber(hash, num),
-          // Skip the op for number to hash to not alter canonical chain
-          ...DBSaveLookups(hash, num, true),
-        ])
+        if (!skipBlockchain) {
+          // Bypass updating head by using blockchain db directly
+          const [hash, num] = [block.hash(), block.header.number]
+          const td =
+            (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
+            block.header.difficulty
+
+          await this.chain.blockchain.dbManager.batch([
+            DBSetTD(td, num, hash),
+            ...DBSetBlockOrHeader(block),
+            DBSetHashToNumber(hash, num),
+            // Skip the op for number to hash to not alter canonical chain
+            ...DBSaveLookups(hash, num, true),
+          ])
+        }
       } finally {
         this.running = false
       }
@@ -377,7 +388,7 @@ export class VMExecution extends Execution {
                   })
                   if (hardfork !== this.hardfork) {
                     const hash = short(block.hash())
-                    this.config.logger.info(
+                    this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
@@ -513,11 +524,14 @@ export class VMExecution extends Execution {
                 this.config.execCommon.gteHardfork(Hardfork.London) === true
                   ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
                   : ''
+
               const tdAdd =
                 this.config.execCommon.gteHardfork(Hardfork.Paris) === true
                   ? ''
                   : `td=${this.chain.blocks.td} `
-              this.config.logger.info(
+              ;(this.config.execCommon.gteHardfork(Hardfork.Paris) === true
+                ? this.config.logger.debug
+                : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
               )
             } else {
@@ -680,15 +694,25 @@ export class VMExecution extends Execution {
   stats(vm: VM) {
     this.statsCount += 1
     if (this.statsCount === this.STATS_NUM_BLOCKS) {
-      let stats = (vm.stateManager as any)._accountCache.stats()
+      const sm = vm.stateManager as any
+      const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
+      let stats
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      stats = !sm._accountCacheSettings.deactivate ? sm._accountCache.stats() : disactivatedStats
       this.config.logger.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
-      stats = (vm.stateManager as any)._storageCache.stats()
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      stats = !sm._storageCacheSettings.deactivate ? sm._storageCache.stats() : disactivatedStats
       this.config.logger.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
       )
-      const tStats = ((vm.stateManager as any)._trie as Trie).database().stats()
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      stats = !sm._codeCacheSettings.deactivate ? sm._codeCache.stats() : disactivatedStats
+      this.config.logger.info(
+        `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`
+      )
+      const tStats = (sm._trie as Trie).database().stats()
       this.config.logger.info(
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`

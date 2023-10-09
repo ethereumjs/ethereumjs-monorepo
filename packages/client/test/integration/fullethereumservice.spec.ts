@@ -26,14 +26,14 @@ describe('[Integration:FullEthereumService]', async () => {
     return this
   }
   async function setup(): Promise<[MockServer, FullEthereumService]> {
-    const server = new MockServer({ config })
+    const server = new MockServer({ config }) as any
     const blockchain = await Blockchain.create({
       common: config.chainCommon,
       validateBlocks: false,
       validateConsensus: false,
     })
     const chain = new MockChain({ config, blockchain })
-    const serviceConfig = new Config({ servers: [server as any], lightserv: true })
+    const serviceConfig = new Config({ server, lightserv: true })
     const service = new FullEthereumService({
       config: serviceConfig,
       chain,

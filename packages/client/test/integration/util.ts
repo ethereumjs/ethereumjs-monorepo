@@ -38,7 +38,7 @@ export async function setup(
     storageCache: 1000,
   })
 
-  const server = new MockServer({ config, location })
+  const server = new MockServer({ config, location }) as any
   const blockchain = await Blockchain.create({
     validateBlocks: false,
     validateConsensus: false,
@@ -47,10 +47,9 @@ export async function setup(
 
   const chain = new MockChain({ config, blockchain, height })
 
-  const servers = [server] as any
   const serviceConfig = new Config({
     syncmode,
-    servers,
+    server,
     lightserv,
     minPeers,
     common,

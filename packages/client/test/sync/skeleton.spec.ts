@@ -35,6 +35,19 @@ const block51 = Block.fromBlockData(
   { common }
 )
 
+describe('[Skeleton]/ startup ', () => {
+  it('starts the chain when starting the skeleton', async () => {
+    const config = new Config({
+      common,
+    })
+    const chain = await Chain.create({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    assert.equal(chain.opened, false, 'chain is not started')
+    await skeleton.open()
+    assert.equal(chain.opened, true, 'chain is opened by skeleton')
+  })
+})
+
 describe('[Skeleton] / initSync', async () => {
   // Tests various sync initializations based on previous leftovers in the database
   // and announced heads.
@@ -189,7 +202,6 @@ describe('[Skeleton] / initSync', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        transports: [],
         logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
@@ -230,6 +242,7 @@ describe('[Skeleton] / initSync', async () => {
     })
   }
 })
+
 describe('[Skeleton] / setHead', async () => {
   // Tests that a running skeleton sync can be extended with properly linked up
   // headers but not with side chains.
@@ -305,7 +318,7 @@ describe('[Skeleton] / setHead', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        transports: [],
+
         logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
@@ -375,7 +388,7 @@ describe('[Skeleton] / setHead', async () => {
       difficulty: '0x1',
     }
     const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     try {
@@ -386,7 +399,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should init/setHead properly from genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -490,7 +503,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to genesis', async () => {
-    const config = new Config({ common, transports: [], logger: getLogger({ logLevel: 'debug' }) })
+    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -538,13 +551,14 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead is set with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
     await wait(200)
+
     assert.equal(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead is set with force=true'
     )
-
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -562,7 +576,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
 
@@ -611,6 +625,8 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
+
     await wait(200)
     assert.equal(
       chain.blocks.height,
@@ -648,7 +664,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       accountCache: 10000,
       storageCache: 1000,
@@ -753,7 +768,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       accountCache: 10000,
       storageCache: 1000,
@@ -814,7 +828,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       logger: getLogger({ logLevel: 'debug' }),
       accountCache: 10000,

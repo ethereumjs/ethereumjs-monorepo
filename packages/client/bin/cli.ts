@@ -47,7 +47,7 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.transports, args.bootnodes, etc)
+// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.bootnodes, etc)
 const args: ClientOpts = yargs(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
@@ -101,11 +101,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('transports', {
-    describe: 'Network transports',
-    default: Config.TRANSPORTS_DEFAULT,
-    array: true,
-  })
   .option('bootnodes', {
     describe: 'Comma-separated list of network bootnodes',
     array: true,
@@ -140,7 +135,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',
-    default: 8545,
+    default: 8546,
   })
   .option('wsAddr', {
     describe: 'WS-RPC server listening address',
@@ -163,7 +158,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('wsEnginePort', {
     describe: 'WS-RPC server listening port for Engine namespace',
     number: true,
-    default: 8551,
+    default: 8552,
   })
   .option('wsEngineAddr', {
     describe: 'WS-RPC server listening interface address for Engine namespace',
@@ -271,6 +266,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     number: true,
     default: Config.STORAGE_CACHE,
   })
+  .option('codeCache', {
+    describe: 'Size for the code cache (max number of contracts)',
+    number: true,
+    default: Config.CODE_CACHE,
+  })
   .option('trieCache', {
     describe: 'Size for the trie cache (max number of trie nodes)',
     number: true,
@@ -362,9 +362,29 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .option('pruneEngineCache', {
+    describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
+    boolean: true,
+    default: true,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
-  .strict().argv
+  .strict()
+  .check((argv, _options) => {
+    const usedPorts = new Set()
+    let collision = false
+    if (argv.ws === true) {
+      usedPorts.add(argv.wsPort)
+      if (!usedPorts.has(argv.wsEnginePort)) {
+        usedPorts.add(argv.wsEnginePort)
+      }
+    }
+    if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
+    if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
+
+    if (collision) throw new Error('cannot reuse ports between RPC instances')
+    return true
+  }).argv
 
 /**
  * Initializes and returns the databases needed for the client
@@ -807,6 +827,7 @@ async function run() {
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,
+    codeCache: args.codeCache,
     trieCache: args.trieCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
@@ -829,8 +850,8 @@ async function run() {
     disableBeaconSync: args.disableBeaconSync,
     forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
-    transports: args.transports?.length === 0 ? args.transports : undefined,
     txLookupLimit: args.txLookupLimit,
+    pruneEngineCache: args.pruneEngineCache,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -860,7 +881,7 @@ async function run() {
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
-      config.logger.info('Client started successfully')
+      config.superMsg('Client started successfully')
       return { client, servers }
     })
     .catch((e) => {
