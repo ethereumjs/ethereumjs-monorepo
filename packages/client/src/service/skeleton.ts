@@ -95,6 +95,8 @@ export class Skeleton extends MetaDBManager {
   private fetchingstarted = 0
   private lastfetched = BIGINT_0
 
+  private lastvalid = 0
+
   private lastFcuTime = 0
   private syncstarted = 0
 
@@ -959,6 +961,12 @@ export class Skeleton extends MetaDBManager {
       vmHead !== undefined &&
       this.status.linked &&
       (vmHead?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
+    if (isValid) {
+      if (this.lastvalid === 0) {
+        this.config.superMsg('Chain validation completed')
+      }
+      this.lastvalid = Date.now()
+    }
     const isSynced =
       this.status.linked &&
       (this.chain.blocks.latest?.header.number ?? BIGINT_0) === (subchain0?.head ?? BIGINT_0)
