@@ -1136,7 +1136,9 @@ export class Engine {
       }
     }
 
-    const isHeadExecuted = await this.vm.stateManager.hasStateRoot(headBlock.header.stateRoot)
+    const isHeadExecuted =
+      (this.executedBlocks.get(headBlockHash.slice(2)) ??
+        (await validExecutedChainBlock(headBlock, this.chain))) !== null
     if (!isHeadExecuted) {
       // execution has not yet caught up, so lets just return sync
       const payloadStatus = {
