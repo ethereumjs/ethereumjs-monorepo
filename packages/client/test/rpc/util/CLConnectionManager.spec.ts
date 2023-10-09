@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src'
 import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/util/CLConnectionManager'
@@ -123,7 +123,7 @@ describe('[CLConnectionManager]', () => {
       'connection status updated correctly'
     )
   })
-  it.only('updates connection status correctly', async () => {
+  it('updates connection status correctly', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(1696528979492)
     const config = new Config()
@@ -146,10 +146,10 @@ describe('[CLConnectionManager]', () => {
     )
 
     manager['config'].chainCommon.setHardfork('paris')
-    ;(manager as any)._inActivityCb = () => {
-      assert.ok(true, 'called inactivity callback on disconnection event')
-    }
+    ;(manager as any)._inActivityCb = () => vi.fn()
+    const callbackSpy = vi.spyOn(manager as any, '_inActivityCb')
     manager['connectionCheck']()
+    expect(callbackSpy).toHaveBeenCalledTimes(1)
     assert.equal(manager['disconnectedCheckIndex'], 1, 'disconnection check incremented correctly')
   })
 })
