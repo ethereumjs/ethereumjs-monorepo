@@ -35,6 +35,7 @@ Below you can find a list of the packages included in this repository.
 | [@ethereumjs/tx][tx-package]                     | [![NPM Package][tx-npm-badge]][tx-npm-link]                     | [![Tx Issues][tx-issues-badge]][tx-issues-link]                               | [![Actions Status][tx-actions-badge]][tx-actions-link]                     | [![Code Coverage][tx-coverage-badge]][tx-coverage-link]                     |
 | [@ethereumjs/util][util-package]                 | [![NPM Package][util-npm-badge]][util-npm-link]                 | [![Util Issues][util-issues-badge]][util-issues-link]                         | [![Actions Status][util-actions-badge]][util-actions-link]                 | [![Code Coverage][util-coverage-badge]][util-coverage-link]                 |
 | [@ethereumjs/vm][vm-package]                     | [![NPM Package][vm-npm-badge]][vm-npm-link]                     | [![VM Issues][vm-issues-badge]][vm-issues-link]                               | [![Actions Status][vm-actions-badge]][vm-actions-link]                     | [![Code Coverage][vm-coverage-badge]][vm-coverage-link]                     |
+| [@ethereumjs/wallet][wallet-package]             | [![NPM Package][wallet-npm-badge]][wallet-npm-link]             | [![StateManager Issues][wallet-issues-badge]][wallet-issues-link]             | [![Actions Status][wallet-actions-badge]][wallet-actions-link]             | [![Code Coverage][wallet-coverage-badge]][wallet-coverage-link]             |
 
 ## Branches
 
@@ -230,3 +231,12 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [vm-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22VM%22
 [vm-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=vm
 [vm-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm
+[wallet-package]: ./packages/wallet
+[wallet-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/wallet.svg
+[wallet-npm-link]: https://www.npmjs.com/package/@ethereumjs/wallet
+[wallet-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20wallet?label=issues
+[wallet-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+wallet"
+[wallet-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Wallet/badge.svg
+[wallet-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22wallet%22
+[wallet-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=wallet
+[wallet-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/wallet
