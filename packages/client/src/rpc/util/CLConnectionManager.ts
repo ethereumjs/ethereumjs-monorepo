@@ -72,13 +72,13 @@ export class CLConnectionManager {
   private DEFAULT_FORKCHOICE_LOG_INTERVAL = 60000
 
   /** Threshold for a disconnected status decision */
-  private DISCONNECTED_THRESHOLD = 30000
+  private DISCONNECTED_THRESHOLD = 45000
   /** Wait for a minute to log disconnected again*/
   private LOG_DISCONNECTED_EVERY_N_CHECKS = 6
   private disconnectedCheckIndex = 0
 
   /** Threshold for an uncertain status decision */
-  private UNCERTAIN_THRESHOLD = 15000
+  private UNCERTAIN_THRESHOLD = 30000
 
   /** Track ethereumjs client shutdown status */
   private _clientShutdown = false
