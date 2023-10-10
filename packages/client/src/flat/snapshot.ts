@@ -1,6 +1,8 @@
+import { EmptyNode, byteTypeToNibbleType, bytesToNibbles } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
+  KECCAK256_NULL_S,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -62,38 +64,36 @@ export class Snapshot {
 
   async _saveCachePreState(key: Uint8Array) {
     const keyHex = bytesToHex(key)
-    const it = this._diffCache[this._checkpoints].get(keyHex)
-    if (it === undefined) {
+    const diffMap = this._diffCache[this._checkpoints]
+    if (!diffMap.has(keyHex)) {
       const oldElem: SnapshotElement | undefined = {
         data: (await this._db.get(key)) as Uint8Array | undefined,
       }
-      this._diffCache[this._checkpoints].set(keyHex, oldElem)
+      diffMap.set(keyHex, oldElem)
     }
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
-    const addressHex = address.bytes
-    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(addressHex)])
-    const value = account.serialize()
+    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(address.bytes)])
     await this._saveCachePreState(key)
 
+    const value = account.serialize()
     await this._db.put(key, value)
   }
 
   async getAccount(address: Address): Promise<Uint8Array | undefined> {
-    const addressHex = address.bytes
-    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(addressHex)])
+    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(address.bytes)])
 
     return this._db.get(key)
   }
 
   getAccounts(): Promise<[Uint8Array, Uint8Array | undefined][]> {
-    throw Error('Not yet implemented')
+    const prefix = ACCOUNT_PREFIX
+    return this._db.byPrefix(prefix)
   }
 
   async delAccount(address: Address): Promise<void> {
-    const addressHex = address.bytes
-    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(addressHex)])
+    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(address.bytes)])
     await this._saveCachePreState(key)
 
     return this._db.del(key)
@@ -117,6 +117,8 @@ export class Snapshot {
     await this.clearAccountStorage(address)
   }
 
+  // TODO why do we update codeRoot of account for putCode but not storageRoot for putStorageSlot?
+  // ANSWER I'm seeing it's because during merklize account storageRoot's are updated en masse
   async putStorageSlot(address: Address, slot: Uint8Array, value: Uint8Array): Promise<void> {
     const key = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot)])
     await this._saveCachePreState(key)
@@ -129,7 +131,8 @@ export class Snapshot {
   }
 
   async getStorageSlots(address: Address): Promise<[Uint8Array, Uint8Array | undefined][]> {
-    throw Error('Not yet implemented')
+    const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
+    return this._db.byPrefix(prefix)
   }
 
   async delStorageSlot(address: Address, slot: Uint8Array): Promise<void> {
@@ -145,20 +148,109 @@ export class Snapshot {
     await this._db.delByPrefix(prefix)
   }
 
-  async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
-    throw Error('Not yet implemented')
-  }
-
   async putCode(address: Address, code: Uint8Array): Promise<void> {
-    throw Error('Not yet implemented')
+    const codeHash = keccak256(code)
+    if (equalsBytes(codeHash, KECCAK256_NULL)) {
+      return
+    }
+
+    const key = concatenateUint8Arrays([CODE_PREFIX, keccak256(address.bytes)])
+    await this._saveCachePreState(key)
+    await this._db.put(key, code)
+
+    // update codeHash field of associated account
+    const rawAccount = await this.getAccount(address)
+    if (!rawAccount) throw new Error('Creating code for nonexistent account')
+    const account = Account.fromRlpSerializedAccount(rawAccount)
+    account.codeHash = codeHash
+    await this.putAccount(address, account)
   }
 
-  async getCode(address: Address): Promise<Uint8Array | null> {
-    throw Error('Not yet implemented')
+  async getCode(address: Address): Promise<Uint8Array | undefined> {
+    const rawAccount = await this.getAccount(address)
+    if (!rawAccount) return undefined
+    const account = Account.fromRlpSerializedAccount(rawAccount)
+    if (equalsBytes(account.codeHash, KECCAK256_NULL)) {
+      return new Uint8Array(0)
+    }
+
+    const key = concatenateUint8Arrays([CODE_PREFIX, keccak256(address.bytes)])
+    return this._db.get(key)
   }
 
   async merkleize(): Promise<Uint8Array> {
-    throw Error('Not yet implemented')
+    // Merkleize all the storage tries in the db
+    const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
+    console.log(storageRoots)
+
+    return new Promise((resolve, reject) => {
+      let root = new EmptyNode()
+      try {
+        return this.getAccounts()
+          .then((accounts) => {
+            accounts.map(([key, value]) => {
+              const k = key.slice(ACCOUNT_PREFIX.length)
+              // Update the account's stateRoot field if there exist
+              // storage slots for that account in the db (i.e. not EoA).
+              // TODO: Can probably cache stateRoot and re-compute storage
+              // trie root only if the storage trie has been touched.
+              const storageRoot = storageRoots[bytesToHex(k)]
+              let v = value
+              if (storageRoot !== undefined) {
+                const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
+                acc.storageRoot = storageRoot
+                v = acc.serialize()
+              }
+              root = root.insert(byteTypeToNibbleType(k), v ?? KECCAK256_NULL)
+
+              resolve(root.hash())
+            })
+          })
+          .catch((e) => {
+            reject(e)
+          })
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
+
+  async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
+    return new Promise((resolve, reject) => {
+      try {
+        const tries: any = {}
+        const prefix = STORAGE_PREFIX
+        this._db
+          .byPrefix(prefix)
+          .then((slots) => {
+            slots.map((slotData) => {
+              const [key, value] = slotData
+              const hashedAddr = key.slice(STORAGE_PREFIX.length, STORAGE_PREFIX.length + 32)
+              const hashedAddrString = bytesToHex(hashedAddr)
+              if (hashedAddrString in tries) {
+                tries[hashedAddrString] = new EmptyNode()
+              }
+              const slotKey = key.slice(STORAGE_PREFIX.length + 32)
+              tries[hashedAddrString] = tries[hashedAddrString].insert(
+                bytesToNibbles(slotKey),
+                value
+              )
+            })
+
+            const roots: any = {}
+            for (let i = 0; i < tries.length; i++) {
+              const k = tries[i]
+              roots[k] = tries[k].hash()
+            }
+            return resolve(roots)
+          })
+          .catch((e) => {
+            reject(e)
+          })
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 
   // /**
