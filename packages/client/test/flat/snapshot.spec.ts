@@ -68,7 +68,7 @@ describe('snapshot get storage slots for address', () => {
   it('should return empty for non-existent key', async () => {
     const snapshot = new Snapshot()
     const addr = new Address(hexToBytes('0x' + '3'.repeat(40)))
-    assert.notOk(await snapshot.getStorageSlots(addr))
+    assert.equal(JSON.stringify(await snapshot.getStorageSlots(addr)), JSON.stringify([]))
   })
 
   it('should return all slots for account', async () => {
