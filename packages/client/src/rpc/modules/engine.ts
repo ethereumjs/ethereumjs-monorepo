@@ -993,6 +993,7 @@ export class Engine {
     const newPayloadRes = await this.newPayload(params)
     if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
       newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
     }
     return newPayloadRes
   }
@@ -1010,6 +1011,7 @@ export class Engine {
     const newPayloadRes = await this.newPayload(params)
     if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
       newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
     }
     return newPayloadRes
   }
