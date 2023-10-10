@@ -181,76 +181,45 @@ export class Snapshot {
   async merkleize(): Promise<Uint8Array> {
     // Merkleize all the storage tries in the db
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
-    console.log(storageRoots)
 
-    return new Promise((resolve, reject) => {
-      let root = new EmptyNode()
-      try {
-        return this.getAccounts()
-          .then((accounts) => {
-            accounts.map(([key, value]) => {
-              const k = key.slice(ACCOUNT_PREFIX.length)
-              // Update the account's stateRoot field if there exist
-              // storage slots for that account in the db (i.e. not EoA).
-              // TODO: Can probably cache stateRoot and re-compute storage
-              // trie root only if the storage trie has been touched.
-              const storageRoot = storageRoots[bytesToHex(k)]
-              let v = value
-              if (storageRoot !== undefined) {
-                const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
-                acc.storageRoot = storageRoot
-                v = acc.serialize()
-              }
-              root = root.insert(byteTypeToNibbleType(k), v ?? KECCAK256_NULL)
-
-              resolve(root.hash())
-            })
-          })
-          .catch((e) => {
-            reject(e)
-          })
-      } catch (e) {
-        reject(e)
+    let root = new EmptyNode()
+    const accounts = await this.getAccounts()
+    accounts.map(([key, value]) => {
+      const storageKeySlice = key.slice(ACCOUNT_PREFIX.length)
+      // TODO update the account's stateRoot field if there exist
+      // storage slots for that account in the db (i.e. not EoA).
+      // TODO can probably cache stateRoot and re-compute storage
+      // trie root only if the storage trie has been touched.
+      const storageRoot = storageRoots[bytesToHex(storageKeySlice)]
+      let v = value
+      if (storageRoot !== undefined) {
+        const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
+        acc.storageRoot = storageRoot
+        v = acc.serialize()
       }
+      root = root.insert(byteTypeToNibbleType(storageKeySlice), v ?? KECCAK256_NULL)
     })
+    return root.hash()
   }
 
   async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
-    return new Promise((resolve, reject) => {
-      try {
-        const tries: any = {}
-        const prefix = STORAGE_PREFIX
-        this._db
-          .byPrefix(prefix)
-          .then((slots) => {
-            slots.map((slotData) => {
-              const [key, value] = slotData
-              const hashedAddr = key.slice(STORAGE_PREFIX.length, STORAGE_PREFIX.length + 32)
-              const hashedAddrString = bytesToHex(hashedAddr)
-              if (hashedAddrString in tries) {
-                tries[hashedAddrString] = new EmptyNode()
-              }
-              const slotKey = key.slice(STORAGE_PREFIX.length + 32)
-              tries[hashedAddrString] = tries[hashedAddrString].insert(
-                bytesToNibbles(slotKey),
-                value
-              )
-            })
-
-            const roots: any = {}
-            for (let i = 0; i < tries.length; i++) {
-              const k = tries[i]
-              roots[k] = tries[k].hash()
-            }
-            return resolve(roots)
-          })
-          .catch((e) => {
-            reject(e)
-          })
-      } catch (e) {
-        reject(e)
+    const tries: any = {}
+    const prefix = STORAGE_PREFIX
+    for await (const [key, value] of this._db._leveldb.iterator({ gt: prefix })) {
+      const hashedAddr = key.slice(STORAGE_PREFIX.length, STORAGE_PREFIX.length + 32)
+      const hashedAddrString = bytesToHex(hashedAddr)
+      if (hashedAddrString in tries === false) {
+        tries[hashedAddrString] = new EmptyNode()
       }
-    })
+      const slotKey = key.slice(STORAGE_PREFIX.length + 32)
+      tries[hashedAddrString] = tries[hashedAddrString].insert(bytesToNibbles(slotKey), value)
+    }
+    const roots: any = {}
+    for (let i = 0; i < tries.length; i++) {
+      const k = tries[i]
+      roots[k] = tries[k].hash()
+    }
+    return roots
   }
 
   // /**
