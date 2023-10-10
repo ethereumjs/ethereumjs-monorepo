@@ -276,6 +276,11 @@ const recursivelyFindParents = async (
     )
     parentBlocks.push(block)
 
+    if (block.isGenesis()) {
+      // In case we hit the genesis block we should stop finding additional parents
+      break
+    }
+
     // throw error if lookups have exceeded maxDepth
     if (parentBlocks.length > maxDepth) {
       throw Error(`recursivelyFindParents lookups deeper than maxDepth=${maxDepth}`)
