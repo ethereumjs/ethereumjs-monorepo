@@ -1226,11 +1226,9 @@ export class Engine {
       }
       this.service.txPool.removeNewBlockTxs(blocks)
 
-      const isPrevSynced = this.chain.config.synchronized
-      this.config.updateSynchronizedState(headBlock.header)
-      if (!isPrevSynced && this.chain.config.synchronized) {
-        this.service.txPool.checkRunState()
-      }
+      this.config.syncTargetHeight = headBlock.header.number
+      this.config.synchronized = true
+      this.service.txPool.checkRunState()
     } else {
       // even if the vmHead is same still validations need to be done regarding the correctness
       // of the sequence and canonical-ity
