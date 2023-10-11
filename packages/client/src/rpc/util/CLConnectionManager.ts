@@ -32,6 +32,7 @@ export enum ConnectionStatus {
 
 type CLConnectionManagerOpts = {
   config: Config
+  inActivityCb?: () => void
 }
 
 type NewPayload = {
@@ -65,13 +66,16 @@ export class CLConnectionManager {
   private DEFAULT_CONNECTION_CHECK_INTERVAL = 10000
 
   /** Default payload log interval (in ms) */
-  private DEFAULT_PAYLOAD_LOG_INTERVAL = 15000
+  private DEFAULT_PAYLOAD_LOG_INTERVAL = 60000
 
   /** Default forkchoice log interval (in ms) */
-  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 15000
+  private DEFAULT_FORKCHOICE_LOG_INTERVAL = 60000
 
   /** Threshold for a disconnected status decision */
   private DISCONNECTED_THRESHOLD = 30000
+  /** Wait for a minute to log disconnected again*/
+  private LOG_DISCONNECTED_EVERY_N_CHECKS = 6
+  private disconnectedCheckIndex = 0
 
   /** Threshold for an uncertain status decision */
   private UNCERTAIN_THRESHOLD = 15000
@@ -99,6 +103,7 @@ export class CLConnectionManager {
 
   private _initialPayload?: NewPayload
   private _initialForkchoiceUpdate?: ForkchoiceUpdate
+  private _inActivityCb?: () => void
 
   get running() {
     return !!this._connectionCheckInterval
@@ -124,6 +129,7 @@ export class CLConnectionManager {
       this._clientShutdown = true
       this.stop()
     })
+    this._inActivityCb = opts.inActivityCb
   }
 
   start() {
@@ -280,6 +286,7 @@ export class CLConnectionManager {
    */
   private connectionCheck() {
     if (this.connectionStatus === ConnectionStatus.Connected) {
+      this.disconnectedCheckIndex = 0
       const now = new Date().getTime()
       const timeDiff = now - this.lastRequestTimestamp
 
@@ -293,9 +300,16 @@ export class CLConnectionManager {
         logCLStatus(this.config.logger, 'Consensus client disconnected', logLevel.WARN)
       }
     } else {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
+      if (
+        this.config.chainCommon.gteHardfork(Hardfork.Paris) &&
+        this.disconnectedCheckIndex % this.LOG_DISCONNECTED_EVERY_N_CHECKS === 0
+      ) {
         logCLStatus(this.config.logger, 'Waiting for consensus client to connect...', logLevel.INFO)
+        if (this._inActivityCb !== undefined) {
+          this._inActivityCb()
+        }
       }
+      this.disconnectedCheckIndex++
     }
 
     if (
@@ -344,6 +358,7 @@ export class CLConnectionManager {
       return
     }
     if (!this.config.synchronized) {
+      this.config.logger.info('')
       if (!this._lastPayload) {
         logCLStatus(this.config.logger, 'No consensus payload received yet', logLevel.INFO)
       } else {
@@ -380,6 +395,7 @@ export class CLConnectionManager {
   public newPayloadLog() {
     if (this._lastPayload) {
       const payloadMsg = this._getPayloadLogMsg(this._lastPayload)
+      this.config.logger.info('')
       logCLStatus(
         this.config.logger,
         `New consensus payload received  ${payloadMsg}`,
