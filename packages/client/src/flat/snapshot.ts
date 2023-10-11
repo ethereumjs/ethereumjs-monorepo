@@ -1,13 +1,5 @@
-import { EmptyNode, byteTypeToNibbleType, bytesToNibbles } from '@ethereumjs/trie'
-import {
-  Account,
-  KECCAK256_NULL,
-  KECCAK256_NULL_S,
-  bytesToHex,
-  bytesToUnprefixedHex,
-  equalsBytes,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { merkleizeList } from '@ethereumjs/trie'
+import { Account, KECCAK256_NULL, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -181,25 +173,24 @@ export class Snapshot {
   async merkleize(): Promise<Uint8Array> {
     // Merkleize all the storage tries in the db
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
-
-    let root = new EmptyNode()
     const accounts = await this.getAccounts()
+    const leaves: [Uint8Array, Uint8Array][] = []
     accounts.map(([key, value]) => {
-      const storageKeySlice = key.slice(ACCOUNT_PREFIX.length)
+      const accountKey = key.slice(ACCOUNT_PREFIX.length)
       // TODO update the account's stateRoot field if there exist
       // storage slots for that account in the db (i.e. not EoA).
       // TODO can probably cache stateRoot and re-compute storage
       // trie root only if the storage trie has been touched.
-      const storageRoot = storageRoots[bytesToHex(storageKeySlice)]
+      const storageRoot = storageRoots[bytesToHex(accountKey)]
       let v = value
       if (storageRoot !== undefined) {
         const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
         acc.storageRoot = storageRoot
         v = acc.serialize()
       }
-      root = root.insert(byteTypeToNibbleType(storageKeySlice), v ?? KECCAK256_NULL)
+      leaves.push([accountKey, v ?? KECCAK256_NULL])
     })
-    return root.hash()
+    return merkleizeList(leaves)
   }
 
   async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
@@ -209,15 +200,14 @@ export class Snapshot {
       const hashedAddr = key.slice(STORAGE_PREFIX.length, STORAGE_PREFIX.length + 32)
       const hashedAddrString = bytesToHex(hashedAddr)
       if (hashedAddrString in tries === false) {
-        tries[hashedAddrString] = new EmptyNode()
+        tries[hashedAddrString] = []
       }
       const slotKey = key.slice(STORAGE_PREFIX.length + 32)
-      tries[hashedAddrString] = tries[hashedAddrString].insert(bytesToNibbles(slotKey), value)
+      tries[hashedAddrString] = tries[hashedAddrString].push([slotKey, value])
     }
     const roots: any = {}
-    for (let i = 0; i < tries.length; i++) {
-      const k = tries[i]
-      roots[k] = tries[k].hash()
+    for (const [address, leaves] of Object.entries(tries)) {
+      roots[address] = merkleizeList(leaves as Uint8Array[][])
     }
     return roots
   }
