@@ -225,12 +225,6 @@ export class FullEthereumService extends Service {
    * vm execution
    */
   async buildHeadState(): Promise<void> {
-    console.log({
-      buildHeadState: this.building,
-      execstarted: this.execution.started,
-      synchronizer: this.synchronizer !== undefined,
-      snapsyncavail: this.snapsync !== undefined,
-    })
     if (this.building) return
     this.building = true
 
@@ -240,7 +234,7 @@ export class FullEthereumService extends Service {
       } else if (this.snapsync !== undefined) {
         const syncResult = await this.snapsync.checkAndSync()
         if (syncResult !== null) {
-          const transition = await this.skeleton?.updateSnapStatus(syncResult)
+          const transition = await this.skeleton?.setVmHead(syncResult)
           if (transition === true) {
             this.config.superMsg('Snapsync completed, transitioning to VMExecution')
             await this.execution.open()

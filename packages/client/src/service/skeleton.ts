@@ -546,10 +546,7 @@ export class Skeleton extends MetaDBManager {
     return { reorged, safeBlock, finalizedBlock }
   }
 
-  async updateSnapStatus(snapStatus: {
-    syncedHash: Uint8Array
-    syncedHeight: bigint
-  }): Promise<boolean> {
+  async setVmHead(snapStatus: { syncedHash: Uint8Array; syncedHeight: bigint }): Promise<boolean> {
     const { syncedHash, syncedHeight } = snapStatus
     return this.runWithLock<boolean>(async () => {
       // check if the synced state's block is canonical and <= current safe and chain has synced till
@@ -558,11 +555,6 @@ export class Skeleton extends MetaDBManager {
         // need to debug why this flag causes to return undefined when chain gets synced
         //, true
       )
-      console.log('updateSnapStatus', {
-        syncedHeight,
-        syncedBlock: syncedBlock?.header.number,
-        safeBlock: this.safeBlock?.header.number,
-      })
       if (
         syncedBlock !== undefined &&
         syncedBlock.header.number <= this.chain.blocks.height &&
@@ -570,7 +562,6 @@ export class Skeleton extends MetaDBManager {
           syncedBlock.header.number <= this.safeBlock.header.number) ||
           syncedBlock.header.number <= this.chain.blocks.height - BigInt(20))
       ) {
-        console.log('-----------------setting iteator ----', syncedBlock?.header.number)
         await this.chain.blockchain.setIteratorHead('vm', syncedHash)
         await this.chain.update(false)
         return true
@@ -695,7 +686,6 @@ export class Skeleton extends MetaDBManager {
     return this.runWithLock<number>(async () => {
       // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
-        console.log('putBlocks-----------', { progress: this.status.progress })
         throw Error(`Skeleton no subchain set for sync`)
       }
       if (this.status.linked) {
@@ -844,7 +834,6 @@ export class Skeleton extends MetaDBManager {
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
   async fillCanonicalChain() {
-    console.log('fillCanonicalChain', { filling: this.filling })
     if (this.filling) return
     this.filling = true
 
@@ -915,7 +904,6 @@ export class Skeleton extends MetaDBManager {
       try {
         numBlocksInserted = await this.chain.putBlocks([block], true)
       } catch (e) {
-        console.log(e)
         this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
         if (oldHead !== null && oldHead.header.number >= block.header.number) {
           // Put original canonical head block back if reorg fails

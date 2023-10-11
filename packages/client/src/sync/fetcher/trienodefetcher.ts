@@ -420,14 +420,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   }
 
   nextTasks(): void {
-    console.log('--------------------trienode fetcher next tasks-------------------', {
-      in: this.in.length,
-    })
     try {
       if (this.in.length === 0) {
         if (this.pathToNodeRequestData.size() > 0) {
           const tasks = this.tasks()
-          console.log(tasks)
           let count = 0
           for (const task of tasks) {
             count += task.pathStrings.length
@@ -437,7 +433,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         }
       }
     } catch (err) {
-      console.log(err)
       this.debug(err)
     }
   }

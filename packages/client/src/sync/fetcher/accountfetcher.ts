@@ -76,50 +76,6 @@ export type JobTask = {
   count: bigint
 }
 
-export function snapFetchersCompleted(
-  fetcherDoneFlags: FetcherDoneFlags,
-  fetcherType: Object,
-  root?: Uint8Array,
-  stateManager?: DefaultStateManager,
-  eventBus?: EventBusType
-) {
-  switch (fetcherType) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    case AccountFetcher:
-      fetcherDoneFlags.accountFetcherDone = true
-      fetcherDoneFlags.stateRoot = root
-      fetcherDoneFlags.stateManager = stateManager
-      fetcherDoneFlags.eventBus = eventBus
-      break
-    case StorageFetcher:
-      fetcherDoneFlags.storageFetcherDone = true
-      break
-    case ByteCodeFetcher:
-      fetcherDoneFlags.byteCodeFetcherDone = true
-      break
-    case TrieNodeFetcher:
-      fetcherDoneFlags.trieNodeFetcherDone = true
-      break
-  }
-  console.log('##################### fetcherDoneFlags ######################## ', {
-    ...fetcherDoneFlags,
-    stateManager: undefined,
-    eventBus: undefined,
-  })
-  if (
-    fetcherDoneFlags.accountFetcherDone &&
-    fetcherDoneFlags.storageFetcherDone &&
-    fetcherDoneFlags.byteCodeFetcherDone &&
-    fetcherDoneFlags.trieNodeFetcherDone
-  ) {
-    fetcherDoneFlags.eventBus!.emit(
-      Event.SYNC_SNAPSYNC_COMPLETE,
-      fetcherDoneFlags.stateRoot!,
-      fetcherDoneFlags.stateManager!
-    )
-  }
-}
-
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   protected debug: Debugger
   stateManager: DefaultStateManager
@@ -192,16 +148,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     )
   }
 
-  async fetch() {
-    console.log('---------------------------fetch call --------------------- ', {
-      ...this.fetcherDoneFlags,
-      stateManager: undefined,
-      eventBus: undefined,
-    })
+  async fetch(): Promise<boolean> {
     const accountFetch = !this.fetcherDoneFlags.accountFetcherDone ? super.fetch() : null
     const storageFetch = !this.fetcherDoneFlags.storageFetcherDone
       ? this.storageFetcher.fetch().then(
-          () => snapFetchersCompleted(this.fetcherDoneFlags, StorageFetcher),
+          () => this.snapFetchersCompleted(StorageFetcher),
           () => {
             throw Error('Snap fetcher failed to exit')
           }
@@ -209,7 +160,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       : null
     const codeFetch = !this.fetcherDoneFlags.byteCodeFetcherDone
       ? this.byteCodeFetcher.fetch().then(
-          () => snapFetchersCompleted(this.fetcherDoneFlags, ByteCodeFetcher),
+          () => this.snapFetchersCompleted(ByteCodeFetcher),
           () => {
             throw Error('Snap fetcher failed to exit')
           }
@@ -221,16 +172,59 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     // ignore this if previously build
     const trieNodeFetch = !this.fetcherDoneFlags.trieNodeFetcherDone
       ? this.trieNodeFetcher.fetch().then(
-          () => snapFetchersCompleted(this.fetcherDoneFlags, TrieNodeFetcher),
+          () => this.snapFetchersCompleted(TrieNodeFetcher),
           () => {
             throw Error('Snap fetcher failed to exit')
           }
         )
       : null
 
-    await Promise.all([accountFetch, storageFetch, codeFetch, trieNodeFetch])
-    console.log('-------------------snap fetcher done!!!!----------------------')
+    this.config.superMsg(
+      `Snapsync started - accountFetch=${accountFetch !== null} storageFetch=${
+        storageFetch !== null
+      } codeFetch=${codeFetch !== null} trieNodeFetch=${trieNodeFetch !== null}`
+    )
+    await Promise.all([accountFetch, storageFetch, codeFetch !== null, trieNodeFetch])
     return true
+  }
+
+  snapFetchersCompleted(fetcherType: Object, root?: Uint8Array): void {
+    const fetcherDoneFlags = this.fetcherDoneFlags
+    const eventBus = this.config.events
+    const stateManager = this.stateManager
+
+    switch (fetcherType) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      case AccountFetcher:
+        fetcherDoneFlags.accountFetcherDone = true
+        fetcherDoneFlags.stateRoot = root
+        fetcherDoneFlags.stateManager = stateManager
+        fetcherDoneFlags.eventBus = eventBus
+        break
+      case StorageFetcher:
+        fetcherDoneFlags.storageFetcherDone = true
+        break
+      case ByteCodeFetcher:
+        fetcherDoneFlags.byteCodeFetcherDone = true
+        break
+      case TrieNodeFetcher:
+        fetcherDoneFlags.trieNodeFetcherDone = true
+        break
+    }
+
+    const { accountFetcherDone, storageFetcherDone, byteCodeFetcherDone, trieNodeFetcherDone } =
+      fetcherDoneFlags
+    this.config.superMsg(
+      `fetcherDoneFlags: accountFetcherDone=${accountFetcherDone} storageFetcherDone=${storageFetcherDone} byteCodeFetcherDone=${byteCodeFetcherDone} trieNodeFetcherDone=${trieNodeFetcherDone}`
+    )
+
+    if (accountFetcherDone && storageFetcherDone && byteCodeFetcherDone && trieNodeFetcherDone) {
+      fetcherDoneFlags.eventBus!.emit(
+        Event.SYNC_SNAPSYNC_COMPLETE,
+        fetcherDoneFlags.stateRoot!,
+        fetcherDoneFlags.stateManager!
+      )
+    }
   }
 
   private async verifyRangeProof(
@@ -408,13 +402,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       this.debug('Final range received with no elements remaining to the right')
 
       await this.accountTrie.persistRoot()
-      snapFetchersCompleted(
-        this.fetcherDoneFlags,
-        AccountFetcher,
-        this.accountTrie.root(),
-        this.stateManager,
-        this.config.events
-      )
+      this.snapFetchersCompleted(AccountFetcher, this.accountTrie.root())
 
       // TODO It's possible that we should never destroy these fetchers since they will be needed to continually heal tries
       this.byteCodeFetcher.setDestroyWhenDone()

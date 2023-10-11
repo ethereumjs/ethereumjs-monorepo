@@ -121,7 +121,6 @@ export class SnapSynchronizer extends Synchronizer {
    * Start synchronizer.
    */
   async start(): Promise<void> {
-    console.log('------------------snapsync start ----------------', { running: this.running })
     if (this.running) return
     this.running = true
 
@@ -129,9 +128,7 @@ export class SnapSynchronizer extends Synchronizer {
       this.forceSync = true
     }, this.interval * 30)
     try {
-      console.log('snapsync starting syc ****************************************')
       await this.sync()
-      console.log('snapsync ended ????????????????????????????????????????????')
     } catch (error: any) {
       this.config.logger.error(`Snap sync error: ${error.message}`)
       this.config.events.emit(Event.SYNC_ERROR, error)
@@ -171,14 +168,13 @@ export class SnapSynchronizer extends Synchronizer {
         )
       }
 
-      this.config.logger.warn(
-        `snapsync finished!!!!!!!!!!!!!! snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+      this.config.logger.debug(
+        `snapsync fetcherDone=${fetcherDone} snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
           snapTargetRoot
         )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
           this.chain.blocks.finalized?.header.number
         }`
       )
-
       return {
         syncedHash: snapTargetHash,
         syncedRoot: snapTargetRoot,
