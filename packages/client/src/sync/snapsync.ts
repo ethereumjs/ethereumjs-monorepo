@@ -9,6 +9,7 @@ import { Synchronizer } from './sync'
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
 import type { Skeleton } from '../service/skeleton'
+import type { FetcherDoneFlags } from './fetcher'
 import type { SynchronizerOptions } from './sync'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
@@ -24,6 +25,12 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
+  private readonly fetcherDoneFlags: FetcherDoneFlags = {
+    storageFetcherDone: false,
+    accountFetcherDone: false,
+    byteCodeFetcherDone: false,
+    trieNodeFetcherDone: false,
+  }
 
   constructor(options: SnapSynchronizerOptions) {
     super(options)
@@ -134,6 +141,53 @@ export class SnapSynchronizer extends Synchronizer {
     clearTimeout(timeout)
   }
 
+  async checkAndSync(): Promise<{
+    syncedHash: Uint8Array
+    syncedRoot: Uint8Array
+    syncedHeight: bigint
+  } | null> {
+    let fetcherDone =
+      this.fetcherDoneFlags.storageFetcherDone &&
+      this.fetcherDoneFlags.accountFetcherDone &&
+      this.fetcherDoneFlags.byteCodeFetcherDone &&
+      this.fetcherDoneFlags.trieNodeFetcherDone
+    if (!fetcherDone) {
+      fetcherDone = await this.sync()
+    }
+
+    if (fetcherDone) {
+      // a bit weird way to extract this data ideally should have been returned by sync
+      // but that is being run through a sync abstract class
+      const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
+      if (
+        snapTargetHeight === undefined ||
+        snapTargetRoot === undefined ||
+        snapTargetHash === undefined
+      ) {
+        throw Error(
+          `Invalid synced data by snapsync snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+            snapTargetRoot ?? 'na'
+          )} snapTargetHash=${snapTargetHash ?? 'na'}`
+        )
+      }
+
+      this.config.logger.warn(
+        `snapsync finished!!!!!!!!!!!!!! snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+          snapTargetRoot
+        )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
+          this.chain.blocks.finalized?.header.number
+        }`
+      )
+
+      return {
+        syncedHash: snapTargetHash,
+        syncedRoot: snapTargetRoot,
+        syncedHeight: snapTargetHeight,
+      }
+    }
+    return null
+  }
+
   /**
    * Called from `sync()` to sync blocks and state from peer starting from current height.
    * @param peer remote peer to sync with
@@ -187,6 +241,7 @@ export class SnapSynchronizer extends Synchronizer {
           root: stateRoot,
           // This needs to be determined from the current state of the MPT dump
           first: BigInt(0),
+          fetcherDoneFlags: this.fetcherDoneFlags,
         })
       } else {
         this.config.logger.info(`syncWithPeer updating stateRoot=${short(stateRoot)}`)

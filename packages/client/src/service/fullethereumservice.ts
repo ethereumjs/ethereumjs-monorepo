@@ -10,9 +10,7 @@ import { EthProtocol } from '../net/protocol/ethprotocol'
 import { LesProtocol } from '../net/protocol/lesprotocol'
 import { SnapProtocol } from '../net/protocol/snapprotocol'
 import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync'
-import { fetcherDoneFlags } from '../sync/fetcher/accountfetcher'
 import { Event } from '../types'
-import { short } from '../util'
 
 import { Service, type ServiceOptions } from './service'
 import { Skeleton } from './skeleton'
@@ -240,44 +238,14 @@ export class FullEthereumService extends Service {
       if (this.execution.started && this.synchronizer !== undefined) {
         await this.synchronizer.runExecution()
       } else if (this.snapsync !== undefined) {
-        const fetcherDone =
-          fetcherDoneFlags.storageFetcherDone &&
-          fetcherDoneFlags.accountFetcherDone &&
-          fetcherDoneFlags.byteCodeFetcherDone &&
-          fetcherDoneFlags.trieNodeFetcherDone
-        const completed = fetcherDone || (await this.snapsync.sync())
-        if (completed) {
-          // a bit weird way to extract this data ideally should have been returned by sync
-          // but that is being run through a sync abstract class
-          const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
-          if (
-            snapTargetHeight === undefined ||
-            snapTargetRoot === undefined ||
-            snapTargetHash === undefined
-          ) {
-            throw Error(
-              `Invalid synced data by snapsync snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
-                snapTargetRoot ?? 'na'
-              )} snapTargetHash=${snapTargetHash ?? 'na'}`
-            )
-          }
-
-          const transition = await this.skeleton?.updateSnapStatus({
-            syncedHash: snapTargetHash,
-            syncedHeight: snapTargetHeight,
-          })
+        const syncResult = await this.snapsync.checkAndSync()
+        if (syncResult !== null) {
+          const transition = await this.skeleton?.updateSnapStatus(syncResult)
           if (transition === true) {
+            this.config.superMsg('Snapsync completed, transitioning to VMExecution')
             await this.execution.open()
             await this.execution.start()
           }
-
-          this.config.logger.warn(
-            `snapsync finished!!!!!!!!!!!!!! transition=${transition} snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
-              snapTargetRoot
-            )}  snapTargetHash=${short(snapTargetHash)} height=${
-              this.chain.blocks.height
-            } finalized=${this.chain.blocks.finalized?.header.number}`
-          )
         }
       } else {
         this.config.logger.warn(

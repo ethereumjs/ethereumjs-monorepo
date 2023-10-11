@@ -36,6 +36,16 @@ const { debug: createDebugLogger } = debugDefault
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
+export type FetcherDoneFlags = {
+  storageFetcherDone: boolean
+  accountFetcherDone: boolean
+  byteCodeFetcherDone: boolean
+  trieNodeFetcherDone: boolean
+  eventBus?: EventBusType
+  stateManager?: DefaultStateManager
+  stateRoot?: Uint8Array
+}
+
 /**
  * Implements an snap1 based account fetcher
  * @memberof module:sync/fetcher
@@ -54,6 +64,8 @@ export interface AccountFetcherOptions extends FetcherOptions {
   destroyWhenDone?: boolean
 
   stateManager: DefaultStateManager
+
+  fetcherDoneFlags: FetcherDoneFlags
 }
 
 // root comes from block?
@@ -62,24 +74,6 @@ export type JobTask = {
   first: bigint
   /** Range to eventually fetch */
   count: bigint
-}
-
-export type FetcherDoneFlags = {
-  storageFetcherDone: boolean
-  accountFetcherDone: boolean
-  byteCodeFetcherDone: boolean
-  trieNodeFetcherDone: boolean
-  eventBus?: EventBusType
-  stateManager?: DefaultStateManager
-  stateRoot?: Uint8Array
-}
-
-// keep a global instance for now, will be attached to the db to save/load from
-export const fetcherDoneFlags: FetcherDoneFlags = {
-  storageFetcherDone: false,
-  accountFetcherDone: false,
-  byteCodeFetcherDone: false,
-  trieNodeFetcherDone: false,
 }
 
 export function snapFetchersCompleted(
@@ -142,6 +136,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   storageFetcher: StorageFetcher
   byteCodeFetcher: ByteCodeFetcher
   trieNodeFetcher: TrieNodeFetcher
+  private readonly fetcherDoneFlags: FetcherDoneFlags
 
   /**
    * Create new block fetcher
@@ -157,6 +152,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     this.debug = createDebugLogger('client:AccountFetcher')
 
+    this.fetcherDoneFlags = options.fetcherDoneFlags
     this.storageFetcher = new StorageFetcher({
       config: this.config,
       pool: this.pool,
@@ -198,22 +194,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   async fetch() {
     console.log('---------------------------fetch call --------------------- ', {
-      ...fetcherDoneFlags,
+      ...this.fetcherDoneFlags,
       stateManager: undefined,
       eventBus: undefined,
     })
-    const accountFetch = !fetcherDoneFlags.accountFetcherDone ? super.fetch() : null
-    const storageFetch = !fetcherDoneFlags.storageFetcherDone
+    const accountFetch = !this.fetcherDoneFlags.accountFetcherDone ? super.fetch() : null
+    const storageFetch = !this.fetcherDoneFlags.storageFetcherDone
       ? this.storageFetcher.fetch().then(
-          () => snapFetchersCompleted(fetcherDoneFlags, StorageFetcher),
+          () => snapFetchersCompleted(this.fetcherDoneFlags, StorageFetcher),
           () => {
             throw Error('Snap fetcher failed to exit')
           }
         )
       : null
-    const codeFetch = !fetcherDoneFlags.byteCodeFetcherDone
+    const codeFetch = !this.fetcherDoneFlags.byteCodeFetcherDone
       ? this.byteCodeFetcher.fetch().then(
-          () => snapFetchersCompleted(fetcherDoneFlags, ByteCodeFetcher),
+          () => snapFetchersCompleted(this.fetcherDoneFlags, ByteCodeFetcher),
           () => {
             throw Error('Snap fetcher failed to exit')
           }
@@ -223,9 +219,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     // always do trienode fetch as this should only sync diffs else return
     // but currently it doesn't seem to be returning, so for static state
     // ignore this if previously build
-    const trieNodeFetch = !fetcherDoneFlags.trieNodeFetcherDone
+    const trieNodeFetch = !this.fetcherDoneFlags.trieNodeFetcherDone
       ? this.trieNodeFetcher.fetch().then(
-          () => snapFetchersCompleted(fetcherDoneFlags, TrieNodeFetcher),
+          () => snapFetchersCompleted(this.fetcherDoneFlags, TrieNodeFetcher),
           () => {
             throw Error('Snap fetcher failed to exit')
           }
@@ -413,7 +409,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       await this.accountTrie.persistRoot()
       snapFetchersCompleted(
-        fetcherDoneFlags,
+        this.fetcherDoneFlags,
         AccountFetcher,
         this.accountTrie.root(),
         this.stateManager,
