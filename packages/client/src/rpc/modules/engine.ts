@@ -1238,7 +1238,7 @@ export class Engine {
       if (!isPrevSynced && this.chain.config.synchronized) {
         this.service.txPool.checkRunState()
       }
-    } else {
+    } else if (!headBlock.isGenesis()) {
       // even if the vmHead is same still validations need to be done regarding the correctness
       // of the sequence and canonical-ity
       try {
