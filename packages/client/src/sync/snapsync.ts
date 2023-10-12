@@ -26,8 +26,14 @@ export class SnapSynchronizer extends Synchronizer {
   skeleton?: Skeleton
   private execution: VMExecution
   private readonly fetcherDoneFlags: FetcherDoneFlags = {
+    syncing: false,
+    accountFetcher: {
+      started: false,
+      // entire account range
+      first: BigInt(0),
+      done: false,
+    },
     storageFetcherDone: false,
-    accountFetcherDone: false,
     byteCodeFetcherDone: false,
     trieNodeFetcherDone: false,
   }
@@ -145,7 +151,7 @@ export class SnapSynchronizer extends Synchronizer {
   } | null> {
     let fetcherDone =
       this.fetcherDoneFlags.storageFetcherDone &&
-      this.fetcherDoneFlags.accountFetcherDone &&
+      this.fetcherDoneFlags.accountFetcher.done &&
       this.fetcherDoneFlags.byteCodeFetcherDone &&
       this.fetcherDoneFlags.trieNodeFetcherDone
     if (!fetcherDone) {

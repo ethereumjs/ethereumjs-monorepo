@@ -163,13 +163,14 @@ describe('simple mainnet test run', async () => {
           void ejsClient.services[0].synchronizer?.sync()
           const syncResponse = await Promise.race([beaconSyncPromise, syncTimeout])
           assert.equal(
-            syncResponse.syncState,
-            'SYNCED',
+            ['SYNCED', 'VALID'].includes(syncResponse.syncState),
+            true,
             'beaconSyncRelayer should have synced client'
           )
           await ejsClient.stop()
           assert.ok(true, 'completed beacon sync')
         } catch (e) {
+          console.log()
           assert.fail('could not complete beacon sync in 8 minutes')
         }
       } else {

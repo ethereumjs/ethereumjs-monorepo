@@ -352,7 +352,7 @@ export class Config {
 
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
 
@@ -670,7 +670,7 @@ export class Config {
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['goerli', 'sepolia']
+    const dnsNets = ['goerli', 'sepolia', 'holesky']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 
