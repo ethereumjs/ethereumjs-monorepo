@@ -1238,12 +1238,6 @@ export class Engine {
       }
     }
 
-    if (
-      this.config.syncTargetHeight === undefined ||
-      this.config.syncTargetHeight < headBlock.header.number
-    ) {
-      this.config.syncTargetHeight = headBlock.header.number
-    }
     this.config.updateSynchronizedState(headBlock.header)
     if (this.chain.config.synchronized) {
       this.service.txPool.checkRunState()

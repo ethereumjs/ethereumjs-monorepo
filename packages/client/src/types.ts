@@ -153,7 +153,7 @@ export interface ClientOpts {
   minerCoinbase?: Address
   saveReceipts?: boolean
   prefixStorageTrieKeys?: boolean
-  enableSnapSync?: boolean
+  snap?: boolean
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean

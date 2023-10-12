@@ -17,6 +17,7 @@ import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
+import type { BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
 
 const INVALID_PARAMS = -32602
@@ -114,6 +115,11 @@ export class Skeleton extends MetaDBManager {
    */
   public safeBlock?: Block
   public finalizedBlock?: Block
+
+  // to track if we have cl FCUs close to the clockhead
+  synchronized = false
+  private lastsyncronized = false
+  private lastSyncDate = 0
 
   constructor(opts: MetaDBManagerOptions) {
     super(opts)
@@ -382,6 +388,13 @@ export class Skeleton extends MetaDBManager {
    * @returns True if the head (will) cause a reorg in the canonical skeleton subchain
    */
   async setHead(head: Block, force = true, init = false, reorgthrow = false): Promise<boolean> {
+    if (
+      this.config.syncTargetHeight === undefined ||
+      this.config.syncTargetHeight < head.header.number
+    ) {
+      this.config.syncTargetHeight = head.header.number
+    }
+
     return this.runWithLock<boolean>(async () => {
       if (this.started === 0) {
         throw Error(`skeleton setHead called before being opened`)
@@ -471,6 +484,66 @@ export class Skeleton extends MetaDBManager {
     })
   }
 
+  /**
+   * Updates if the skeleton/cl seems synced to the head
+   * copied over from config, could be DRY-ied
+   * @param option latest to update the sync state with
+   */
+  updateSynchronizedState(latest?: BlockHeader | null) {
+    // If no syncTargetHeight has been discovered from peer or fcU sync state can't be
+    // determined
+    const subchain0 = this.status.progress.subchains[0]
+    if ((this.config.syncTargetHeight ?? BIGINT_0) === BIGINT_0 || subchain0 === undefined) {
+      return
+    }
+
+    if (latest !== null && latest !== undefined) {
+      const height = subchain0.head
+      if (height >= (this.config.syncTargetHeight ?? BIGINT_0)) {
+        this.config.syncTargetHeight = height
+        this.lastSyncDate =
+          typeof latest.timestamp === 'bigint' && latest.timestamp > 0n
+            ? Number(latest.timestamp) * 1000
+            : Date.now()
+
+        const diff = Date.now() - this.lastSyncDate
+        // update synchronized
+        if (diff < this.config.syncedStateRemovalPeriod) {
+          if (!this.synchronized) {
+            this.synchronized = true
+            // Log to console the sync status
+            this.config.superMsg(
+              `Synchronized cl (skeleton) at height=${height} hash=${short(latest.hash())} 🎉`
+            )
+          }
+        }
+      }
+    } else {
+      if (this.synchronized) {
+        const diff = Date.now() - this.lastSyncDate
+        if (diff >= this.config.syncedStateRemovalPeriod) {
+          this.synchronized = false
+          this.config.logger.info(
+            `Cl (skeleton) sync status reset (no chain updates for ${Math.round(
+              diff / 1000
+            )} seconds).`
+          )
+        }
+      }
+    }
+
+    if (this.synchronized !== this.lastsyncronized) {
+      this.config.logger.debug(
+        `Cl (skeleton) synchronized=${this.synchronized}${
+          latest !== null && latest !== undefined ? ' height=' + latest.number : ''
+        } syncTargetHeight=${this.config.syncTargetHeight} lastSyncDate=${
+          (Date.now() - this.lastSyncDate) / 1000
+        } secs ago`
+      )
+      this.lastsyncronized = this.synchronized
+    }
+  }
+
   async forkchoiceUpdate(
     headBlock: Block,
     {
@@ -542,6 +615,7 @@ export class Skeleton extends MetaDBManager {
       this.safeBlock = safeBlock ?? this.safeBlock
       this.finalizedBlock = finalizedBlock ?? this.finalizedBlock
     })
+    this.updateSynchronizedState(headBlock?.header)
 
     return { reorged, safeBlock, finalizedBlock }
   }
@@ -1266,7 +1340,7 @@ export class Skeleton extends MetaDBManager {
           } reorgsHead=${
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
-          }`
+          } synchronized=${this.synchronized}`
         } else {
           logInfo = `${logInfo} cl=${chainHead} s=${this.status.safe} f=${this.status.finalized}`
         }
@@ -1279,7 +1353,9 @@ export class Skeleton extends MetaDBManager {
         this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${logInfo} peers=${peers}`)
       } else {
         // else break into two
-        this.config.logger.info(`${logPrefix} ${status}${extraStatus} peers=${peers}`)
+        this.config.logger.info(
+          `${logPrefix} ${status}${extraStatus} synchronized=${this.config.synchronized} peers=${peers}`
+        )
         this.config.logger.info(`${logPrefix} ${logInfo}`)
         if (!isSynced) {
           this.config.logger.info(`${logPrefix} ${subchainLog}`)

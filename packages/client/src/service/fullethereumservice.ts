@@ -232,14 +232,20 @@ export class FullEthereumService extends Service {
       if (this.execution.started && this.synchronizer !== undefined) {
         await this.synchronizer.runExecution()
       } else if (this.snapsync !== undefined) {
-        const syncResult = await this.snapsync.checkAndSync()
-        if (syncResult !== null) {
-          const transition = await this.skeleton?.setVmHead(syncResult)
-          if (transition === true) {
-            this.config.superMsg('Snapsync completed, transitioning to VMExecution')
-            await this.execution.open()
-            await this.execution.start()
+        if (this.skeleton?.synchronized === true) {
+          const syncResult = await this.snapsync.checkAndSync()
+          if (syncResult !== null) {
+            const transition = await this.skeleton?.setVmHead(syncResult)
+            if (transition === true) {
+              this.config.superMsg('Snapsync completed, transitioning to VMExecution')
+              await this.execution.open()
+              await this.execution.start()
+            }
           }
+        } else {
+          this.config.logger.debug(
+            `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`
+          )
         }
       } else {
         this.config.logger.warn(
