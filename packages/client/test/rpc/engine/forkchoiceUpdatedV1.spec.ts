@@ -8,10 +8,8 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { blockToExecutionPayload } from '../../../src/rpc/modules'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, batchBlocks, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import { batchBlocks } from './newPayloadV1.spec.js'
 
 const crypto = require('crypto')
 
@@ -51,7 +49,7 @@ function createBlock(parentBlock: Block) {
   return block
 }
 
-export const validPayload = [validForkChoiceState, validPayloadAttributes]
+const validPayload = [validForkChoiceState, validPayloadAttributes]
 
 describe(method, () => {
   it('call with invalid head block hash without 0x', async () => {
@@ -241,7 +239,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     req = params(method, [
       {
@@ -289,7 +287,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     req = params(method, [
       {

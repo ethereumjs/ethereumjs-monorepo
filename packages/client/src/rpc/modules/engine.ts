@@ -396,7 +396,7 @@ const assembleBlock = async (
     await block.validateData()
     return { block }
   } catch (error) {
-    const validationError = `Error assembling block during from payload: ${error}`
+    const validationError = `Error assembling block from payload: ${error}`
     config.logger.error(validationError)
     const latestValidHash = await validHash(hexToBytes(payload.parentHash), chain, chainCache)
     const response = {
@@ -494,7 +494,26 @@ export class Engine {
     }
     this.skeleton = this.service.skeleton
 
-    this.connectionManager = new CLConnectionManager({ config: this.chain.config })
+    const logELStatus = () => {
+      const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
+      if (forceShowInfo) {
+        this.lastAnnouncementTime = Date.now()
+      }
+      const fetcher = this.service.beaconSync?.fetcher
+
+      this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
+        forceShowInfo,
+        lastStatus: this.lastAnnouncementStatus,
+        executing: this.execution.started && this.execution.running,
+        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
+        peers: (this.service.beaconSync as any)?.pool.size,
+      })
+    }
+
+    this.connectionManager = new CLConnectionManager({
+      config: this.chain.config,
+      inActivityCb: logELStatus,
+    })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
 
     this.remoteBlocks = new Map()
@@ -551,28 +570,7 @@ export class Engine {
         headBlock: response?.headBlock,
         error,
       })
-      const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
-      if (forceShowInfo) {
-        this.lastAnnouncementTime = Date.now()
-      }
-      const fetcher = this.service.beaconSync?.fetcher
-
-      this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
-        forceShowInfo,
-        lastStatus: this.lastAnnouncementStatus,
-        executing: this.execution.started && this.execution.running,
-        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
-        peers: (this.service.beaconSync as any)?.pool.size,
-      })
-
-      // void this.skeleton.isLastAnnoucement().then((lastAnnouncement) => {
-      //   if (lastAnnouncement || ) {
-      //     if (lastAnnouncement) {
-      //       void this.skeleton.logSyncStatus('status', true)
-      //     }
-      //   }
-      // })
-      // Remove the headBlock from the response object as headBlock is bundled only for connectionManager
+      logELStatus()
       delete response?.headBlock
     }
 
@@ -906,7 +904,14 @@ export class Engine {
         }
       }
     } catch (error) {
-      const validationError = `Error verifying block while running: ${error}`
+      const errorMsg = `${error}`.toLowerCase()
+      if (errorMsg.includes('block') && errorMsg.includes('not found')) {
+        throw {
+          code: INTERNAL_ERROR,
+          message: errorMsg,
+        }
+      }
+      const validationError = `Error verifying block while running: ${errorMsg}`
       this.config.logger.error(validationError)
       const latestValidHash = await validHash(
         headBlock.header.parentHash,
@@ -1131,7 +1136,9 @@ export class Engine {
       }
     }
 
-    const isHeadExecuted = await this.vm.stateManager.hasStateRoot(headBlock.header.stateRoot)
+    const isHeadExecuted =
+      (this.executedBlocks.get(headBlockHash.slice(2)) ??
+        (await validExecutedChainBlock(headBlock, this.chain))) !== null
     if (!isHeadExecuted) {
       // execution has not yet caught up, so lets just return sync
       const payloadStatus = {

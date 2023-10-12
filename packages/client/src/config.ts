@@ -567,11 +567,9 @@ export class Config {
           if (!this.synchronized) {
             this.synchronized = true
             // Log to console the sync status
-            this.logger.info('*'.repeat(60))
-            this.logger.info(
+            this.superMsg(
               `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
             )
-            this.logger.info('*'.repeat(60))
           }
 
           if (emitSyncEvent === true) {
