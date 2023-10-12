@@ -161,9 +161,15 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
       this.config.superMsg(`Snapsync: running accountFetch=${accountFetch !== null}`)
       await accountFetch
+      if (this.fetcherDoneFlags.accountFetcher.done !== true) {
+        // @scorbajio need to see the reason for this here
+        throw Error('accountFetcher finished without completing the sync')
+      }
 
       const storageFetch = !this.fetcherDoneFlags.storageFetcherDone
         ? this.storageFetcher.fetch().then(
+            // we should not be doing this, fetcher itself should mark completion
+            // cc @scorbajio
             () => this.snapFetchersCompleted(StorageFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
@@ -172,6 +178,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         : null
       const codeFetch = !this.fetcherDoneFlags.byteCodeFetcherDone
         ? this.byteCodeFetcher.fetch().then(
+            // we should not be doing this, fetcher itself should mark completion
+            // cc @scorbajio
             () => this.snapFetchersCompleted(ByteCodeFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
@@ -184,11 +192,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       )
       await Promise.all([storageFetch, codeFetch])
 
+      if (
+        this.fetcherDoneFlags.storageFetcherDone !== true ||
+        this.fetcherDoneFlags.byteCodeFetcherDone !== true
+      ) {
+        throw Error(
+          `storageFetch or codeFetch didn't complete storageFetcherDone=${this.fetcherDoneFlags.storageFetcherDone} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcherDone}`
+        )
+      }
+
       // always do trienode fetch as this should only sync diffs else return
       // but currently it doesn't seem to be returning, so for static state
       // ignore this if previously build
       const trieNodeFetch = !this.fetcherDoneFlags.trieNodeFetcherDone
         ? this.trieNodeFetcher.fetch().then(
+            // we should not be doing this, fetcher itself should mark completion
+            // cc @scorbajio
             () => this.snapFetchersCompleted(TrieNodeFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
@@ -197,6 +216,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         : null
       this.config.superMsg(`Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`)
       await trieNodeFetch
+      if (this.fetcherDoneFlags.trieNodeFetcherDone !== true) {
+        // @scorbajio need to see the reason for this here
+        throw Error('trieNodeFetch finished without completing the sync')
+      }
 
       return true
     } catch (error) {

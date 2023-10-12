@@ -155,39 +155,45 @@ export class SnapSynchronizer extends Synchronizer {
       this.fetcherDoneFlags.byteCodeFetcherDone &&
       this.fetcherDoneFlags.trieNodeFetcherDone
     if (!fetcherDone) {
-      fetcherDone = await this.sync()
-    }
-
-    if (fetcherDone) {
-      // a bit weird way to extract this data ideally should have been returned by sync
-      // but that is being run through a sync abstract class
-      const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
-      if (
-        snapTargetHeight === undefined ||
-        snapTargetRoot === undefined ||
-        snapTargetHash === undefined
-      ) {
+      await this.sync()
+      fetcherDone =
+        this.fetcherDoneFlags.storageFetcherDone &&
+        this.fetcherDoneFlags.accountFetcher.done &&
+        this.fetcherDoneFlags.byteCodeFetcherDone &&
+        this.fetcherDoneFlags.trieNodeFetcherDone
+      if (!fetcherDone) {
         throw Error(
-          `Invalid synced data by snapsync snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
-            snapTargetRoot ?? 'na'
-          )} snapTargetHash=${snapTargetHash ?? 'na'}`
+          `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcherDone} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcherDone} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcherDone}`
         )
       }
-
-      this.config.logger.debug(
-        `snapsync fetcherDone=${fetcherDone} snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
-          snapTargetRoot
-        )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
-          this.chain.blocks.finalized?.header.number
-        }`
-      )
-      return {
-        syncedHash: snapTargetHash,
-        syncedRoot: snapTargetRoot,
-        syncedHeight: snapTargetHeight,
-      }
     }
-    return null
+    // a bit weird way to extract this data ideally should have been returned by sync
+    // but that is being run through a sync abstract class
+    const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
+    if (
+      snapTargetHeight === undefined ||
+      snapTargetRoot === undefined ||
+      snapTargetHash === undefined
+    ) {
+      throw Error(
+        `Invalid synced data by snapsync snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+          snapTargetRoot ?? 'na'
+        )} snapTargetHash=${snapTargetHash ?? 'na'}`
+      )
+    }
+
+    this.config.logger.debug(
+      `snapsync fetcherDone=${fetcherDone} snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+        snapTargetRoot
+      )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
+        this.chain.blocks.finalized?.header.number
+      }`
+    )
+    return {
+      syncedHash: snapTargetHash,
+      syncedRoot: snapTargetRoot,
+      syncedHeight: snapTargetHeight,
+    }
   }
 
   /**
@@ -196,21 +202,18 @@ export class SnapSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    this.config.logger.info(`SnapSynchronizer - syncWithPeer ${peer?.id}`)
     // if skeleton is passed we have to wait for skeleton to be updated
-    // if (
-    //   this.skeleton !== undefined &&
-    //   (!this.skeleton.isStarted() || this.skeleton.bounds() === undefined)
-    // ) {
-    //   this.config.logger.info(`SnapSynchronizer - early return ${peer?.id}`)
-    //   return false
-    // }
+    if (this.skeleton?.synchronized !== true) {
+      this.config.logger.info(`SnapSynchronizer - early return ${peer?.id}`)
+      return false
+    }
 
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) {
       return false
     }
 
+    this.config.logger.info(`SnapSynchronizer - syncWithPeer ${peer?.id}`)
     const stateRoot = latest.stateRoot
     const height = latest.number
     // eslint-disable-next-line eqeqeq
@@ -219,36 +222,36 @@ export class SnapSynchronizer extends Synchronizer {
       this.config.logger.info(`New sync target height=${height} hash=${bytesToHex(latest.hash())}`)
     }
 
-    if (this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth) {
+    if (
+      (this.fetcher === null || this.fetcher.syncErrored !== undefined) &&
+      this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth
+    ) {
       if ((this.config.snapTargetHeight ?? BIGINT_0) < latest.number) {
         this.config.snapTargetHeight = latest.number
         this.config.snapTargetRoot = latest.stateRoot
         this.config.snapTargetHash = latest.hash()
       }
 
-      if (this.fetcher === null || this.fetcher.syncErrored !== undefined) {
-        this.config.logger.info(
-          `syncWithPeer new AccountFetcher peer=${peer?.id} snapTargetHeight=${
-            this.config.snapTargetHeight
-          } snapTargetRoot=${short(this.config.snapTargetRoot!)}  ${
-            this.fetcher === null
-              ? ''
-              : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
-          }`
-        )
-        this.fetcher = new AccountFetcher({
-          config: this.config,
-          pool: this.pool,
-          stateManager: this.execution.vm.stateManager as DefaultStateManager,
-          root: stateRoot,
-          // This needs to be determined from the current state of the MPT dump
-          first: BigInt(0),
-          fetcherDoneFlags: this.fetcherDoneFlags,
-        })
-      } else {
-        this.config.logger.info(`syncWithPeer updating stateRoot=${short(stateRoot)}`)
-        this.fetcher.updateStateRoot(stateRoot)
-      }
+      this.config.logger.info(
+        `syncWithPeer new AccountFetcher peer=${peer?.id} snapTargetHeight=${
+          this.config.snapTargetHeight
+        } snapTargetRoot=${short(this.config.snapTargetRoot!)}  ${
+          this.fetcher === null
+            ? ''
+            : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
+        }`
+      )
+      this.fetcher = new AccountFetcher({
+        config: this.config,
+        pool: this.pool,
+        stateManager: this.execution.vm.stateManager as DefaultStateManager,
+        root: stateRoot,
+        // This needs to be determined from the current state of the MPT dump
+        first: BigInt(0),
+        fetcherDoneFlags: this.fetcherDoneFlags,
+      })
+    } else {
+      return false
     }
     return true
   }

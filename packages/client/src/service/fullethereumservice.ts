@@ -232,7 +232,7 @@ export class FullEthereumService extends Service {
       if (this.execution.started && this.synchronizer !== undefined) {
         await this.synchronizer.runExecution()
       } else if (this.snapsync !== undefined) {
-        if (this.skeleton?.synchronized === true) {
+        if (this.config.synchronized === true || this.skeleton?.synchronized === true) {
           const syncResult = await this.snapsync.checkAndSync()
           if (syncResult !== null) {
             const transition = await this.skeleton?.setVmHead(syncResult)
