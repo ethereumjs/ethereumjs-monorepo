@@ -468,7 +468,13 @@ export class Blockchain implements BlockchainInterface {
 
         // we cannot overwrite the Genesis block after initializing the Blockchain
         if (isGenesis) {
-          throw new Error('Cannot put a genesis block: create a new Blockchain')
+          if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
+            // Try to re-put the exisiting genesis block, accept this
+            return
+          }
+          throw new Error(
+            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain'
+          )
         }
 
         const { header } = block
