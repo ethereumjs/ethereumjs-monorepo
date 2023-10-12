@@ -395,9 +395,11 @@ export class Skeleton extends MetaDBManager {
             next: head.header.parentHash,
           }
           this.status.progress.subchains.unshift(s)
-          this.config.superMsg(
-            `Created new subchain tail=${s.tail} head=${s.head} next=${short(s.next)}`
-          )
+          const msgs = [
+            `Created new subchain tail=${s.tail} head=${s.head} next=${short(s.next)}`,
+            'Note: Subchain will be backfilled and merged with the canonical chain on success.',
+          ]
+          this.config.superMsg(msgs)
           // Reset the filling of canonical head from tail only on tail reorg and exit any ongoing fill
           this.status.canonicalHeadReset = s.tail > BIGINT_0
         } else {
