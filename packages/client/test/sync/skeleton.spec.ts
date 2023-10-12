@@ -35,6 +35,39 @@ const block51 = Block.fromBlockData(
   { common }
 )
 
+describe('[Skeleton]/ startup scenarios ', () => {
+  it('starts the chain when starting the skeleton', async () => {
+    const config = new Config({
+      common,
+    })
+    const chain = await Chain.create({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    assert.equal(chain.opened, false, 'chain is not started')
+    await skeleton.open()
+    assert.equal(chain.opened, true, 'chain is opened by skeleton')
+  })
+
+  it('throws when reset called before being started', async () => {
+    const config = new Config({
+      common,
+    })
+    const chain = await Chain.create({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    assert.equal(chain.opened, false, 'chain is not started')
+    try {
+      await skeleton.reset()
+      assert.fail('should have thrown')
+    } catch (err: any) {
+      assert.ok(err.message.includes('skeleton reset'), 'throws when skeleton sync not started')
+    }
+    await skeleton.open()
+    assert.equal(skeleton['status'].linked, false)
+    skeleton['status'].linked = true
+    await skeleton.reset()
+    assert.equal(skeleton['status'].linked, false, 'status.linked reset to false')
+  })
+})
+
 describe('[Skeleton] / initSync', async () => {
   // Tests various sync initializations based on previous leftovers in the database
   // and announced heads.
@@ -229,6 +262,7 @@ describe('[Skeleton] / initSync', async () => {
     })
   }
 })
+
 describe('[Skeleton] / setHead', async () => {
   // Tests that a running skeleton sync can be extended with properly linked up
   // headers but not with side chains.
@@ -537,13 +571,14 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead is set with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
     await wait(200)
+
     assert.equal(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead is set with force=true'
     )
-
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -610,6 +645,8 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
+
     await wait(200)
     assert.equal(
       chain.blocks.height,

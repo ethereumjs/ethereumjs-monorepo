@@ -243,7 +243,9 @@ export class Chain {
 
     this.config.chainCommon.events.on('hardforkChanged', async (hardfork: string) => {
       const block = this.config.chainCommon.hardforkBlock()
-      this.config.logger.info(`New hardfork reached 🪢 ! hardfork=${hardfork} block=${block}`)
+      this.config.superMsg(
+        `New hardfork reached 🪢 ! hardfork=${hardfork} ${block !== null ? `block=${block}` : ''}`
+      )
     })
   }
 
@@ -422,7 +424,11 @@ export class Chain {
 
       const td = await this.blockchain.getParentTD(b.header)
       if (b.header.number <= this.headers.height) {
-        await this.blockchain.checkAndTransitionHardForkByNumber(b.header.number, td)
+        await this.blockchain.checkAndTransitionHardForkByNumber(
+          b.header.number,
+          td,
+          b.header.timestamp
+        )
         await this.blockchain.consensus.setup({ blockchain: this.blockchain })
       }
 
