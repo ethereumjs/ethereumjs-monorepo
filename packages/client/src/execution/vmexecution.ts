@@ -258,7 +258,7 @@ export class VMExecution extends Execution {
 
       if (isSortedDesc === false) {
         throw Error(
-          `headBlock=${vmHeadBlock?.header.number} should be >= safeBlock=${safeBlock?.header.number} should be >= finalizedBlock=${finalizedBlock?.header.number}`
+          `headBlock=${chainPointers[0][1].header.number} should be >= safeBlock=${chainPointers[1][1]?.header.number} should be >= finalizedBlock=${chainPointers[2][1]?.header.number}`
         )
       }
       // skip emitting the chain update event as we will manually do it
