@@ -316,7 +316,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('enableSnapSync', {
+  .option('snap', {
     describe: 'Enable snap state sync (for testing and development purposes)',
     boolean: true,
   })
@@ -844,7 +844,7 @@ async function run() {
     saveReceipts: args.saveReceipts,
     syncmode: args.sync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
-    enableSnapSync: args.enableSnapSync,
+    enableSnapSync: args.snap,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
   })
