@@ -509,8 +509,9 @@ export class Engine {
       this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
         forceShowInfo,
         lastStatus: this.lastAnnouncementStatus,
-        executing: this.execution.started && this.execution.running,
+        vmexecution: { started: this.execution.started, running: this.execution.running },
         fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
+        snapsync: this.service.snapsync?.fetcherDoneFlags,
         peers: (this.service.beaconSync as any)?.pool.size,
       })
     }

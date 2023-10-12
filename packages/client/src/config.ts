@@ -319,6 +319,7 @@ export interface ConfigOptions {
   maxInvalidBlocksErrorCache?: number
   pruneEngineCache?: boolean
   snapAvailabilityDepth?: bigint
+  snapTransitionSafeDepth?: bigint
 }
 
 export class Config {
@@ -366,6 +367,9 @@ export class Config {
   // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
   public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
   public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
+  // distance from head at which we can safely transition from a synced snapstate to vmexecution
+  // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
+  public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -413,6 +417,7 @@ export class Config {
   public readonly engineNewpayloadMaxExecute: number
   public readonly engineNewpayloadMaxTxsExecute: number
   public readonly snapAvailabilityDepth: bigint
+  public readonly snapTransitionSafeDepth: bigint
 
   public readonly prefixStorageTrieKeys: boolean
   // Defaulting to false as experimental as of now
@@ -499,6 +504,8 @@ export class Config {
     this.engineNewpayloadMaxTxsExecute =
       options.engineNewpayloadMaxTxsExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE
     this.snapAvailabilityDepth = options.snapAvailabilityDepth ?? Config.SNAP_AVAILABILITY_DEPTH
+    this.snapTransitionSafeDepth =
+      options.snapTransitionSafeDepth ?? Config.SNAP_TRANSITION_SAFE_DEPTH
 
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
     this.enableSnapSync = options.enableSnapSync ?? false

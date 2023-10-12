@@ -37,6 +37,7 @@ const { debug: createDebugLogger } = debugDefault
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
 export type FetcherDoneFlags = {
+  fetchingDone: boolean
   syncing: boolean
   accountFetcher: {
     started: boolean
@@ -157,10 +158,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.fetcherDoneFlags.syncing = true
 
     try {
+      this.fetcherDoneFlags.accountFetcher.started = true
       const accountFetch = !this.fetcherDoneFlags.accountFetcher.done ? super.fetch() : null
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
       this.config.superMsg(`Snapsync: running accountFetch=${accountFetch !== null}`)
       await accountFetch
+      this.fetcherDoneFlags.accountFetcher.started = false
       if (this.fetcherDoneFlags.accountFetcher.done !== true) {
         // @scorbajio need to see the reason for this here
         throw Error('accountFetcher finished without completing the sync')
@@ -227,6 +230,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       return false
     } finally {
       this.fetcherDoneFlags.syncing = false
+      this.fetcherDoneFlags.accountFetcher.started = false
     }
   }
 
@@ -239,6 +243,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       case AccountFetcher:
         fetcherDoneFlags.accountFetcher.done = true
+        fetcherDoneFlags.accountFetcher.first = BIGINT_2 ** BIGINT_256
         fetcherDoneFlags.stateRoot = root
         fetcherDoneFlags.stateManager = stateManager
         fetcherDoneFlags.eventBus = eventBus
@@ -256,11 +261,14 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     const { accountFetcher, storageFetcherDone, byteCodeFetcherDone, trieNodeFetcherDone } =
       fetcherDoneFlags
+    this.fetcherDoneFlags.fetchingDone =
+      accountFetcher.done && storageFetcherDone && byteCodeFetcherDone && trieNodeFetcherDone
+
     this.config.superMsg(
-      `fetcherDoneFlags: accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcherDone} byteCodeFetcherDone=${byteCodeFetcherDone} trieNodeFetcherDone=${trieNodeFetcherDone}`
+      `snapFetchersCompletion status fetchingDone=${this.fetcherDoneFlags.fetchingDone} accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcherDone} byteCodeFetcherDone=${byteCodeFetcherDone} trieNodeFetcherDone=${trieNodeFetcherDone}`
     )
 
-    if (accountFetcher.done && storageFetcherDone && byteCodeFetcherDone && trieNodeFetcherDone) {
+    if (this.fetcherDoneFlags.fetchingDone) {
       fetcherDoneFlags.eventBus!.emit(
         Event.SYNC_SNAPSYNC_COMPLETE,
         fetcherDoneFlags.stateRoot!,
@@ -474,6 +482,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         byteCodeFetchRequests.add(codeHash)
       }
     }
+
+    // update what has been synced for accountfetcher
+    const lastFetched = result[result.length - 1]
+    if (lastFetched !== undefined && lastFetched !== null) {
+      this.fetcherDoneFlags.accountFetcher.first = bytesToBigInt(lastFetched.hash)
+    }
+
     if (storageFetchRequests.size > 0)
       this.storageFetcher.enqueueByStorageRequestList(
         Array.from(storageFetchRequests) as StorageRequest[]

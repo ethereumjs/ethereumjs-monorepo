@@ -25,7 +25,8 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
-  private readonly fetcherDoneFlags: FetcherDoneFlags = {
+  readonly fetcherDoneFlags: FetcherDoneFlags = {
+    fetchingDone: false,
     syncing: false,
     accountFetcher: {
       started: false,
@@ -149,24 +150,17 @@ export class SnapSynchronizer extends Synchronizer {
     syncedRoot: Uint8Array
     syncedHeight: bigint
   } | null> {
-    let fetcherDone =
-      this.fetcherDoneFlags.storageFetcherDone &&
-      this.fetcherDoneFlags.accountFetcher.done &&
-      this.fetcherDoneFlags.byteCodeFetcherDone &&
-      this.fetcherDoneFlags.trieNodeFetcherDone
-    if (!fetcherDone) {
+    const fetchingAlreadyDone = this.fetcherDoneFlags.fetchingDone
+    if (!fetchingAlreadyDone) {
       await this.sync()
-      fetcherDone =
-        this.fetcherDoneFlags.storageFetcherDone &&
-        this.fetcherDoneFlags.accountFetcher.done &&
-        this.fetcherDoneFlags.byteCodeFetcherDone &&
-        this.fetcherDoneFlags.trieNodeFetcherDone
-      if (!fetcherDone) {
-        throw Error(
-          `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcherDone} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcherDone} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcherDone}`
-        )
-      }
     }
+
+    if (!this.fetcherDoneFlags.fetchingDone) {
+      throw Error(
+        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcherDone} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcherDone} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcherDone}`
+      )
+    }
+
     // a bit weird way to extract this data ideally should have been returned by sync
     // but that is being run through a sync abstract class
     const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
@@ -182,13 +176,17 @@ export class SnapSynchronizer extends Synchronizer {
       )
     }
 
-    this.config.logger.debug(
-      `snapsync fetcherDone=${fetcherDone} snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
-        snapTargetRoot
-      )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
-        this.chain.blocks.finalized?.header.number
-      }`
-    )
+    const snapDoneMsg = `snapsync complete!!! snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+      snapTargetRoot
+    )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
+      this.chain.blocks.finalized?.header.number
+    }`
+    if (fetchingAlreadyDone) {
+      this.config.logger.debug(snapDoneMsg)
+    } else {
+      this.config.superMsg(snapDoneMsg)
+    }
+
     return {
       syncedHash: snapTargetHash,
       syncedRoot: snapTargetRoot,

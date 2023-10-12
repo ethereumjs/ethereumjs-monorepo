@@ -16,6 +16,7 @@ import {
 import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
+import type { FetcherDoneFlags } from '../sync/fetcher'
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
@@ -634,7 +635,8 @@ export class Skeleton extends MetaDBManager {
         syncedBlock.header.number <= this.chain.blocks.height &&
         ((this.safeBlock !== undefined &&
           syncedBlock.header.number <= this.safeBlock.header.number) ||
-          syncedBlock.header.number <= this.chain.blocks.height - BigInt(20))
+          syncedBlock.header.number <=
+            this.chain.blocks.height - this.config.snapTransitionSafeDepth)
       ) {
         await this.chain.blockchain.setIteratorHead('vm', syncedHash)
         await this.chain.update(false)
@@ -1160,14 +1162,16 @@ export class Skeleton extends MetaDBManager {
     {
       forceShowInfo,
       lastStatus,
-      executing,
+      vmexecution,
       fetching,
+      snapsync,
       peers,
     }: {
       forceShowInfo?: boolean
       lastStatus?: string
-      executing?: boolean
+      vmexecution?: { running: boolean; started: boolean }
       fetching?: boolean
+      snapsync?: FetcherDoneFlags
       peers?: number | string
     } = {}
   ): string {
@@ -1198,7 +1202,7 @@ export class Skeleton extends MetaDBManager {
     const status = isValid
       ? 'VALID'
       : isSynced
-      ? executing === true
+      ? vmexecution?.running === true
         ? `EXECUTING`
         : `SYNCED`
       : `SYNCING`
@@ -1317,14 +1321,46 @@ export class Skeleton extends MetaDBManager {
         }
       }
 
-      let logInfo
+      let logInfo = ''
       let subchainLog = ''
       if (isValid) {
         logInfo = `vm=cl=${chainHead}`
       } else {
-        logInfo = `vm=${vmHead?.header.number} hash=${short(
+        const vmlogInfo = `vm=${vmHead?.header.number} hash=${short(
           vmHead?.hash() ?? 'na'
-        )} executing=${executing}`
+        )} started=${vmexecution?.started}`
+
+        if (vmexecution?.started === true) {
+          logInfo = `${vmlogInfo} executing=${vmexecution?.running}`
+        } else {
+          logInfo = `${logInfo} snapsync=${snapsync !== undefined}`
+          if (snapsync !== undefined) {
+            if (snapsync.fetchingDone === true) {
+              const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
+              logInfo = `${logInfo} synced height=${snapTargetHeight} hash=${short(
+                snapTargetHash ?? 'na'
+              )} root=${short(snapTargetRoot ?? 'na')} vm-transition-by=${
+                (snapTargetHeight ?? BIGINT_0) + this.config.snapTransitionSafeDepth
+              }`
+            } else {
+              let stage = '??'
+              if (snapsync.syncing) {
+                stage = 'accountranges'
+              } else if (snapsync.accountFetcher.done === true) {
+                stage = 'storage and codes'
+              } else if (
+                snapsync.storageFetcherDone === true &&
+                snapsync.byteCodeFetcherDone === true
+              ) {
+                stage = 'trienodes'
+              }
+
+              logInfo = `${logInfo} syncing=${stage}`
+            }
+          }
+
+          logInfo = `${logInfo} (${vmlogInfo})`
+        }
 
         // if not synced add subchain info
         if (!isSynced) {
@@ -1341,8 +1377,6 @@ export class Skeleton extends MetaDBManager {
             this.status.canonicalHeadReset &&
             (subchain0?.tail ?? BIGINT_0) <= this.chain.blocks.height
           } synchronized=${this.synchronized}`
-        } else {
-          logInfo = `${logInfo} cl=${chainHead} s=${this.status.safe} f=${this.status.finalized}`
         }
       }
       peers = peers !== undefined ? `${peers}` : 'na'
