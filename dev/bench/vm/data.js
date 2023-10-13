@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1697102009886,
+  "lastUpdate": 1697197328486,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "7a0a37b7355c77ce841d5b04da55a2a4b53fe550",
-          "message": "client: decouple skeleton from beacon sync (#3028)\n\n* client: decouple skeleton from beacon sync\r\n\r\n* get the vi mock in beaconsync spec working\r\n\r\n* fix beacon spec\r\n\r\n* modify snapsync spec to also play beacon sync updates\r\n\r\n* spec fixes\r\n\r\n* fix spec issues\r\n\r\n* remove reduant checks\r\n\r\n* more spec fixes\r\n\r\n* further fixes\r\n\r\n* client fixes\r\n\r\n* Clean up typing in tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-09-25T21:48:06+05:30",
-          "tree_id": "900a6ef4e94125e92a717738d5f46c1de5aa9c89",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7a0a37b7355c77ce841d5b04da55a2a4b53fe550"
-        },
-        "date": 1695658889720,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30352,
-            "range": "±5.08%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30001,
-            "range": "±2.96%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29892,
-            "range": "±2.97%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 29470,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24045,
-            "range": "±11.85%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.81%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4d60587409cf423159b07c03482ae37f2739f7e",
+          "message": "Change rpcDebug option to allow enabling/disabling specific rpc module logs (#3102)\n\n* Change rpcDebug option to allow enabling/disabling specific rpc module logs\r\n\r\n* Client: generalize --rpcDebug functionality to allow for arbitrary filters\r\n\r\n* Fix test\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-10-13T13:35:10+02:00",
+          "tree_id": "61667a7312d70fc28f980495b310797f7012c9e7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a4d60587409cf423159b07c03482ae37f2739f7e"
+        },
+        "date": 1697197327626,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 27826,
+            "range": "±7.83%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28530,
+            "range": "±3.01%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28255,
+            "range": "±3.21%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28255,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 26915,
+            "range": "±3.68%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
