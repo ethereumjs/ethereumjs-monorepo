@@ -67,7 +67,7 @@ export function createRPCServer(
 
   const onRequest = (request: any) => {
     let msg = ''
-    if (rpcDebug !== '') {
+    if (rpcDebug && rpcDebug !== '') {
       let show = false
       if (rpcDebug === 'all') {
         show = true
