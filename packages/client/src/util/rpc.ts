@@ -67,16 +67,27 @@ export function createRPCServer(
 
   const onRequest = (request: any) => {
     let msg = ''
-    if (
-      rpcDebug === 'true' ||
-      (rpcDebug === 'engine' && request.method.includes('engine_') === true) ||
-      (rpcDebug === 'eth' && request.method.includes('eth_') === true)
-    ) {
-      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
-    } else {
-      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    if (rpcDebug !== '') {
+      let show = false
+      if (rpcDebug === 'all') {
+        show = true
+      } else {
+        const filters = rpcDebug.split(',')
+        for (const filter of filters) {
+          if (request.method.includes(filter) === true) {
+            show = true
+          }
+        }
+      }
+      if (show) {
+        if (logger?.level === 'debug') {
+          msg += `${request.method} called with params:\n${inspectParams(request.params)}`
+        } else {
+          msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+        }
+        logger?.info(msg)
+      }
     }
-    logger?.debug(msg)
   }
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
