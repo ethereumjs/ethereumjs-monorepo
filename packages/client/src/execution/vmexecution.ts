@@ -361,7 +361,7 @@ export class VMExecution extends Execution {
                 // determine starting state for block run
                 // if we are just starting or if a chain reorg has happened
                 if (headBlock === undefined || reorg) {
-                  const headBlock = await blockchain.getBlock(block.header.parentHash)
+                  headBlock = await blockchain.getBlock(block.header.parentHash)
                   parentState = headBlock.header.stateRoot
 
                   if (reorg) {
@@ -508,21 +508,34 @@ export class VMExecution extends Execution {
                   // to parent's parent and so on...
                   //
                   // There can also be a better way to backstep vm to but lets naively step back
-                  let backStepTo, backStepToHash
+                  let backStepTo,
+                    backStepToHash,
+                    backStepToRoot,
+                    hasParentStateRoot = false
                   if (headBlock !== undefined) {
+                    hasParentStateRoot = await this.vm.stateManager.hasStateRoot(
+                      headBlock.header.stateRoot
+                    )
                     backStepTo = headBlock.header.number ?? BIGINT_0 - BIGINT_1
                     backStepToHash = headBlock.header.parentHash
+                    backStepToRoot = headBlock.header.stateRoot
                   }
-                  this.config.logger.warn(
-                    `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
-                      backStepToHash ?? 'na'
-                    )}:\n${error}`
-                  )
 
-                  // backStepToHash should not be undefined but if its the above warn log will show us to debug
-                  // but still handle here so that we don't send the client into a tizzy
-                  if (backStepToHash !== undefined) {
+                  if (hasParentStateRoot === true && backStepToHash !== undefined) {
+                    this.config.logger.warn(
+                      `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
+                        backStepToHash ?? 'na'
+                      )} hasParentStateRoot=${backStepToRoot ?? 'na'}:\n${error}`
+                    )
                     await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
+                  } else {
+                    this.config.logger.error(
+                      `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
+                        backStepToHash ?? 'na'
+                      )} hasParentStateRoot=${hasParentStateRoot} stateRoot=${
+                        backStepToRoot ?? 'na'
+                      }:\n${error}`
+                    )
                   }
                 } else {
                   this.config.logger.warn(`${errorMsg}:\n${error}`)
