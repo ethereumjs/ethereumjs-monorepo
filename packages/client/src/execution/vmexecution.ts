@@ -525,16 +525,16 @@ export class VMExecution extends Execution {
                     this.config.logger.warn(
                       `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na'
-                      )} hasParentStateRoot=${backStepToRoot ?? 'na'}:\n${error}`
+                      )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`
                     )
                     await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
                   } else {
                     this.config.logger.error(
                       `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na'
-                      )} hasParentStateRoot=${hasParentStateRoot} stateRoot=${
+                      )} hasParentStateRoot=${hasParentStateRoot} stateRoot=${short(
                         backStepToRoot ?? 'na'
-                      }:\n${error}`
+                      )}:\n${error}`
                     )
                   }
                 } else {
