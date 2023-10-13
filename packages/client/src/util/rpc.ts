@@ -17,7 +17,7 @@ const algorithm: TAlgorithm = 'HS256'
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
-  rpcDebug: boolean
+  rpcDebug: string
   logger?: Logger
 }
 type CreateRPCServerReturn = {
@@ -67,7 +67,11 @@ export function createRPCServer(
 
   const onRequest = (request: any) => {
     let msg = ''
-    if (rpcDebug) {
+    if (
+      rpcDebug === 'true' ||
+      (rpcDebug === 'engine' && request.method.includes('engine_') === true) ||
+      (rpcDebug === 'eth' && request.method.includes('eth_') === true)
+    ) {
       msg += `${request.method} called with params:\n${inspectParams(request.params)}`
     } else {
       msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
@@ -77,7 +81,11 @@ export function createRPCServer(
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
     let msg = ''
-    if (rpcDebug) {
+    if (
+      rpcDebug === 'true' ||
+      (rpcDebug === 'engine' && request.method.includes('engine_') === true) ||
+      (rpcDebug === 'eth' && request.method.includes('eth_') === true)
+    ) {
       msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
     } else {
       msg = `${request.method}${batchAddOn} responded with: `
@@ -107,11 +115,11 @@ export function createRPCServer(
   }
 
   let methods
-  const ethMethods = manager.getMethods(false, rpcDebug)
+  const ethMethods = manager.getMethods(false, rpcDebug !== 'false')
 
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...ethMethods, ...manager.getMethods(true, rpcDebug) }
+      methods = { ...ethMethods, ...manager.getMethods(true, rpcDebug !== 'false') }
       break
     case MethodConfig.WithoutEngine:
       methods = { ...ethMethods }

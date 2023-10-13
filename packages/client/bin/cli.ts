@@ -204,8 +204,10 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: 5,
   })
   .option('rpcDebug', {
-    describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
-    boolean: true,
+    describe:
+      'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug). Can indicate a specific module or a boolean.',
+    choices: ['true', 'false', 'eth', 'engine'],
+    default: 'false',
   })
   .option('rpcCors', {
     describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
