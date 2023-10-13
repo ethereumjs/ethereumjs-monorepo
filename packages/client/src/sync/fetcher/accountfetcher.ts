@@ -2,8 +2,7 @@ import { Trie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_2,
-  BIGINT_256,
+  BIGINT_2EXP256,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
@@ -108,7 +107,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     this.root = options.root
     this.first = options.first
-    this.count = options.count ?? BIGINT_2 ** BIGINT_256 - this.first
+    this.count = options.count ?? BIGINT_2EXP256 - this.first
 
     this.stateManager = options.stateManager
     this.accountTrie = this.stateManager['_getAccountTrie']()
@@ -243,7 +242,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       case AccountFetcher:
         fetcherDoneFlags.accountFetcher.done = true
-        fetcherDoneFlags.accountFetcher.first = BIGINT_2 ** BIGINT_256
+        fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256
         fetcherDoneFlags.stateRoot = root
         fetcherDoneFlags.stateManager = stateManager
         fetcherDoneFlags.eventBus = eventBus
@@ -370,7 +369,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (
       rangeResult.accounts.length === 0 ||
-      equalsBytes(limit, bigIntToBytes(BIGINT_2 ** BIGINT_256)) === true
+      equalsBytes(limit, bigIntToBytes(BIGINT_2EXP256)) === true
     ) {
       // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
       if (rangeResult.proof.length > 0) {
@@ -473,7 +472,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           accountHash: account.hash,
           storageRoot,
           first: BIGINT_0,
-          count: BIGINT_2 ** BIGINT_256 - BIGINT_1,
+          count: BIGINT_2EXP256 - BIGINT_1,
         })
       }
       // build record of accounts that need bytecode to be fetched
@@ -560,7 +559,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       const origin = this.getOrigin(pendingRange)
       const limit = this.getLimit(pendingRange)
 
-      this.config.logger.info(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
+      this.debug(`Fetcher pending with origin=${short(origin)} limit=${short(limit)}`)
       const tasks = this.tasks()
       for (const task of tasks) {
         this.enqueueTask(task)

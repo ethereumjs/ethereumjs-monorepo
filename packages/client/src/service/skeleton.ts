@@ -3,11 +3,14 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
   BIGINT_1,
+  BIGINT_100,
+  BIGINT_2EXP256,
   Lock,
   bigIntToBytes,
   bytesToBigInt,
   bytesToInt,
   equalsBytes,
+  formatBigDecimal,
   intToBytes,
   utf8ToBytes,
   zeros,
@@ -1321,7 +1324,7 @@ export class Skeleton extends MetaDBManager {
         }
       }
 
-      let logInfo = ''
+      let logInfo
       let subchainLog = ''
       if (isValid) {
         logInfo = `vm=cl=${chainHead}`
@@ -1333,7 +1336,7 @@ export class Skeleton extends MetaDBManager {
         if (vmexecution?.started === true) {
           logInfo = `${vmlogInfo} executing=${vmexecution?.running}`
         } else {
-          logInfo = `${logInfo} snapsync=${snapsync !== undefined}`
+          logInfo = `snapsync=${snapsync !== undefined}`
           if (snapsync !== undefined) {
             if (snapsync.fetchingDone === true) {
               const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
@@ -1345,13 +1348,20 @@ export class Skeleton extends MetaDBManager {
             } else {
               let stage = '??'
               if (snapsync.syncing) {
-                stage = 'accountranges'
-              } else if (snapsync.accountFetcher.done === true) {
+                stage = `accountranges done=${formatBigDecimal(
+                  snapsync.accountFetcher.first * BIGINT_100,
+                  BIGINT_2EXP256,
+                  BIGINT_100
+                )}%`
+              }
+
+              // move the stage along
+              if (snapsync.accountFetcher.done === true) {
                 stage = 'storage and codes'
-              } else if (
-                snapsync.storageFetcherDone === true &&
-                snapsync.byteCodeFetcherDone === true
-              ) {
+              }
+
+              // move the stage along
+              if (snapsync.storageFetcherDone === true && snapsync.byteCodeFetcherDone === true) {
                 stage = 'trienodes'
               }
 
