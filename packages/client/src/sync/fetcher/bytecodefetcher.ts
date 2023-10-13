@@ -13,7 +13,7 @@ import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Job, SnapFetcherDoneFlags } from './types'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -28,6 +28,7 @@ type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Uint8Array[]
   stateManager: DefaultStateManager
+  fetcherDoneFlags: SnapFetcherDoneFlags
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -41,6 +42,7 @@ export type JobTask = {
 export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
   stateManager: DefaultStateManager
+  fetcherDoneFlags: SnapFetcherDoneFlags
   codeDB: DB
 
   hashes: Uint8Array[]
@@ -52,6 +54,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     super(options)
     this.hashes = options.hashes ?? []
     this.stateManager = options.stateManager
+    this.fetcherDoneFlags = options.fetcherDoneFlags
+    this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()
 
     this.debug = createDebugLogger('client:ByteCodeFetcher')
@@ -174,6 +178,11 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       storeCount += 1
     }
     await this.codeDB.batch(ops as BatchDBOp[])
+    this.fetcherDoneFlags.byteCodeFetcher.first += BigInt(codeHashToByteCode.size)
+    // no idea why first starts exceeding count, may be because of missed hashesh thing, so resort to this
+    // weird method of tracking the count
+    this.fetcherDoneFlags.byteCodeFetcher.count =
+      this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
 
     this.debug(`Stored ${storeCount} bytecode in code trie`)
   }
@@ -191,6 +200,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   enqueueByByteCodeRequestList(byteCodeRequestList: Uint8Array[]) {
     this.hashes.push(...byteCodeRequestList)
+    // no idea why first starts exceeding count, may be because of missed hashesh thing, so resort to this
+    // weird method of tracking the count
+    this.fetcherDoneFlags.byteCodeFetcher.count =
+      this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
     this.debug(
       `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`
     )

@@ -20,7 +20,7 @@ import { Fetcher } from './fetcher'
 import type { Peer } from '../../net/peer'
 import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Job, SnapFetcherDoneFlags } from './types'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -57,6 +57,8 @@ export interface StorageFetcherOptions extends FetcherOptions {
   destroyWhenDone?: boolean
 
   stateManager: DefaultStateManager
+
+  fetcherDoneFlags: SnapFetcherDoneFlags
 }
 
 export type JobTask = {
@@ -67,6 +69,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   protected debug: Debugger
   root: Uint8Array
   stateManager: DefaultStateManager
+  fetcherDoneFlags: SnapFetcherDoneFlags
 
   private _proofTrie: Trie
 
@@ -85,9 +88,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     super(options)
     this._proofTrie = new Trie()
     this.fragmentedRequests = []
+
     this.root = options.root
     this.stateManager = options.stateManager
+    this.fetcherDoneFlags = options.fetcherDoneFlags
     this.storageRequests = options.storageRequests ?? []
+    this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
+
     this.accountToHighestKnownHash = new Map<String, Uint8Array>()
     this.debug = createDebugLogger('client:StorageFetcher')
     if (this.storageRequests.length > 0) {
@@ -422,6 +429,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         }
       })
       await Promise.all(storagePromises)
+      this.fetcherDoneFlags.storageFetcher.first += BigInt(storagePromises.length)
       this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {
       this.debug(err)
@@ -441,6 +449,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   enqueueByStorageRequestList(storageRequestList: StorageRequest[]) {
     this.storageRequests.push(...storageRequestList)
+    this.fetcherDoneFlags.storageFetcher.count += BigInt(storageRequestList.length)
     this.debug(
       `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
     )

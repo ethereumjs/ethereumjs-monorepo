@@ -9,7 +9,7 @@ import { Synchronizer } from './sync'
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
 import type { Skeleton } from '../service/skeleton'
-import type { FetcherDoneFlags } from './fetcher'
+import type { SnapFetcherDoneFlags } from './fetcher/types'
 import type { SynchronizerOptions } from './sync'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
@@ -25,7 +25,7 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
-  readonly fetcherDoneFlags: FetcherDoneFlags = {
+  readonly fetcherDoneFlags: SnapFetcherDoneFlags = {
     fetchingDone: false,
     syncing: false,
     accountFetcher: {
@@ -34,8 +34,18 @@ export class SnapSynchronizer extends Synchronizer {
       first: BigInt(0),
       done: false,
     },
-    storageFetcherDone: false,
-    byteCodeFetcherDone: false,
+    storageFetcher: {
+      started: false,
+      first: BigInt(0),
+      count: BigInt(0),
+      done: false,
+    },
+    byteCodeFetcher: {
+      started: false,
+      first: BigInt(0),
+      count: BigInt(0),
+      done: false,
+    },
     trieNodeFetcherDone: false,
   }
 
@@ -157,7 +167,7 @@ export class SnapSynchronizer extends Synchronizer {
 
     if (!this.fetcherDoneFlags.fetchingDone) {
       throw Error(
-        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcherDone} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcherDone} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcherDone}`
+        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcherDone}`
       )
     }
 
@@ -176,11 +186,9 @@ export class SnapSynchronizer extends Synchronizer {
       )
     }
 
-    const snapDoneMsg = `snapsync complete!!! snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
+    const snapDoneMsg = `snapsync complete!!! height=${snapTargetHeight} root=${short(
       snapTargetRoot
-    )}  snapTargetHash=${short(snapTargetHash)} height=${this.chain.blocks.height} finalized=${
-      this.chain.blocks.finalized?.header.number
-    }`
+    )}  hash=${short(snapTargetHash)}`
     if (fetchingAlreadyDone) {
       this.config.logger.debug(snapDoneMsg)
     } else {

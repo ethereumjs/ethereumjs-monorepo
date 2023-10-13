@@ -19,7 +19,7 @@ import {
 import { short, timeDuration } from '../util'
 import { DBKey, MetaDBManager } from '../util/metaDBManager'
 
-import type { FetcherDoneFlags } from '../sync/fetcher'
+import type { SnapFetcherDoneFlags } from '../sync/fetcher/types'
 import type { MetaDBManagerOptions } from '../util/metaDBManager'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { Hardfork } from '@ethereumjs/common'
@@ -1174,7 +1174,7 @@ export class Skeleton extends MetaDBManager {
       lastStatus?: string
       vmexecution?: { running: boolean; started: boolean }
       fetching?: boolean
-      snapsync?: FetcherDoneFlags
+      snapsync?: SnapFetcherDoneFlags
       peers?: number | string
     } = {}
   ): string {
@@ -1265,8 +1265,17 @@ export class Skeleton extends MetaDBManager {
         extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${this.chain.blocks.height})`
         break
       case 'SYNCED':
-        scenario =
-          Date.now() - this.syncedchain > STALE_WINDOW ? 'execution stalled?' : 'awaiting execution'
+        if (vmexecution?.started === true) {
+          scenario =
+            Date.now() - this.syncedchain > STALE_WINDOW
+              ? 'execution stalled?'
+              : 'awaiting execution'
+        } else if (snapsync !== undefined) {
+          // stall detection yet to be added
+          scenario = `snapsync height=${this.config.syncTargetHeight}`
+        } else {
+          scenario = 'execution none'
+        }
         extraStatus = ` (${scenario} vm=${vmHead?.header.number} cl=el=${this.chain.blocks.height} )`
         break
       case 'SYNCING':
@@ -1324,52 +1333,65 @@ export class Skeleton extends MetaDBManager {
         }
       }
 
-      let logInfo
+      let vmlogInfo
+      let snapLogInfo
       let subchainLog = ''
       if (isValid) {
-        logInfo = `vm=cl=${chainHead}`
+        snapLogInfo = `vm=cl=${chainHead}`
       } else {
-        const vmlogInfo = `vm=${vmHead?.header.number} hash=${short(
-          vmHead?.hash() ?? 'na'
-        )} started=${vmexecution?.started}`
+        vmlogInfo = `vm=${vmHead?.header.number} hash=${short(vmHead?.hash() ?? 'na')} started=${
+          vmexecution?.started
+        }`
 
         if (vmexecution?.started === true) {
-          logInfo = `${vmlogInfo} executing=${vmexecution?.running}`
+          vmlogInfo = `${vmlogInfo} executing=${vmexecution?.running}`
         } else {
-          logInfo = `snapsync=${snapsync !== undefined}`
+          snapLogInfo = `snapsync=${snapsync !== undefined}`
           if (snapsync !== undefined) {
             if (snapsync.fetchingDone === true) {
               const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
-              logInfo = `${logInfo} synced height=${snapTargetHeight} hash=${short(
+              snapLogInfo = `${snapLogInfo} synced height=${snapTargetHeight} hash=${short(
                 snapTargetHash ?? 'na'
               )} root=${short(snapTargetRoot ?? 'na')} vm-transition-by=${
                 (snapTargetHeight ?? BIGINT_0) + this.config.snapTransitionSafeDepth
               }`
             } else {
-              let stage = '??'
+              const accountrangesDone = formatBigDecimal(
+                snapsync.accountFetcher.first * BIGINT_100,
+                BIGINT_2EXP256,
+                BIGINT_100
+              )
+              const pendingStorageCodeReqs =
+                snapsync.storageFetcher.count -
+                snapsync.storageFetcher.first +
+                snapsync.byteCodeFetcher.count -
+                snapsync.byteCodeFetcher.first
+              const storagecodeReqsDone = formatBigDecimal(
+                (snapsync.storageFetcher.first + snapsync.byteCodeFetcher.first) * BIGINT_100,
+                snapsync.storageFetcher.count + snapsync.byteCodeFetcher.count,
+                BIGINT_100
+              )
+
+              let stage = `?? accounts=${accountrangesDone}% storage-and-codes=${storagecodeReqsDone}% of ${pendingStorageCodeReqs}`
               if (snapsync.syncing) {
-                stage = `accountranges done=${formatBigDecimal(
-                  snapsync.accountFetcher.first * BIGINT_100,
-                  BIGINT_2EXP256,
-                  BIGINT_100
-                )}%`
+                stage = `accounts=${accountrangesDone}% storage-and-codes=${storagecodeReqsDone}% of ${pendingStorageCodeReqs}`
               }
 
               // move the stage along
               if (snapsync.accountFetcher.done === true) {
-                stage = 'storage and codes'
+                stage = `storage-and-codes done=${storagecodeReqsDone}% of ${pendingStorageCodeReqs} accounts=${accountrangesDone}%`
               }
 
               // move the stage along
-              if (snapsync.storageFetcherDone === true && snapsync.byteCodeFetcherDone === true) {
-                stage = 'trienodes'
+              if (snapsync.storageFetcher.done === true && snapsync.byteCodeFetcher.done === true) {
+                stage = `trienodes=true storage+codes=${storagecodeReqsDone}% of ${pendingStorageCodeReqs} accounts=${accountrangesDone}%`
               }
 
-              logInfo = `${logInfo} syncing=${stage}`
+              snapLogInfo = `${snapLogInfo} ${stage} (hash=${short(
+                this.config.snapTargetHash ?? 'na'
+              )} root=${short(this.config.snapTargetRoot ?? 'na')})`
             }
           }
-
-          logInfo = `${logInfo} (${vmlogInfo})`
         }
 
         // if not synced add subchain info
@@ -1394,13 +1416,18 @@ export class Skeleton extends MetaDBManager {
       // if valid then the status info is short and sweet
       this.config.logger.info('')
       if (isValid) {
-        this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${logInfo} peers=${peers}`)
+        this.config.logger.info(`${logPrefix} ${status}${extraStatus} ${vmlogInfo} peers=${peers}`)
       } else {
         // else break into two
         this.config.logger.info(
           `${logPrefix} ${status}${extraStatus} synchronized=${this.config.synchronized} peers=${peers}`
         )
-        this.config.logger.info(`${logPrefix} ${logInfo}`)
+        if (snapLogInfo !== undefined && snapLogInfo !== '') {
+          this.config.logger.info(`${logPrefix} ${snapLogInfo}`)
+        }
+        if (vmlogInfo !== undefined && vmlogInfo !== '') {
+          this.config.logger.info(`${logPrefix} ${vmlogInfo}`)
+        }
         if (!isSynced) {
           this.config.logger.info(`${logPrefix} ${subchainLog}`)
         }

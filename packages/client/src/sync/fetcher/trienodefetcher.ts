@@ -23,7 +23,7 @@ import { Fetcher } from './fetcher'
 
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Job, SnapFetcherDoneFlags } from './types'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -41,6 +41,8 @@ export interface TrieNodeFetcherOptions extends FetcherOptions {
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
+
+  fetcherDoneFlags: SnapFetcherDoneFlags
 }
 
 export type JobTask = {
@@ -67,6 +69,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   root: Uint8Array
 
   stateManager: DefaultStateManager
+  fetcherDoneFlags: SnapFetcherDoneFlags
   accountTrie: Trie
   codeDB: DB
 
@@ -94,6 +97,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
     this.root = options.root
+    this.fetcherDoneFlags = options.fetcherDoneFlags
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
     this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
