@@ -354,17 +354,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
+    this._codeCache?.put(address, value)
     const codeHash = keccak256(value)
-    if (!this._codeCacheSettings.deactivate) {
-      const codeExists = !equalsBytes(await this.getContractCode(address), new Uint8Array())
-      this._codeCache?.put(address, value, codeExists)
-    }
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
-    }
-    if (this._codeCacheSettings.deactivate) {
-      const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
-      await this._getCodeDB().put(key, value)
     }
 
     if (this.DEBUG) {

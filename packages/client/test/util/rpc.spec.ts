@@ -22,7 +22,7 @@ describe('[Util/RPC]', () => {
     const manager = new RPCManager(client, config)
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
-      for (const rpcDebug of [false, true]) {
+      for (const rpcDebug of ['', 'eth']) {
         const { server } = createRPCServer(manager, { methodConfig, rpcDebug, logger })
         const httpServer = createRPCServerListener({
           server,

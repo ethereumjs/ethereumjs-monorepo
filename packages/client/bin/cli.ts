@@ -135,7 +135,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',
-    default: 8545,
+    default: 8546,
   })
   .option('wsAddr', {
     describe: 'WS-RPC server listening address',
@@ -158,7 +158,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('wsEnginePort', {
     describe: 'WS-RPC server listening port for Engine namespace',
     number: true,
-    default: 8551,
+    default: 8552,
   })
   .option('wsEngineAddr', {
     describe: 'WS-RPC server listening interface address for Engine namespace',
@@ -204,8 +204,9 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: 5,
   })
   .option('rpcDebug', {
-    describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
-    boolean: true,
+    describe:
+      'Additionally log complete RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods).',
+    default: '',
   })
   .option('rpcCors', {
     describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
@@ -362,9 +363,29 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .option('pruneEngineCache', {
+    describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
+    boolean: true,
+    default: true,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
-  .strict().argv
+  .strict()
+  .check((argv, _options) => {
+    const usedPorts = new Set()
+    let collision = false
+    if (argv.ws === true) {
+      usedPorts.add(argv.wsPort)
+      if (!usedPorts.has(argv.wsEnginePort)) {
+        usedPorts.add(argv.wsEnginePort)
+      }
+    }
+    if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
+    if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
+
+    if (collision) throw new Error('cannot reuse ports between RPC instances')
+    return true
+  }).argv
 
 /**
  * Initializes and returns the databases needed for the client
@@ -831,6 +852,7 @@ async function run() {
     forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
     txLookupLimit: args.txLookupLimit,
+    pruneEngineCache: args.pruneEngineCache,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -860,7 +882,7 @@ async function run() {
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
-      config.logger.info('Client started successfully')
+      config.superMsg('Client started successfully')
       return { client, servers }
     })
     .catch((e) => {

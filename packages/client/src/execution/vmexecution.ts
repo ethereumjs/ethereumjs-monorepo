@@ -39,7 +39,7 @@ export class VMExecution extends Execution {
   /**
    * Display state cache stats every num blocks
    */
-  private STATS_NUM_BLOCKS = 1000
+  private STATS_NUM_BLOCKS = 5000
   private statsCount = 0
 
   /**
@@ -162,12 +162,14 @@ export class VMExecution extends Execution {
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
    * @param optional param if runWithoutSetHead should block for execution
+   * @param optional param if runWithoutSetHead should skip putting block into chain
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(
     opts: RunBlockOpts,
     receipts?: TxReceipt[],
-    blocking: boolean = false
+    blocking: boolean = false,
+    skipBlockchain: boolean = false
   ): Promise<boolean> {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
@@ -193,19 +195,22 @@ export class VMExecution extends Execution {
           // Save receipts
           this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
         }
-        // Bypass updating head by using blockchain db directly
-        const [hash, num] = [block.hash(), block.header.number]
-        const td =
-          (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
-          block.header.difficulty
 
-        await this.chain.blockchain.dbManager.batch([
-          DBSetTD(td, num, hash),
-          ...DBSetBlockOrHeader(block),
-          DBSetHashToNumber(hash, num),
-          // Skip the op for number to hash to not alter canonical chain
-          ...DBSaveLookups(hash, num, true),
-        ])
+        if (!skipBlockchain) {
+          // Bypass updating head by using blockchain db directly
+          const [hash, num] = [block.hash(), block.header.number]
+          const td =
+            (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
+            block.header.difficulty
+
+          await this.chain.blockchain.dbManager.batch([
+            DBSetTD(td, num, hash),
+            ...DBSetBlockOrHeader(block),
+            DBSetHashToNumber(hash, num),
+            // Skip the op for number to hash to not alter canonical chain
+            ...DBSaveLookups(hash, num, true),
+          ])
+        }
       } finally {
         this.running = false
       }
@@ -383,7 +388,7 @@ export class VMExecution extends Execution {
                   })
                   if (hardfork !== this.hardfork) {
                     const hash = short(block.hash())
-                    this.config.logger.info(
+                    this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
@@ -482,9 +487,40 @@ export class VMExecution extends Execution {
                 // error can repeatedly processed for debugging
                 const { number } = errorBlock.header
                 const hash = short(errorBlock.hash())
-                this.config.logger.warn(
-                  `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
-                )
+                const errorMsg = `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed`
+
+                // check if the vmHead 's backstepping can resolve this issue, headBlock is parent of the
+                // current block which is trying to be executed and should equal current vmHead
+                if (
+                  `${error}`.toLowerCase().includes('does not contain state root') &&
+                  number > BIGINT_1
+                ) {
+                  // this is a weird case which has been observed, could be because of a forking scenario
+                  // or some race condition, but if this happens for now we can try to handle it by
+                  // backstepping to the parent. if the parent isn't there, it can recursively go back
+                  // to parent's parent and so on...
+                  //
+                  // There can also be a better way to backstep vm to but lets naively step back
+                  let backStepTo, backStepToHash
+                  if (headBlock !== undefined) {
+                    backStepTo = headBlock.header.number ?? BIGINT_0 - BIGINT_1
+                    backStepToHash = headBlock.header.parentHash
+                  }
+                  this.config.logger.warn(
+                    `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
+                      backStepToHash ?? 'na'
+                    )}:\n${error}`
+                  )
+
+                  // backStepToHash should not be undefined but if its the above warn log will show us to debug
+                  // but still handle here so that we don't send the client into a tizzy
+                  if (backStepToHash !== undefined) {
+                    await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
+                  }
+                } else {
+                  this.config.logger.warn(`${errorMsg}:\n${error}`)
+                }
+
                 if (this.config.debugCode) {
                   await debugCodeReplayBlock(this, errorBlock)
                 }
@@ -519,11 +555,14 @@ export class VMExecution extends Execution {
                 this.config.execCommon.gteHardfork(Hardfork.London) === true
                   ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
                   : ''
+
               const tdAdd =
                 this.config.execCommon.gteHardfork(Hardfork.Paris) === true
                   ? ''
                   : `td=${this.chain.blocks.td} `
-              this.config.logger.info(
+              ;(this.config.execCommon.gteHardfork(Hardfork.Paris) === true
+                ? this.config.logger.debug
+                : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
               )
             } else {

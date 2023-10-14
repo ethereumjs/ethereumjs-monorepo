@@ -42,6 +42,7 @@ type StartRPCOpts = { port?: number; wsServer?: boolean }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 type createClientArgs = {
+  minerCoinbase: string
   includeVM: boolean // Instantiates the VM when creating the test client
   commonChain: Common
   enableMetaDB: boolean
@@ -81,6 +82,10 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
+    minerCoinbase:
+      clientOpts.minerCoinbase !== undefined
+        ? Address.fromString(clientOpts.minerCoinbase)
+        : undefined,
     common,
     saveReceipts: clientOpts.enableMetaDB,
     txLookupLimit: clientOpts.txLookupLimit,
@@ -267,9 +272,10 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
 
   const { chain } = client
   const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
-  const { execution } = service
+  const { execution, skeleton } = service
 
   await chain.open()
+  await skeleton?.open()
   await execution?.open()
   await chain.update()
   return { chain, common, execution: execution!, server, service, blockchain }
@@ -328,4 +334,20 @@ export function gethGenesisStartLondon(gethGenesis: any) {
 export const dummy = {
   addr: new Address(hexToBytes('0xcde098d93535445768e8a2345a2f869139f45641')),
   privKey: hexToBytes('0x5831aac354d13ff96a0c051af0d44c0931c2a20bdacee034ffbaa2354d84f5f8'),
+}
+
+/**
+ *
+ * @param t Test suite
+ * @param server HttpServer
+ * @param inputBlocks Array of valid ExecutionPayloadV1 data
+ */
+export const batchBlocks = async (server: HttpServer, inputBlocks: any[]) => {
+  for (let i = 0; i < inputBlocks.length; i++) {
+    const req = params('engine_newPayloadV1', [inputBlocks[i]])
+    const expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
+    await baseRequest(server, req, 200, expectRes, false, false)
+  }
 }
