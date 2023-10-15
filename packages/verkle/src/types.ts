@@ -4,8 +4,59 @@ import type { VerkleNode } from './node'
 import type { WalkController } from './util/walkController'
 import type { DB } from '@ethereumjs/util'
 
-// Curve point of a commitment
-export type CommitmentPoint = Uint8Array
+// Field representation of a commitment
+export interface Fr {}
+
+// Elliptic curve point representation of a commitment
+export interface Point {
+  // Bytes returns the compressed serialized version of the element.
+  bytes(): Uint8Array
+  // BytesUncompressed returns the uncompressed serialized version of the element.
+  bytesUncompressed(): Uint8Array
+
+  // SetBytes deserializes a compressed group element from buf.
+  // This method does all the proper checks assuming the bytes come from an
+  // untrusted source.
+  setBytes(bytes: Uint8Array): void
+
+  // SetBytesUncompressed deserializes an uncompressed group element from buf.
+  setBytesUncompressed(bytes: Uint8Array, trusted: boolean): void
+
+  // computes X/Y
+  mapToBaseField(): Point
+
+  // mapToScalarField maps a group element to the scalar field.
+  mapToScalarField(field: Fr): void
+
+  // Equal returns true if p and other represent the same point.
+  equal(secondPoint: Point): boolean
+
+  // SetIdentity sets p to the identity element.
+  setIdentity(): Point
+
+  // Double sets p to 2*p1.
+  double(point1: Point): Point
+
+  // Add sets p to p1+p2.
+  add(point1: Point, point2: Point): Point
+
+  // Sub sets p to p1-p2.
+  sub(point1: Point, point2: Point): Point
+
+  // IsOnCurve returns true if p is on the curve.
+  isOnCurve(): boolean
+
+  normalise(): void
+
+  // Set sets p to p1.
+  set(): Point
+
+  // Neg sets p to -p1.
+  neg(): Point
+
+  // ScalarMul sets p to p1*s.
+  scalarMul(point1: Point, scalarMont: Fr): Point
+}
 
 export type Proof = Uint8Array[]
 
@@ -58,7 +109,7 @@ export type Checkpoint = {
 }
 
 export type FoundNodeFunction = (
-  nodeRef: CommitmentPoint,
+  nodeRef: Point,
   node: VerkleNode | null,
   key: Uint8Array,
   walkController: WalkController
