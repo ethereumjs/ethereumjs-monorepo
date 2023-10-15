@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1697197328486,
+  "lastUpdate": 1697410707675,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "35dad1afa28ee5259b79c8f69b423bbfa21acc4e",
-          "message": "trie: update mpt tutorial (#3056)\n\n* trie: update first module of examples\r\n\r\n* trie: update module 2 of mpt examples\r\n\r\n* trie: update module 3 of mpt examples\r\n\r\n* trie: simplify imports of mpt examples\r\n\r\n* trie: update module 4 of mpt examples\r\n\r\n* trie: remove redundant comments from code examples\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/trie/examples/merkle_patricia_trees/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* trie: clarify sentence\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
-          "timestamp": "2023-09-26T10:01:08-07:00",
-          "tree_id": "85d0743d5995d1843c2a6e0e412b729e2bec58c4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/35dad1afa28ee5259b79c8f69b423bbfa21acc4e"
-        },
-        "date": 1695747923319,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 25496,
-            "range": "±6.46%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 25594,
-            "range": "±3.27%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 25176,
-            "range": "±3.64%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 25050,
-            "range": "±3.69%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20354,
-            "range": "±13.08%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.68%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "charmful0x@gmail.com",
+            "name": "Darwin",
+            "username": "charmful0x"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7b4c229b0ec1be3fee052978db28ba904f9b92d0",
+          "message": "docs: fix examples URLs path (#3103)",
+          "timestamp": "2023-10-15T15:54:53-07:00",
+          "tree_id": "283e54d45e40699be81814f068355c6a98e5a295",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7b4c229b0ec1be3fee052978db28ba904f9b92d0"
+        },
+        "date": 1697410707046,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 29302,
+            "range": "±5.54%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28860,
+            "range": "±2.91%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28827,
+            "range": "±3.03%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28379,
+            "range": "±3.09%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23271,
+            "range": "±10.53%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
           }
         ]
       }
