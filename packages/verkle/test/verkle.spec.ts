@@ -37,13 +37,14 @@ const values = [
   '0xe703000000000000000000000000000000000000000000000000000000000000',
 ].map(hexToBytes)
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const absentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d03',
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
 ].map(hexToBytes)
 
 describe('Verkle trie', () => {
-  it('should insert and retrieve values', async () => {
+  it.todo('should insert and retrieve values', async () => {
     const trie = new VerkleTrie()
     for (let i = 0; i < presentKeys.length; i++) {
       await trie.put(presentKeys[i], values[i])

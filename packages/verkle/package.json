@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/verkle",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Implementation of verkle tries as used in Ethereum.",
   "keywords": [
     "verkle",

@@ -47,8 +47,6 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
   }
   commit(): Point {
     throw new Error('Not implemented')
-    // const commit = TODO
-    // this.commit = commit
   }
 
   getValue(index: number): Uint8Array | null {

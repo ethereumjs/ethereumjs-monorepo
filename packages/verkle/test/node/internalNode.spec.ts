@@ -5,14 +5,19 @@ import { NODE_WIDTH, VerkleNodeType } from '../../src/node/index.js'
 import { InternalNode } from '../../src/node/internalNode.js'
 import { POINT_IDENTITY } from '../../src/util/crypto.js'
 
+import type { Point } from '../../src/types.js'
+
 describe('verkle node - internal', () => {
   it('constructor should create an internal node', async () => {
     const commitment = randomBytes(32)
     const depth = 2
-    const node = new InternalNode({ commitment, depth })
+    const node = new InternalNode({ commitment: commitment as unknown as Point, depth })
 
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
-    assert.ok(equalsBytes(node.commitment, commitment), 'commitment should be set')
+    assert.ok(
+      equalsBytes(node.commitment as unknown as Uint8Array, commitment),
+      'commitment should be set'
+    )
     assert.equal(node.depth, depth, 'depth should be set')
 
     // Children nodes should all default to null.
@@ -29,7 +34,10 @@ describe('verkle node - internal', () => {
 
     assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.ok(
-      equalsBytes(node.commitment, POINT_IDENTITY),
+      equalsBytes(
+        node.commitment as unknown as Uint8Array,
+        POINT_IDENTITY as unknown as Uint8Array
+      ),
       'commitment should be set to point identity'
     )
     assert.equal(node.depth, depth, 'depth should be set')
