@@ -1,4 +1,4 @@
-import type { CommitmentPoint } from '../types.js'
+import type { Point } from '../types.js'
 import type { InternalNode } from './internalNode.js'
 import type { LeafNode } from './leafNode.js'
 
@@ -15,14 +15,14 @@ export interface TypedVerkleNode {
 export type VerkleNode = TypedVerkleNode[VerkleNodeType]
 
 export interface VerkleNodeInterface {
-  commit(): Uint8Array
+  commit(): Point
   hash(): any
   serialize(): Uint8Array
 }
 
 interface BaseVerkleNodeOptions {
   // Value of the commitment
-  commitment: CommitmentPoint
+  commitment: Point
   depth: number
 }
 
@@ -32,13 +32,13 @@ interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
 
   // Values of the child commitments before the trie is modified by inserts.
   // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
-  copyOnWrite?: Record<string, CommitmentPoint>
+  copyOnWrite?: Record<string, Point>
 }
 interface VerkleLeafNodeOptions extends BaseVerkleNodeOptions {
   stem: Uint8Array
   values: Uint8Array[]
-  c1: CommitmentPoint
-  c2: CommitmentPoint
+  c1: Point
+  c2: Point
 }
 
 export interface VerkleNodeOptions {

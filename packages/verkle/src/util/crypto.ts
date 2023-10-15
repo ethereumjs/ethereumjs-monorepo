@@ -2,6 +2,8 @@ import { type Address, concatBytes, setLengthLeft, toBytes, writeInt32LE } from 
 
 import * as rustVerkleWasm from '../rust-verkle-wasm/rust_verkle_wasm.js'
 
+import type { Point } from '../types.js'
+
 export function pedersenHash(input: Uint8Array): Uint8Array {
   const pedersenHash = rustVerkleWasm.pedersen_hash(input)
 
@@ -35,4 +37,4 @@ export function getTreeKey(address: Address, treeIndex: number, subIndex: number
 }
 
 // TODO: Replace this by the actual value of Point().Identity() from the Go code.
-export const POINT_IDENTITY = new Uint8Array(32).fill(0)
+export const POINT_IDENTITY = new Uint8Array(32).fill(0) as unknown as Point

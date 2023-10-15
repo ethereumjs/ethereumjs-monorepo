@@ -6,11 +6,12 @@ import { type VerkleNode, VerkleNodeType } from './types.js'
 
 export function decodeRawNode(raw: Uint8Array[]): VerkleNode {
   const nodeType = raw[0][0]
+  const depth = 0
   switch (nodeType) {
     case VerkleNodeType.Internal:
-      return InternalNode.fromRawNode(raw)
+      return InternalNode.fromRawNode(raw, depth)
     case VerkleNodeType.Leaf:
-      return LeafNode.fromRawNode(raw)
+      return LeafNode.fromRawNode(raw, depth)
     default:
       throw new Error('Invalid node type')
   }

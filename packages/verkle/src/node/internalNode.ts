@@ -6,13 +6,13 @@ import { BaseVerkleNode } from './baseVerkleNode.js'
 import { LeafNode } from './leafNode.js'
 import { NODE_WIDTH, VerkleNodeType } from './types.js'
 
-import type { CommitmentPoint } from '../types.js'
+import type { Point } from '../types.js'
 import type { VerkleNode, VerkleNodeOptions } from './types.js'
 
 export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
   // Array of references to children nodes
   public children: Array<VerkleNode | null>
-  public copyOnWrite: Record<string, CommitmentPoint>
+  public copyOnWrite: Record<string, Point>
   public type = VerkleNodeType.Internal
 
   /* TODO: options.children is not actually used here */
@@ -22,13 +22,11 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
     this.copyOnWrite = options.copyOnWrite ?? {}
   }
 
-  commit(): Uint8Array {
+  commit(): Point {
     throw new Error('Not implemented')
-    // const commit = TODO
-    // this.commit = commit
   }
 
-  cowChild(index: number): void {
+  cowChild(_: number): void {
     // Not implemented yet
   }
 
@@ -47,7 +45,8 @@ export class InternalNode extends BaseVerkleNode<VerkleNodeType.Internal> {
       throw new Error('Invalid node length')
     }
 
-    const commitment = rawNode[rawNode.length - 1]
+    // TODO: Generate Point from rawNode value
+    const commitment = rawNode[rawNode.length - 1] as unknown as Point
 
     return new InternalNode({ commitment, depth })
   }

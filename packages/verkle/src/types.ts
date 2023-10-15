@@ -109,7 +109,7 @@ export type Checkpoint = {
 }
 
 export type FoundNodeFunction = (
-  nodeRef: Point,
+  nodeRef: Uint8Array,
   node: VerkleNode | null,
   key: Uint8Array,
   walkController: WalkController

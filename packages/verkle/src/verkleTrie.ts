@@ -23,7 +23,7 @@ import { WalkController, matchingBytesLength } from './util/index.js'
 import { Lock } from './util/lock.js'
 
 import type { VerkleNode } from './node/types.js'
-import type { CommitmentPoint, FoundNodeFunction } from './types.js'
+import type { FoundNodeFunction, Point } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
@@ -147,6 +147,7 @@ export class VerkleTrie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
+    /*  */
     const node = await this.findLeafNode(key, throwIfMissing)
     if (node !== null) {
       const keyLastByte = key[key.length - 1]
@@ -167,30 +168,34 @@ export class VerkleTrie {
    * @returns A Promise that resolves once value is stored.
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
-    // Create the leaf node
-    // const leafNode = new LeafNode({value:} new Map([[key, value]]))
     await this._db.put(key, value)
-    // const leafKey = getLeafKey(key)
-    // await this.putNode(leafKey, leafNode)
+
+    // Find or create the leaf node
+    const leafNode = await this.findLeafNode(key, false)
+    if (leafNode === null) {
+      // If leafNode is missing, create it
+      // leafNode = LeafNode.create()
+      throw new Error('Not implemented')
+    }
 
     // Walk up the trie and update internal nodes
-    let currentNode = leafNode
-    let currentKey = leafKey
-    let currentDepth = this.maxKeyLength
+    let currentNode: VerkleNode = leafNode
+    let currentKey = leafNode.stem
+    let currentDepth = leafNode.depth
 
     while (currentDepth > 0) {
       const parentKey = currentKey.slice(0, -1)
       const parentIndex = currentKey[currentKey.length - 1]
-      const parentNode: VerkleNode[] | null = InternalNode.create()
+      const parentNode = InternalNode.create(currentDepth)
       parentNode.children[parentIndex] = currentNode
-      await this.putNode(parentKey, parentNode)
+      await this._db.put(parentKey, parentNode.serialize())
 
       currentNode = parentNode
       currentKey = parentKey
       currentDepth--
     }
 
-    this.root = currentNode
+    this._root = currentNode.hash()
   }
 
   /**
@@ -292,7 +297,7 @@ export class VerkleTrie {
   /**
    * Retrieves a node from db by hash.
    */
-  async lookupNode(node: CommitmentPoint | Uint8Array[]): Promise<VerkleNode | null> {
+  async lookupNode(node: Uint8Array | Uint8Array[]): Promise<VerkleNode | null> {
     if (isRawNode(node)) {
       return decodeRawNode(node)
     }

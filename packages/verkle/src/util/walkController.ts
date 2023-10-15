@@ -3,7 +3,7 @@ import { InternalNode, LeafNode } from '../node/index.js'
 import { PrioritizedTaskExecutor } from './tasks.js'
 
 import type { VerkleNode } from '../node/types.js'
-import type { CommitmentPoint, FoundNodeFunction } from '../types.js'
+import type { FoundNodeFunction } from '../types.js'
 import type { VerkleTrie } from '../verkleTrie.js'
 
 /**
@@ -78,8 +78,10 @@ export class WalkController {
     }))
 
     for (const child of children) {
-      const childKey = new Uint8Array([...key, child.keyExtension])
-      this.pushNodeToQueue(child.nodeRef, childKey)
+      if (child.nodeRef !== null) {
+        const childKey = new Uint8Array([...key, child.keyExtension])
+        this.pushNodeToQueue(child.nodeRef.hash(), childKey)
+      }
     }
   }
 
@@ -126,11 +128,11 @@ export class WalkController {
       throw new Error('Could not get node at childIndex')
     }
     const childKey = new Uint8Array([...key, childIndex])
-    this.pushNodeToQueue(childRef, childKey, priority ?? childKey.length)
+    this.pushNodeToQueue(childRef.hash(), childKey, priority ?? childKey.length)
   }
 
   private processNode(
-    nodeRef: CommitmentPoint,
+    nodeRef: Uint8Array,
     node: VerkleNode | null,
     key: Uint8Array = new Uint8Array(0)
   ) {
