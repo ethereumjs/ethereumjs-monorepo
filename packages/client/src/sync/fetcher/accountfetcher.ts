@@ -468,6 +468,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       await this.accountTrie.persistRoot()
       this.snapFetchersCompleted(AccountFetcher, this.accountTrie.root())
 
+      this.storageFetcher.setDestroyWhenDone()
+
       // TODO It's possible that we should never destroy these fetchers since they will be needed to continually heal tries
       this.byteCodeFetcher.setDestroyWhenDone()
       this.trieNodeFetcher.setDestroyWhenDone()

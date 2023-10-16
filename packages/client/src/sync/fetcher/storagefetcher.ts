@@ -191,6 +191,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     }
   }
 
+  setDestroyWhenDone() {
+    this.destroyWhenDone = true
+  }
+
   /**
    * Request results from peer for the given job.
    * Resolves with the raw result
@@ -414,7 +418,6 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         this.debug(
           'Empty result detected - Associated range requested was empty with no elements remaining to the right'
         )
-        this.destroyWhenDone = true
         return
       }
       let slotCount = 0
@@ -454,6 +457,39 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
     )
     this.nextTasks()
+  }
+
+  /**
+   * Run the fetcher. Returns a promise that resolves once all tasks are completed.
+   */
+  async fetch() {
+    if (this.running) {
+      return false
+    }
+    this.write()
+    this.running = true
+    this.nextTasks()
+
+    while (this.running) {
+      if (this.next() === false) {
+        if (
+          this.storageRequests.length === 0 &&
+          this.fragmentedRequests.length === 0 &&
+          this.finished === this.total &&
+          this.destroyWhenDone
+        ) {
+          this.push(null)
+        }
+        await this.wait()
+      }
+    }
+    this.running = false
+    if (this.destroyWhenDone) {
+      this.destroy()
+      this['writer'] = null
+    }
+    if (this.syncErrored) throw this.syncErrored
+    return true
   }
 
   /**
