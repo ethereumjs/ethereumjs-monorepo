@@ -384,7 +384,7 @@ export class Common {
       if (mergeIndex >= 0 && td !== undefined && td !== null) {
         if (hfIndex >= mergeIndex && BigInt(hfs[mergeIndex].ttd!) > td) {
           throw Error('Maximum HF determined by total difficulty is lower than the block number HF')
-        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) <= td) {
+        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) < td) {
           throw Error('HF determined by block number is lower than the minimum total difficulty HF')
         }
       }
