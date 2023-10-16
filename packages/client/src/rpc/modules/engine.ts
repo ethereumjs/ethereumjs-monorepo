@@ -1251,6 +1251,17 @@ export class Engine {
       }
     }
 
+    if (
+      this.config.syncTargetHeight === undefined ||
+      this.config.syncTargetHeight < headBlock.header.number
+    ) {
+      this.config.syncTargetHeight = headBlock.header.number
+    }
+    this.config.updateSynchronizedState(headBlock.header)
+    if (this.chain.config.synchronized) {
+      this.service.txPool.checkRunState()
+    }
+
     // prepare valid response
     let validResponse
     // If payloadAttributes is present, start building block and return payloadId
