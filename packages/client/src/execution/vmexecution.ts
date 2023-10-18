@@ -37,9 +37,15 @@ export class VMExecution extends Execution {
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
-   * Display state cache stats every num blocks
+   * Interval for client execution stats output (in ms)
+   * for debug log level
+   *
    */
-  private STATS_NUM_BLOCKS = 5000
+  private STATS_INTERVAL = 1000 * 40 // 40 seconds
+
+  private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _statsVm: VM | undefined
+
   private statsCount = 0
 
   /**
@@ -411,8 +417,8 @@ export class VMExecution extends Execution {
                     throw Error('Execution stopped')
                   }
 
+                  this._statsVm = this.vm
                   const beforeTS = Date.now()
-                  this.stats(this.vm)
                   const result = await this.vm.runBlock({
                     block,
                     root: parentState,
@@ -593,6 +599,12 @@ export class VMExecution extends Execution {
    * Start execution
    */
   async start(): Promise<boolean> {
+    this._statsInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this.stats.bind(this),
+      this.STATS_INTERVAL
+    )
+
     const { blockchain } = this.vm
     if (this.running || !this.started) {
       return false
@@ -627,6 +639,7 @@ export class VMExecution extends Execution {
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
+    clearInterval(this._statsInterval)
     // Stop with the lock to be concurrency safe and flip started flag so that
     // vmPromise can resolve early
     await this.runWithLock<void>(async () => {
@@ -676,10 +689,11 @@ export class VMExecution extends Execution {
       })
 
       if (txHashes.length === 0) {
+        this._statsVm = vm
+
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        this.stats(vm)
         const res = await vm.runBlock({
           block,
           root,
@@ -722,10 +736,10 @@ export class VMExecution extends Execution {
     }
   }
 
-  stats(vm: VM) {
+  stats() {
     this.statsCount += 1
-    if (this.statsCount === this.STATS_NUM_BLOCKS) {
-      const sm = vm.stateManager as any
+    if (this._statsVm !== undefined) {
+      const sm = this._statsVm.stateManager as any
       const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
