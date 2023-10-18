@@ -46,8 +46,6 @@ export class VMExecution extends Execution {
   private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
   private _statsVm: VM | undefined
 
-  private statsCount = 0
-
   /**
    * Create new VM execution module
    */
@@ -737,7 +735,6 @@ export class VMExecution extends Execution {
   }
 
   stats() {
-    this.statsCount += 1
     if (this._statsVm !== undefined) {
       const sm = this._statsVm.stateManager as any
       const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
@@ -762,7 +759,6 @@ export class VMExecution extends Execution {
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
       )
-      this.statsCount = 0
     }
   }
 }
