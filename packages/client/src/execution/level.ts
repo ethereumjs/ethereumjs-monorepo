@@ -139,14 +139,17 @@ export class LevelDB<
    */
   async byPrefix(prefix: TKey, opts?: EncodingOpts): Promise<[TKey, TValue | undefined][]> {
     const encodings = getEncodings(opts)
+
     const ret: [TKey, TValue][] = []
     try {
       for await (const [key, val] of this._leveldb.iterator({ gte: prefix, ...encodings })) {
-        // eslint-disable-next-line
-        if (val instanceof Buffer) {
-          ret.push([key, Uint8Array.from(val) as TValue])
-        }
-        ret.push([key, (val ?? undefined) as TValue])
+        const data = [
+          // eslint-disable-next-line
+          key instanceof Buffer ? Uint8Array.from(key) : key,
+          // eslint-disable-next-line
+          (val instanceof Buffer ? Uint8Array.from(val) : val) as TValue,
+        ]
+        ret.push(data)
       }
     } catch (error: any) {
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
