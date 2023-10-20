@@ -85,9 +85,6 @@ describe('snapshot get storage slots for address', () => {
       await snapshot.putAccount(addr, acc)
     }
 
-    // TODO assert to check accuracy of returned accounts
-    // const val = await snapshot.getAccounts()
-
     // Insert these slots to every address
     const slots = [
       [hexToBytes('0x' + '1'), hexToBytes('0x' + '2222')],
