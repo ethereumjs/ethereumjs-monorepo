@@ -71,7 +71,7 @@ Generated TypeDoc API [Documentation](./docs/README.md)
 
 With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
 
-If you use an ES6-style `import` in your code files from the ESM build will be used:
+If you use an ES6-style `import` in your code, files from the ESM build will be used:
 
 ```typescript
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
