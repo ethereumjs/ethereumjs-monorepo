@@ -278,14 +278,14 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
 
     const { accountFetcher, storageFetcher, byteCodeFetcher, trieNodeFetcher } = fetcherDoneFlags
-    this.fetcherDoneFlags.fetchingDone =
+    this.fetcherDoneFlags.done =
       accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcher.done
 
     this.config.superMsg(
-      `snapFetchersCompletion status fetchingDone=${this.fetcherDoneFlags.fetchingDone} accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcher.done} byteCodeFetcherDone=${byteCodeFetcher.done} trieNodeFetcherDone=${trieNodeFetcher.done}`
+      `snapFetchersCompletion status fetchingDone=${this.fetcherDoneFlags.done} accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcher.done} byteCodeFetcherDone=${byteCodeFetcher.done} trieNodeFetcherDone=${trieNodeFetcher.done}`
     )
 
-    if (this.fetcherDoneFlags.fetchingDone) {
+    if (this.fetcherDoneFlags.done) {
       this.config.events.emit(Event.SYNC_SNAPSYNC_COMPLETE, this.root, this.stateManager)
     }
   }

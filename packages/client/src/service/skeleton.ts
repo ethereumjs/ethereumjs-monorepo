@@ -1362,7 +1362,7 @@ export class Skeleton extends MetaDBManager {
             snapLogInfo = `snapsync=false`
           } else {
             snapLogInfo
-            if (snapsync.fetchingDone === true) {
+            if (snapsync.done === true) {
               const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
               snapLogInfo = `${snapLogInfo} synced height=${snapTargetHeight} hash=${short(
                 snapTargetHash ?? 'na'

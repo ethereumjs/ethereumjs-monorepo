@@ -11,7 +11,7 @@ export type Job<JobTask, JobResult, StorageItem> = {
 }
 
 export type SnapFetcherDoneFlags = {
-  fetchingDone: boolean
+  done: boolean
   syncing: boolean
   accountFetcher: {
     started: boolean

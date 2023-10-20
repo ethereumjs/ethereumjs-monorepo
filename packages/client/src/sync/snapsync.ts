@@ -26,7 +26,7 @@ export class SnapSynchronizer extends Synchronizer {
   skeleton?: Skeleton
   private execution: VMExecution
   readonly fetcherDoneFlags: SnapFetcherDoneFlags = {
-    fetchingDone: false,
+    done: false,
     syncing: false,
     accountFetcher: {
       started: false,
@@ -165,12 +165,12 @@ export class SnapSynchronizer extends Synchronizer {
     syncedRoot: Uint8Array
     syncedHeight: bigint
   } | null> {
-    const fetchingAlreadyDone = this.fetcherDoneFlags.fetchingDone
+    const fetchingAlreadyDone = this.fetcherDoneFlags.done
     if (!fetchingAlreadyDone) {
       await this.sync()
     }
 
-    if (!this.fetcherDoneFlags.fetchingDone) {
+    if (!this.fetcherDoneFlags.done) {
       throw Error(
         `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcher.done}`
       )
@@ -199,6 +199,11 @@ export class SnapSynchronizer extends Synchronizer {
           snapTargetRoot
         )}  for target height=${snapTargetHeight} hash=${short(snapTargetHash)}`
       )
+      // TODO: figure out what needs to be reinited
+      // this.fetcherDoneFlags.accountFetcher.done = false;
+      // this.fetcherDoneFlags.storageFetcher.done = false;
+      // this.fetcherDoneFlags.byteCodeFetcher.done = false;
+      // this.fetcherDoneFlags.trieNodeFetcher.done = false
     }
 
     const snapDoneMsg = `snapsync complete!!! height=${snapTargetHeight} root=${short(
@@ -224,7 +229,7 @@ export class SnapSynchronizer extends Synchronizer {
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
     // if skeleton is passed we have to wait for skeleton to be updated
-    if (this.skeleton?.synchronized !== true) {
+    if (this.skeleton?.synchronized !== true || this.fetcherDoneFlags.done) {
       this.config.logger.info(`SnapSynchronizer - early return ${peer?.id}`)
       return false
     }
