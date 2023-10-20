@@ -213,7 +213,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           BIGINT_100
         )
         this.config.logger.warn(
-          `storageFetcher completed with pending tasks done=${reqsDone}% of ${this.fetcherDoneFlags.byteCodeFetcher.count}`
+          `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${this.fetcherDoneFlags.byteCodeFetcher.count}`
         )
       }
 
@@ -229,7 +229,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // always do trienode fetch as this should only sync diffs else return
       // but currently it doesn't seem to be returning, so for static state
       // ignore this if previously build
-      const trieNodeFetch = !this.fetcherDoneFlags.trieNodeFetcherDone
+      const trieNodeFetch = !this.fetcherDoneFlags.trieNodeFetcher.done
         ? this.trieNodeFetcher.fetch().then(
             // we should not be doing this, fetcher itself should mark completion
             // cc @scorbajio
@@ -241,7 +241,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         : null
       this.config.superMsg(`Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`)
       await trieNodeFetch
-      if (this.fetcherDoneFlags.trieNodeFetcherDone !== true) {
+      if (this.fetcherDoneFlags.trieNodeFetcher.done !== true) {
         // @scorbajio need to see the reason for this here
         throw Error('trieNodeFetch finished without completing the sync')
       }
@@ -273,17 +273,16 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         fetcherDoneFlags.byteCodeFetcher.done = true
         break
       case TrieNodeFetcher:
-        fetcherDoneFlags.trieNodeFetcherDone = true
+        fetcherDoneFlags.trieNodeFetcher.done = true
         break
     }
 
-    const { accountFetcher, storageFetcher, byteCodeFetcher, trieNodeFetcherDone } =
-      fetcherDoneFlags
+    const { accountFetcher, storageFetcher, byteCodeFetcher, trieNodeFetcher } = fetcherDoneFlags
     this.fetcherDoneFlags.fetchingDone =
-      accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcherDone
+      accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcher.done
 
     this.config.superMsg(
-      `snapFetchersCompletion status fetchingDone=${this.fetcherDoneFlags.fetchingDone} accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcher.done} byteCodeFetcherDone=${byteCodeFetcher.done} trieNodeFetcherDone=${trieNodeFetcherDone}`
+      `snapFetchersCompletion status fetchingDone=${this.fetcherDoneFlags.fetchingDone} accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcher.done} byteCodeFetcherDone=${byteCodeFetcher.done} trieNodeFetcherDone=${trieNodeFetcher.done}`
     )
 
     if (this.fetcherDoneFlags.fetchingDone) {

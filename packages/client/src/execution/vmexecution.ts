@@ -532,7 +532,7 @@ export class VMExecution extends Execution {
                     this.config.logger.error(
                       `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na'
-                      )} hasParentStateRoot=${hasParentStateRoot} stateRoot=${short(
+                      )} hasParentStateRoot=${hasParentStateRoot} backStepToRoot=${short(
                         backStepToRoot ?? 'na'
                       )}:\n${error}`
                     )

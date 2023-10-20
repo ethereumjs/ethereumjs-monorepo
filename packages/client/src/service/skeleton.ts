@@ -573,7 +573,7 @@ export class Skeleton extends MetaDBManager {
         lookupOps.map(async ({ name, prevBlock, updateToHash }) => {
           if (updateToHash !== undefined && !equalsBytes(updateToHash, zeroBlockHash)) {
             // try getting canonical block
-            const newBlock =
+            let newBlock =
               prevBlock !== undefined && equalsBytes(updateToHash, prevBlock.hash())
                 ? prevBlock
                 : equalsBytes(updateToHash, headBlock.hash())
@@ -602,10 +602,22 @@ export class Skeleton extends MetaDBManager {
                 // eslint-disable-next-line no-empty
               }
             } else {
-              if (newBlock.header.number < (prevBlock?.header.number ?? BIGINT_0)) {
-                throw Error(
-                  `Invalid ${name}Block number=${newBlock.header.number} current ${name}Block=${prevBlock?.header.number}`
-                )
+              if (newBlock.header.number < (this.finalizedBlock?.header.number ?? BIGINT_0)) {
+                const canonicalBlock = await this.getBlock(newBlock.header.number, true)
+                if (canonicalBlock === undefined) {
+                  throw Error(
+                    `Canonical lookup for stale=${name}Block number=${newBlock.header.number} failed`
+                  )
+                }
+
+                if (!equalsBytes(canonicalBlock.hash(), newBlock.hash())) {
+                  throw Error(
+                    `Invalid ${name}Block number=${newBlock.header.number} current ${name}Block=${prevBlock?.header.number}`
+                  )
+                } else {
+                  // update it back to finalized block
+                  newBlock = this.finalizedBlock
+                }
               }
             }
             return newBlock
@@ -1272,7 +1284,7 @@ export class Skeleton extends MetaDBManager {
               : 'awaiting execution'
         } else if (snapsync !== undefined) {
           // stall detection yet to be added
-          scenario = `snapsync height=${this.config.syncTargetHeight}`
+          scenario = `snapsync target=${this.config.snapTargetHeight}`
         } else {
           scenario = 'execution none'
         }
@@ -1346,8 +1358,10 @@ export class Skeleton extends MetaDBManager {
         if (vmexecution?.started === true) {
           vmlogInfo = `${vmlogInfo} executing=${vmexecution?.running}`
         } else {
-          snapLogInfo = `snapsync=${snapsync !== undefined}`
-          if (snapsync !== undefined) {
+          if (snapsync === undefined) {
+            snapLogInfo = `snapsync=false`
+          } else {
+            snapLogInfo
             if (snapsync.fetchingDone === true) {
               const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
               snapLogInfo = `${snapLogInfo} synced height=${snapTargetHeight} hash=${short(
@@ -1355,41 +1369,47 @@ export class Skeleton extends MetaDBManager {
               )} root=${short(snapTargetRoot ?? 'na')} vm-transition-by=${
                 (snapTargetHeight ?? BIGINT_0) + this.config.snapTransitionSafeDepth
               }`
-            } else {
-              const accountrangesDone = formatBigDecimal(
+            } else if (snapsync.syncing) {
+              const accountsDone = formatBigDecimal(
                 snapsync.accountFetcher.first * BIGINT_100,
                 BIGINT_2EXP256,
                 BIGINT_100
               )
-              const pendingStorageCodeReqs =
-                snapsync.storageFetcher.count -
-                snapsync.storageFetcher.first +
-                snapsync.byteCodeFetcher.count -
-                snapsync.byteCodeFetcher.first
-              const storagecodeReqsDone = formatBigDecimal(
-                (snapsync.storageFetcher.first + snapsync.byteCodeFetcher.first) * BIGINT_100,
-                snapsync.storageFetcher.count + snapsync.byteCodeFetcher.count,
+              const storageReqsDone = formatBigDecimal(
+                snapsync.storageFetcher.first * BIGINT_100,
+                snapsync.storageFetcher.count,
+                BIGINT_100
+              )
+              const codeReqsDone = formatBigDecimal(
+                snapsync.byteCodeFetcher.first * BIGINT_100,
+                snapsync.byteCodeFetcher.count,
                 BIGINT_100
               )
 
-              let stage = `?? accounts=${accountrangesDone}% storage-and-codes=${storagecodeReqsDone}% of ${pendingStorageCodeReqs}`
-              if (snapsync.syncing) {
-                stage = `accounts=${accountrangesDone}% storage-and-codes=${storagecodeReqsDone}% of ${pendingStorageCodeReqs}`
-              }
+              const snapprogress = `accounts=${accountsDone}% storage=${storageReqsDone}% of ${snapsync.storageFetcher.count} codes=${codeReqsDone}% of ${snapsync.byteCodeFetcher.count}`
 
+              let stage = 'snapsync=??'
+              stage = `snapsync=accounts`
               // move the stage along
               if (snapsync.accountFetcher.done === true) {
-                stage = `storage-and-codes done=${storagecodeReqsDone}% of ${pendingStorageCodeReqs} accounts=${accountrangesDone}%`
+                stage = `snapsync=storage&codes`
               }
-
-              // move the stage along
               if (snapsync.storageFetcher.done === true && snapsync.byteCodeFetcher.done === true) {
-                stage = `trienodes=true storage+codes=${storagecodeReqsDone}% of ${pendingStorageCodeReqs} accounts=${accountrangesDone}%`
+                stage = `snapsync=trienodes`
+              }
+              if (snapsync.trieNodeFetcher.done === true) {
+                stage = `finished`
               }
 
-              snapLogInfo = `${snapLogInfo} ${stage} (hash=${short(
+              snapLogInfo = `${stage} ${snapprogress} (hash=${short(
                 this.config.snapTargetHash ?? 'na'
               )} root=${short(this.config.snapTargetRoot ?? 'na')})`
+            } else {
+              if (this.synchronized) {
+                snapLogInfo = `snapsync=??`
+              } else {
+                snapLogInfo = `snapsync awaiting cl synchronization`
+              }
             }
           }
         }

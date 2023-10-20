@@ -30,6 +30,11 @@ export type SnapFetcherDoneFlags = {
     count: bigint
     done: boolean
   }
-  trieNodeFetcherDone: boolean
+  trieNodeFetcher: {
+    started: boolean
+    first: bigint
+    count: bigint
+    done: boolean
+  }
   stateRoot?: Uint8Array
 }

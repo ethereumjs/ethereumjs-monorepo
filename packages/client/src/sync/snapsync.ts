@@ -46,7 +46,12 @@ export class SnapSynchronizer extends Synchronizer {
       count: BigInt(0),
       done: false,
     },
-    trieNodeFetcherDone: false,
+    trieNodeFetcher: {
+      started: false,
+      first: BigInt(0),
+      count: BigInt(0),
+      done: false,
+    },
   }
 
   constructor(options: SnapSynchronizerOptions) {
@@ -167,7 +172,7 @@ export class SnapSynchronizer extends Synchronizer {
 
     if (!this.fetcherDoneFlags.fetchingDone) {
       throw Error(
-        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcherDone}`
+        `snap sync fetchers didn't sync complete state accountFetcherDone=${this.fetcherDoneFlags.accountFetcher.done} storageFetcherDone=${this.fetcherDoneFlags.storageFetcher.done} byteCodeFetcherDone=${this.fetcherDoneFlags.byteCodeFetcher.done} trieNodeFetcherDone=${this.fetcherDoneFlags.trieNodeFetcher.done}`
       )
     }
 
@@ -182,7 +187,17 @@ export class SnapSynchronizer extends Synchronizer {
       throw Error(
         `Invalid synced data by snapsync snapTargetHeight=${snapTargetHeight} snapTargetRoot=${short(
           snapTargetRoot ?? 'na'
-        )} snapTargetHash=${snapTargetHash ?? 'na'}`
+        )} snapTargetHash=${short(snapTargetHash ?? 'na')}`
+      )
+    }
+
+    const hasTargetStateRoot = await this.execution.vm.stateManager.hasStateRoot(snapTargetRoot)
+    if (!hasTargetStateRoot) {
+      const syncedRoot = await this.execution.vm.stateManager.getStateRoot()
+      throw Error(
+        `Invalid snap syncedRoot=${short(syncedRoot)} snapTargetHash=${short(
+          snapTargetRoot
+        )}  for target height=${snapTargetHeight} hash=${short(snapTargetHash)}`
       )
     }
 
