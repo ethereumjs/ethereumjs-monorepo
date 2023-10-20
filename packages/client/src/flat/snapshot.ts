@@ -1,5 +1,13 @@
 import { merkleizeList } from '@ethereumjs/trie'
-import { Account, KECCAK256_NULL, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  KECCAK256_NULL,
+  KeyEncoding,
+  ValueEncoding,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
@@ -79,9 +87,10 @@ export class Snapshot {
     return this._db.get(key)
   }
 
+  // TODO make this a private internal function
   getAccounts(): Promise<[Uint8Array, Uint8Array | undefined][]> {
     const prefix = ACCOUNT_PREFIX
-    return this._db.byPrefix(prefix)
+    return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 
   async delAccount(address: Address): Promise<void> {
@@ -124,7 +133,7 @@ export class Snapshot {
 
   async getStorageSlots(address: Address): Promise<[Uint8Array, Uint8Array | undefined][]> {
     const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
-    return this._db.byPrefix(prefix)
+    return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 
   async delStorageSlot(address: Address, slot: Uint8Array): Promise<void> {
@@ -135,9 +144,9 @@ export class Snapshot {
 
   async clearAccountStorage(address: Address): Promise<void> {
     const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
-    const keys = await this._db.keysByPrefix(prefix)
+    const keys = await this._db.keysByPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
     for (const key of keys) await this._saveCachePreState(key)
-    await this._db.delByPrefix(prefix)
+    await this._db.delByPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 
   async putCode(address: Address, code: Uint8Array): Promise<void> {
@@ -180,7 +189,7 @@ export class Snapshot {
       // TODO update the account's stateRoot field if there exist
       // storage slots for that account in the db (i.e. not EoA).
       // TODO can probably cache stateRoot and re-compute storage
-      // trie root only if the storage trie has been touched.
+
       const storageRoot = storageRoots[bytesToHex(accountKey)]
       let v = value
       if (storageRoot !== undefined) {
