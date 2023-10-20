@@ -50,7 +50,7 @@ export function stringifyQuery(query: unknown): string {
 }
 
 // Initialize the kzg object with the kzg library
-initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
+initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {
