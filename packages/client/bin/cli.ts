@@ -741,7 +741,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/devnet6.txt')
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
