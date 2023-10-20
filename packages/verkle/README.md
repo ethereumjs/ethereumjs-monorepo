@@ -83,7 +83,7 @@ If you use Node.js specific `require`, the CJS build will be used:
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking, which CJS cannot provide.
 
 ## References
 
