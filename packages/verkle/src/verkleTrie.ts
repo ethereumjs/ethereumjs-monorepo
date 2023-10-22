@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   KeyEncoding,
+  Lock,
   MapDB,
   ValueEncoding,
   bytesToHex,
@@ -20,7 +21,6 @@ import {
   type VerkleTrieOptsWithDefaults,
 } from './types.js'
 import { WalkController, matchingBytesLength } from './util/index.js'
-import { Lock } from './util/lock.js'
 
 import type { VerkleNode } from './node/types.js'
 import type { FoundNodeFunction, Point } from './types.js'
