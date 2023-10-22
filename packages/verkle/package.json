@@ -52,7 +52,8 @@
   "dependencies": {
     "@ethereumjs/rlp": "5.0.0",
     "@ethereumjs/util": "9.0.0",
-    "lru-cache": "^10.0.0"
+    "lru-cache": "^10.0.0",
+    "verkle-trie": "^0.0.4"
   },
   "engines": {
     "node": ">=18"
