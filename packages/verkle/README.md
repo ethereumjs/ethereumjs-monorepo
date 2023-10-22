@@ -33,6 +33,7 @@ It is best to select the variant that is most appropriate for your unique use ca
 
 ```typescript
 import { VerkleTrie } from '@ethereumjs/verkle'
+import { bytesToUtf8, utf8ToBytes } from 'ethereumjs/util'
 
 const trie = new VerkleTrie()
 
