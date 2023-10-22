@@ -294,17 +294,17 @@ export class Chain {
       height: BIGINT_0,
     }
 
-    blocks.latest = await this.getCanonicalHeadBlock()
-    blocks.finalized = (await this.getCanonicalFinalizedBlock()) ?? null
-    blocks.safe = (await this.getCanonicalSafeBlock()) ?? null
-    blocks.vm = await this.getCanonicalVmHead()
-
-    headers.latest = blocks.latest.header
+    headers.latest = await this.getCanonicalHeadHeader()
     // finalized and safe are always blocks since they have to have valid execution
     // before they can be saved in chain
     headers.finalized = blocks.finalized?.header ?? null
     headers.safe = blocks.safe?.header ?? null
     headers.vm = (await this.getCanonicalVmHead()).header
+
+    blocks.latest = await this.getCanonicalHeadBlock()
+    blocks.finalized = (await this.getCanonicalFinalizedBlock()) ?? null
+    blocks.safe = (await this.getCanonicalSafeBlock()) ?? null
+    blocks.vm = await this.getCanonicalVmHead()
 
     headers.height = headers.latest.number
     blocks.height = blocks.latest.header.number
