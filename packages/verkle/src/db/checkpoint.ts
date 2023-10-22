@@ -22,8 +22,7 @@ export class CheckpointDB implements DB {
   // be some not so clean workaround.
   //
   // (note that @ts-ignore doesn't work since stripped on declaration (.d.ts) files)
-  protected _cache?: LRUCache<Uint8Array, any>
-  // protected _cache?: LRUCache<string, Uint8Array | undefined>
+  protected _cache?: LRUCache<string, any>
 
   _stats = {
     cache: {
@@ -48,7 +47,6 @@ export class CheckpointDB implements DB {
     this.checkpoints = []
 
     if (this.cacheSize > 0) {
-      // @ts-ignore
       this._cache = new LRUCache({
         max: this.cacheSize,
         updateAgeOnGet: true,
@@ -155,7 +153,7 @@ export class CheckpointDB implements DB {
     if (value !== undefined) {
       this._stats.db.hits += 1
     }
-    this._cache?.set(key, value)
+    this._cache?.set(keyHex, value)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,
       // so future `get` calls will not look the key up again from disk.
@@ -169,9 +167,10 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+    const keyHex = bytesToHex(key)
     if (this.hasCheckpoints()) {
       // put value in diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), value)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
     } else {
       await this.db.put(key, value, {
         keyEncoding: KeyEncoding.Bytes,
@@ -180,7 +179,7 @@ export class CheckpointDB implements DB {
       this._stats.db.writes += 1
 
       if (this._cache !== undefined) {
-        this._cache.set(key, value)
+        this._cache.set(keyHex, value)
         this._stats.cache.writes += 1
       }
     }
@@ -190,9 +189,10 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async del(key: Uint8Array): Promise<void> {
+    const keyHex = bytesToHex(key)
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache
-      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(bytesToHex(key), undefined)
+      this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, undefined)
     } else {
       // delete the value on disk
       await this.db.del(key, {
@@ -201,7 +201,7 @@ export class CheckpointDB implements DB {
       this._stats.db.writes += 1
 
       if (this._cache !== undefined) {
-        this._cache.set(key, undefined)
+        this._cache.set(keyHex, undefined)
         this._stats.cache.writes += 1
       }
     }
