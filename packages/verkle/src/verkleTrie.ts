@@ -61,7 +61,7 @@ export class VerkleTrie {
       this._opts = { ...this._opts, ...opts }
     }
 
-    this.database(opts?.db ?? new MapDB<string, string>())
+    this.database(opts?.db)
 
     this.EMPTY_TRIE_ROOT = zeros(32)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -77,13 +77,12 @@ export class VerkleTrie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToHex(key), {
+        opts.root = await opts?.db.get(key, {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
-        opts.root = rootHex !== undefined ? hexToBytes(rootHex) : undefined
       } else {
-        await opts?.db.put(bytesToHex(key), bytesToHex(opts.root), {
+        await opts?.db.put(key, opts.root, {
           keyEncoding: KeyEncoding.String,
           valueEncoding: ValueEncoding.String,
         })
@@ -93,7 +92,7 @@ export class VerkleTrie {
     return new VerkleTrie(opts)
   }
 
-  database(db?: DB<string, string>) {
+  database(db?: DB<Uint8Array, Uint8Array>) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')

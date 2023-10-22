@@ -64,7 +64,7 @@ export interface VerkleTrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<string, string>
+  db?: DB<Uint8Array, Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
