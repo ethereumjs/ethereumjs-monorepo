@@ -78,13 +78,13 @@ export class VerkleTrie {
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
         opts.root = await opts?.db.get(key, {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
+          keyEncoding: KeyEncoding.Bytes,
+          valueEncoding: ValueEncoding.Bytes,
         })
       } else {
         await opts?.db.put(key, opts.root, {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
+          keyEncoding: KeyEncoding.Bytes,
+          valueEncoding: ValueEncoding.Bytes,
         })
       }
     }
