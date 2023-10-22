@@ -97,12 +97,16 @@ export class CheckpointDB implements DB {
           batchOp.push({
             type: 'del',
             key: hexToBytes(key),
+            opts: {
+              keyEncoding: KeyEncoding.Bytes,
+            },
           })
         } else {
           batchOp.push({
             type: 'put',
             key: hexToBytes(key),
             value,
+            opts: { keyEncoding: KeyEncoding.Bytes, valueEncoding: ValueEncoding.Bytes },
           })
         }
       }
