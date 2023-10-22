@@ -1,4 +1,4 @@
-import { type Address, concatBytes, setLengthLeft, toBytes, writeInt32LE } from '@ethereumjs/util'
+import { type Address, concatBytes, int32ToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
 
 import * as rustVerkleWasm from '../rust-verkle-wasm/rust_verkle_wasm.js'
 
@@ -27,7 +27,7 @@ export function pedersenHash(input: Uint8Array): Uint8Array {
 export function getTreeKey(address: Address, treeIndex: number, subIndex: number): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
-  const treeIndexB = writeInt32LE(treeIndex)
+  const treeIndexB = int32ToBytes(treeIndex, true)
 
   const input = concatBytes(address32, treeIndexB)
 
