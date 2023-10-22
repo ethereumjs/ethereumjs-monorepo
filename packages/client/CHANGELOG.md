@@ -562,3 +562,5 @@ showing the relations between the main components as well as the initialization 
 ## [0.0.1] - 2018-10-26
 
 - Initial development release
+
+[0.0.1]: https://github.com/ethereumjs/ethereumjs-client/tree/v0.0.1
