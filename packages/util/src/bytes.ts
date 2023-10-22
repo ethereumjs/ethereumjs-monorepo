@@ -445,64 +445,59 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
 }
 
 /**
- * @notice Read a 32-bit little-endian integer from a Uint8Array
+ * @notice Convert a Uint8Array to a 32-bit integer
  * @param {Uint8Array} bytes The input Uint8Array from which to read the 32-bit integer.
- * @return {number} The 32-bit little-endian integer read from the input Uint8Arrays.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @throws {Error} If the input Uint8Array has a length less than 4.
+ * @return {number} The 32-bit integer read from the input Uint8Array.
  */
-export function readInt32LE(bytes: Uint8Array): number {
-  return (bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0
+export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): number {
+  if (bytes.length < 4) {
+    throw new Error('The input Uint8Array must have at least 4 bytes.')
+  }
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  return dataView.getInt32(0, littleEndian)
 }
 
 /**
- * @notice Read a 64-bit little-endian bigint from a Uint8Array
+ * @notice Convert a Uint8Array to a 64-bit bigint
  * @param {Uint8Array} bytes The input Uint8Array from which to read the 64-bit bigint.
- * @return {bigint} The 64-bit little-endian bigint read from the input Uint8Arrays.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @throws {Error} If the input Uint8Array has a length less than 8.
+ * @return {bigint} The 64-bit bigint read from the input Uint8Array.
  */
-export function readBigInt64LE(bytes: Uint8Array): bigint {
-  const lo = BigInt((bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)) >>> 0)
-  const hi = BigInt((bytes[4] | (bytes[5] << 8) | (bytes[6] << 16) | (bytes[7] << 24)) >>> 0)
-
-  return (hi << BigInt(32)) | lo
+export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false): bigint {
+  if (bytes.length < 8) {
+    throw new Error('The input Uint8Array must have at least 8 bytes.')
+  }
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  return dataView.getBigInt64(0, littleEndian)
 }
 
 /**
- * @notice Write a 32-bit little-endian number to a Uint8Array.
- * @param {number} number The number value to write to the Uint8Array.
- * @return {Uint8Array} A Uint8Array of length 32 containing the 32-bit little-endian number.
+ * @notice Convert a 32-bit integer to a Uint8Array.
+ * @param {number} value The 32-bit integer to convert.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @return {Uint8Array} A Uint8Array of length 4 containing the integer.
  */
-export function writeInt32LE(number: number): Uint8Array {
-  const bytes = new Uint8Array(32)
-
-  bytes[0] = number & 0xff
-  bytes[1] = (number >> 8) & 0xff
-  bytes[2] = (number >> 16) & 0xff
-  bytes[3] = (number >> 24) & 0xff
-
-  return bytes
+export function int32ToBytes(value: number, littleEndian: boolean = false): Uint8Array {
+  const buffer = new ArrayBuffer(4)
+  const dataView = new DataView(buffer)
+  dataView.setInt32(0, value, littleEndian)
+  return new Uint8Array(buffer)
 }
 
 /**
- * @notice Write a 64-bit little-endian bigint to a Uint8Array.
- * @param {bigint} bigint The bigint value to write to the Uint8Array.
- * @return {Uint8Array} A Uint8Array of length 32 containing the 64-bit little-endian bigint.
+ * @notice Convert a 64-bit bigint to a Uint8Array.
+ * @param {bigint} value The 64-bit bigint to convert.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @return {Uint8Array} A Uint8Array of length 8 containing the bigint.
  */
-export function writeBigInt64LE(bigint: bigint): Uint8Array {
-  const bytes = new Uint8Array(32)
-
-  const lo = BigInt.asUintN(32, bigint)
-  const hi = BigInt.asUintN(32, bigint >> BigInt(32))
-
-  bytes[0] = Number(lo & BigInt(0xff))
-  bytes[1] = Number((lo >> BigInt(8)) & BigInt(0xff))
-  bytes[2] = Number((lo >> BigInt(16)) & BigInt(0xff))
-  bytes[3] = Number((lo >> BigInt(24)) & BigInt(0xff))
-
-  bytes[4] = Number(hi & BigInt(0xff))
-  bytes[5] = Number((hi >> BigInt(8)) & BigInt(0xff))
-  bytes[6] = Number((hi >> BigInt(16)) & BigInt(0xff))
-  bytes[7] = Number((hi >> BigInt(24)) & BigInt(0xff))
-
-  return bytes
+export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): Uint8Array {
+  const buffer = new ArrayBuffer(8)
+  const dataView = new DataView(buffer)
+  dataView.setBigInt64(0, value, littleEndian)
+  return new Uint8Array(buffer)
 }
 
 // eslint-disable-next-line no-restricted-imports
