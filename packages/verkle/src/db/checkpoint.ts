@@ -196,7 +196,7 @@ export class CheckpointDB implements DB {
     } else {
       // delete the value on disk
       await this.db.del(key, {
-        keyEncoding: KeyEncoding.String,
+        keyEncoding: KeyEncoding.Bytes,
       })
       this._stats.db.writes += 1
 
