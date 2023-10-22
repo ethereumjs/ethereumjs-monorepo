@@ -302,16 +302,8 @@ export class Chain {
     headers.latest = blocks.latest.header
     // finalized and safe are always blocks since they have to have valid execution
     // before they can be saved in chain
-    if (blocks.finalized !== null) {
-      headers.finalized = blocks.finalized.header
-    } else {
-      headers.finalized = null
-    }
-    if (blocks.safe !== null) {
-      headers.safe = blocks.safe.header
-    } else {
-      headers.safe = null
-    }
+    headers.finalized = blocks.finalized?.header ?? null
+    headers.safe = blocks.safe?.header ?? null
     headers.vm = (await this.getCanonicalVmHead()).header
 
     headers.height = headers.latest.number
