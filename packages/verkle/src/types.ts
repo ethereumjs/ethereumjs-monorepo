@@ -93,7 +93,7 @@ export interface CheckpointDBOpts {
   /**
    * A database instance.
    */
-  db: DB<string, string>
+  db: DB<Uint8Array, Uint8Array>
 
   /**
    * Cache size (default: 0)
