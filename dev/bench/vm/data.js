@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1697931399144,
+  "lastUpdate": 1697933100995,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "606285089bc557db4b0284c07536ae112c4b0bd4",
-          "message": "VM: Complement Profiler with out-of-EVM Measurements (#3064)\n\n* VM: first outer profiler output test, generic internal flag for runTx() and runBlock(), move title output to execution start\r\n\r\n* some clean-up, move back to per-option-output\r\n\r\n* EVM -> runTx(): complement profiler with broadly partitioned chunk measurements\r\n\r\n* VM -> runBlock(): complement profiler with broadly partitioned chunk measurements\r\n\r\n* vm: address review\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-09-28T12:16:58+02:00",
-          "tree_id": "cd39d0e2c9b5975f3fa0efb2ca11d0d59a631fc0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/606285089bc557db4b0284c07536ae112c4b0bd4"
-        },
-        "date": 1695896434229,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30420,
-            "range": "±5.69%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 30300,
-            "range": "±2.99%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 30195,
-            "range": "±3.24%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28580,
-            "range": "±6.03%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23445,
-            "range": "±12.34%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.96%",
             "unit": "ops/sec",
             "extra": "75 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d282e2e35258aa2751ba3828347d2ba99775df0c",
+          "message": "trie: refactor lock class (#3109)\n\n* trie: refactor lock\r\n\r\n* trie: merge lock tests",
+          "timestamp": "2023-10-22T01:01:33+01:00",
+          "tree_id": "28db7d09722b48d50523c8128dc37205f009db2c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d282e2e35258aa2751ba3828347d2ba99775df0c"
+        },
+        "date": 1697933100261,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28728,
+            "range": "±4.81%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28850,
+            "range": "±2.83%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28571,
+            "range": "±2.94%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28209,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23314,
+            "range": "±10.62%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
           }
         ]
       }
