@@ -146,7 +146,6 @@ export class VerkleTrie {
    * @returns A Promise that resolves to `Uint8Array` if a value was found or `null` if no value was found.
    */
   async get(key: Uint8Array, throwIfMissing = false): Promise<Uint8Array | null> {
-    /*  */
     const node = await this.findLeafNode(key, throwIfMissing)
     if (node !== null) {
       const keyLastByte = key[key.length - 1]
