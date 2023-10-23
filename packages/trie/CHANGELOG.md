@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.1 - 2023-10-26
+
+### Debug Logging
+
+The trie library now allows for using debug logging with the `DEBUG=ethjs,trie:*` flag on the command line as already being implemented in other EthereumJS libraries, see PR [#3019](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3019).
+
+See [Debugging](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#debugging) README section for usage instructions. This comes in pretty handy if in-depth trie analysis with step-by-step following of path reads is needed.
+
+### Bugfixes
+
+- Fix empty-root check, PR [#3001](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3001)
+
+### Other Changes
+
+- New parameter `skipKeyTransform` (default: `false`) for Trie `put()`, `del()` and `batch()` method to allow to pass in already hashed keys, PR [#2950](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2950)
+- New `keyPrefix` option tries to store node keys with a static prefix (used upstream in the `statemanager` package to speed to storage trie reads), PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023)
+- Peformance: `findPath()` optimizations, PR [#3066](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3066)
+- Make `null` available as type option for `put()` method value, PR [#3020](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3020)
+- More flexible cache configuration along `shallowCopy()`, PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
+- Use `lock` class from `@ethereumjs/util`, PR [#3109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3109)
+- Improve util types and handling, PR [#2951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2951)
+
 ## 6.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
