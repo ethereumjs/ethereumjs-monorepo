@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.1.0 - 2023-10-26
+
+### Holesky Testnet Support
+
+This release comes with full support for the [Holesky](https://holesky.ethpandaops.io/) public Ethereum testnet replacing the `Goerli` test network.
+
+- Add Holesky chain specification, PR [2982](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2982), [#2989](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2989), [#2997](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2997), [#3049](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3049), [#3074](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3074) and [#3088](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3088)
+
+### EIP-7516 BLOBBASEFEE Opcode
+
+This release supports [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) with a new `BLOBBASEFEE` opcode added to and scheduled for the Dencun HF, see PR [#3035](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3035) and [#3068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3068). The opcode returns the value of the blob base-fee of the current block it is executing in.
+
+### Dencun devnet-10 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-10](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update `EIP-4788`: do not use precompile anymore but use the pre-deployed bytecode, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
+- Small Cancun-related fixes, PR [#3099](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3099)
+
+### Bugfixes
+
+- Updates and fixes along Geth genesis file parsing, PR [#2961](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2961)
+- Handle `forkHash` on timestamp == genesis timestamp, PR [#2959](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2959)
+
+### Other Changes
+
+- Performance: Cache Parameter Values + activated EIPs for current Hardfork, PR [#2994](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2994)
+
 ## 4.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳

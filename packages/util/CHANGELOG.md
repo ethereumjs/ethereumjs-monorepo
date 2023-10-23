@@ -8,9 +8,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 9.0.1 - 2023-10-26
 
-- New reoccurringly used BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for reusage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
-- `bytesToBigInt()` performance optimization for 1-byte bytes, PR [#3054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3054)
+### Dencun devnet-10 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-10](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
 - Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
+### Other Changes
+
+- Performance: New reoccurringly used BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for reusage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- Performance: `bytesToBigInt()` performance optimization for 1-byte bytes, PR [#3054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3054)
 
 ## 9.0.0 - 2023-08-09
 
