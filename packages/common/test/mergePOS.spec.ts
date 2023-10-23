@@ -128,7 +128,7 @@ describe('[Common]: Merge/POS specific logic', () => {
       assert.ok(e.message.includes(eMsg), msg)
     }
     try {
-      c.setHardforkBy({ blockNumber: 14n, td: 5000n })
+      c.setHardforkBy({ blockNumber: 14n, td: 5001n })
       assert.fail(`should have thrown td > ttd validation error`)
     } catch (e: any) {
       msg = 'block number < last HF block number set, TD set and higher (should throw)'
