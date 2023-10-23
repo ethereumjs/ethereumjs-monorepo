@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE
  */
 
-import { bytesToHex, bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
+import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
 
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
