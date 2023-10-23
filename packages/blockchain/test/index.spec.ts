@@ -844,7 +844,7 @@ describe('initialization tests', () => {
     } catch (e: any) {
       assert.equal(
         e.message,
-        'Cannot put a genesis block: create a new Blockchain',
+        'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
         'putting a genesis block did throw (otherGenesisBlock not found in chain)'
       )
     }
