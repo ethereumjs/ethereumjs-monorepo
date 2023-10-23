@@ -135,10 +135,16 @@ export function toAscii(hex: string): string {
  * @param optional padding
  * @returns hex representation of input string
  */
-export function fromUtf8(stringValue: string) {
-  const str = utf8ToBytes(stringValue)
+export function fromUtf8(utf8String: string): string {
+  if (typeof utf8String !== 'string') {
+    throw new Error(`[fromUtf8] input must be a string, received type ${typeof utf8String}`)
+  }
 
-  return `0x${padToEven(bytesToHex(str)).replace(/^0+|0+$/g, '')}`
+  const utf8Bytes = utf8ToBytes(utf8String)
+  const hexValue = bytesToHex(utf8Bytes)
+
+  // Make sure the hex value is padded to an even length
+  return hexValue.length % 2 === 0 ? hexValue : '0' + hexValue
 }
 
 /**
