@@ -1,6 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  Address,
   BIGINT_1,
   BIGINT_2,
   TypeOutput,
@@ -130,6 +131,22 @@ export class PendingBlock {
       toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
     const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
 
+    let withdrawalsBuf = zeros(0)
+
+    if (withdrawals !== undefined) {
+      const withdrawalsBufTemp: Uint8Array[] = []
+      for (const withdrawal of withdrawals) {
+        const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
+        const validatorIndex = bigIntToUnpaddedBytes(
+          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt)
+        )
+        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
+        withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
+      }
+      withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
+    }
+
     const payloadIdBytes = toBytes(
       keccak256(
         concatBytes(
@@ -138,7 +155,8 @@ export class PendingBlock {
           timestampBuf,
           gasLimitBuf,
           parentBeaconBlockRootBuf,
-          coinbaseBuf
+          coinbaseBuf,
+          withdrawalsBuf
         )
       ).subarray(0, 8)
     )

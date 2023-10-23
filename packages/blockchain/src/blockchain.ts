@@ -312,11 +312,29 @@ export class Blockchain implements BlockchainInterface {
    */
   async getIteratorHead(name = 'vm'): Promise<Block> {
     return this.runWithLock<Block>(async () => {
-      // if the head is not found return the genesis hash
-      const hash = this._heads[name] ?? this.genesisBlock.hash()
-      const block = await this.getBlock(hash)
-      return block
+      return (await this.getHead(name, false))!
     })
+  }
+
+  /**
+   * This method differs from `getIteratorHead`. If the head is not found, it returns `undefined`.
+   * @param name - Optional name of the iterator head (default: 'vm')
+   * @returns
+   */
+  async getIteratorHeadSafe(name = 'vm'): Promise<Block | undefined> {
+    return this.runWithLock<Block | undefined>(async () => {
+      return this.getHead(name, true)
+    })
+  }
+
+  private async getHead(name: string, returnUndefinedIfNotSet: boolean = false) {
+    const headHash = this._heads[name]
+    if (headHash === undefined && returnUndefinedIfNotSet) {
+      return undefined
+    }
+    const hash = this._heads[name] ?? this.genesisBlock.hash()
+    const block = await this.getBlock(hash)
+    return block
   }
 
   /**
@@ -450,7 +468,13 @@ export class Blockchain implements BlockchainInterface {
 
         // we cannot overwrite the Genesis block after initializing the Blockchain
         if (isGenesis) {
-          throw new Error('Cannot put a genesis block: create a new Blockchain')
+          if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
+            // Try to re-put the exisiting genesis block, accept this
+            return
+          }
+          throw new Error(
+            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain'
+          )
         }
 
         const { header } = block
