@@ -141,10 +141,7 @@ export function fromUtf8(utf8String: string): string {
   }
 
   const utf8Bytes = utf8ToBytes(utf8String)
-  const hexValue = bytesToHex(utf8Bytes)
-
-  // Make sure the hex value is padded to an even length
-  return hexValue.length % 2 === 0 ? hexValue : '0' + hexValue
+  return bytesToHex(utf8Bytes)
 }
 
 /**
