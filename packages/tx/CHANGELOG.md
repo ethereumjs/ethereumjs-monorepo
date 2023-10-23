@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.1.0 - 2023-10-26
+
+### More Type-Aligned Library Structure
+
+This release gently introduces a backwards-compatible new/adopted library structure which is more aligned with the idea of independent tx types, bundling various functionality together which is not necessarily in a hierarchical order, see PR [#2993](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2993) and [#3010](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3010).
+
+Reused functionality (e.g. calculating the upfront-cost (`getUpfrontCost()`) of an `EIP-1559`-compatible tx - is internally bundled in capability files (e.g. `capabilities/eip1559.ts`), which provide static call access to the respective methods.
+
+These methods are then called and the functionality exposed by the respective methods in the tx classes, see the following example code for an `FeeMarketEIP1559Transaction`:
+
+```typescript
+getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
+    return EIP1559.getUpfrontCost(this, baseFee)
+  }
+```
+
+This makes creating additional or own tx types and reuse existing functionality along substantially easier and makes the library substantially more robust by largely consolidating previously redundant code parts.
+
+### Dencun devnet-10 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-10](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
+### Other Changes
+
+- Performance: cache tx sender to avoid redundant and costly `ecrecover` calls, PR [#2985](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2985)
+- Add new method `getDataFee()` to `BlobEIP4844Transaction`, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
+
 ## 5.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
