@@ -101,14 +101,22 @@ describe('internal', () => {
       assert.isTrue(arrayContainsArray([1, 2, 3, 4, 5], [3, 4]))
     })
 
-    it('should return false when the first array does not contain all elements of the second', () => {
+    it('should return false when the first array does not contain any elements of the second', () => {
       assert.isFalse(arrayContainsArray([1, 2, 3, 4, 5], [6, 7]))
+    })
+
+    it('should return false when the first array contains some but not all elements of the second', () => {
+      assert.isFalse(arrayContainsArray([1, 2, 3, 4, 5], [5, 6]))
     })
   })
 
   describe('fromUtf8', () => {
     it('should convert a UTF-8 string to a hex string', () => {
       assert.equal(fromUtf8('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
+    })
+
+    it('should convert a UTF-8 string with 2-byte characters to a hex string', () => {
+      assert.equal(fromUtf8('ϋύϒϗϘϢϰЂ'), '0xcf8bcf8dcf92cf97cf98cfa2cfb0d082')
     })
   })
 
