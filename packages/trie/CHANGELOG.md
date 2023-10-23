@@ -24,7 +24,7 @@ See [Debugging](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/pa
 - New `keyPrefix` option tries to store node keys with a static prefix (used upstream in the `statemanager` package to speed to storage trie reads), PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023)
 - Peformance: `findPath()` optimizations, PR [#3066](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3066)
 - Make `null` available as type option for `put()` method value, PR [#3020](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3020)
-- More flexible cache configuration along `shallowCopy()`, PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
+- Allow partial trie options for `shallowCopy()` (e.g. for a more flexible cache configuration for the trie copy), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
 - Use `lock` class from `@ethereumjs/util`, PR [#3109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3109)
 - Improve util types and handling, PR [#2951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2951)
 
