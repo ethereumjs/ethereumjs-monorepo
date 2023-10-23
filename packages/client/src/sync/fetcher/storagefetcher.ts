@@ -432,10 +432,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         }
       })
       await Promise.all(storagePromises)
-      this.fetcherDoneFlags.storageFetcher.first += BigInt(storagePromises.length)
+      this.fetcherDoneFlags.storageFetcher.first += BigInt(result[0].length)
+      this.fetcherDoneFlags.storageFetcher.count =
+        this.fetcherDoneFlags.storageFetcher.first + BigInt(this.storageRequests.length)
       this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {
       this.debug(err)
+      throw err
     }
   }
 
@@ -452,44 +455,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   enqueueByStorageRequestList(storageRequestList: StorageRequest[]) {
     this.storageRequests.push(...storageRequestList)
-    this.fetcherDoneFlags.storageFetcher.count += BigInt(storageRequestList.length)
+    this.fetcherDoneFlags.storageFetcher.count =
+      this.fetcherDoneFlags.storageFetcher.first + BigInt(this.storageRequests.length)
     this.debug(
       `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
     )
     this.nextTasks()
-  }
-
-  /**
-   * Run the fetcher. Returns a promise that resolves once all tasks are completed.
-   */
-  async fetch() {
-    if (this.running) {
-      return false
-    }
-    this.write()
-    this.running = true
-    this.nextTasks()
-
-    while (this.running) {
-      if (this.next() === false) {
-        if (
-          this.storageRequests.length === 0 &&
-          this.fragmentedRequests.length === 0 &&
-          this.finished === this.total &&
-          this.destroyWhenDone
-        ) {
-          this.push(null)
-        }
-        await this.wait()
-      }
-    }
-    this.running = false
-    if (this.destroyWhenDone) {
-      this.destroy()
-      this['writer'] = null
-    }
-    if (this.syncErrored) throw this.syncErrored
-    return true
   }
 
   /**

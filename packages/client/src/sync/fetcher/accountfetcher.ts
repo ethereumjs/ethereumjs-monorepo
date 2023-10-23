@@ -141,12 +141,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     )
   }
 
-  async fetch(): Promise<boolean> {
+  async blockingFetch(): Promise<boolean> {
     this.fetcherDoneFlags.syncing = true
 
     try {
       this.fetcherDoneFlags.accountFetcher.started = true
-      const accountFetch = !this.fetcherDoneFlags.accountFetcher.done ? super.fetch() : null
+      const accountFetch = !this.fetcherDoneFlags.accountFetcher.done ? super.blockingFetch() : null
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
       this.config.superMsg(`Snapsync: running accountFetch=${accountFetch !== null}`)
       await accountFetch
@@ -166,7 +166,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
 
       const storageFetch = !this.fetcherDoneFlags.storageFetcher.done
-        ? this.storageFetcher.fetch().then(
+        ? this.storageFetcher.blockingFetch().then(
             // we should not be doing this, fetcher itself should mark completion
             // cc @scorbajio
             () => this.snapFetchersCompleted(StorageFetcher),
@@ -176,7 +176,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           )
         : null
       const codeFetch = !this.fetcherDoneFlags.byteCodeFetcher.done
-        ? this.byteCodeFetcher.fetch().then(
+        ? this.byteCodeFetcher.blockingFetch().then(
             // we should not be doing this, fetcher itself should mark completion
             // cc @scorbajio
             () => this.snapFetchersCompleted(ByteCodeFetcher),
@@ -189,6 +189,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       this.config.superMsg(
         `Snapsync: running storageFetch=${storageFetch !== null} codeFetch=${codeFetch !== null}`
       )
+
+      this.storageFetcher.setDestroyWhenDone()
+      this.byteCodeFetcher.setDestroyWhenDone()
       await Promise.all([storageFetch, codeFetch])
 
       if (
@@ -200,7 +203,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           BIGINT_100
         )
         this.config.logger.warn(
-          `storageFetcher completed with pending tasks done=${reqsDone}% of ${this.fetcherDoneFlags.storageFetcher.count}`
+          `storageFetcher completed with pending tasks done=${reqsDone}% of ${this.fetcherDoneFlags.storageFetcher.count} queud=${this.storageFetcher.storageRequests.length}`
         )
       }
 
@@ -240,6 +243,8 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
           )
         : null
       this.config.superMsg(`Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`)
+
+      this.trieNodeFetcher.setDestroyWhenDone()
       await trieNodeFetch
       if (this.fetcherDoneFlags.trieNodeFetcher.done !== true) {
         // @scorbajio need to see the reason for this here
@@ -282,7 +287,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcher.done
 
     this.config.superMsg(
-      `snapFetchersCompletion status fetchingDone=${this.fetcherDoneFlags.done} accountFetcherDone=${accountFetcher.done} storageFetcherDone=${storageFetcher.done} byteCodeFetcherDone=${byteCodeFetcher.done} trieNodeFetcherDone=${trieNodeFetcher.done}`
+      `snapFetchersCompletion stateRoot=${short(this.root)} done=${
+        this.fetcherDoneFlags.done
+      } accountsDone=${accountFetcher.done} storageDone=${storageFetcher.done} byteCodesDone=${
+        byteCodeFetcher.done
+      } trieNodesDone=${trieNodeFetcher.done}`
     )
 
     if (this.fetcherDoneFlags.done) {
@@ -466,15 +475,9 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       await this.accountTrie.persistRoot()
       this.snapFetchersCompleted(AccountFetcher, this.accountTrie.root())
-
-      this.storageFetcher.setDestroyWhenDone()
-
-      // TODO It's possible that we should never destroy these fetchers since they will be needed to continually heal tries
-      this.byteCodeFetcher.setDestroyWhenDone()
-      this.trieNodeFetcher.setDestroyWhenDone()
-
       return
     }
+
     const storageFetchRequests = new Set()
     const byteCodeFetchRequests = new Set<Uint8Array>()
     for (const account of result) {

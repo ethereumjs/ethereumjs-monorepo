@@ -1,4 +1,4 @@
-import { BIGINT_0, bytesToHex } from '@ethereumjs/util'
+import { BIGINT_0, bytesToHex, equalsBytes } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -117,7 +117,11 @@ export class SnapSynchronizer extends Synchronizer {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
+        if (
+          (!best &&
+            number + this.config.snapAvailabilityDepth / BigInt(4) >= this.chain.blocks.height) ||
+          (best && best[1] < number)
+        ) {
           best = [peer, number]
         }
       }
@@ -191,11 +195,11 @@ export class SnapSynchronizer extends Synchronizer {
       )
     }
 
-    const hasTargetStateRoot = await this.execution.vm.stateManager.hasStateRoot(snapTargetRoot)
-    if (!hasTargetStateRoot) {
-      const syncedRoot = await this.execution.vm.stateManager.getStateRoot()
+    // getStateRoot also flushes the data
+    const syncedRoot = await this.execution.vm.stateManager.getStateRoot()
+    if (!equalsBytes(syncedRoot, snapTargetRoot)) {
       throw Error(
-        `Invalid snap syncedRoot=${short(syncedRoot)} snapTargetHash=${short(
+        `Invalid snap syncedRoot=${short(syncedRoot)} targetRoot=${short(
           snapTargetRoot
         )}  for target height=${snapTargetHeight} hash=${short(snapTargetHash)}`
       )

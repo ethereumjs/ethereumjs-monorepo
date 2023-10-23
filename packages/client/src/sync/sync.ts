@@ -150,7 +150,7 @@ export abstract class Synchronizer {
   async syncWithFetcher() {
     try {
       if (this._fetcher) {
-        await this._fetcher.fetch()
+        await this._fetcher.blockingFetch()
       }
       this.config.logger.debug(`Fetcher finished fetching...`)
       return this.resolveSync()

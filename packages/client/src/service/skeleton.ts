@@ -430,6 +430,26 @@ export class Skeleton extends MetaDBManager {
           !equalsBytes(parent.hash(), head.header.parentHash) ||
           parent.header.number < subchain.tail
         ) {
+          // truncate subchain 0 before inserting a new chain so that this chain can be merged into new
+          // one without issues if the opportunity arrises
+          if (
+            subchain !== undefined &&
+            this.status.linked &&
+            this.status.canonicalHeadReset === false &&
+            this.chain.blocks.height >= subchain.tail
+          ) {
+            const trucateTailTo = await this.getBlock(this.chain.blocks.height + BIGINT_1, true)
+            if (trucateTailTo !== undefined) {
+              subchain.tail = trucateTailTo.header.number
+              subchain.next = trucateTailTo.header.parentHash
+              this.config.logger.info(
+                `Truncated subchain0 with head=${subchain.head} to a new tail=${
+                  subchain.tail
+                } next=${short(subchain.next)}`
+              )
+            }
+          }
+
           const s = {
             head: head.header.number,
             tail: head.header.number,
@@ -1064,7 +1084,13 @@ export class Skeleton extends MetaDBManager {
       // however delete it in a lock as the parent lookup of a reorged block in skeleton is used
       // to determine if the tail is to be reset or not
       await this.runWithLock<void>(async () => {
-        await this.deleteBlock(block)
+        if (
+          this.status.linked &&
+          !this.status.canonicalHeadReset &&
+          this.chain.blocks.height >= block.header.number
+        ) {
+          await this.deleteBlock(block)
+        }
       })
       if (this.fillLogIndex >= this.config.numBlocksPerIteration) {
         this.config.logger.debug(

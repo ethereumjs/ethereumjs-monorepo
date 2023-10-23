@@ -48,6 +48,7 @@ export interface FetcherOptions {
  */
 export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable {
   public config: Config
+  public fetchPromise: Promise<boolean> | null = null
   protected debug: Debugger
 
   protected pool: PeerPool
@@ -484,25 +485,39 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     if (this.running) {
       return false
     }
-    this.write()
-    this.running = true
-    this.nextTasks()
 
-    while (this.running) {
-      if (this.next() === false) {
-        if (this.finished === this.total && this.destroyWhenDone) {
-          this.push(null)
+    this.fetchPromise = new Promise(async (resolve, reject) => {
+      try {
+        this.write()
+        this.running = true
+        this.nextTasks()
+
+        while (this.running) {
+          if (this.next() === false) {
+            if (this.finished === this.total && this.destroyWhenDone) {
+              this.push(null)
+            }
+            await this.wait()
+          }
         }
-        await this.wait()
+        this.running = false
+        if (this.destroyWhenDone) {
+          this.destroy()
+          this.writer = null
+        }
+        if (this.syncErrored) throw this.syncErrored
+        this.fetchPromise = null
+        resolve(true)
+      } catch (e) {
+        reject(e)
       }
-    }
-    this.running = false
-    if (this.destroyWhenDone) {
-      this.destroy()
-      this.writer = null
-    }
-    if (this.syncErrored) throw this.syncErrored
-    return true
+    })
+    return this.fetchPromise
+  }
+
+  async blockingFetch(): Promise<boolean> {
+    const blockingPromise = this.fetchPromise ?? this.fetch()
+    return blockingPromise
   }
 
   /**
