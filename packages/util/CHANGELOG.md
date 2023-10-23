@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 9.0.1 - 2023-10-26
+
+- New reoccurringly used BigInt constants (`BIGINT_0`, `BIGINT_32`, `BIGINT_2EXP96`,...) in the `bytes` module for reusage along performance optimizations, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- `bytesToBigInt()` performance optimization for 1-byte bytes, PR [#3054](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3054)
+- Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
 ## 9.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
