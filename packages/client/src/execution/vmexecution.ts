@@ -41,7 +41,7 @@ export class VMExecution extends Execution {
    * for debug log level
    *
    */
-  private STATS_INTERVAL = 1000 * 40 // 40 seconds
+  private STATS_INTERVAL = 1000 * 90 // 90 seconds
 
   private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
   private _statsVm: VM | undefined
