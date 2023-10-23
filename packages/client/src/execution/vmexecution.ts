@@ -229,12 +229,12 @@ export class VMExecution extends Execution {
   ): Promise<void> {
     return this.runWithLock<void>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
-      const chainPointers: [string, Block | null][] = [
+      const chainPointers: [string, Block][] = [
         ['vmHeadBlock', vmHeadBlock],
         // if safeBlock is not provided, the current safeBlock of chain should be used
         // which is genesisBlock if it has never been set for e.g.
-        ['safeBlock', safeBlock ?? this.chain.blocks.safe],
-        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized],
+        ['safeBlock', safeBlock ?? this.chain.blocks.safe ?? this.chain.genesis],
+        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized ?? this.chain.genesis],
       ]
 
       let isSortedDesc = true
@@ -258,7 +258,7 @@ export class VMExecution extends Execution {
 
       if (isSortedDesc === false) {
         throw Error(
-          `headBlock=${vmHeadBlock?.header.number} should be >= safeBlock=${safeBlock?.header.number} should be >= finalizedBlock=${finalizedBlock?.header.number}`
+          `headBlock=${chainPointers[0][1].header.number} should be >= safeBlock=${chainPointers[1][1]?.header.number} should be >= finalizedBlock=${chainPointers[2][1]?.header.number}`
         )
       }
       // skip emitting the chain update event as we will manually do it
