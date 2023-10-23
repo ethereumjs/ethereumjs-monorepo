@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1697933100995,
+  "lastUpdate": 1698049867002,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0aaad282669c59b6d3f5ef006535d580fffa1284",
-          "message": "Client: use same Cache Setup for normal and executeBlocks-triggered Execution (#3063)\n\n* Trie: generalize trie shallowCopy() options to allow for more options from the original options to be passed, adopt StateManager usage\r\n\r\n* Trie: add additional cache size default 0 for shallowCopy() test\r\n\r\n* Trie: add adopt cache size on shallowCopy() test\r\n\r\n* StateManager: add downlevelCaches option to shallowCopy(), add tests\r\n\r\n* Add downlevelCaches option in VM shallowCopy(), use option for client when run with --executeBlocks flag\r\n\r\n* replace any usages in StateManager tests to retain typing\r\n\r\n* Apply code review suggestions\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-09-28T14:14:16+02:00",
-          "tree_id": "ac1ce0ebcc7ef4bb04f98df1d1256b64a8b7d0a8",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0aaad282669c59b6d3f5ef006535d580fffa1284"
-        },
-        "date": 1695903538727,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19503,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17004,
-            "range": "±7.34%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18275,
-            "range": "±3.73%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 18884,
-            "range": "±3.53%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18490,
-            "range": "±3.61%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.62%",
             "unit": "ops/sec",
             "extra": "71 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eeb74e4b55972678092bb3a24a8485b996b632de",
+          "message": "Change execution stats intervals (#3106)\n\n* Report execution stats in time intervals\r\n\r\n* Format constant\r\n\r\n* Remove unused property\r\n\r\n* Client: further reduce execution/state stats interval from 40 -> 90 secs\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-10-23T10:23:25+02:00",
+          "tree_id": "6368583ac94055591591c9e54cd8e1deb43b67dd",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/eeb74e4b55972678092bb3a24a8485b996b632de"
+        },
+        "date": 1698049865544,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18367,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 16652,
+            "range": "±6.94%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17910,
+            "range": "±3.45%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17622,
+            "range": "±3.68%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17488,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
           }
         ]
       }
