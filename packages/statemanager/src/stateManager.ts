@@ -420,10 +420,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
             7
           )
         : undefined
-      storageTrie =  this._trie.shallowCopy(false, { keyPrefix })
+      storageTrie = this._trie.shallowCopy(false, { keyPrefix })
       if (account !== undefined) {
         storageTrie.root(account.storageRoot)
-      }else{
+      } else {
         storageTrie.root(storageTrie.EMPTY_TRIE_ROOT)
       }
       storageTrie.flushCheckpoints()
