@@ -758,7 +758,6 @@ describe('Utility Functions', () => {
       KECCAK256_NULL,
     ]
     const result = accountBodyToRLP(body)
-    // You can add more specific RLP encoding checks here based on your use case
     assert.equal(JSON.stringify(result), JSON.stringify(RLP.encode(body)))
   })
 })
