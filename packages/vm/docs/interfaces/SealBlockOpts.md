@@ -22,7 +22,7 @@ Overrides the value passed in the constructor.
 
 #### Defined in
 
-[vm/src/types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L197)
+[vm/src/types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L210)
 
 ___
 
@@ -35,4 +35,4 @@ Overrides the value passed in the constructor.
 
 #### Defined in
 
-[vm/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L191)
+[vm/src/types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L204)

@@ -1,6 +1,6 @@
-[@ethereumjs/tx](../README.md) / TransactionInterface
+[@ethereumjs/tx](../README.md) / LegacyTxInterface
 
-# Interface: TransactionInterface<T\>
+# Interface: LegacyTxInterface<T\>
 
 ## Type parameters
 
@@ -10,56 +10,58 @@
 
 ## Hierarchy
 
-- **`TransactionInterface`**
+- [`TransactionInterface`](TransactionInterface.md)<`T`\>
 
-  ↳ [`LegacyTxInterface`](LegacyTxInterface.md)
-
-  ↳ [`EIP2718CompatibleTx`](EIP2718CompatibleTx.md)
+  ↳ **`LegacyTxInterface`**
 
 ## Table of contents
 
 ### Properties
 
-- [cache](TransactionInterface.md#cache)
-- [common](TransactionInterface.md#common)
-- [data](TransactionInterface.md#data)
-- [gasLimit](TransactionInterface.md#gaslimit)
-- [nonce](TransactionInterface.md#nonce)
-- [r](TransactionInterface.md#r)
-- [s](TransactionInterface.md#s)
-- [to](TransactionInterface.md#to)
-- [type](TransactionInterface.md#type)
-- [v](TransactionInterface.md#v)
-- [value](TransactionInterface.md#value)
+- [cache](LegacyTxInterface.md#cache)
+- [common](LegacyTxInterface.md#common)
+- [data](LegacyTxInterface.md#data)
+- [gasLimit](LegacyTxInterface.md#gaslimit)
+- [nonce](LegacyTxInterface.md#nonce)
+- [r](LegacyTxInterface.md#r)
+- [s](LegacyTxInterface.md#s)
+- [to](LegacyTxInterface.md#to)
+- [type](LegacyTxInterface.md#type)
+- [v](LegacyTxInterface.md#v)
+- [value](LegacyTxInterface.md#value)
 
 ### Methods
 
-- [errorStr](TransactionInterface.md#errorstr)
-- [getBaseFee](TransactionInterface.md#getbasefee)
-- [getDataFee](TransactionInterface.md#getdatafee)
-- [getHashedMessageToSign](TransactionInterface.md#gethashedmessagetosign)
-- [getMessageToSign](TransactionInterface.md#getmessagetosign)
-- [getMessageToVerifySignature](TransactionInterface.md#getmessagetoverifysignature)
-- [getSenderAddress](TransactionInterface.md#getsenderaddress)
-- [getSenderPublicKey](TransactionInterface.md#getsenderpublickey)
-- [getUpfrontCost](TransactionInterface.md#getupfrontcost)
-- [getValidationErrors](TransactionInterface.md#getvalidationerrors)
-- [hash](TransactionInterface.md#hash)
-- [isSigned](TransactionInterface.md#issigned)
-- [isValid](TransactionInterface.md#isvalid)
-- [raw](TransactionInterface.md#raw)
-- [serialize](TransactionInterface.md#serialize)
-- [sign](TransactionInterface.md#sign)
-- [supports](TransactionInterface.md#supports)
-- [toCreationAddress](TransactionInterface.md#tocreationaddress)
-- [toJSON](TransactionInterface.md#tojson)
-- [verifySignature](TransactionInterface.md#verifysignature)
+- [errorStr](LegacyTxInterface.md#errorstr)
+- [getBaseFee](LegacyTxInterface.md#getbasefee)
+- [getDataFee](LegacyTxInterface.md#getdatafee)
+- [getHashedMessageToSign](LegacyTxInterface.md#gethashedmessagetosign)
+- [getMessageToSign](LegacyTxInterface.md#getmessagetosign)
+- [getMessageToVerifySignature](LegacyTxInterface.md#getmessagetoverifysignature)
+- [getSenderAddress](LegacyTxInterface.md#getsenderaddress)
+- [getSenderPublicKey](LegacyTxInterface.md#getsenderpublickey)
+- [getUpfrontCost](LegacyTxInterface.md#getupfrontcost)
+- [getValidationErrors](LegacyTxInterface.md#getvalidationerrors)
+- [hash](LegacyTxInterface.md#hash)
+- [isSigned](LegacyTxInterface.md#issigned)
+- [isValid](LegacyTxInterface.md#isvalid)
+- [raw](LegacyTxInterface.md#raw)
+- [serialize](LegacyTxInterface.md#serialize)
+- [sign](LegacyTxInterface.md#sign)
+- [supports](LegacyTxInterface.md#supports)
+- [toCreationAddress](LegacyTxInterface.md#tocreationaddress)
+- [toJSON](LegacyTxInterface.md#tojson)
+- [verifySignature](LegacyTxInterface.md#verifysignature)
 
 ## Properties
 
 ### cache
 
 • `Readonly` **cache**: [`TransactionCache`](TransactionCache.md)
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[cache](TransactionInterface.md#cache)
 
 #### Defined in
 
@@ -71,6 +73,10 @@ ___
 
 • `Readonly` **common**: `Common`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[common](TransactionInterface.md#common)
+
 #### Defined in
 
 [tx/src/types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L141)
@@ -80,6 +86,10 @@ ___
 ### data
 
 • `Readonly` **data**: `Uint8Array`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[data](TransactionInterface.md#data)
 
 #### Defined in
 
@@ -91,6 +101,10 @@ ___
 
 • `Readonly` **gasLimit**: `bigint`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[gasLimit](TransactionInterface.md#gaslimit)
+
 #### Defined in
 
 [tx/src/types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L143)
@@ -100,6 +114,10 @@ ___
 ### nonce
 
 • `Readonly` **nonce**: `bigint`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[nonce](TransactionInterface.md#nonce)
 
 #### Defined in
 
@@ -111,6 +129,10 @@ ___
 
 • `Optional` `Readonly` **r**: `bigint`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[r](TransactionInterface.md#r)
+
 #### Defined in
 
 [tx/src/types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L148)
@@ -120,6 +142,10 @@ ___
 ### s
 
 • `Optional` `Readonly` **s**: `bigint`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[s](TransactionInterface.md#s)
 
 #### Defined in
 
@@ -131,6 +157,10 @@ ___
 
 • `Optional` `Readonly` **to**: `Address`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[to](TransactionInterface.md#to)
+
 #### Defined in
 
 [tx/src/types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L144)
@@ -140,6 +170,10 @@ ___
 ### type
 
 • **type**: [`TransactionType`](../enums/TransactionType.md)
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[type](TransactionInterface.md#type)
 
 #### Defined in
 
@@ -151,6 +185,10 @@ ___
 
 • `Optional` `Readonly` **v**: `bigint`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[v](TransactionInterface.md#v)
+
 #### Defined in
 
 [tx/src/types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
@@ -160,6 +198,10 @@ ___
 ### value
 
 • `Readonly` **value**: `bigint`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[value](TransactionInterface.md#value)
 
 #### Defined in
 
@@ -175,6 +217,10 @@ ___
 
 `string`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[errorStr](TransactionInterface.md#errorstr)
+
 #### Defined in
 
 [tx/src/types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L171)
@@ -188,6 +234,10 @@ ___
 #### Returns
 
 `bigint`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getBaseFee](TransactionInterface.md#getbasefee)
 
 #### Defined in
 
@@ -203,6 +253,10 @@ ___
 
 `bigint`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getDataFee](TransactionInterface.md#getdatafee)
+
 #### Defined in
 
 [tx/src/types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L154)
@@ -216,6 +270,10 @@ ___
 #### Returns
 
 `Uint8Array`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getHashedMessageToSign](TransactionInterface.md#gethashedmessagetosign)
 
 #### Defined in
 
@@ -231,6 +289,10 @@ ___
 
 `Uint8Array` \| `Uint8Array`[]
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getMessageToSign](TransactionInterface.md#getmessagetosign)
+
 #### Defined in
 
 [tx/src/types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L159)
@@ -244,6 +306,10 @@ ___
 #### Returns
 
 `Uint8Array`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getMessageToVerifySignature](TransactionInterface.md#getmessagetoverifysignature)
 
 #### Defined in
 
@@ -259,6 +325,10 @@ ___
 
 `Address`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getSenderAddress](TransactionInterface.md#getsenderaddress)
+
 #### Defined in
 
 [tx/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L167)
@@ -272,6 +342,10 @@ ___
 #### Returns
 
 `Uint8Array`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getSenderPublicKey](TransactionInterface.md#getsenderpublickey)
 
 #### Defined in
 
@@ -287,6 +361,10 @@ ___
 
 `bigint`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getUpfrontCost](TransactionInterface.md#getupfrontcost)
+
 #### Defined in
 
 [tx/src/types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L155)
@@ -300,6 +378,10 @@ ___
 #### Returns
 
 `string`[]
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[getValidationErrors](TransactionInterface.md#getvalidationerrors)
 
 #### Defined in
 
@@ -315,6 +397,10 @@ ___
 
 `Uint8Array`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[hash](TransactionInterface.md#hash)
+
 #### Defined in
 
 [tx/src/types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L161)
@@ -328,6 +414,10 @@ ___
 #### Returns
 
 `boolean`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[isSigned](TransactionInterface.md#issigned)
 
 #### Defined in
 
@@ -343,6 +433,10 @@ ___
 
 `boolean`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[isValid](TransactionInterface.md#isvalid)
+
 #### Defined in
 
 [tx/src/types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)
@@ -357,6 +451,10 @@ ___
 
 [`TxValuesArray`](TxValuesArray.md)[`T`]
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[raw](TransactionInterface.md#raw)
+
 #### Defined in
 
 [tx/src/types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
@@ -370,6 +468,10 @@ ___
 #### Returns
 
 `Uint8Array`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[serialize](TransactionInterface.md#serialize)
 
 #### Defined in
 
@@ -391,6 +493,10 @@ ___
 
 [`Transaction`](Transaction.md)[`T`]
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[sign](TransactionInterface.md#sign)
+
 #### Defined in
 
 [tx/src/types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)
@@ -411,6 +517,10 @@ ___
 
 `boolean`
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[supports](TransactionInterface.md#supports)
+
 #### Defined in
 
 [tx/src/types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L151)
@@ -424,6 +534,10 @@ ___
 #### Returns
 
 `boolean`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[toCreationAddress](TransactionInterface.md#tocreationaddress)
 
 #### Defined in
 
@@ -439,6 +553,10 @@ ___
 
 [`JsonTx`](JsonTx.md)
 
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[toJSON](TransactionInterface.md#tojson)
+
 #### Defined in
 
 [tx/src/types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L170)
@@ -452,6 +570,10 @@ ___
 #### Returns
 
 `boolean`
+
+#### Inherited from
+
+[TransactionInterface](TransactionInterface.md).[verifySignature](TransactionInterface.md#verifysignature)
 
 #### Defined in
 
