@@ -26,7 +26,7 @@ While this option is deactivated by default it is recommended for most use cases
 
 ### Other Changes
 
-- Allow for users to decide if to either downlevel caches or not on `shallowCopy()` by adding a new `downlevelCaches` parameter (default: `true`), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
+- Allow for users to decide if to either downlevel (so: adopt them for a short-lived scenario) caches or not on `shallowCopy()` by adding a new `downlevelCaches` parameter (default: `true`), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
 - Return zero values for `getProof()` as `0x0`, PR [#3038](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3038)
 - Deactivate storage/account caches for cache size 0, PR [#3012](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3012)
 
