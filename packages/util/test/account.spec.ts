@@ -3,6 +3,11 @@ import { assert, describe, it } from 'vitest'
 
 import {
   Account,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  accountBodyFromSlim,
+  accountBodyToRLP,
+  accountBodyToSlim,
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
@@ -26,6 +31,8 @@ import {
 } from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
+
+import type { AccountBodyBytes } from '../src/index.js'
 
 const _0n = BigInt(0)
 
@@ -707,5 +714,51 @@ describe('Utility Functions', () => {
       assert.notOk(isValidAddress('x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
       assert.notOk(isValidAddress('0X52908400098527886E0F7030069857D2E4169EE7'))
     })
+  })
+
+  it('should convert account body from slim', () => {
+    const body: AccountBodyBytes = [
+      new Uint8Array(8),
+      new Uint8Array(8),
+      new Uint8Array(0),
+      new Uint8Array(0),
+    ]
+    const result = accountBodyFromSlim(body)
+    assert.equal(result.length, 4)
+    assert.equal(
+      JSON.stringify(result[2]),
+      JSON.stringify(KECCAK256_RLP),
+      'Empty storageRoot should be changed to hash of RLP of null'
+    )
+    assert.equal(
+      JSON.stringify(result[3]),
+      JSON.stringify(KECCAK256_NULL),
+      'Empty codeRoot should be changed to hash of RLP of null'
+    )
+  })
+
+  it('should convert account body to slim', () => {
+    const body: AccountBodyBytes = [
+      new Uint8Array(8),
+      new Uint8Array(8),
+      KECCAK256_RLP,
+      KECCAK256_NULL,
+    ]
+    const result = accountBodyToSlim(body)
+    assert.equal(result.length, 4)
+    assert.equal(JSON.stringify(result[2]), JSON.stringify(new Uint8Array(0)))
+    assert.equal(JSON.stringify(result[3]), JSON.stringify(new Uint8Array(0)))
+  })
+
+  it('should convert account body to RLP', () => {
+    const body: AccountBodyBytes = [
+      new Uint8Array(8),
+      new Uint8Array(8),
+      KECCAK256_RLP,
+      KECCAK256_NULL,
+    ]
+    const result = accountBodyToRLP(body)
+    // You can add more specific RLP encoding checks here based on your use case
+    assert.equal(JSON.stringify(result), JSON.stringify(RLP.encode(body)))
   })
 })
