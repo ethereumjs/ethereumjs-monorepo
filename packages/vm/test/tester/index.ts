@@ -42,6 +42,7 @@ import type { Common } from '@ethereumjs/common'
  * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
+ * --profiler                             If this flag is passed, the state/blockchain tests will profile
  */
 
 const argv = minimist(process.argv.slice(2))
@@ -59,6 +60,8 @@ async function runTests() {
     console.log(`Test type not supported or provided`)
     process.exit(1)
   }
+
+  const RUN_PROFILER: boolean = argv.profiler ?? false
 
   const FORK_CONFIG: string = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
@@ -106,6 +109,7 @@ async function runTests() {
     value?: number
     debug?: boolean
     reps?: number
+    profile: boolean
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -117,6 +121,7 @@ async function runTests() {
     value: argv.value, // GeneralStateTests
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
+    profile: RUN_PROFILER,
   }
 
   /**

@@ -80,7 +80,12 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     common,
   })
 
-  const vm = await VM.create({ stateManager, common, blockchain })
+  const vm = await VM.create({
+    stateManager,
+    common,
+    blockchain,
+    profilerOpts: { reportAfterTx: options.profile },
+  })
 
   await setupPreConditions(vm.stateManager, testData)
 
