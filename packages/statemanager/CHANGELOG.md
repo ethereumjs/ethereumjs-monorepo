@@ -16,9 +16,9 @@ The new cache is substantially more robust towards various type of revert-based 
 
 ### Peformance Option to store Storage Keys with Prefix
 
-This release introduces a new option `prefixStorageTrieKeys` which triggers the underlying trie to store storage key values with a prefix based on the account address, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023). This significantly increases performance for consecutive storage accesses for the same account on especially larger tries, since trie node accesses get noticeably faster to be performed by the underlying key-value store since values are stored close to each other.
+This release introduces a new option `prefixStorageTrieKeys` which triggers the underlying trie to store storage key values with a prefix based on the account address, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023). This significantly increases performance for consecutive storage accesses for the same account on especially larger tries, since trie node accesses get noticeably faster when performed by the underlying key-value store since values are stored close to each other.
 
-While this option is deactivated by default it is recommended for most use cases to activate. Note that this option is not backwards-compatible with existing databases and therefore can't be used if access to existing DBs need to be guaranteed.
+While this option is deactivated by default it is recommended for most use cases for it to be activated. Note that this option is not backwards-compatible with existing databases and therefore can't be used if access to existing DBs need to be guaranteed.
 
 ### Bugfixes
 
