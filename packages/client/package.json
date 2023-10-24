@@ -60,7 +60,7 @@
     "@ethereumjs/blockchain": "7.0.1",
     "@ethereumjs/common": "4.1.0",
     "@ethereumjs/devp2p": "6.0.1",
-    "@ethereumjs/ethash": "3.0.0",
+    "@ethereumjs/ethash": "3.0.1",
     "@ethereumjs/evm": "2.0.0",
     "@ethereumjs/genesis": "0.2.0",
     "@ethereumjs/rlp": "5.0.1",

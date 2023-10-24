@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 This release introduces a new code cache implementation, see PR [#3022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3022) and [#3080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3080). The new cache complements the expanded account and storage caches and now also tracks stored/deployed-code-changes along commits and reverts and so only keeps code in the cache which made it to the final state change.
 
-The new cache is substantially more robust towards various type of revert-based attacks and grows a more-used cache over time.
+The new cache is substantially more robust towards various type of revert-based attacks and grows a more-used cache over time, since never-applied values are consecutively sorted out.
 
 ### Peformance Option to store Storage Keys with Prefix
 
