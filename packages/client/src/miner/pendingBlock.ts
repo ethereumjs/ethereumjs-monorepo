@@ -133,7 +133,7 @@ export class PendingBlock {
 
     let withdrawalsBuf = zeros(0)
 
-    if (withdrawals !== undefined) {
+    if (withdrawals !== undefined && withdrawals !== null) {
       const withdrawalsBufTemp: Uint8Array[] = []
       for (const withdrawal of withdrawals) {
         const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
