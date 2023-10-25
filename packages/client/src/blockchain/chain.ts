@@ -294,17 +294,17 @@ export class Chain {
       height: BIGINT_0,
     }
 
+    blocks.latest = await this.getCanonicalHeadBlock()
+    blocks.finalized = (await this.getCanonicalFinalizedBlock()) ?? null
+    blocks.safe = (await this.getCanonicalSafeBlock()) ?? null
+    blocks.vm = await this.getCanonicalVmHead()
+
     headers.latest = await this.getCanonicalHeadHeader()
     // finalized and safe are always blocks since they have to have valid execution
     // before they can be saved in chain
-    headers.finalized = (await this.getCanonicalFinalizedBlock()).header
-    headers.safe = (await this.getCanonicalSafeBlock()).header
-    headers.vm = (await this.getCanonicalVmHead()).header
-
-    blocks.latest = await this.getCanonicalHeadBlock()
-    blocks.finalized = await this.getCanonicalFinalizedBlock()
-    blocks.safe = await this.getCanonicalSafeBlock()
-    blocks.vm = await this.getCanonicalVmHead()
+    headers.finalized = blocks.finalized?.header ?? null
+    headers.safe = blocks.safe?.header ?? null
+    headers.vm = blocks.vm.header
 
     headers.height = headers.latest.number
     blocks.height = blocks.latest.header.number
@@ -513,17 +513,17 @@ export class Chain {
   /**
    * Gets the latest block in the canonical chain
    */
-  async getCanonicalSafeBlock(): Promise<Block> {
+  async getCanonicalSafeBlock(): Promise<Block | undefined> {
     if (!this.opened) throw new Error('Chain closed')
-    return this.blockchain.getIteratorHead('safe')
+    return this.blockchain.getIteratorHeadSafe('safe')
   }
 
   /**
    * Gets the latest block in the canonical chain
    */
-  async getCanonicalFinalizedBlock(): Promise<Block> {
+  async getCanonicalFinalizedBlock(): Promise<Block | undefined> {
     if (!this.opened) throw new Error('Chain closed')
-    return this.blockchain.getIteratorHead('finalized')
+    return this.blockchain.getIteratorHeadSafe('finalized')
   }
 
   /**

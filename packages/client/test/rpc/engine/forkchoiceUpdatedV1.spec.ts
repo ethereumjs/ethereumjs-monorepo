@@ -280,7 +280,7 @@ describe(method, () => {
   })
 
   it('latest block after reorg', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server, blockchain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     let req = params(method, [validForkChoiceState])
     let expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
@@ -294,6 +294,7 @@ describe(method, () => {
         ...validForkChoiceState,
         headBlockHash: blocks[2].blockHash,
         safeBlockHash: blocks[0].blockHash,
+        finalizedBlockHash: bytesToHex(blockchain.genesisBlock.hash()),
       },
     ])
     expectRes = (res: any) => {

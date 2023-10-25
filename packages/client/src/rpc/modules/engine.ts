@@ -276,6 +276,11 @@ const recursivelyFindParents = async (
     )
     parentBlocks.push(block)
 
+    if (block.isGenesis()) {
+      // In case we hit the genesis block we should stop finding additional parents
+      break
+    }
+
     // throw error if lookups have exceeded maxDepth
     if (parentBlocks.length > maxDepth) {
       throw Error(`recursivelyFindParents lookups deeper than maxDepth=${maxDepth}`)
@@ -998,6 +1003,7 @@ export class Engine {
     const newPayloadRes = await this.newPayload(params)
     if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
       newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
     }
     return newPayloadRes
   }
@@ -1015,6 +1021,7 @@ export class Engine {
     const newPayloadRes = await this.newPayload(params)
     if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
       newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
     }
     return newPayloadRes
   }
@@ -1225,7 +1232,13 @@ export class Engine {
         }
       }
       this.service.txPool.removeNewBlockTxs(blocks)
-    } else {
+
+      const isPrevSynced = this.chain.config.synchronized
+      this.config.updateSynchronizedState(headBlock.header)
+      if (!isPrevSynced && this.chain.config.synchronized) {
+        this.service.txPool.checkRunState()
+      }
+    } else if (!headBlock.isGenesis()) {
       // even if the vmHead is same still validations need to be done regarding the correctness
       // of the sequence and canonical-ity
       try {
