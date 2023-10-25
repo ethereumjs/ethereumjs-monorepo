@@ -12,7 +12,7 @@ This client release now syncs with the new Holesky and Dencun devnet-10 test net
 
 ### Holesky Testnet Support
 
-This client release now fully supports running the new [Holesky](https://holesky.ethpandaops.io/) public Ethereum testnet replacing the `Goerli` test network, see , PR [2982](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2982) and some following PRs.
+This client release now fully supports running the new [Holesky](https://holesky.ethpandaops.io/) public Ethereum testnet replacing the `Goerli` test network, see , PR [#2982](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2982) and some following PRs.
 
 The following command starts an EthereumJS client on Holesky:
 
@@ -20,7 +20,7 @@ The following command starts an EthereumJS client on Holesky:
 ethereumjs --network=holesky --rpc --rpcEngine
 ```
 
-Then start a corresponding CL client (e.g. Lodestar with checkpoint sync towards `https://lodestar-holesky.chainsafe.io`), also see client [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client).
+Then start a corresponding CL client (e.g. Lodestar with checkpoint sync towards `https://lodestar-holesky.chainsafe.io`), also see client [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/README.md).
 
 ### Dencun devnet-10 Compatibility
 
