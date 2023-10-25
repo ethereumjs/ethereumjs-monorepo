@@ -470,6 +470,12 @@ export class Skeleton extends MetaDBManager {
             finalized: BIGINT_0,
             next: head.header.parentHash,
           }
+
+          // reset subchains if it only had been set with genesis to only track non-trivial subchains
+          if (subchain0Head === BIGINT_0) {
+            this.status.progress.subchains = []
+          }
+
           this.status.progress.subchains.unshift(s)
           const msgs = [
             `Created new subchain tail=${s.tail} head=${s.head} next=${short(s.next)}`,

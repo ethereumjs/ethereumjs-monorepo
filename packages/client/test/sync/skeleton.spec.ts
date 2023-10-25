@@ -453,9 +453,15 @@ describe('[Skeleton] / setHead', async () => {
 
     assert.equal(
       (skeleton as any).status.progress.subchains.length,
-      0,
-      'no subchain should have been created'
+      1,
+      'trivial subchain0 should have been created'
     )
+    assert.equal(
+      (skeleton as any).status.progress.subchains[0]!.head,
+      BigInt(0),
+      'trivial subchain0 should have been created'
+    )
+
     try {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
@@ -468,9 +474,15 @@ describe('[Skeleton] / setHead', async () => {
     assert.equal(reorg, false, 'should not reorg on valid first block')
     assert.equal(
       (skeleton as any).status.progress.subchains.length,
-      0,
-      'no subchain should have been created'
+      1,
+      'trivial subchain should have been created'
     )
+    assert.equal(
+      (skeleton as any).status.progress.subchains[0]!.head,
+      BigInt(0),
+      'trivial subchain0 should have been created'
+    )
+
     reorg = await skeleton.setHead(block1, true)
     assert.equal(reorg, false, 'should not reorg on valid first block')
     assert.equal(
@@ -579,6 +591,9 @@ describe('[Skeleton] / setHead', async () => {
       BigInt(5),
       'canonical height should change when setHead is set with force=true'
     )
+
+    // unlink the skeleton for the below check to check all blocks cleared
+    skeleton.status.linked = false
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -653,6 +668,9 @@ describe('[Skeleton] / setHead', async () => {
       BigInt(5),
       'canonical height should change when setHead with force=true'
     )
+
+    // unlink the skeleton for the below check to check all blocks cleared
+    skeleton.status.linked = false
     for (const block of [block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
