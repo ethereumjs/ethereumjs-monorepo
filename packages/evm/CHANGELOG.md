@@ -19,7 +19,7 @@ We were already able to do various performance related improvements using this t
 - Substantial stack optimizations (`PUSH` and `POPn` +30-40%, `DUP` +40%), PR [#3000](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3000)
 - `JUMPDEST` optimizations, PR [#3000](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3000)
 - Various EVM interpreter optimizations (overall 7-15% performance gain), PR [#2996](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2996)
-- Memory optimizations (`MOLAD` and `MSTORE` + 10-20%), PR [#3032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3032)
+- Memory optimizations (`MLOAD` and `MSTORE` + 10-20%), PR [#3032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3032)
 - Reused BigInts cache, PR [#3034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3034) and [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
 - `EXP` opcode optimizations (real-world 3x gain, not attack resistant), PR [#3034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3034)
 
