@@ -38,7 +38,7 @@ This release contains various fixes and spec updates related to the Dencun (Dene
 
 - Allow for users to decide if to either downlevel (so: adopt them for a short-lived scenario) state caches or not on `shallowCopy()` by adding a new `downlevelCaches` parameter (default: `true`), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
 - Update ethereum tests to 12.3, PR [#2971](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2971)
-- Update ethereum tests to 12.4, PR [3052](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3052)
+- Update ethereum tests to 12.4, PR [#3052](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3052)
 - Reactivate selected slow tests, PR [#2991](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2991)
 
 ## 7.0.0 - 2023-08-09
