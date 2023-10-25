@@ -455,21 +455,31 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error('Storage key must be 32 bytes long')
     }
     if (!this._storageCacheSettings.deactivate) {
+      console.time('fromCache')
       const value = this._storageCache!.get(address, key)
+      console.timeEnd('fromCache')
       if (value !== undefined) {
         const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
         return decoded
       }
     }
 
+    console.time('account')
     const account = await this.getAccount(address)
+    console.timeEnd('account')
     if (!account) {
       throw new Error('getContractStorage() called on non-existing account')
     }
-    const trie = this._getStorageTrie(address, account)
-    const value = await trie.get(key)
+    console.time('getStorageTrie')
+    //const trie = this._getStorageTrie(address, account)
+    console.timeEnd('getStorageTrie')
+    console.time('trie get')
+    const value = await this._trie.get(key, undefined, account.storageRoot)
+    console.timeEnd('trie get')
     if (!this._storageCacheSettings.deactivate) {
+      console.time('cache put')
       this._storageCache?.put(address, key, value ?? hexToBytes('0x80'))
+      console.timeEnd('cache put')
     }
     const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
     return decoded
