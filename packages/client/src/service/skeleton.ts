@@ -276,20 +276,15 @@ export class Skeleton extends MetaDBManager {
         )
       }
       // genesis announcement
+      this.status.linked = true
+      this.status.canonicalHeadReset = false
       return false
     }
 
-    let [lastchain] = this.status.progress.subchains
+    const [lastchain] = this.status.progress.subchains
+    // subchains should have already been inited
     if (lastchain === undefined) {
-      this.config.logger.debug(
-        `Skeleton empty, comparing against genesis tail=0 head=0 newHead=${number}`
-      )
-      // set the lastchain to genesis for comparison in following conditions
-      lastchain = {
-        head: BIGINT_0,
-        tail: BIGINT_0,
-        next: zeroBlockHash,
-      }
+      throw Error(`No subchain to processNewHead`)
     }
 
     if (lastchain.tail > number) {
@@ -413,7 +408,25 @@ export class Skeleton extends MetaDBManager {
         )} force=${force}`
       )
 
-      const subchain0Head = this.status.progress.subchains[0]?.head ?? BIGINT_0
+      let [lastchain] = this.status.progress.subchains
+      if (lastchain === undefined) {
+        // init the subchains even if this is not a forced head
+        lastchain = {
+          head: this.chain.blocks.height,
+          tail: this.chain.blocks.height,
+          next: this.chain.blocks.latest?.header.parentHash ?? zeroBlockHash,
+        }
+        this.status.linked = true
+        this.status.canonicalHeadReset = false
+        this.config.logger.debug(
+          `Initing empty skeleton with current chain head tail=${lastchain.tail} head=${
+            lastchain.head
+          } next=${short(lastchain.next)}`
+        )
+        this.status.progress.subchains.push(lastchain)
+      }
+
+      const subchain0Head = lastchain.head
       const reorg = await this.processNewHead(head, force)
 
       // see if just the head needs to be updated or a new subchain needs to be created
@@ -575,85 +588,132 @@ export class Skeleton extends MetaDBManager {
       finalizedBlockHash,
     }: { safeBlockHash?: Uint8Array; finalizedBlockHash?: Uint8Array }
   ): Promise<{ reorged: boolean; safeBlock?: Block; finalizedBlock?: Block }> {
-    // setHead locks independently and between setHead unlocking and locking below, there should be no break of
-    // continuity
+    // setHead locks independently and between setHead unlocking and locking below there should
+    // be no injected code as each of the async ops take the lock. so once setHead takes the
+    // lock, all of them should be executed serially
     const reorged = await this.setHead(headBlock, true)
-    await this.blockingFillWithCutoff(this.chain.config.engineNewpayloadMaxExecute)
+    const subchain0 = this.status.progress.subchains[0]
+    if (subchain0 === undefined) {
+      throw Error(`subchain0 should have been set as a result of skeleton setHead`)
+    }
 
-    // set/update safe and finalized
+    // set/update safe and finalized and see if they can backfill the tail in which case should
+    // update tail of subchain0
+    // also important to do putBlocks before running validations
     let safeBlock: Block | undefined
+    if (safeBlockHash !== undefined) {
+      if (equalsBytes(safeBlockHash, zeroBlockHash)) {
+        safeBlock = this.chain.genesis
+      } else if (equalsBytes(safeBlockHash, this.safeBlock?.hash() ?? zeroBlockHash)) {
+        safeBlock = this.safeBlock
+      } else if (equalsBytes(safeBlockHash, headBlock.hash())) {
+        safeBlock = headBlock
+      } else {
+        safeBlock = await this.getBlockByHash(safeBlockHash)
+      }
+      if (safeBlock !== undefined) {
+        if (safeBlock.header.number > headBlock.header.number) {
+          throw {
+            code: INVALID_PARAMS,
+            message: `Invalid safe block=${safeBlock.header.number} > headBlock=${headBlock.header.number}`,
+          }
+        }
+        if (!this.status.linked && safeBlock.header.number === subchain0.tail - BIGINT_1) {
+          await this.putBlocks([safeBlock])
+        }
+      }
+    }
+
     let finalizedBlock: Block | undefined
+    if (finalizedBlockHash !== undefined) {
+      if (equalsBytes(finalizedBlockHash, zeroBlockHash)) {
+        finalizedBlock = this.chain.genesis
+      } else if (equalsBytes(finalizedBlockHash, this.finalizedBlock?.hash() ?? zeroBlockHash)) {
+        finalizedBlock = this.finalizedBlock
+      } else if (equalsBytes(finalizedBlockHash, headBlock.hash())) {
+        finalizedBlock = headBlock
+      } else {
+        finalizedBlock = await this.getBlockByHash(finalizedBlockHash)
+      }
+      if (finalizedBlock !== undefined) {
+        if (
+          finalizedBlock.header.number > headBlock.header.number ||
+          (safeBlock !== undefined && finalizedBlock.header.number > safeBlock.header.number)
+        ) {
+          throw {
+            code: INVALID_PARAMS,
+            message: `Invalid finalized block=${finalizedBlock.header.number} > headBlock=${headBlock.header.number} or safeBlock=${safeBlock?.header.number}`,
+          }
+        }
+        if (!this.status.linked && finalizedBlock.header.number === subchain0.tail - BIGINT_1) {
+          await this.putBlocks([finalizedBlock])
+        }
+      }
+    }
 
     await this.runWithLock<void>(async () => {
-      const lookupOps = [
-        { name: 'safe', prevBlock: this.safeBlock, updateToHash: safeBlockHash },
-        { name: 'finalized', prevBlock: this.finalizedBlock, updateToHash: finalizedBlockHash },
-      ]
-      const results = await Promise.all(
-        lookupOps.map(async ({ name, prevBlock, updateToHash }) => {
-          if (updateToHash !== undefined && !equalsBytes(updateToHash, zeroBlockHash)) {
-            // try getting canonical block
-            let newBlock =
-              prevBlock !== undefined && equalsBytes(updateToHash, prevBlock.hash())
-                ? prevBlock
-                : equalsBytes(updateToHash, headBlock.hash())
-                ? headBlock
-                : await this.getBlockByHash(updateToHash, true)
-            if (newBlock === undefined) {
-              // if skeleton is linked, the block should have been found
-              if (this.status.linked) {
-                throw {
-                  code: INVALID_PARAMS,
-                  message: `${name} block not available in canonical chain`,
-                }
-              }
+      let shouldBeFinalizedNumber = this.finalizedBlock?.header.number ?? BIGINT_0
+      if (finalizedBlock !== undefined && finalizedBlock.header.number > shouldBeFinalizedNumber) {
+        shouldBeFinalizedNumber = finalizedBlock.header.number
+      }
 
-              try {
-                const newBlockInChain = await this.chain.getBlock(updateToHash)
-                // if this block 's number has been synced its not canonical
-                const subchain0 = this.status.progress.subchains[0]
-                if (subchain0 !== undefined && newBlockInChain.header.number >= subchain0.tail) {
-                  throw {
-                    code: INVALID_PARAMS,
-                    message: `${name} block not in canonical chain`,
-                  }
-                }
-              } catch (_e) {
-                // eslint-disable-next-line no-empty
-              }
-            } else {
-              if (newBlock.header.number < (this.finalizedBlock?.header.number ?? BIGINT_0)) {
-                const canonicalBlock = await this.getBlock(newBlock.header.number, true)
-                if (canonicalBlock === undefined) {
-                  throw Error(
-                    `Canonical lookup for stale=${name}Block number=${newBlock.header.number} failed`
-                  )
-                }
+      let shouldBeSafeNumber = shouldBeFinalizedNumber
+      if (this.safeBlock !== undefined && this.safeBlock.header.number > shouldBeSafeNumber) {
+        shouldBeSafeNumber = this.safeBlock.header.number
+      }
+      if (safeBlock !== undefined && safeBlock.header.number > shouldBeSafeNumber) {
+        shouldBeSafeNumber = safeBlock.header.number
+      }
 
-                if (!equalsBytes(canonicalBlock.hash(), newBlock.hash())) {
-                  throw Error(
-                    `Invalid ${name}Block number=${newBlock.header.number} current ${name}Block=${prevBlock?.header.number}`
-                  )
-                } else {
-                  // update it back to finalized block
-                  newBlock = this.finalizedBlock
-                }
-              }
-            }
-            return newBlock
+      // check for canonicality and availability of the safe and finalized now
+      if (this.status.linked || shouldBeSafeNumber >= subchain0.tail) {
+        if (safeBlock === undefined) {
+          throw {
+            code: INVALID_PARAMS,
+            message: `safe block not available in canonical chain`,
           }
-        })
-      )
+        } else {
+          const canonicalBlock = await this.getBlock(safeBlock.header.number, true)
+          if (
+            canonicalBlock === undefined ||
+            !equalsBytes(safeBlock.hash(), canonicalBlock.hash())
+          ) {
+            throw {
+              code: INVALID_PARAMS,
+              message: `safe block not canonical in chain`,
+            }
+          }
+        }
+      }
 
-      safeBlock = results[0]
-      finalizedBlock = results[1]
+      if (this.status.linked || shouldBeFinalizedNumber >= subchain0.tail) {
+        if (finalizedBlock === undefined) {
+          throw {
+            code: INVALID_PARAMS,
+            message: `finalized block not available in canonical chain`,
+          }
+        } else {
+          const canonicalBlock = await this.getBlock(finalizedBlock.header.number, true)
+          if (
+            canonicalBlock === undefined ||
+            !equalsBytes(finalizedBlock.hash(), canonicalBlock.hash())
+          ) {
+            throw {
+              code: INVALID_PARAMS,
+              message: `finalized block not canonical in chain`,
+            }
+          }
+        }
+      }
 
+      this.updateSynchronizedState(headBlock?.header)
       this.safeBlock = safeBlock ?? this.safeBlock
       this.finalizedBlock = finalizedBlock ?? this.finalizedBlock
     })
-    this.updateSynchronizedState(headBlock?.header)
 
-    return { reorged, safeBlock, finalizedBlock }
+    await this.blockingFillWithCutoff(this.chain.config.engineNewpayloadMaxExecute)
+
+    return { reorged, safeBlock: this.safeBlock, finalizedBlock: this.finalizedBlock }
   }
 
   async setVmHead(snapStatus: { syncedHash: Uint8Array; syncedHeight: bigint }): Promise<boolean> {

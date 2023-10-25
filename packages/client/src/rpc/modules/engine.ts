@@ -1082,11 +1082,7 @@ export class Engine {
       return response
     }
 
-    // Lookup refered blocks
     let headBlock: Block | undefined
-    // let safeBlock: Block | undefined
-    // let finalizedBlock: Block | undefined
-
     try {
       const head = toBytes(headBlockHash)
       headBlock =
@@ -1127,6 +1123,7 @@ export class Engine {
       safeBlockHash: safe,
       finalizedBlockHash: finalized,
     })
+
     if (reorged) await this.service.beaconSync?.reorged(headBlock)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
@@ -1164,22 +1161,7 @@ export class Engine {
       return response
     }
 
-    if (safeBlock === undefined) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'safe block not available',
-      }
-    }
-
-    if (finalizedBlock === undefined) {
-      throw {
-        code: INVALID_PARAMS,
-        message: 'finalized block not available',
-      }
-    }
-
     const vmHeadHash = (await this.chain.blockchain.getIteratorHead()).hash()
-
     if (!equalsBytes(vmHeadHash, headBlock.hash())) {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {

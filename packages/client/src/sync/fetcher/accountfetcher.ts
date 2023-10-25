@@ -287,11 +287,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       accountFetcher.done && storageFetcher.done && byteCodeFetcher.done && trieNodeFetcher.done
 
     this.config.superMsg(
-      `snapFetchersCompletion stateRoot=${short(this.root)} done=${
-        this.fetcherDoneFlags.done
-      } accountsDone=${accountFetcher.done} storageDone=${storageFetcher.done} byteCodesDone=${
-        byteCodeFetcher.done
-      } trieNodesDone=${trieNodeFetcher.done}`
+      `snapFetchersCompletion root=${short(this.root)} accountsRoot=${short(
+        fetcherDoneFlags.stateRoot ?? 'na'
+      )} done=${this.fetcherDoneFlags.done} accountsDone=${accountFetcher.done} storageDone=${
+        storageFetcher.done
+      } byteCodesDone=${byteCodeFetcher.done} trieNodesDone=${trieNodeFetcher.done}`
     )
 
     if (this.fetcherDoneFlags.done) {

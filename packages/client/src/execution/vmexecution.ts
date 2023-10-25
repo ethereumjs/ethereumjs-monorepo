@@ -235,38 +235,21 @@ export class VMExecution extends Execution {
 
     return this.runWithLock<boolean>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
-      const chainPointers: [string, Block][] = [
-        ['vmHeadBlock', vmHeadBlock],
-        // if safeBlock is not provided, the current safeBlock of chain should be used
-        // which is genesisBlock if it has never been set for e.g.
-        ['safeBlock', safeBlock ?? this.chain.blocks.safe ?? this.chain.genesis],
-        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized ?? this.chain.genesis],
-      ]
+      const chainPointers: [string, Block][] = [['vmHeadBlock', vmHeadBlock]]
 
-      let isSortedDesc = true
-      let lastBlock = vmHeadBlock
-      for (const [blockName, block] of chainPointers) {
-        if (block === null) {
-          continue
-        }
-        if (!(await this.vm.stateManager.hasStateRoot(block.header.stateRoot))) {
-          // If we set blockchain iterator to somewhere where we don't have stateroot
-          // execution run will always fail
-          throw Error(
-            `${blockName}'s stateRoot not found number=${block.header.number} root=${short(
-              block.header.stateRoot
-            )}`
-          )
-        }
-        isSortedDesc = isSortedDesc && lastBlock.header.number >= block.header.number
-        lastBlock = block
-      }
-
-      if (isSortedDesc === false) {
+      // instead of checking for the previous roots of safe,finalized, we will contend
+      // ourselves with just vmHead because in snap sync we might not have the safe
+      // finalized blocks executed
+      if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
+        // If we set blockchain iterator to somewhere where we don't have stateroot
+        // execution run will always fail
         throw Error(
-          `headBlock=${chainPointers[0][1].header.number} should be >= safeBlock=${chainPointers[1][1]?.header.number} should be >= finalizedBlock=${chainPointers[2][1]?.header.number}`
+          `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
+            vmHeadBlock.header.stateRoot
+          )}`
         )
       }
+
       // skip emitting the chain update event as we will manually do it
       await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {

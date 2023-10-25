@@ -486,32 +486,37 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       return false
     }
 
-    this.fetchPromise = new Promise(async (resolve, reject) => {
-      try {
-        this.write()
-        this.running = true
-        this.nextTasks()
+    this.fetchPromise = new Promise(
+      // wrapped in try catch to make sure no unhandled exception is thrown so we can
+      // ignore eslint error
+      // eslint-disable-next-line no-async-promise-executor
+      async (resolve, reject) => {
+        try {
+          this.write()
+          this.running = true
+          this.nextTasks()
 
-        while (this.running) {
-          if (this.next() === false) {
-            if (this.finished === this.total && this.destroyWhenDone) {
-              this.push(null)
+          while (this.running) {
+            if (this.next() === false) {
+              if (this.finished === this.total && this.destroyWhenDone) {
+                this.push(null)
+              }
+              await this.wait()
             }
-            await this.wait()
           }
+          this.running = false
+          if (this.destroyWhenDone) {
+            this.destroy()
+            this.writer = null
+          }
+          if (this.syncErrored) throw this.syncErrored
+          this.fetchPromise = null
+          resolve(true)
+        } catch (e) {
+          reject(e)
         }
-        this.running = false
-        if (this.destroyWhenDone) {
-          this.destroy()
-          this.writer = null
-        }
-        if (this.syncErrored) throw this.syncErrored
-        this.fetchPromise = null
-        resolve(true)
-      } catch (e) {
-        reject(e)
       }
-    })
+    )
     return this.fetchPromise
   }
 
