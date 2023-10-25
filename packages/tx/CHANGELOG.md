@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### More Type-Aligned Library Structure
 
-This release gently introduces a backwards-compatible new/adopted library structure which is more aligned with the idea of independent tx types, bundling various functionality together which is not necessarily in a hierarchical order, see PR [#2993](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2993) and [#3010](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3010).
+This release gently introduces a backwards-compatible new/adopted library structure which is more aligned with the idea of independent tx types, bundling various functionalities together in a way that is not necessarily hierarchical, see PR [#2993](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2993) and [#3010](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3010).
 
 Reused functionality (e.g. calculating the upfront-cost (`getUpfrontCost()`) of an `EIP-1559`-compatible tx - is internally bundled in capability files (e.g. `capabilities/eip1559.ts`), which provide static call access to the respective methods.
 
