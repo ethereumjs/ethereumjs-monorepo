@@ -446,8 +446,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(processTxsLabel)
-    // eslint-disable-next-line no-console
-    console.timeEnd(entireBlockLabel)
   }
 
   return {
