@@ -22,7 +22,7 @@ getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
   }
 ```
 
-This makes creating additional or own tx types and reuse existing functionality along substantially easier and makes the library substantially more robust by largely consolidating previously redundant code parts.
+This makes creating additional or custom tx types and reusing of existing functionality substantially easier and makes the library substantially more robust by largely consolidating previously redundant code parts.
 
 ### Dencun devnet-10 Compatibility
 
