@@ -16,7 +16,7 @@ This release contains various fixes and spec updates related to the Dencun (Dene
 
 ### Other Changes
 
-- New `getIteratorHeadSafe()` method not throwing if no iterator head is found, PR [#3099](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3099)
+- New `getIteratorHeadSafe()` method which returns `undefined` if the provided head is not found. This differs from `getIteratorHead`, which returns the genesis block in case if the provided head is not found, PR [#3099](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3099)
 
 ## 7.0.0 - 2023-08-09
 
