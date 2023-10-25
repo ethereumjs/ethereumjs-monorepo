@@ -474,7 +474,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     //const trie = this._getStorageTrie(address, account)
     console.timeEnd('getStorageTrie')
     console.time('trie get')
-    const value = await this._trie.get(key, undefined, account.storageRoot)
+    const keyPrefix = this._prefixStorageTrieKeys ? keccak256(address.bytes).slice(0, 7) : undefined
+    const value = await this._trie.get(key, undefined, account.storageRoot, keyPrefix)
     console.timeEnd('trie get')
     if (!this._storageCacheSettings.deactivate) {
       console.time('cache put')

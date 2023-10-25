@@ -201,14 +201,19 @@ export class Trie {
   async get(
     key: Uint8Array,
     throwIfMissing = false,
-    root?: Uint8Array
+    root?: Uint8Array,
+    keyPrefix?: Uint8Array
   ): Promise<Uint8Array | null> {
     let value: Uint8Array | null = null
     const mainRoot = this.root()
+    const kPrefix = this._opts.keyPrefix
     try {
       if (root) {
         console.log(`main before:${bytesToHex(mainRoot)}`)
         this.root(root)
+        if (keyPrefix) {
+          this._opts.keyPrefix = keyPrefix
+        }
       }
       this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['GET'])
       const { node, remaining } = await this.findPath(this.appliedKey(key), throwIfMissing)
@@ -223,7 +228,7 @@ export class Trie {
         console.log(`main after:${bytesToHex(this.root())}`)
       }
     }
-
+    this._opts.keyPrefix = kPrefix
     return value
   }
 
