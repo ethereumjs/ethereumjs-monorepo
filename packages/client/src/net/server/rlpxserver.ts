@@ -236,6 +236,9 @@ export class RlpxServer extends Server {
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
+      this.config.logger.info(
+        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`
+      )
     })
   }
 
