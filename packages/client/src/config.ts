@@ -69,6 +69,12 @@ export interface ConfigOptions {
   prefixStorageTrieKeys?: boolean
 
   /**
+   * A temporary option to offer backward compatibility with already-synced databases that stores
+   * trie items as `string`, instead of the more performant `Uint8Array`
+   */
+  useStringValueTrieDB?: boolean
+
+  /**
    * Provide a custom VM instance to process blocks
    *
    * Default: VM instance created by client
@@ -427,6 +433,7 @@ export class Config {
   // Just a development only flag, will/should be removed
   public readonly disableSnapSync: boolean = false
   public readonly prefixStorageTrieKeys: boolean
+  public readonly useStringValueTrieDB: boolean
 
   public synchronized: boolean
   /** lastSyncDate in ms */
@@ -507,6 +514,7 @@ export class Config {
     this.disableBeaconSync = options.disableBeaconSync ?? false
     this.forceSnapSync = options.forceSnapSync ?? false
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
+    this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
