@@ -216,6 +216,7 @@ export class RlpxServer extends Server {
           udpPort: null,
           tcpPort: null,
         },
+        onlyConfirmed: true,
         shouldFindNeighbours: this.config.discV4,
         shouldGetDnsPeers: this.config.discDns,
         dnsRefreshQuantity: this.config.maxPeers,
@@ -231,6 +232,10 @@ export class RlpxServer extends Server {
 
       this.dpt.events.on('listening', () => {
         resolve()
+      })
+
+      this.config.events.on(Event.PEER_CONNECTED, (peer) => {
+        this.dpt?.confirmPeer(peer.id)
       })
 
       if (typeof this.config.port === 'number') {

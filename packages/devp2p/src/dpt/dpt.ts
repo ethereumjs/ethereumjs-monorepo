@@ -1,4 +1,4 @@
-import { bytesToInt, randomBytes } from '@ethereumjs/util'
+import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 
@@ -32,6 +32,9 @@ export class DPT {
   protected _dnsNetworks: string[]
   protected _dnsAddr: string
 
+  protected _onlyConfirmed: boolean
+  protected _confirmedPeers: Set<string>
+
   constructor(privateKey: Uint8Array, options: DPTOptions) {
     this.events = new EventEmitter()
     this._privateKey = privateKey
@@ -45,6 +48,9 @@ export class DPT {
 
     this._dns = new DNS({ dnsServerAddress: this._dnsAddr })
     this._banlist = new BanList()
+
+    this._onlyConfirmed = options.onlyConfirmed ?? false
+    this._confirmedPeers = new Set()
 
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
@@ -118,6 +124,9 @@ export class DPT {
   async bootstrap(peer: PeerInfo): Promise<void> {
     try {
       peer = await this.addPeer(peer)
+      if (peer.id !== undefined) {
+        this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
+      }
     } catch (error: any) {
       this.events.emit('error', error)
       return
@@ -148,6 +157,20 @@ export class DPT {
     }
   }
 
+  /**
+   * Add peer to a confirmed list of peers (peers meeting some
+   * level of quality, e.g. being on the same network) to allow
+   * for a more selective findNeighbours request and sending
+   * (with activated `onlyConfirmed` setting)
+   *
+   * @param id Unprefixed hex id
+   */
+  confirmPeer(id: string) {
+    if (this._confirmedPeers.size < 5000) {
+      this._confirmedPeers.add(id)
+    }
+  }
+
   getPeer(obj: string | Uint8Array | PeerInfo) {
     return this._kbucket.get(obj)
   }
@@ -157,7 +180,13 @@ export class DPT {
   }
 
   getClosestPeers(id: Uint8Array) {
-    return this._kbucket.closest(id)
+    let peers = this._kbucket.closest(id)
+    if (this._onlyConfirmed) {
+      peers = peers.filter((peer) => {
+        this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false
+      })
+    }
+    return peers
   }
 
   removePeer(obj: string | PeerInfo | Uint8Array) {
@@ -187,7 +216,14 @@ export class DPT {
         // Randomly distributed selector based on peer ID
         // to decide on subdivided execution
         const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
-        if (selector === this._refreshIntervalSelectionCounter) {
+        let confirmed = true
+        if (this._onlyConfirmed) {
+          const id = bytesToUnprefixedHex(peer.id as Uint8Array)
+          if (!this._confirmedPeers.has(id)) {
+            confirmed = false
+          }
+        }
+        if (confirmed && selector === this._refreshIntervalSelectionCounter) {
           this._server.findneighbours(peer, randomBytes(64))
         }
       }
