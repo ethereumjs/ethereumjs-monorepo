@@ -8,10 +8,8 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { blockToExecutionPayload } from '../../../src/rpc/modules'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, batchBlocks, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import { batchBlocks } from './newPayloadV1.spec.js'
 
 const crypto = require('crypto')
 
@@ -51,7 +49,7 @@ function createBlock(parentBlock: Block) {
   return block
 }
 
-export const validPayload = [validForkChoiceState, validPayloadAttributes]
+const validPayload = [validForkChoiceState, validPayloadAttributes]
 
 describe(method, () => {
   it('call with invalid head block hash without 0x', async () => {
@@ -241,7 +239,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     req = params(method, [
       {
@@ -282,20 +280,21 @@ describe(method, () => {
   })
 
   it('latest block after reorg', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server, blockchain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     let req = params(method, [validForkChoiceState])
     let expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     req = params(method, [
       {
         ...validForkChoiceState,
         headBlockHash: blocks[2].blockHash,
         safeBlockHash: blocks[0].blockHash,
+        finalizedBlockHash: bytesToHex(blockchain.genesisBlock.hash()),
       },
     ])
     expectRes = (res: any) => {

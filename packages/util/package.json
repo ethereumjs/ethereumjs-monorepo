@@ -95,7 +95,7 @@
   },
   "devDependencies": {},
   "peerDependencies": {
-    "c-kzg": "^2.1.0"
+    "c-kzg": "^2.1.2"
   },
   "peerDependenciesMeta": {
     "c-kzg": {

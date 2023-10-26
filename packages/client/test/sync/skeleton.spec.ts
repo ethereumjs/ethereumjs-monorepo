@@ -35,7 +35,7 @@ const block51 = Block.fromBlockData(
   { common }
 )
 
-describe('[Skeleton]/ startup ', () => {
+describe('[Skeleton]/ startup scenarios ', () => {
   it('starts the chain when starting the skeleton', async () => {
     const config = new Config({
       common,
@@ -45,6 +45,26 @@ describe('[Skeleton]/ startup ', () => {
     assert.equal(chain.opened, false, 'chain is not started')
     await skeleton.open()
     assert.equal(chain.opened, true, 'chain is opened by skeleton')
+  })
+
+  it('throws when reset called before being started', async () => {
+    const config = new Config({
+      common,
+    })
+    const chain = await Chain.create({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    assert.equal(chain.opened, false, 'chain is not started')
+    try {
+      await skeleton.reset()
+      assert.fail('should have thrown')
+    } catch (err: any) {
+      assert.ok(err.message.includes('skeleton reset'), 'throws when skeleton sync not started')
+    }
+    await skeleton.open()
+    assert.equal(skeleton['status'].linked, false)
+    skeleton['status'].linked = true
+    await skeleton.reset()
+    assert.equal(skeleton['status'].linked, false, 'status.linked reset to false')
   })
 })
 

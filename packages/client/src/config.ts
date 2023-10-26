@@ -567,11 +567,9 @@ export class Config {
           if (!this.synchronized) {
             this.synchronized = true
             // Log to console the sync status
-            this.logger.info('*'.repeat(60))
-            this.logger.info(
+            this.superMsg(
               `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
             )
-            this.logger.info('*'.repeat(60))
           }
 
           if (emitSyncEvent === true) {
@@ -653,10 +651,18 @@ export class Config {
     return key
   }
 
-  superMsg(msg: string, meta?: any) {
-    const len = msg.length
+  superMsg(msgs: string | string[], meta?: any) {
+    if (typeof msgs === 'string') {
+      msgs = [msgs]
+    }
+    let len = 0
+    for (const msg of msgs) {
+      len = msg.length > len ? msg.length : len
+    }
     this.logger.info('-'.repeat(len), meta)
-    this.logger.info(msg, meta)
+    for (const msg of msgs) {
+      this.logger.info(msg, meta)
+    }
     this.logger.info('-'.repeat(len), meta)
   }
 

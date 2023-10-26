@@ -19,3 +19,6 @@ export const validEngineCodes = [
   UNSUPPORTED_FORK,
   UNKNOWN_PAYLOAD,
 ]
+
+// Errors for the ETH protocol
+export const INVALID_BLOCK = -39001

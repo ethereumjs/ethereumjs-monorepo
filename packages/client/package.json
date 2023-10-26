@@ -71,7 +71,7 @@
     "@ethereumjs/vm": "7.0.0",
     "abstract-level": "^1.0.3",
     "body-parser": "^1.19.2",
-    "c-kzg": "^2.1.0",
+    "c-kzg": "^2.1.2",
     "chalk": "^4.1.2",
     "connect": "^3.7.0",
     "cors": "^2.8.5",

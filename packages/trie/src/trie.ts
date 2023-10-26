@@ -1,5 +1,6 @@
 import {
   KeyEncoding,
+  Lock,
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
@@ -25,7 +26,6 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { Lock } from './util/lock.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'

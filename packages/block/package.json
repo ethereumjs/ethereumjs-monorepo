@@ -53,7 +53,7 @@
     "ethereum-cryptography": "^2.1.2"
   },
   "devDependencies": {
-    "c-kzg": "^2.1.0"
+    "c-kzg": "^2.1.2"
   },
   "engines": {
     "node": ">=18"
