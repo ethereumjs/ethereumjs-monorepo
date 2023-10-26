@@ -151,10 +151,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       const accountFetch = !this.fetcherDoneFlags.accountFetcher.done ? super.blockingFetch() : null
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
       this.config.superMsg(`Snapsync: running accountFetch=${accountFetch !== null}`)
-      this.fetcherDoneFlags.accountFetcher.started = false
-      if (this.fetcherDoneFlags.accountFetcher.done !== true) {
-        throw Error('accountFetcher finished without completing the sync')
-      }
 
       // if account fetcher is working, storage fetchers might need to work
       if (accountFetch !== null) {
@@ -163,6 +159,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
       // trienodes need to be tried on each fetch call
       this.fetcherDoneFlags.trieNodeFetcher.done = false
+
+      await accountFetch
+      if (this.fetcherDoneFlags.accountFetcher.done !== true) {
+        throw Error('accountFetcher finished without completing the sync')
+      }
 
       const storageFetch = !this.fetcherDoneFlags.storageFetcher.done
         ? this.storageFetcher.blockingFetch().then(
