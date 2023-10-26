@@ -102,7 +102,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
   })
   .option('bootnodes', {
-    describe: 'Comma-separated list of network bootnodes',
+    describe:
+      'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported)',
     array: true,
   })
   .option('port', {
