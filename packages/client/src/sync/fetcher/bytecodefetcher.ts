@@ -1,4 +1,4 @@
-import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
+import { CODEHASH_PREFIX, DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   bytesToHex,
@@ -10,11 +10,11 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher'
+import { getInitFecherDoneFlags } from './types'
 
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job, SnapFetcherDoneFlags } from './types'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -27,8 +27,8 @@ type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Uint8Array[]
-  stateManager: DefaultStateManager
-  fetcherDoneFlags: SnapFetcherDoneFlags
+  stateManager?: DefaultStateManager
+  fetcherDoneFlags?: SnapFetcherDoneFlags
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -53,8 +53,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.stateManager = options.stateManager
-    this.fetcherDoneFlags = options.fetcherDoneFlags
+    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()
 

@@ -1,3 +1,4 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   BranchNode,
   ExtensionNode,
@@ -20,11 +21,11 @@ import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils
 import { OrderedMap } from 'js-sdsl'
 
 import { Fetcher } from './fetcher'
+import { getInitFecherDoneFlags } from './types'
 
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job, SnapFetcherDoneFlags } from './types'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -37,12 +38,12 @@ type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 export interface TrieNodeFetcherOptions extends FetcherOptions {
   root: Uint8Array
   accountToStorageTrie?: Map<String, Trie>
-  stateManager: DefaultStateManager
+  stateManager?: DefaultStateManager
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  fetcherDoneFlags: SnapFetcherDoneFlags
+  fetcherDoneFlags?: SnapFetcherDoneFlags
 }
 
 export type JobTask = {
@@ -97,12 +98,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: TrieNodeFetcherOptions) {
     super(options)
     this.root = options.root
-    this.fetcherDoneFlags = options.fetcherDoneFlags
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.pathToNodeRequestData = new OrderedMap<string, NodeRequestData>()
     this.requestedNodeToPath = new Map<string, string>()
     this.fetchedAccountNodes = new Map<string, FetchedNodeData>()
 
-    this.stateManager = options.stateManager
+    this.stateManager = options.stateManager ?? new DefaultStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
     this.codeDB = this.stateManager['_getCodeDB']()
 

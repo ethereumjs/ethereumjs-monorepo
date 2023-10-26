@@ -4,6 +4,7 @@ import { Event } from '../types'
 import { short } from '../util'
 
 import { AccountFetcher } from './fetcher'
+import { getInitFecherDoneFlags } from './fetcher/types'
 import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
@@ -25,34 +26,7 @@ export class SnapSynchronizer extends Synchronizer {
   public running = false
   skeleton?: Skeleton
   private execution: VMExecution
-  readonly fetcherDoneFlags: SnapFetcherDoneFlags = {
-    done: false,
-    syncing: false,
-    accountFetcher: {
-      started: false,
-      // entire account range
-      first: BigInt(0),
-      done: false,
-    },
-    storageFetcher: {
-      started: false,
-      first: BigInt(0),
-      count: BigInt(0),
-      done: false,
-    },
-    byteCodeFetcher: {
-      started: false,
-      first: BigInt(0),
-      count: BigInt(0),
-      done: false,
-    },
-    trieNodeFetcher: {
-      started: false,
-      first: BigInt(0),
-      count: BigInt(0),
-      done: false,
-    },
-  }
+  readonly fetcherDoneFlags: SnapFetcherDoneFlags = getInitFecherDoneFlags()
 
   constructor(options: SnapSynchronizerOptions) {
     super(options)

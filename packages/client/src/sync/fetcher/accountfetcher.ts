@@ -1,3 +1,4 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -24,13 +25,13 @@ import { ByteCodeFetcher } from './bytecodefetcher'
 import { Fetcher } from './fetcher'
 import { StorageFetcher } from './storagefetcher'
 import { TrieNodeFetcher } from './trienodefetcher'
+import { getInitFecherDoneFlags } from './types'
 
 import type { Peer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
 import type { Job, SnapFetcherDoneFlags } from './types'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -52,9 +53,9 @@ export interface AccountFetcherOptions extends FetcherOptions {
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  stateManager: DefaultStateManager
+  stateManager?: DefaultStateManager
 
-  fetcherDoneFlags: SnapFetcherDoneFlags
+  fetcherDoneFlags?: SnapFetcherDoneFlags
 }
 
 // root comes from block?
@@ -88,13 +89,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
    */
   constructor(options: AccountFetcherOptions) {
     super(options)
-    this.fetcherDoneFlags = options.fetcherDoneFlags
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
 
     this.root = options.root
     this.first = options.first
     this.count = options.count ?? BIGINT_2EXP256 - this.first
 
-    this.stateManager = options.stateManager
+    this.stateManager = options.stateManager ?? new DefaultStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
     this.debug = createDebugLogger('client:AccountFetcher')

@@ -1,3 +1,4 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
@@ -16,12 +17,12 @@ import debugDefault from 'debug'
 import { short } from '../../util'
 
 import { Fetcher } from './fetcher'
+import { getInitFecherDoneFlags } from './types'
 
 import type { Peer } from '../../net/peer'
 import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { Job, SnapFetcherDoneFlags } from './types'
-import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -90,8 +91,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.fragmentedRequests = []
 
     this.root = options.root
-    this.stateManager = options.stateManager
-    this.fetcherDoneFlags = options.fetcherDoneFlags
+    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
