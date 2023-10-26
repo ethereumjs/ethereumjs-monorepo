@@ -462,7 +462,7 @@ describe('[CLI]', () => {
   }, 30000)
   // test experimental feature options
   it('should start client when passed options for experimental features', async () => {
-    const cliArgs = ['--mine=true', '--enableSnapSync=true', '--dev=poa', '--port=30393']
+    const cliArgs = ['--mine=true', '--snap=true', '--dev=poa', '--port=30393']
     const onData = async (
       message: string,
       child: ChildProcessWithoutNullStreams,
