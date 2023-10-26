@@ -2,13 +2,13 @@ import {
   KeyEncoding,
   ValueEncoding,
   bytesToUnprefixedHex,
+  hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types.js'
-import type { BatchDBOp, DB, DelBatch, EncodingOpts, PutBatch } from '@ethereumjs/util'
+import type { BatchDBOp, DB, EncodingOpts } from '@ethereumjs/util'
 
 /**
  * DB is a thin wrapper around the underlying levelup db,
@@ -16,9 +16,8 @@ import type { BatchDBOp, DB, DelBatch, EncodingOpts, PutBatch } from '@ethereumj
  */
 export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
-  public db: DB<string, string> | DB<string, Uint8Array>
+  public db: DB<string, string | Uint8Array>
   public readonly cacheSize: number
-  public readonly useBytes: boolean
   private readonly valueEncoding: ValueEncoding
 
   // Starting with lru-cache v8 undefined and null are not allowed any more
@@ -52,8 +51,7 @@ export class CheckpointDB implements DB {
   constructor(opts: CheckpointDBOpts) {
     this.db = opts.db
     this.cacheSize = opts.cacheSize ?? 0
-    this.useBytes = opts.useBytes ?? false
-    this.valueEncoding = this.useBytes ? ValueEncoding.Bytes : ValueEncoding.String
+    this.valueEncoding = opts.valueEncoding ?? ValueEncoding.String
     // Roots of trie at the moment of checkpoint
     this.checkpoints = []
 
@@ -165,7 +163,12 @@ export class CheckpointDB implements DB {
     if (value !== undefined) {
       this._stats.db.hits += 1
     }
-    const returnValue = this.useBytes ? (value as Uint8Array) : hexToBytes(<string>value)
+    const returnValue =
+      value !== undefined
+        ? value instanceof Uint8Array
+          ? value
+          : hexToBytes(<string>value)
+        : undefined
     this._cache?.set(keyHex, returnValue)
     if (this.hasCheckpoints()) {
       // Since we are a checkpoint, put this value in diff cache,
@@ -185,7 +188,8 @@ export class CheckpointDB implements DB {
       // put value in diff cache
       this.checkpoints[this.checkpoints.length - 1].keyValueMap.set(keyHex, value)
     } else {
-      const valuePut = this.useBytes ? value : bytesToUnprefixedHex(value)
+      const valuePut =
+        this.valueEncoding === ValueEncoding.Bytes ? value : bytesToUnprefixedHex(value)
       await this.db.put(keyHex, <any>valuePut, {
         keyEncoding: KeyEncoding.String,
         valueEncoding: this.valueEncoding,
@@ -244,16 +248,12 @@ export class CheckpointDB implements DB {
           key: bytesToUnprefixedHex(op.key),
           value: op.type === 'put' ? op.value : undefined,
           type: op.type,
-          opts: op.opts,
+          opts: { ...op.opts, ...{ valueEncoding: this.valueEncoding } },
         }
-        if (op.type === 'put') {
-          if (this.useBytes) {
-            return convertedOp as PutBatch<string, Uint8Array>
-          } else {
-            convertedOp.value = bytesToUnprefixedHex(<Uint8Array>convertedOp.value)
-            return convertedOp as PutBatch<string, string>
-          }
-        } else return convertedOp as DelBatch<string>
+        if (op.type === 'put' && this.valueEncoding === ValueEncoding.String) {
+          convertedOp.value = bytesToUnprefixedHex(<Uint8Array>convertedOp.value)
+        }
+        return convertedOp
       })
       await this.db.batch(<any>convertedOps)
     }
@@ -282,7 +282,11 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   shallowCopy(): CheckpointDB {
-    return new CheckpointDB({ db: this.db, cacheSize: this.cacheSize })
+    return new CheckpointDB({
+      db: this.db,
+      cacheSize: this.cacheSize,
+      valueEncoding: this.valueEncoding,
+    })
   }
 
   open() {
