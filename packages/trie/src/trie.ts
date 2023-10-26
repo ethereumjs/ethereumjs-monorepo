@@ -146,7 +146,7 @@ export class Trie {
       } else {
         await opts?.db.put(
           bytesToUnprefixedHex(key),
-          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToHex(opts.root)),
+          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
           {
             keyEncoding: KeyEncoding.String,
             valueEncoding: encoding,
