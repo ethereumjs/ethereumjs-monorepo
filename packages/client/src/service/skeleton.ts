@@ -1150,6 +1150,8 @@ export class Skeleton extends MetaDBManager {
       // however delete it in a lock as the parent lookup of a reorged block in skeleton is used
       // to determine if the tail is to be reset or not
       await this.runWithLock<void>(async () => {
+        // there could be a race between new subchain creation and deletion of the block with the
+        // tail of subchain so making sure we are in happy condition to go for deletion
         if (
           this.status.linked &&
           !this.status.canonicalHeadReset &&
@@ -1218,7 +1220,7 @@ export class Skeleton extends MetaDBManager {
       return block
     } catch (error: any) {
       // If skeleton is linked, it probably has deleted the block and put it into the chain
-      if (onlySkeleton || !this.status.linked) return undefined
+      if (onlySkeleton && !this.status.linked) return undefined
       // As a fallback, try to get the block from the canonical chain in case it is available there
       try {
         return await this.chain.getBlock(number)
