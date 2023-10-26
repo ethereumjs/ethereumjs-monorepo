@@ -2,7 +2,6 @@ import {
   KeyEncoding,
   ValueEncoding,
   bytesToUnprefixedHex,
-  hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
@@ -167,7 +166,7 @@ export class CheckpointDB implements DB {
       value !== undefined
         ? value instanceof Uint8Array
           ? value
-          : hexToBytes(<string>value)
+          : unprefixedHexToBytes(<string>value)
         : undefined
     this._cache?.set(keyHex, returnValue)
     if (this.hasCheckpoints()) {
