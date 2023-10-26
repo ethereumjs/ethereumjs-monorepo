@@ -146,30 +146,26 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.fetcherDoneFlags.syncing = true
 
     try {
-      this.fetcherDoneFlags.accountFetcher.started = true
+      // in next iterations we might make this dynamic depending on how far off we are from the
+      // vmhead
       const accountFetch = !this.fetcherDoneFlags.accountFetcher.done ? super.blockingFetch() : null
       // wait for all accounts to fetch else storage and code fetcher's doesn't get us full data
       this.config.superMsg(`Snapsync: running accountFetch=${accountFetch !== null}`)
-      await accountFetch
       this.fetcherDoneFlags.accountFetcher.started = false
       if (this.fetcherDoneFlags.accountFetcher.done !== true) {
         throw Error('accountFetcher finished without completing the sync')
       }
-      if (this.fetcherDoneFlags.accountFetcher.first !== BIGINT_2EXP256) {
-        const fetcherProgress = formatBigDecimal(
-          this.fetcherDoneFlags.accountFetcher.first * BIGINT_100,
-          BIGINT_2EXP256,
-          BIGINT_100
-        )
-        this.config.logger.warn(
-          `accountFetcher completed with pending range done=${fetcherProgress}%`
-        )
+
+      // if account fetcher is working, storage fetchers might need to work
+      if (accountFetch !== null) {
+        this.fetcherDoneFlags.storageFetcher.done = false
+        this.fetcherDoneFlags.byteCodeFetcher.done = false
       }
+      // trienodes need to be tried on each fetch call
+      this.fetcherDoneFlags.trieNodeFetcher.done = false
 
       const storageFetch = !this.fetcherDoneFlags.storageFetcher.done
         ? this.storageFetcher.blockingFetch().then(
-            // we should not be doing this, fetcher itself should mark completion
-            // cc @scorbajio
             () => this.snapFetchersCompleted(StorageFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
@@ -178,8 +174,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         : null
       const codeFetch = !this.fetcherDoneFlags.byteCodeFetcher.done
         ? this.byteCodeFetcher.blockingFetch().then(
-            // we should not be doing this, fetcher itself should mark completion
-            // cc @scorbajio
             () => this.snapFetchersCompleted(ByteCodeFetcher),
             () => {
               throw Error('Snap fetcher failed to exit')
@@ -196,32 +190,6 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       await Promise.all([storageFetch, codeFetch])
 
       if (
-        this.fetcherDoneFlags.storageFetcher.first !== this.fetcherDoneFlags.storageFetcher.count
-      ) {
-        const reqsDone = formatBigDecimal(
-          this.fetcherDoneFlags.storageFetcher.first * BIGINT_100,
-          this.fetcherDoneFlags.storageFetcher.count,
-          BIGINT_100
-        )
-        this.config.logger.warn(
-          `storageFetcher completed with pending tasks done=${reqsDone}% of ${this.fetcherDoneFlags.storageFetcher.count} queud=${this.storageFetcher.storageRequests.length}`
-        )
-      }
-
-      if (
-        this.fetcherDoneFlags.byteCodeFetcher.first !== this.fetcherDoneFlags.byteCodeFetcher.count
-      ) {
-        const reqsDone = formatBigDecimal(
-          this.fetcherDoneFlags.byteCodeFetcher.first * BIGINT_100,
-          this.fetcherDoneFlags.byteCodeFetcher.count,
-          BIGINT_100
-        )
-        this.config.logger.warn(
-          `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${this.fetcherDoneFlags.byteCodeFetcher.count}`
-        )
-      }
-
-      if (
         this.fetcherDoneFlags.storageFetcher.done !== true ||
         this.fetcherDoneFlags.byteCodeFetcher.done !== true
       ) {
@@ -233,24 +201,17 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // always do trienode fetch as this should only sync diffs else return
       // but currently it doesn't seem to be returning, so for static state
       // ignore this if previously build
-      const trieNodeFetch = !this.fetcherDoneFlags.trieNodeFetcher.done
-        ? this.trieNodeFetcher.fetch().then(
-            // we should not be doing this, fetcher itself should mark completion
-            // cc @scorbajio
-            () => this.snapFetchersCompleted(TrieNodeFetcher),
-            () => {
-              throw Error('Snap fetcher failed to exit')
-            }
-          )
-        : null
+      const trieNodeFetch = this.trieNodeFetcher.fetch().then(
+        () => {
+          this.snapFetchersCompleted(TrieNodeFetcher)
+        },
+        () => {
+          throw Error('Snap fetcher failed to exit')
+        }
+      )
       this.config.superMsg(`Snapsync: running trieNodeFetch=${trieNodeFetch !== null}`)
-
       this.trieNodeFetcher.setDestroyWhenDone()
       await trieNodeFetch
-      if (this.fetcherDoneFlags.trieNodeFetcher.done !== true) {
-        // @scorbajio need to see the reason for this here
-        throw Error('trieNodeFetch finished without completing the sync')
-      }
 
       return true
     } catch (error) {
@@ -271,12 +232,46 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
         fetcherDoneFlags.accountFetcher.done = true
         fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256
         fetcherDoneFlags.stateRoot = root
+
+        if (fetcherDoneFlags.accountFetcher.first !== BIGINT_2EXP256) {
+          const fetcherProgress = formatBigDecimal(
+            fetcherDoneFlags.accountFetcher.first * BIGINT_100,
+            BIGINT_2EXP256,
+            BIGINT_100
+          )
+          this.config.logger.warn(
+            `accountFetcher completed with pending range done=${fetcherProgress}%`
+          )
+        }
         break
       case StorageFetcher:
         fetcherDoneFlags.storageFetcher.done = true
+
+        if (fetcherDoneFlags.storageFetcher.first !== fetcherDoneFlags.storageFetcher.count) {
+          const reqsDone = formatBigDecimal(
+            fetcherDoneFlags.storageFetcher.first * BIGINT_100,
+            fetcherDoneFlags.storageFetcher.count,
+            BIGINT_100
+          )
+          this.config.logger.warn(
+            `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`
+          )
+        }
+
         break
       case ByteCodeFetcher:
         fetcherDoneFlags.byteCodeFetcher.done = true
+
+        if (fetcherDoneFlags.byteCodeFetcher.first !== fetcherDoneFlags.byteCodeFetcher.count) {
+          const reqsDone = formatBigDecimal(
+            fetcherDoneFlags.byteCodeFetcher.first * BIGINT_100,
+            fetcherDoneFlags.byteCodeFetcher.count,
+            BIGINT_100
+          )
+          this.config.logger.warn(
+            `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`
+          )
+        }
         break
       case TrieNodeFetcher:
         fetcherDoneFlags.trieNodeFetcher.done = true
