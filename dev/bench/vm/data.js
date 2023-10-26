@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1698261512583,
+  "lastUpdate": 1698304975657,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "69d9f25305ddff7d2140f487a07d7037f37e3e90",
-          "message": "Implement a more performant code cache (#3022)\n\n* Setup boilerplace code for code cache\r\n\r\n* Fix linting error\r\n\r\n* Export code cache\r\n\r\n* Add tests for code cache\r\n\r\n* Integrate code cache with statemanager\r\n\r\n* Fix code cache integration in state manager\r\n\r\n* Add checkpointing tests for code cache\r\n\r\n* Use address as key for code cache\r\n\r\n* Use bytesToUnprefixedHex\r\n\r\n* Implement put, get, and flush for code cache\r\n\r\n* Flush code cache before other caches in statemanager\r\n\r\n* Update code root of account after putting code\r\n\r\n* Put code into cache even if the code is empty\r\n\r\n* Fix linting issues\r\n\r\n* Fix diffCache state saving\r\n\r\n* Do not throw error on code deletion\r\n\r\n* stateManager: save known prestate\r\n\r\n* Save prestate using current value in db\r\n\r\n* Fix getContractcode\r\n\r\n* Rename variables to be more consistent with naming conventions used in other tests\r\n\r\n* Clarify docs and clean up naming\r\n\r\n* Remove old code cache\r\n\r\n* Simplify _saveCachePreState\r\n\r\n* Fix lint error\r\n\r\n* Add code cache CLI option to client\r\n\r\n* Fix code cache flushing\r\n\r\n* Fix code cache size function\r\n\r\n* Do not call stat function of cache if it is disactivated\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-09-29T12:13:47+02:00",
-          "tree_id": "2009d3a2fb136e630e9b15de2a94b12d3a135ff3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/69d9f25305ddff7d2140f487a07d7037f37e3e90"
-        },
-        "date": 1695982798123,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 22275,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19830,
-            "range": "±6.27%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 20824,
-            "range": "±3.59%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 20616,
-            "range": "±3.48%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 20141,
-            "range": "±3.66%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±12.06%",
             "unit": "ops/sec",
             "extra": "70 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2353bc7cc72c2f10c8b505c31f02dde6601421d3",
+          "message": "verkle: verkle package (#2923)\n\n* verkle: initial commit\r\n\r\n* verkle: scaffold verkle trie implementation and types\r\n\r\n* verkle: fix installation issues\r\n\r\n* verkle: move rust verkle wasm to verkle package\r\n\r\n* verkle: remove package json and readme from rust verkle wasm dir\r\n\r\n* util: add some bigint LE utils for verkle\r\n\r\n* verkle: refactor constants and cryptographic methods to the verkle package\r\n\r\n* verkle: remove unnecessary constants & methods\r\n\r\n* verkle: verkle node classes and types\r\n\r\n* verkle: get method and rawNode utils\r\n\r\n* verkle: handle case where array item is not found\r\n\r\n* verkle: wip findPath method\r\n\r\n* verkle: wip\r\n\r\n* verkle: fromRawNode method\r\n\r\n* verkle: update packages\r\n\r\n* verkle: minor adjustments\r\n\r\n* verkle: wip\r\n\r\n* verkle: add test case for put and get\r\n\r\n* verkle: wip insertstem and related methods for verkle nodes\r\n\r\n* verkle: internal node test\r\n\r\n* verkle: default values and minor fixes to internalNode\r\n\r\n* verkle: make internal verkle node options optional\r\n\r\n* verkle: leafNode basic test\r\n\r\n* verkle: remove unused import\r\n\r\n* verkle: setDepth method for leafNode and commented out code for create method\r\n\r\n* verkle: wip\r\n\r\n* verkle: add Point interface\r\n\r\n* verkle: general cleanup and improvements\r\n\r\n* verkle: minor test adjustments\r\n\r\n* verkle: readme and testing related updates\r\n\r\n* verkle: capital V for verkle workflow\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* verkle: use Lock from util package\r\n\r\n* client: undo removal of link\r\n\r\n* util: update byte<>int conversion helpers\r\n\r\n* verkle: use Uint8Array instead of hexstrings for db\r\n\r\n* verkle: add imports to example\r\n\r\n* verkle: update db to Uint8Arrays\r\n\r\n* verkle: revert to using strings as keys for cache\r\n\r\n* verkle: update crypto import\r\n\r\n* verkle: adjust Key and Value encoding in create method\r\n\r\n* verkle: adjust value encoding in db del method\r\n\r\n* verkle: add missing key and value encoding opts to batch options\r\n\r\n* verkle: remove extra line\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
+          "timestamp": "2023-10-26T09:19:07+02:00",
+          "tree_id": "ee121eff2f32221d7bcd8fdd078355eec4badada",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2353bc7cc72c2f10c8b505c31f02dde6601421d3"
+        },
+        "date": 1698304974548,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 29388,
+            "range": "±4.76%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 29271,
+            "range": "±2.41%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 29116,
+            "range": "±2.50%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28459,
+            "range": "±2.55%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 24549,
+            "range": "±8.78%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
