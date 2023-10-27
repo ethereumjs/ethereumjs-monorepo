@@ -1,4 +1,4 @@
-import { type Address, BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0 } from '@ethereumjs/util'
 
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
@@ -15,18 +15,16 @@ import type { Common } from '@ethereumjs/common'
  */
 export function accessAddressEIP2929(
   runState: RunState,
-  address: Address,
+  address: Uint8Array,
   common: Common,
   chargeGas = true,
   isSelfdestructOrAuthcall = false
 ): bigint {
   if (common.isActivatedEIP(2929) === false) return BIGINT_0
 
-  const addressStr = address.bytes
-
   // Cold
-  if (!runState.interpreter.journal.isWarmedAddress(addressStr)) {
-    runState.interpreter.journal.addWarmedAddress(addressStr)
+  if (!runState.interpreter.journal.isWarmedAddress(address)) {
+    runState.interpreter.journal.addWarmedAddress(address)
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
