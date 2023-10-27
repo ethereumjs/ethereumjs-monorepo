@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1698415942832,
+  "lastUpdate": 1698420413983,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c8816e2ddee521a74c38e0c9ad67d866ca841f39",
-          "message": "Make browser binaries optional (#3075)\n\n* Move browser testing deps to optional peers\r\n\r\n* Update package-lock\r\n\r\n* skip peer deps on CI\r\n\r\n* Add rollup as evm devDep\r\n\r\n* update package-lock\r\n\r\n* Revert evm devDep\r\n\r\n* revert changes in vm CI",
-          "timestamp": "2023-09-30T16:34:19+05:30",
-          "tree_id": "041039a5c0f75679cac563842a066e2752969fdc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c8816e2ddee521a74c38e0c9ad67d866ca841f39"
-        },
-        "date": 1696072148374,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18918,
-            "range": "±6.14%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19669,
-            "range": "±3.34%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19563,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19039,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18243,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±11.72%",
             "unit": "ops/sec",
             "extra": "69 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0443f9b9d8c053e3a76e827b82e7f91838f9896f",
+          "message": "trie: use Uint8Array as value type in DB (#3067)\n\n* trie: use Uint8Array as value type in DB\r\n\r\n* trie: make string value default and add option for bytes\r\n\r\n* trie: values returned as uint8array option, now backwards compatible\r\n\r\n* trie: update hex conversion to right value\r\n\r\n* trie: write unprefixedHex root\r\n\r\n* client: add flag to use old version of DB\r\n\r\n* trie: ensure `view` is used if no db is provided in constructor\r\n\r\n* vm: only create tries when necessary\r\n\r\n* trie: fix test\r\n\r\n* trie: lint\r\n\r\n* trie: add encoding tests\r\n\r\n* block: remove `txTrie` and cache tx trie root\r\n\r\n* block: add cache\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-10-27T17:22:31+02:00",
+          "tree_id": "4ca5a134f3f52026c05be073eabb982ede6d0216",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0443f9b9d8c053e3a76e827b82e7f91838f9896f"
+        },
+        "date": 1698420412561,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 24525,
+            "range": "±4.23%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 23769,
+            "range": "±4.65%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 24131,
+            "range": "±3.34%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 23819,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 23435,
+            "range": "±3.46%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
