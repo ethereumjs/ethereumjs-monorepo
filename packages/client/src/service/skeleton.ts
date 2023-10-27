@@ -590,7 +590,7 @@ export class Skeleton extends MetaDBManager {
     {
       safeBlockHash,
       finalizedBlockHash,
-    }: { safeBlockHash?: Uint8Array; finalizedBlockHash?: Uint8Array }
+    }: { safeBlockHash?: Uint8Array; finalizedBlockHash?: Uint8Array } = {}
   ): Promise<{ reorged: boolean; safeBlock?: Block; finalizedBlock?: Block }> {
     // setHead locks independently and between setHead unlocking and locking below there should
     // be no injected code as each of the async ops take the lock. so once setHead takes the
@@ -626,6 +626,8 @@ export class Skeleton extends MetaDBManager {
           await this.putBlocks([safeBlock])
         }
       }
+    } else {
+      safeBlock = this.safeBlock ?? this.chain.genesis
     }
 
     let finalizedBlock: Block | undefined
@@ -653,6 +655,8 @@ export class Skeleton extends MetaDBManager {
           await this.putBlocks([finalizedBlock])
         }
       }
+    } else {
+      finalizedBlock = this.finalizedBlock ?? this.chain.genesis
     }
 
     await this.runWithLock<void>(async () => {

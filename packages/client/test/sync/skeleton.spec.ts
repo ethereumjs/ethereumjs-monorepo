@@ -86,6 +86,13 @@ describe('[Skeleton] / initSync', async () => {
       head: block50,
       newState: [{ head: BigInt(50), tail: BigInt(50) }],
     },
+    // Completely empty database with only the trivial genesis subchain
+    {
+      name: 'Completely empty database with only the genesis set',
+      oldState: [{ head: BigInt(0), tail: BigInt(0) }],
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+    },
     // Empty database with only the genesis set with a leftover empty sync
     // progress. This is a synthetic case, just for the sake of covering things.
     {
@@ -611,7 +618,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
-    const config = new Config({ common })
+    const config = new Config({ common, engineNewpayloadMaxExecute: 10 })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
 
@@ -659,8 +666,9 @@ describe('[Skeleton] / setHead', async () => {
       BigInt(4),
       'canonical height should not change when setHead with force=false'
     )
-    await skeleton.setHead(block5, true)
-    await skeleton.blockingFillWithCutoff(10)
+
+    // test sethead and blockingFillWithCutoff true via forkchoice update
+    await skeleton.forkchoiceUpdate(block5)
 
     await wait(200)
     assert.equal(
