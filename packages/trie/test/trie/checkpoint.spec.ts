@@ -1,7 +1,13 @@
-import { MapDB, bytesToHex, bytesToUtf8, equalsBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  MapDB,
+  bytesToHex,
+  bytesToUtf8,
+  equalsBytes,
+  hexToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { createHash } from 'crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { hexToBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie } from '../../src/index.js'
