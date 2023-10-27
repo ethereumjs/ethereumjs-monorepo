@@ -9,6 +9,7 @@ import {
   BIGINT_1,
   BIGINT_2,
   GWEI_TO_WEI,
+  KECCAK256_RLP,
   TypeOutput,
   Withdrawal,
   toBytes,
@@ -150,6 +151,9 @@ export class BlockBuilder {
    * Calculates and returns the receiptTrie for the block.
    */
   public async receiptTrie() {
+    if (this.transactionResults.length === 0) {
+      return KECCAK256_RLP
+    }
     const receiptTrie = new Trie()
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
