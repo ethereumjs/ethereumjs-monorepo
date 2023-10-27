@@ -1449,7 +1449,7 @@ export class Skeleton extends MetaDBManager {
       let snapLogInfo
       let subchainLog = ''
       if (isValid) {
-        snapLogInfo = `vm=cl=${chainHead}`
+        vmlogInfo = `vm=cl=${chainHead}`
       } else {
         vmlogInfo = `vm=${vmHead?.header.number} hash=${short(vmHead?.hash() ?? 'na')} started=${
           vmexecution?.started
