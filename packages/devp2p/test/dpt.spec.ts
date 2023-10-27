@@ -71,12 +71,15 @@ describe('DPT', () => {
 
     const spy = vi.spyOn(dpt['_server'], 'findneighbours')
     await dpt.refresh()
-    expect(spy).toHaveBeenCalledTimes(0)
+    expect(
+      spy,
+      'call findneighbours on unconfirmed if no confirmed peers yet'
+    ).toHaveBeenCalledTimes(1)
 
     dpt['_refreshIntervalSelectionCounter'] = 0
     dpt.confirmPeer('01')
     await dpt.refresh()
-    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy, 'call findneighbours on confirmed').toHaveBeenCalledTimes(2)
 
     dpt['_server'].ping = vi.fn().mockResolvedValue(peers[1])
     await dpt.addPeer(peers[1])
@@ -91,6 +94,13 @@ describe('DPT', () => {
       dpt.getClosestPeers(peers[0].id!).length,
       2,
       'should return confirmed on getClosestPeers()'
+    )
+
+    dpt.removePeer(peers[1])
+    assert.equal(
+      dpt.getClosestPeers(peers[0].id!).length,
+      1,
+      'should work after peers being removed'
     )
 
     dpt.destroy()

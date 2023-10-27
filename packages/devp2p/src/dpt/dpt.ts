@@ -194,6 +194,10 @@ export class DPT {
   }
 
   removePeer(obj: string | PeerInfo | Uint8Array) {
+    const peer = this._kbucket.get(obj)
+    if (peer?.id !== undefined) {
+      this._confirmedPeers.delete(bytesToUnprefixedHex(peer.id as Uint8Array))
+    }
     this._kbucket.remove(obj)
   }
 
