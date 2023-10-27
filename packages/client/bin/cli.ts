@@ -102,7 +102,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
   })
   .option('bootnodes', {
-    describe: 'Comma-separated list of network bootnodes',
+    describe:
+      'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
     array: true,
   })
   .option('port', {
@@ -327,6 +328,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
     deprecated:
       'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
+  })
+  .options('useStringValueTrieDB', {
+    describe:
+      'Use string values in the trie DB. This is old behavior, new behavior uses Uint8Arrays in the DB (more performant)',
+    boolean: true,
+    default: false,
+    deprecated:
+      'Usage of old DBs which uses string-values is temporary. Please sync new instances without this option.',
   })
   .option('txLookupLimit', {
     describe:
@@ -806,7 +815,31 @@ async function run() {
   }
 
   logger = getLogger(args)
-  const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
+  let bootnodes
+  if (args.bootnodes !== undefined) {
+    // File path passed, read bootnodes from disk
+    if (
+      Array.isArray(args.bootnodes) &&
+      args.bootnodes.length === 1 &&
+      args.bootnodes[0].includes('.txt')
+    ) {
+      const file = readFileSync(args.bootnodes[0], 'utf-8')
+      let nodeURLs = file.split(/\r?\n/).filter((url) => (url !== '' ? true : false))
+      nodeURLs = nodeURLs.map((url) => {
+        const discportIndex = url.indexOf('?discport')
+        if (discportIndex > 0) {
+          return url.substring(0, discportIndex)
+        } else {
+          return url
+        }
+      })
+      bootnodes = parseMultiaddrs(nodeURLs)
+      logger.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
+    } else {
+      bootnodes = parseMultiaddrs(args.bootnodes)
+    }
+  }
+
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
@@ -845,6 +878,7 @@ async function run() {
     syncmode: args.sync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
     enableSnapSync: args.snap,
+    useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
   })

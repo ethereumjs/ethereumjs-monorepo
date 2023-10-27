@@ -58,6 +58,12 @@ export interface ConfigOptions {
   prefixStorageTrieKeys?: boolean
 
   /**
+   * A temporary option to offer backward compatibility with already-synced databases that stores
+   * trie items as `string`, instead of the more performant `Uint8Array`
+   */
+  useStringValueTrieDB?: boolean
+
+  /**
    * Provide a custom VM instance to process blocks
    *
    * Default: VM instance created by client
@@ -422,6 +428,7 @@ export class Config {
   public readonly prefixStorageTrieKeys: boolean
   // Defaulting to false as experimental as of now
   public readonly enableSnapSync: boolean
+  public readonly useStringValueTrieDB: boolean
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -505,6 +512,7 @@ export class Config {
 
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
     this.enableSnapSync = options.enableSnapSync ?? false
+    this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -516,7 +524,7 @@ export class Config {
     this.execCommon = common.copy()
 
     this.discDns = this.getDnsDiscovery(options.discDns)
-    this.discV4 = this.getV4Discovery(options.discV4)
+    this.discV4 = options.discV4 ?? true
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
@@ -675,14 +683,5 @@ export class Config {
     if (option !== undefined) return option
     const dnsNets = ['goerli', 'sepolia', 'holesky']
     return dnsNets.includes(this.chainCommon.chainName())
-  }
-
-  /**
-   * Returns specified option or the default setting for whether v4 peer discovery
-   * is enabled based on chainName. `true` for `mainnet`
-   */
-  getV4Discovery(option: boolean | undefined): boolean {
-    if (option !== undefined) return option
-    return this.chainCommon.chainName() === 'mainnet'
   }
 }

@@ -8,7 +8,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -57,6 +57,9 @@ export class VMExecution extends Execution {
         db: new LevelDB(this.stateDB),
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
+        valueEncoding: options.config.useStringValueTrieDB
+          ? ValueEncoding.String
+          : ValueEncoding.Bytes,
       })
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)

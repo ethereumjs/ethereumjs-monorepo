@@ -154,6 +154,7 @@ export interface ClientOpts {
   saveReceipts?: boolean
   prefixStorageTrieKeys?: boolean
   snap?: boolean
+  useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
