@@ -184,7 +184,6 @@ describe('simple mainnet test run', async () => {
           ])
 
           await Promise.race([beaconSyncPromise, snapSyncTimeout])
-          // await ejsClient.stop()
           assert.ok(true, 'completed snap sync')
         } catch (e) {
           assert.fail('could not complete snap sync in 8 minutes')
@@ -227,6 +226,7 @@ describe('simple mainnet test run', async () => {
   it('network cleanup', async () => {
     try {
       beaconSyncRelayer?.close()
+      await ejsClient?.stop()
       await teardownCallBack()
       assert.ok(true, 'network cleaned')
     } catch (e) {
