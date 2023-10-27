@@ -518,7 +518,7 @@ export class Config {
     this.execCommon = common.copy()
 
     this.discDns = this.getDnsDiscovery(options.discDns)
-    this.discV4 = this.getV4Discovery(options.discV4)
+    this.discV4 = options.discV4 ?? true
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
@@ -672,16 +672,7 @@ export class Config {
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['goerli', 'sepolia']
+    const dnsNets = ['holesky', 'sepolia']
     return dnsNets.includes(this.chainCommon.chainName())
-  }
-
-  /**
-   * Returns specified option or the default setting for whether v4 peer discovery
-   * is enabled based on chainName. `true` for `mainnet`
-   */
-  getV4Discovery(option: boolean | undefined): boolean {
-    if (option !== undefined) return option
-    return this.chainCommon.chainName() === 'mainnet'
   }
 }

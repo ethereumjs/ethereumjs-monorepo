@@ -74,7 +74,7 @@ export class Server {
     const protocols: Protocol[] = Array.from(this.protocols)
     await Promise.all(protocols.map((p) => p.open()))
     this.started = true
-    this.config.logger.info(`Started ${this.name} server.`)
+    this.config.logger.info(`Started ${this.name} server maxPeers=${this.config.maxPeers}`)
     return true
   }
 
