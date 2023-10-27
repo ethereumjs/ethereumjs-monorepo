@@ -1378,7 +1378,13 @@ export class Skeleton extends MetaDBManager {
               : 'awaiting execution'
         } else if (snapsync !== undefined) {
           // stall detection yet to be added
-          scenario = `snapsync target=${this.config.snapTargetHeight}`
+          if (snapsync.done) {
+            scenario = `snapsync-to-vm-transition=${
+              (snapsync.snapTargetHeight ?? BIGINT_0) + this.config.snapTransitionSafeDepth
+            }`
+          } else {
+            scenario = `snapsync target=${snapsync.snapTargetHeight}`
+          }
         } else {
           scenario = 'execution none'
         }
@@ -1455,14 +1461,11 @@ export class Skeleton extends MetaDBManager {
           if (snapsync === undefined) {
             snapLogInfo = `snapsync=false`
           } else {
-            snapLogInfo
+            const { snapTargetHeight, snapTargetRoot, snapTargetHash } = snapsync
             if (snapsync.done === true) {
-              const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
-              snapLogInfo = `${snapLogInfo} synced height=${snapTargetHeight} hash=${short(
+              snapLogInfo = `snapsync=synced height=${snapTargetHeight} hash=${short(
                 snapTargetHash ?? 'na'
-              )} root=${short(snapTargetRoot ?? 'na')} vm-transition-by=${
-                (snapTargetHeight ?? BIGINT_0) + this.config.snapTransitionSafeDepth
-              }`
+              )} root=${short(snapTargetRoot ?? 'na')}`
             } else if (snapsync.syncing) {
               const accountsDone = formatBigDecimal(
                 snapsync.accountFetcher.first * BIGINT_100,
@@ -1496,8 +1499,8 @@ export class Skeleton extends MetaDBManager {
               }
 
               snapLogInfo = `${stage} ${snapprogress} (hash=${short(
-                this.config.snapTargetHash ?? 'na'
-              )} root=${short(this.config.snapTargetRoot ?? 'na')})`
+                snapTargetHash ?? 'na'
+              )} root=${short(snapTargetRoot ?? 'na')})`
             } else {
               if (this.synchronized) {
                 snapLogInfo = `snapsync=??`

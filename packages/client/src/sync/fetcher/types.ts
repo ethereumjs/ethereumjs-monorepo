@@ -11,6 +11,10 @@ export type Job<JobTask, JobResult, StorageItem> = {
 }
 
 export type SnapFetcherDoneFlags = {
+  snapTargetHeight?: bigint
+  snapTargetRoot?: Uint8Array
+  snapTargetHash?: Uint8Array
+
   done: boolean
   syncing: boolean
   accountFetcher: {

@@ -429,10 +429,6 @@ export class Config {
   public lastSyncDate: number
   /** Best known block height */
   public syncTargetHeight?: bigint
-  /** for snapsync */
-  public snapTargetHeight?: bigint
-  public snapTargetRoot?: Uint8Array
-  public snapTargetHash?: Uint8Array
   /** Client is in the process of shutting down */
   public shutdown: boolean = false
 

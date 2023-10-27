@@ -61,12 +61,8 @@ export class SnapSynchronizer extends Synchronizer {
     await this.chain.open()
     await this.pool.open()
 
-    const { snapTargetHeight, snapTargetRoot } = this.config
-
     this.config.logger.info(
-      `Opened SnapSynchronizer snapTargetHeight=${snapTargetHeight ?? 'NA'} snapTargetRoot=${short(
-        snapTargetRoot ?? 'NA'
-      )}`
+      `Opened SnapSynchronizer syncTargetHeight=${this.config.syncTargetHeight ?? 'NA'}`
     )
   }
 
@@ -154,9 +150,7 @@ export class SnapSynchronizer extends Synchronizer {
       )
     }
 
-    // a bit weird way to extract this data ideally should have been returned by sync
-    // but that is being run through a sync abstract class
-    const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.config
+    const { snapTargetHeight, snapTargetRoot, snapTargetHash } = this.fetcherDoneFlags
     if (
       snapTargetHeight === undefined ||
       snapTargetRoot === undefined ||
@@ -230,16 +224,16 @@ export class SnapSynchronizer extends Synchronizer {
       (this.fetcher === null || this.fetcher.syncErrored !== undefined) &&
       this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth
     ) {
-      if ((this.config.snapTargetHeight ?? BIGINT_0) < latest.number) {
-        this.config.snapTargetHeight = latest.number
-        this.config.snapTargetRoot = latest.stateRoot
-        this.config.snapTargetHash = latest.hash()
+      if ((this.fetcherDoneFlags.snapTargetHeight ?? BIGINT_0) < latest.number) {
+        this.fetcherDoneFlags.snapTargetHeight = latest.number
+        this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
+        this.fetcherDoneFlags.snapTargetHash = latest.hash()
       }
 
       this.config.logger.info(
         `syncWithPeer new AccountFetcher peer=${peer?.id} snapTargetHeight=${
-          this.config.snapTargetHeight
-        } snapTargetRoot=${short(this.config.snapTargetRoot!)}  ${
+          this.fetcherDoneFlags.snapTargetHeight
+        } snapTargetRoot=${short(this.fetcherDoneFlags.snapTargetRoot!)}  ${
           this.fetcher === null
             ? ''
             : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
