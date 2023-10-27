@@ -466,8 +466,6 @@ export class Skeleton extends MetaDBManager {
           const s = {
             head: head.header.number,
             tail: head.header.number,
-            safe: BIGINT_0,
-            finalized: BIGINT_0,
             next: head.header.parentHash,
           }
 
