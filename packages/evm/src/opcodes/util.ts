@@ -4,7 +4,10 @@ import {
   BIGINT_1,
   BIGINT_160,
   BIGINT_2,
+  BIGINT_273,
+  BIGINT_3,
   BIGINT_32,
+  BIGINT_512,
   BIGINT_64,
   BIGINT_NEG1,
   bigIntToBytes,
@@ -175,12 +178,14 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
   if (newMemoryWordCount <= runState.memoryWordCount) return BIGINT_0
   const words = newMemoryWordCount
 
-  let cost = BIGINT_0
-  if (words <= BigInt(273)) {
+  let cost: bigint
+  const fee = common.param('gasPrices', 'memory')
+  const quadCoeff = common.param('gasPrices', 'quadCoeffDiv')
+
+  // Optimization for mainnet-compatible networks
+  if (fee === BIGINT_3 && quadCoeff === BIGINT_512 && words <= BIGINT_273) {
     cost = SUB_MEM_USAGE_COST_PRECALC_CONSTS[Number(words)]
   } else {
-    const fee = common.param('gasPrices', 'memory')
-    const quadCoeff = common.param('gasPrices', 'quadCoeffDiv')
     // words * 3 + words ^2 / 512
     cost = words * fee + (words * words) / quadCoeff
   }
