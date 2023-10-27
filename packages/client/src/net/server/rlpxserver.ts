@@ -216,7 +216,7 @@ export class RlpxServer extends Server {
           udpPort: null,
           tcpPort: null,
         },
-        onlyConfirmed: true,
+        onlyConfirmed: this.config.chainCommon.chainName() === 'mainnet' ? false : true,
         shouldFindNeighbours: this.config.discV4,
         shouldGetDnsPeers: this.config.discDns,
         dnsRefreshQuantity: this.config.maxPeers,
