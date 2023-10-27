@@ -85,8 +85,21 @@ export class Trie {
    * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
+    let valueEncoding: ValueEncoding
     if (opts !== undefined) {
+      // Sanity check: can only set valueEncoding if a db is provided
+      // The valueEncoding defaults to `Bytes` if no DB is provided (use a MapDB in memory)
+      if (opts?.valueEncoding !== undefined && opts.db === undefined) {
+        throw new Error('`valueEncoding` can only be set if a `db` is provided')
+      }
       this._opts = { ...this._opts, ...opts }
+
+      valueEncoding =
+        opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
+    } else {
+      // No opts are given, so create a MapDB later on
+      // Use `Bytes` for ValueEncoding
+      valueEncoding = ValueEncoding.Bytes
     }
 
     this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
@@ -100,7 +113,7 @@ export class Trie {
         }
       : (..._: any) => {}
 
-    this.database(opts?.db ?? new MapDB<string, string>(), opts?.valueEncoding)
+    this.database(opts?.db ?? new MapDB<string, Uint8Array>(), valueEncoding)
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
