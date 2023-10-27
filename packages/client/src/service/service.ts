@@ -198,6 +198,7 @@ export class Service {
       const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
       const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
       const msg = `Memory stats usage=${heapUsed} MB percentage=${percentage}%`
+
       if (this._statsCounter % 4 === 0) {
         this.config.logger.info(msg)
         this._statsCounter = 0

@@ -460,6 +460,21 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  it('should start client with file path for bootnodes option', async () => {
+    const cliArgs = ['--bootnodes=./test/testdata/bootnode.txt']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function
+    ) => {
+      if (message.includes('Reading bootnodes')) {
+        assert.ok(message.includes('num=2'), 'passing bootnode.txt URL for bootnodes option works')
+        child.kill(9)
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)
   // test experimental feature options
   it('should start client when passed options for experimental features', async () => {
     const cliArgs = ['--mine=true', '--forceSnapSync=true', '--dev=poa', '--port=30393']
