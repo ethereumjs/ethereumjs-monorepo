@@ -50,7 +50,9 @@ export class Block {
   public readonly withdrawals?: Withdrawal[]
   public readonly common: Common
 
-  private txTrieRoot?: Uint8Array
+  private cache: {
+    txTrieRoot?: Uint8Array
+  } = {}
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
@@ -456,10 +458,10 @@ export class Block {
       return result
     }
 
-    if (this.txTrieRoot === undefined) {
-      this.txTrieRoot = await this.genTxTrie()
+    if (this.cache.txTrieRoot === undefined) {
+      this.cache.txTrieRoot = await this.genTxTrie()
     }
-    result = equalsBytes(this.txTrieRoot, this.header.transactionsTrie)
+    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
     return result
   }
 
