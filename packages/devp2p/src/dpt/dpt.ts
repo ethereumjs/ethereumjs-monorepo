@@ -185,7 +185,7 @@ export class DPT {
 
   getClosestPeers(id: Uint8Array) {
     let peers = this._kbucket.closest(id)
-    if (this._onlyConfirmed) {
+    if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
       peers = peers.filter((peer) =>
         this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false
       )
@@ -221,7 +221,7 @@ export class DPT {
         // to decide on subdivided execution
         const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
         let confirmed = true
-        if (this._onlyConfirmed) {
+        if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
           const id = bytesToUnprefixedHex(peer.id as Uint8Array)
           if (!this._confirmedPeers.has(id)) {
             confirmed = false
