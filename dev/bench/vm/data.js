@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1698355177389,
+  "lastUpdate": 1698415942832,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e2da533d714918f9513d21f7e9db74c06bd58516",
-          "message": "FindPath-optimize (#3066)\n\n* trie/findPath: create stack array with key length\r\n\r\n* trie/findPath: use progress pointer to track key index\r\n\r\n* trie/findPath: filter array before return\r\n\r\n* fix debug msg\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-09-29T15:15:52-06:00",
-          "tree_id": "351975c89dca60580eeee0dcf86de9483c1b54e1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e2da533d714918f9513d21f7e9db74c06bd58516"
-        },
-        "date": 1696022428948,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 20031,
-            "range": "±3.18%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 17791,
-            "range": "±7.20%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 18963,
-            "range": "±3.76%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19254,
-            "range": "±3.67%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18094,
-            "range": "±4.11%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.74%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b8480333d91bacd97004c1c6e9f2ed2b28d9e448",
+          "message": "Client Discovery Improvements (#3120)\n\n* Client: add explicit discovery startup logging\r\n\r\n* Client: add bootnodes format hint on CLI option help\r\n\r\n* Client: add option to pass in bootnode.txt file to --bootnodes CLI param, add CLI test\r\n\r\n* Client: replace goerli -> holesky in list with networks with activated DNS discovery\r\n\r\n* Devp2p: add new confirmed-peer mechanism for a more fine grained peer discovery, reactivated discV4 for client\r\n\r\n* Devp2p: add test setup for DPT, initialization, bootstrap(), addPeer() and confirmed/unconfirmed refresh() tests, fix bug in getClosestPeers()\r\n\r\n* Client: make onlyConfirmed exception for mainnet (since most peers are mainnet peers and peering then goes quicker)\r\n\r\n* Devp2p: increase network resilience for the case that no initial confirmation is possible\r\n\r\n* Devp2p: remove peer from confirmed peers list when being removed from DPT, fix tests\r\n\r\n* Fix tests\r\n\r\n* Client: add missing bootnode.txt test file",
+          "timestamp": "2023-10-27T10:08:39-04:00",
+          "tree_id": "4ea32229f34b3ac03dcd176391c6aaf145caa619",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b8480333d91bacd97004c1c6e9f2ed2b28d9e448"
+        },
+        "date": 1698415942123,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 28629,
+            "range": "±5.47%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 28649,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 28672,
+            "range": "±3.02%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 28178,
+            "range": "±3.15%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22581,
+            "range": "±11.72%",
+            "unit": "ops/sec",
+            "extra": "69 samples"
           }
         ]
       }
