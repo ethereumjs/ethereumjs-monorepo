@@ -179,12 +179,16 @@ export class DPT {
     return this._kbucket.getAll()
   }
 
+  numPeers() {
+    return this._kbucket.getAll().length
+  }
+
   getClosestPeers(id: Uint8Array) {
     let peers = this._kbucket.closest(id)
     if (this._onlyConfirmed) {
-      peers = peers.filter((peer) => {
+      peers = peers.filter((peer) =>
         this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false
-      })
+      )
     }
     return peers
   }
