@@ -18,6 +18,7 @@ import * as kzg from 'c-kzg'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
+import { open } from 'lmdb'
 import { homedir } from 'os'
 import * as path from 'path'
 import readline from 'readline'
@@ -401,7 +402,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
  */
 function initDBs(config: Config): {
   chainDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
-  stateDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB: any
   metaDB: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 } {
   // Chain DB
@@ -412,7 +413,7 @@ function initDBs(config: Config): {
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
   ensureDirSync(stateDataDir)
-  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
+  const stateDB = open({ path: stateDataDir })
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)

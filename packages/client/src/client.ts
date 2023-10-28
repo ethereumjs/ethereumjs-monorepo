@@ -32,7 +32,7 @@ export interface EthereumClientOptions {
    *
    * Default: Database created by the Trie class
    */
-  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB?: any
 
   /**
    * Database to store tx receipts, logs, and indexes.

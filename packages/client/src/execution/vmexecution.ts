@@ -147,15 +147,19 @@ export class VMExecution extends Execution {
       this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
+      console.log('1')
       if (number === BIGINT_0) {
         const genesisState =
           this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
         if (!genesisState) {
           throw new Error('genesisState not available')
         }
+        console.log('1.5')
         await this.vm.stateManager.generateCanonicalGenesis(genesisState)
       }
+      console.log('2')
       await super.open()
+      console.log('3')
       // TODO: Should a run be started to execute any left over blocks?
       // void this.run()
     })

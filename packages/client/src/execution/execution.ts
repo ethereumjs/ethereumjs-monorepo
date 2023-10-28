@@ -7,7 +7,7 @@ export interface ExecutionOptions {
   config: Config
 
   /* State database */
-  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB?: any
 
   /* Meta database (receipts, logs, indexes) */
   metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
@@ -19,7 +19,7 @@ export interface ExecutionOptions {
 export abstract class Execution {
   public config: Config
 
-  protected stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  protected stateDB?: any
   protected metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
   protected chain: Chain
 

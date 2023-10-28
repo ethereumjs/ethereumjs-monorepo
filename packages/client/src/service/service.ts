@@ -21,7 +21,7 @@ export interface ServiceOptions {
   chainDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
 
   /* State database */
-  stateDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  stateDB?: any
 
   /* Meta database (receipts, logs, indexes) */
   metaDB?: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>

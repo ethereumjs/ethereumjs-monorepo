@@ -44,7 +44,7 @@ export class LevelDB<
   TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
 > implements DB<TKey, TValue>
 {
-  _leveldb: AbstractLevel<string | Uint8Array, string | Uint8Array, string | Uint8Array>
+  _leveldb: any
 
   /**
    * Initialize a DB instance. If `leveldb` is not provided, DB
@@ -83,9 +83,9 @@ export class LevelDB<
   /**
    * @inheritDoc
    */
-  async put(key: TKey, val: TValue, opts?: {}): Promise<void> {
-    const encodings = getEncodings(opts)
-    await this._leveldb.put(key, val, encodings)
+  put(key: TKey, val: TValue) {
+    //const encodings = getEncodings(opts)
+    this._leveldb.put(key, val)
   }
 
   /**
