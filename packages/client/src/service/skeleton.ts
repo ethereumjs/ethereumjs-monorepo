@@ -460,6 +460,13 @@ export class Skeleton extends MetaDBManager {
                   subchain.tail
                 } next=${short(subchain.next)}`
               )
+
+              // try if we can backfill tail from the previous blocks synced in skeleton which might
+              // not be in the canonical chain, this call has to be non blocking because backfill
+              // will try taking the lock in putblocks
+              void this.tryTailBackfill(trucateTailTo).catch((e) => {
+                this.config.logger.debug(`Tail backfill exited with error=${e}`)
+              })
             }
           }
 
@@ -716,6 +723,14 @@ export class Skeleton extends MetaDBManager {
 
       this.updateSynchronizedState(headBlock?.header)
       this.safeBlock = safeBlock ?? this.safeBlock
+
+      if (
+        (finalizedBlock?.header.number ?? BIGINT_0) >
+        (this.finalizedBlock?.header.number ?? BIGINT_0)
+      ) {
+        void this.pruneFinalizedNonCanonicalBlocks()
+      }
+
       this.finalizedBlock = finalizedBlock ?? this.finalizedBlock
     })
 
@@ -1010,6 +1025,33 @@ export class Skeleton extends MetaDBManager {
   }
 
   /**
+   * lookup and try backfill if skeleton already has blocks previously filled
+   */
+  async tryTailBackfill(currentTail: Block): Promise<void> {
+    let tailBlock: Block | undefined = currentTail
+    while (tailBlock !== undefined) {
+      // backfill in the batches maxPerRequest
+      const blocks = []
+      for (let i = 0; i < this.chain.config.maxPerRequest; i++) {
+        tailBlock = await this.getBlockByHash(tailBlock.header.parentHash)
+
+        if (tailBlock === undefined) {
+          // no more parents found so break out of for and then from while
+          break
+        } else {
+          blocks.push(tailBlock)
+        }
+      }
+
+      if (blocks.length > 0) {
+        // if for some reason blocks don't backfill tail this will throw
+        // and this will exit the tail fill
+        await this.putBlocks(blocks)
+      }
+    }
+  }
+
+  /**
    * Inserts skeleton blocks into canonical chain and runs execution.
    */
   async fillCanonicalChain() {
@@ -1198,6 +1240,10 @@ export class Skeleton extends MetaDBManager {
     // Serialize the block with its hardfork so that its easy to load the block latter
     const rlp = this.serialize({ hardfork: block.common.hardfork(), blockRLP: block.serialize() })
     await this.put(DBKey.SkeletonBlock, bigIntToBytes(block.header.number), rlp)
+    // this is duplication of the unfinalized blocks but for now an easy reference
+    // will be pruned on finalization changes. this could be simplified and deduped
+    // but will anyway will move into blockchain class and db on upcoming skeleton refactor
+    await this.put(DBKey.SkeletonUnfinalizedBlockByHash, block.hash(), rlp)
     await this.put(
       DBKey.SkeletonBlockHashToNumber,
       block.hash(),
@@ -1206,23 +1252,30 @@ export class Skeleton extends MetaDBManager {
     return true
   }
 
+  skeletonBlockRlpToBlock(skeletonBlockRlp: Uint8Array): Block {
+    const { hardfork, blockRLP } = this.deserialize(skeletonBlockRlp)
+    const common = this.config.chainCommon.copy()
+    common.setHardfork(hardfork)
+
+    const block = Block.fromRLPSerializedBlock(blockRLP, {
+      common,
+    })
+    return block
+  }
+
   /**
    * Gets a block from the skeleton or canonical db by number.
    */
-  async getBlock(number: bigint, onlySkeleton = false): Promise<Block | undefined> {
+  async getBlock(number: bigint, onlyCanonical = false): Promise<Block | undefined> {
     try {
-      const rlp = await this.get(DBKey.SkeletonBlock, bigIntToBytes(number))
-      const { hardfork, blockRLP } = this.deserialize(rlp!)
-      const common = this.config.chainCommon.copy()
-      common.setHardfork(hardfork)
-
-      const block = Block.fromRLPSerializedBlock(blockRLP, {
-        common,
-      })
-      return block
+      const skeletonBlockRlp = await this.get(DBKey.SkeletonBlock, bigIntToBytes(number))
+      if (skeletonBlockRlp === null) {
+        throw Error(`SkeletonBlock rlp lookup failed for ${number} onlyCanonical=${onlyCanonical}`)
+      }
+      return this.skeletonBlockRlpToBlock(skeletonBlockRlp)
     } catch (error: any) {
       // If skeleton is linked, it probably has deleted the block and put it into the chain
-      if (onlySkeleton && !this.status.linked) return undefined
+      if (onlyCanonical && !this.status.linked) return undefined
       // As a fallback, try to get the block from the canonical chain in case it is available there
       try {
         return await this.chain.getBlock(number)
@@ -1235,23 +1288,52 @@ export class Skeleton extends MetaDBManager {
   /**
    * Gets a skeleton block from the db by hash
    */
-  async getBlockByHash(hash: Uint8Array, onlySkeleton?: boolean): Promise<Block | undefined> {
+  async getBlockByHash(
+    hash: Uint8Array,
+    onlyCanonical: boolean = false
+  ): Promise<Block | undefined> {
     const number = await this.get(DBKey.SkeletonBlockHashToNumber, hash)
     if (number) {
-      const block = await this.getBlock(bytesToBigInt(number), onlySkeleton)
+      const block = await this.getBlock(bytesToBigInt(number), onlyCanonical)
       if (block !== undefined && equalsBytes(block.hash(), hash)) {
         return block
       }
     }
 
-    if (onlySkeleton === true && !this.status.linked) {
+    if (onlyCanonical === true && !this.status.linked) {
       return undefined
+    }
+
+    let block = onlyCanonical === false ? await this.getUnfinalizedBlock(hash) : undefined
+    if (block === undefined && (onlyCanonical === false || this.status.linked)) {
+      block = await this.chain.getBlock(hash).catch((_e) => undefined)
+    }
+
+    if (onlyCanonical === false) {
+      return block
     } else {
-      try {
-        return await this.chain.getBlock(hash)
-      } catch (e) {
-        return undefined
+      if (this.status.linked && block !== undefined) {
+        const canBlock = await this.chain.getBlock(block.header.number).catch((_e) => undefined)
+        if (canBlock !== undefined && equalsBytes(canBlock.hash(), block.hash())) {
+          // block is canonical
+          return block
+        }
       }
+
+      // no canonical block found or the block was not canonical
+      return undefined
+    }
+  }
+
+  async getUnfinalizedBlock(hash: Uint8Array): Promise<Block | undefined> {
+    try {
+      const skeletonBlockRlp = await this.get(DBKey.SkeletonUnfinalizedBlockByHash, hash)
+      if (skeletonBlockRlp === null) {
+        throw Error(`SkeletonUnfinalizedBlockByHash rlp lookup failed for hash=${short(hash)}`)
+      }
+      return this.skeletonBlockRlpToBlock(skeletonBlockRlp)
+    } catch (_e) {
+      return undefined
     }
   }
 
@@ -1262,10 +1344,21 @@ export class Skeleton extends MetaDBManager {
     try {
       await this.delete(DBKey.SkeletonBlock, bigIntToBytes(block.header.number))
       await this.delete(DBKey.SkeletonBlockHashToNumber, block.hash())
+      await this.delete(DBKey.SkeletonUnfinalizedBlockByHash, block.hash())
       return true
     } catch (error: any) {
       return false
     }
+  }
+
+  /**
+   *
+   * TODO: complete the impl of pruning of blocks which got finalized and were non
+   * canonical. canonical blocks anyway get deleted in deleteBlock
+   */
+
+  async pruneFinalizedNonCanonicalBlocks(): Promise<void> {
+    return
   }
 
   logSyncStatus(

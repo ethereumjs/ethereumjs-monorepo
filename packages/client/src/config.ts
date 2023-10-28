@@ -460,7 +460,7 @@ export class Config {
     this.txLookupLimit = options.txLookupLimit ?? 2350000
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.maxFetcherJobs = options.maxFetcherJobs ?? Config.MAXFETCHERJOBS_DEFAULT
-    this.maxFetcherRequests = options.maxPerRequest ?? Config.MAXFETCHERREQUESTS_DEFAULT
+    this.maxFetcherRequests = options.maxFetcherRequests ?? Config.MAXFETCHERREQUESTS_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
