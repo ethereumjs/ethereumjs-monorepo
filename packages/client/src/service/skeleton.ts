@@ -495,12 +495,8 @@ export class Skeleton extends MetaDBManager {
         }
       }
 
-      // Put block if this is forced i.e. fcU update or if this is forward announcement i.e. new blocks
-      // after the current head. putting this block on annoucement i.e force=false on <=current head changes the
-      // skeleton canonical relationship. for > current head, this is treated more like optimistic cache
-      if (force || head.header.number > subchain0Head) {
-        await this.putBlock(head)
-      }
+      // only add to unfinalized cache if this is announcement and before canonical head
+      await this.putBlock(head, !force && head.header.number <= subchain0Head)
 
       if (init) {
         await this.trySubChainsMerge()
@@ -1236,19 +1232,23 @@ export class Skeleton extends MetaDBManager {
   /**
    * Writes a skeleton block to the db by number
    */
-  private async putBlock(block: Block): Promise<boolean> {
+  private async putBlock(block: Block, onlyUnfinalized: boolean = false): Promise<boolean> {
     // Serialize the block with its hardfork so that its easy to load the block latter
     const rlp = this.serialize({ hardfork: block.common.hardfork(), blockRLP: block.serialize() })
-    await this.put(DBKey.SkeletonBlock, bigIntToBytes(block.header.number), rlp)
-    // this is duplication of the unfinalized blocks but for now an easy reference
-    // will be pruned on finalization changes. this could be simplified and deduped
-    // but will anyway will move into blockchain class and db on upcoming skeleton refactor
     await this.put(DBKey.SkeletonUnfinalizedBlockByHash, block.hash(), rlp)
-    await this.put(
-      DBKey.SkeletonBlockHashToNumber,
-      block.hash(),
-      bigIntToBytes(block.header.number)
-    )
+
+    if (!onlyUnfinalized) {
+      await this.put(DBKey.SkeletonBlock, bigIntToBytes(block.header.number), rlp)
+      // this is duplication of the unfinalized blocks but for now an easy reference
+      // will be pruned on finalization changes. this could be simplified and deduped
+      // but will anyway will move into blockchain class and db on upcoming skeleton refactor
+      await this.put(
+        DBKey.SkeletonBlockHashToNumber,
+        block.hash(),
+        bigIntToBytes(block.header.number)
+      )
+    }
+
     return true
   }
 
