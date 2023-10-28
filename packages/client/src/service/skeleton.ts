@@ -460,13 +460,6 @@ export class Skeleton extends MetaDBManager {
                   subchain.tail
                 } next=${short(subchain.next)}`
               )
-
-              // try if we can backfill tail from the previous blocks synced in skeleton which might
-              // not be in the canonical chain, this call has to be non blocking because backfill
-              // will try taking the lock in putblocks
-              void this.tryTailBackfill(trucateTailTo).catch((e) => {
-                this.config.logger.debug(`Tail backfill exited with error=${e}`)
-              })
             }
           }
 
@@ -598,7 +591,16 @@ export class Skeleton extends MetaDBManager {
     // setHead locks independently and between setHead unlocking and locking below there should
     // be no injected code as each of the async ops take the lock. so once setHead takes the
     // lock, all of them should be executed serially
+    const prevLinked = this.status.linked
     const reorged = await this.setHead(headBlock, true)
+    if (reorged && prevLinked && !this.status.linked) {
+      await this.blockingTailBackfillWithCutoff(this.chain.config.engineNewpayloadMaxExecute).catch(
+        (e) => {
+          this.config.logger.debug(`blockingTailBackfillWithCutoff exited with error=${e}`)
+        }
+      )
+    }
+
     const subchain0 = this.status.progress.subchains[0]
     if (subchain0 === undefined) {
       throw Error(`subchain0 should have been set as a result of skeleton setHead`)
@@ -872,7 +874,7 @@ export class Skeleton extends MetaDBManager {
    * Writes skeleton blocks to the db by number
    * @returns number of blocks saved
    */
-  async putBlocks(blocks: Block[]): Promise<number> {
+  async putBlocks(blocks: Block[], skipForwardFill: boolean = false): Promise<number> {
     return this.runWithLock<number>(async () => {
       // if no subchain or linked chain throw error as this will exit the fetcher
       if (this.status.progress.subchains.length === 0) {
@@ -937,26 +939,31 @@ export class Skeleton extends MetaDBManager {
           throw Error(`Blocks don't extend canonical subchain`)
         }
         merged = await this.trySubChainsMerge()
+
         // If tail is updated normally or because of merge, we should now fill from
         // the tail to modify the canonical
         if (tailUpdated || merged) {
           this.status.canonicalHeadReset = true
+          if (this.status.progress.subchains[0].tail - BIGINT_1 <= this.chain.blocks.height) {
+            this.status.linked = await this.checkLinked()
+          }
         }
+
         // If its merged, we need to break as the new tail could be quite ahead
         // so we need to clear out and run the reverse block fetcher again
-        if (merged) break
+        if (merged || this.status.linked) break
       }
 
       await this.writeSyncStatus()
 
-      if (!this.status.linked) {
-        this.status.linked = await this.checkLinked()
-      }
-
       // If the sync is finished, start filling the canonical chain.
       if (this.status.linked) {
-        this.config.superMsg('Backfilling subchain completed. Start filling canonical chain.')
-        void this.fillCanonicalChain()
+        this.config.superMsg(
+          `Backfilling subchain completed, filling canonical chain=${!skipForwardFill}`
+        )
+        if (!skipForwardFill) {
+          void this.fillCanonicalChain()
+        }
       }
 
       if (merged) throw errSyncMerged
@@ -1012,37 +1019,63 @@ export class Skeleton extends MetaDBManager {
       // if subchain0Head is not too ahead, then fill blocking as it gives better sync
       // log experience else just trigger
       if (
-        !this.status.canonicalHeadReset &&
-        subchain0.head - BigInt(cutoffLen) < this.chain.blocks.height
+        subchain0.head - BigInt(cutoffLen) <
+        (this.status.canonicalHeadReset ? subchain0.tail : this.chain.blocks.height)
       ) {
+        this.config.logger.debug('Attempting blocking fill')
         await fillPromise
       }
     }
   }
 
-  /**
-   * lookup and try backfill if skeleton already has blocks previously filled
-   */
-  async tryTailBackfill(currentTail: Block): Promise<void> {
-    let tailBlock: Block | undefined = currentTail
-    while (tailBlock !== undefined) {
-      // backfill in the batches maxPerRequest
-      const blocks = []
-      for (let i = 0; i < this.chain.config.maxPerRequest; i++) {
-        tailBlock = await this.getBlockByHash(tailBlock.header.parentHash)
+  async getUnfinalizedParentsForBackfill(maxItems: number): Promise<Block[]> {
+    const blocks = []
+    const subchain0 = this.status.progress.subchains[0]
+    if (!this.status.linked && subchain0 !== undefined) {
+      let next = subchain0.next
+      for (let i = 0; i < maxItems; i++) {
+        const tailBlock = await this.getBlockByHash(next)
 
         if (tailBlock === undefined) {
-          // no more parents found so break out of for and then from while
           break
         } else {
           blocks.push(tailBlock)
+          next = tailBlock.header.parentHash
         }
       }
+    }
 
+    return blocks
+  }
+
+  /**
+   * lookup and try backfill if skeleton already has blocks previously filled
+   */
+  async tryTailBackfill(): Promise<void> {
+    let blocks: Block[]
+    do {
+      blocks = await this.getUnfinalizedParentsForBackfill(this.chain.config.maxPerRequest)
       if (blocks.length > 0) {
-        // if for some reason blocks don't backfill tail this will throw
-        // and this will exit the tail fill
         await this.putBlocks(blocks)
+      }
+    } while (blocks.length > 0)
+  }
+
+  /**
+   *
+   */
+  async blockingTailBackfillWithCutoff(maxItems: number): Promise<void> {
+    const blocks = await this.getUnfinalizedParentsForBackfill(maxItems)
+    if (blocks.length > 0) {
+      // also skip the fill since a blocking fill might be attempted by forkchoiceUpdate
+      await this.putBlocks(blocks, true)
+
+      // if chain isn't linked and blocks requested were full then start a non blocking
+      // fill
+      if (!this.status.linked && blocks.length === maxItems) {
+        void this.tryTailBackfill().catch((e) => {
+          this.chain.config.logger.debug(`tryTailBackfill exited with error ${e}`)
+        })
       }
     }
   }

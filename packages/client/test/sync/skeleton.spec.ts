@@ -678,6 +678,7 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     // unlink the skeleton for the below check to check all blocks cleared
+    const prevLinked = skeleton.status.linked
     skeleton.status.linked = false
     for (const block of [block3, block4, block5]) {
       assert.equal(
@@ -693,6 +694,72 @@ describe('[Skeleton] / setHead', async () => {
         )} should be cleaned up after filling canonical chain`
       )
     }
+    // restore linkedStatus
+    skeleton.status.linked = prevLinked
+
+    const block41 = Block.fromBlockData(
+      { header: { number: 4, parentHash: block3.hash(), difficulty: 101 } },
+      { common, setHardfork: true }
+    )
+    const block51 = Block.fromBlockData(
+      { header: { number: 5, parentHash: block41.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+    const block61 = Block.fromBlockData(
+      { header: { number: 6, parentHash: block51.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+
+    await skeleton.setHead(block41, false)
+    await skeleton.setHead(block51, false)
+
+    // should link the chains including the 41, 51 block backfilled from the unfinalized
+    await skeleton.forkchoiceUpdate(block61)
+    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(6), 'head should be correct')
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(4),
+      'tail should be backfilled'
+    )
+    assert.equal(skeleton.status.linked, true, 'should be linked')
+    assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
+
+    const block71 = Block.fromBlockData(
+      { header: { number: 7, parentHash: block61.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+    const block81 = Block.fromBlockData(
+      { header: { number: 8, parentHash: block71.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+    const block91 = Block.fromBlockData(
+      { header: { number: 9, parentHash: block81.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+
+    // lets jump ahead and add the block 81 and 71 with annoucements and trigger tryTailBackfill
+    await skeleton.forkchoiceUpdate(block91)
+    assert.equal(skeleton.status.progress.subchains.length, 2, '2 subchains')
+    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(9),
+      'new subchain should be created'
+    )
+    await skeleton.setHead(block81, false)
+    await skeleton.setHead(block71, false)
+    await skeleton.tryTailBackfill()
+
+    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(7),
+      'tail should be backfilled'
+    )
+    assert.equal(skeleton.status.linked, true, 'should be linked')
+    // async wait needed here so the async fillCanonicalChain can fill the chain
+    await wait(50)
+    assert.equal(chain.blocks.height, BigInt(9), 'all blocks should be in chain')
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
