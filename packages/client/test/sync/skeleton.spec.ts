@@ -739,7 +739,7 @@ describe('[Skeleton] / setHead', async () => {
 
     // lets jump ahead and add the block 81 and 71 with annoucements and trigger tryTailBackfill
     await skeleton.forkchoiceUpdate(block91)
-    assert.equal(skeleton.status.progress.subchains.length, 2, '2 subchains')
+    assert.equal(skeleton.status.progress.subchains.length, 1, '1 subchain with older dropped')
     assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
     assert.equal(
       skeleton.status.progress.subchains[0]?.tail,
@@ -760,6 +760,46 @@ describe('[Skeleton] / setHead', async () => {
     // async wait needed here so the async fillCanonicalChain can fill the chain
     await wait(50)
     assert.equal(chain.blocks.height, BigInt(9), 'all blocks should be in chain')
+    assert.equal(
+      equalsBytes(chain.blocks.latest!.hash(), block91.hash()),
+      true,
+      'correct head hash'
+    )
+
+    // do a very common reorg that happens in a network: reorged head block
+    const block92 = Block.fromBlockData(
+      { header: { number: 9, parentHash: block81.hash(), difficulty: 101 } },
+      { common, setHardfork: true }
+    )
+    const block102 = Block.fromBlockData(
+      { header: { number: 10, parentHash: block92.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+
+    await skeleton.forkchoiceUpdate(block92)
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.head,
+      BigInt(9),
+      'head number should be same'
+    )
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(9),
+      'tail should be truncated to head'
+    )
+    assert.equal(
+      equalsBytes(chain.blocks.latest!.hash(), block92.hash()),
+      true,
+      'correct reorged head hash'
+    )
+
+    // should be able to build on top of the next block
+    await skeleton.forkchoiceUpdate(block102)
+    assert.equal(
+      equalsBytes(chain.blocks.latest!.hash(), block102.hash()),
+      true,
+      'continue reorged chain'
+    )
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {

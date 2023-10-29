@@ -318,7 +318,7 @@ export class Skeleton extends MetaDBManager {
         // which we will let it get addressed post this if else block
         if (force) {
           this.config.logger.debug(
-            `Skeleton differing announcement tail=${lastchain.tail} head=${
+            `Skeleton head reorg tail=${lastchain.tail} head=${
               lastchain.head
             } number=${number} expected=${short(
               mayBeDupBlock?.hash() ?? zeroBlockHash
@@ -326,7 +326,7 @@ export class Skeleton extends MetaDBManager {
           )
         } else {
           this.config.logger.debug(
-            `Skeleton stale announcement tail=${lastchain.tail} head=${lastchain.head} number=${number}`
+            `Skeleton differing announcement tail=${lastchain.tail} head=${lastchain.head} number=${number}`
           )
         }
         return true
@@ -451,15 +451,25 @@ export class Skeleton extends MetaDBManager {
             this.status.canonicalHeadReset === false &&
             this.chain.blocks.height >= subchain.tail
           ) {
-            const trucateTailTo = await this.getBlock(this.chain.blocks.height + BIGINT_1, true)
+            const trucateTailToNumber = this.chain.blocks.height + BIGINT_1
+            const trucateTailTo =
+              trucateTailToNumber <= subchain.head
+                ? await this.getBlock(trucateTailToNumber, true)
+                : undefined
             if (trucateTailTo !== undefined) {
               subchain.tail = trucateTailTo.header.number
               subchain.next = trucateTailTo.header.parentHash
               this.config.logger.info(
                 `Truncated subchain0 with head=${subchain.head} to a new tail=${
                   subchain.tail
-                } next=${short(subchain.next)}`
+                } next=${short(subchain.next)} before overlaying a new subchain`
               )
+            } else {
+              // clear out this subchain
+              this.config.logger.info(
+                `Dropping subchain0 with head=${subchain.head} before overlaying a new subchain as trucateTailToNumber=${trucateTailToNumber} block not available `
+              )
+              this.status.progress.subchains.splice(0, 1)
             }
           }
 
@@ -483,8 +493,48 @@ export class Skeleton extends MetaDBManager {
           // Reset the filling of canonical head from tail only on tail reorg and exit any ongoing fill
           this.status.canonicalHeadReset = s.tail > BIGINT_0
         } else {
-          // Only the head differed, tail is preserved
+          // we are here because valid canonical parent is either in skeleton or chain and new head
+          // > tail and hence doesn't reorg the current tail
           subchain.head = head.header.number
+          // if this was a linked chain with no reset marked and chain height >= tail we need to
+          // truncate the tail
+          if (
+            this.status.linked &&
+            !this.status.canonicalHeadReset &&
+            this.chain.blocks.height >= subchain.tail
+          ) {
+            let trucateTailTo
+            const trucateTailToNumber = this.chain.blocks.height + BIGINT_1
+            if (trucateTailToNumber < head.header.number) {
+              trucateTailTo = await this.getBlock(trucateTailToNumber, true)
+            }
+
+            if (trucateTailTo === undefined) {
+              subchain.tail = head.header.number
+              subchain.next = head.header.parentHash
+              // reset canonical head, don't change linked status because parent was
+              // found in canonical chain
+              this.status.canonicalHeadReset = true
+              this.config.logger.info(
+                `Truncated subchain tail for chain reorg to the subchain head=${
+                  subchain.tail
+                } next=${short(subchain.next)} linked=${this.status.linked} canonicalHeadReset=${
+                  this.status.canonicalHeadReset
+                }`
+              )
+            } else {
+              subchain.tail = trucateTailTo.header.number
+              subchain.next = trucateTailTo.header.parentHash
+              // just reset tail and no need to modify linked status
+              this.config.logger.info(
+                `Truncated subchain with head=${subchain.head} to a new tail=${
+                  subchain.tail
+                } next=${short(subchain.next)} linked=${this.status.linked} canonicalHeadReset=${
+                  this.status.canonicalHeadReset
+                }`
+              )
+            }
+          }
         }
       }
 
