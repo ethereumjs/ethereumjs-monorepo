@@ -64,12 +64,11 @@ export function createRPCServer(
   opts: CreateRPCServerOpts
 ): CreateRPCServerReturn {
   const { methodConfig, rpcDebug, logger } = opts
-
   const onRequest = (request: any) => {
     let msg = ''
     if (rpcDebug && rpcDebug !== '') {
       let show = false
-      if (rpcDebug === 'all') {
+      if (rpcDebug === '' || rpcDebug === 'all') {
         show = true
       } else {
         const filters = rpcDebug.split(',')
@@ -93,7 +92,8 @@ export function createRPCServer(
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
     let msg = ''
     if (
-      rpcDebug === 'true' ||
+      rpcDebug === '' ||
+      rpcDebug === 'all' ||
       (rpcDebug === 'engine' && request.method.includes('engine_') === true) ||
       (rpcDebug === 'eth' && request.method.includes('eth_') === true)
     ) {
@@ -126,11 +126,14 @@ export function createRPCServer(
   }
 
   let methods
-  const ethMethods = manager.getMethods(false, rpcDebug !== 'false')
+  const ethMethods = manager.getMethods(false, rpcDebug !== 'false' && rpcDebug !== undefined)
 
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...ethMethods, ...manager.getMethods(true, rpcDebug !== 'false') }
+      methods = {
+        ...ethMethods,
+        ...manager.getMethods(true, rpcDebug !== 'false' && rpcDebug !== undefined),
+      }
       break
     case MethodConfig.WithoutEngine:
       methods = { ...ethMethods }
