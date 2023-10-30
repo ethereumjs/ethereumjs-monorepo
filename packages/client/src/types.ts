@@ -155,6 +155,7 @@ export interface ClientOpts {
   disableBeaconSync?: boolean
   forceSnapSync?: boolean
   prefixStorageTrieKeys?: boolean
+  useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
