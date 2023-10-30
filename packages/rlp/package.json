@@ -50,7 +50,7 @@
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "npm run test:node",
     "test:browser": "npx vitest run --browser.name=chrome --browser.headless -c=vitest.config.browser.ts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
