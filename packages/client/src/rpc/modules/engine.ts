@@ -23,6 +23,7 @@ import {
   UNSUPPORTED_FORK,
   validEngineCodes,
 } from '../error-code'
+import { callWithStackTrace } from '../helpers'
 import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
 import { middleware, validators } from '../validation'
 
@@ -463,6 +464,8 @@ export class Engine {
   private chain: Chain
   private config: Config
   private vm: VM
+  private _rpcDebug: boolean
+
   private pendingBlock: PendingBlock
 
   private connectionManager: CLConnectionManager
@@ -482,11 +485,12 @@ export class Engine {
    * Create engine_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
     this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
+    this._rpcDebug = rpcDebug
 
     if (this.service.execution === undefined) {
       throw Error('execution required for engine module')
@@ -532,14 +536,14 @@ export class Engine {
     }
 
     this.newPayloadV1 = cmMiddleware(
-      middleware(this.newPayloadV1.bind(this), 1, [
+      middleware(callWithStackTrace(this.newPayloadV1.bind(this), this._rpcDebug), 1, [
         [validators.object(executionPayloadV1FieldValidators)],
       ]),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
     this.newPayloadV2 = cmMiddleware(
-      middleware(this.newPayloadV2.bind(this), 1, [
+      middleware(callWithStackTrace(this.newPayloadV2.bind(this), this._rpcDebug), 1, [
         [
           validators.either(
             validators.object(executionPayloadV1FieldValidators),
@@ -552,7 +556,7 @@ export class Engine {
 
     this.newPayloadV3 = cmMiddleware(
       middleware(
-        this.newPayloadV3.bind(this),
+        callWithStackTrace(this.newPayloadV3.bind(this), this._rpcDebug),
         3,
         [
           [validators.object(executionPayloadV3FieldValidators)],
@@ -580,21 +584,21 @@ export class Engine {
     }
 
     this.forkchoiceUpdatedV1 = cmMiddleware(
-      middleware(this.forkchoiceUpdatedV1.bind(this), 1, [
+      middleware(callWithStackTrace(this.forkchoiceUpdatedV1.bind(this), this._rpcDebug), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV1))],
       ]),
       forkchoiceUpdatedResponseCMHandler
     )
     this.forkchoiceUpdatedV2 = cmMiddleware(
-      middleware(this.forkchoiceUpdatedV2.bind(this), 1, [
+      middleware(callWithStackTrace(this.forkchoiceUpdatedV2.bind(this), this._rpcDebug), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV2))],
       ]),
       forkchoiceUpdatedResponseCMHandler
     )
     this.forkchoiceUpdatedV3 = cmMiddleware(
-      middleware(this.forkchoiceUpdatedV3.bind(this), 1, [
+      middleware(callWithStackTrace(this.forkchoiceUpdatedV3.bind(this), this._rpcDebug), 1, [
         [validators.object(forkchoiceFieldValidators)],
         [validators.optional(validators.object(payloadAttributesFieldValidatorsV3))],
       ]),
@@ -602,47 +606,57 @@ export class Engine {
     )
 
     this.getPayloadV1 = cmMiddleware(
-      middleware(this.getPayloadV1.bind(this), 1, [[validators.bytes8]]),
-      () => this.connectionManager.updateStatus()
-    )
-
-    this.getPayloadV2 = cmMiddleware(
-      middleware(this.getPayloadV2.bind(this), 1, [[validators.bytes8]]),
-      () => this.connectionManager.updateStatus()
-    )
-
-    this.getPayloadV3 = cmMiddleware(
-      middleware(this.getPayloadV3.bind(this), 1, [[validators.bytes8]]),
-      () => this.connectionManager.updateStatus()
-    )
-
-    this.exchangeTransitionConfigurationV1 = cmMiddleware(
-      middleware(this.exchangeTransitionConfigurationV1.bind(this), 1, [
-        [
-          validators.object({
-            terminalTotalDifficulty: validators.uint256,
-            terminalBlockHash: validators.bytes32,
-            terminalBlockNumber: validators.uint64,
-          }),
-        ],
+      middleware(callWithStackTrace(this.getPayloadV1.bind(this), this._rpcDebug), 1, [
+        [validators.bytes8],
       ]),
       () => this.connectionManager.updateStatus()
     )
 
+    this.getPayloadV2 = cmMiddleware(
+      middleware(callWithStackTrace(this.getPayloadV2.bind(this), this._rpcDebug), 1, [
+        [validators.bytes8],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.getPayloadV3 = cmMiddleware(
+      middleware(callWithStackTrace(this.getPayloadV3.bind(this), this._rpcDebug), 1, [
+        [validators.bytes8],
+      ]),
+      () => this.connectionManager.updateStatus()
+    )
+
+    this.exchangeTransitionConfigurationV1 = cmMiddleware(
+      middleware(
+        callWithStackTrace(this.exchangeTransitionConfigurationV1.bind(this), this._rpcDebug),
+        1,
+        [
+          [
+            validators.object({
+              terminalTotalDifficulty: validators.uint256,
+              terminalBlockHash: validators.bytes32,
+              terminalBlockNumber: validators.uint64,
+            }),
+          ],
+        ]
+      ),
+      () => this.connectionManager.updateStatus()
+    )
+
     this.exchangeCapabilities = cmMiddleware(
-      middleware(this.exchangeCapabilities.bind(this), 0, []),
+      middleware(callWithStackTrace(this.exchangeCapabilities.bind(this), this._rpcDebug), 0, []),
       () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadBodiesByHashV1 = cmMiddleware(
-      middleware(this.getPayloadBodiesByHashV1.bind(this), 1, [
+      middleware(callWithStackTrace(this.getPayloadBodiesByHashV1.bind(this), this._rpcDebug), 1, [
         [validators.array(validators.bytes32)],
       ]),
       () => this.connectionManager.updateStatus()
     )
 
     this.getPayloadBodiesByRangeV1 = cmMiddleware(
-      middleware(this.getPayloadBodiesByRangeV1.bind(this), 2, [
+      middleware(callWithStackTrace(this.getPayloadBodiesByRangeV1.bind(this), this._rpcDebug), 2, [
         [validators.bytes8],
         [validators.bytes8],
       ]),
