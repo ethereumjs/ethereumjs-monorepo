@@ -13,7 +13,6 @@ import type { RLPxOptions } from '../src/index.js'
 
 const privateKey = randomBytes(32)
 describe('RLPx', () => {
-  // can create an instance of RLPx with a private key and options
   it('should create an instance of RLPx with the given private key and options', () => {
     const options: RLPxOptions = {
       timeout: 10000,
@@ -43,7 +42,6 @@ describe('RLPx', () => {
     expect(rlpx['_refillIntervalSelectionCounter']).toEqual(0)
   })
 
-  // can listen for incoming connections
   it('should start listening for incoming connections', () => {
     const options: RLPxOptions = {
       timeout: 10000,
@@ -64,8 +62,7 @@ describe('RLPx', () => {
     expect(mockServer.listen).toHaveBeenCalledWith(30303)
   })
 
-  // can connect to a peer
-  it("should connect to a peer and emit 'peer:added' event", async () => {
+  it('should connect to a peer', async () => {
     vi.mock('net', () => {
       const Socket = vi.fn().mockImplementation(() => {
         return {
@@ -131,7 +128,6 @@ describe('RLPx', () => {
     expect(mockOnConnect).toHaveBeenCalled()
   })
 
-  // throws an error if already connected to a peer
   it('should throw an error if already connected to a peer', async () => {
     const options: RLPxOptions = {
       timeout: 10000,
