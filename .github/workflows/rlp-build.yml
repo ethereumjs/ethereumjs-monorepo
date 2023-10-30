@@ -37,9 +37,4 @@ jobs:
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
-      
-      - run: npm run coverage
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: rlp
+
