@@ -151,4 +151,26 @@ describe('RLPx', () => {
       assert.equal(err.message, 'Already connected')
     }
   })
+
+  it('should return open slots and open queue slots', () => {
+    const options: RLPxOptions = {
+      timeout: 10000,
+      maxPeers: 10,
+      clientId: new Uint8Array([6, 7, 8, 9, 10]),
+      capabilities: [],
+      common: new Common({ chain: 1 }),
+    }
+    const rlpx = new RLPx(privateKey, options)
+
+    assert.equal(
+      rlpx['_getOpenSlots'](),
+      10,
+      'returns default number of open slots (i.e. `max_peers`) on startup'
+    )
+    assert.equal(
+      rlpx['_getOpenQueueSlots'](),
+      20,
+      'returns default number of open queue slots on startup'
+    )
+  })
 })
