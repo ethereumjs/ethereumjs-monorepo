@@ -40,3 +40,8 @@ jobs:
 
       - run: npm run lint
       - run: npm run test:node # Only run node tests for now until vitest browser test issues are sorted out
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: genesis

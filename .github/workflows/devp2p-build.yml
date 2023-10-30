@@ -41,6 +41,6 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
-          flags: block
+          flags: devp2p
 
       - run: npm run lint
