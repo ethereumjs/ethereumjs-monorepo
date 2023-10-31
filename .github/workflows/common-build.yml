@@ -1,7 +1,7 @@
 name: Common
 on:
   push:
-    branches: [rlp-codecov]
+    branches: [master]
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
       - run: npm run lint
       - run: npm run coverage
 
-      - uses: vebr/jest-lcov-reporter@v0.2.0
+      - uses: Nef10/lcov-reporter-action@v0.4.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ${{github.workspace}}/packages/common/coverage/lcov.info
+          lcov-file: ${{github.workspace}}/packages/rlp/coverage/lcov.info
+          pr-number: 3130
