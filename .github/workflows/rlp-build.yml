@@ -39,8 +39,7 @@ jobs:
       - run: npm run lint
       - run: npm run coverage
       - uses: Nef10/lcov-reporter-action@v0.4.0
-        working-directory: ${{github.workspace}}/packages/common
         with:
-          lcov-file: ./coverage/lcov.info
+          lcov-file: ${{ github.workspace }}/packages/rlp/coverage/lcov.info
           pr-number: 3130
           github-token: {{ secrets.GITHUB_TOKEN }}
