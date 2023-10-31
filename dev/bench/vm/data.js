@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1698747002094,
+  "lastUpdate": 1698777708992,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a41a6725cc854a6b72e6ab6320e10dd8a9ebc380",
-          "message": "client: Add eth_coinbase RPC implementation (#3079)\n\n* Add coinbase rpc endpoint\r\n\r\n* Add test for coinbase rpc endpoint\r\n\r\n* Add cli test for minerCoinbase option\r\n\r\n* Uncomment commented out tests\r\n\r\n* Update test\r\n\r\n* Update test\r\n\r\n* Fix test\r\n\r\n* Update packages/client/src/rpc/modules/eth.ts\r\n\r\n* fixes\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-10-04T11:37:24-04:00",
-          "tree_id": "d49d793ce1e14eae0671106dbef143ac272697b3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a41a6725cc854a6b72e6ab6320e10dd8a9ebc380"
-        },
-        "date": 1696434114414,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19355,
-            "range": "±4.79%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19595,
-            "range": "±3.54%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19488,
-            "range": "±3.44%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19649,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19320,
-            "range": "±3.41%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.71%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6795fa6bf937429119c2dbdd8c073129aef27c09",
+          "message": "Add rpcDebug stack collection to all rpc modules (#3127)\n\n* Add rpcDebug stack trace collection to admin rpc module\r\n\r\n* Add rpcDebug stack trace collection to engine rpc module\r\n\r\n* Add rpcDebug stack trace collection to net rpc module\r\n\r\n* Add rpcDebug stack trace collection to net txpool module",
+          "timestamp": "2023-10-31T14:37:06-04:00",
+          "tree_id": "706e3329858763adc039ab18e836cbbb1b31042d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6795fa6bf937429119c2dbdd8c073129aef27c09"
+        },
+        "date": 1698777707702,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 18955,
+            "range": "±3.25%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 17679,
+            "range": "±5.26%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 18170,
+            "range": "±3.12%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 18284,
+            "range": "±3.10%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 17616,
+            "range": "±3.10%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
