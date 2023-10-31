@@ -17,6 +17,7 @@ import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
+import { LMDB } from './lmdb'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -54,7 +55,7 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       const trie = new Trie({
-        db: new LevelDB(this.stateDB),
+        db: new LMDB(this.stateDB),
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
         valueEncoding: options.config.useStringValueTrieDB
@@ -147,19 +148,15 @@ export class VMExecution extends Execution {
       this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
       this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-      console.log('1')
       if (number === BIGINT_0) {
         const genesisState =
           this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
         if (!genesisState) {
           throw new Error('genesisState not available')
         }
-        console.log('1.5')
         await this.vm.stateManager.generateCanonicalGenesis(genesisState)
       }
-      console.log('2')
       await super.open()
-      console.log('3')
       // TODO: Should a run be started to execute any left over blocks?
       // void this.run()
     })

@@ -39,7 +39,7 @@ const getEncodings = (opts: EncodingOpts = {}) => {
  * LevelDB is a thin wrapper around the underlying levelup db,
  * corresponding to the {@link DB}
  */
-export class LevelDB<
+export class LMDB<
   TKey extends Uint8Array | string = Uint8Array | string,
   TValue extends Uint8Array | string | DBObject = Uint8Array | string | DBObject
 > implements DB<TKey, TValue>
@@ -62,10 +62,31 @@ export class LevelDB<
    */
   async get(key: TKey, opts?: EncodingOpts): Promise<TValue | undefined> {
     let value
-    const encodings = getEncodings(opts)
-
+    getEncodings(opts)
     try {
-      value = await this._leveldb.get(key, encodings)
+      value = await this._leveldb.get(key)
+      if (value === null) return undefined
+    } catch (error: any) {
+      // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
+        throw error
+      }
+    }
+    // eslint-disable-next-line
+    if (value instanceof Buffer) value = Uint8Array.from(value)
+    return value as TValue
+  }
+
+  /**
+   * @inheritDoc
+   */
+  syncGet(key: TKey, opts?: EncodingOpts): TValue | undefined {
+    let value
+    getEncodings(opts)
+    try {
+      value = this._leveldb.get(key)
       if (value === null) return undefined
     } catch (error: any) {
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
@@ -113,7 +134,7 @@ export class LevelDB<
    * @inheritDoc
    */
   shallowCopy(): DB<TKey, TValue> {
-    return new LevelDB<TKey, TValue>(this._leveldb)
+    return new LMDB<TKey, TValue>(this._leveldb)
   }
 
   open() {

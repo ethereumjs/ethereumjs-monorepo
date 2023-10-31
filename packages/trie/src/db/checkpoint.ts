@@ -154,10 +154,20 @@ export class CheckpointDB implements DB {
       }
     }
     // Nothing has been found in diff cache, look up from disk
-    const value = await this.db.get(keyHex, {
-      keyEncoding: KeyEncoding.String,
-      valueEncoding: this.valueEncoding,
-    })
+
+    let value: string | Uint8Array | undefined
+    if ('syncGet' in this.db) {
+      value = this.db.syncGet!(keyHex, {
+        keyEncoding: KeyEncoding.String,
+        valueEncoding: this.valueEncoding,
+      })
+    } else {
+      value = await this.db.get(keyHex, {
+        keyEncoding: KeyEncoding.String,
+        valueEncoding: this.valueEncoding,
+      })
+    }
+
     this._stats.db.reads += 1
     if (value !== undefined) {
       this._stats.db.hits += 1

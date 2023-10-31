@@ -636,7 +636,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    console.log('1')
     if (!this._codeCacheSettings.deactivate) {
       const items = this._codeCache!.flush()
       for (const item of items) {
@@ -659,7 +658,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         await this.modifyAccountFields(addr, { codeHash })
       }
     }
-    console.log('2')
     if (!this._storageCacheSettings.deactivate) {
       const items = this._storageCache!.flush()
       for (const item of items) {
@@ -675,7 +673,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         }
       }
     }
-    console.log('3')
     if (!this._accountCacheSettings.deactivate) {
       const items = this._accountCache!.flush()
       for (const item of items) {
@@ -684,17 +681,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         const elem = item[1]
         if (elem.accountRLP === undefined) {
           const trie = this._trie
-          console.log('3.5')
           await trie.del(addressBytes)
         } else {
           const trie = this._trie
-          console.log('3.6')
           await trie.put(addressBytes, elem.accountRLP)
-          console.log('3.7')
         }
       }
     }
-    console.log('4')
   }
 
   /**

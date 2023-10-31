@@ -49,6 +49,8 @@ export interface DB<
    */
   get(key: TKey, opts?: EncodingOpts): Promise<TValue | undefined>
 
+  syncGet?(key: TKey, opts?: EncodingOpts): TValue | undefined
+
   /**
    * Writes a value directly to db.
    * @param key The key as a `TValue`
