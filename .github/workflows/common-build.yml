@@ -53,7 +53,6 @@ jobs:
       - run: npm run coverage
 
       - uses: vebr/jest-lcov-reporter@v0.2.0
-        working-directory: ${{github.workspace}}/packages/common
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: /coverage/lcov.info
+          lcov-file: ${{github.workspace}}/packages/common/coverage/lcov.info
