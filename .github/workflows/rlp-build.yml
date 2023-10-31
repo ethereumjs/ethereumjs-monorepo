@@ -38,10 +38,7 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-      - uses: codecov/codecov-action@v3
+      - uses: romeovs/lcov-reporter-action@v0.2.16
         with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: rlp
-          verbose: true
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          lcov-file: ${{ env.cwd }}/coverage/lcov.info
+          github-token: ${{ secrets.CODECOV_TOKEN }}
