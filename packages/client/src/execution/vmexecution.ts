@@ -8,7 +8,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -57,6 +57,9 @@ export class VMExecution extends Execution {
         db: new LevelDB(this.stateDB),
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
+        valueEncoding: options.config.useStringValueTrieDB
+          ? ValueEncoding.String
+          : ValueEncoding.Bytes,
       })
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
@@ -230,41 +233,26 @@ export class VMExecution extends Execution {
   async setHead(
     blocks: Block[],
     { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {}
-  ): Promise<void> {
-    return this.runWithLock<void>(async () => {
+  ): Promise<boolean> {
+    if (!this.started || this.config.shutdown) return false
+
+    return this.runWithLock<boolean>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
-      const chainPointers: [string, Block][] = [
-        ['vmHeadBlock', vmHeadBlock],
-        // if safeBlock is not provided, the current safeBlock of chain should be used
-        // which is genesisBlock if it has never been set for e.g.
-        ['safeBlock', safeBlock ?? this.chain.blocks.safe ?? this.chain.genesis],
-        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized ?? this.chain.genesis],
-      ]
+      const chainPointers: [string, Block][] = [['vmHeadBlock', vmHeadBlock]]
 
-      let isSortedDesc = true
-      let lastBlock = vmHeadBlock
-      for (const [blockName, block] of chainPointers) {
-        if (block === null) {
-          continue
-        }
-        if (!(await this.vm.stateManager.hasStateRoot(block.header.stateRoot))) {
-          // If we set blockchain iterator to somewhere where we don't have stateroot
-          // execution run will always fail
-          throw Error(
-            `${blockName}'s stateRoot not found number=${block.header.number} root=${short(
-              block.header.stateRoot
-            )}`
-          )
-        }
-        isSortedDesc = isSortedDesc && lastBlock.header.number >= block.header.number
-        lastBlock = block
-      }
-
-      if (isSortedDesc === false) {
+      // instead of checking for the previous roots of safe,finalized, we will contend
+      // ourselves with just vmHead because in snap sync we might not have the safe
+      // finalized blocks executed
+      if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
+        // If we set blockchain iterator to somewhere where we don't have stateroot
+        // execution run will always fail
         throw Error(
-          `headBlock=${chainPointers[0][1].header.number} should be >= safeBlock=${chainPointers[1][1]?.header.number} should be >= finalizedBlock=${chainPointers[2][1]?.header.number}`
+          `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
+            vmHeadBlock.header.stateRoot
+          )}`
         )
       }
+
       // skip emitting the chain update event as we will manually do it
       await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
@@ -293,6 +281,7 @@ export class VMExecution extends Execution {
         await this.chain.blockchain.setIteratorHead('finalized', finalizedBlock.hash())
       }
       await this.chain.update(true)
+      return true
     })
   }
 
@@ -358,7 +347,7 @@ export class VMExecution extends Execution {
                 // determine starting state for block run
                 // if we are just starting or if a chain reorg has happened
                 if (headBlock === undefined || reorg) {
-                  const headBlock = await blockchain.getBlock(block.header.parentHash)
+                  headBlock = await blockchain.getBlock(block.header.parentHash)
                   parentState = headBlock.header.stateRoot
 
                   if (reorg) {
@@ -505,21 +494,34 @@ export class VMExecution extends Execution {
                   // to parent's parent and so on...
                   //
                   // There can also be a better way to backstep vm to but lets naively step back
-                  let backStepTo, backStepToHash
+                  let backStepTo,
+                    backStepToHash,
+                    backStepToRoot,
+                    hasParentStateRoot = false
                   if (headBlock !== undefined) {
+                    hasParentStateRoot = await this.vm.stateManager.hasStateRoot(
+                      headBlock.header.stateRoot
+                    )
                     backStepTo = headBlock.header.number ?? BIGINT_0 - BIGINT_1
                     backStepToHash = headBlock.header.parentHash
+                    backStepToRoot = headBlock.header.stateRoot
                   }
-                  this.config.logger.warn(
-                    `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
-                      backStepToHash ?? 'na'
-                    )}:\n${error}`
-                  )
 
-                  // backStepToHash should not be undefined but if its the above warn log will show us to debug
-                  // but still handle here so that we don't send the client into a tizzy
-                  if (backStepToHash !== undefined) {
+                  if (hasParentStateRoot === true && backStepToHash !== undefined) {
+                    this.config.logger.warn(
+                      `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
+                        backStepToHash ?? 'na'
+                      )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`
+                    )
                     await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
+                  } else {
+                    this.config.logger.error(
+                      `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
+                        backStepToHash ?? 'na'
+                      )} hasParentStateRoot=${hasParentStateRoot} backStepToRoot=${short(
+                        backStepToRoot ?? 'na'
+                      )}:\n${error}`
+                    )
                   }
                 } else {
                   this.config.logger.warn(`${errorMsg}:\n${error}`)

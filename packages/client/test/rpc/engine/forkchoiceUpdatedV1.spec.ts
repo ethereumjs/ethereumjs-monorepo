@@ -194,8 +194,13 @@ describe(method, () => {
     )
 
     await chain.putBlocks([newBlock])
+    const newBlockHashHex = bytesToHex(newBlock.hash())
     const req = params(method, [
-      { ...validForkChoiceState, headBlockHash: bytesToHex(newBlock.hash()) },
+      {
+        safeBlockHash: newBlockHashHex,
+        finalizedBlockHash: newBlockHashHex,
+        headBlockHash: newBlockHashHex,
+      },
       null,
     ])
     const expectRes = (res: any) => {
@@ -262,7 +267,7 @@ describe(method, () => {
         finalizedBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
       },
     ])
-    const expectRes = checkError(INVALID_PARAMS, 'finalized block not available')
+    const expectRes = checkError(INVALID_PARAMS, 'finalized block not available in canonical chain')
     await baseRequest(server, req, 200, expectRes)
   })
 
@@ -366,7 +371,7 @@ describe(method, () => {
 
     const expectRes = (res: any) => {
       assert.equal(res.body.error.code, -32602)
-      assert.ok(res.body.error.message.includes('safeBlock'))
+      assert.ok(res.body.error.message.includes('safe'))
       assert.ok(res.body.error.message.includes('canonical'))
     }
     await baseRequest(server, req, 200, expectRes)
@@ -409,7 +414,7 @@ describe(method, () => {
 
     const expectRes = (res: any) => {
       assert.equal(res.body.error.code, -32602)
-      assert.ok(res.body.error.message.includes('finalizedBlock'))
+      assert.ok(res.body.error.message.includes('finalized'))
       assert.ok(res.body.error.message.includes('canonical'))
     }
     await baseRequest(server, req, 200, expectRes)
