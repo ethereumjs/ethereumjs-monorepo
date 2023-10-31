@@ -509,8 +509,9 @@ export class Engine {
       this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
         forceShowInfo,
         lastStatus: this.lastAnnouncementStatus,
-        executing: this.execution.started && this.execution.running,
+        vmexecution: { started: this.execution.started, running: this.execution.running },
         fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
+        snapsync: this.service.snapsync?.fetcherDoneFlags,
         peers: (this.service.beaconSync as any)?.pool.size,
       })
     }
@@ -1067,7 +1068,7 @@ export class Engine {
     // It is possible that newPayload didn't start beacon sync as the payload it was asked to
     // evaluate didn't require syncing beacon. This can happen if the EL<>CL starts and CL
     // starts from a bit behind like how lodestar does
-    if (!this.service.beaconSync && !this.config.disableBeaconSync) {
+    if (!this.service.beaconSync) {
       await this.service.switchToBeaconSync()
     }
 
@@ -1081,9 +1082,6 @@ export class Engine {
       return response
     }
 
-    /*
-     * Process head block
-     */
     let headBlock: Block | undefined
     try {
       const head = toBytes(headBlockHash)
@@ -1121,9 +1119,12 @@ export class Engine {
     )
 
     // call skeleton sethead with force head change and reset beacon sync if reorg
-    const reorged = await this.skeleton.setHead(headBlock, true)
+    const { reorged, safeBlock, finalizedBlock } = await this.skeleton.forkchoiceUpdate(headBlock, {
+      safeBlockHash: safe,
+      finalizedBlockHash: finalized,
+    })
+
     if (reorged) await this.service.beaconSync?.reorged(headBlock)
-    await this.skeleton.blockingFillWithCutoff(this.chain.config.engineNewpayloadMaxExecute)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
@@ -1147,6 +1148,9 @@ export class Engine {
       (this.executedBlocks.get(headBlockHash.slice(2)) ??
         (await validExecutedChainBlock(headBlock, this.chain))) !== null
     if (!isHeadExecuted) {
+      // Trigger the statebuild here since we have finalized and safeblock available
+      void this.service.buildHeadState()
+
       // execution has not yet caught up, so lets just return sync
       const payloadStatus = {
         status: Status.SYNCING,
@@ -1157,51 +1161,7 @@ export class Engine {
       return response
     }
 
-    /*
-     * Process safe and finalized block since headBlock has been found to be executed
-     * Allowed to have zero value while transition block is finalizing
-     */
-    let safeBlock, finalizedBlock
-
-    if (!equalsBytes(safe, zeroBlockHash)) {
-      if (equalsBytes(safe, headBlock.hash())) {
-        safeBlock = headBlock
-      } else {
-        try {
-          // Right now only check if the block is available, canonicality check is done
-          // in setHead after chain.putBlocks so as to reflect latest canonical chain
-          safeBlock =
-            (await this.skeleton.getBlockByHash(safe, true)) ?? (await this.chain.getBlock(safe))
-        } catch (_error: any) {
-          throw {
-            code: INVALID_PARAMS,
-            message: 'safe block not available',
-          }
-        }
-      }
-    } else {
-      safeBlock = undefined
-    }
-
-    if (!equalsBytes(finalized, zeroBlockHash)) {
-      try {
-        // Right now only check if the block is available, canonicality check is done
-        // in setHead after chain.putBlocks so as to reflect latest canonical chain
-        finalizedBlock =
-          (await this.skeleton.getBlockByHash(finalized, true)) ??
-          (await this.chain.getBlock(finalized))
-      } catch (error: any) {
-        throw {
-          message: 'finalized block not available',
-          code: INVALID_PARAMS,
-        }
-      }
-    } else {
-      finalizedBlock = undefined
-    }
-
     const vmHeadHash = (await this.chain.blockchain.getIteratorHead()).hash()
-
     if (!equalsBytes(vmHeadHash, headBlock.hash())) {
       let parentBlocks: Block[] = []
       if (this.chain.headers.latest && this.chain.headers.latest.number < headBlock.header.number) {
@@ -1224,7 +1184,17 @@ export class Engine {
 
       const blocks = [...parentBlocks, headBlock]
       try {
-        await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
+        const completed = await this.execution.setHead(blocks, { safeBlock, finalizedBlock })
+        if (!completed) {
+          const latestValidHash = await validHash(headBlock.hash(), this.chain, this.chainCache)
+          const payloadStatus = {
+            status: Status.SYNCING,
+            latestValidHash,
+            validationError: null,
+          }
+          const response = { payloadStatus, payloadId: null }
+          return response
+        }
       } catch (error) {
         throw {
           message: (error as Error).message,
@@ -1251,12 +1221,6 @@ export class Engine {
       }
     }
 
-    if (
-      this.config.syncTargetHeight === undefined ||
-      this.config.syncTargetHeight < headBlock.header.number
-    ) {
-      this.config.syncTargetHeight = headBlock.header.number
-    }
     this.config.updateSynchronizedState(headBlock.header)
     if (this.chain.config.synchronized) {
       this.service.txPool.checkRunState()

@@ -6,6 +6,8 @@ import { assert, describe, it } from 'vitest'
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
 import { SnapProtocol } from '../../../src/net/protocol'
+import { ByteCodeFetcher } from '../../../src/sync/fetcher/bytecodefetcher'
+import { StorageFetcher } from '../../../src/sync/fetcher/storagefetcher'
 import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
@@ -21,9 +23,7 @@ describe('[AccountFetcher]', async () => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { AccountFetcher, snapFetchersCompleted } = await import(
-    '../../../src/sync/fetcher/accountfetcher'
-  )
+  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -285,21 +285,16 @@ describe('[AccountFetcher]', async () => {
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
-    const fetcherDoneFlags = fetcher.fetcherDoneFlags
 
     const snapCompleted = new Promise((resolve) => {
       config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: any) => resolve(stateRoot))
     })
     // test snapfetcher complete, since the storage fetcher is already empty it should anyway lead
     // call to snapFetchersCompleted with storageFetcher
-    snapFetchersCompleted(fetcherDoneFlags, TrieNodeFetcher)
-    snapFetchersCompleted(
-      fetcherDoneFlags,
-      AccountFetcher,
-      fetcher.accountTrie.root(),
-      fetcher.accountTrie,
-      config.events
-    )
+    fetcher.snapFetchersCompleted(TrieNodeFetcher)
+    fetcher.snapFetchersCompleted(StorageFetcher)
+    fetcher.snapFetchersCompleted(ByteCodeFetcher)
+    fetcher.snapFetchersCompleted(AccountFetcher)
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([snapCompleted, snapSyncTimeout])

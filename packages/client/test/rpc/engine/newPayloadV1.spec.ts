@@ -292,7 +292,7 @@ describe(method, () => {
 
     // newpayload shouldn't execute block but just return either SYNCING or ACCEPTED
     let expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'ACCEPTED')
+      assert.equal(res.body.result.status, 'SYNCING')
     }
     let req = params(method, [blockDataWithValidTransaction])
     await baseRequest(server, req, 200, expectRes, false, false)

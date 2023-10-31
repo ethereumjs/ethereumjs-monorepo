@@ -318,13 +318,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('disableBeaconSync', {
-    describe:
-      'Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain',
-    boolean: true,
-  })
-  .option('forceSnapSync', {
-    describe: 'Force a snap sync run (for testing and development purposes)',
+  .option('snap', {
+    describe: 'Enable snap state sync (for testing and development purposes)',
     boolean: true,
   })
   .option('prefixStorageTrieKeys', {
@@ -882,9 +877,8 @@ async function run() {
     port: args.port,
     saveReceipts: args.saveReceipts,
     syncmode: args.sync,
-    disableBeaconSync: args.disableBeaconSync,
-    forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
+    enableSnapSync: args.snap,
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,

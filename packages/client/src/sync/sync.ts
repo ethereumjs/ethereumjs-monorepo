@@ -150,7 +150,7 @@ export abstract class Synchronizer {
   async syncWithFetcher() {
     try {
       if (this._fetcher) {
-        await this._fetcher.fetch()
+        await this._fetcher.blockingFetch()
       }
       this.config.logger.debug(`Fetcher finished fetching...`)
       return this.resolveSync()
@@ -178,18 +178,13 @@ export abstract class Synchronizer {
     }
 
     if (!(await this.syncWithPeer(peer))) return false
-    const syncEvent: Promise<boolean> = new Promise((resolve) => {
-      // This event listener listens for other instances of the fetcher that might be syncing from a different peer
-      // and reach the head of the chain before the current fetcher.
-      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
-        this.resolveSync(height)
-        resolve(true)
-      })
-    })
 
-    // This "race" ensures that either the current fetcher (or any other fetcher that happens to be syncing)
-    // resolve this current call to `sync` so we don't have orphan processes running in the background
-    return Promise.race([this.syncWithFetcher(), syncEvent])
+    // syncWithFetcher should auto resolve when sync completes even if from any other independent
+    // fetcher. We shouldn't be auto resolving the fetchers on sync events because SYNC events are
+    // not precision based but we need precision to resolve the fetchers
+    //
+    // TODO: check this for the forward fetcher that it resolves on being close/on head or post merge
+    return this.syncWithFetcher()
   }
 
   /**
