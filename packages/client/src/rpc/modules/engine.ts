@@ -910,20 +910,42 @@ export class Engine {
         }
       }
     } catch (error) {
-      const errorMsg = `${error}`.toLowerCase()
-      if (errorMsg.includes('block') && errorMsg.includes('not found')) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: errorMsg,
-        }
-      }
-      const validationError = `Error verifying block while running: ${errorMsg}`
-      this.config.logger.error(validationError)
       const latestValidHash = await validHash(
         headBlock.header.parentHash,
         this.chain,
         this.chainCache
       )
+
+      const errorMsg = `${error}`.toLowerCase()
+      if (errorMsg.includes('block') && errorMsg.includes('not found')) {
+        if (blocks.length > 1) {
+          // this error can come if the block tries to load a previous block yet not in the chain
+          // error coding of the evm errors should be a better way to handle this
+          //
+          // at Blockchain.getBlock (/home/gajinder/ethereumjs-monorepo/packages/blockchain/src/blockchain.ts:763:15)
+          // at async i (/home/gajinder/ethereumjs-monorepo/packages/evm/src/opcodes/functions.ts:606:21)
+          // at async Interpreter.runStep (/home/gajinder/ethereumjs-monorepo/packages/evm/src/interpreter.ts:320:9)
+          // at async Interpreter.run (/home/gajinder/ethereumjs-monorepo/packages/evm/src/interpreter.ts:257:9)
+          // at async EVM.runInterpreter (/home/gajinder/ethereumjs-monorepo/packages/evm/src/evm.ts:594:28)
+          // at async EVM._executeCall (/home/gajinder/ethereumjs-monorepo/packages/evm/src/evm.ts:301:16)
+          // at async EVM.runCall (/home/gajinder/ethereumjs-monorepo/packages/evm/src/evm.ts:718:16)
+          // at async Interpreter._baseCall (/home/gajinder/ethereumjs-monorepo/packages/evm/src/interpreter.ts:930:21)
+          // at async i (/home/gajinder/ethereumjs-monorepo/packages/evm/src/opcodes/functions.ts:1086:19)
+          // at async Interpreter.runStep (/home/gajinder/ethereumjs-monorepo/packages/evm/src/interpreter.ts:320:9)
+
+          const response = { status: Status.SYNCING, latestValidHash, validationError: null }
+          return response
+        } else {
+          throw {
+            code: INTERNAL_ERROR,
+            message: errorMsg,
+          }
+        }
+      }
+
+      const validationError = `Error verifying block while running: ${errorMsg}`
+      this.config.logger.error(validationError)
+
       const response = { status: Status.INVALID, latestValidHash, validationError }
       this.invalidBlocks.set(blockHash.slice(2), error as Error)
       this.remoteBlocks.delete(blockHash.slice(2))
