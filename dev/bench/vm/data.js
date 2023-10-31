@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1698688135502,
+  "lastUpdate": 1698747002094,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "05b48dcc13ab80070e79fa47b62ead01dab3f778",
-          "message": "client: fix canonical reset of the chain by the skeleton (#3078)\n\n* client: fix canonical reset of the chain by the skeleton\r\n\r\ncleanup and better logging for newpayload execution skip\r\n\r\nfix caching scenario\r\n\r\nfix the beacon syncronizer and skeleton opening\r\n\r\n* add more info to log\r\n\r\n* nits\r\n\r\n* Add test for skeleton/chain startup\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-10-03T11:08:05-04:00",
-          "tree_id": "d3b7444c0b5ba2f44f023119e000ee49551d3166",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/05b48dcc13ab80070e79fa47b62ead01dab3f778"
-        },
-        "date": 1696345904242,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28873,
-            "range": "±5.68%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28944,
-            "range": "±3.04%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28226,
-            "range": "±3.11%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28002,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22960,
-            "range": "±11.89%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.76%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9f91d225c9cce0fabc19086668591a70cadeadb4",
+          "message": "client: integrate snapsync on experimental basis (#3031)\n\n* client: integrate snapsync on experimental basis\r\n\r\nuse statemanager in snap fetchers and fix the snapsync startup and snapsync test\r\n\r\nfunctional snapsync integration with static peer state with hacks\r\n\r\nrebase fixes\r\n\r\nget static snapsync working again\r\n\r\ntypefix\r\n\r\nfix spec\r\n\r\ntrack safe and finalized in finalized\r\n\r\nintegrate building stat e with skeleton\r\n\r\nintegrate account fetcher with the skeleton\r\n\r\n* move naive snapprogess tracker to synchronizer\r\n\r\n* code cleanup and refactor\r\n\r\n* update the fetching strategy and small progress flags refac\r\n\r\n* add missing commit\r\n\r\n* track cl syncsyncronization for snapsync start\r\n\r\n* handle the sync failure and non completion scenarios\r\n\r\n* add rudimentary snap progress to el status logs\r\n\r\n* debug and fix the snapfetcher premature exits and add accountranges %age logging\r\n\r\n* fix vmstep back\r\n\r\n* track and log storage and byetcode progress\r\n\r\n* pretty print stateroot\r\n\r\n* Terminate storagefetcher after all storage and fragmented requests have been processed\r\n\r\n* further fixes and improvements\r\n\r\n* add early detection for snapsync state mismatch\r\n\r\n* storage and codefetcher fixes\r\n\r\n* lint\r\n\r\n* fix statemanager test\r\n\r\n* refactor finalized and safe block checks for availability and canonicality\r\n\r\n* fix skeleton spec\r\n\r\n* fix snap fetcher spec tests\r\n\r\n* simplify fetcher's fetchPromise assignment\r\n\r\n* fix cli spec\r\n\r\n* fix fullsync spec\r\n\r\n* improve the snapsync fetch flow\r\n\r\n* small fix\r\n\r\n* fix refac slip\r\n\r\n* further code improvs\r\n\r\n* fix valid log info\r\n\r\n* cleanup\r\n\r\n* increase coevragee\r\n\r\n* sim cleanup\r\n\r\n* add spec for formatBigDecimal\r\n\r\n* keep unfinalized non canonical blocks around to handle some reorgs without backfill\r\n\r\n* store annoucements in unfinalized\r\n\r\n* improvements for the backfill from skeleton unfinalized blocks\r\n\r\n* handle simple head reorg\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-10-31T11:05:12+01:00",
+          "tree_id": "7d19da58047bb47c2b13ab5e6fb7697a6088b215",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9f91d225c9cce0fabc19086668591a70cadeadb4"
+        },
+        "date": 1698747001137,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 19242,
+            "range": "±3.29%",
+            "unit": "ops/sec",
+            "extra": "72 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 18052,
+            "range": "±7.17%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 17995,
+            "range": "±3.30%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 17901,
+            "range": "±3.40%",
+            "unit": "ops/sec",
+            "extra": "71 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 18203,
+            "range": "±3.71%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
           }
         ]
       }
