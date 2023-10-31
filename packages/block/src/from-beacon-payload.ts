@@ -48,7 +48,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     gasLimit: bigIntToHex(BigInt(payload.gas_limit)),
     gasUsed: bigIntToHex(BigInt(payload.gas_used)),
     timestamp: bigIntToHex(BigInt(payload.timestamp)),
-    extraData: bigIntToHex(BigInt(payload.extra_data)),
+    extraData: payload.extra_data,
     baseFeePerGas: bigIntToHex(BigInt(payload.base_fee_per_gas)),
     blockHash: payload.block_hash,
     transactions: payload.transactions,
