@@ -483,6 +483,7 @@ export class Blockchain implements BlockchainInterface {
         let td = header.difficulty
         const currentTd = { header: BIGINT_0, block: BIGINT_0 }
         let dbOps: DBOp[] = []
+        let headHeaderNumber = BIGINT_0
 
         if (block.common.chainId() !== this.common.chainId()) {
           throw new Error('Chain mismatch while trying to put block or header')
@@ -500,10 +501,12 @@ export class Blockchain implements BlockchainInterface {
         // set total difficulty in the current context scope
         if (this._headHeaderHash) {
           currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
+          headHeaderNumber = await this.dbManager.hashToNumber(this._headHeaderHash) ?? BIGINT_0
         }
         if (this._headBlockHash) {
           currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
         }
+
 
         // calculate the total difficulty of the new block
         const parentTd = await this.getParentTD(header)
@@ -523,12 +526,13 @@ export class Blockchain implements BlockchainInterface {
         if (
           block.isGenesis() ||
           td > currentTd.header ||
-          block.common.consensusType() === ConsensusType.ProofOfStake
+          (block.common.consensusType() === ConsensusType.ProofOfStake && header.number > headHeaderNumber)
         ) {
           const foundCommon = await this.findCommonAncestor(header)
           commonAncestor = foundCommon.commonAncestor
           ancestorHeaders = foundCommon.ancestorHeaders
 
+          headHeaderNumber = block.header.number
           this._headHeaderHash = blockHash
           if (item instanceof Block) {
             this._headBlockHash = blockHash
