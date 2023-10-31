@@ -169,6 +169,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
         switchToBeaconSync: () => {
           return undefined
         },
+        buildHeadState: () => {},
       },
     ],
     servers,

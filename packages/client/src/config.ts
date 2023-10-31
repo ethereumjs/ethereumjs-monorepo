@@ -43,22 +43,11 @@ export interface ConfigOptions {
   syncmode?: SyncMode
 
   /**
-   * Whether to disable beacon (optimistic) sync if CL provides
-   * blocks at the head of chain.
+   * Whether to enable and run snapSync, currently experimental
    *
    * Default: false
    */
-  disableBeaconSync?: boolean
-
-  /**
-   * Whether to test and run snapSync. When fully ready, this needs to
-   * be replaced by a more sophisticated condition based on how far back we are
-   * from the head, and how to run it in conjunction with the beacon sync
-   * blocks at the head of chain.
-   *
-   * Default: false
-   */
-  forceSnapSync?: boolean
+  enableSnapSync?: boolean
 
   /**
    * A temporary option to offer backward compatibility with already-synced databases that are
@@ -335,6 +324,8 @@ export interface ConfigOptions {
    */
   maxInvalidBlocksErrorCache?: number
   pruneEngineCache?: boolean
+  snapAvailabilityDepth?: bigint
+  snapTransitionSafeDepth?: bigint
 }
 
 export class Config {
@@ -368,7 +359,7 @@ export class Config {
 
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
 
@@ -381,6 +372,10 @@ export class Config {
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
   // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
   public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
+  // distance from head at which we can safely transition from a synced snapstate to vmexecution
+  // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
+  public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -427,15 +422,16 @@ export class Config {
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
   public readonly engineNewpayloadMaxTxsExecute: number
+  public readonly snapAvailabilityDepth: bigint
+  public readonly snapTransitionSafeDepth: bigint
 
-  public readonly disableBeaconSync: boolean
-  public readonly forceSnapSync: boolean
-  // Just a development only flag, will/should be removed
-  public readonly disableSnapSync: boolean = false
   public readonly prefixStorageTrieKeys: boolean
+  // Defaulting to false as experimental as of now
+  public readonly enableSnapSync: boolean
   public readonly useStringValueTrieDB: boolean
 
   public synchronized: boolean
+  public lastsyncronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -464,7 +460,7 @@ export class Config {
     this.txLookupLimit = options.txLookupLimit ?? 2350000
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.maxFetcherJobs = options.maxFetcherJobs ?? Config.MAXFETCHERJOBS_DEFAULT
-    this.maxFetcherRequests = options.maxPerRequest ?? Config.MAXFETCHERREQUESTS_DEFAULT
+    this.maxFetcherRequests = options.maxFetcherRequests ?? Config.MAXFETCHERREQUESTS_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
@@ -510,10 +506,12 @@ export class Config {
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
       options.engineNewpayloadMaxTxsExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE
+    this.snapAvailabilityDepth = options.snapAvailabilityDepth ?? Config.SNAP_AVAILABILITY_DEPTH
+    this.snapTransitionSafeDepth =
+      options.snapTransitionSafeDepth ?? Config.SNAP_TRANSITION_SAFE_DEPTH
 
-    this.disableBeaconSync = options.disableBeaconSync ?? false
-    this.forceSnapSync = options.forceSnapSync ?? false
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
+    this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
@@ -597,13 +595,16 @@ export class Config {
       }
     }
 
-    this.logger.debug(
-      `Client synchronized=${this.synchronized}${
-        latest !== null && latest !== undefined ? ' height=' + latest.number : ''
-      } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
-        (Date.now() - this.lastSyncDate) / 1000
-      } secs ago`
-    )
+    if (this.synchronized !== this.lastsyncronized) {
+      this.logger.debug(
+        `Client synchronized=${this.synchronized}${
+          latest !== null && latest !== undefined ? ' height=' + latest.number : ''
+        } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
+          (Date.now() - this.lastSyncDate) / 1000
+        } secs ago`
+      )
+      this.lastsyncronized = this.synchronized
+    }
   }
 
   /**
@@ -680,7 +681,7 @@ export class Config {
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['holesky', 'sepolia']
+    const dnsNets = ['goerli', 'sepolia', 'holesky']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 }
