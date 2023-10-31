@@ -41,4 +41,5 @@ jobs:
       - uses: romeovs/lcov-reporter-action@v0.2.16
         with:
           lcov-file: ${{ env.cwd }}/coverage/lcov.info
-          github-token: ${{ secrets.CODECOV_TOKEN }}
+          filter-changed-files: true
+          delete-old-comments: true
