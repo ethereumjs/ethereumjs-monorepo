@@ -38,7 +38,9 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-      - uses: codecov/codecov-action@v3
+
+      - uses: vebr/jest-lcov-reporter@v0.2.0
+        working-directory: ${{github.workspace}}/packages/common
         with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: common
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info

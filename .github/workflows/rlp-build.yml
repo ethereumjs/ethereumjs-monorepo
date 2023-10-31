@@ -34,10 +34,13 @@ jobs:
           cache: 'npm'
 
       - run: npm ci --omit=peer
-        working-directory: ${{github.workspace}}
+        working-directory: ${{ github.workspace }}
 
       - run: npm run lint
       - run: npm run coverage
-      - uses: ramsar7002/lcov-reporter-action@v0.3.3
+      - uses: Nef10/lcov-reporter-action@v0.4.0
+        working-directory: ${{github.workspace}}/packages/common
         with:
-          lcov-file: ${{github.workspace}}/packages/rlp/coverage/lcov.info
+          lcov-file: ./coverage/lcov.info
+          pr-number: 3130
+          github-token: {{ secrets.GITHUB_TOKEN }}
