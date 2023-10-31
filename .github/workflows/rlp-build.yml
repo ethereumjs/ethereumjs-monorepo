@@ -38,8 +38,6 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-      - uses: romeovs/lcov-reporter-action@v0.2.16
+      - uses: ramsar7002/lcov-reporter-action@v0.3.3
         with:
           lcov-file: ${{ env.cwd }}/coverage/lcov.info
-          filter-changed-files: true
-          delete-old-comments: true
