@@ -42,5 +42,4 @@ jobs:
       - uses: vebr/jest-lcov-reporter@v0.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ${{github.workspace}}/packages/common/coverage/lcov.info
-          name: Common Test Coverage
+          lcov-file: ./coverage/lcov.info
