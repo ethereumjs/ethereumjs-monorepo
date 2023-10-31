@@ -169,7 +169,7 @@ describe('ProofStateManager', () => {
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
-    const addressHex = bytesToUnprefixedHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(keccak256(address.bytes))
     stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
