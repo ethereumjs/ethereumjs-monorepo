@@ -40,4 +40,4 @@ jobs:
       - run: npm run coverage
       - uses: ramsar7002/lcov-reporter-action@v0.3.3
         with:
-          lcov-file: ./coverage/lcov.info
+          lcov-file: ${{github.workspace}}/packages/rlp/coverage/lcov.info
