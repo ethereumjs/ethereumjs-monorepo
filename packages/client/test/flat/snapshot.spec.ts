@@ -189,7 +189,7 @@ describe('snapshot checkpointing', () => {
     snapshot.checkpoint()
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(JSON.stringify(val), JSON.stringify(res))
+    assert.equal(JSON.stringify(res), JSON.stringify(val.serialize()))
   })
 
   it('should get recent version after checkpoint update', async () => {
@@ -212,37 +212,46 @@ describe('snapshot checkpointing', () => {
     const snapshot = new Snapshot()
     const addr = new Address(hexToBytes('0x' + '3'.repeat(40)))
     const acc = new Account()
-    const val = acc
-    await snapshot.putAccount(addr, val)
+
+    await snapshot.putAccount(addr, acc)
 
     snapshot.checkpoint()
 
     acc.codeHash = keccak256(hexToBytes('0x' + 'abab'))
     await snapshot.putAccount(addr, acc)
 
-    // TODO
-    // await snapshot.revert()
+    await snapshot.revert()
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(JSON.stringify(res), JSON.stringify(val))
+    assert.equal(JSON.stringify(res), JSON.stringify(new Account().serialize()))
   })
 
   it('should commit change after checkpoint', async () => {
     const snapshot = new Snapshot()
     const addr = new Address(hexToBytes('0x' + '3'.repeat(40)))
     const acc = new Account()
-    const val = acc
-    await snapshot.putAccount(addr, val)
+
+    await snapshot.putAccount(addr, acc)
 
     snapshot.checkpoint()
 
     acc.codeHash = keccak256(hexToBytes('0x' + 'abab'))
     await snapshot.putAccount(addr, acc)
 
+    snapshot.checkpoint()
+
+    acc.codeHash = keccak256(hexToBytes('0x' + 'cdcd'))
+    await snapshot.putAccount(addr, acc)
+
     // TODO
-    // await snapshot.commit()
+    snapshot.commit()
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(JSON.stringify(res), JSON.stringify(acc.serialize()))
+    assert.equal(
+      JSON.stringify(res),
+      JSON.stringify(
+        Account.fromAccountData({ codeHash: keccak256(hexToBytes('0x' + 'abab')) }).serialize()
+      )
+    )
   })
 })
