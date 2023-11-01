@@ -224,50 +224,29 @@ export class Snapshot {
   // /**
   //  * Revert changes to cache last checkpoint (no effect on trie).
   //  */
-  revert(): void {
-    //   this._checkpoints -= 1
-    //   if (this.DEBUG) {
-    //     this._debug(`Revert to checkpoint ${this._checkpoints}`)
-    //   }
-    //   const diffMap = this._diffCache.pop()!
-    //   for (const entry of diffMap.entries()) {
-    //     const addressHex = entry[0]
-    //     const elem = entry[1]
-    //     if (elem === undefined) {
-    //       if (this._lruCache) {
-    //         this._lruCache!.delete(addressHex)
-    //       } else {
-    //         this._orderedMapCache!.eraseElementByKey(addressHex)
-    //       }
-    //     } else {
-    //       if (this._lruCache) {
-    //         this._lruCache!.set(addressHex, elem)
-    //       } else {
-    //         this._orderedMapCache!.setElement(addressHex, elem)
-    //       }
-    //     }
-    //   }
-    throw Error('Not yet implemented')
+  // TODO need to implement more performant way of deleting by prefix diffs
+  async revert(): Promise<void> {
+    this._checkpoints -= 1
+    // if (this.DEBUG) {
+    //   this._debug(`Revert to checkpoint ${this._checkpoints}`)
+    // }
+    const diffMap = this._diffCache.pop()!
+    for (const entry of diffMap.entries()) {
+      const addressHex = entry[0]
+      const elem = entry[1]
+      if (elem === undefined) {
+        await this._db.del(hexToBytes(addressHex))
+      } else {
+        await this._db.put(hexToBytes(addressHex), elem.data ?? KECCAK256_NULL) // TODO or instead of putting null you should delete
+      }
+    }
   }
 
   // /**
   //  * Commits to current state of cache (no effect on trie).
   //  */
-  commit(): void {
-    //   this._checkpoints -= 1
-    //   if (this.DEBUG) {
-    //     this._debug(`Commit to checkpoint ${this._checkpoints}`)
-    //   }
-    //   const diffMap = this._diffCache.pop()!
-    //   for (const entry of diffMap.entries()) {
-    //     const addressHex = entry[0]
-    //     const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
-    //     if (!oldEntry) {
-    //       const elem = entry[1]
-    //       this._diffCache[this._checkpoints].set(addressHex, elem)
-    //     }
-    //   }
-    throw Error('Not yet implemented')
+  async commit(): Promise<void> {
+    await this.revert()
   }
 
   // /**
@@ -275,11 +254,10 @@ export class Snapshot {
   //  * later on be reverted or committed.
   //  */
   checkpoint(): void {
-    //   this._checkpoints += 1
-    //   if (this.DEBUG) {
-    //     this._debug(`New checkpoint ${this._checkpoints}`)
-    //   }
-    //   this._diffCache.push(new Map<string, SnapshotElement | undefined>())
-    throw Error('Not yet implemented')
+    this._checkpoints += 1
+    // if (this.DEBUG) {
+    //   this._debug(`New checkpoint ${this._checkpoints}`)
+    // }
+    this._diffCache.push(new Map<string, SnapshotElement | undefined>())
   }
 }
