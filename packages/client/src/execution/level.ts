@@ -149,7 +149,7 @@ export class LevelDB<
           // eslint-disable-next-line
           (val instanceof Buffer ? Uint8Array.from(val) : val) as TValue,
         ]
-        ret.push(data)
+        ret.push(data as any)
       }
     } catch (error: any) {
       // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
