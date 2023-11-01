@@ -11,7 +11,7 @@ import { Snapshot } from '../../src/flat/snapshot'
 // const StateManager = require('../../../../dist/state/stateManager').default
 
 async function merkleizeViaTrie(leaves: [Address, Uint8Array][]) {
-  const trie = new Trie()
+  const trie = new Trie({ useKeyHashing: true })
   for (const leaf of leaves) {
     await trie.put(leaf[0].bytes, leaf[1])
   }
