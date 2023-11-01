@@ -42,3 +42,4 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: ethash
+          verbose: true

@@ -45,3 +45,5 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: genesis
+          verbose: true
+          fail_ci_if_error: true

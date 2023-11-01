@@ -43,4 +43,5 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: wallet
+          verbose: true
 
