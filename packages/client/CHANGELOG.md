@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 0.9.0 - 2023-10-26
 
-This client release now syncs with the new Holesky and Dencun devnet-10 test networks and comes with improved sync performance, a revamped post-Merge client UX experience and various beacon sync related fixes and robustness improvements.
+This client release now syncs with the new Holesky and Dencun devnet-11 test networks and comes with improved sync performance, a revamped post-Merge client UX experience and various beacon sync related fixes and robustness improvements.
 
 ### Holesky Testnet Support
 
@@ -22,9 +22,9 @@ ethereumjs --network=holesky --rpc --rpcEngine
 
 Then start a corresponding CL client (e.g. Lodestar with checkpoint sync towards `https://lodestar-holesky.chainsafe.io`), also see client [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/README.md).
 
-### Dencun devnet-10 Compatibility
+### Dencun devnet-11 Compatibility
 
-Another testnet to be run with this client: Dencun `devnet-10`, which is one of the last and eventually the _very_ last testnet before running the Dencun hardfork on the official testnet.
+Another testnet to be run with this client: Dencun `devnet-11`, which is one of the last and eventually the _very_ last testnet before running the Dencun hardfork on the official testnet.
 
 Following spec updates included:
 
@@ -38,7 +38,7 @@ Following spec updates included:
 - Make the newpayload execution of big blocks non blocking, PR [#3076](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3076)
 - Hive Cancun fixes, PR [#3099](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3099)
 
-See [devnet-10](https://github.com/ethpandaops/dencun-testnet) EthPandaOps GitHub repository for instructions on how to run the testnet.
+See [devnet-11](https://github.com/ethpandaops/dencun-testnet) EthPandaOps GitHub repository for instructions on how to run the testnet.
 
 ### Sync and EVM/VM (Execution) Performance
 
@@ -60,7 +60,7 @@ The client can be now leveraged as a tool for block and/or tx profiling by using
 
 ### Discovery Improvements
 
-A new more fine-tuned discovery `discV4` mechanism has been integrated along PR [#3120](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3120). This should now make it substantially easier to find new peers especially on smaller networks like the `devnet-10` and related Dencun test networks. Additionally the `--bootnodes` option has been expanded to now also take `bootnode.txt` files for easier loading of bootnodes.
+A new more fine-tuned discovery `discV4` mechanism has been integrated along PR [#3120](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3120). This should now make it substantially easier to find new peers especially on smaller networks like the `devnet-11` and related Dencun test networks. Additionally the `--bootnodes` option has been expanded to now also take `bootnode.txt` files for easier loading of bootnodes.
 
 ### Skeleton/Beacon Sync Reworks and Fixes
 

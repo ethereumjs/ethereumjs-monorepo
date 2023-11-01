@@ -22,9 +22,9 @@ The VM profiler addition now also allows for running blockchain or state tests w
 
 This release supports [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) with a new `BLOBBASEFEE` opcode added to and scheduled for the Dencun HF, see PR [#3035](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3035) and [#3068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3068). The opcode returns the value of the blob base-fee of the current block it is executing in.
 
-### Dencun devnet-10 Compatibility
+### Dencun devnet-11 Compatibility
 
-This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-10](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
 
 - Update `EIP-4788`: do not use precompile anymore but use the pre-deployed bytecode, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
 - Additional `EIP-4788` updates (address + modulus), PR [#3068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3068)
