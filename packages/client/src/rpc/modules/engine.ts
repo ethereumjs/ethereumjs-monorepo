@@ -924,20 +924,35 @@ export class Engine {
         }
       }
     } catch (error) {
-      const errorMsg = `${error}`.toLowerCase()
-      if (errorMsg.includes('block') && errorMsg.includes('not found')) {
-        throw {
-          code: INTERNAL_ERROR,
-          message: errorMsg,
-        }
-      }
-      const validationError = `Error verifying block while running: ${errorMsg}`
-      this.config.logger.error(validationError)
       const latestValidHash = await validHash(
         headBlock.header.parentHash,
         this.chain,
         this.chainCache
       )
+
+      const errorMsg = `${error}`.toLowerCase()
+      if (errorMsg.includes('block') && errorMsg.includes('not found')) {
+        if (blocks.length > 1) {
+          // this error can come if the block tries to load a previous block yet not in the chain via BLOCKHASH
+          // opcode.
+          //
+          // i)  error coding of the evm errors should be a better way to handle this OR
+          // ii) figure out a way to pass let the evm access the above blocks which is what connects this
+          //     chain to vmhead. to be handled in skeleton refactoring to blockchain class
+
+          const response = { status: Status.SYNCING, latestValidHash, validationError: null }
+          return response
+        } else {
+          throw {
+            code: INTERNAL_ERROR,
+            message: errorMsg,
+          }
+        }
+      }
+
+      const validationError = `Error verifying block while running: ${errorMsg}`
+      this.config.logger.error(validationError)
+
       const response = { status: Status.INVALID, latestValidHash, validationError }
       this.invalidBlocks.set(blockHash.slice(2), error as Error)
       this.remoteBlocks.delete(blockHash.slice(2))
