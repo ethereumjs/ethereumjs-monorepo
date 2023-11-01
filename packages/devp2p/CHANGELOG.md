@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Kademlia bucket add fix, PR [#2957](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2957)
 - Performance: only create `DEBUG` msgs if debugging, PR [#2958](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2958)
 - Pin `scanf` dependency (fixes broken types), PR [#3060](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3060)
+- Minimal `RLPx` test suite, PR [#3126](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3126)
 
 ## 6.0.0 - 2023-08-09
 

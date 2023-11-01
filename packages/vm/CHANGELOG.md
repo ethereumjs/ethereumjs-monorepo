@@ -16,7 +16,7 @@ Most of profiling is taking place in the EVM (so: the dedicated opcode profiling
 
 The VM adds to the profiler (see new `profiler` option) by adding output within the tx or block scope along `runTx()` or `runBlock()` runs (committing state, block rewards,...).
 
-The VM profiler addition now also allows for running blockchain or state tests with the profiler activated, e.g. to benchmark certain extreme-case or attack scenarios, see [DEVELOPER](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/DEVELOPER.md) docs for usage instructions.
+The VM profiler addition now also allows for running blockchain or state tests with the profiler activated, e.g. to benchmark certain extreme-case or attack scenarios, see [DEVELOPER](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/DEVELOPER.md) docs for usage instructions (see PR [#3115](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3115)).
 
 ### EIP-7516 BLOBBASEFEE Opcode
 
@@ -40,6 +40,7 @@ This release contains various fixes and spec updates related to the Dencun (Dene
 - Update ethereum tests to 12.3, PR [#2971](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2971)
 - Update ethereum tests to 12.4, PR [#3052](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3052)
 - Reactivate selected slow tests, PR [#2991](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2991)
+- Better error message for `runTx()` `gasLimit` check to avoid confusion with EIP1559 base fee, PR [#3118](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3118)
 
 ## 7.0.0 - 2023-08-09
 

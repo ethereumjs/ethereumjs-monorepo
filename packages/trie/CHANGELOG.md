@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 6.0.1 - 2023-10-26
 
+### Native Support for Uint8Array Values in DBs
+
+The trie library now allows to store values being passed as native `Uint8Array` values instead of strings, see PR [#3067](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3067).
+
+This leads to a significant performance increase when dealing with larger state DBs and it is recommended to activate for new DBs by using the new `valueEncoding` option.
+
+**Attention!**: Switching value encoding by using this new option is not compatible with existing databases.
+
 ### Debug Logging
 
 The trie library now allows for using debug logging with the `DEBUG=ethjs,trie:*` flag on the command line as already being implemented in other EthereumJS libraries, see PR [#3019](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3019).

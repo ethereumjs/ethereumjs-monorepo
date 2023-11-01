@@ -44,11 +44,11 @@ See [devnet-10](https://github.com/ethpandaops/dencun-testnet) EthPandaOps GitHu
 
 This client release integrates with the EthereumJS EVM v2.1.0 (see EVM [CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md) for details) which comes with significant performance improvements for various opcodes as well as overall EVM execution.
 
-Furthermore the data model for saving the state has been optimized to improve storage DB read performance, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023).
+Furthermore the data model for saving the state has been optimized to improve storage DB read performance, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023) and PR [#3067](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3067).
 
 Both changes together should increase client sync performance by 30% or more.
 
-**Important**: The new db model is not backwards-compatible with existing client databases. Use the new `--prefixStorageTrieKeys` flag set to `false` to preserve the old DB behavior.
+**Important**: The new db model is not backwards-compatible with existing client databases. Use the new `--prefixStorageTrieKeys` (set it to `false`) and `--useStringValueTrieDB` (set it to `true`) flags to preserve the old DB behavior.
 
 ### New Post-Merge UX Experience
 
@@ -58,6 +58,10 @@ We have gone through the complete post-Merge beacon sync process and reworked th
 
 The client can be now leveraged as a tool for block and/or tx profiling by using the new `--vmProfileBlocks` and `--vmProfileTxs` options, see PR [#3042](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3042). This gives details into the EVM/VM execution performance for specific blocks. See profiler related EVM [README section](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/README.md#profiling-the-evm) for further details.
 
+### Discovery Improvements
+
+A new more fine-tuned discovery `discV4` mechanism has been integrated along PR [#3120](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3120). This should now make it substantially easier to find new peers especially on smaller networks like the `devnet-10` and related Dencun test networks. Additionally the `--bootnodes` option has been expanded to now also take `bootnode.txt` files for easier loading of bootnodes.
+
 ### Skeleton/Beacon Sync Reworks and Fixes
 
 - Some skeleton improvements from observations on devnet syncs, PR [#3014](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3014)
@@ -65,12 +69,13 @@ The client can be now leveraged as a tool for block and/or tx profiling by using
 - Fix canonical reset of the chain by the skeleton, PR [#3078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3078)
 - Skeleton reorg head fixes, PR [#3085](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3085)
 - Fixes regarding beacon sync, vmexecution and further log improvs, PR [#3094](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3094)
+- Various rebase and sync related improvements along PR [#3031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3031)
 
 ### Other Features
 
 - Add `eth_coinbase` RPC method, PR [#3079](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3079)
 - Add Option to Return Actual Caught Error Message and Stack Trace when RPC Call Fails, PR [#3059](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3059)
-- More fine-grained `--rpcDebug` option (enable/disable specific RPC module logs), PR [#3102](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3102)
+- More fine-grained `--rpcDebug` option (enable/disable specific RPC module logs), PRs [#3102](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3102) and [#3127](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3127)
 
 ### Other Changes and Fixes
 
@@ -84,8 +89,11 @@ The client can be now leveraged as a tool for block and/or tx profiling by using
 - Docker related updates, PR [#3065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3065)
 - Use same Cache Setup for normal and executeBlocks-triggered Execution, PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
 - Simplify client transports, **breaking**: removed `--transports`, PR [#3069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3069)
+- Experimental SNAP sync integration (larger announcement later on, but feel free to already experiment with it using the `--snap` option)! 😆), PR [#3031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3031)
 - Guard against rpc port collisions, PR [#3083](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3083)
 - Change execution stats intervals, PR [#3106](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3106)
+- pendingBlock fix if FCU is called with withdrawals=null pre-cancun, PR [#3119](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3119)
+- Handle an edge case in `newpayload` block execution, PR [#3131](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3131)
 
 ## 0.8.1 - 2023-08-09
 
