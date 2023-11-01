@@ -36,10 +36,11 @@ jobs:
       - run: npm ci --omit=peer
         working-directory: ${{github.workspace}}
 
-      - uses: nick-fields/retry@v2
+      - run: npm run coverage
+
+      - uses: codecov/codecov-action@v3
         with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: cd ${{github.workspace}}/packages/devp2p && npm run coverage
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: devp2p
 
       - run: npm run lint

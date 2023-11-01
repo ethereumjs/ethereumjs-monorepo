@@ -1,5 +1,4 @@
-import { CODEHASH_PREFIX } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { CODEHASH_PREFIX, DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   bytesToHex,
@@ -11,11 +10,12 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Fetcher } from './fetcher'
+import { getInitFecherDoneFlags } from './types'
 
 import type { Peer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
-import type { BatchDBOp } from '@ethereumjs/util'
+import type { Job, SnapFetcherDoneFlags } from './types'
+import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -27,7 +27,8 @@ type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
  */
 export interface ByteCodeFetcherOptions extends FetcherOptions {
   hashes: Uint8Array[]
-  trie: Trie
+  stateManager?: DefaultStateManager
+  fetcherDoneFlags?: SnapFetcherDoneFlags
 
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
@@ -40,10 +41,11 @@ export type JobTask = {
 
 export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> {
   protected debug: Debugger
+  stateManager: DefaultStateManager
+  fetcherDoneFlags: SnapFetcherDoneFlags
+  codeDB: DB
 
   hashes: Uint8Array[]
-
-  trie: Trie
 
   /**
    * Create new block fetcher
@@ -51,7 +53,11 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   constructor(options: ByteCodeFetcherOptions) {
     super(options)
     this.hashes = options.hashes ?? []
-    this.trie = options.trie ?? new Trie({ useKeyHashing: true })
+    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
+    this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
+    this.codeDB = this.stateManager['_getCodeDB']()
+
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
@@ -171,7 +177,12 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       })
       storeCount += 1
     }
-    await this.trie.batch(ops as BatchDBOp[])
+    await this.codeDB.batch(ops as BatchDBOp[])
+    this.fetcherDoneFlags.byteCodeFetcher.first += BigInt(codeHashToByteCode.size)
+    // no idea why first starts exceeding count, may be because of missed hashesh thing, so resort to this
+    // weird method of tracking the count
+    this.fetcherDoneFlags.byteCodeFetcher.count =
+      this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
 
     this.debug(`Stored ${storeCount} bytecode in code trie`)
   }
@@ -189,6 +200,10 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    */
   enqueueByByteCodeRequestList(byteCodeRequestList: Uint8Array[]) {
     this.hashes.push(...byteCodeRequestList)
+    // no idea why first starts exceeding count, may be because of missed hashesh thing, so resort to this
+    // weird method of tracking the count
+    this.fetcherDoneFlags.byteCodeFetcher.count =
+      this.fetcherDoneFlags.byteCodeFetcher.first + BigInt(this.hashes.length)
     this.debug(
       `Number of bytecode fetch requests added to fetcher queue: ${byteCodeRequestList.length}`
     )
