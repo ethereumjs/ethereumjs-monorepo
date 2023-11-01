@@ -42,6 +42,7 @@ import type {
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+import { EventEmitter } from 'events'
 
 /**
  * This class stores and interacts with blocks.
@@ -50,6 +51,7 @@ export class Blockchain implements BlockchainInterface {
   consensus: Consensus
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
+  events: EventEmitter
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
@@ -79,6 +81,13 @@ export class Blockchain implements BlockchainInterface {
   private _hardforkByHeadBlockNumber: boolean
   private readonly _validateConsensus: boolean
   private readonly _validateBlocks: boolean
+
+  /**
+   * This is used to track which canonical blocks are deleted. After a method calls
+   * `_deleteCanonicalChainReferences`, if this array has any items, the
+   * `deletedCanonicalBlocks` event is emitted with the array as argument.
+   */
+  private _deletedBlocks: Block[] = []
 
   /**
    * Safe creation of a new Blockchain object awaiting the initialization function,
@@ -143,6 +152,8 @@ export class Blockchain implements BlockchainInterface {
     this.db = opts.db !== undefined ? opts.db : new MapDB()
 
     this.dbManager = new DBManager(this.db, this.common)
+
+    this.events = new EventEmitter()
 
     if (opts.consensus) {
       this.consensus = opts.consensus
@@ -436,6 +447,10 @@ export class Blockchain implements BlockchainInterface {
       await this.dbManager.batch(ops)
       await this.checkAndTransitionHardForkByNumber(canonicalHead, td, header.timestamp)
     })
+    if (this._deletedBlocks.length > 0) {
+      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      this._deletedBlocks = []
+    }
   }
 
   /**
@@ -465,6 +480,14 @@ export class Blockchain implements BlockchainInterface {
               })
             : item
         const isGenesis = block.isGenesis()
+
+        console.log(
+          'PUTBLOCK',
+          bytesToHex(block.hash()),
+          block.transactions.length,
+          block.header.number
+        )
+        console.trace()
 
         // we cannot overwrite the Genesis block after initializing the Blockchain
         if (isGenesis) {
@@ -566,6 +589,10 @@ export class Blockchain implements BlockchainInterface {
         throw e
       }
     })
+    if (this._deletedBlocks.length > 0) {
+      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      this._deletedBlocks = []
+    }
   }
 
   /**
@@ -886,6 +913,7 @@ export class Blockchain implements BlockchainInterface {
     // But is this the way to go? If we know this is called from the
     // iterator we are safe, but if this is called from anywhere
     // else then this might lead to a concurrency problem?
+    console.log('DELBLOCK', bytesToHex(blockHash))
     await this._delBlock(blockHash)
   }
 
@@ -916,6 +944,11 @@ export class Blockchain implements BlockchainInterface {
     }
 
     await this.dbManager.batch(dbOps)
+
+    if (this._deletedBlocks.length > 0) {
+      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      this._deletedBlocks = []
+    }
   }
 
   /**
@@ -1127,34 +1160,48 @@ export class Blockchain implements BlockchainInterface {
     headHash: Uint8Array,
     ops: DBOp[]
   ) {
-    let hash: Uint8Array | false
-
-    hash = await this.safeNumberToHash(blockNumber)
-    while (hash !== false) {
-      ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
-
-      // reset stale iterator heads to current canonical head this can, for
-      // instance, make the VM run "older" (i.e. lower number blocks than last
-      // executed block) blocks to verify the chain up to the current, actual,
-      // head.
-      for (const name of Object.keys(this._heads)) {
-        if (equalsBytes(this._heads[name], hash)) {
-          this._heads[name] = headHash
-        }
-      }
-
-      // reset stale headHeader to current canonical
-      if (this._headHeaderHash !== undefined && equalsBytes(this._headHeaderHash, hash) === true) {
-        this._headHeaderHash = headHash
-      }
-      // reset stale headBlock to current canonical
-      if (this._headBlockHash !== undefined && equalsBytes(this._headBlockHash, hash) === true) {
-        this._headBlockHash = headHash
-      }
-
-      blockNumber++
+    try {
+      let hash: Uint8Array | false
 
       hash = await this.safeNumberToHash(blockNumber)
+      while (hash !== false) {
+        ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
+
+        if (this.events.listenerCount('deletedCanonicalBlocks') > 0) {
+          const block = await this.getBlock(blockNumber)
+          this._deletedBlocks.push(block)
+        }
+
+        // reset stale iterator heads to current canonical head this can, for
+        // instance, make the VM run "older" (i.e. lower number blocks than last
+        // executed block) blocks to verify the chain up to the current, actual,
+        // head.
+        for (const name of Object.keys(this._heads)) {
+          if (equalsBytes(this._heads[name], hash)) {
+            this._heads[name] = headHash
+          }
+        }
+
+        // reset stale headHeader to current canonical
+        if (
+          this._headHeaderHash !== undefined &&
+          equalsBytes(this._headHeaderHash, hash) === true
+        ) {
+          this._headHeaderHash = headHash
+        }
+        // reset stale headBlock to current canonical
+        if (this._headBlockHash !== undefined && equalsBytes(this._headBlockHash, hash) === true) {
+          this._headBlockHash = headHash
+        }
+
+        blockNumber++
+
+        hash = await this.safeNumberToHash(blockNumber)
+      }
+    } catch (e) {
+      // Ensure that if this method throws, `_deletedBlocks` is reset to the empty array
+      this._deletedBlocks = []
+      throw e
     }
   }
 
