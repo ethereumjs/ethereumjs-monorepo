@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1698831081473,
+  "lastUpdate": 1698835724073,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "90a14028088def9f4b7f8520e65f39ee4b4c7c8b",
-          "message": "Client: Small UX Improvements (#3086)\n\n* Client: do not falsely show Merge-happening-soon announcement if mergeForkIdTransition block number >= paris\r\n\r\n* Client: move skeleton-empty-comparison msg to debug level (not so much user info transported, rather repetitive and distracting)\r\n\r\n* Client: fix txsPerType engine API payload logging, improve formatting\r\n\r\n* Client: log the negative consensus client connection case\r\n\r\n* Client: adjust threshold for skeleton canonical chain fill status messages from 20 to 100 (reduce msg output)\r\n\r\n* Client: adjust threshold for skeleton canonical chain fill status messages even more\r\n\r\n* Client: add super messages [TM] so that outstandingly important notifications (transitioning to beacon sync) do not get lost in the noise\r\n\r\n* Client: somewhat reduce payload and forkchoice log intervals\r\n\r\n* Client: make execution HF switch log msg a super message\r\n\r\n* Client: somewhat reduce cache stats output\r\n\r\n* Client: another HF super msg\r\n\r\n* Fixed typing mismatch\r\n\r\n* Add connection status tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-10-05T14:52:13-04:00",
-          "tree_id": "5ab5eaac9cdda72326b161f9f034fac3591a2bf9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/90a14028088def9f4b7f8520e65f39ee4b4c7c8b"
-        },
-        "date": 1696532936358,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28455,
-            "range": "±5.69%",
-            "unit": "ops/sec",
-            "extra": "75 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28890,
-            "range": "±2.97%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28567,
-            "range": "±3.41%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28335,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23427,
-            "range": "±9.79%",
-            "unit": "ops/sec",
-            "extra": "73 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±10.03%",
             "unit": "ops/sec",
             "extra": "74 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ab4ba34e81fcc1e01b733fe37d2b657a67da5099",
+          "message": "Minimal `rlpx` test suite (#3126)\n\n* Add rlpx tests and remove ts-ignore\r\n\r\n* Remove excess robot comments\r\n\r\n* Upload code coverage for devp2p\r\n\r\n* bump coverage\r\n\r\n* Update RLP coverage\r\n\r\n* update ci\r\n\r\n* use default coverage script\r\n\r\n* Update rlp test script\r\n\r\n* Revert non devp2p changes\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-11-01T11:45:32+01:00",
+          "tree_id": "b50989b3e6d8817fec12d94f63ceba3aca87e868",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ab4ba34e81fcc1e01b733fe37d2b657a67da5099"
+        },
+        "date": 1698835722776,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40074,
+            "range": "±2.40%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38433,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38618,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35942,
+            "range": "±4.26%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36867,
+            "range": "±2.26%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
