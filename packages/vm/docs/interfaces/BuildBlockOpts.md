@@ -23,7 +23,7 @@ The block and builder options to use.
 
 #### Defined in
 
-[vm/src/types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L180)
+[vm/src/types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L193)
 
 ___
 
@@ -36,7 +36,7 @@ Defaults used for any values not provided.
 
 #### Defined in
 
-[vm/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L174)
+[vm/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L187)
 
 ___
 
@@ -48,7 +48,7 @@ The parent block
 
 #### Defined in
 
-[vm/src/types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L168)
+[vm/src/types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L181)
 
 ___
 
@@ -58,4 +58,4 @@ ___
 
 #### Defined in
 
-[vm/src/types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L176)
+[vm/src/types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L189)

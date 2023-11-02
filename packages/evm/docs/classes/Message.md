@@ -12,6 +12,7 @@
 
 - [\_codeAddress](Message.md#_codeaddress)
 - [authcallOrigin](Message.md#authcallorigin)
+- [blobVersionedHashes](Message.md#blobversionedhashes)
 - [caller](Message.md#caller)
 - [code](Message.md#code)
 - [containerCode](Message.md#containercode)
@@ -27,7 +28,6 @@
 - [selfdestruct](Message.md#selfdestruct)
 - [to](Message.md#to)
 - [value](Message.md#value)
-- [versionedHashes](Message.md#versionedhashes)
 
 ### Accessors
 
@@ -71,6 +71,18 @@ the purpose is to figure out where `value` should be taken from (not from `calle
 #### Defined in
 
 [message.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L68)
+
+___
+
+### blobVersionedHashes
+
+• `Optional` **blobVersionedHashes**: `Uint8Array`[]
+
+List of versioned hashes if message is a blob transaction in the outer VM
+
+#### Defined in
+
+[message.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L73)
 
 ___
 
@@ -225,18 +237,6 @@ ___
 #### Defined in
 
 [message.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L44)
-
-___
-
-### versionedHashes
-
-• `Optional` **versionedHashes**: `Uint8Array`[]
-
-List of versioned hashes if message is a blob transaction in the outer VM
-
-#### Defined in
-
-[message.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L73)
 
 ## Accessors
 

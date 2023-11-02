@@ -43,6 +43,7 @@ const vm = await VM.create({ common })
 
 const tx = LegacyTransaction.fromTxData({
   gasLimit: BigInt(21000),
+  gasPrice: BigInt(1000000000),
   value: BigInt(1),
   to: Address.zero(),
   v: BigInt(37),

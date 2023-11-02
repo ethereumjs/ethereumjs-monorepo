@@ -29,6 +29,10 @@
 - [WithdrawalV1](README.md#withdrawalv1)
 - [WithdrawalsBytes](README.md#withdrawalsbytes)
 
+### Functions
+
+- [executionPayloadFromBeaconPayload](README.md#executionpayloadfrombeaconpayload)
+
 ## Type Aliases
 
 ### BlockBodyBytes
@@ -142,3 +146,26 @@ ___
 #### Defined in
 
 [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L113)
+
+## Functions
+
+### executionPayloadFromBeaconPayload
+
+▸ **executionPayloadFromBeaconPayload**(`payload`): [`ExecutionPayload`](README.md#executionpayload)
+
+Converts a beacon block execution payload JSON object BeaconPayloadJson to the [ExecutionPayload](README.md#executionpayload) data needed to construct a [Block](classes/Block.md).
+The JSON data can be retrieved from a consensus layer (CL) client on this Beacon API `/eth/v2/beacon/blocks/[block number]`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `payload` | `BeaconPayloadJson` |
+
+#### Returns
+
+[`ExecutionPayload`](README.md#executionpayload)
+
+#### Defined in
+
+[from-beacon-payload.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L39)
