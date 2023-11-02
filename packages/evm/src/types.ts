@@ -177,13 +177,13 @@ export interface EVMOpts {
    * - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines for the EVM (`outdated`)
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565) - Transaction Types
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
    * - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) - EVM Object Format (EOF) v1 (`outdated`)
+   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    * - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
    * - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
@@ -210,7 +210,7 @@ export interface EVMOpts {
 
   /**
    * Allows unlimited contract sizes while debugging. By setting this to `true`, the check for
-   * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is 170.
+   * contract size limit of 24KB (see [EIP-170](https://git.io/vxZkK)) is bypassed.
    *
    * Default: `false` [ONLY set to `true` during debugging]
    */
