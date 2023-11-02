@@ -33,7 +33,7 @@
 
 #### Defined in
 
-[enums.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L51)
+[enums.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L61)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[enums.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L49)
+[enums.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L59)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 #### Defined in
 
-[enums.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L44)
+[enums.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L54)
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 #### Defined in
 
-[enums.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L56)
+[enums.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L66)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[enums.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L39)
+[enums.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L49)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 #### Defined in
 
-[enums.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L45)
+[enums.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L55)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 #### Defined in
 
-[enums.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L41)
+[enums.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L51)
 
 ___
 
@@ -103,7 +103,7 @@ ___
 
 #### Defined in
 
-[enums.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L52)
+[enums.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L62)
 
 ___
 
@@ -113,7 +113,7 @@ ___
 
 #### Defined in
 
-[enums.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L40)
+[enums.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L50)
 
 ___
 
@@ -123,7 +123,7 @@ ___
 
 #### Defined in
 
-[enums.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L47)
+[enums.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L57)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[enums.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L50)
+[enums.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L60)
 
 ___
 
@@ -143,7 +143,7 @@ ___
 
 #### Defined in
 
-[enums.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L53)
+[enums.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L63)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[enums.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L48)
+[enums.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L58)
 
 ___
 
@@ -163,7 +163,7 @@ ___
 
 #### Defined in
 
-[enums.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L54)
+[enums.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L64)
 
 ___
 
@@ -173,7 +173,7 @@ ___
 
 #### Defined in
 
-[enums.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L46)
+[enums.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L56)
 
 ___
 
@@ -183,7 +183,7 @@ ___
 
 #### Defined in
 
-[enums.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L55)
+[enums.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L65)
 
 ___
 
@@ -193,7 +193,7 @@ ___
 
 #### Defined in
 
-[enums.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L43)
+[enums.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L53)
 
 ___
 
@@ -203,4 +203,4 @@ ___
 
 #### Defined in
 
-[enums.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L42)
+[enums.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L52)

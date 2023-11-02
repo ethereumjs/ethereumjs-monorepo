@@ -224,8 +224,10 @@ Currently supported EIPs:
 - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
 - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun) (`experimental`)
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+- [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
 
 ### EIP-4844 Shard Blob Transactions Support
 
@@ -360,6 +362,40 @@ The EVM processes state changes at many levels.
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 TODO: this section likely needs an update.
+
+## Profiling the EVM
+
+Starting with the `v2.1.0` release the EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+
+While the EVM now has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+
+To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
+
+```shell
+npm run client:start -- --sync=none --vmProfileBlocks --executeBlocks=962720
+```
+
+This will give a profile output like the following:
+
+![EthereumJS EVM Profiler](./profiler.png?raw=true)
+
+The `total (ms)` column gives you a good overview what takes the most significant amount of time, to be put in relation with the number of calls.
+
+The number to optimize for is the `Mgas/s` value. This value indicates how much gas (being a measure for the computational cost for an opcode) can be processed by the second.
+
+A good measure to putting this relation with is by taking both the Ethereum gas limit (the max amount of "computation" per block) and the time/slot into account. With a gas limit of 30 Mio and a 12 sec slot time this leads to a following (very) minimum `Mgas/s` value:
+
+```shell
+30M / 12 sec = 2.5 Million gas per second
+```
+
+Note that this is nevertheless a very theoretical value but pretty valuable for some first rough orientation though.
+
+Another note: profiler results for at least some opcodes are heavily distorted, first to mention the `SSTORE` opcode where the major "cost" occurs after block execution on checkpoint commit, which is not taken into account by the profiler.
+
+Generally all results should rather encourage and need "self thinking" 😋 and are not suited to be blindedly taken over without a deeper understanding/grasping of the underlying measurement conditions.
+
+Happy EVM Profiling! 🎉 🤩
 
 ## Development
 

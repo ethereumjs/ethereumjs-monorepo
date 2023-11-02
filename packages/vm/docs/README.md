@@ -32,14 +32,32 @@
 
 ### Type Aliases
 
+- [EVMProfilerOpts](README.md#evmprofileropts)
 - [TxReceipt](README.md#txreceipt)
 - [VMEvents](README.md#vmevents)
+- [VMProfilerOpts](README.md#vmprofileropts)
 
 ### Functions
 
 - [encodeReceipt](README.md#encodereceipt)
 
 ## Type Aliases
+
+### EVMProfilerOpts
+
+Ƭ **EVMProfilerOpts**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `enabled` | `boolean` |
+
+#### Defined in
+
+[vm/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L67)
+
+___
 
 ### TxReceipt
 
@@ -66,7 +84,24 @@ ___
 
 #### Defined in
 
-[vm/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L67)
+[vm/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L72)
+
+___
+
+### VMProfilerOpts
+
+Ƭ **VMProfilerOpts**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `reportAfterBlock?` | `boolean` |
+| `reportAfterTx?` | `boolean` |
+
+#### Defined in
+
+[vm/src/types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L79)
 
 ## Functions
 
@@ -89,4 +124,4 @@ Returns the encoded tx receipt.
 
 #### Defined in
 
-[vm/src/runBlock.ts:468](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L468)
+[vm/src/runBlock.ts:538](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L538)

@@ -69,7 +69,7 @@ Use the static factory methods to assist in creating a Block object from varying
 
 #### Defined in
 
-[block.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L360)
+[block.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L361)
 
 ## Properties
 
@@ -79,7 +79,7 @@ Use the static factory methods to assist in creating a Block object from varying
 
 #### Defined in
 
-[block.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L51)
+[block.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L52)
 
 ___
 
@@ -89,7 +89,7 @@ ___
 
 #### Defined in
 
-[block.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L46)
+[block.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L47)
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 #### Defined in
 
-[block.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L47)
+[block.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L48)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 #### Defined in
 
-[block.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L50)
+[block.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L51)
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 #### Defined in
 
-[block.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L48)
+[block.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L49)
 
 ___
 
@@ -129,7 +129,7 @@ ___
 
 #### Defined in
 
-[block.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L49)
+[block.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L50)
 
 ## Methods
 
@@ -145,7 +145,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[block.ts:698](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L698)
+[block.ts:701](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L701)
 
 ___
 
@@ -167,7 +167,7 @@ Returns the canonical difficulty for this block.
 
 #### Defined in
 
-[block.ts:664](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L664)
+[block.ts:667](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L667)
 
 ___
 
@@ -183,7 +183,7 @@ Generates transaction trie for validation.
 
 #### Defined in
 
-[block.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L441)
+[block.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L442)
 
 ___
 
@@ -201,7 +201,7 @@ an array of error strings
 
 #### Defined in
 
-[block.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L469)
+[block.ts:470](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L470)
 
 ___
 
@@ -217,7 +217,7 @@ Returns the hash of the block.
 
 #### Defined in
 
-[block.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L420)
+[block.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L421)
 
 ___
 
@@ -233,7 +233,7 @@ Determines if this block is the genesis block.
 
 #### Defined in
 
-[block.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L427)
+[block.ts:428](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L428)
 
 ___
 
@@ -249,7 +249,7 @@ Returns a Array of the raw Bytes Arays of this block, in order.
 
 #### Defined in
 
-[block.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L402)
+[block.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L403)
 
 ___
 
@@ -265,7 +265,7 @@ Returns the rlp encoding of the block.
 
 #### Defined in
 
-[block.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L434)
+[block.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L435)
 
 ___
 
@@ -281,7 +281,7 @@ Returns the block in JSON format.
 
 #### Defined in
 
-[block.ts:681](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L681)
+[block.ts:684](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L684)
 
 ___
 
@@ -299,7 +299,7 @@ True if all transactions are valid, false otherwise
 
 #### Defined in
 
-[block.ts:519](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L519)
+[block.ts:520](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L520)
 
 ___
 
@@ -318,7 +318,7 @@ True if the transaction trie is valid, false otherwise
 
 #### Defined in
 
-[block.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L451)
+[block.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L452)
 
 ___
 
@@ -336,7 +336,7 @@ true if the uncle's hash is valid, false otherwise.
 
 #### Defined in
 
-[block.ts:613](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L613)
+[block.ts:616](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L616)
 
 ___
 
@@ -360,7 +360,7 @@ blob gas per block
 
 #### Defined in
 
-[block.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L567)
+[block.ts:568](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L568)
 
 ___
 
@@ -387,7 +387,7 @@ It checks:
 
 #### Defined in
 
-[block.ts:534](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L534)
+[block.ts:535](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L535)
 
 ___
 
@@ -410,7 +410,7 @@ Throws if invalid
 
 #### Defined in
 
-[block.ts:674](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L674)
+[block.ts:677](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L677)
 
 ___
 
@@ -432,7 +432,7 @@ Header does not count an uncle twice.
 
 #### Defined in
 
-[block.ts:640](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L640)
+[block.ts:643](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L643)
 
 ___
 
@@ -450,7 +450,7 @@ true if the withdrawals trie root is valid, false otherwise
 
 #### Defined in
 
-[block.ts:623](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L623)
+[block.ts:626](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L626)
 
 ___
 
@@ -475,7 +475,7 @@ the block constructed block
 
 #### Defined in
 
-[block.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L348)
+[block.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L349)
 
 ___
 
@@ -498,7 +498,7 @@ Static constructor to create a block from a block data dictionary
 
 #### Defined in
 
-[block.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L85)
+[block.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L86)
 
 ___
 
@@ -523,7 +523,7 @@ the block constructed block
 
 #### Defined in
 
-[block.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L288)
+[block.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L289)
 
 ___
 
@@ -549,7 +549,7 @@ the block specified by `blockTag`
 
 #### Defined in
 
-[block.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L228)
+[block.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L229)
 
 ___
 
@@ -572,7 +572,7 @@ Static constructor to create a block from a RLP-serialized block
 
 #### Defined in
 
-[block.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L134)
+[block.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L135)
 
 ___
 
@@ -596,7 +596,7 @@ Creates a new block object from Ethereum JSON RPC.
 
 #### Defined in
 
-[block.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L217)
+[block.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L218)
 
 ___
 
@@ -619,7 +619,7 @@ Static constructor to create a block from an array of Bytes values
 
 #### Defined in
 
-[block.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L150)
+[block.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L151)
 
 ___
 
@@ -642,7 +642,7 @@ Returns the txs trie root for array of TypedTransaction
 
 #### Defined in
 
-[block.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L71)
+[block.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L72)
 
 ___
 
@@ -665,4 +665,4 @@ Returns the withdrawals trie root for array of Withdrawal.
 
 #### Defined in
 
-[block.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L58)
+[block.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block.ts#L59)
