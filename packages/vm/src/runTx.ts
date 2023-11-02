@@ -270,7 +270,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const baseFeePerGas = block.header.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
+        `Transaction's ${
+          'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
+        } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         this,
         block,
         tx
