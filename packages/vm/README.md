@@ -43,6 +43,7 @@ const vm = await VM.create({ common })
 
 const tx = LegacyTransaction.fromTxData({
   gasLimit: BigInt(21000),
+  gasPrice: BigInt(1000000000),
   value: BigInt(1),
   to: Address.zero(),
   v: BigInt(37),
@@ -86,8 +87,8 @@ const block = await blockBuilder.build()
 
 This projects contain the following examples:
 
-1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
+1. [./examples/run-blockchain](./examples/run-blockchain.cts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
+1. [./examples/run-solidity-contract](./examples/run-solidity-contract.cts): Compiles a Solidity contract, and calls constant and non-constant functions.
 
 All of the examples have their own `README.md` explaining how to run them.
 

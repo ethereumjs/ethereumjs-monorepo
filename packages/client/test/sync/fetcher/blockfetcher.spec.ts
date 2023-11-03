@@ -20,7 +20,7 @@ describe('[BlockFetcher]', async () => {
   const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -43,7 +43,7 @@ describe('[BlockFetcher]', async () => {
   })
 
   it('enqueueByNumberList()', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -92,7 +92,7 @@ describe('[BlockFetcher]', async () => {
   })
 
   it('should process', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -111,7 +111,7 @@ describe('[BlockFetcher]', async () => {
   })
 
   it('should adopt correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -137,7 +137,7 @@ describe('[BlockFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -152,7 +152,7 @@ describe('[BlockFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new BlockFetcher({
@@ -182,7 +182,7 @@ describe('[BlockFetcher]', async () => {
   })
 
   it('should parse bodies correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     config.chainCommon.getHardforkBy = td.func<typeof config.chainCommon.getHardforkBy>()
     td.when(
       config.chainCommon.getHardforkBy({
@@ -235,7 +235,7 @@ describe('[BlockFetcher]', async () => {
   it('store()', async () => {
     td.reset()
 
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     chain.putBlocks = td.func<any>()

@@ -211,7 +211,7 @@ export class TxPool {
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
     }
     this.running = true
-    this.config.logger.info('TxPool started.')
+    this.config.superMsg('TxPool started.')
     return true
   }
 

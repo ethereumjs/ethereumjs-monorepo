@@ -1,10 +1,35 @@
 import { BIGINT_0, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 
-import { INVALID_PARAMS } from './error-code'
+import { INTERNAL_ERROR, INVALID_BLOCK, INVALID_PARAMS } from './error-code'
 
 import type { Chain } from '../blockchain'
 import type { Block } from '@ethereumjs/block'
 import type { JsonRpcTx, TypedTransaction } from '@ethereumjs/tx'
+
+type RpcError = {
+  code: number
+  message: string
+  trace?: string
+}
+
+export function callWithStackTrace(handler: Function, debug: boolean) {
+  return async (...args: any) => {
+    try {
+      const res = await handler(...args)
+      return res
+    } catch (error: any) {
+      const e: RpcError = {
+        code: error.code ?? INTERNAL_ERROR,
+        message: error.message,
+      }
+      if (debug === true) {
+        e['trace'] = error.stack ?? 'Stack trace is not available'
+      }
+
+      throw e
+    }
+  }
+}
 
 /**
  * Returns tx formatted to the standard JSON-RPC fields
@@ -48,6 +73,7 @@ export const getBlockByOption = async (blockOpt: string, chain: Chain) => {
   }
 
   let block: Block
+  let tempBlock: Block | undefined // Used in `safe` and `finalized` blocks
   const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
 
   switch (blockOpt) {
@@ -58,10 +84,24 @@ export const getBlockByOption = async (blockOpt: string, chain: Chain) => {
       block = latest
       break
     case 'safe':
-      block = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
+      tempBlock = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
+      if (tempBlock === null || tempBlock === undefined) {
+        throw {
+          message: 'Unknown block',
+          code: INVALID_BLOCK,
+        }
+      }
+      block = tempBlock
       break
     case 'finalized':
-      block = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
+      tempBlock = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
+      if (tempBlock === null || tempBlock === undefined) {
+        throw {
+          message: 'Unknown block',
+          code: INVALID_BLOCK,
+        }
+      }
+      block = tempBlock
       break
     default: {
       const blockNumber = BigInt(blockOpt)

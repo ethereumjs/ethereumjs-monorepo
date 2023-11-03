@@ -127,7 +127,6 @@ describe('[Miner]', async () => {
   })
   customCommon.events.setMaxListeners(50)
   const customConfig = new Config({
-    transports: [],
     accountCache: 10000,
     storageCache: 1000,
     accounts,
@@ -139,7 +138,6 @@ describe('[Miner]', async () => {
   const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
   goerliCommon.events.setMaxListeners(50)
   const goerliConfig = new Config({
-    transports: [],
     accountCache: 10000,
     storageCache: 1000,
     accounts,
@@ -210,7 +208,7 @@ describe('[Miner]', async () => {
     assert.notOk(miner.running)
 
     // Should not start when config.mine=false
-    const configMineFalse = new Config({ transports: [], accounts, mine: false })
+    const configMineFalse = new Config({ accounts, mine: false })
     miner = new Miner({ config: configMineFalse, service })
     miner.start()
     assert.notOk(miner.running, 'miner should not start when config.mine=false')
@@ -329,7 +327,6 @@ describe('[Miner]', async () => {
   it('assembleBlocks() -> with saveReceipts', async () => {
     const chain = new FakeChain() as any
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -393,7 +390,6 @@ describe('[Miner]', async () => {
       hardfork: Hardfork.London,
     })
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -505,7 +501,6 @@ describe('[Miner]', async () => {
   it.skip('assembleBlocks() -> should stop assembling when a new block is received', async () => {
     const chain = new FakeChain() as any
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -565,7 +560,6 @@ describe('[Miner]', async () => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Goerli })
     common.setHardforkBy({ blockNumber: 0 })
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -678,7 +672,6 @@ describe('[Miner]', async () => {
     ;(common as any)._chainParams['genesis'].difficulty = 1
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,

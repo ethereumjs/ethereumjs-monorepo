@@ -58,7 +58,6 @@ common
   })
 
 const config = new Config({
-  transports: [],
   common,
   accountCache: 10000,
   storageCache: 1000,

@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 
-import { closeRPC, startRPC } from './helpers'
+import { baseRequest, closeRPC, createClient, createManager, params, startRPC } from './helpers'
 
 import type { TAlgorithm } from 'jwt-simple'
 
@@ -221,5 +221,45 @@ describe('JSON-RPC call', () => {
         closeRPC(server)
         assert.notOk(err)
       })
+  })
+})
+
+describe('callWithStackTrace', () => {
+  it('call with stack trace and gets a stack trace in the error', async () => {
+    const method = 'eth_getBlockByNumber'
+    const mockBlockNumber = BigInt(123)
+    const mockChain = {
+      headers: { latest: { number: mockBlockNumber } },
+      async getCanonicalHeadHeader(): Promise<any> {
+        throw new Error('This is not the block you are looking for')
+      },
+    }
+    const manager = createManager(createClient({ chain: mockChain }))
+    const server = startRPC(manager.getMethods(false, true))
+
+    const req = params(method, ['0x678', false])
+    const expectRes = (res: any) => {
+      assert.ok(res.body.error.trace !== undefined)
+    }
+    await baseRequest(server, req, 200, expectRes)
+  })
+
+  it('call with stack trace and gets an error without a stack trace', async () => {
+    const method = 'eth_getBlockByNumber'
+    const mockBlockNumber = BigInt(123)
+    const mockChain = {
+      headers: { latest: { number: mockBlockNumber } },
+      async getCanonicalHeadHeader(): Promise<any> {
+        throw new Error('This is not the block you are looking for')
+      },
+    }
+    const manager = createManager(createClient({ chain: mockChain }))
+    const server = startRPC(manager.getMethods(false, false))
+
+    const req = params(method, ['0x678', false])
+    const expectRes = (res: any) => {
+      assert.ok(res.body.error.trace === undefined)
+    }
+    await baseRequest(server, req, 200, expectRes)
   })
 })

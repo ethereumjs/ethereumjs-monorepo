@@ -1,5 +1,6 @@
 import {
   KeyEncoding,
+  Lock,
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
@@ -25,8 +26,7 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { Lock } from './util/lock.js'
-import { bytesToNibbles, doKeysMatch, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
@@ -38,6 +38,7 @@ import type {
   TrieNode,
   TrieOpts,
   TrieOptsWithDefaults,
+  TrieShallowCopyOpts,
 } from './types.js'
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
@@ -60,6 +61,7 @@ export class Trie {
     useRootPersistence: false,
     useNodePruning: false,
     cacheSize: 0,
+    valueEncoding: ValueEncoding.String,
   }
 
   /** The root for an empty trie */
@@ -83,8 +85,21 @@ export class Trie {
    * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
+    let valueEncoding: ValueEncoding
     if (opts !== undefined) {
+      // Sanity check: can only set valueEncoding if a db is provided
+      // The valueEncoding defaults to `Bytes` if no DB is provided (use a MapDB in memory)
+      if (opts?.valueEncoding !== undefined && opts.db === undefined) {
+        throw new Error('`valueEncoding` can only be set if a `db` is provided')
+      }
       this._opts = { ...this._opts, ...opts }
+
+      valueEncoding =
+        opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
+    } else {
+      // No opts are given, so create a MapDB later on
+      // Use `Bytes` for ValueEncoding
+      valueEncoding = ValueEncoding.Bytes
     }
 
     this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
@@ -98,7 +113,7 @@ export class Trie {
         }
       : (..._: any) => {}
 
-    this.database(opts?.db ?? new MapDB<string, string>())
+    this.database(opts?.db ?? new MapDB<string, Uint8Array>(), valueEncoding)
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -120,6 +135,9 @@ export class Trie {
   static async create(opts?: TrieOpts) {
     let key = ROOT_DB_KEY
 
+    const encoding =
+      opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
+
     if (opts?.useKeyHashing === true) {
       key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
     }
@@ -129,29 +147,37 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToUnprefixedHex(key), {
+        const root = await opts?.db.get(bytesToUnprefixedHex(key), {
           keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
+          valueEncoding: encoding,
         })
-        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
+        if (typeof root === 'string') {
+          opts.root = unprefixedHexToBytes(root)
+        } else {
+          opts.root = root
+        }
       } else {
-        await opts?.db.put(bytesToUnprefixedHex(key), bytesToUnprefixedHex(opts.root), {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
-        })
+        await opts?.db.put(
+          bytesToUnprefixedHex(key),
+          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
+          {
+            keyEncoding: KeyEncoding.String,
+            valueEncoding: encoding,
+          }
+        )
       }
     }
 
     return new Trie(opts)
   }
 
-  database(db?: DB<string, string>) {
+  database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')
       }
 
-      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize })
+      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize, valueEncoding })
     }
 
     return this._db
@@ -320,42 +346,20 @@ export class Trie {
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
   async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
-    const stack: TrieNode[] = []
     const targetKey = bytesToNibbles(key)
+    const keyLen = targetKey.length
+    const stack: TrieNode[] = Array.from({ length: keyLen })
+    let progress = 0
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
     const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      // If we already have a result, exit early
-      if (result) return
-
-      if (node === null) {
-        result = { node: null, remaining: [], stack }
-        return
-      }
-
-      this.DEBUG &&
-        this.debug(
-          `${node.constructor.name} FOUND${'_nibbles' in node ? `: [${node._nibbles}]` : ''}`,
-          ['FIND_PATH', keyProgress.toString()]
-        )
-
-      const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
-      this.DEBUG && this.debug(`[${keyRemainder}] Remaining`, ['FIND_PATH', keyProgress.toString()])
-      stack.push(node)
-      this.DEBUG &&
-        this.debug(
-          `Adding ${node.constructor.name} to STACK (size: ${stack.length}) ${stack.map(
-            (e, i) => `${i === stack.length - 1 ? '\n|| +' : '\n|| '}` + e.constructor.name
-          )}`,
-          ['FIND_PATH']
-        )
-
+      stack[progress] = node as TrieNode
       if (node instanceof BranchNode) {
-        if (keyRemainder.length === 0) {
+        if (progress === keyLen) {
           result = { node, remaining: [], stack }
         } else {
-          const branchIndex = keyRemainder[0]
+          const branchIndex = targetKey[progress]
           this.DEBUG &&
             this.debug(`Looking for node on branch index: [${branchIndex}]`, [
               'FIND_PATH',
@@ -372,36 +376,49 @@ export class Trie {
               ['FIND_PATH', 'BranchNode', branchIndex.toString()]
             )
           if (!branchNode) {
-            result = { node: null, remaining: keyRemainder, stack }
+            result = { node: null, remaining: targetKey.slice(progress), stack }
           } else {
+            progress++
             walkController.onlyBranchIndex(node, keyProgress, branchIndex)
           }
         }
       } else if (node instanceof LeafNode) {
-        if (doKeysMatch(keyRemainder, node.key())) {
-          result = { node, remaining: [], stack }
-        } else {
-          result = { node: null, remaining: keyRemainder, stack }
+        const _progress = progress
+        if (keyLen - progress > node.key().length) {
+          result = { node: null, remaining: targetKey.slice(_progress), stack }
+          return
         }
+        for (const k of node.key()) {
+          if (k !== targetKey[progress]) {
+            result = { node: null, remaining: targetKey.slice(_progress), stack }
+            return
+          }
+          progress++
+        }
+        result = { node, remaining: [], stack }
       } else if (node instanceof ExtensionNode) {
         this.DEBUG &&
           this.debug(
-            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${keyRemainder.slice(
-              0,
-              node.key().length
+            `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
+              progress,
+              progress + node.key().length
             )}]\n|| Matching: [${
-              keyRemainder.slice(0, node.key().length).toString() === node.key().toString()
+              targetKey.slice(progress, progress + node.key().length).toString() ===
+              node.key().toString()
             }]
             `,
             ['FIND_PATH', 'ExtensionNode']
           )
-        const matchingLen = matchingNibbleLength(keyRemainder, node.key())
-        if (matchingLen !== node.key().length) {
-          result = { node: null, remaining: keyRemainder, stack }
-        } else {
+        const _progress = progress
+        for (const k of node.key()) {
           this.DEBUG && this.debug(`NextNode: ${node.value()}`, ['FIND_PATH', 'ExtensionNode'])
-          walkController.allChildren(node, keyProgress)
+          if (k !== targetKey[progress]) {
+            result = { node: null, remaining: targetKey.slice(_progress), stack }
+            return
+          }
+          progress++
         }
+        walkController.allChildren(node, keyProgress)
       }
     }
 
@@ -425,11 +442,12 @@ export class Trie {
         ['FIND_PATH']
       )
 
+    result.stack = result.stack.filter((e) => e !== undefined)
     this.DEBUG &&
       this.debug(
-        `Result: \n|| Node: ${
-          result.node === null ? 'null' : result.node.constructor.name
-        }\n|| Remaining: [${result.remaining}]\n|| Stack: ${result.stack
+        `Result:
+        || Node: ${result.node === null ? 'null' : result.node.constructor.name}
+        || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
           .map((e) => e.constructor.name)
           .join(', ')}`,
         ['FIND_PATH']
@@ -1043,19 +1061,20 @@ export class Trie {
    * Note on db: the copy will create a reference to the
    * same underlying database.
    *
-   * Note on cache: for memory reasons a copy will not
-   * recreate a new LRU cache but initialize with cache
-   * being deactivated.
+   * Note on cache: for memory reasons a copy will by default
+   * not recreate a new LRU cache but initialize with cache
+   * being deactivated. This behavior can be overwritten by
+   * explicitly setting `cacheSize` as an option on the method.
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true, keyPrefix?: Uint8Array): Trie {
+  shallowCopy(includeCheckpoints = true, opts?: TrieShallowCopyOpts): Trie {
     const trie = new Trie({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
-      keyPrefix: keyPrefix ?? this._opts.keyPrefix,
       cacheSize: 0,
+      ...(opts ?? {}),
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
       trie._db.setCheckpoints(this._db.checkpoints)

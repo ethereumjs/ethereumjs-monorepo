@@ -33,12 +33,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
+      - run: npm ci --omit=peer
         working-directory: ${{github.workspace}}
 
       - run: npm run lint
-      - run: npm run coverage
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: rlp
+

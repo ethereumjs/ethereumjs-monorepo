@@ -2,8 +2,6 @@ import { Hardfork } from '@ethereumjs/common'
 
 import { Event } from '../types'
 
-import { RlpxServer } from './server'
-
 import type { Config } from '../config'
 import type { Peer } from './peer'
 
@@ -236,23 +234,18 @@ export class PeerPool {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= NO_PEER_PERIOD_COUNT) {
         this.noPeerPeriods = 0
-        const promises = this.config.servers.map(async (server) => {
-          if (server instanceof RlpxServer) {
-            this.config.logger.info('Restarting RLPx server')
-            await server.stop()
-            await server.start()
-            this.config.logger.info('Reinitiating server bootstrap')
-            await server.bootstrap()
-          }
-        })
-        await Promise.all(promises)
+        if (this.config.server !== undefined) {
+          this.config.logger.info('Restarting RLPx server')
+          await this.config.server.stop()
+          await this.config.server.start()
+          this.config.logger.info('Reinitiating server bootstrap')
+          await this.config.server.bootstrap()
+        }
       } else {
         let tablesize: number | undefined = 0
-        for (const server of this.config.servers) {
-          if (server instanceof RlpxServer && server.discovery) {
-            tablesize = server.dpt?.getPeers().length
-            this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
-          }
+        if (this.config.server !== undefined && this.config.server.discovery) {
+          tablesize = this.config.server.dpt?.getPeers().length
+          this.config.logger.info(`Looking for suited peers: peertablesize=${tablesize}`)
         }
       }
     } else {

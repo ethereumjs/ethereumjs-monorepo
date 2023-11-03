@@ -8,7 +8,7 @@ import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from './skeleton'
+import type { Skeleton } from '../service/skeleton'
 import type { SynchronizerOptions } from './sync'
 import type { Block } from '@ethereumjs/block'
 
@@ -88,10 +88,13 @@ export class BeaconSynchronizer extends Synchronizer {
     const subchain = this.skeleton.bounds()
     if (subchain !== undefined) {
       const { head, tail, next } = subchain
-      this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
-      const headBlock = await this.skeleton.getBlock(head)
+      this.config.superMsg(`Resuming beacon sync tail=${tail} head=${head} next=${short(next)}`)
+      const headBlock = await this.skeleton.getBlock(head, true)
       if (headBlock !== undefined) {
         await this.skeleton.initSync(headBlock)
+        void this.start()
+      } else {
+        await this.skeleton.reset()
       }
     }
   }
@@ -167,25 +170,24 @@ export class BeaconSynchronizer extends Synchronizer {
     clearTimeout(timeout)
   }
 
+  async reorged(block: Block): Promise<void> {
+    if (!this.opened) return
+    // Clean the current fetcher, later this.start will start it again
+    await this.stop()
+    this.config.logger.debug(
+      `Beacon sync reorged, new head number=${block.header.number} hash=${short(
+        block.header.hash()
+      )}`
+    )
+    void this.start()
+  }
+
   /**
    * Returns true if the block successfully extends the chain.
    */
   async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
     const reorg = await this.skeleton.setHead(block, false)
-    if (reorg === false) {
-      this.config.logger.debug(
-        `Beacon sync skeleton can be extended number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    } else {
-      this.config.logger.debug(
-        `Block can not extend Beacon sync skeleton number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    }
     return !reorg
   }
 
@@ -199,19 +201,8 @@ export class BeaconSynchronizer extends Synchronizer {
     // from the new head.
     const reorg = await this.skeleton.setHead(block, true, !this.running)
     if (reorg) {
-      // Clean the current fetcher, later this.start will start it again
-      await this.stop()
-      this.config.logger.debug(
-        `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    } else {
-      this.config.logger.debug(
-        `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
-      )
+      await this.reorged(block)
     }
-    void this.start()
     return true
   }
 
@@ -300,7 +291,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
-    this.config.logger.info(
+    this.config.logger.debug(
       `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
     )
   }
@@ -316,7 +307,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BIGINT_0) {
-      void this.execution.run(true, shouldRunOnlyBatched)
+      await this.execution.run(true, shouldRunOnlyBatched)
     }
   }
 

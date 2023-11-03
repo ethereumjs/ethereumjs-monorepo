@@ -31,7 +31,7 @@ describe('[LightEthereumService]', async () => {
   const { LightEthereumService } = await import('../../src/service/lightethereumservice')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     assert.ok(service.synchronizer instanceof LightSynchronizer, 'light sync')
@@ -39,7 +39,7 @@ describe('[LightEthereumService]', async () => {
   })
 
   it('should get protocols', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     assert.ok(service.protocols[0] instanceof LesProtocol, 'light protocols')
@@ -47,7 +47,7 @@ describe('[LightEthereumService]', async () => {
 
   it('should open', async () => {
     const server = new RlpxServer({} as any)
-    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.open()
@@ -68,7 +68,7 @@ describe('[LightEthereumService]', async () => {
 
   it('should start/stop', async () => {
     const server = new RlpxServer({} as any)
-    const config = new Config({ servers: [server], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const service = new LightEthereumService({ config, chain })
     await service.start()

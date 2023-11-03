@@ -23,7 +23,7 @@ describe('[RlpxPeer]', async () => {
   const { RlpxPeer } = await import('../../../src/net/peer/rlpxpeer')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const peer = new RlpxPeer({
       config,
       id: 'abcdef0123',
@@ -57,7 +57,7 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should connect to peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const proto0 = { name: 'les', versions: [4] } as any
     const peer = new RlpxPeer({
       config,
@@ -73,7 +73,7 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should handle peer events', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: vi.fn() } as any
     ;(peer as any).bindProtocols = vi.fn().mockResolvedValue(undefined)
@@ -115,7 +115,7 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should accept peer connection', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
     peer.bindProtocols = vi.fn().mockResolvedValue(null)
 
@@ -124,7 +124,7 @@ describe('[RlpxPeer]', async () => {
   })
 
   it('should bind protocols', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const protocols = [{ name: 'proto0' }] as any
     const peer = new RlpxPeer({
       config,

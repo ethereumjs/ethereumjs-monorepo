@@ -48,8 +48,11 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly txTrie = new Trie()
   public readonly common: Common
+
+  private cache: {
+    txTrieRoot?: Uint8Array
+  } = {}
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
@@ -439,9 +442,8 @@ export class Block {
   /**
    * Generates transaction trie for validation.
    */
-  async genTxTrie(): Promise<void> {
-    const { transactions, txTrie } = this
-    await Block.genTransactionsTrieRoot(transactions, txTrie)
+  async genTxTrie(): Promise<Uint8Array> {
+    return Block.genTransactionsTrieRoot(this.transactions, new Trie())
   }
 
   /**
@@ -456,10 +458,10 @@ export class Block {
       return result
     }
 
-    if (equalsBytes(this.txTrie.root(), KECCAK256_RLP)) {
-      await this.genTxTrie()
+    if (this.cache.txTrieRoot === undefined) {
+      this.cache.txTrieRoot = await this.genTxTrie()
     }
-    result = equalsBytes(this.txTrie.root(), this.header.transactionsTrie)
+    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
     return result
   }
 

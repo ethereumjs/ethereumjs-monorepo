@@ -1,11 +1,11 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 
+import { errSyncMerged } from '../../service/skeleton'
 import { Event } from '../../types'
-import { errSyncMerged } from '../skeleton'
 
 import { BlockFetcher } from './blockfetcher'
 
-import type { Skeleton } from '../skeleton'
+import type { Skeleton } from '../../service/skeleton'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import type { Block } from '@ethereumjs/block'
 

@@ -124,7 +124,7 @@ describe(method, () => {
       const { executionPayload, blobsBundle } = res.body.result
       assert.equal(
         executionPayload.blockHash,
-        '0xe085c4203edf3c9437b41ff43dabe4918a0f496d04217768f0f50e501cd0721a',
+        '0xf63169fd7c38630ead561c84612d0e9e1eade2f54d729f48460042a3cee66609',
         'built expected block'
       )
       assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')

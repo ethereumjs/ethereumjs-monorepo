@@ -21,7 +21,7 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import readline from 'readline'
-import yargs from 'yargs'
+import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../src/client'
@@ -47,20 +47,21 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-// @ts-ignore
+// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.bootnodes, etc)
 const args: ClientOpts = yargs(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
   })
   .option('network', {
     describe: 'Network',
-    choices: networks.map((n) => n[1]),
+    choices: networks.map((n) => n[1]).filter((el) => isNaN(parseInt(el))),
     default: 'mainnet',
   })
   .option('networkId', {
     describe: 'Network ID',
-    choices: networks.map((n) => parseInt(n[0])),
+    choices: networks.map((n) => parseInt(n[0])).filter((el) => !isNaN(el)),
     default: undefined,
+    conflicts: ['customChain', 'customGenesisState', 'gethGenesis'], // Disallows custom chain data and networkId
   })
   .option('sync', {
     describe: 'Blockchain sync mode (light sync experimental)',
@@ -79,10 +80,12 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('customChain', {
     describe: 'Path to custom chain parameters json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customGenesisState',
   })
   .option('customGenesisState', {
     describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
+    implies: 'customChain',
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
@@ -98,13 +101,9 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('transports', {
-    describe: 'Network transports',
-    default: Config.TRANSPORTS_DEFAULT,
-    array: true,
-  })
   .option('bootnodes', {
-    describe: 'Comma-separated list of network bootnodes',
+    describe:
+      'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
     array: true,
   })
   .option('port', {
@@ -137,7 +136,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',
-    default: 8545,
+    default: 8546,
   })
   .option('wsAddr', {
     describe: 'WS-RPC server listening address',
@@ -160,7 +159,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('wsEnginePort', {
     describe: 'WS-RPC server listening port for Engine namespace',
     number: true,
-    default: 8551,
+    default: 8552,
   })
   .option('wsEngineAddr', {
     describe: 'WS-RPC server listening interface address for Engine namespace',
@@ -206,8 +205,9 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: 5,
   })
   .option('rpcDebug', {
-    describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
-    boolean: true,
+    describe:
+      'Additionally log complete RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods).',
+    default: '',
   })
   .option('rpcCors', {
     describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
@@ -268,6 +268,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     number: true,
     default: Config.STORAGE_CACHE,
   })
+  .option('codeCache', {
+    describe: 'Size for the code cache (max number of contracts)',
+    number: true,
+    default: Config.CODE_CACHE,
+  })
   .option('trieCache', {
     describe: 'Size for the trie cache (max number of trie nodes)',
     number: true,
@@ -299,14 +304,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('dev', {
     describe: 'Start an ephemeral PoA blockchain with a single miner and prefunded accounts',
-    choices: [undefined, false, true, 'poa', 'pow'],
-  })
-  .check((argv) => {
-    if ('dev' in argv && argv['dev'] === undefined) {
-      throw Error('If the "dev" option is used it must be assigned a value')
-    } else {
-      return true
-    }
+    choices: ['false', 'true', 'poa', 'pow'],
   })
   .option('minerCoinbase', {
     describe:
@@ -319,13 +317,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('disableBeaconSync', {
-    describe:
-      'Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain',
-    boolean: true,
-  })
-  .option('forceSnapSync', {
-    describe: 'Force a snap sync run (for testing and development purposes)',
+  .option('snap', {
+    describe: 'Enable snap state sync (for testing and development purposes)',
     boolean: true,
   })
   .option('prefixStorageTrieKeys', {
@@ -335,6 +328,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
     deprecated:
       'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
+  })
+  .options('useStringValueTrieDB', {
+    describe:
+      'Use string values in the trie DB. This is old behavior, new behavior uses Uint8Arrays in the DB (more performant)',
+    boolean: true,
+    default: false,
+    deprecated:
+      'Usage of old DBs which uses string-values is temporary. Please sync new instances without this option.',
   })
   .option('txLookupLimit', {
     describe:
@@ -366,8 +367,29 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .option('pruneEngineCache', {
+    describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
+    boolean: true,
+    default: true,
+  })
+  .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
-  .strict().argv
+  .strict()
+  .check((argv, _options) => {
+    const usedPorts = new Set()
+    let collision = false
+    if (argv.ws === true) {
+      usedPorts.add(argv.wsPort)
+      if (!usedPorts.has(argv.wsEnginePort)) {
+        usedPorts.add(argv.wsEnginePort)
+      }
+    }
+    if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
+    if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
+
+    if (collision) throw new Error('cannot reuse ports between RPC instances')
+    return true
+  }).argv
 
 /**
  * Initializes and returns the databases needed for the client
@@ -723,7 +745,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/devnet6.txt')
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
@@ -749,24 +771,12 @@ async function run() {
   }
 
   // Configure common based on args given
-  if (
-    (typeof args.customChain === 'string' ||
-      typeof args.customGenesisState === 'string' ||
-      typeof args.gethGenesis === 'string') &&
-    (args.network !== 'mainnet' || args.networkId !== undefined)
-  ) {
-    console.error('cannot specify both custom chain parameters and preset network ID')
-    process.exit()
-  }
+
   // Use custom chain parameters file if specified
   if (typeof args.customChain === 'string') {
-    if (args.customGenesisState === undefined) {
-      console.error('cannot have custom chain parameters without genesis state')
-      process.exit()
-    }
     try {
       const customChainParams = JSON.parse(readFileSync(args.customChain, 'utf-8'))
-      customGenesisState = JSON.parse(readFileSync(args.customGenesisState, 'utf-8'))
+      customGenesisState = JSON.parse(readFileSync(args.customGenesisState!, 'utf-8'))
       common = new Common({
         chain: customChainParams.name,
         customChains: [customChainParams],
@@ -805,7 +815,31 @@ async function run() {
   }
 
   logger = getLogger(args)
-  const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
+  let bootnodes
+  if (args.bootnodes !== undefined) {
+    // File path passed, read bootnodes from disk
+    if (
+      Array.isArray(args.bootnodes) &&
+      args.bootnodes.length === 1 &&
+      args.bootnodes[0].includes('.txt')
+    ) {
+      const file = readFileSync(args.bootnodes[0], 'utf-8')
+      let nodeURLs = file.split(/\r?\n/).filter((url) => (url !== '' ? true : false))
+      nodeURLs = nodeURLs.map((url) => {
+        const discportIndex = url.indexOf('?discport')
+        if (discportIndex > 0) {
+          return url.substring(0, discportIndex)
+        } else {
+          return url
+        }
+      })
+      bootnodes = parseMultiaddrs(nodeURLs)
+      logger.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
+    } else {
+      bootnodes = parseMultiaddrs(args.bootnodes)
+    }
+  }
+
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
@@ -822,6 +856,7 @@ async function run() {
     numBlocksPerIteration: args.numBlocksPerIteration,
     accountCache: args.accountCache,
     storageCache: args.storageCache,
+    codeCache: args.codeCache,
     trieCache: args.trieCache,
     dnsNetworks: args.dnsNetworks,
     extIP: args.extIP,
@@ -841,11 +876,11 @@ async function run() {
     port: args.port,
     saveReceipts: args.saveReceipts,
     syncmode: args.sync,
-    disableBeaconSync: args.disableBeaconSync,
-    forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
-    transports: args.transports,
+    enableSnapSync: args.snap,
+    useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
+    pruneEngineCache: args.pruneEngineCache,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -875,7 +910,7 @@ async function run() {
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
-      config.logger.info('Client started successfully')
+      config.superMsg('Client started successfully')
       return { client, servers }
     })
     .catch((e) => {

@@ -19,6 +19,7 @@
 
 - [CheckpointDBOpts](interfaces/CheckpointDBOpts.md)
 - [TrieOpts](interfaces/TrieOpts.md)
+- [TrieShallowCopyOpts](interfaces/TrieShallowCopyOpts.md)
 
 ### Type Aliases
 
@@ -69,7 +70,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L95)
+[packages/trie/src/types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L108)
 
 ___
 
@@ -170,7 +171,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L75)
+[packages/trie/src/types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L83)
 
 ## Variables
 
@@ -180,7 +181,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L102)
+[packages/trie/src/types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L115)
 
 ## Functions
 
@@ -250,13 +251,13 @@ ___
 
 ### decodeNode
 
-▸ **decodeNode**(`raw`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
+▸ **decodeNode**(`node`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `raw` | `Uint8Array` |
+| `node` | `Uint8Array` |
 
 #### Returns
 
@@ -264,7 +265,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L24)
+[packages/trie/src/node/util.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L30)
 
 ___
 
@@ -284,7 +285,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L10)
+[packages/trie/src/node/util.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L12)
 
 ___
 
@@ -355,21 +356,21 @@ ___
 
 ### isRawNode
 
-▸ **isRawNode**(`n`): `boolean`
+▸ **isRawNode**(`n`): n is Uint8Array[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `n` | `any` |
+| `n` | `Uint8Array` \| `NestedUint8Array` |
 
 #### Returns
 
-`boolean`
+n is Uint8Array[]
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L32)
+[packages/trie/src/node/util.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L26)
 
 ___
 

@@ -6,30 +6,12 @@ import { assert, describe, it, vi } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, batchBlocks, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import type { HttpServer } from 'jayson'
 
 const method = 'engine_newPayloadV1'
 
 const [blockData] = blocks
-
-/**
- *
- * @param t Test suite
- * @param server HttpServer
- * @param inputBlocks Array of valid ExecutionPayloadV1 data
- */
-export const batchBlocks = async (server: HttpServer, inputBlocks: any[] = blocks) => {
-  for (let i = 0; i < inputBlocks.length; i++) {
-    const req = params('engine_newPayloadV1', [inputBlocks[i]])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
-  }
-}
 
 describe(method, () => {
   it('call with invalid block hash without 0x', async () => {
@@ -112,6 +94,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
+    // should return syncing as block1 would still not be executed
     const state = {
       headBlockHash: blocks[1].blockHash,
       safeBlockHash: blocks[1].blockHash,
@@ -119,9 +102,15 @@ describe(method, () => {
     }
     req = params('engine_forkchoiceUpdatedV1', [state])
     expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
+      assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
     }
+    await baseRequest(server, req, 200, expectRes, false, false)
 
+    // now block2 should be executed
+    req = params(method, [blocks[1]])
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
     await baseRequest(server, req, 200, expectRes)
   })
 
@@ -256,10 +245,71 @@ describe(method, () => {
     await baseRequest(server, req, 200, expectRes)
   })
 
+  it('call with too many transactions', async () => {
+    const accountPk = hexToBytes(
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+    )
+    const accountAddress = Address.fromPrivateKey(accountPk)
+    const newGenesisJSON = {
+      ...genesisJSON,
+      alloc: {
+        ...genesisJSON.alloc,
+        [accountAddress.toString()]: {
+          balance: '0x100000000',
+        },
+      },
+    }
+
+    const { chain, server, common } = await setupChain(newGenesisJSON, 'post-merge', {
+      engine: true,
+    })
+
+    const transactions = Array.from({ length: 101 }, (_v, i) => {
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: i,
+          maxFeePerGas: '0x7',
+          value: 6,
+          gasLimit: 53_000,
+        },
+        { common }
+      ).sign(accountPk)
+
+      return bytesToHex(tx.serialize())
+    })
+    const blockDataWithValidTransaction = {
+      ...blockData,
+      transactions,
+      parentHash: '0x7444bd276e83a1ad90cf2ce8d1cff9ad15ed2489e49928a802bd60e3e81010f4',
+      receiptsRoot: '0x29651db7ce551aae097d75c4c9785e55068a11cf9e365bbe1c3b1780a85621c0',
+      gasUsed: '0x51ae28',
+      stateRoot: '0xd51a194147c26671af9ce46e9f5914d3e64fac15e80e46be5cc8c42c935449bc',
+      blockHash: '0x7c5cc6138adca74b80e6066c30e330b6307ff43bc0dc3dd4e988bb1b9764d199',
+    }
+
+    // set the newpayload limit to 100 for test
+    ;(chain.config as any).engineNewpayloadMaxTxsExecute = 100
+
+    // newpayload shouldn't execute block but just return either SYNCING or ACCEPTED
+    let expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'SYNCING')
+    }
+    let req = params(method, [blockDataWithValidTransaction])
+    await baseRequest(server, req, 200, expectRes, false, false)
+
+    // set the newpayload limit to 101 and the block should be executed
+    ;(chain.config as any).engineNewpayloadMaxTxsExecute = 101
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
+    req = params(method, [blockDataWithValidTransaction])
+    await baseRequest(server, req, 200, expectRes)
+  })
+
   it('re-execute payload and verify that no errors occur', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     let req = params('engine_forkchoiceUpdatedV1', [
       {

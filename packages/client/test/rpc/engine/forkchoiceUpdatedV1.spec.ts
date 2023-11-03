@@ -8,10 +8,8 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { blockToExecutionPayload } from '../../../src/rpc/modules'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, batchBlocks, params, setupChain } from '../helpers'
 import { checkError } from '../util'
-
-import { batchBlocks } from './newPayloadV1.spec.js'
 
 const crypto = require('crypto')
 
@@ -51,7 +49,7 @@ function createBlock(parentBlock: Block) {
   return block
 }
 
-export const validPayload = [validForkChoiceState, validPayloadAttributes]
+const validPayload = [validForkChoiceState, validPayloadAttributes]
 
 describe(method, () => {
   it('call with invalid head block hash without 0x', async () => {
@@ -196,8 +194,13 @@ describe(method, () => {
     )
 
     await chain.putBlocks([newBlock])
+    const newBlockHashHex = bytesToHex(newBlock.hash())
     const req = params(method, [
-      { ...validForkChoiceState, headBlockHash: bytesToHex(newBlock.hash()) },
+      {
+        safeBlockHash: newBlockHashHex,
+        finalizedBlockHash: newBlockHashHex,
+        headBlockHash: newBlockHashHex,
+      },
       null,
     ])
     const expectRes = (res: any) => {
@@ -241,7 +244,7 @@ describe(method, () => {
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     req = params(method, [
       {
@@ -264,7 +267,7 @@ describe(method, () => {
         finalizedBlockHash: '0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4b',
       },
     ])
-    const expectRes = checkError(INVALID_PARAMS, 'finalized block not available')
+    const expectRes = checkError(INVALID_PARAMS, 'finalized block not available in canonical chain')
     await baseRequest(server, req, 200, expectRes)
   })
 
@@ -282,20 +285,21 @@ describe(method, () => {
   })
 
   it('latest block after reorg', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const { server, blockchain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     let req = params(method, [validForkChoiceState])
     let expectRes = (res: any) => {
       assert.equal(res.body.result.payloadStatus.status, 'VALID')
     }
     await baseRequest(server, req, 200, expectRes, false, false)
 
-    await batchBlocks(server)
+    await batchBlocks(server, blocks)
 
     req = params(method, [
       {
         ...validForkChoiceState,
         headBlockHash: blocks[2].blockHash,
         safeBlockHash: blocks[0].blockHash,
+        finalizedBlockHash: bytesToHex(blockchain.genesisBlock.hash()),
       },
     ])
     expectRes = (res: any) => {
@@ -367,7 +371,7 @@ describe(method, () => {
 
     const expectRes = (res: any) => {
       assert.equal(res.body.error.code, -32602)
-      assert.ok(res.body.error.message.includes('safeBlock'))
+      assert.ok(res.body.error.message.includes('safe'))
       assert.ok(res.body.error.message.includes('canonical'))
     }
     await baseRequest(server, req, 200, expectRes)
@@ -410,7 +414,7 @@ describe(method, () => {
 
     const expectRes = (res: any) => {
       assert.equal(res.body.error.code, -32602)
-      assert.ok(res.body.error.message.includes('finalizedBlock'))
+      assert.ok(res.body.error.message.includes('finalized'))
       assert.ok(res.body.error.message.includes('canonical'))
     }
     await baseRequest(server, req, 200, expectRes)
