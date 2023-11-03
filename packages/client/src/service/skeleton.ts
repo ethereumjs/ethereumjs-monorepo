@@ -1309,7 +1309,7 @@ export class Skeleton extends MetaDBManager {
     }
     this.filling = false
     this.config.logger.debug(
-      `Successfully put=${fillLogIndex} skipped=${skippedLogIndex} blocks start=${start} end=${canonicalHead} skeletonHead=${subchain.head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
+      `Successfully put=${fillLogIndex} skipped (because already inserted)=${skippedLogIndex} blocks start=${start} end=${canonicalHead} skeletonHead=${subchain.head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
     )
   }
 
