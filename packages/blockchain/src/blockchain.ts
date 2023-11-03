@@ -501,12 +501,11 @@ export class Blockchain implements BlockchainInterface {
         // set total difficulty in the current context scope
         if (this._headHeaderHash) {
           currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
-          headHeaderNumber = await this.dbManager.hashToNumber(this._headHeaderHash) ?? BIGINT_0
+          headHeaderNumber = (await this.dbManager.hashToNumber(this._headHeaderHash)) ?? BIGINT_0
         }
         if (this._headBlockHash) {
           currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
         }
-
 
         // calculate the total difficulty of the new block
         const parentTd = await this.getParentTD(header)
@@ -526,7 +525,8 @@ export class Blockchain implements BlockchainInterface {
         if (
           block.isGenesis() ||
           td > currentTd.header ||
-          (block.common.consensusType() === ConsensusType.ProofOfStake && header.number > headHeaderNumber)
+          (block.common.consensusType() === ConsensusType.ProofOfStake &&
+            header.number > headHeaderNumber)
         ) {
           const foundCommon = await this.findCommonAncestor(header)
           commonAncestor = foundCommon.commonAncestor
