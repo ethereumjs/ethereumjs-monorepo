@@ -16,6 +16,14 @@ export function pedersenHash(input: Uint8Array): Uint8Array {
   return pedersenHash
 }
 
+export function verifyUpdate(
+  root: Uint8Array,
+  proof: Uint8Array,
+  keyValues: Map<any, any>
+): Uint8Array {
+  return rustVerkleWasm.verify_update(root, proof, keyValues)
+}
+
 /**
  * @dev Returns the tree key for a given address, tree index, and sub index.
  * @dev Assumes that the verkle node width = 256
