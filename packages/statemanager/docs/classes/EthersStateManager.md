@@ -25,6 +25,7 @@
 - [commit](EthersStateManager.md#commit)
 - [deleteAccount](EthersStateManager.md#deleteaccount)
 - [dumpStorage](EthersStateManager.md#dumpstorage)
+- [dumpStorageRange](EthersStateManager.md#dumpstoragerange)
 - [flush](EthersStateManager.md#flush)
 - [generateCanonicalGenesis](EthersStateManager.md#generatecanonicalgenesis)
 - [getAccount](EthersStateManager.md#getaccount)
@@ -56,7 +57,7 @@
 
 #### Defined in
 
-[ethersStateManager.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L30)
+[ethersStateManager.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L31)
 
 ## Properties
 
@@ -70,7 +71,7 @@ EVMStateManagerInterface.originalStorageCache
 
 #### Defined in
 
-[ethersStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L27)
+[ethersStateManager.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L28)
 
 ## Methods
 
@@ -92,7 +93,7 @@ Checks if an `account` exists at `address`
 
 #### Defined in
 
-[ethersStateManager.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L198)
+[ethersStateManager.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L204)
 
 ___
 
@@ -116,7 +117,7 @@ EVMStateManagerInterface.checkpoint
 
 #### Defined in
 
-[ethersStateManager.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L348)
+[ethersStateManager.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L354)
 
 ___
 
@@ -133,7 +134,7 @@ initially be retrieved from the provider
 
 #### Defined in
 
-[ethersStateManager.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L91)
+[ethersStateManager.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L92)
 
 ___
 
@@ -159,7 +160,7 @@ EVMStateManagerInterface.clearContractStorage
 
 #### Defined in
 
-[ethersStateManager.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L172)
+[ethersStateManager.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L173)
 
 ___
 
@@ -182,7 +183,7 @@ EVMStateManagerInterface.commit
 
 #### Defined in
 
-[ethersStateManager.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L359)
+[ethersStateManager.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L365)
 
 ___
 
@@ -208,7 +209,7 @@ EVMStateManagerInterface.deleteAccount
 
 #### Defined in
 
-[ethersStateManager.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L317)
+[ethersStateManager.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L323)
 
 ___
 
@@ -238,7 +239,33 @@ EVMStateManagerInterface.dumpStorage
 
 #### Defined in
 
-[ethersStateManager.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L183)
+[ethersStateManager.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L184)
+
+___
+
+### dumpStorageRange
+
+▸ **dumpStorageRange**(`_address`, `_startKey`, `_limit`): `Promise`<`StorageRange`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `_address` | `Address` |
+| `_startKey` | `bigint` |
+| `_limit` | `number` |
+
+#### Returns
+
+`Promise`<`StorageRange`\>
+
+#### Implementation of
+
+EVMStateManagerInterface.dumpStorageRange
+
+#### Defined in
+
+[ethersStateManager.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L195)
 
 ___
 
@@ -252,7 +279,7 @@ ___
 
 #### Defined in
 
-[ethersStateManager.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L376)
+[ethersStateManager.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L382)
 
 ___
 
@@ -276,7 +303,7 @@ EVMStateManagerInterface.generateCanonicalGenesis
 
 #### Defined in
 
-[ethersStateManager.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L399)
+[ethersStateManager.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L405)
 
 ___
 
@@ -305,7 +332,7 @@ EVMStateManagerInterface.getAccount
 
 #### Defined in
 
-[ethersStateManager.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L224)
+[ethersStateManager.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L230)
 
 ___
 
@@ -334,7 +361,7 @@ EVMStateManagerInterface.getContractCode
 
 #### Defined in
 
-[ethersStateManager.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L103)
+[ethersStateManager.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L104)
 
 ___
 
@@ -366,7 +393,7 @@ EVMStateManagerInterface.getContractStorage
 
 #### Defined in
 
-[ethersStateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L132)
+[ethersStateManager.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L133)
 
 ___
 
@@ -395,7 +422,7 @@ EVMStateManagerInterface.getProof
 
 #### Defined in
 
-[ethersStateManager.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L330)
+[ethersStateManager.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L336)
 
 ___
 
@@ -417,7 +444,7 @@ EVMStateManagerInterface.getStateRoot
 
 #### Defined in
 
-[ethersStateManager.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L383)
+[ethersStateManager.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L389)
 
 ___
 
@@ -439,7 +466,7 @@ EVMStateManagerInterface.hasStateRoot
 
 #### Defined in
 
-[ethersStateManager.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L395)
+[ethersStateManager.ts:401](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L401)
 
 ___
 
@@ -468,7 +495,7 @@ EVMStateManagerInterface.modifyAccountFields
 
 #### Defined in
 
-[ethersStateManager.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L288)
+[ethersStateManager.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L294)
 
 ___
 
@@ -495,7 +522,7 @@ EVMStateManagerInterface.putAccount
 
 #### Defined in
 
-[ethersStateManager.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L264)
+[ethersStateManager.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L270)
 
 ___
 
@@ -523,7 +550,7 @@ EVMStateManagerInterface.putContractCode
 
 #### Defined in
 
-[ethersStateManager.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L118)
+[ethersStateManager.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L119)
 
 ___
 
@@ -552,7 +579,7 @@ EVMStateManagerInterface.putContractStorage
 
 #### Defined in
 
-[ethersStateManager.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L164)
+[ethersStateManager.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L165)
 
 ___
 
@@ -575,7 +602,7 @@ EVMStateManagerInterface.revert
 
 #### Defined in
 
-[ethersStateManager.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L370)
+[ethersStateManager.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L376)
 
 ___
 
@@ -598,7 +625,7 @@ internal cache.
 
 #### Defined in
 
-[ethersStateManager.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L81)
+[ethersStateManager.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L82)
 
 ___
 
@@ -626,7 +653,7 @@ EVMStateManagerInterface.setStateRoot
 
 #### Defined in
 
-[ethersStateManager.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L390)
+[ethersStateManager.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L396)
 
 ___
 
@@ -648,4 +675,4 @@ EVMStateManagerInterface.shallowCopy
 
 #### Defined in
 
-[ethersStateManager.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L59)
+[ethersStateManager.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/ethersStateManager.ts#L60)

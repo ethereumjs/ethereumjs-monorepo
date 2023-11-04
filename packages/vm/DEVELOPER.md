@@ -106,6 +106,12 @@ It is also possible to only run the tests from the skip lists:
 
 `ts-node ./test/tester --state --runSkipped=SLOW`
 
+#### Profiling Tests
+
+Test runs can be profiled using the new EVM/VM profiling functionality by using the `--profile` option for test runs:
+
+`ts-node ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
+
 ### CI Test Integration
 
 Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-monorepo/actions). The configuration can be found in `.github/workflows`.

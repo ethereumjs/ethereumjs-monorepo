@@ -45,9 +45,9 @@ await stateManager.commit()
 await stateManager.flush()
 ```
 
-### Account and Storage Caches
+### Account, Storage and Code Caches
 
-Starting with the v2 release the StateManager comes with a significantly more elaborate caching mechanism for account and storage caches.
+Starting with the v2 release and complemented by the v2.1 release the StateManager comes with a significantly more elaborate caching mechanism for account, storage and code caches.
 
 There are now two cache options available: an unbounded cache (`CacheType.ORDERED_MAP`) for short-lived usage scenarios (this one is the default cache) and a fixed-size cache (`CacheType.LRU`) for a long-lived large cache scenario.
 

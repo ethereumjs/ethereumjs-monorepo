@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.1 - 2023-10-26
+
+- Kademlia bucket add fix, PR [#2957](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2957)
+- Performance: only create `DEBUG` msgs if debugging, PR [#2958](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2958)
+- Pin `scanf` dependency (fixes broken types), PR [#3060](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3060)
+- Minimal `RLPx` test suite, PR [#3126](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3126)
+
 ## 6.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
