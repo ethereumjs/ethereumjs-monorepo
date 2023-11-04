@@ -1,11 +1,10 @@
 import { type Address, concatBytes, int32ToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
-
-import * as rustVerkleWasm from '../rust-verkle-wasm/rust_verkle_wasm.js'
+import { pedersen_hash, verify_update } from 'rust-verkle-wasm'
 
 import type { Point } from '../types.js'
 
 export function pedersenHash(input: Uint8Array): Uint8Array {
-  const pedersenHash = rustVerkleWasm.pedersen_hash(input)
+  const pedersenHash = pedersen_hash(input)
 
   if (pedersenHash === null) {
     throw new Error(
@@ -21,7 +20,7 @@ export function verifyUpdate(
   proof: Uint8Array,
   keyValues: Map<any, any>
 ): Uint8Array {
-  return rustVerkleWasm.verify_update(root, proof, keyValues)
+  return verify_update(root, proof, keyValues)
 }
 
 /**
