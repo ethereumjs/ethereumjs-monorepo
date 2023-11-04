@@ -28,7 +28,13 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
 import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
+import type {
+  BlockHeaderBytes,
+  BlockOptions,
+  HeaderData,
+  JsonHeader,
+  VerkleExecutionWitness,
+} from './types'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
 
@@ -62,6 +68,10 @@ export class BlockHeader {
   public readonly blobGasUsed?: bigint
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
+  /**
+   * EIP-6800: Verkle Proof Data (experimental)
+   */
+  public readonly executionWitness?: VerkleExecutionWitness
 
   public readonly common: Common
 
@@ -171,6 +181,7 @@ export class BlockHeader {
       extraData: new Uint8Array(0),
       mixHash: zeros(32),
       nonce: zeros(8),
+      executionWitness: undefined,
     }
 
     const parentHash = toType(headerData.parentHash, TypeOutput.Uint8Array) ?? defaults.parentHash
@@ -192,6 +203,7 @@ export class BlockHeader {
     const extraData = toType(headerData.extraData, TypeOutput.Uint8Array) ?? defaults.extraData
     const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
+    let executionWitness = headerData.executionWitness ?? defaults.executionWitness
 
     const setHardfork = options.setHardfork ?? false
     if (setHardfork === true) {
@@ -218,6 +230,25 @@ export class BlockHeader {
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
+    }
+
+    if (this.common.isActivatedEIP(6800)) {
+      if (executionWitness === undefined) {
+        executionWitness = {
+          stateDiff: [],
+          verkleProof: {
+            commitmentsByPath: [],
+            d: '0x',
+            depthExtensionPresent: '0x',
+            ipaProof: {
+              cl: [],
+              cr: [],
+              finalEvaluation: '0x',
+            },
+            otherStems: [],
+          },
+        }
+      }
     }
 
     const baseFeePerGas =
@@ -278,6 +309,7 @@ export class BlockHeader {
     this.blobGasUsed = blobGasUsed
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
+    this.executionWitness = executionWitness
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -371,6 +403,14 @@ export class BlockHeader {
           const msg = this._errorMsg('Initial EIP1559 block does not have initial base fee')
           throw new Error(msg)
         }
+      }
+    }
+
+    // Validation for Verkle blocks
+    // Unnecessary in this implementation since we're providing defaults if those fields are undefined
+    if (this.common.isActivatedEIP(6800)) {
+      if (this.executionWitness === undefined) {
+        throw new Error(`Invalid block: verkle executionWitness missing`)
       }
     }
 
