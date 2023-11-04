@@ -6,14 +6,12 @@ import {
   bytesToBigInt64,
   bytesToHex,
   bytesToInt32,
-  int32ToBytes,
   padToEven,
-  setLengthLeft,
   setLengthRight,
   toBytes,
   zeros,
 } from '@ethereumjs/util'
-import { pedersenHash } from '@ethereumjs/verkle'
+import { getTreeKey, verifyUpdate } from '@ethereumjs/verkle'
 import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
@@ -214,40 +212,28 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._state = preState
   }
 
-  private getTreeKey(address: Address, treeIndex: number, subIndex: number): Uint8Array {
-    const address32 = setLengthLeft(address.toBytes(), 32)
-
-    const treeIndexB = int32ToBytes(treeIndex, true)
-
-    const input = concatBytes(address32, treeIndexB)
-
-    const treeKey = concatBytes(pedersenHash(input).slice(0, 31), toBytes(subIndex))
-
-    return treeKey
-  }
-
   getTreeKeyForVersion(address: Address) {
-    return this.getTreeKey(address, 0, VERSION_LEAF_KEY)
+    return getTreeKey(address, 0, VERSION_LEAF_KEY)
   }
 
   getTreeKeyForBalance(address: Address) {
-    return this.getTreeKey(address, 0, BALANCE_LEAF_KEY)
+    return getTreeKey(address, 0, BALANCE_LEAF_KEY)
   }
 
   getTreeKeyForNonce(address: Address) {
-    return this.getTreeKey(address, 0, NONCE_LEAF_KEY)
+    return getTreeKey(address, 0, NONCE_LEAF_KEY)
   }
 
   getTreeKeyForCodeHash(address: Address) {
-    return this.getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
+    return getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
   }
 
   getTreeKeyForCodeSize(address: Address) {
-    return this.getTreeKey(address, 0, CODE_SIZE_LEAF_KEY)
+    return getTreeKey(address, 0, CODE_SIZE_LEAF_KEY)
   }
 
   getTreeKeyForCodeChunk(address: Address, chunkId: number) {
-    return this.getTreeKey(
+    return getTreeKey(
       address,
       Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH),
       (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
@@ -288,7 +274,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       position = MAIN_STORAGE_OFFSET + storageKey
     }
 
-    return this.getTreeKey(
+    return getTreeKey(
       address,
       Math.floor(position / VERKLE_NODE_WIDTH),
       position % VERKLE_NODE_WIDTH
@@ -448,14 +434,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     //
     // This function returns the new root when all of the updated values are applied
 
-    const updatedStateRoot: Uint8Array = new Uint8Array(0)
-
-    // TODO: restore this assignment to updatedStateRoot
-    // wasm.verify_update(
-    //   parentVerkleRoot,
-    //   this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
-    //   new Map() // TODO: Generate the keys_values map from the old to the updated value
-    // )
+    const updatedStateRoot: Uint8Array = verifyUpdate(
+      parentVerkleRoot,
+      this._proof!, // TODO: Convert this into a Uint8Array ingestible by the method
+      new Map() // TODO: Generate the keys_values map from the old to the updated value
+    )
 
     // TODO: Not sure if this should return the updated state Root (current block) or the un-updated one (parent block)
     const verkleRoot = await this.getStateRoot()
