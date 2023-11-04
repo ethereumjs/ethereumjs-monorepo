@@ -333,6 +333,14 @@ The following EIPs are currently supported:
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
 
+### Fake EIPs
+
+This library supports the notion of "Fake EIPs". Fake EIPs are not real EIPs but take upon a range of (future-proof) unused EIP numbers to allow for adding certain types of generic EIP-like custom functionality which is not specified in a dedicated EIP (yet).
+
+Following Fake EIP numbers are assigned:
+
+- [Fake-EIP-999001](https://github.com/gballet/verkle-block-sample): Support for Verkle Proof Blocks (experimental)
+
 ### Bootstrap Nodes
 
 You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.

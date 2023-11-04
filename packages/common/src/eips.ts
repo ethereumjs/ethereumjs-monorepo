@@ -471,6 +471,17 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
   },
+  6800: {
+    comment: 'Ethereum state using a unified verkle tree',
+    url: 'https://github.com/ethereum/EIPs/pull/6800',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [],
+    gasConfig: {},
+    gasPrices: {},
+    vm: {},
+    pow: {},
+  },
   7516: {
     comment: 'BLOBBASEFEE opcode',
     url: 'https://eips.ethereum.org/EIPS/eip-7516',
