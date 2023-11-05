@@ -326,6 +326,11 @@ export interface ConfigOptions {
   pruneEngineCache?: boolean
   snapAvailabilityDepth?: bigint
   snapTransitionSafeDepth?: bigint
+
+  /**
+   * Save account keys preimages in the meta db (default: false)
+   */
+  savePreimage?: boolean
 }
 
 export class Config {
@@ -429,6 +434,7 @@ export class Config {
   // Defaulting to false as experimental as of now
   public readonly enableSnapSync: boolean
   public readonly useStringValueTrieDB: boolean
+  public readonly savePreimages: boolean
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -473,6 +479,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
+    this.savePreimages = options.savePreimage ?? false
 
     if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
       this.vmProfilerOpts = {

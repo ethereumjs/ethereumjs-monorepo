@@ -17,6 +17,7 @@ import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
+import { PreimagesManager } from './preimage'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -30,6 +31,7 @@ export class VMExecution extends Execution {
   public hardfork: string = ''
 
   public receiptsManager?: ReceiptsManager
+  public preimagesManager?: PreimagesManager
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | null>
 
@@ -97,13 +99,22 @@ export class VMExecution extends Execution {
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
-    if (this.metaDB && this.config.saveReceipts) {
-      this.receiptsManager = new ReceiptsManager({
-        chain: this.chain,
-        config: this.config,
-        metaDB: this.metaDB,
-      })
-      this.pendingReceipts = new Map()
+    if (this.metaDB) {
+      if (this.config.saveReceipts) {
+        this.receiptsManager = new ReceiptsManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+        this.pendingReceipts = new Map()
+      }
+      if (this.config.savePreimages) {
+        this.preimagesManager = new PreimagesManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+      }
     }
   }
 

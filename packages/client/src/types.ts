@@ -162,4 +162,5 @@ export interface ClientOpts {
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
   pruneEngineCache?: boolean
+  savePreimages?: boolean
 }
