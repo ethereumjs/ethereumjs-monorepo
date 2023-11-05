@@ -1,11 +1,10 @@
 import { type Address, concatBytes, int32ToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
+import { pedersen_hash, verify_update } from 'rust-verkle-wasm'
 
-import * as rustVerkleWasm from '../rust-verkle-wasm/rust_verkle_wasm.js'
-
-import type { Point } from '../types.js'
+import type { Point } from '../types'
 
 export function pedersenHash(input: Uint8Array): Uint8Array {
-  const pedersenHash = rustVerkleWasm.pedersen_hash(input)
+  const pedersenHash = pedersen_hash(input)
 
   if (pedersenHash === null) {
     throw new Error(
@@ -34,6 +33,14 @@ export function getTreeKey(address: Address, treeIndex: number, subIndex: number
   const treeKey = concatBytes(pedersenHash(input).slice(0, 31), toBytes(subIndex))
 
   return treeKey
+}
+
+export function verifyUpdate(
+  root: Uint8Array,
+  proof: Uint8Array,
+  keyValues: Map<any, any>
+): Uint8Array {
+  return verify_update(root, proof, keyValues)
 }
 
 // TODO: Replace this by the actual value of Point().Identity() from the Go code.
