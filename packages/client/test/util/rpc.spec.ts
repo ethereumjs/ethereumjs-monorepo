@@ -23,7 +23,12 @@ describe('[Util/RPC]', () => {
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
       for (const rpcDebug of ['', 'eth']) {
-        const { server } = createRPCServer(manager, { methodConfig, rpcDebug, logger })
+        const { server } = createRPCServer(manager, {
+          methodConfig,
+          rpcDebug,
+          logger,
+          rpcDebugVerbose: '',
+        })
         const httpServer = createRPCServerListener({
           server,
           withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
@@ -66,7 +71,8 @@ describe('[Util/RPC/Engine eth methods]', async () => {
   const manager = new RPCManager(client, config)
   const { server } = createRPCServer(manager, {
     methodConfig: MethodConfig.EngineOnly,
-    rpcDebug: false,
+    rpcDebug: '',
+    rpcDebugVerbose: '',
   })
   const httpServer = createRPCServerListener({ server })
   const methods = [
