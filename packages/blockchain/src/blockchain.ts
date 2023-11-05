@@ -9,6 +9,7 @@ import {
 } from '@ethereumjs/common'
 import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
 import {
+  AsyncEventEmitter,
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
@@ -33,6 +34,7 @@ import { DBManager } from './db/manager.js'
 import { DBTarget } from './db/operation.js'
 
 import type {
+  BlockchainEvents,
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
@@ -41,11 +43,7 @@ import type {
 } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import { AsyncEventEmitter, BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
-
-type BlockchainEvents = {
-  deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
-}
+import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
  * This class stores and interacts with blocks.
