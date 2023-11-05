@@ -41,8 +41,11 @@ import type {
 } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { AsyncEventEmitter, BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+
+type BlockchainEvents = {
+  deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
+}
 
 /**
  * This class stores and interacts with blocks.
@@ -51,7 +54,7 @@ export class Blockchain implements BlockchainInterface {
   consensus: Consensus
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
-  events: EventEmitter
+  events: AsyncEventEmitter<BlockchainEvents>
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */
   private _customGenesisState?: GenesisState /** Custom genesis state */
@@ -153,7 +156,7 @@ export class Blockchain implements BlockchainInterface {
 
     this.dbManager = new DBManager(this.db, this.common)
 
-    this.events = new EventEmitter()
+    this.events = new AsyncEventEmitter()
 
     if (opts.consensus) {
       this.consensus = opts.consensus
@@ -480,14 +483,6 @@ export class Blockchain implements BlockchainInterface {
               })
             : item
         const isGenesis = block.isGenesis()
-
-        console.log(
-          'PUTBLOCK',
-          bytesToHex(block.hash()),
-          block.transactions.length,
-          block.header.number
-        )
-        console.trace()
 
         // we cannot overwrite the Genesis block after initializing the Blockchain
         if (isGenesis) {
@@ -913,7 +908,6 @@ export class Blockchain implements BlockchainInterface {
     // But is this the way to go? If we know this is called from the
     // iterator we are safe, but if this is called from anywhere
     // else then this might lead to a concurrency problem?
-    console.log('DELBLOCK', bytesToHex(blockHash))
     await this._delBlock(blockHash)
   }
 
