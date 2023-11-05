@@ -21,10 +21,16 @@
 
 - [AccessListEIP2930TxData](interfaces/AccessListEIP2930TxData.md)
 - [BlobEIP4844TxData](interfaces/BlobEIP4844TxData.md)
+- [EIP1559CompatibleTx](interfaces/EIP1559CompatibleTx.md)
+- [EIP2718CompatibleTx](interfaces/EIP2718CompatibleTx.md)
+- [EIP2930CompatibleTx](interfaces/EIP2930CompatibleTx.md)
+- [EIP4844CompatibleTx](interfaces/EIP4844CompatibleTx.md)
 - [FeeMarketEIP1559TxData](interfaces/FeeMarketEIP1559TxData.md)
 - [JsonRpcTx](interfaces/JsonRpcTx.md)
 - [JsonTx](interfaces/JsonTx.md)
+- [LegacyTxInterface](interfaces/LegacyTxInterface.md)
 - [Transaction](interfaces/Transaction.md)
+- [TransactionCache](interfaces/TransactionCache.md)
 - [TransactionInterface](interfaces/TransactionInterface.md)
 - [TxData](interfaces/TxData.md)
 - [TxOptions](interfaces/TxOptions.md)
@@ -62,7 +68,7 @@
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:29
+common/dist/cjs/interfaces.d.ts:51
 
 ___
 
@@ -72,7 +78,7 @@ ___
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:28
+common/dist/cjs/interfaces.d.ts:50
 
 ___
 
@@ -82,7 +88,7 @@ ___
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:27
+common/dist/cjs/interfaces.d.ts:49
 
 ___
 
@@ -99,7 +105,7 @@ ___
 
 #### Defined in
 
-common/dist/cjs/interfaces.d.ts:23
+common/dist/cjs/interfaces.d.ts:45
 
 ___
 
@@ -109,7 +115,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L371)
+[tx/src/types.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L422)
 
 ___
 
@@ -136,7 +142,7 @@ Legacy [Transaction](interfaces/Transaction.md) Data
 
 #### Defined in
 
-[tx/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L187)
+[tx/src/types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L238)
 
 ___
 
@@ -146,7 +152,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L113)
+[tx/src/types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L122)
 
 ___
 
@@ -156,7 +162,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)
+[tx/src/types.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L213)
 
 ## Functions
 
@@ -216,7 +222,7 @@ tx is AccessListEIP2930Transaction
 
 #### Defined in
 
-[tx/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L119)
+[tx/src/types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L128)
 
 ___
 
@@ -236,7 +242,7 @@ txData is AccessListEIP2930TxData
 
 #### Defined in
 
-[tx/src/types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)
+[tx/src/types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L220)
 
 ___
 
@@ -256,7 +262,7 @@ tx is BlobEIP4844Transaction
 
 #### Defined in
 
-[tx/src/types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L127)
+[tx/src/types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L136)
 
 ___
 
@@ -276,7 +282,7 @@ txData is BlobEIP4844TxData
 
 #### Defined in
 
-[tx/src/types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L179)
+[tx/src/types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L230)
 
 ___
 
@@ -296,7 +302,7 @@ tx is FeeMarketEIP1559Transaction
 
 #### Defined in
 
-[tx/src/types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L123)
+[tx/src/types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L132)
 
 ___
 
@@ -316,7 +322,7 @@ txData is FeeMarketEIP1559TxData
 
 #### Defined in
 
-[tx/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L174)
+[tx/src/types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
 
 ___
 
@@ -336,7 +342,7 @@ tx is LegacyTransaction
 
 #### Defined in
 
-[tx/src/types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L115)
+[tx/src/types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L124)
 
 ___
 
@@ -356,4 +362,4 @@ txData is LegacyTxData
 
 #### Defined in
 
-[tx/src/types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
+[tx/src/types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L215)

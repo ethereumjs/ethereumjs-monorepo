@@ -31,6 +31,7 @@
 - [HardforkTransitionConfig](interfaces/HardforkTransitionConfig.md)
 - [StateManagerInterface](interfaces/StateManagerInterface.md)
 - [StorageDump](interfaces/StorageDump.md)
+- [StorageRange](interfaces/StorageRange.md)
 
 ### Type Aliases
 
@@ -42,6 +43,7 @@
 - [CasperConfig](README.md#casperconfig)
 - [CliqueConfig](README.md#cliqueconfig)
 - [EIPConfig](README.md#eipconfig)
+- [EIPOrHFConfig](README.md#eiporhfconfig)
 - [EthashConfig](README.md#ethashconfig)
 - [HardforkConfig](README.md#hardforkconfig)
 - [Proof](README.md#proof)
@@ -63,7 +65,7 @@
 
 #### Defined in
 
-[interfaces.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L43)
+[interfaces.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L66)
 
 ___
 
@@ -73,7 +75,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L42)
+[interfaces.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L65)
 
 ___
 
@@ -83,7 +85,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L41)
+[interfaces.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L64)
 
 ___
 
@@ -100,7 +102,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L33)
+[interfaces.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L56)
 
 ___
 
@@ -110,7 +112,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L11)
+[interfaces.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L34)
 
 ___
 
@@ -143,11 +145,34 @@ ___
 
 ### EIPConfig
 
-Ƭ **EIPConfig**: { `minimumHardfork`: [`Hardfork`](enums/Hardfork.md) ; `requiredEIPs`: `number`[]  } & `EIPOrHFConfig`
+Ƭ **EIPConfig**: { `minimumHardfork`: [`Hardfork`](enums/Hardfork.md) ; `requiredEIPs`: `number`[]  } & [`EIPOrHFConfig`](README.md#eiporhfconfig)
 
 #### Defined in
 
 [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
+
+___
+
+### EIPOrHFConfig
+
+Ƭ **EIPOrHFConfig**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `comment` | `string` |
+| `gasConfig?` | { `[key: string]`: `ParamDict`;  } |
+| `gasPrices?` | { `[key: string]`: `ParamDict`;  } |
+| `pow?` | { `[key: string]`: `ParamDict`;  } |
+| `sharding?` | { `[key: string]`: `ParamDict`;  } |
+| `status` | `string` |
+| `url` | `string` |
+| `vm?` | { `[key: string]`: `ParamDict`;  } |
+
+#### Defined in
+
+[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L136)
 
 ___
 
@@ -163,7 +188,7 @@ ___
 
 ### HardforkConfig
 
-Ƭ **HardforkConfig**: { `consensus?`: `ConsensusConfig` ; `eips?`: `number`[] ; `name`: `string`  } & `EIPOrHFConfig`
+Ƭ **HardforkConfig**: { `consensus?`: `ConsensusConfig` ; `eips?`: `number`[] ; `name`: `string`  } & [`EIPOrHFConfig`](README.md#eiporhfconfig)
 
 #### Defined in
 
@@ -189,7 +214,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L19)
+[interfaces.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L42)
 
 ___
 
@@ -207,7 +232,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L13)
+[interfaces.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L36)
 
 ## Variables
 
@@ -219,7 +244,7 @@ GenesisState info about well known ethereum chains
 
 #### Defined in
 
-[enums.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L23)
+[enums.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L25)
 
 ## Functions
 
@@ -265,4 +290,4 @@ parsed params
 
 #### Defined in
 
-[utils.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L199)
+[utils.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L205)

@@ -60,7 +60,7 @@ const decodedAsBuffers = arrToBufArr(decoded)
 assert.deepEqual(bufferList, decodedAsBuffers)
 ```
 
-### Buffer -> Uint8Arrayy
+### Buffer -> Uint8Array
 
 With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
 

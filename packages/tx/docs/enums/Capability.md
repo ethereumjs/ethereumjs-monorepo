@@ -2,7 +2,7 @@
 
 # Enumeration: Capability
 
-Can be used in conjunction with Transaction.supports
+Can be used in conjunction with [[TransactionType].supports](../interfaces/Transaction.md)
 to query on tx capabilities
 
 ## Table of contents
