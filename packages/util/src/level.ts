@@ -1,8 +1,8 @@
 import { MemoryLevel } from 'memory-level'
 
-import { KeyEncoding, ValueEncoding } from './db'
+import { KeyEncoding, ValueEncoding } from './db.js'
 
-import type { BatchDBOp, DB, DBObject, EncodingOpts } from './db'
+import type { BatchDBOp, DB, DBObject, EncodingOpts } from './db.js'
 import type { AbstractLevel } from 'abstract-level'
 // Helper to infer the `valueEncoding` option for `putting` a value in a levelDB
 const getEncodings = (opts: EncodingOpts = {}) => {
