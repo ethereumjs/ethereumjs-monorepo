@@ -44,7 +44,7 @@ export * from './bytes.js'
 export * from './types.js'
 
 /**
- * Helpful TypeScript types
+ * Level wrapper
  */
 export * from './level.js'
 
