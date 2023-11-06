@@ -104,6 +104,18 @@ export class VMExecution extends Execution {
         metaDB: this.metaDB,
       })
       this.pendingReceipts = new Map()
+      this.chain.blockchain.events.addListener(
+        'deletedCanonicalBlocks',
+        async (blocks, resolve) => {
+          // Once a block gets deleted from the chain, delete the receipts also
+          for (const block of blocks) {
+            await this.receiptsManager?.deleteReceipts(block)
+          }
+          if (resolve !== undefined) {
+            resolve()
+          }
+        }
+      )
     }
   }
 
