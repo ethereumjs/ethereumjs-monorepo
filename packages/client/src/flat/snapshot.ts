@@ -19,7 +19,6 @@ import type { Debugger } from 'debug'
 const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x' + '00')
 const STORAGE_PREFIX: Uint8Array = hexToBytes('0x' + '11')
 const CODE_PREFIX: Uint8Array = hexToBytes('0x' + '22')
-const CHECKPOINT_PREFIX: Uint8Array = hexToBytes('0x' + '33')
 
 const { debug: createDebugLogger } = debugDefault
 
