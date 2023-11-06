@@ -1,4 +1,4 @@
-import { hexToBytes, toBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import { hexToBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import type { Nibbles } from '../types.js'
 
