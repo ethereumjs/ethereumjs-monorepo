@@ -243,7 +243,6 @@ describe('snapshot checkpointing', () => {
     acc.codeHash = keccak256(hexToBytes('0x' + 'cdcd'))
     await snapshot.putAccount(addr, acc)
 
-    // TODO
     snapshot.commit()
 
     const res = await snapshot.getAccount(addr)
