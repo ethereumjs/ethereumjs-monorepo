@@ -91,9 +91,10 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^5.0.0",
-    "ethereum-cryptography": "^2.1.2"
+    "abstract-level": "^1.0.3",
+    "ethereum-cryptography": "^2.1.2",
+    "memory-level": "^1.0.0"
   },
-  "devDependencies": {},
   "peerDependencies": {
     "c-kzg": "^2.1.0"
   },

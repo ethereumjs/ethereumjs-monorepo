@@ -44,6 +44,11 @@ export * from './bytes.js'
 export * from './types.js'
 
 /**
+ * Helpful TypeScript types
+ */
+export * from './level.js'
+
+/**
  * Export ethjs-util methods
  */
 export * from './asyncEventEmitter.js'

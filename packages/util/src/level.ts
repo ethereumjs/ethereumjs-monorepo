@@ -1,9 +1,9 @@
-import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB, DBObject, EncodingOpts } from '@ethereumjs/util'
-import type { AbstractLevel } from 'abstract-level'
+import { KeyEncoding, ValueEncoding } from './db'
 
+import type { BatchDBOp, DB, DBObject, EncodingOpts } from './db'
+import type { AbstractLevel } from 'abstract-level'
 // Helper to infer the `valueEncoding` option for `putting` a value in a levelDB
 const getEncodings = (opts: EncodingOpts = {}) => {
   const encodings = { keyEncoding: '', valueEncoding: '' }

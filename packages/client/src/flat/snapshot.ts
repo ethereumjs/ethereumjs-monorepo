@@ -3,6 +3,7 @@ import {
   Account,
   KECCAK256_NULL,
   KeyEncoding,
+  LevelDB,
   ValueEncoding,
   bytesToHex,
   equalsBytes,
@@ -10,8 +11,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-
-import { LevelDB } from '../execution/level'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'

@@ -1,9 +1,8 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
-import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, LevelDB, equalsBytes } from '@ethereumjs/util'
 
-import { LevelDB } from '../execution/level'
 import { Event } from '../types'
 
 import type { Config } from '../config'
