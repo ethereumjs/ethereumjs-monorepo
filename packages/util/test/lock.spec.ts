@@ -2,6 +2,29 @@ import { assert, describe, it } from 'vitest'
 
 import { Lock } from '../src/index.js'
 
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+describe('Lock class', () => {
+  it('should lock', async () => {
+    let global = 0
+    const lock = new Lock()
+
+    const f = async () => {
+      await lock.acquire()
+      const local = global
+      await wait(500)
+      global = local + 1
+      lock.release()
+    }
+
+    void f()
+    void f()
+    await wait(1500)
+
+    assert.equal(global, 2)
+  })
+})
+
 describe('Lock class: acquire', () => {
   it('should return true when permits are available', async () => {
     const lock = new Lock()

@@ -1,5 +1,6 @@
 import {
   KeyEncoding,
+  Lock,
   MapDB,
   RLP_EMPTY_STRING,
   ValueEncoding,
@@ -25,7 +26,6 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { Lock } from './util/lock.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
@@ -61,6 +61,7 @@ export class Trie {
     useRootPersistence: false,
     useNodePruning: false,
     cacheSize: 0,
+    valueEncoding: ValueEncoding.String,
   }
 
   /** The root for an empty trie */
@@ -84,8 +85,21 @@ export class Trie {
    * Note: in most cases, the static {@link Trie.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
   constructor(opts?: TrieOpts) {
+    let valueEncoding: ValueEncoding
     if (opts !== undefined) {
+      // Sanity check: can only set valueEncoding if a db is provided
+      // The valueEncoding defaults to `Bytes` if no DB is provided (use a MapDB in memory)
+      if (opts?.valueEncoding !== undefined && opts.db === undefined) {
+        throw new Error('`valueEncoding` can only be set if a `db` is provided')
+      }
       this._opts = { ...this._opts, ...opts }
+
+      valueEncoding =
+        opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
+    } else {
+      // No opts are given, so create a MapDB later on
+      // Use `Bytes` for ValueEncoding
+      valueEncoding = ValueEncoding.Bytes
     }
 
     this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
@@ -99,7 +113,7 @@ export class Trie {
         }
       : (..._: any) => {}
 
-    this.database(opts?.db ?? new MapDB<string, string>())
+    this.database(opts?.db ?? new MapDB<string, Uint8Array>(), valueEncoding)
 
     this.EMPTY_TRIE_ROOT = this.hash(RLP_EMPTY_STRING)
     this._hashLen = this.EMPTY_TRIE_ROOT.length
@@ -121,6 +135,9 @@ export class Trie {
   static async create(opts?: TrieOpts) {
     let key = ROOT_DB_KEY
 
+    const encoding =
+      opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
+
     if (opts?.useKeyHashing === true) {
       key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
     }
@@ -130,29 +147,37 @@ export class Trie {
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
       if (opts?.root === undefined) {
-        const rootHex = await opts?.db.get(bytesToUnprefixedHex(key), {
+        const root = await opts?.db.get(bytesToUnprefixedHex(key), {
           keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
+          valueEncoding: encoding,
         })
-        opts.root = rootHex !== undefined ? unprefixedHexToBytes(rootHex) : undefined
+        if (typeof root === 'string') {
+          opts.root = unprefixedHexToBytes(root)
+        } else {
+          opts.root = root
+        }
       } else {
-        await opts?.db.put(bytesToUnprefixedHex(key), bytesToUnprefixedHex(opts.root), {
-          keyEncoding: KeyEncoding.String,
-          valueEncoding: ValueEncoding.String,
-        })
+        await opts?.db.put(
+          bytesToUnprefixedHex(key),
+          <any>(encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root)),
+          {
+            keyEncoding: KeyEncoding.String,
+            valueEncoding: encoding,
+          }
+        )
       }
     }
 
     return new Trie(opts)
   }
 
-  database(db?: DB<string, string>) {
+  database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
     if (db !== undefined) {
       if (db instanceof CheckpointDB) {
         throw new Error('Cannot pass in an instance of CheckpointDB')
       }
 
-      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize })
+      this._db = new CheckpointDB({ db, cacheSize: this._opts.cacheSize, valueEncoding })
     }
 
     return this._db

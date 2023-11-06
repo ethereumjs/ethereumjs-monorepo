@@ -43,22 +43,11 @@ export interface ConfigOptions {
   syncmode?: SyncMode
 
   /**
-   * Whether to disable beacon (optimistic) sync if CL provides
-   * blocks at the head of chain.
+   * Whether to enable and run snapSync, currently experimental
    *
    * Default: false
    */
-  disableBeaconSync?: boolean
-
-  /**
-   * Whether to test and run snapSync. When fully ready, this needs to
-   * be replaced by a more sophisticated condition based on how far back we are
-   * from the head, and how to run it in conjunction with the beacon sync
-   * blocks at the head of chain.
-   *
-   * Default: false
-   */
-  forceSnapSync?: boolean
+  enableSnapSync?: boolean
 
   /**
    * A temporary option to offer backward compatibility with already-synced databases that are
@@ -67,6 +56,12 @@ export interface ConfigOptions {
    * Default: true
    */
   prefixStorageTrieKeys?: boolean
+
+  /**
+   * A temporary option to offer backward compatibility with already-synced databases that stores
+   * trie items as `string`, instead of the more performant `Uint8Array`
+   */
+  useStringValueTrieDB?: boolean
 
   /**
    * Provide a custom VM instance to process blocks
@@ -323,6 +318,14 @@ export interface ConfigOptions {
   engineNewpayloadMaxTxsExecute?: number
 
   maxStorageRange?: bigint
+
+  /**
+   * Cache size of invalid block hashes and their errors
+   */
+  maxInvalidBlocksErrorCache?: number
+  pruneEngineCache?: boolean
+  snapAvailabilityDepth?: bigint
+  snapTransitionSafeDepth?: bigint
 }
 
 export class Config {
@@ -353,17 +356,26 @@ export class Config {
   public static readonly SAFE_REORG_DISTANCE = 100
   public static readonly SKELETON_FILL_CANONICAL_BACKSTEP = 100
   public static readonly SKELETON_SUBCHAIN_MERGE_MINIMUM = 1000
+
   public static readonly MAX_RANGE_BYTES = 50000
   // This should get like 100 accounts in this range
-  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000_000)
+  public static readonly MAX_ACCOUNT_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(1_000)
   // Larger ranges used for storage slots since assumption is slots should be much sparser than accounts
   public static readonly MAX_STORAGE_RANGE = (BIGINT_2 ** BIGINT_256 - BIGINT_1) / BigInt(10)
+
+  public static readonly MAX_INVALID_BLOCKS_ERROR_CACHE = 128
+  public static readonly PRUNE_ENGINE_CACHE = true
+
   public static readonly SYNCED_STATE_REMOVAL_PERIOD = 60000
   // engine new payload calls can come in batch of 64, keeping 128 as the lookup factor
   public static readonly ENGINE_PARENTLOOKUP_MAX_DEPTH = 128
   public static readonly ENGINE_NEWPAYLOAD_MAX_EXECUTE = 2
   // currently ethereumjs can execute 200 txs in 12 second window so keeping 1/2 target for blocking response
   public static readonly ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE = 100
+  public static readonly SNAP_AVAILABILITY_DEPTH = BigInt(128)
+  // distance from head at which we can safely transition from a synced snapstate to vmexecution
+  // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
+  public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
 
   public readonly logger: Logger
   public readonly syncmode: SyncMode
@@ -404,18 +416,22 @@ export class Config {
   public readonly maxRangeBytes: number
   public readonly maxAccountRange: bigint
   public readonly maxStorageRange: bigint
+  public readonly maxInvalidBlocksErrorCache: number
+  public readonly pruneEngineCache: boolean
   public readonly syncedStateRemovalPeriod: number
   public readonly engineParentLookupMaxDepth: number
   public readonly engineNewpayloadMaxExecute: number
   public readonly engineNewpayloadMaxTxsExecute: number
+  public readonly snapAvailabilityDepth: bigint
+  public readonly snapTransitionSafeDepth: bigint
 
-  public readonly disableBeaconSync: boolean
-  public readonly forceSnapSync: boolean
-  // Just a development only flag, will/should be removed
-  public readonly disableSnapSync: boolean = false
   public readonly prefixStorageTrieKeys: boolean
+  // Defaulting to false as experimental as of now
+  public readonly enableSnapSync: boolean
+  public readonly useStringValueTrieDB: boolean
 
   public synchronized: boolean
+  public lastsyncronized?: boolean
   /** lastSyncDate in ms */
   public lastSyncDate: number
   /** Best known block height */
@@ -444,7 +460,7 @@ export class Config {
     this.txLookupLimit = options.txLookupLimit ?? 2350000
     this.maxPerRequest = options.maxPerRequest ?? Config.MAXPERREQUEST_DEFAULT
     this.maxFetcherJobs = options.maxFetcherJobs ?? Config.MAXFETCHERJOBS_DEFAULT
-    this.maxFetcherRequests = options.maxPerRequest ?? Config.MAXFETCHERREQUESTS_DEFAULT
+    this.maxFetcherRequests = options.maxFetcherRequests ?? Config.MAXFETCHERREQUESTS_DEFAULT
     this.minPeers = options.minPeers ?? Config.MINPEERS_DEFAULT
     this.maxPeers = options.maxPeers ?? Config.MAXPEERS_DEFAULT
     this.dnsAddr = options.dnsAddr ?? Config.DNSADDR_DEFAULT
@@ -473,9 +489,15 @@ export class Config {
       options.skeletonFillCanonicalBackStep ?? Config.SKELETON_FILL_CANONICAL_BACKSTEP
     this.skeletonSubchainMergeMinimum =
       options.skeletonSubchainMergeMinimum ?? Config.SKELETON_SUBCHAIN_MERGE_MINIMUM
+
     this.maxRangeBytes = options.maxRangeBytes ?? Config.MAX_RANGE_BYTES
     this.maxAccountRange = options.maxAccountRange ?? Config.MAX_ACCOUNT_RANGE
     this.maxStorageRange = options.maxStorageRange ?? Config.MAX_STORAGE_RANGE
+
+    this.maxInvalidBlocksErrorCache =
+      options.maxInvalidBlocksErrorCache ?? Config.MAX_INVALID_BLOCKS_ERROR_CACHE
+    this.pruneEngineCache = options.pruneEngineCache ?? Config.PRUNE_ENGINE_CACHE
+
     this.syncedStateRemovalPeriod =
       options.syncedStateRemovalPeriod ?? Config.SYNCED_STATE_REMOVAL_PERIOD
     this.engineParentLookupMaxDepth =
@@ -484,10 +506,13 @@ export class Config {
       options.engineNewpayloadMaxExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_EXECUTE
     this.engineNewpayloadMaxTxsExecute =
       options.engineNewpayloadMaxTxsExecute ?? Config.ENGINE_NEWPAYLOAD_MAX_TXS_EXECUTE
+    this.snapAvailabilityDepth = options.snapAvailabilityDepth ?? Config.SNAP_AVAILABILITY_DEPTH
+    this.snapTransitionSafeDepth =
+      options.snapTransitionSafeDepth ?? Config.SNAP_TRANSITION_SAFE_DEPTH
 
-    this.disableBeaconSync = options.disableBeaconSync ?? false
-    this.forceSnapSync = options.forceSnapSync ?? false
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
+    this.enableSnapSync = options.enableSnapSync ?? false
+    this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
@@ -499,7 +524,7 @@ export class Config {
     this.execCommon = common.copy()
 
     this.discDns = this.getDnsDiscovery(options.discDns)
-    this.discV4 = this.getV4Discovery(options.discV4)
+    this.discV4 = options.discV4 ?? true
 
     this.logger = options.logger ?? getLogger({ loglevel: 'error' })
 
@@ -548,11 +573,9 @@ export class Config {
           if (!this.synchronized) {
             this.synchronized = true
             // Log to console the sync status
-            this.logger.info('*'.repeat(60))
-            this.logger.info(
+            this.superMsg(
               `Synchronized blockchain at height=${height} hash=${short(latest.hash())} 🎉`
             )
-            this.logger.info('*'.repeat(60))
           }
 
           if (emitSyncEvent === true) {
@@ -572,13 +595,16 @@ export class Config {
       }
     }
 
-    this.logger.debug(
-      `Client synchronized=${this.synchronized}${
-        latest !== null && latest !== undefined ? ' height=' + latest.number : ''
-      } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
-        (Date.now() - this.lastSyncDate) / 1000
-      } secs ago`
-    )
+    if (this.synchronized !== this.lastsyncronized) {
+      this.logger.debug(
+        `Client synchronized=${this.synchronized}${
+          latest !== null && latest !== undefined ? ' height=' + latest.number : ''
+        } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
+          (Date.now() - this.lastSyncDate) / 1000
+        } secs ago`
+      )
+      this.lastsyncronized = this.synchronized
+    }
   }
 
   /**
@@ -634,22 +660,28 @@ export class Config {
     return key
   }
 
+  superMsg(msgs: string | string[], meta?: any) {
+    if (typeof msgs === 'string') {
+      msgs = [msgs]
+    }
+    let len = 0
+    for (const msg of msgs) {
+      len = msg.length > len ? msg.length : len
+    }
+    this.logger.info('-'.repeat(len), meta)
+    for (const msg of msgs) {
+      this.logger.info(msg, meta)
+    }
+    this.logger.info('-'.repeat(len), meta)
+  }
+
   /**
    * Returns specified option or the default setting for whether DNS-based peer discovery
    * is enabled based on chainName. `true` for goerli
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['goerli', 'sepolia']
+    const dnsNets = ['goerli', 'sepolia', 'holesky']
     return dnsNets.includes(this.chainCommon.chainName())
-  }
-
-  /**
-   * Returns specified option or the default setting for whether v4 peer discovery
-   * is enabled based on chainName. `true` for `mainnet`
-   */
-  getV4Discovery(option: boolean | undefined): boolean {
-    if (option !== undefined) return option
-    return this.chainCommon.chainName() === 'mainnet'
   }
 }

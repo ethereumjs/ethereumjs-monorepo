@@ -113,9 +113,15 @@ describe(`${method}: call with executionPayloadV1`, () => {
     }
     req = params('engine_forkchoiceUpdatedV1', [state])
     expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
+      assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
     }
+    await baseRequest(server, req, 200, expectRes, false, false)
 
+    // now block2 should be executed
+    req = params(method, [blocks[1]])
+    expectRes = (res: any) => {
+      assert.equal(res.body.result.status, 'VALID')
+    }
     await baseRequest(server, req, 200, expectRes)
   })
 

@@ -562,5 +562,8 @@ export const chains: ChainsDict = {
         comment: 'bootnode 2',
       },
     ],
+    dnsNetworks: [
+      'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.holesky.ethdisco.net',
+    ],
   },
 }

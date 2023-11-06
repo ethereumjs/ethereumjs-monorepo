@@ -8,6 +8,7 @@
 
 - [cacheSize](TrieOpts.md#cachesize)
 - [db](TrieOpts.md#db)
+- [keyPrefix](TrieOpts.md#keyprefix)
 - [root](TrieOpts.md#root)
 - [useKeyHashing](TrieOpts.md#usekeyhashing)
 - [useKeyHashingFunction](TrieOpts.md#usekeyhashingfunction)
@@ -26,7 +27,7 @@ Default: 0 (deactivated)
 
 #### Defined in
 
-[packages/trie/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L72)
+[packages/trie/src/types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L80)
 
 ___
 
@@ -39,6 +40,21 @@ A database instance.
 #### Defined in
 
 [packages/trie/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L30)
+
+___
+
+### keyPrefix
+
+• `Optional` **keyPrefix**: `Uint8Array`
+
+Add a prefix to the trie node keys
+
+(potential performance benefits if multiple tries are stored within the same DB,
+e.g. all storage tries being stored in the outer account state DB)
+
+#### Defined in
+
+[packages/trie/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L62)
 
 ___
 
@@ -96,7 +112,7 @@ unreachable nodes will be pruned (deleted) from the trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L65)
+[packages/trie/src/types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L73)
 
 ___
 
@@ -108,4 +124,4 @@ Store the root inside the database after every `write` operation
 
 #### Defined in
 
-[packages/trie/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L59)
+[packages/trie/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L67)

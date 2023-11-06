@@ -251,6 +251,8 @@ export class Eth {
       [[validators.address], [validators.blockOption]]
     )
 
+    this.coinbase = middleware(callWithStackTrace(this.coinbase.bind(this), this._rpcDebug), 0, [])
+
     this.getBlockByNumber = middleware(
       callWithStackTrace(this.getBlockByNumber.bind(this), this._rpcDebug),
       2,
@@ -507,6 +509,22 @@ export class Eth {
       return '0x0'
     }
     return bigIntToHex(account.balance)
+  }
+
+  /**
+   * Returns the currently configured coinbase address.
+   * @param _params An empty array
+   * @returns The chain ID.
+   */
+  async coinbase(_params = []) {
+    const cb = this.client.config.minerCoinbase
+    if (cb === undefined) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'Coinbase must be explicitly specified',
+      }
+    }
+    return cb.toString()
   }
 
   /**

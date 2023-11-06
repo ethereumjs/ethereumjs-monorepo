@@ -247,7 +247,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txBaseFee = tx.getBaseFee()
   let gasLimit = tx.gasLimit
   if (gasLimit < txBaseFee) {
-    const msg = _errorMsg('base fee exceeds gas limit', this, block, tx)
+    const msg = _errorMsg(
+      `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
+        txBaseFee
+      )}`,
+      this,
+      block,
+      tx
+    )
     throw new Error(msg)
   }
   gasLimit -= txBaseFee
@@ -263,7 +270,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const baseFeePerGas = block.header.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
+        `Transaction's ${
+          'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
+        } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         this,
         block,
         tx

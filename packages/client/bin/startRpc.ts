@@ -26,7 +26,8 @@ export type RPCArgs = {
   rpcEnginePort: number
   wsEngineAddr: string
   wsEnginePort: number
-  rpcDebug: boolean
+  rpcDebug: string
+  rpcDebugVerbose: string
   helpRpc: boolean
   jwtSecret?: string
   rpcEngineAuth: boolean
@@ -90,6 +91,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcEngineAuth,
     rpcCors,
     rpcDebug,
+    rpcDebugVerbose,
   } = args
   const manager = new RPCManager(client, config)
   const { logger } = config
@@ -109,6 +111,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
 
     const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine,
+      rpcDebugVerbose,
       rpcDebug,
       logger,
     })
@@ -171,6 +174,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     const { server, namespaces, methods } = createRPCServer(manager, {
       methodConfig: MethodConfig.EngineOnly,
       rpcDebug,
+      rpcDebugVerbose,
       logger,
     })
     servers.push(server)

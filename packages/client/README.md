@@ -6,8 +6,8 @@
 [![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
-| ------------------------------------------------------------------- |
+| Ethereum Execution Layer (EL) Client built in TypeScript/JavaScript. |
+| -------------------------------------------------------------------- |
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](
 
 Here are some use cases:
 
-- Sync the main Ethereum networks (`mainnet` (experimental), `goerli`, `sepolia`, ...)
+- Sync the main Ethereum networks (`mainnet` (experimental), `sepolia`, `holesky`, ...)
 - Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
 - Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./lib/sync/txpool.ts)
@@ -104,10 +104,10 @@ And pass in CLI parameters like:
 
 ```shell
 # npm installation
-ethereumjs --network=goerli
+ethereumjs --network=holesky
 
 # Source installation
-npm run client:start -- --network=goerli
+npm run client:start -- --network=holesky
 ```
 
 To see a help page with the full list of client options available run:
@@ -125,20 +125,26 @@ The EthereumJS client is tightly integrated with the EthereumJS [Common](../comm
 The main supported networks are:
 
 - `mainnet` (experimental)
-- `goerli`
 - `sepolia` (`v0.3.0`+)
+- `holesky` (`v0.9.0`+)
 
 Use the CLI `--network` option to switch the network:
 
 ```shell
-ethereumjs --network=sepolia
+ethereumjs --network=holesky
 ```
 
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
 ## Running with a Consensus Layer (CL) Client
 
-In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client. The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Other possible options are to run with [Prysm](https://github.com/prysmaticlabs/prysm) (Go), [Lighthouse](https://github.com/sigp/lighthouse) (Rust), [Nimbus](https://github.com/status-im/nimbus-eth2) (Nim) or [Teku](https://github.com/ConsenSys/teku) (Java).
+In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client. The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Lodestar provides a [quick-start repository](https://github.com/ChainSafe/lodestar-quickstart) that allows users to get started quickly with minimal configuration. After cloning the linked quick-start repository, all that should be necessary to get the Lodestar consensus client started with EthereumJS is to run the following command:
+
+```shell
+./setup.sh --network sepolia --dataDir sepolia-data --elClient ethereumjs
+```
+
+Other possible options are to run with [Prysm](https://github.com/prysmaticlabs/prysm) (Go), [Lighthouse](https://github.com/sigp/lighthouse) (Rust), [Nimbus](https://github.com/status-im/nimbus-eth2) (Nim) or [Teku](https://github.com/ConsenSys/teku) (Java).
 
 ### Necessary CLI Options
 
@@ -173,11 +179,11 @@ JWT authentication can be disabled by adding the `--rpcEngineAuth false` flag (d
 The following is a rough guidance to run Lodestar as a beacon (non-validating) Node, see Lodestar [docs](https://chainsafe.github.io/lodestar/usage/beacon-management/) for more complete and up-to-date instructions on beacon management with Lodestar.
 
 1. Use lodestar branch `stable` and run `yarn && yarn build`
-2. Run cmd: `./lodestar beacon --network sepolia --jwt-secret /path/to/jwtsecret/file`
+2. Run cmd: `./lodestar beacon --network holesky --jwt-secret /path/to/jwtsecret/file`
 
 This will by default try connecting to `ethereumjs` over the endpoint `8551`. (You may customize this in conjunction with `ethereumjs`, see lodestar cli help via `--help`).
 
-You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
+You may provide `--checkpointSyncUrl` (with a synced `holesky` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `holesky` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
 
 #### (Optional) Validator
 
@@ -193,26 +199,20 @@ For a testnet chain, you may skip keystore generation and directly provide lodes
 
 (Modify the mnemonic and range indices as per your validator configuration).
 
-#### Running EthereumJS/Lodestar on Sepolia
+#### Running EthereumJS/Lodestar on Holesky
 
-A suited network to test the EthereumJS/Lodestar client combination is the Sepolia network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
+A suited network to test the EthereumJS/Lodestar client combination is the Holesky network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
 
-To sync the EthereumJS client pre-Merge run:
-
-```shell
-ethereumjs --network=sepolia
-```
-
-After the Merge you need to expand and start with JSON RPC and Engine API endpoints exposed:
+To start the EthereumJS client with JSON RPC and Engine API endpoints exposed:
 
 ```shell
-ethereumjs --network=sepolia --rpc --rpcEngine
+ethereumjs --network=holesky --rpc --rpcEngine
 ```
 
 Then start the Lodestar client with:
 
 ```shell
-./lodestar beacon --network=sepolia --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
+./lodestar beacon --network=holesky --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
 ```
 
 ## Custom Chains

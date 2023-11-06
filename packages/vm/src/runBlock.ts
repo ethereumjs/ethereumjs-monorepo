@@ -9,6 +9,7 @@ import {
   BIGINT_0,
   BIGINT_8,
   GWEI_TO_WEI,
+  KECCAK256_RLP,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -390,7 +391,12 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
-  const receiptTrie = new Trie()
+
+  let receiptTrie: Trie | undefined = undefined
+  if (block.transactions.length !== 0) {
+    receiptTrie = new Trie()
+  }
+
   const receipts = []
   const txResults = []
 
@@ -440,20 +446,20 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie.put(RLP.encode(txIdx), encodedReceipt)
+    await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
   }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(processTxsLabel)
-    // eslint-disable-next-line no-console
-    console.timeEnd(entireBlockLabel)
   }
+
+  const receiptsRoot = receiptTrie !== undefined ? receiptTrie.root() : KECCAK256_RLP
 
   return {
     bloom,
     gasUsed,
-    receiptsRoot: receiptTrie.root(),
+    receiptsRoot,
     receipts,
     results: txResults,
   }
@@ -590,6 +596,9 @@ async function _applyDAOHardfork(evm: EVMInterface) {
 }
 
 async function _genTxTrie(block: Block) {
+  if (block.transactions.length === 0) {
+    return KECCAK256_RLP
+  }
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())

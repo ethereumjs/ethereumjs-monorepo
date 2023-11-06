@@ -8,7 +8,15 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, LevelDB, Lock, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  LevelDB,
+  Lock,
+  ValueEncoding,
+  bytesToHex,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -36,10 +44,14 @@ export class VMExecution extends Execution {
   private MAX_TOLERATED_BLOCK_TIME = 12
 
   /**
-   * Display state cache stats every num blocks
+   * Interval for client execution stats output (in ms)
+   * for debug log level
+   *
    */
-  private STATS_NUM_BLOCKS = 1000
-  private statsCount = 0
+  private STATS_INTERVAL = 1000 * 90 // 90 seconds
+
+  private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _statsVm: VM | undefined
 
   /**
    * Create new VM execution module
@@ -52,6 +64,9 @@ export class VMExecution extends Execution {
         db: new LevelDB(this.stateDB),
         useKeyHashing: true,
         cacheSize: this.config.trieCache,
+        valueEncoding: options.config.useStringValueTrieDB
+          ? ValueEncoding.String
+          : ValueEncoding.Bytes,
       })
 
       this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
@@ -161,12 +176,14 @@ export class VMExecution extends Execution {
    * the entire procedure.
    * @param receipts If we built this block, pass the receipts to not need to run the block again
    * @param optional param if runWithoutSetHead should block for execution
+   * @param optional param if runWithoutSetHead should skip putting block into chain
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(
     opts: RunBlockOpts,
     receipts?: TxReceipt[],
-    blocking: boolean = false
+    blocking: boolean = false,
+    skipBlockchain: boolean = false
   ): Promise<boolean> {
     // if its not blocking request then return early if its already running else wait to grab the lock
     if ((!blocking && this.running) || !this.started || this.config.shutdown) return false
@@ -192,19 +209,22 @@ export class VMExecution extends Execution {
           // Save receipts
           this.pendingReceipts?.set(bytesToHex(block.hash()), receipts)
         }
-        // Bypass updating head by using blockchain db directly
-        const [hash, num] = [block.hash(), block.header.number]
-        const td =
-          (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
-          block.header.difficulty
 
-        await this.chain.blockchain.dbManager.batch([
-          DBSetTD(td, num, hash),
-          ...DBSetBlockOrHeader(block),
-          DBSetHashToNumber(hash, num),
-          // Skip the op for number to hash to not alter canonical chain
-          ...DBSaveLookups(hash, num, true),
-        ])
+        if (!skipBlockchain) {
+          // Bypass updating head by using blockchain db directly
+          const [hash, num] = [block.hash(), block.header.number]
+          const td =
+            (await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)) +
+            block.header.difficulty
+
+          await this.chain.blockchain.dbManager.batch([
+            DBSetTD(td, num, hash),
+            ...DBSetBlockOrHeader(block),
+            DBSetHashToNumber(hash, num),
+            // Skip the op for number to hash to not alter canonical chain
+            ...DBSaveLookups(hash, num, true),
+          ])
+        }
       } finally {
         this.running = false
       }
@@ -220,41 +240,26 @@ export class VMExecution extends Execution {
   async setHead(
     blocks: Block[],
     { finalizedBlock, safeBlock }: { finalizedBlock?: Block; safeBlock?: Block } = {}
-  ): Promise<void> {
-    return this.runWithLock<void>(async () => {
+  ): Promise<boolean> {
+    if (!this.started || this.config.shutdown) return false
+
+    return this.runWithLock<boolean>(async () => {
       const vmHeadBlock = blocks[blocks.length - 1]
-      const chainPointers: [string, Block | null][] = [
-        ['vmHeadBlock', vmHeadBlock],
-        // if safeBlock is not provided, the current safeBlock of chain should be used
-        // which is genesisBlock if it has never been set for e.g.
-        ['safeBlock', safeBlock ?? this.chain.blocks.safe],
-        ['finalizedBlock', finalizedBlock ?? this.chain.blocks.finalized],
-      ]
+      const chainPointers: [string, Block][] = [['vmHeadBlock', vmHeadBlock]]
 
-      let isSortedDesc = true
-      let lastBlock = vmHeadBlock
-      for (const [blockName, block] of chainPointers) {
-        if (block === null) {
-          continue
-        }
-        if (!(await this.vm.stateManager.hasStateRoot(block.header.stateRoot))) {
-          // If we set blockchain iterator to somewhere where we don't have stateroot
-          // execution run will always fail
-          throw Error(
-            `${blockName}'s stateRoot not found number=${block.header.number} root=${short(
-              block.header.stateRoot
-            )}`
-          )
-        }
-        isSortedDesc = isSortedDesc && lastBlock.header.number >= block.header.number
-        lastBlock = block
-      }
-
-      if (isSortedDesc === false) {
+      // instead of checking for the previous roots of safe,finalized, we will contend
+      // ourselves with just vmHead because in snap sync we might not have the safe
+      // finalized blocks executed
+      if (!(await this.vm.stateManager.hasStateRoot(vmHeadBlock.header.stateRoot))) {
+        // If we set blockchain iterator to somewhere where we don't have stateroot
+        // execution run will always fail
         throw Error(
-          `headBlock=${vmHeadBlock?.header.number} should be >= safeBlock=${safeBlock?.header.number} should be >= finalizedBlock=${finalizedBlock?.header.number}`
+          `vmHeadBlock's stateRoot not found number=${vmHeadBlock.header.number} root=${short(
+            vmHeadBlock.header.stateRoot
+          )}`
         )
       }
+
       // skip emitting the chain update event as we will manually do it
       await this.chain.putBlocks(blocks, true, true)
       for (const block of blocks) {
@@ -283,6 +288,7 @@ export class VMExecution extends Execution {
         await this.chain.blockchain.setIteratorHead('finalized', finalizedBlock.hash())
       }
       await this.chain.update(true)
+      return true
     })
   }
 
@@ -348,7 +354,7 @@ export class VMExecution extends Execution {
                 // determine starting state for block run
                 // if we are just starting or if a chain reorg has happened
                 if (headBlock === undefined || reorg) {
-                  const headBlock = await blockchain.getBlock(block.header.parentHash)
+                  headBlock = await blockchain.getBlock(block.header.parentHash)
                   parentState = headBlock.header.stateRoot
 
                   if (reorg) {
@@ -382,7 +388,7 @@ export class VMExecution extends Execution {
                   })
                   if (hardfork !== this.hardfork) {
                     const hash = short(block.hash())
-                    this.config.logger.info(
+                    this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
                     )
                     this.hardfork = this.config.execCommon.setHardforkBy({
@@ -405,8 +411,8 @@ export class VMExecution extends Execution {
                     throw Error('Execution stopped')
                   }
 
+                  this._statsVm = this.vm
                   const beforeTS = Date.now()
-                  this.stats(this.vm)
                   const result = await this.vm.runBlock({
                     block,
                     root: parentState,
@@ -481,9 +487,53 @@ export class VMExecution extends Execution {
                 // error can repeatedly processed for debugging
                 const { number } = errorBlock.header
                 const hash = short(errorBlock.hash())
-                this.config.logger.warn(
-                  `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed:\n${error}`
-                )
+                const errorMsg = `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed`
+
+                // check if the vmHead 's backstepping can resolve this issue, headBlock is parent of the
+                // current block which is trying to be executed and should equal current vmHead
+                if (
+                  `${error}`.toLowerCase().includes('does not contain state root') &&
+                  number > BIGINT_1
+                ) {
+                  // this is a weird case which has been observed, could be because of a forking scenario
+                  // or some race condition, but if this happens for now we can try to handle it by
+                  // backstepping to the parent. if the parent isn't there, it can recursively go back
+                  // to parent's parent and so on...
+                  //
+                  // There can also be a better way to backstep vm to but lets naively step back
+                  let backStepTo,
+                    backStepToHash,
+                    backStepToRoot,
+                    hasParentStateRoot = false
+                  if (headBlock !== undefined) {
+                    hasParentStateRoot = await this.vm.stateManager.hasStateRoot(
+                      headBlock.header.stateRoot
+                    )
+                    backStepTo = headBlock.header.number ?? BIGINT_0 - BIGINT_1
+                    backStepToHash = headBlock.header.parentHash
+                    backStepToRoot = headBlock.header.stateRoot
+                  }
+
+                  if (hasParentStateRoot === true && backStepToHash !== undefined) {
+                    this.config.logger.warn(
+                      `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
+                        backStepToHash ?? 'na'
+                      )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`
+                    )
+                    await this.vm.blockchain.setIteratorHead('vm', backStepToHash)
+                  } else {
+                    this.config.logger.error(
+                      `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
+                        backStepToHash ?? 'na'
+                      )} hasParentStateRoot=${hasParentStateRoot} backStepToRoot=${short(
+                        backStepToRoot ?? 'na'
+                      )}:\n${error}`
+                    )
+                  }
+                } else {
+                  this.config.logger.warn(`${errorMsg}:\n${error}`)
+                }
+
                 if (this.config.debugCode) {
                   await debugCodeReplayBlock(this, errorBlock)
                 }
@@ -518,11 +568,14 @@ export class VMExecution extends Execution {
                 this.config.execCommon.gteHardfork(Hardfork.London) === true
                   ? `baseFee=${endHeadBlock.header.baseFeePerGas} `
                   : ''
+
               const tdAdd =
                 this.config.execCommon.gteHardfork(Hardfork.Paris) === true
                   ? ''
                   : `td=${this.chain.blocks.td} `
-              this.config.logger.info(
+              ;(this.config.execCommon.gteHardfork(Hardfork.Paris) === true
+                ? this.config.logger.debug
+                : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
               )
             } else {
@@ -553,6 +606,12 @@ export class VMExecution extends Execution {
    * Start execution
    */
   async start(): Promise<boolean> {
+    this._statsInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this.stats.bind(this),
+      this.STATS_INTERVAL
+    )
+
     const { blockchain } = this.vm
     if (this.running || !this.started) {
       return false
@@ -587,6 +646,7 @@ export class VMExecution extends Execution {
    * Stop VM execution. Returns a promise that resolves once its stopped.
    */
   async stop(): Promise<boolean> {
+    clearInterval(this._statsInterval)
     // Stop with the lock to be concurrency safe and flip started flag so that
     // vmPromise can resolve early
     await this.runWithLock<void>(async () => {
@@ -636,10 +696,11 @@ export class VMExecution extends Execution {
       })
 
       if (txHashes.length === 0) {
+        this._statsVm = vm
+
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
         const beforeTS = Date.now()
-        this.stats(vm)
         const res = await vm.runBlock({
           block,
           root,
@@ -682,10 +743,9 @@ export class VMExecution extends Execution {
     }
   }
 
-  stats(vm: VM) {
-    this.statsCount += 1
-    if (this.statsCount === this.STATS_NUM_BLOCKS) {
-      const sm = vm.stateManager as any
+  stats() {
+    if (this._statsVm !== undefined) {
+      const sm = this._statsVm.stateManager as any
       const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -708,7 +768,6 @@ export class VMExecution extends Execution {
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`
       )
-      this.statsCount = 0
     }
   }
 }

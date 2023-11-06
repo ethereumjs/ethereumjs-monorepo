@@ -39,7 +39,7 @@ The access list which contains the addresses/storage slots which the transaction
 
 #### Defined in
 
-[tx/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
+[tx/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L303)
 
 ___
 
@@ -51,7 +51,7 @@ The transaction's chain ID
 
 #### Defined in
 
-[tx/src/types.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L247)
+[tx/src/types.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L298)
 
 ___
 
@@ -67,7 +67,7 @@ LegacyTxData.data
 
 #### Defined in
 
-[tx/src/types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L216)
+[tx/src/types.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L267)
 
 ___
 
@@ -83,7 +83,7 @@ LegacyTxData.gasLimit
 
 #### Defined in
 
-[tx/src/types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L201)
+[tx/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
 
 ___
 
@@ -99,7 +99,7 @@ LegacyTxData.gasPrice
 
 #### Defined in
 
-[tx/src/types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L196)
+[tx/src/types.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L247)
 
 ___
 
@@ -115,7 +115,7 @@ LegacyTxData.nonce
 
 #### Defined in
 
-[tx/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L191)
+[tx/src/types.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L242)
 
 ___
 
@@ -131,7 +131,7 @@ LegacyTxData.r
 
 #### Defined in
 
-[tx/src/types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L226)
+[tx/src/types.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L277)
 
 ___
 
@@ -147,7 +147,7 @@ LegacyTxData.s
 
 #### Defined in
 
-[tx/src/types.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L231)
+[tx/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L282)
 
 ___
 
@@ -163,7 +163,7 @@ LegacyTxData.to
 
 #### Defined in
 
-[tx/src/types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L206)
+[tx/src/types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L257)
 
 ___
 
@@ -179,7 +179,7 @@ LegacyTxData.type
 
 #### Defined in
 
-[tx/src/types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L237)
+[tx/src/types.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L288)
 
 ___
 
@@ -195,7 +195,7 @@ LegacyTxData.v
 
 #### Defined in
 
-[tx/src/types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
+[tx/src/types.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L272)
 
 ___
 
@@ -211,4 +211,4 @@ LegacyTxData.value
 
 #### Defined in
 
-[tx/src/types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L211)
+[tx/src/types.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L262)

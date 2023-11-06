@@ -102,7 +102,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
   })
   .option('bootnodes', {
-    describe: 'Comma-separated list of network bootnodes',
+    describe:
+      'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
     array: true,
   })
   .option('port', {
@@ -135,7 +136,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('wsPort', {
     describe: 'WS-RPC server listening port',
-    default: 8545,
+    default: 8546,
   })
   .option('wsAddr', {
     describe: 'WS-RPC server listening address',
@@ -158,7 +159,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('wsEnginePort', {
     describe: 'WS-RPC server listening port for Engine namespace',
     number: true,
-    default: 8551,
+    default: 8552,
   })
   .option('wsEngineAddr', {
     describe: 'WS-RPC server listening interface address for Engine namespace',
@@ -204,8 +205,16 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: 5,
   })
   .option('rpcDebug', {
-    describe: 'Additionally log complete RPC calls on log level debug (i.e. --loglevel=debug)',
-    boolean: true,
+    describe:
+      'Additionally log truncated RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods). Truncated by default, add verbosity using "rpcDebugVerbose"',
+    default: '',
+    string: true,
+  })
+  .option('rpcDebugVerbose', {
+    describe:
+      'Additionally log complete RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods).',
+    default: '',
+    string: true,
   })
   .option('rpcCors', {
     describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',
@@ -315,13 +324,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
-  .option('disableBeaconSync', {
-    describe:
-      'Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain',
-    boolean: true,
-  })
-  .option('forceSnapSync', {
-    describe: 'Force a snap sync run (for testing and development purposes)',
+  .option('snap', {
+    describe: 'Enable snap state sync (for testing and development purposes)',
     boolean: true,
   })
   .option('prefixStorageTrieKeys', {
@@ -331,6 +335,14 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
     deprecated:
       'Support for `--prefixStorageTrieKeys=false` is temporary. Please sync new instances with `prefixStorageTrieKeys` enabled',
+  })
+  .options('useStringValueTrieDB', {
+    describe:
+      'Use string values in the trie DB. This is old behavior, new behavior uses Uint8Arrays in the DB (more performant)',
+    boolean: true,
+    default: false,
+    deprecated:
+      'Usage of old DBs which uses string-values is temporary. Please sync new instances without this option.',
   })
   .option('txLookupLimit', {
     describe:
@@ -362,9 +374,29 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'path to a file of RLP encoded blocks',
     string: true,
   })
+  .option('pruneEngineCache', {
+    describe: 'Enable/Disable pruning engine block cache (disable for testing against hive etc)',
+    boolean: true,
+    default: true,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
-  .strict().argv
+  .strict()
+  .check((argv, _options) => {
+    const usedPorts = new Set()
+    let collision = false
+    if (argv.ws === true) {
+      usedPorts.add(argv.wsPort)
+      if (!usedPorts.has(argv.wsEnginePort)) {
+        usedPorts.add(argv.wsEnginePort)
+      }
+    }
+    if (argv.rpc === true && usedPorts.has(argv.rpcPort)) collision = true
+    if (argv.rpcEngine === true && usedPorts.has(argv.rpcEnginePort)) collision = true
+
+    if (collision) throw new Error('cannot reuse ports between RPC instances')
+    return true
+  }).argv
 
 /**
  * Initializes and returns the databases needed for the client
@@ -720,7 +752,7 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/devnet6.txt')
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
 
@@ -790,7 +822,31 @@ async function run() {
   }
 
   logger = getLogger(args)
-  const bootnodes = args.bootnodes !== undefined ? parseMultiaddrs(args.bootnodes) : undefined
+  let bootnodes
+  if (args.bootnodes !== undefined) {
+    // File path passed, read bootnodes from disk
+    if (
+      Array.isArray(args.bootnodes) &&
+      args.bootnodes.length === 1 &&
+      args.bootnodes[0].includes('.txt')
+    ) {
+      const file = readFileSync(args.bootnodes[0], 'utf-8')
+      let nodeURLs = file.split(/\r?\n/).filter((url) => (url !== '' ? true : false))
+      nodeURLs = nodeURLs.map((url) => {
+        const discportIndex = url.indexOf('?discport')
+        if (discportIndex > 0) {
+          return url.substring(0, discportIndex)
+        } else {
+          return url
+        }
+      })
+      bootnodes = parseMultiaddrs(nodeURLs)
+      logger.info(`Reading bootnodes file=${args.bootnodes[0]} num=${nodeURLs.length}`)
+    } else {
+      bootnodes = parseMultiaddrs(args.bootnodes)
+    }
+  }
+
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
@@ -827,10 +883,11 @@ async function run() {
     port: args.port,
     saveReceipts: args.saveReceipts,
     syncmode: args.sync,
-    disableBeaconSync: args.disableBeaconSync,
-    forceSnapSync: args.forceSnapSync,
     prefixStorageTrieKeys: args.prefixStorageTrieKeys,
+    enableSnapSync: args.snap,
+    useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
+    pruneEngineCache: args.pruneEngineCache,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -860,7 +917,7 @@ async function run() {
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
-      config.logger.info('Client started successfully')
+      config.superMsg('Client started successfully')
       return { client, servers }
     })
     .catch((e) => {

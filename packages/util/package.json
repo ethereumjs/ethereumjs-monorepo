@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",
@@ -96,7 +96,7 @@
     "memory-level": "^1.0.0"
   },
   "peerDependencies": {
-    "c-kzg": "^2.1.0"
+    "c-kzg": "^2.1.2"
   },
   "peerDependenciesMeta": {
     "c-kzg": {

@@ -17,7 +17,8 @@ const algorithm: TAlgorithm = 'HS256'
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
-  rpcDebug: boolean
+  rpcDebug: string
+  rpcDebugVerbose: string
   logger?: Logger
 }
 type CreateRPCServerReturn = {
@@ -43,6 +44,28 @@ export enum MethodConfig {
 const ALLOWED_DRIFT = 60_000
 
 /**
+ * Check if the `method` matches the comma-separated filter string
+ * @param method - Method to check the filter on
+ * @param filterStringCSV - Comma-separated list of filters to use
+ * @returns
+ */
+function checkFilter(method: string, filterStringCSV: string) {
+  if (filterStringCSV === '') {
+    return false
+  }
+  if (filterStringCSV === 'all') {
+    return true
+  }
+  const filters = filterStringCSV.split(',')
+  for (const filter of filters) {
+    if (method.includes(filter) === true) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Internal util to pretty print params for logging.
  */
 export function inspectParams(params: any, shorten?: number) {
@@ -63,32 +86,23 @@ export function createRPCServer(
   manager: RPCManager,
   opts: CreateRPCServerOpts
 ): CreateRPCServerReturn {
-  const { methodConfig, rpcDebug, logger } = opts
-
+  const { methodConfig, rpcDebug, rpcDebugVerbose, logger } = opts
   const onRequest = (request: any) => {
-    let msg = ''
-    if (rpcDebug) {
-      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
-    } else {
-      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    if (checkFilter(request.method, rpcDebugVerbose)) {
+      logger?.info(`${request.method} called with params:\n${inspectParams(request.params)}`)
+    } else if (checkFilter(request.method, rpcDebug)) {
+      logger?.info(`${request.method} called with params: ${inspectParams(request.params, 125)}`)
     }
-    logger?.debug(msg)
   }
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
-    let msg = ''
-    if (rpcDebug) {
-      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
-    } else {
-      msg = `${request.method}${batchAddOn} responded with: `
-      if (response.result !== undefined) {
-        msg += inspectParams(response, 125)
-      }
-      if (response.error !== undefined) {
-        msg += `error: ${response.error.message}`
-      }
+    if (checkFilter(request.method, rpcDebugVerbose)) {
+      logger?.info(`${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`)
+    } else if (checkFilter(request.method, rpcDebug)) {
+      logger?.info(
+        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`
+      )
     }
-    logger?.debug(msg)
   }
 
   const onBatchResponse = (request: any, response: any) => {
@@ -107,11 +121,14 @@ export function createRPCServer(
   }
 
   let methods
-  const ethMethods = manager.getMethods(false, rpcDebug)
+  const ethMethods = manager.getMethods(false, rpcDebug !== 'false' && rpcDebug !== '')
 
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...ethMethods, ...manager.getMethods(true, rpcDebug) }
+      methods = {
+        ...ethMethods,
+        ...manager.getMethods(true, rpcDebug !== 'false' && rpcDebug !== ''),
+      }
       break
     case MethodConfig.WithoutEngine:
       methods = { ...ethMethods }

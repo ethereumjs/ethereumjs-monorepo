@@ -88,10 +88,13 @@ export class BeaconSynchronizer extends Synchronizer {
     const subchain = this.skeleton.bounds()
     if (subchain !== undefined) {
       const { head, tail, next } = subchain
-      this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
-      const headBlock = await this.skeleton.getBlock(head)
+      this.config.superMsg(`Resuming beacon sync tail=${tail} head=${head} next=${short(next)}`)
+      const headBlock = await this.skeleton.getBlock(head, true)
       if (headBlock !== undefined) {
         await this.skeleton.initSync(headBlock)
+        void this.start()
+      } else {
+        await this.skeleton.reset()
       }
     }
   }
@@ -288,7 +291,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
-    this.config.logger.info(
+    this.config.logger.debug(
       `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
     )
   }
@@ -304,7 +307,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BIGINT_0) {
-      void this.execution.run(true, shouldRunOnlyBatched)
+      await this.execution.run(true, shouldRunOnlyBatched)
     }
   }
 
