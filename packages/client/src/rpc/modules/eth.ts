@@ -6,7 +6,7 @@ import {
   TypeOutput,
   bigIntToHex,
   bytesToHex,
-  compareBytes,
+  equalsBytes,
   hexToBytes,
   intToHex,
   setLengthLeft,
@@ -751,7 +751,7 @@ export class Eth {
     const block = await this._chain.getBlock(blockHash)
     // Check if block is in canonical chain
     const blockByNumber = await this._chain.getBlock(block.header.number)
-    if (!compareBytes(blockByNumber.hash(), block.hash())) {
+    if (!equalsBytes(blockByNumber.hash(), block.hash())) {
       return null
     }
 
