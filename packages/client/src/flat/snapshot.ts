@@ -4,7 +4,6 @@ import {
   KECCAK256_NULL,
   KeyEncoding,
   LevelDB,
-  ValueEncoding,
   bytesToHex,
   equalsBytes,
   hexToBytes,
