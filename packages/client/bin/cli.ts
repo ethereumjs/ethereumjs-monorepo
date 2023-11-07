@@ -47,7 +47,6 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-// @ts-ignore because yargs isn't typing our args closely enough yet for arrays of strings (i.e. args.bootnodes, etc)
 const args: ClientOpts = yargs(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
@@ -105,6 +104,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe:
       'Comma-separated list of network bootnodes (format: "enode://<id>@<host:port>,enode://..." ("[?discport=<port>]" not supported) or path to a bootnode.txt file',
     array: true,
+    coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
   })
   .option('port', {
     describe: 'RLPx listening port',
@@ -117,6 +117,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('multiaddrs', {
     describe: 'Network multiaddrs',
     array: true,
+    coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
   })
   .option('rpc', {
     describe: 'Enable the JSON-RPC server with HTTP endpoint',
@@ -249,6 +250,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   .option('dnsNetworks', {
     describe: 'EIP-1459 ENR tree urls to query for peer discovery targets',
     array: true,
+    coerce: (arr) => arr.filter((el: any) => el !== undefined).map((el: any) => el.toString()),
   })
   .option('execution', {
     describe: 'Start continuous VM execution (pre-Merge setting)',
@@ -317,6 +319,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe:
       'Address for mining rewards (etherbase). If not provided, defaults to the primary account',
     string: true,
+    coerce: (coinbase) => Address.fromString(coinbase),
   })
   .option('saveReceipts', {
     describe:
@@ -396,7 +399,8 @@ const args: ClientOpts = yargs(hideBin(process.argv))
 
     if (collision) throw new Error('cannot reuse ports between RPC instances')
     return true
-  }).argv
+  })
+  .parseSync()
 
 /**
  * Initializes and returns the databases needed for the client
