@@ -14,6 +14,7 @@ import {
 } from '@ethereumjs/util'
 
 import { PendingBlock } from '../../miner'
+import { BeaconSynchronizer } from '../../sync'
 import { short } from '../../util'
 import {
   INTERNAL_ERROR,
@@ -1178,7 +1179,13 @@ export class Engine {
         (await validExecutedChainBlock(headBlock, this.chain))) !== null
     if (!isHeadExecuted) {
       // Trigger the statebuild here since we have finalized and safeblock available
-      void this.service.buildHeadState()
+      void this.service.buildHeadState().then(() => {
+        if (reorged && headBlock !== undefined) {
+          if (this.service.synchronizer instanceof BeaconSynchronizer) {
+            void this.service.synchronizer.reorged(headBlock)
+          }
+        }
+      })
 
       // execution has not yet caught up, so lets just return sync
       const payloadStatus = {

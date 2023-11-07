@@ -484,6 +484,7 @@ export class Skeleton extends MetaDBManager {
 
           this.status.progress.subchains.unshift(s)
           const msgs = [
+            // Here
             `Created new subchain tail=${s.tail} head=${s.head} next=${short(s.next)}`,
             'Note: Subchain will be backfilled and merged with the canonical chain on success.',
           ]

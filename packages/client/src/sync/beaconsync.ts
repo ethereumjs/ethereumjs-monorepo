@@ -118,9 +118,10 @@ export class BeaconSynchronizer extends Synchronizer {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
+        /*if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
           best = [peer, number]
-        }
+        }*/
+        best = [peer, number]
       }
     }
     return best ? best[0] : undefined
@@ -179,7 +180,8 @@ export class BeaconSynchronizer extends Synchronizer {
         block.header.hash()
       )}`
     )
-    void this.start()
+    await this.skeleton.initSync(block)
+    await this.start()
   }
 
   /**

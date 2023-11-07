@@ -227,7 +227,6 @@ export class FullEthereumService extends Service {
   async buildHeadState(): Promise<void> {
     if (this.building) return
     this.building = true
-
     try {
       if (this.execution.started && this.synchronizer !== undefined) {
         await this.synchronizer.runExecution()
