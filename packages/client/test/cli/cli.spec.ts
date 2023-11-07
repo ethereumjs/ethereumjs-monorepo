@@ -53,14 +53,14 @@ describe('[CLI]', () => {
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
-  it('should successfully start client with custom inputs for PoW network', async () => {
+  it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
       '--rpcPort=8562',
       '--rpcAddr=0.0.0.0',
       '--dev=poa',
       '--port=30306',
-      '--minerCoinbase="abc"',
+      '--minerCoinbase="0x7e5f4552091a69125d5dfcb7b8c2659029395bdf"',
       '--saveReceipts=false',
       '--execution=false',
     ]
@@ -78,11 +78,14 @@ describe('[CLI]', () => {
           host: '0.0.0.0',
         })
         const res = await client.request('eth_coinbase', [], 2.0)
-        assert.ok(res.result === 'abc', 'correct coinbase address set')
+        assert.ok(
+          res.result === '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
+          'correct coinbase address set'
+        )
         count -= 1
       }
       if (message.includes('Client started successfully')) {
-        assert.ok(message, 'Client started successfully with custom inputs for PoW network')
+        assert.ok(message, 'Client started successfully with custom inputs for PoA network')
         count -= 1
       }
       if (count === 0) {
@@ -91,7 +94,7 @@ describe('[CLI]', () => {
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 30000)
+  }, 10000)
   it('should throw error if "dev" option is passed in without a value', async () => {
     const cliArgs = ['--dev']
     const onData = async (
