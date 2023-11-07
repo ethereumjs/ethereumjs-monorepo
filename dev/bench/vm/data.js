@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1699372799314,
+  "lastUpdate": 1699377998930,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "02a7abb2f767b8bafdb7fa7e4440e69bd618c67c",
-          "message": "Client: More UI Improvements / Fix TxPool not being started along FCU (#3100)\n\n* Client: expand super msgs to also take in multiline output\r\n\r\n* Client: adjust CL disconnect thresholds to avoid reconnect messages\r\n\r\n* Client: add note to explain subchains on subchain creation\r\n\r\n* Client: fix synchronized setting on FCU\r\n\r\n* Client: make tx pool started a super msg\r\n\r\n* fix switching client to syncronized state and start txpool\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-10-11T17:54:08+05:30",
-          "tree_id": "3168fb310cf386a2eadaf42fbcf785954971ce9d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/02a7abb2f767b8bafdb7fa7e4440e69bd618c67c"
-        },
-        "date": 1697027335122,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19125,
-            "range": "±6.26%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 19800,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 19525,
-            "range": "±3.92%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 19914,
-            "range": "±3.43%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 19192,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±3.44%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a582c7e7f6ba3b3e2b99d5c99b8a9da1a03f43f5",
+          "message": "vm/tests: cleanup access to private variables + types (#3149)\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-11-07T10:23:19-07:00",
+          "tree_id": "e6f3de7a40450a50452dc459135e41be544071fa",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a582c7e7f6ba3b3e2b99d5c99b8a9da1a03f43f5"
+        },
+        "date": 1699377998257,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39757,
+            "range": "±2.42%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39147,
+            "range": "±1.72%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38885,
+            "range": "±1.91%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36255,
+            "range": "±3.97%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37099,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
