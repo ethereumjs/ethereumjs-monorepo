@@ -206,8 +206,15 @@ const args: ClientOpts = yargs(hideBin(process.argv))
   })
   .option('rpcDebug', {
     describe:
+      'Additionally log truncated RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods). Truncated by default, add verbosity using "rpcDebugVerbose"',
+    default: '',
+    string: true,
+  })
+  .option('rpcDebugVerbose', {
+    describe:
       'Additionally log complete RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods).',
     default: '',
+    string: true,
   })
   .option('rpcCors', {
     describe: 'Configure the Access-Control-Allow-Origin CORS header for RPC server',

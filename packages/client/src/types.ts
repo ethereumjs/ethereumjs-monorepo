@@ -130,6 +130,7 @@ export interface ClientOpts {
   logRotate?: boolean
   logMaxFiles?: number
   rpcDebug?: string
+  rpcDebugVerbose?: string
   rpcCors?: string
   maxPerRequest?: number
   maxFetcherJobs?: number
