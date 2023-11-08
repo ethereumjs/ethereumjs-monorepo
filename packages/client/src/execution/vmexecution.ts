@@ -8,7 +8,15 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  Lock,
+  ValueEncoding,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -437,6 +445,21 @@ export class VMExecution extends Execution {
                   }
 
                   void this.receiptsManager?.saveReceipts(block, result.receipts)
+
+                  if (this.preimagesManager !== undefined) {
+                    for (const txResult of result.results) {
+                      if (txResult.preimages === undefined) {
+                        continue
+                      }
+
+                      for (const preimage of txResult.preimages) {
+                        await this.preimagesManager.savePreimage(
+                          hexToBytes(preimage[0]),
+                          preimage[1]
+                        )
+                      }
+                    }
+                  }
 
                   txCounter += block.transactions.length
                   // set as new head block
