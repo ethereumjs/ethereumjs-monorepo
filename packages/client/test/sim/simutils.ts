@@ -4,6 +4,7 @@ import { BlobEIP4844Transaction, FeeMarketEIP1559Transaction } from '@ethereumjs
 import {
   Address,
   BIGINT_1,
+  LevelDB,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -22,7 +23,6 @@ import qs from 'qs'
 
 import { EthereumClient } from '../../src/client'
 import { Config } from '../../src/config'
-import { LevelDB } from '../../src/execution/level'
 import { RPCManager } from '../../src/rpc'
 import { Event } from '../../src/types'
 
