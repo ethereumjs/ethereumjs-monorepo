@@ -26,6 +26,18 @@ import type { Hardfork } from '@ethereumjs/common'
 
 const INVALID_PARAMS = -32602
 
+export enum PutStatus {
+  VALID = 'VALID',
+  INVALID = 'INVALID',
+}
+
+type FillStatus = {
+  status: PutStatus
+  height: bigint
+  hash: Uint8Array
+  validationError?: string
+}
+
 type SkeletonStatus = {
   progress: SkeletonProgress
   linked: boolean
@@ -89,6 +101,7 @@ export class Skeleton extends MetaDBManager {
   private _lock = new Lock()
 
   private status: SkeletonStatus
+  fillStatus: FillStatus | null = null
 
   private started: number /** Timestamp when the skeleton syncer was created */
 
@@ -533,6 +546,12 @@ export class Skeleton extends MetaDBManager {
               )
             }
           }
+        }
+
+        // if chain head reset needs to be done i.e. fill not started or chain is not linked because of reorg
+        // fillStatus should be set null
+        if (this.status.canonicalHeadReset || !this.status.linked) {
+          this.fillStatus = null
         }
       }
 
@@ -999,6 +1018,8 @@ export class Skeleton extends MetaDBManager {
         // the tail to modify the canonical
         if (tailUpdated || merged) {
           this.status.canonicalHeadReset = true
+          // since tail has been backfilled, fill status should be null
+          this.fillStatus = null
           if (this.status.progress.subchains[0].tail - BIGINT_1 <= this.chain.blocks.height) {
             this.status.linked = await this.checkLinked()
           }
@@ -1143,10 +1164,8 @@ export class Skeleton extends MetaDBManager {
     this.filling = true
 
     let canonicalHead = this.chain.blocks.height
-    let oldHead = null
     const subchain = this.status.progress.subchains[0]!
     if (this.status.canonicalHeadReset) {
-      oldHead = this.chain.blocks.latest // Grab previous head block in case of resettng canonical head
       if (subchain.tail > canonicalHead + BIGINT_1) {
         throw Error(
           `Canonical head should already be on or ahead subchain tail canonicalHead=${canonicalHead} tail=${subchain.tail}`
@@ -1216,15 +1235,38 @@ export class Skeleton extends MetaDBManager {
       if (this.chain.blocks.height <= block.header.number) {
         try {
           numBlocksInserted = await this.chain.putBlocks([block], true)
+          if (numBlocksInserted > 0) {
+            this.fillStatus = {
+              status: PutStatus.VALID,
+              height: block.header.number,
+              hash: block.hash(),
+            }
+          }
         } catch (e) {
-          this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
-          if (oldHead !== null && oldHead.header.number >= block.header.number) {
-            // Put original canonical head block back if reorg fails
-            // UPDATE
-            // not sure we can put oldHead because the oldHead chain might have been partially overwritten
-            // skipping for now, leaving code here for future cleanup/debugging
-            //
-            // await this.chain.putBlocks([oldHead], true)
+          const validationError = `${e}`
+          this.config.logger.error(`fillCanonicalChain putBlock error=${validationError}`)
+          const errorMsg = `${validationError}`.toLowerCase()
+          if (errorMsg.includes('block') && errorMsg.includes('not found')) {
+            // see if backstepping is required ot this is just canonicalHeadReset
+            await this.runWithLock<void>(async () => {
+              if (!this.status.canonicalHeadReset) {
+                this.config.logger.debug(
+                  `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`
+                )
+                await this.backStep(number)
+              } else {
+                this.config.logger.debug(
+                  `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+                )
+              }
+            })
+          } else {
+            this.fillStatus = {
+              status: PutStatus.INVALID,
+              height: block.header.number,
+              hash: block.hash(),
+              validationError,
+            }
           }
         }
 
@@ -1261,20 +1303,6 @@ export class Skeleton extends MetaDBManager {
               `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`
             )
           }
-
-          // see if backstepping is required ot this is just canonicalHeadReset
-          await this.runWithLock<void>(async () => {
-            if (!this.status.canonicalHeadReset) {
-              this.config.logger.debug(
-                `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`
-              )
-              await this.backStep(number)
-            } else {
-              this.config.logger.debug(
-                `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
-              )
-            }
-          })
           break
         }
       } else {

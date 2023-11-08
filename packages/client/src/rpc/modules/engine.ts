@@ -15,6 +15,7 @@ import {
 
 import { ExecStatus } from '../../execution'
 import { PendingBlock } from '../../miner'
+import { PutStatus } from '../../sync'
 import { short } from '../../util'
 import {
   INTERNAL_ERROR,
@@ -835,6 +836,18 @@ export class Engine {
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
       const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
+      if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
+        const latestValidHash =
+          this.chain.blocks.latest !== null
+            ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+            : bytesToHex(zeros(32))
+        const response = {
+          status: Status.INVALID,
+          validationError: this.skeleton.fillStatus.validationError ?? '',
+          latestValidHash,
+        }
+        return response
+      }
       const status =
         // If the transitioned to beacon sync and this block can extend beacon chain then
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
@@ -850,6 +863,19 @@ export class Engine {
     // Call skeleton.setHead without forcing head change to return if the block is reorged or not
     // Do optimistic lookup if not reorged
     const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
+    if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
+      const latestValidHash =
+        this.chain.blocks.latest !== null
+          ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+          : bytesToHex(zeros(32))
+      const response = {
+        status: Status.INVALID,
+        validationError: this.skeleton.fillStatus.validationError ?? '',
+        latestValidHash,
+      }
+      return response
+    }
+
     this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
     // we should check if the block exists executed in remoteBlocks or in chain as a check since stateroot
@@ -1177,7 +1203,23 @@ export class Engine {
       finalizedBlockHash: finalized,
     })
 
-    if (reorged) await this.service.beaconSync?.reorged(headBlock)
+    if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
+      const latestValidHash =
+        this.chain.blocks.latest !== null
+          ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+          : bytesToHex(zeros(32))
+      const response = {
+        payloadStatus: {
+          status: Status.INVALID,
+          validationError: this.skeleton.fillStatus.validationError ?? '',
+          latestValidHash,
+        },
+        payloadId: null,
+      }
+      return response
+    }
+
+    await this.service.beaconSync?.reorged(headBlock)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
@@ -1339,7 +1381,7 @@ export class Engine {
 
     // before returning response prune cached blocks based on finalized and vmHead
     if (this.chain.config.pruneEngineCache) {
-      pruneCachedBlocks(this.chain, this.chainCache)
+      // pruneCachedBlocks(this.chain, this.chainCache)
     }
     return validResponse
   }
