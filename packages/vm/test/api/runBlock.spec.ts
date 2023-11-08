@@ -27,7 +27,7 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock tests', () => {
-  it('runBlock() -> successful API parameter usage', async () => {
+  describe('runBlock() -> successful API parameter usage', async () => {
     async function simpleRun(vm: VM) {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
       const genesisRlp = toBytes(testData.genesisRLP)
@@ -195,7 +195,7 @@ describe('runBlock tests', () => {
     })
   })
 
-  it('runBlock() -> API parameter usage/data errors', async () => {
+  describe('runBlock() -> API parameter usage/data errors', async () => {
     const vm = await VM.create({ common })
 
     it('should fail when runTx fails', async () => {
@@ -281,7 +281,7 @@ describe('runBlock tests', () => {
     })
   })
 
-  it('runBlock() -> runtime behavior', async () => {
+  describe('runBlock() -> runtime behavior', async () => {
     // this test actually checks if the DAO fork works. This is not checked in ethereum/tests
     it('DAO fork behavior', async () => {
       const common = getDAOCommon(1)
@@ -445,7 +445,7 @@ describe('runBlock tests', () => {
   }
 
   // TODO: complete on result values and add more usage scenario test cases
-  it('runBlock() -> API return values', () => {
+  describe('runBlock() -> API return values', () => {
     it('should return correct HF receipts', async () => {
       let res = await runWithHf('byzantium')
       assert.equal(
@@ -463,7 +463,7 @@ describe('runBlock tests', () => {
     })
   })
 
-  it('runBlock() -> tx types', async () => {
+  describe('runBlock() -> tx types', async () => {
     async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
       const common = vm.common
 

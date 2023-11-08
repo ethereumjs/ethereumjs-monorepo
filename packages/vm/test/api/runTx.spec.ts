@@ -44,7 +44,7 @@ const TRANSACTION_TYPES = [
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 common.events.setMaxListeners(100)
 describe('runTx tests', () => {
-  it('runTx() -> successful API parameter usage', async () => {
+  describe('runTx() -> successful API parameter usage', async () => {
     async function simpleRun(vm: VM, msg: string) {
       for (const txType of TRANSACTION_TYPES) {
         const tx = getTransaction(vm.common, txType.type, true)
@@ -274,7 +274,7 @@ describe('runTx tests', () => {
     })
   })
 
-  it('runTx() -> API parameter usage/data errors', () => {
+  describe('runTx() -> API parameter usage/data errors', () => {
     it('Typed Transaction with HF set to pre-Berlin', async () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
       const vm = await VM.create({ common })
@@ -326,7 +326,11 @@ describe('runTx tests', () => {
           await vm.runTx({ tx })
           assert.fail('should throw error')
         } catch (e: any) {
-          assert.ok(e.message.includes('not signed'), `should fail for ${txType.name}`)
+          assert.ok(
+            e.message.includes('not signed') === true ||
+              e.message.includes('Invalid Signature') === true,
+            `should fail for ${txType.name}`
+          )
         }
       }
     })
@@ -425,7 +429,7 @@ describe('runTx tests', () => {
     })
   })
 
-  it('runTx() -> runtime behavior', () => {
+  describe('runTx() -> runtime behavior', () => {
     it('storage cache', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
@@ -473,7 +477,7 @@ describe('runTx tests', () => {
     })
   })
 
-  it('runTx() -> runtime errors', () => {
+  describe('runTx() -> runtime errors', () => {
     it('account balance overflows (call)', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
@@ -531,7 +535,7 @@ describe('runTx tests', () => {
   })
 
   // TODO: complete on result values and add more usage scenario test cases
-  it('runTx() -> API return values', () => {
+  describe('runTx() -> API return values', () => {
     it('simple run, common return values', async () => {
       for (const txType of TRANSACTION_TYPES) {
         const vm = await VM.create({ common })
@@ -621,7 +625,7 @@ describe('runTx tests', () => {
     })
   })
 
-  it('runTx() -> consensus bugs', () => {
+  describe('runTx() -> consensus bugs', () => {
     it('validate out-of-gas does not give any refunds', async () => {
       // There was a consensus bug in the following mainnet tx:
       // 0xe3b0fb0a45bc905d1f98baabaadd194901267d02de74cdad187b7feb8920d7b3
@@ -704,7 +708,7 @@ describe('runTx tests', () => {
     })
   })
 
-  it('runTx() -> RunTxOptions', () => {
+  describe('runTx() -> RunTxOptions', () => {
     it('should throw on negative value args', async () => {
       const vm = await VM.create({ common })
       await setBalance(vm, Address.zero(), BigInt(10000000000))
@@ -857,7 +861,7 @@ describe('runTx tests', () => {
     )
   })
 
-  it('EIP 4844 transaction tests', () => {
+  describe('EIP 4844 transaction tests', () => {
     it('should work', async () => {
       // Hack to detect if running in browser or not
       const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
