@@ -848,6 +848,33 @@ export class Engine {
         }
         return response
       }
+
+      if (this.execution.chainStatus?.status === ExecStatus.INVALID && optimisticLookup) {
+        // if the invalid block is canonical along the current chain return invalid
+        const invalidBlock = await this.skeleton.getBlockByHash(
+          this.execution.chainStatus.hash,
+          true
+        )
+        if (invalidBlock !== undefined) {
+          // hard luck: block along canonical chain is invalid
+          const latestValidHash = await validHash(
+            invalidBlock.header.parentHash,
+            this.chain,
+            this.chainCache
+          )
+          const validationError = `Block number=${invalidBlock.header.number} hash=${short(
+            invalidBlock.hash()
+          )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
+
+          const response = {
+            status: Status.INVALID,
+            latestValidHash,
+            validationError,
+          }
+          return response
+        }
+      }
+
       const status =
         // If the transitioned to beacon sync and this block can extend beacon chain then
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
@@ -893,7 +920,7 @@ export class Engine {
       return response
     }
 
-    if (this.execution.chainStatus?.status === ExecStatus.INVALID) {
+    if (this.execution.chainStatus?.status === ExecStatus.INVALID && optimisticLookup) {
       // if the invalid block is canonical along the current chain return invalid
       const invalidBlock = await this.skeleton.getBlockByHash(this.execution.chainStatus.hash, true)
       if (invalidBlock !== undefined) {
