@@ -358,6 +358,12 @@ export interface RunTxOpts {
   reportAccessList?: boolean
 
   /**
+   * If true, adds a hashedKey -> preimages mapping of all touched accounts
+   * to the `RunTxResult` returned.
+   */
+  reportPreimages?: boolean
+
+  /**
    * To obtain an accurate tx receipt input the block gas used up until this tx.
    */
   blockGasUsed?: bigint
@@ -398,6 +404,11 @@ export interface RunTxResult extends EVMResult {
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
    */
   accessList?: AccessList
+
+  /**
+   * Preimages mapping of the touched accounts from the tx (see `reportPreimages` option)
+   */
+  preimages?: Map<string, Uint8Array>
 
   /**
    * The value that accrues to the miner by this transaction
