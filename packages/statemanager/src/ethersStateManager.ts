@@ -345,6 +345,17 @@ export class EthersStateManager implements EVMStateManagerInterface {
   }
 
   /**
+   * Returns the applied key for a given address
+   * Used for saving preimages
+   * @param address - The address to return the applied key
+   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   */
+  getAppliedKey(address: Uint8Array): Uint8Array {
+    // TODO: Consider not hardcoding keccak256 as a hashing function?
+    return keccak256(address)
+  }
+
+  /**
    * Checkpoints the current state of the StateManager instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
