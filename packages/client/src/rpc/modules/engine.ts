@@ -1219,7 +1219,7 @@ export class Engine {
       return response
     }
 
-    await this.service.beaconSync?.reorged(headBlock)
+    if (reorged) await this.service.beaconSync?.reorged(headBlock)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
@@ -1381,7 +1381,7 @@ export class Engine {
 
     // before returning response prune cached blocks based on finalized and vmHead
     if (this.chain.config.pruneEngineCache) {
-      // pruneCachedBlocks(this.chain, this.chainCache)
+      pruneCachedBlocks(this.chain, this.chainCache)
     }
     return validResponse
   }
