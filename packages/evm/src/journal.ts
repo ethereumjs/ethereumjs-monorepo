@@ -2,7 +2,9 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
+  bytesToHex,
   bytesToUnprefixedHex,
+  hexToBytes,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
@@ -14,6 +16,7 @@ import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
 type AddressString = string
+type HashString = string
 type SlotString = string
 type WarmSlots = Set<SlotString>
 
@@ -44,6 +47,7 @@ export class Journal {
   private journalHeight: JournalHeight
 
   public accessList?: Map<AddressString, Set<SlotString>>
+  public preimages?: Map<HashString, Uint8Array>
 
   constructor(stateManager: EVMStateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
@@ -69,6 +73,14 @@ export class Journal {
     this.accessList = new Map()
   }
 
+  /**
+   * Clears the internal `preimages` map, and marks this journal to start reporting
+   * the images (hashed addresses) of the accounts that have been accessed
+   */
+  startReportingPreimages() {
+    this.preimages = new Map()
+  }
+
   async putAccount(address: Address, account: Account | undefined) {
     this.touchAddress(address)
     return this.stateManager.putAccount(address, account)
@@ -85,6 +97,13 @@ export class Journal {
   }
 
   private touchAccount(address: string) {
+    // If preimages are being reported, add the address to the preimages map
+    if (this.preimages !== undefined) {
+      const bytesAddress = hexToBytes(address)
+      const hashedKey = this.stateManager.getAppliedKey(bytesAddress)
+      this.preimages.set(bytesToHex(hashedKey), bytesAddress)
+    }
+
     if (!this.touched.has(address)) {
       this.touched.add(address)
       const diffArr = this.journalDiff[this.journalDiff.length - 1][1]
@@ -164,7 +183,7 @@ export class Journal {
   }
 
   /**
-   * Removes accounts form the state trie that have been touched,
+   * Removes accounts from the state trie that have been touched,
    * as defined in EIP-161 (https://eips.ethereum.org/EIPS/eip-161).
    * Also cleanups any other internal fields
    */
@@ -183,6 +202,7 @@ export class Journal {
     }
     this.cleanJournal()
     delete this.accessList
+    delete this.preimages
   }
 
   addAlwaysWarmAddress(addressStr: string, addToAccessList: boolean = false) {
