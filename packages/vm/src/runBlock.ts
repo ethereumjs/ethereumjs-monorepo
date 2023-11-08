@@ -30,6 +30,7 @@ import type {
   PreByzantiumTxReceipt,
   RunBlockOpts,
   RunBlockResult,
+  RunTxResult,
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
@@ -137,7 +138,14 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint`)
   }
 
-  let result
+  let result: {
+    bloom: Bloom
+    gasUsed: bigint
+    receiptsRoot: Uint8Array
+    receipts: (PreByzantiumTxReceipt | PostByzantiumTxReceipt)[]
+    results: RunTxResult[]
+  }
+
   try {
     result = await applyBlock.bind(this)(block, opts)
     if (this.DEBUG) {
@@ -397,8 +405,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     receiptTrie = new Trie()
   }
 
-  const receipts = []
-  const txResults = []
+  const receipts: TxReceipt[] = []
+  const txResults: RunTxResult[] = []
 
   /*
    * Process transactions
