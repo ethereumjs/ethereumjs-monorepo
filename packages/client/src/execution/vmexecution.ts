@@ -116,7 +116,7 @@ export class VMExecution extends Execution {
         })
         this.pendingReceipts = new Map()
       }
-      if (this.config.savePreimages) {
+      if (this.config.savePreimages === true) {
         this.preimagesManager = new PreimagesManager({
           chain: this.chain,
           config: this.config,
@@ -431,6 +431,7 @@ export class VMExecution extends Execution {
                     clearCache,
                     skipBlockValidation,
                     skipHeaderValidation: true,
+                    reportPreimages: this.config.savePreimages,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
@@ -446,17 +447,14 @@ export class VMExecution extends Execution {
 
                   void this.receiptsManager?.saveReceipts(block, result.receipts)
 
-                  if (this.preimagesManager !== undefined) {
+                  if (this.config.savePreimages === true && this.preimagesManager !== undefined) {
                     for (const txResult of result.results) {
                       if (txResult.preimages === undefined) {
                         continue
                       }
 
-                      for (const preimage of txResult.preimages) {
-                        await this.preimagesManager.savePreimage(
-                          hexToBytes(preimage[0]),
-                          preimage[1]
-                        )
+                      for (const [key, preimage] of txResult.preimages) {
+                        await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
                       }
                     }
                   }
