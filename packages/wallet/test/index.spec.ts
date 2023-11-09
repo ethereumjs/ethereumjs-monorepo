@@ -75,9 +75,8 @@ describe('Wallet tests', () => {
     )
   })
 
+  const pubKey = unprefixedHexToBytes(fixturePublicKey)
   it('public key only wallet', () => {
-    const pubKey = unprefixedHexToBytes(fixturePublicKey)
-
     assert.deepEqual(
       bytesToUnprefixedHex(Wallet.fromPublicKey(pubKey).getPublicKey()),
       fixturePublicKey,
@@ -116,17 +115,17 @@ describe('Wallet tests', () => {
       'This is a public key only wallet',
       '.getPrivateKey() should fail'
     )
+  })
 
-    it('.toV3() should fail', async () => {
-      try {
-        await Wallet.fromPublicKey(pubKey).toV3('')
-      } catch (err: any) {
-        assert.ok(
-          err.message.includes('This is a public key only wallet'),
-          'fails to generate V3 when no private key present'
-        )
-      }
-    })
+  it('.toV3() should fail', async () => {
+    try {
+      await Wallet.fromPublicKey(pubKey).toV3('')
+    } catch (err: any) {
+      assert.ok(
+        err.message.includes('This is a public key only wallet'),
+        'fails to generate V3 when no private key present'
+      )
+    }
   })
 
   it('.fromExtendedPrivateKey()', () => {
@@ -690,7 +689,7 @@ describe('Wallet tests', () => {
     )
   }, 30000)
 
-  it('.fromV3()', () => {
+  describe('.fromV3()', () => {
     it('should work with PBKDF2', async () => {
       const w =
         '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
@@ -791,7 +790,7 @@ describe('Wallet tests', () => {
     })
   })
 
-  it('.fromEthSale()', () => {
+  describe('.fromEthSale()', () => {
     // Generated using https://github.com/ethereum/pyethsaletool/ [4afd19ad60cee8d09b645555180bc3a7c8a25b67]
     it('should work with short password (8 characters)', async function () {
       const json =
@@ -814,7 +813,7 @@ describe('Wallet tests', () => {
     })
   })
 
-  it('.fromEtherWallet()', () => {
+  describe('.fromEtherWallet()', () => {
     // it('should work with unencrypted input', function () {
     //   const etherWalletUnencrypted = '{"address":"0x9d6abd11d36cc20d4836c25967f1d9efe6b1a27c","encrypted":true,"locked":false,"hash":"b7a6621e8b125a17234d3e5c35522696a84134d98d07eab2479d020a8613c4bd","private":"a2c6222146ca2269086351fda9f8d2dfc8a50331e8a05f0f400c13653a521862","public":"2ed129b50b1a4dbbc53346bf711df6893265ad0c700fd11431b0bc3a66bd383a87b10ad835804a6cbe092e0375a0cc3524acf06b1ec7bb978bf25d2d6c35d120"}'
     //   const wallet = Thirdparty.fromEtherWallet(etherWalletUnencrypted)
