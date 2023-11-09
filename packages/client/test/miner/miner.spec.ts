@@ -1,10 +1,10 @@
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
+import { keccak256 } from '@ethereumjs/devp2p'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
@@ -380,6 +380,73 @@ describe('[Miner]', async () => {
     assert.ok(receipt, 'receipt should be saved')
     receipt = await receiptsManager!.getReceipts(txA03.hash())
     assert.ok(receipt, 'receipt should be saved')
+    await wait(500)
+  })
+
+  it('assembleBlocks() -> with savePreimages', async () => {
+    const chain = new FakeChain() as any
+    const config = new Config({
+      accountCache: 10000,
+      storageCache: 1000,
+      accounts,
+      mine: true,
+      common: customCommon,
+      savePreimages: true,
+    })
+    const service = new FullEthereumService({
+      config,
+      chain,
+      metaDB: new AbstractLevel({
+        encodings: { utf8: true, buffer: true },
+      }),
+    })
+    const miner = new Miner({ config, service, skipHardForkValidation: true })
+    const { txPool } = service
+    const { vm, preimagesManager } = service.execution
+    txPool.start()
+    miner.start()
+
+    assert.ok(preimagesManager !== undefined, 'preimagesManager should be initialized')
+
+    await setBalance(vm, A.address, BigInt('400000000000001'))
+    await setBalance(vm, B.address, BigInt('400000000000001'))
+
+    const txs = [txA01, txA02, txA03, txB01]
+
+    // add txs
+    for (const tx of txs) {
+      await txPool.add(tx)
+    }
+
+    // disable consensus to skip PoA block signer validation
+    ;(vm.blockchain as any)._validateConsensus = false
+
+    chain.putBlocks = async (blocks: Block[]) => {
+      const msg = 'txs in block should be properly ordered by gasPrice and nonce'
+      const expectedOrder = [txB01, txA01, txA02, txA03]
+      for (const [index, tx] of expectedOrder.entries()) {
+        const txHash = blocks[0].transactions[index]?.hash()
+        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+      }
+      miner.stop()
+      txPool.stop()
+    }
+
+    await (miner as any).queueNextAssembly(0)
+
+    // The two accounts (`sender` and `to` accounts) touched by the transactions should be in the preimagesManager
+    const touchedAddresses = txs.flatMap((tx) => [tx.getSenderAddress().bytes, tx.to!.bytes])
+    const touchedAddressesHashedKeys = touchedAddresses.map((address) => keccak256(address))
+
+    for (const [index, hashedKey] of touchedAddressesHashedKeys.entries()) {
+      const preimage = await preimagesManager!.getPreimage(hashedKey)
+      assert.ok(preimage !== null, 'preimage should be saved')
+      assert.ok(
+        equalsBytes(preimage!, touchedAddresses[index]),
+        'preimage should match touched address'
+      )
+    }
+
     await wait(500)
   })
 
