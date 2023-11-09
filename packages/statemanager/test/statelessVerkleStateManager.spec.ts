@@ -34,7 +34,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     )
     assert.equal(
       bytesToHex(balanceKey),
-      'bf101a6e1c8e83c11bd203a582c7981b91097ec55cbd344ce09005c1f26d1901'
+      '0xbf101a6e1c8e83c11bd203a582c7981b91097ec55cbd344ce09005c1f26d1901'
     )
   })
 
@@ -47,7 +47,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     )
     assert.equal(
       bytesToHex(balanceKey),
-      '274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1601'
+      '0x274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1601'
     )
   })
 
@@ -63,12 +63,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.equal(account.nonce, 3963257n, 'should have correct nonce')
     assert.equal(
       bytesToHex(account.storageRoot),
-      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
     assert.equal(
       bytesToHex(account.codeHash),
-      'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
   })
