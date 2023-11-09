@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1699392095678,
+  "lastUpdate": 1699522240476,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a4d60587409cf423159b07c03482ae37f2739f7e",
-          "message": "Change rpcDebug option to allow enabling/disabling specific rpc module logs (#3102)\n\n* Change rpcDebug option to allow enabling/disabling specific rpc module logs\r\n\r\n* Client: generalize --rpcDebug functionality to allow for arbitrary filters\r\n\r\n* Fix test\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-10-13T13:35:10+02:00",
-          "tree_id": "61667a7312d70fc28f980495b310797f7012c9e7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a4d60587409cf423159b07c03482ae37f2739f7e"
-        },
-        "date": 1697197327626,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 27826,
-            "range": "±7.83%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28530,
-            "range": "±3.01%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28255,
-            "range": "±3.21%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28255,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 26915,
-            "range": "±3.68%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.26%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e0e2fbf9f323675555df93aca0f94af1b84ef97",
+          "message": "vm: fix nested tests (#3151)",
+          "timestamp": "2023-11-09T10:26:10+01:00",
+          "tree_id": "e46fd6013aa84fb88ac220ae766d1ca0e6c80cac",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e0e2fbf9f323675555df93aca0f94af1b84ef97"
+        },
+        "date": 1699522239041,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 24674,
+            "range": "±3.36%",
+            "unit": "ops/sec",
+            "extra": "76 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 22400,
+            "range": "±6.18%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 23470,
+            "range": "±3.50%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 22644,
+            "range": "±3.89%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 22585,
+            "range": "±3.42%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
