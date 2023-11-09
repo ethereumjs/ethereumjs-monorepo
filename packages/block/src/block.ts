@@ -30,6 +30,7 @@ import type {
   HeaderData,
   JsonBlock,
   JsonRpcBlock,
+  VerkleExecutionWitness,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
@@ -49,6 +50,11 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly common: Common
+
+  /**
+   * EIP-6800: Verkle Proof Data (experimental)
+   */
+  public readonly executionWitness?: VerkleExecutionWitness
 
   private cache: {
     txTrieRoot?: Uint8Array
@@ -92,6 +98,7 @@ export class Block {
       transactions: txsData,
       uncleHeaders: uhsData,
       withdrawals: withdrawalsData,
+      executionWitness: executionWitnessData,
     } = blockData
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
@@ -125,8 +132,11 @@ export class Block {
     }
 
     const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+    // The witness data is planned to come in rlp serialized bytes so leave this
+    // stub till that time
+    const executionWitness = executionWitnessData
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
+    return new Block(header, transactions, uncleHeaders, withdrawals, executionWitness, opts)
   }
 
   /**
@@ -208,7 +218,11 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
+    // executionWitness are not part of the EL fetched blocks via eth_ bodies method
+    // they are currently only available via the engine api construced blocks
+    const executionWitness = undefined
+
+    return new Block(header, transactions, uncleHeaders, withdrawals, executionWitness, opts)
   }
 
   /**
@@ -300,6 +314,7 @@ export class Block {
       feeRecipient: coinbase,
       transactions,
       withdrawals: withdrawalsData,
+      executionWitness,
     } = payload
 
     const txs = []
@@ -331,7 +346,13 @@ export class Block {
     }
 
     // we are not setting setHardfork as common is already set to the correct hf
-    const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
+    const block = Block.fromBlockData(
+      { header, transactions: txs, withdrawals, executionWitness },
+      options
+    )
+    if (block.common.isActivatedEIP(6800) && executionWitness === undefined) {
+      throw Error('Missing executionWitness for EIP-6800 activated executionPayload')
+    }
     // Verify blockHash matches payload
     if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
@@ -366,6 +387,7 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
+    executionWitness?: VerkleExecutionWitness,
     opts: BlockOptions = {}
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
@@ -373,6 +395,25 @@ export class Block {
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
+    this.executionWitness =
+      executionWitness ??
+      (this.common.isActivatedEIP(6800)
+        ? {
+            stateDiff: [],
+            verkleProof: {
+              commitmentsByPath: [],
+              d: '0x',
+              depthExtensionPresent: '0x',
+              ipaProof: {
+                cl: [],
+                cr: [],
+                finalEvaluation: '0x',
+              },
+              otherStems: [],
+            },
+          }
+        : undefined)
+
     this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
       this.validateUncles()
@@ -392,6 +433,10 @@ export class Block {
 
     if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+    }
+
+    if (!this.common.isActivatedEIP(6800) && executionWitness !== undefined) {
+      throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
     const freeze = opts?.freeze ?? true
@@ -558,6 +603,14 @@ export class Block {
     if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
+    }
+
+    // Validation for Verkle blocks
+    // Unnecessary in this implementation since we're providing defaults if those fields are undefined
+    if (this.common.isActivatedEIP(6800)) {
+      if (this.executionWitness === undefined) {
+        throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
+      }
     }
   }
 

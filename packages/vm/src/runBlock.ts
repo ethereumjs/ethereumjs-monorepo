@@ -130,7 +130,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
 
     if (this.common.isActivatedEIP(6800)) {
       ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
-        block.header.executionWitness!
+        block.executionWitness!
       )
     }
 

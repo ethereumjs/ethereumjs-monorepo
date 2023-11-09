@@ -82,7 +82,7 @@ describe('[fromExecutionPayloadJson]: kaustinen', () => {
     // the witness object in payload has camel casing for now
     // the current block hash doesn't include witness data so deep match is required
     assert.deepEqual(
-      block.header.executionWitness,
+      block.executionWitness,
       payloadKaustinen.execution_witness,
       'execution witness should match'
     )

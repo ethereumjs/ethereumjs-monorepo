@@ -20,7 +20,7 @@ describe('Verkle-enabled VM', async () => {
     for (const [index, blockJSON] of [block1JSON, block2JSON, block3JSON].entries()) {
       const block = Block.fromBlockData(blockJSON, { common })
       const stateManager = new StatelessVerkleStateManager()
-      stateManager.initVerkleExecutionWitness(block.header.executionWitness!)
+      stateManager.initVerkleExecutionWitness(block.executionWitness!)
       const vm = await VM.create({ common, stateManager })
       await vm.runBlock({
         block,

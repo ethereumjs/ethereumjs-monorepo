@@ -3,423 +3,6 @@
     "baseFeePerGas": "0x8",
     "blockHash": "0xb528b8feb9f7c45dc76b1dab179567f3fcbba43069c0835e20e2080b9e1bf47d",
     "blockNumber": "0x680c5",
-    "executionWitness": {
-      "stateDiff": [
-        {
-          "stem": "0x290378459380774194f3dd7af473757815a18a7dcb4eb6ca719dd127ccea28",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 128
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 129
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 130
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 131
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 132
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 133
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 134
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 135
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 136
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 137
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 138
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 139
-            }
-          ]
-        },
-        {
-          "stem": "0x3560782eb707a3a378ef492c66a4c38f1e33daaf9ec700b31f356d3e72e774",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            }
-          ]
-        },
-        {
-          "stem": "0x4d97c3dfe169c2aab9b20fa5bbb6f6e53e4560767896523f6e5a93e09297be",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 128
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 129
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 130
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 131
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 132
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 133
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 134
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 135
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 136
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 137
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 138
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 139
-            }
-          ]
-        },
-        {
-          "stem": "0x84c05df768c23da56ace0e5bc7988d5dd032a1e2d8ea3c7145afc81bc0fba2",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 128
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 129
-            }
-          ]
-        },
-        {
-          "stem": "0x8b900b79d7f493c4fb3a8fba13196cc0e76478a36b8674a6dfe6ddee66a9b4",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x0000000000000000000000000000000000000000000000000000000000000000",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0xb8ea48b767f7c48a000000000000000000000000000000000000000000000000",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x0300000000000000000000000000000000000000000000000000000000000000",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            }
-          ]
-        },
-        {
-          "stem": "0xad6c8b059c0aa4becd95161a2f297e0074af3048e47e671544c520eb0c4ab8",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            }
-          ]
-        },
-        {
-          "stem": "0xae1b106992d792cbeb5d96559894c2a8dda72c9414cfb3532325f4633047ae",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x0000000000000000000000000000000000000000000000000000000000000000",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x525de5f1f51e4d4a201500000000000000000000000000000000000000000000",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x79793c0000000000000000000000000000000000000000000000000000000000",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            }
-          ]
-        },
-        {
-          "stem": "0xd68b7458f07bf329e87b81f099f9c3855d43aeeed7748d85d222b3a8d69152",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            }
-          ]
-        },
-        {
-          "stem": "0xee9707ef2846473a6fe4e10781a3b8b225ea950a7c89fb88f01c3544a41dfb",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            }
-          ]
-        },
-        {
-          "stem": "0xf48b4a9ad9ca0b7761b6557aa59cc184a3d14dc8b6af87741fd29e19c11111",
-          "suffixDiffs": [
-            {
-              "currentValue": "0x",
-              "suffix": 0
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 1
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 2
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 3
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 4
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 128
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 130
-            },
-            {
-              "currentValue": "0x",
-              "suffix": 131
-            }
-          ]
-        }
-      ],
-      "verkleProof": {
-        "commitmentsByPath": [
-          "0x18f21df848fbde27fbe0f8a231b4561ed8993588010b01b6e076cac910b87c42",
-          "0x0520fa7a1eaa72f303b4bd5edfdc58235942f3a48a88ceb669d24ddb85586f55",
-          "0x186e9dc2f984e5db103680adbfdd83c2f6df0376daae0384d6bdc63d3ee1383b",
-          "0x32a41cdc3f91731a5ff0239e98d63b7e63880dda4a2bce20abe615b8bdbb81ae",
-          "0x4b22c6bdd8233349c3966c44fe7322213431df9fc3e3cc6fce0c7d7fd0fb0c22",
-          "0x56653741afebf8e9ed40e310ba9868bf8736e50463ad8d0a9fd700f2a35a7570",
-          "0x3c0d513d31e51867367010464d08a84a85c975528f7aaf1f059c0f2d5a8b90ca",
-          "0x10dd60b1df160579af0d2667dcf6358e340aeef59ad6b00200f56ee8af850b39",
-          "0x2dcb916d0a9a01ba6254922ae3492284c46345e3e7e0fc94f4fc0978ba0e4b00",
-          "0x192f580695485d9fe38610a4d3d1af7ef4daaa5b5a512e6e9574191ccfd02670",
-          "0x08b9cb110253c94d40df41d56745b8767b1ddac66e3d378f04fed2b007f5db7b",
-          "0x1cfb1a085e241a26fefbcd19e5c8fa14a5abe38eff6d78a7671475e74c900ec8",
-          "0x63be1f65657faa7d706b908d3b3b3674f5d8d858b790480dd8a4d9c2ce9369fc",
-          "0x08652f5969f0d7f893dea8a247dbc70bcc10a54ad86684cd9f15288b056d5e96",
-          "0x2758d93b5d57c8bb8985b8245ebc4b9f8c3dd1e376119a1a99416cd16c4d459c",
-          "0x38af2cefe233d1f2c0a8d116fafa67725c9201d65e3a5b7b6e2c615c13a5eec7",
-          "0x0c3dec1d8094db18271c95c0292877dfe14076d5bd965b7da4b090f8e0c3cf26",
-          "0x2ab4e41a5e97902d093bd194d7e9fb15d7b6866d083cc2cde9b1e60235d3e759",
-          "0x1ea2625ea1d3b62c540749ebcb1daa2eefda6478d1958c067e8d65bf473a15e5",
-          "0x30a3c5b308656a1ff8fd9cb982cdcd7050a477459d33da41e312615af4028569",
-          "0x073afcac9107622d7e81726ef59c8e30f7c0228724ab6ca437d34ad7dd89169d",
-          "0x5ff714b854edbf2e5eb9f994ca2ca4ff30fdef76d62091c9920463487c91fe0c",
-          "0x4deb8879de6ddbc6c99dd321e1b26b70fbdb2fe080d8244a2b9e1ddb63ae4fcf",
-          "0x2644e2ebafd0c4b847fe534f833d79899e9dbaedb3e7b0715326ac3f8de5a2ef",
-          "0x09eb0175311484f786ba1e12f5dd80823fb9bb806de46cac8f10b72b91019b75"
-        ],
-        "d": "0x06110992b049b61a7543a1a388a08b7aa967580266b12b1880dfd8b8aa1e2aa3",
-        "depthExtensionPresent": "0x181818181a181a181819",
-        "ipaProof": {
-          "cl": [
-            "0x7201d3474df7071d5b08628720df125d3c576b7310a99a67e57c5d364f442aed",
-            "0x5eb72934160412aba09e9f28d911577942c171cf0921c016eb7887aa8ae0ce05",
-            "0x69a486db0afb403ea7c64d00bdde39e53112a41fa48fdc1403a392f12a5dc02c",
-            "0x461f0f169a348da80089c2f59d99a2a372de7be4f9b80c734d87b951b51ef39c",
-            "0x66a53133a17a72f39492d3430fb8b476bbe3c56fbfe59c44bdfca4a9a3a5e99c",
-            "0x497cc3587d1994f6ae21b2e7ffd97f5505c9aaaa9c6288267dc8e1c326b8118a",
-            "0x1cb46f70017c2f54571b8620e237cb3b94b41e37894c29a3fcb1685ffcd56083",
-            "0x5a249d17a2257c122743ec27afbb7624e52819c6ef6c6d081d4c023012931381"
-          ],
-          "cr": [
-            "0x1be4988b202837e86a2e3ba61ba5fc62e4bb36bebad554193df623270ef0c9fd",
-            "0x2120506addcff94106a227c0ba2812cbc21f7003fac2643d4ec2b1ed8a9df858",
-            "0x6a0a5aa53dbf13b873669715f5a8245d76dc41bfb6c9a002347ece4cc8aea838",
-            "0x0f2558cd2bdd186be9d721a24679f1d92c599abdf25ac4b1294df2f090be3091",
-            "0x0a3a12eebd6234289697b747d242fa4ea769802c5a28c739534324f070fb7102",
-            "0x5984c0dd556fca9e7e7335eb03670ca08787292b0eb9de624ce88f421d531f8e",
-            "0x47f7f6d5b603026777d3f57fa1657ba257df66adf890ea4d5da454b44816ebc7",
-            "0x23d9bd0146baffdef1fac45f9b573596a15f72ae0f84aa2b82689ea2a6c95f2a"
-          ],
-          "finalEvaluation": "0x0fb5674a2d8693294a5cfc0f95ae7ce5a6c4112255dc7a25afd76446863612b1"
-        },
-        "otherStems": ["0xf48b4afcf49fabd63c9ea130cd708c6f1a1c2cfd8329c9265395a00f670658"]
-      }
-    },
     "extraData": "0x",
     "feeRecipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
     "gasLimit": "0x1c9c380",
@@ -566,5 +149,422 @@
       "gasPrice": "0x3b9b1368",
       "accessList": []
     }
-  ]
+  ],
+  "executionWitness": {
+    "stateDiff": [
+      {
+        "stem": "0x290378459380774194f3dd7af473757815a18a7dcb4eb6ca719dd127ccea28",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 128
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 129
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 130
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 131
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 132
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 133
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 134
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 135
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 136
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 137
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 138
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 139
+          }
+        ]
+      },
+      {
+        "stem": "0x3560782eb707a3a378ef492c66a4c38f1e33daaf9ec700b31f356d3e72e774",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          }
+        ]
+      },
+      {
+        "stem": "0x4d97c3dfe169c2aab9b20fa5bbb6f6e53e4560767896523f6e5a93e09297be",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 128
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 129
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 130
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 131
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 132
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 133
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 134
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 135
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 136
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 137
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 138
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 139
+          }
+        ]
+      },
+      {
+        "stem": "0x84c05df768c23da56ace0e5bc7988d5dd032a1e2d8ea3c7145afc81bc0fba2",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 128
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 129
+          }
+        ]
+      },
+      {
+        "stem": "0x8b900b79d7f493c4fb3a8fba13196cc0e76478a36b8674a6dfe6ddee66a9b4",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0xb8ea48b767f7c48a000000000000000000000000000000000000000000000000",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x0300000000000000000000000000000000000000000000000000000000000000",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          }
+        ]
+      },
+      {
+        "stem": "0xad6c8b059c0aa4becd95161a2f297e0074af3048e47e671544c520eb0c4ab8",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          }
+        ]
+      },
+      {
+        "stem": "0xae1b106992d792cbeb5d96559894c2a8dda72c9414cfb3532325f4633047ae",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x525de5f1f51e4d4a201500000000000000000000000000000000000000000000",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x79793c0000000000000000000000000000000000000000000000000000000000",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          }
+        ]
+      },
+      {
+        "stem": "0xd68b7458f07bf329e87b81f099f9c3855d43aeeed7748d85d222b3a8d69152",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          }
+        ]
+      },
+      {
+        "stem": "0xee9707ef2846473a6fe4e10781a3b8b225ea950a7c89fb88f01c3544a41dfb",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          }
+        ]
+      },
+      {
+        "stem": "0xf48b4a9ad9ca0b7761b6557aa59cc184a3d14dc8b6af87741fd29e19c11111",
+        "suffixDiffs": [
+          {
+            "currentValue": "0x",
+            "suffix": 0
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 1
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 2
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 3
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 4
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 128
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 130
+          },
+          {
+            "currentValue": "0x",
+            "suffix": 131
+          }
+        ]
+      }
+    ],
+    "verkleProof": {
+      "commitmentsByPath": [
+        "0x18f21df848fbde27fbe0f8a231b4561ed8993588010b01b6e076cac910b87c42",
+        "0x0520fa7a1eaa72f303b4bd5edfdc58235942f3a48a88ceb669d24ddb85586f55",
+        "0x186e9dc2f984e5db103680adbfdd83c2f6df0376daae0384d6bdc63d3ee1383b",
+        "0x32a41cdc3f91731a5ff0239e98d63b7e63880dda4a2bce20abe615b8bdbb81ae",
+        "0x4b22c6bdd8233349c3966c44fe7322213431df9fc3e3cc6fce0c7d7fd0fb0c22",
+        "0x56653741afebf8e9ed40e310ba9868bf8736e50463ad8d0a9fd700f2a35a7570",
+        "0x3c0d513d31e51867367010464d08a84a85c975528f7aaf1f059c0f2d5a8b90ca",
+        "0x10dd60b1df160579af0d2667dcf6358e340aeef59ad6b00200f56ee8af850b39",
+        "0x2dcb916d0a9a01ba6254922ae3492284c46345e3e7e0fc94f4fc0978ba0e4b00",
+        "0x192f580695485d9fe38610a4d3d1af7ef4daaa5b5a512e6e9574191ccfd02670",
+        "0x08b9cb110253c94d40df41d56745b8767b1ddac66e3d378f04fed2b007f5db7b",
+        "0x1cfb1a085e241a26fefbcd19e5c8fa14a5abe38eff6d78a7671475e74c900ec8",
+        "0x63be1f65657faa7d706b908d3b3b3674f5d8d858b790480dd8a4d9c2ce9369fc",
+        "0x08652f5969f0d7f893dea8a247dbc70bcc10a54ad86684cd9f15288b056d5e96",
+        "0x2758d93b5d57c8bb8985b8245ebc4b9f8c3dd1e376119a1a99416cd16c4d459c",
+        "0x38af2cefe233d1f2c0a8d116fafa67725c9201d65e3a5b7b6e2c615c13a5eec7",
+        "0x0c3dec1d8094db18271c95c0292877dfe14076d5bd965b7da4b090f8e0c3cf26",
+        "0x2ab4e41a5e97902d093bd194d7e9fb15d7b6866d083cc2cde9b1e60235d3e759",
+        "0x1ea2625ea1d3b62c540749ebcb1daa2eefda6478d1958c067e8d65bf473a15e5",
+        "0x30a3c5b308656a1ff8fd9cb982cdcd7050a477459d33da41e312615af4028569",
+        "0x073afcac9107622d7e81726ef59c8e30f7c0228724ab6ca437d34ad7dd89169d",
+        "0x5ff714b854edbf2e5eb9f994ca2ca4ff30fdef76d62091c9920463487c91fe0c",
+        "0x4deb8879de6ddbc6c99dd321e1b26b70fbdb2fe080d8244a2b9e1ddb63ae4fcf",
+        "0x2644e2ebafd0c4b847fe534f833d79899e9dbaedb3e7b0715326ac3f8de5a2ef",
+        "0x09eb0175311484f786ba1e12f5dd80823fb9bb806de46cac8f10b72b91019b75"
+      ],
+      "d": "0x06110992b049b61a7543a1a388a08b7aa967580266b12b1880dfd8b8aa1e2aa3",
+      "depthExtensionPresent": "0x181818181a181a181819",
+      "ipaProof": {
+        "cl": [
+          "0x7201d3474df7071d5b08628720df125d3c576b7310a99a67e57c5d364f442aed",
+          "0x5eb72934160412aba09e9f28d911577942c171cf0921c016eb7887aa8ae0ce05",
+          "0x69a486db0afb403ea7c64d00bdde39e53112a41fa48fdc1403a392f12a5dc02c",
+          "0x461f0f169a348da80089c2f59d99a2a372de7be4f9b80c734d87b951b51ef39c",
+          "0x66a53133a17a72f39492d3430fb8b476bbe3c56fbfe59c44bdfca4a9a3a5e99c",
+          "0x497cc3587d1994f6ae21b2e7ffd97f5505c9aaaa9c6288267dc8e1c326b8118a",
+          "0x1cb46f70017c2f54571b8620e237cb3b94b41e37894c29a3fcb1685ffcd56083",
+          "0x5a249d17a2257c122743ec27afbb7624e52819c6ef6c6d081d4c023012931381"
+        ],
+        "cr": [
+          "0x1be4988b202837e86a2e3ba61ba5fc62e4bb36bebad554193df623270ef0c9fd",
+          "0x2120506addcff94106a227c0ba2812cbc21f7003fac2643d4ec2b1ed8a9df858",
+          "0x6a0a5aa53dbf13b873669715f5a8245d76dc41bfb6c9a002347ece4cc8aea838",
+          "0x0f2558cd2bdd186be9d721a24679f1d92c599abdf25ac4b1294df2f090be3091",
+          "0x0a3a12eebd6234289697b747d242fa4ea769802c5a28c739534324f070fb7102",
+          "0x5984c0dd556fca9e7e7335eb03670ca08787292b0eb9de624ce88f421d531f8e",
+          "0x47f7f6d5b603026777d3f57fa1657ba257df66adf890ea4d5da454b44816ebc7",
+          "0x23d9bd0146baffdef1fac45f9b573596a15f72ae0f84aa2b82689ea2a6c95f2a"
+        ],
+        "finalEvaluation": "0x0fb5674a2d8693294a5cfc0f95ae7ce5a6c4112255dc7a25afd76446863612b1"
+      },
+      "otherStems": ["0xf48b4afcf49fabd63c9ea130cd708c6f1a1c2cfd8329c9265395a00f670658"]
+    }
+  }
 }

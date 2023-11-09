@@ -117,10 +117,6 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
-  /**
-   * EIP-6800: Verkle Proof Data (experimental)
-   */
-  executionWitness?: VerkleExecutionWitness
 }
 
 /**
@@ -134,6 +130,10 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
+  /**
+   * EIP-6800: Verkle Proof Data (experimental)
+   */
+  executionWitness?: VerkleExecutionWitness
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
@@ -165,6 +165,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
+  executionWitness?: VerkleExecutionWitness
 }
 
 /**
@@ -191,7 +192,6 @@ export interface JsonHeader {
   blobGasUsed?: string
   excessBlobGas?: string
   parentBeaconBlockRoot?: string
-  executionWitness?: VerkleExecutionWitness
 }
 
 /*
