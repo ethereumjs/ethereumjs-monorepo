@@ -1,4 +1,12 @@
-import { type Address, concatBytes, int32ToBytes, setLengthLeft, toBytes } from '@ethereumjs/util'
+import {
+  type Address,
+  bytesToHex,
+  concatBytes,
+  int32ToBytes,
+  setLengthLeft,
+  setLengthRight,
+  toBytes,
+} from '@ethereumjs/util'
 import { pedersen_hash, verify_update } from 'rust-verkle-wasm'
 
 import type { Point } from '../types.js'
@@ -8,7 +16,9 @@ export function pedersenHash(input: Uint8Array): Uint8Array {
 
   if (pedersenHash === null) {
     throw new Error(
-      'pedersenHash: Wrong pedersenHash input. This might happen if length is not correct.'
+      `pedersenHash: Wrong pedersenHash input: ${bytesToHex(
+        input
+      )}. This might happen if length is not correct.`
     )
   }
 
@@ -34,9 +44,9 @@ export function verifyUpdate(
 export function getTreeKey(address: Address, treeIndex: number, subIndex: number): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
-  const treeIndexB = int32ToBytes(treeIndex, true)
+  const treeIndexBytes = setLengthRight(int32ToBytes(treeIndex, true), 32)
 
-  const input = concatBytes(address32, treeIndexB)
+  const input = concatBytes(address32, treeIndexBytes)
 
   const treeKey = concatBytes(pedersenHash(input).slice(0, 31), toBytes(subIndex))
 
