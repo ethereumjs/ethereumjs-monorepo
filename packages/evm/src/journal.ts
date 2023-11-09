@@ -4,9 +4,9 @@ import {
   RIPEMD160_ADDRESS_STRING,
   bytesToHex,
   bytesToUnprefixedHex,
-  hexToBytes,
   stripHexPrefix,
   toBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
@@ -99,7 +99,7 @@ export class Journal {
   private touchAccount(address: string) {
     // If preimages are being reported, add the address to the preimages map
     if (this.preimages !== undefined) {
-      const bytesAddress = hexToBytes(address)
+      const bytesAddress = unprefixedHexToBytes(address)
       const hashedKey = this.stateManager.getAppliedKey(bytesAddress)
       this.preimages.set(bytesToHex(hashedKey), bytesAddress)
     }
