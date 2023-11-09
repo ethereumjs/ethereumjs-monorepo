@@ -330,7 +330,7 @@ export interface ConfigOptions {
   /**
    * Save account keys preimages in the meta db (default: false)
    */
-  savePreimage?: boolean
+  savePreimages?: boolean
 }
 
 export class Config {
@@ -479,7 +479,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
-    this.savePreimages = options.savePreimage ?? false
+    this.savePreimages = options.savePreimages ?? false
 
     if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
       this.vmProfilerOpts = {
