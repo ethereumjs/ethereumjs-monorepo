@@ -13,6 +13,8 @@ import {
   Address,
   KECCAK256_NULL,
   MAX_INTEGER,
+  bytesToHex,
+  equalsBytes,
   hexToBytes,
   initKZG,
   zeros,
@@ -315,6 +317,24 @@ describe('runTx() -> API parameter usage/data errors', () => {
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
     assert.deepEqual(res.accessList, [])
+  })
+
+  it('simple run (reportPreimages option)', async () => {
+    const vm = await VM.create({ common })
+
+    const tx = getTransaction(vm.common, 0, true)
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
+
+    const res = await vm.runTx({ tx, reportPreimages: true })
+
+    const hashedCallerKey = vm.stateManager.getAppliedKey(caller.bytes)
+
+    const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
+
+    assert.ok(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
   })
 
   it('run without signature', async () => {
