@@ -274,6 +274,12 @@ export interface RunBlockOpts {
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   setHardfork?: boolean | BigIntLike
+
+  /**
+   * If true, adds a hashedKey -> preimages mapping of all touched accounts
+   * to the `RunTxResult` returned.
+   */
+  reportPreimages?: boolean
 }
 
 /**
@@ -328,6 +334,7 @@ export interface RunTxOpts {
    * If true, skips the nonce check
    */
   skipNonce?: boolean
+
   /**
    * Skip balance checks if true. Adds transaction cost to balance to ensure execution doesn't fail.
    */

@@ -427,7 +427,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Run the tx through the VM
-    const { skipBalance, skipNonce, skipHardForkValidation } = opts
+    const { skipBalance, skipNonce, skipHardForkValidation, reportPreimages } = opts
 
     const txRes = await this.runTx({
       tx,
@@ -436,6 +436,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       skipNonce,
       skipHardForkValidation,
       blockGasUsed: gasUsed,
+      reportPreimages,
     })
     txResults.push(txRes)
     if (this.DEBUG) {
