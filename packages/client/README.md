@@ -411,6 +411,8 @@ Output:
 
 ## Development
 
+See also [DEVELOPER.md](./DEVELOPER.md).
+
 ### Design
 
 For an overview on the design goals which served as a guideline on design decisions as well as some structural client overview see the dedicated [DESIGN.md](./DESIGN.md) document.
@@ -447,6 +449,10 @@ The above command outputs the log messages from all `devp2p` debug loggers avail
 ```shell
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
+
+#### Hive testing
+
+See [DEVELOPER.md](./DEVELOPER.md)
 
 ### Diagram Updates
 
