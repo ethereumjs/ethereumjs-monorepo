@@ -235,7 +235,7 @@ const pruneCachedBlocks = (chain: Chain, chainCache: ChainCache) => {
         vm.header.number < finalized.header.number ? vm.header.number : finalized.header.number
       for (const blockHash of executedBlocks.keys()) {
         const block = executedBlocks.get(blockHash)
-        if (block !== undefined && block.header.number <= pruneExecutedBlocksTill) {
+        if (block !== undefined && block.header.number < pruneExecutedBlocksTill) {
           executedBlocks.delete(blockHash)
         }
       }
