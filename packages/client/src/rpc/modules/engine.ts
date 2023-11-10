@@ -836,7 +836,11 @@ export class Engine {
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
       const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
-      if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
+      if (
+        this.skeleton.fillStatus?.status === PutStatus.INVALID &&
+        optimisticLookup &&
+        headBlock.header.number >= this.skeleton.fillStatus.height
+      ) {
         const latestValidHash =
           this.chain.blocks.latest !== null
             ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
@@ -849,7 +853,11 @@ export class Engine {
         return response
       }
 
-      if (this.execution.chainStatus?.status === ExecStatus.INVALID && optimisticLookup) {
+      if (
+        this.execution.chainStatus?.status === ExecStatus.INVALID &&
+        optimisticLookup &&
+        headBlock.header.number >= this.execution.chainStatus.height
+      ) {
         // if the invalid block is canonical along the current chain return invalid
         const invalidBlock = await this.skeleton.getBlockByHash(
           this.execution.chainStatus.hash,
@@ -890,7 +898,11 @@ export class Engine {
     // Call skeleton.setHead without forcing head change to return if the block is reorged or not
     // Do optimistic lookup if not reorged
     const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
-    if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
+    if (
+      this.skeleton.fillStatus?.status === PutStatus.INVALID &&
+      optimisticLookup &&
+      headBlock.header.number >= this.skeleton.fillStatus.height
+    ) {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
@@ -920,7 +932,11 @@ export class Engine {
       return response
     }
 
-    if (this.execution.chainStatus?.status === ExecStatus.INVALID && optimisticLookup) {
+    if (
+      this.execution.chainStatus?.status === ExecStatus.INVALID &&
+      optimisticLookup &&
+      headBlock.header.number >= this.execution.chainStatus.height
+    ) {
       // if the invalid block is canonical along the current chain return invalid
       const invalidBlock = await this.skeleton.getBlockByHash(this.execution.chainStatus.hash, true)
       if (invalidBlock !== undefined) {
