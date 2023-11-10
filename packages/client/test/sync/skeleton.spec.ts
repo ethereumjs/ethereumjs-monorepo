@@ -963,8 +963,8 @@ describe('[Skeleton] / setHead', async () => {
     )
     assert.equal(
       (skeleton as any).status.progress.subchains[0].tail,
-      BigInt(4),
-      `Subchain should have been backstepped to 4`
+      BigInt(1),
+      `Subchain should have been backstepped to 1`
     )
   })
 
