@@ -4,7 +4,7 @@ import { PrioritizedTaskExecutor } from './tasks.js'
 
 import type { VerkleNode } from '../node/types.js'
 import type { FoundNodeFunction } from '../types.js'
-import type { VerkleTree } from '../verkleTrie.js'
+import type { VerkleTree } from '../verkleTree.js'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.

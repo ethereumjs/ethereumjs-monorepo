@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleTree } from '../src/verkleTrie.js'
+import { VerkleTree } from '../src/verkleTree.js'
 
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
