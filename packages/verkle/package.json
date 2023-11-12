@@ -15,7 +15,7 @@
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "license": "MPL-2.0",
+  "license": "MIT",
   "author": "EthereumJS Team",
   "contributors": [
     {

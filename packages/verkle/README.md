@@ -98,7 +98,7 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 
 ## License
 
-[MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
+[MIT](https://opensource.org/licenses/MIT)
 
 [discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
 [discord-link]: https://discord.gg/TNwARpR
