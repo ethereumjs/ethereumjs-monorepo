@@ -42,7 +42,7 @@ export class VerkleTree {
   }
 
   /** The root for an empty trie */
-  EMPTY_TRIE_ROOT: Uint8Array
+  EMPTY_TREE_ROOT: Uint8Array
 
   /** The backend DB */
   protected _db!: CheckpointDB
@@ -63,9 +63,9 @@ export class VerkleTree {
 
     this.database(opts?.db)
 
-    this.EMPTY_TRIE_ROOT = zeros(32)
-    this._hashLen = this.EMPTY_TRIE_ROOT.length
-    this._root = this.EMPTY_TRIE_ROOT
+    this.EMPTY_TREE_ROOT = zeros(32)
+    this._hashLen = this.EMPTY_TREE_ROOT.length
+    this._root = this.EMPTY_TREE_ROOT
 
     if (opts?.root) {
       this.root(opts.root)
@@ -110,7 +110,7 @@ export class VerkleTree {
   root(value?: Uint8Array | null): Uint8Array {
     if (value !== undefined) {
       if (value === null) {
-        value = this.EMPTY_TRIE_ROOT
+        value = this.EMPTY_TREE_ROOT
       }
 
       if (value.length !== this._hashLen) {
@@ -132,7 +132,7 @@ export class VerkleTree {
       return value !== null
     } catch (error: any) {
       if (error.message === 'Missing node in DB') {
-        return equalsBytes(root, this.EMPTY_TRIE_ROOT)
+        return equalsBytes(root, this.EMPTY_TREE_ROOT)
       } else {
         throw error
       }
