@@ -17,8 +17,8 @@ import { decodeNode, decodeRawNode, isRawNode } from './node/util.js'
 import {
   type Proof,
   ROOT_DB_KEY,
-  type VerkleTrieOpts,
-  type VerkleTrieOptsWithDefaults,
+  type VerkleTreeOpts,
+  type VerkleTreeOptsWithDefaults,
 } from './types.js'
 import { WalkController, matchingBytesLength } from './util/index.js'
 
@@ -33,10 +33,10 @@ interface Path {
 }
 
 /**
- * The basic verkle trie interface, use with `import { VerkleTrie } from '@ethereumjs/verkle'`.
+ * The basic verkle trie interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
  */
-export class VerkleTrie {
-  protected readonly _opts: VerkleTrieOptsWithDefaults = {
+export class VerkleTree {
+  protected readonly _opts: VerkleTreeOptsWithDefaults = {
     useRootPersistence: false,
     cacheSize: 0,
   }
@@ -54,9 +54,9 @@ export class VerkleTrie {
    * Creates a new verkle trie.
    * @param opts Options for instantiating the verkle trie
    *
-   * Note: in most cases, the static {@link VerkleTrie.create} constructor should be used.  It uses the same API but provides sensible defaults
+   * Note: in most cases, the static {@link VerkleTree.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
-  constructor(opts?: VerkleTrieOpts) {
+  constructor(opts?: VerkleTreeOpts) {
     if (opts !== undefined) {
       this._opts = { ...this._opts, ...opts }
     }
@@ -72,7 +72,7 @@ export class VerkleTrie {
     }
   }
 
-  static async create(opts?: VerkleTrieOpts) {
+  static async create(opts?: VerkleTreeOpts) {
     const key = ROOT_DB_KEY
 
     if (opts?.db !== undefined && opts?.useRootPersistence === true) {
@@ -89,7 +89,7 @@ export class VerkleTrie {
       }
     }
 
-    return new VerkleTrie(opts)
+    return new VerkleTree(opts)
   }
 
   database(db?: DB<Uint8Array, Uint8Array>) {
@@ -428,8 +428,8 @@ export class VerkleTrie {
    *
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
-  shallowCopy(includeCheckpoints = true): VerkleTrie {
-    const trie = new VerkleTrie({
+  shallowCopy(includeCheckpoints = true): VerkleTree {
+    const trie = new VerkleTree({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),

@@ -32,10 +32,10 @@ It is best to select the variant that is most appropriate for your unique use ca
 ### Initialization and Basic Usage
 
 ```typescript
-import { VerkleTrie } from '@ethereumjs/verkle'
+import { VerkleTree } from '@ethereumjs/verkle'
 import { bytesToUtf8, utf8ToBytes } from 'ethereumjs/util'
 
-const trie = new VerkleTrie()
+const trie = new VerkleTree()
 
 async function test() {
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))

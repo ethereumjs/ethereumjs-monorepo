@@ -4,7 +4,7 @@ import { PrioritizedTaskExecutor } from './tasks.js'
 
 import type { VerkleNode } from '../node/types.js'
 import type { FoundNodeFunction } from '../types.js'
-import type { VerkleTrie } from '../verkleTrie.js'
+import type { VerkleTree } from '../verkleTrie.js'
 
 /**
  * WalkController is an interface to control how the trie is being traversed.
@@ -12,17 +12,17 @@ import type { VerkleTrie } from '../verkleTrie.js'
 export class WalkController {
   readonly onNode: FoundNodeFunction
   readonly taskExecutor: PrioritizedTaskExecutor
-  readonly trie: VerkleTrie
+  readonly trie: VerkleTree
   private resolve: Function
   private reject: Function
 
   /**
    * Creates a new WalkController
    * @param onNode - The `FoundNodeFunction` to call if a node is found.
-   * @param trie - The `VerkleTrie` to walk on.
+   * @param trie - The `VerkleTree` to walk on.
    * @param poolSize - The size of the task queue.
    */
-  private constructor(onNode: FoundNodeFunction, trie: VerkleTrie, poolSize: number) {
+  private constructor(onNode: FoundNodeFunction, trie: VerkleTree, poolSize: number) {
     this.onNode = onNode
     this.taskExecutor = new PrioritizedTaskExecutor(poolSize)
     this.trie = trie
@@ -39,7 +39,7 @@ export class WalkController {
    */
   static async newWalk(
     onNode: FoundNodeFunction,
-    trie: VerkleTrie,
+    trie: VerkleTree,
     root: Uint8Array,
     poolSize?: number
   ): Promise<void> {

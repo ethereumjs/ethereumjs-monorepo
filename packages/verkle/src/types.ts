@@ -60,7 +60,7 @@ export interface Point {
 
 export type Proof = Uint8Array[]
 
-export interface VerkleTrieOpts {
+export interface VerkleTreeOpts {
   /**
    * A database instance.
    */
@@ -84,7 +84,7 @@ export interface VerkleTrieOpts {
   cacheSize?: number
 }
 
-export type VerkleTrieOptsWithDefaults = VerkleTrieOpts & {
+export type VerkleTreeOptsWithDefaults = VerkleTreeOpts & {
   useRootPersistence: boolean
   cacheSize: number
 }

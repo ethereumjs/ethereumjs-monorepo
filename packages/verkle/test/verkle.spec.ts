@@ -1,7 +1,7 @@
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleTrie } from '../src/verkleTrie.js'
+import { VerkleTree } from '../src/verkleTrie.js'
 
 // Testdata from https://github.com/gballet/go-ethereum/blob/kaustinen-with-shapella/trie/verkle_test.go
 const presentKeys = [
@@ -45,7 +45,7 @@ const absentKeys = [
 
 describe('Verkle trie', () => {
   it.todo('should insert and retrieve values', async () => {
-    const trie = new VerkleTrie()
+    const trie = new VerkleTree()
     for (let i = 0; i < presentKeys.length; i++) {
       await trie.put(presentKeys[i], values[i])
     }
