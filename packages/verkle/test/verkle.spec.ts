@@ -43,7 +43,7 @@ const absentKeys = [
   '0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d04',
 ].map(hexToBytes)
 
-describe('Verkle trie', () => {
+describe('Verkle tree', () => {
   it.todo('should insert and retrieve values', async () => {
     const trie = new VerkleTree()
     for (let i = 0; i < presentKeys.length; i++) {
