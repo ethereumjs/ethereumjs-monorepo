@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1699524736476,
+  "lastUpdate": 1699864134029,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a8ac9bb876d474f1fd69ad1c3fc28c9509c99787",
-          "message": "client: update c-kzg and use the offical trusted setup (#3107)\n\n* client: update c-kzg and use the offical trusted setup\r\n\r\n* update sims",
-          "timestamp": "2023-10-20T09:10:58-04:00",
-          "tree_id": "31c1f088375d0d53aa612fc59c18183ada53c21d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a8ac9bb876d474f1fd69ad1c3fc28c9509c99787"
-        },
-        "date": 1697807668611,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28772,
-            "range": "±5.35%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28741,
-            "range": "±2.79%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28516,
-            "range": "±3.00%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28501,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23379,
-            "range": "±10.68%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.99%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5f0239583d05bb98655548ff1ee8c74ed360ad3a",
+          "message": "Some Verkle Clean-Ups (#3154)\n\n* Renamed VerkleTrie -> VerkleTree\r\n\r\n* Rename verkleTrie.ts -> verkleTree.ts (+ references)\r\n\r\n* Change license from MPL -> MIT\r\n\r\n* Rename EMPTY_TRIE_ROOT -> EMPTY_TREE_ROOT\r\n\r\n* Small README example fix\r\n\r\n* Update packages/verkle/test/verkle.spec.ts\r\n\r\n* verkle: rename trie to tree\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2023-11-13T11:25:59+03:00",
+          "tree_id": "7c2a6d3c0ca66440d78528edd950036cd4dcdb3a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5f0239583d05bb98655548ff1ee8c74ed360ad3a"
+        },
+        "date": 1699864133301,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40028,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39571,
+            "range": "±1.90%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39090,
+            "range": "±2.22%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36286,
+            "range": "±4.41%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36774,
+            "range": "±2.23%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
