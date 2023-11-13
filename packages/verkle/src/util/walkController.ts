@@ -7,43 +7,43 @@ import type { FoundNodeFunction } from '../types.js'
 import type { VerkleTree } from '../verkleTree.js'
 
 /**
- * WalkController is an interface to control how the trie is being traversed.
+ * WalkController is an interface to control how the tree is being traversed.
  */
 export class WalkController {
   readonly onNode: FoundNodeFunction
   readonly taskExecutor: PrioritizedTaskExecutor
-  readonly trie: VerkleTree
+  readonly tree: VerkleTree
   private resolve: Function
   private reject: Function
 
   /**
    * Creates a new WalkController
    * @param onNode - The `FoundNodeFunction` to call if a node is found.
-   * @param trie - The `VerkleTree` to walk on.
+   * @param tree - The `VerkleTree` to walk on.
    * @param poolSize - The size of the task queue.
    */
-  private constructor(onNode: FoundNodeFunction, trie: VerkleTree, poolSize: number) {
+  private constructor(onNode: FoundNodeFunction, tree: VerkleTree, poolSize: number) {
     this.onNode = onNode
     this.taskExecutor = new PrioritizedTaskExecutor(poolSize)
-    this.trie = trie
+    this.tree = tree
     this.resolve = () => {}
     this.reject = () => {}
   }
 
   /**
-   * Async function to create and start a new walk over a trie.
+   * Async function to create and start a new walk over a tree.
    * @param onNode - The `FoundNodeFunction to call if a node is found.
-   * @param trie - The trie to walk on.
+   * @param tree - The tree to walk on.
    * @param root - The root key to walk on.
    * @param poolSize - Task execution pool size to prevent OOM errors. Defaults to 500.
    */
   static async newWalk(
     onNode: FoundNodeFunction,
-    trie: VerkleTree,
+    tree: VerkleTree,
     root: Uint8Array,
     poolSize?: number
   ): Promise<void> {
-    const strategy = new WalkController(onNode, trie, poolSize ?? 500)
+    const strategy = new WalkController(onNode, tree, poolSize ?? 500)
     await strategy.startWalk(root)
   }
 
@@ -54,7 +54,7 @@ export class WalkController {
       this.reject = reject
       let node
       try {
-        node = await this.trie.lookupNode(root)
+        node = await this.tree.lookupNode(root)
       } catch (error) {
         return this.reject(error)
       }
@@ -97,7 +97,7 @@ export class WalkController {
       async (taskFinishedCallback: Function) => {
         let childNode
         try {
-          childNode = await this.trie.lookupNode(nodeRef)
+          childNode = await this.tree.lookupNode(nodeRef)
         } catch (error: any) {
           return this.reject(error)
         }

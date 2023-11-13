@@ -67,7 +67,7 @@ export interface VerkleTreeOpts {
   db?: DB<Uint8Array, Uint8Array>
 
   /**
-   * A `Uint8Array` for the root of a previously stored trie
+   * A `Uint8Array` for the root of a previously stored tree
    */
   root?: Uint8Array
 
@@ -77,7 +77,7 @@ export interface VerkleTreeOpts {
   useRootPersistence?: boolean
 
   /**
-   * LRU cache for trie nodes to allow for faster node retrieval.
+   * LRU cache for tree nodes to allow for faster node retrieval.
    *
    * Default: 0 (deactivated)
    */

@@ -45,12 +45,12 @@ const absentKeys = [
 
 describe('Verkle tree', () => {
   it.todo('should insert and retrieve values', async () => {
-    const trie = new VerkleTree()
+    const tree = new VerkleTree()
     for (let i = 0; i < presentKeys.length; i++) {
-      await trie.put(presentKeys[i], values[i])
+      await tree.put(presentKeys[i], values[i])
     }
     for (let i = 0; i < presentKeys.length; i++) {
-      const retrievedValue = await trie.get(presentKeys[i])
+      const retrievedValue = await tree.get(presentKeys[i])
       if (retrievedValue === null) {
         assert.fail('Value not found')
       }

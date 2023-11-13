@@ -33,7 +33,7 @@ interface Path {
 }
 
 /**
- * The basic verkle trie interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
+ * The basic verkle tree interface, use with `import { VerkleTree } from '@ethereumjs/verkle'`.
  */
 export class VerkleTree {
   protected readonly _opts: VerkleTreeOptsWithDefaults = {
@@ -41,7 +41,7 @@ export class VerkleTree {
     cacheSize: 0,
   }
 
-  /** The root for an empty trie */
+  /** The root for an empty tree */
   EMPTY_TREE_ROOT: Uint8Array
 
   /** The backend DB */
@@ -51,8 +51,8 @@ export class VerkleTree {
   protected _root: Uint8Array
 
   /**
-   * Creates a new verkle trie.
-   * @param opts Options for instantiating the verkle trie
+   * Creates a new verkle tree.
+   * @param opts Options for instantiating the verkle tree
    *
    * Note: in most cases, the static {@link VerkleTree.create} constructor should be used.  It uses the same API but provides sensible defaults
    */
@@ -105,7 +105,7 @@ export class VerkleTree {
   }
 
   /**
-   * Gets and/or Sets the current root of the `trie`
+   * Gets and/or Sets the current root of the `tree`
    */
   root(value?: Uint8Array | null): Uint8Array {
     if (value !== undefined) {
@@ -176,7 +176,7 @@ export class VerkleTree {
       throw new Error('Not implemented')
     }
 
-    // Walk up the trie and update internal nodes
+    // Walk up the tree and update internal nodes
     let currentNode: VerkleNode = leafNode
     let currentKey = leafNode.stem
     let currentDepth = leafNode.depth
@@ -242,9 +242,9 @@ export class VerkleTree {
         }
       }
 
-      // walk trie and process nodes
+      // walk tree and process nodes
       try {
-        await this.walkTrie(this.root(), onFound)
+        await this.walkTree(this.root(), onFound)
       } catch (error: any) {
         if (error.message === 'Missing node in DB' && !throwIfMissing) {
           // pass
@@ -253,18 +253,18 @@ export class VerkleTree {
         }
       }
 
-      // Resolve if walkTrie finishes without finding any nodes
+      // Resolve if walkTree finishes without finding any nodes
       resolve({ node: null, remaining: new Uint8Array(0), stack })
     })
   }
 
   /**
-   * Walks a trie until finished.
+   * Walks a tree until finished.
    * @param root
    * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
-   * @returns Resolves when finished walking trie.
+   * @returns Resolves when finished walking tree.
    */
-  async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
+  async walkTree(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
   }
 
@@ -359,7 +359,7 @@ export class VerkleTree {
   }
 
   /**
-   * The given hash of operations (key additions or deletions) are executed on the trie
+   * The given hash of operations (key additions or deletions) are executed on the tree
    * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
    * @example
    * const ops = [
@@ -369,7 +369,7 @@ export class VerkleTree {
    *  , { type: 'put', key: Uint8Array.from('spouse'), value: Uint8Array.from('Kim Young-sook') }
    *  , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
    * ]
-   * await trie.batch(ops)
+   * await tree.batch(ops)
    * @param ops
    */
   async batch(ops: BatchDBOp[]): Promise<void> {
@@ -377,7 +377,7 @@ export class VerkleTree {
   }
 
   /**
-   * Saves the nodes from a proof into the trie.
+   * Saves the nodes from a proof into the tree.
    * @param proof
    */
   async fromProof(proof: Proof): Promise<void> {
@@ -385,7 +385,7 @@ export class VerkleTree {
   }
 
   /**
-   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
+   * Creates a proof from a tree and key that can be verified using {@link VerkleTree.verifyProof}.
    * @param key
    */
   async createProof(key: Uint8Array): Promise<Proof> {
@@ -410,14 +410,14 @@ export class VerkleTree {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
-   * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
+   * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `tree`
    */
   createReadStream(): any {
     throw new Error('Not implemented')
   }
 
   /**
-   * Returns a copy of the underlying trie.
+   * Returns a copy of the underlying tree.
    *
    * Note on db: the copy will create a reference to the
    * same underlying database.
@@ -429,16 +429,16 @@ export class VerkleTree {
    * @param includeCheckpoints - If true and during a checkpoint, the copy will contain the checkpointing metadata and will use the same scratch as underlying db.
    */
   shallowCopy(includeCheckpoints = true): VerkleTree {
-    const trie = new VerkleTree({
+    const tree = new VerkleTree({
       ...this._opts,
       db: this._db.db.shallowCopy(),
       root: this.root(),
       cacheSize: 0,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
-      trie._db.setCheckpoints(this._db.checkpoints)
+      tree._db.setCheckpoints(this._db.checkpoints)
     }
-    return trie
+    return tree
   }
 
   /**
@@ -461,7 +461,7 @@ export class VerkleTree {
   }
 
   /**
-   * Is the trie during a checkpoint phase?
+   * Is the tree during a checkpoint phase?
    */
   hasCheckpoints() {
     return this._db.hasCheckpoints()
@@ -492,7 +492,7 @@ export class VerkleTree {
   }
 
   /**
-   * Reverts the trie to the state it was at when `checkpoint` was first called.
+   * Reverts the tree to the state it was at when `checkpoint` was first called.
    * If during a nested checkpoint, sets root to most recent checkpoint, and sets
    * parent checkpoint as current.
    */

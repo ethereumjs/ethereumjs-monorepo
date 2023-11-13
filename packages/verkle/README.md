@@ -23,23 +23,17 @@ npm install @ethereumjs/verkle
 
 ## Usage
 
-This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
-
-Checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
-
-It is best to select the variant that is most appropriate for your unique use case.
-
 ### Initialization and Basic Usage
 
 ```typescript
 import { VerkleTree } from '@ethereumjs/verkle'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
-const trie = new VerkleTree()
+const tree = new VerkleTree()
 
 async function test() {
-  await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
-  const value = await trie.get(utf8ToBytes('test'))
+  await tree.put(utf8ToBytes('test'), utf8ToBytes('one'))
+  const value = await tree.get(utf8ToBytes('test'))
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 }
 
@@ -89,8 +83,8 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 ## References
 
 - Wiki
-  - [Overview of verkle tries](https://ethereum.org/en/roadmap/verkle-trees/)
-  - [Verkle tries General Resource](https://verkle.info/)
+  - [Overview of verkle trees](https://ethereum.org/en/roadmap/verkle-trees/)
+  - [Verkle trees general resource](https://verkle.info/)
 
 ## EthereumJS
 
@@ -106,7 +100,7 @@ See our organizational [documentation](https://ethereumjs.readthedocs.io) for an
 [verkle-npm-link]: https://www.npmjs.com/package/@ethereumjs/verkle
 [verkle-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20verkle?label=issues
 [verkle-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+verkle"
-[verkle-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Trie/badge.svg
-[verkle-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Trie%22
+[verkle-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Verkle/badge.svg
+[verkle-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Verkle%22
 [verkle-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=verkle
 [verkle-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/verkle
