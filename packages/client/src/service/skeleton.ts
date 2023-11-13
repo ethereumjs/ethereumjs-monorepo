@@ -1247,7 +1247,7 @@ export class Skeleton extends MetaDBManager {
           this.config.logger.error(`fillCanonicalChain putBlock error=${validationError}`)
           const errorMsg = `${validationError}`.toLowerCase()
           if (errorMsg.includes('block') && errorMsg.includes('not found')) {
-            // see if backstepping is required ot this is just canonicalHeadReset
+            // see if backstepping is required or if this is just canonicalHeadReset
             await this.runWithLock<void>(async () => {
               if (!this.status.canonicalHeadReset) {
                 this.config.logger.debug(
