@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1699889228579,
+  "lastUpdate": 1699964908659,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "eeb74e4b55972678092bb3a24a8485b996b632de",
-          "message": "Change execution stats intervals (#3106)\n\n* Report execution stats in time intervals\r\n\r\n* Format constant\r\n\r\n* Remove unused property\r\n\r\n* Client: further reduce execution/state stats interval from 40 -> 90 secs\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-10-23T10:23:25+02:00",
-          "tree_id": "6368583ac94055591591c9e54cd8e1deb43b67dd",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/eeb74e4b55972678092bb3a24a8485b996b632de"
-        },
-        "date": 1698049865544,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 18367,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 16652,
-            "range": "±6.94%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17910,
-            "range": "±3.45%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17622,
-            "range": "±3.68%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 17488,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.20%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c446d93cc54644ed7a6acca5b5b412fa5ab40429",
+          "message": "verke: update verkle crypto helpers (#3155)",
+          "timestamp": "2023-11-14T15:25:33+03:00",
+          "tree_id": "6220651f8abe8c48c5890d6526df25f2bbca00f5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c446d93cc54644ed7a6acca5b5b412fa5ab40429"
+        },
+        "date": 1699964907971,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40413,
+            "range": "±3.07%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39629,
+            "range": "±1.63%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39560,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35902,
+            "range": "±4.22%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37261,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
