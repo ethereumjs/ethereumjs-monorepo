@@ -37,13 +37,13 @@ export function verifyUpdate(
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
  * @dev Assumes that the verkle node width = 256
  * @param address The address to generate the tree key for.
- * @param treeIndex The index of the tree to generate the key for.
+ * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
-export function getStem(address: Address, treeIndex: number): Uint8Array {
+export function getStem(address: Address, treeIndex: number = 0): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
-  const treeIndexBytes = int32ToBytes(treeIndex, true)
+  const treeIndexBytes = setLengthRight(int32ToBytes(treeIndex, true), 32)
 
   const input = concatBytes(address32, treeIndexBytes)
 
@@ -56,21 +56,13 @@ export function getStem(address: Address, treeIndex: number): Uint8Array {
  * @dev Returns the tree key for a given verkle tree stem, and sub index.
  * @dev Assumes that the verkle node width = 256
  * @param stem The 31-bytes verkle tree stem as a Uint8Array.
- * @param subIndex The sub index of the tree to generate the key for.
+ * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
  * @return The tree key as a Uint8Array.
  */
 
 export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
   const treeKey = concatBytes(stem, subIndex)
   return treeKey
-}
-
-export function getTreeKey(address: Address, treeIndex: number, subIndex: number): Uint8Array {
-  const address32 = setLengthLeft(address.toBytes(), 32)
-  const treeIndexBytes = setLengthRight(int32ToBytes(treeIndex, true), 32)
-  const input = concatBytes(address32, treeIndexBytes)
-
-  return getKey(pedersenHash(input).slice(0, 31), toBytes(subIndex))
 }
 
 export function verifyProof(
