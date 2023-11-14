@@ -11,7 +11,7 @@ import {
   toBytes,
   zeros,
 } from '@ethereumjs/util'
-import { getTreeKey, verifyUpdate } from '@ethereumjs/verkle'
+import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
 import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
@@ -94,11 +94,11 @@ export interface StatelessVerkleStateManagerOpts {
 /**
  * Tree key constants.
  */
-const VERSION_LEAF_KEY = 0
-const BALANCE_LEAF_KEY = 1
-const NONCE_LEAF_KEY = 2
-const CODE_KECCAK_LEAF_KEY = 3
-const CODE_SIZE_LEAF_KEY = 4
+const VERSION_LEAF_KEY = toBytes(0)
+const BALANCE_LEAF_KEY = toBytes(1)
+const NONCE_LEAF_KEY = toBytes(2)
+const CODE_KECCAK_LEAF_KEY = toBytes(3)
+const CODE_SIZE_LEAF_KEY = toBytes(4)
 
 const HEADER_STORAGE_OFFSET = 64
 const CODE_OFFSET = 128
@@ -212,31 +212,30 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._state = preState
   }
 
-  getTreeKeyForVersion(address: Address) {
-    return getTreeKey(address, 0, VERSION_LEAF_KEY)
+  getTreeKeyForVersion(stem: Uint8Array) {
+    return getKey(stem, VERSION_LEAF_KEY)
   }
 
-  getTreeKeyForBalance(address: Address) {
-    return getTreeKey(address, 0, BALANCE_LEAF_KEY)
+  getTreeKeyForBalance(stem: Uint8Array) {
+    return getKey(stem, BALANCE_LEAF_KEY)
   }
 
-  getTreeKeyForNonce(address: Address) {
-    return getTreeKey(address, 0, NONCE_LEAF_KEY)
+  getTreeKeyForNonce(stem: Uint8Array) {
+    return getKey(stem, NONCE_LEAF_KEY)
   }
 
-  getTreeKeyForCodeHash(address: Address) {
-    return getTreeKey(address, 0, CODE_KECCAK_LEAF_KEY)
+  getTreeKeyForCodeHash(stem: Uint8Array) {
+    return getKey(stem, CODE_KECCAK_LEAF_KEY)
   }
 
-  getTreeKeyForCodeSize(address: Address) {
-    return getTreeKey(address, 0, CODE_SIZE_LEAF_KEY)
+  getTreeKeyForCodeSize(stem: Uint8Array) {
+    return getKey(stem, CODE_SIZE_LEAF_KEY)
   }
 
   getTreeKeyForCodeChunk(address: Address, chunkId: number) {
-    return getTreeKey(
-      address,
-      Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH),
-      (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
+    return getKey(
+      getStem(address, Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)),
+      toBytes((CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH)
     )
   }
 
@@ -274,10 +273,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       position = MAIN_STORAGE_OFFSET + storageKey
     }
 
-    return getTreeKey(
-      address,
-      Math.floor(position / VERKLE_NODE_WIDTH),
-      position % VERKLE_NODE_WIDTH
+    return getKey(
+      getStem(address, Math.floor(position / VERKLE_NODE_WIDTH)),
+      toBytes(position % VERKLE_NODE_WIDTH)
     )
   }
 
@@ -310,7 +308,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
     // Get the contract code size
-    const codeSizeKey = this.getTreeKeyForCodeSize(address)
+    const codeSizeKey = this.getTreeKeyForCodeSize(getStem(address, 0))
 
     const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
 
@@ -369,10 +367,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   async getAccount(address: Address): Promise<Account> {
-    // Retrieve treeKeys from account address
-    const balanceKey = this.getTreeKeyForBalance(address)
-    const nonceKey = this.getTreeKeyForNonce(address)
-    const codeHashKey = this.getTreeKeyForCodeHash(address)
+    const stem = getStem(address, 0)
+    const balanceKey = this.getTreeKeyForBalance(stem)
+    const nonceKey = this.getTreeKeyForNonce(stem)
+    const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
     const balanceLE = toBytes(this._state[bytesToHex(balanceKey)])
     const nonceLE = toBytes(this._state[bytesToHex(nonceKey)])
@@ -386,10 +384,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
-    // Retrieve treeKeys from account address
-    const balanceKey = this.getTreeKeyForBalance(address)
-    const nonceKey = this.getTreeKeyForNonce(address)
-    const codeHashKey = this.getTreeKeyForCodeHash(address)
+    const stem = getStem(address, 0)
+    const balanceKey = this.getTreeKeyForBalance(stem)
+    const nonceKey = this.getTreeKeyForNonce(stem)
+    const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
     const balanceBuf = bigInt64ToBytes(account.balance, true)
     const nonceBuf = bigInt64ToBytes(account.nonce, true)
