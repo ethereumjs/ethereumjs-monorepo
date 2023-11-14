@@ -23,11 +23,25 @@ import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
 import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
+export enum ExecStatus {
+  VALID = 'VALID',
+  INVALID = 'INVALID',
+}
+
+type ChainStatus = {
+  height: bigint
+  status: ExecStatus
+  hash: Uint8Array
+  root: Uint8Array
+}
+
 export class VMExecution extends Execution {
   private _lock = new Lock()
 
   public vm: VM
   public hardfork: string = ''
+  /* Whether canonical chain execution has stayed valid or ran into an invalid block */
+  public chainStatus: ChainStatus | null = null
 
   public receiptsManager?: ReceiptsManager
   private pendingReceipts?: Map<string, TxReceipt[]>
@@ -104,6 +118,18 @@ export class VMExecution extends Execution {
         metaDB: this.metaDB,
       })
       this.pendingReceipts = new Map()
+      this.chain.blockchain.events.addListener(
+        'deletedCanonicalBlocks',
+        async (blocks, resolve) => {
+          // Once a block gets deleted from the chain, delete the receipts also
+          for (const block of blocks) {
+            await this.receiptsManager?.deleteReceipts(block)
+          }
+          if (resolve !== undefined) {
+            resolve()
+          }
+        }
+      )
     }
   }
 
@@ -139,7 +165,14 @@ export class VMExecution extends Execution {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
       const headBlock = await this.vm.blockchain.getIteratorHead()
-      const { number, timestamp } = headBlock.header
+      const { number, timestamp, stateRoot } = headBlock.header
+      this.chainStatus = {
+        height: number,
+        status: ExecStatus.VALID,
+        root: stateRoot,
+        hash: headBlock.hash(),
+      }
+
       if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
       }
@@ -258,7 +291,7 @@ export class VMExecution extends Execution {
       for (const block of blocks) {
         const receipts = this.pendingReceipts?.get(bytesToHex(block.hash()))
         if (receipts) {
-          void this.receiptsManager?.saveReceipts(block, receipts)
+          await this.receiptsManager?.saveReceipts(block, receipts)
           this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
       }
@@ -274,6 +307,13 @@ export class VMExecution extends Execution {
         }
       }
       await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
+      this.chainStatus = {
+        height: vmHeadBlock.header.number,
+        root: vmHeadBlock.header.stateRoot,
+        hash: vmHeadBlock.hash(),
+        status: ExecStatus.VALID,
+      }
+
       if (safeBlock !== undefined) {
         await this.chain.blockchain.setIteratorHead('safe', safeBlock.hash())
       }
@@ -425,7 +465,7 @@ export class VMExecution extends Execution {
                     this.config.logger.warn(msg)
                   }
 
-                  void this.receiptsManager?.saveReceipts(block, result.receipts)
+                  await this.receiptsManager?.saveReceipts(block, result.receipts)
 
                   txCounter += block.transactions.length
                   // set as new head block
@@ -445,39 +485,14 @@ export class VMExecution extends Execution {
             // Ensure to catch and not throw as this would lead to unCaughtException with process exit
             .catch(async (error) => {
               if (errorBlock !== undefined) {
-                // TODO: determine if there is a way to differentiate between the cases
-                // a) a bad block is served by a bad peer -> delete the block and restart sync
-                //    sync from parent block
-                // b) there is a consensus error in the VM -> stop execution until the
-                //    consensus error is fixed
-                //
-                // For now only option b) is implemented, atm this is a very likely case
-                // and the implemented behavior helps on debugging.
-                // Option a) would likely need some block comparison of the same blocks
-                // received by different peer to decide on bad blocks
-                // (minimal solution: receive block from 3 peers and take block if there is
-                // is equally served from at least 2 peers)
-                /*try {
-            // remove invalid block
-              await blockchain!.delBlock(block.header.hash())
-            } catch (error: any) {
-              this.config.logger.error(
-                `Error deleting block number=${blockNumber} hash=${hash} on failed execution`
-              )
-            }
-            this.config.logger.warn(
-              `Deleted block number=${blockNumber} hash=${hash} on failed execution`
-            )
+                // set the chainStatus to invalid
+                this.chainStatus = {
+                  height: errorBlock.header.number,
+                  root: errorBlock.header.stateRoot,
+                  hash: errorBlock.hash(),
+                  status: ExecStatus.INVALID,
+                }
 
-            const hardfork = this.config.execCommon.getHardforkBy({ blockNumber })
-            if (hardfork !== this.hardfork) {
-              this.config.logger.warn(
-                `Set back hardfork along block deletion number=${blockNumber} hash=${hash} old=${this.hardfork} new=${hardfork}`
-              )
-              this.config.execCommon.setHardforkBy({ blockNumber, td })
-            }*/
-                // Option a): set iterator head to the parent block so that an
-                // error can repeatedly processed for debugging
                 const { number } = errorBlock.header
                 const hash = short(errorBlock.hash())
                 const errorMsg = `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed`

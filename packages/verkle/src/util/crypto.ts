@@ -34,23 +34,51 @@ export function verifyUpdate(
 }
 
 /**
- * @dev Returns the tree key for a given address, tree index, and sub index.
+ * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
  * @dev Assumes that the verkle node width = 256
  * @param address The address to generate the tree key for.
  * @param treeIndex The index of the tree to generate the key for.
- * @param subIndex The sub index of the tree to generate the key for.
- * @return The tree key as a Uint8Array.
+ * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
-export function getTreeKey(address: Address, treeIndex: number, subIndex: number): Uint8Array {
+export function getStem(address: Address, treeIndex: number): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
-  const treeIndexBytes = setLengthRight(int32ToBytes(treeIndex, true), 32)
+  const treeIndexBytes = int32ToBytes(treeIndex, true)
 
   const input = concatBytes(address32, treeIndexBytes)
 
-  const treeKey = concatBytes(pedersenHash(input).slice(0, 31), toBytes(subIndex))
+  const treeStem = pedersenHash(input).slice(0, 31)
 
+  return treeStem
+}
+
+/**
+ * @dev Returns the tree key for a given verkle tree stem, and sub index.
+ * @dev Assumes that the verkle node width = 256
+ * @param stem The 31-bytes verkle tree stem as a Uint8Array.
+ * @param subIndex The sub index of the tree to generate the key for.
+ * @return The tree key as a Uint8Array.
+ */
+
+export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
+  const treeKey = concatBytes(stem, subIndex)
   return treeKey
+}
+
+export function getTreeKey(address: Address, treeIndex: number, subIndex: number): Uint8Array {
+  const address32 = setLengthLeft(address.toBytes(), 32)
+  const treeIndexBytes = setLengthRight(int32ToBytes(treeIndex, true), 32)
+  const input = concatBytes(address32, treeIndexBytes)
+
+  return getKey(pedersenHash(input).slice(0, 31), toBytes(subIndex))
+}
+
+export function verifyProof(
+  root: Uint8Array,
+  proof: Uint8Array,
+  keyValues: Map<any, any>
+): Uint8Array {
+  return verify_update(root, proof, keyValues)
 }
 
 // TODO: Replace this by the actual value of Point().Identity() from the Go code.
