@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { Address, bytesToHex } from '@ethereumjs/util'
+import { getStem } from '@ethereumjs/verkle'
 import { assert, describe, it } from 'vitest'
 
 import { StatelessVerkleStateManager } from '../src/index.js'
@@ -30,7 +31,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.executionWitness!)
 
     const balanceKey = stateManager.getTreeKeyForBalance(
-      Address.fromString('0x0000000000000000000000000000000000000000')
+      getStem(Address.fromString('0x0000000000000000000000000000000000000000'))
     )
     assert.equal(
       bytesToHex(balanceKey),
@@ -43,7 +44,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.executionWitness!)
 
     const balanceKey = stateManager.getTreeKeyForBalance(
-      Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7')
+      getStem(Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7'))
     )
     assert.equal(
       bytesToHex(balanceKey),
