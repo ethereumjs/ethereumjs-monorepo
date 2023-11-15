@@ -242,15 +242,26 @@ export class VMExecution extends Execution {
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
       this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
-      this.config.logger.info(`Initializing VM execution hardfork=${this.hardfork}`)
-      if (number === BIGINT_0) {
-        const genesisState =
-          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
-        if (!genesisState) {
-          throw new Error('genesisState not available')
+
+      if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
+        if (!this.config.statelessVerkle) {
+          throw Error(`Currently stateful verkle execution not supported`)
         }
-        await this.vm.stateManager.generateCanonicalGenesis(genesisState)
+        this.config.logger.info(`Skipping Vm verkle statemanager genesis hardfork=${this.hardfork}`)
+      } else {
+        this.config.logger.info(
+          `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
+        )
+        if (number === BIGINT_0) {
+          const genesisState =
+            this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
+          if (!genesisState) {
+            throw new Error('genesisState not available')
+          }
+          await this.vm.stateManager.generateCanonicalGenesis(genesisState)
+        }
       }
+
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
       // void this.run()

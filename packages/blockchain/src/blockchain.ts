@@ -7,7 +7,7 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
+import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
 import {
   AsyncEventEmitter,
   BIGINT_0,
@@ -234,10 +234,11 @@ export class Blockchain implements BlockchainInterface {
     let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
     if (stateRoot === undefined) {
       if (this._customGenesisState !== undefined) {
-        stateRoot = await genGenesisStateRoot(this._customGenesisState)
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        stateRoot = await genGenesisStateRoot(this._customGenesisState, this.common)
       } else {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain)
+        stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain, this.common)
       }
     }
 
@@ -1421,9 +1422,32 @@ export class Blockchain implements BlockchainInterface {
 }
 
 /**
+ * Verkle or Merkle genesis root
+ * @param genesisState
+ * @param common
+ * @returns
+ */
+async function genGenesisStateRoot(
+  genesisState: GenesisState,
+  common: Common
+): Promise<Uint8Array> {
+  const genCommon = common.copy()
+  genCommon.setHardforkBy({
+    blockNumber: 0,
+    td: BigInt(genCommon.genesis().difficulty),
+    timestamp: genCommon.genesis().timestamp,
+  })
+  if (genCommon.gteHardfork(Hardfork.Prague)) {
+    throw Error(`Verkle trie state not yet supported`)
+  } else {
+    return genMerkleGenesisStateRoot(genesisState)
+  }
+}
+
+/**
  * Returns the genesis state root if chain is well known or an empty state's root otherwise
  */
-async function getGenesisStateRoot(chainId: Chain): Promise<Uint8Array> {
+async function getGenesisStateRoot(chainId: Chain, common: Common): Promise<Uint8Array> {
   const chainGenesis = ChainGenesis[chainId]
-  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({})
+  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({}, common)
 }

@@ -54,7 +54,6 @@ type createClientArgs = {
   opened: boolean
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
-  stateless: boolean
 }
 export function startRPC(
   methods: any,

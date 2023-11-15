@@ -163,4 +163,6 @@ export interface ClientOpts {
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
   pruneEngineCache?: boolean
+  verkleGenesisStateRoot?: Uint8Array
+  statelessVerkle?: boolean
 }
