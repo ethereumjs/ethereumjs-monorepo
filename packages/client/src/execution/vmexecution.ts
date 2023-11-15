@@ -135,6 +135,7 @@ export class VMExecution extends Execution {
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
 
+    this.config.logger.info(`Setting up merkleVm`)
     this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
     this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
     this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
@@ -172,6 +173,7 @@ export class VMExecution extends Execution {
       return
     }
 
+    this.config.logger.info(`Setting up verkleVm`)
     const stateManager = new StatelessVerkleStateManager()
     this.verkleVm = new (VM as any)({
       common: this.config.execCommon,
@@ -258,37 +260,42 @@ export class VMExecution extends Execution {
   /**
    * Reset the execution after the chain has been reset back
    */
-  async reset(): Promise<void> {
-    await this.runWithLock<void>(async () => {
-      const headBlock = await this.vm.blockchain.getIteratorHead()
-      const { number, timestamp, stateRoot } = headBlock.header
-      this.chainStatus = {
-        height: number,
-        status: ExecStatus.VALID,
-        root: stateRoot,
-        hash: headBlock.hash(),
-      }
+  async checkAndReset(headBlock: Block): Promise<void> {
+    if (
+      this.chainStatus !== null &&
+      (headBlock.header.number > this.chainStatus.height ||
+        equalsBytes(headBlock.hash(), this.chainStatus?.hash))
+    ) {
+      return
+    }
 
-      // there could to be checks here that the resetted head is a parent of the chainStatus
-      // but we can skip it for now trusting the chain reset has been correctly performed
-      const td = await this.chain.blockchain.getTotalDifficulty(headBlock.header.parentHash)
-      this.hardfork = this.config.execCommon.setHardforkBy({
-        blockNumber: number,
-        td,
-        timestamp,
-      })
-      if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
-        // verkleVm should already exist but we can still do an allocation just to be safe
-        this.setupVerkleVm()
-        this.vm = this.verkleVm!
-      } else {
-        // its could be a rest to a pre-merkle when the chain was never initialized
-        this.setupMerkleVm()
-        this.vm = this.merkleVm!
-      }
+    const { number, timestamp, stateRoot } = headBlock.header
+    this.chainStatus = {
+      height: number,
+      status: ExecStatus.VALID,
+      root: stateRoot,
+      hash: headBlock.hash(),
+    }
 
-      await this.vm.stateManager.setStateRoot(stateRoot)
+    // there could to be checks here that the resetted head is a parent of the chainStatus
+    // but we can skip it for now trusting the chain reset has been correctly performed
+    const td = await this.chain.blockchain.getTotalDifficulty(headBlock.header.parentHash)
+    this.hardfork = this.config.execCommon.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
     })
+    if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
+      // verkleVm should already exist but we can still do an allocation just to be safe
+      this.setupVerkleVm()
+      this.vm = this.verkleVm!
+    } else {
+      // its could be a rest to a pre-merkle when the chain was never initialized
+      this.setupMerkleVm()
+      this.vm = this.merkleVm!
+    }
+
+    await this.vm.stateManager.setStateRoot(stateRoot)
   }
 
   /**
@@ -313,6 +320,9 @@ export class VMExecution extends Execution {
 
     await this.runWithLock<void>(async () => {
       try {
+        const vmHeadBlock = await this.chain.blockchain.getIteratorHead()
+        await this.checkAndReset(vmHeadBlock)
+
         // running should be false here because running is always changed inside the lock and switched
         // to false before the lock is released
         this.running = true
@@ -433,6 +443,10 @@ export class VMExecution extends Execution {
           throw Error(`${blockName} not in canonical chain`)
         }
       }
+
+      const oldVmHead = await this.chain.blockchain.getIteratorHead()
+      await this.checkAndReset(oldVmHead)
+
       await this.chain.blockchain.setIteratorHead('vm', vmHeadBlock.hash())
       this.chainStatus = {
         height: vmHeadBlock.header.number,
@@ -492,6 +506,8 @@ export class VMExecution extends Execution {
           throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
         }
         let startHeadBlock = await blockchain.getIteratorHead()
+        await this.checkAndReset(startHeadBlock)
+
         if (typeof blockchain.getCanonicalHeadBlock !== 'function') {
           throw new Error(
             'cannot get iterator head: blockchain has no getCanonicalHeadBlock function'
