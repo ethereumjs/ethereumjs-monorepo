@@ -6,7 +6,11 @@ import {
 } from '@ethereumjs/blockchain'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { CacheType, DefaultStateManager } from '@ethereumjs/statemanager'
+import {
+  CacheType,
+  DefaultStateManager,
+  StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -39,6 +43,8 @@ export class VMExecution extends Execution {
   private _lock = new Lock()
 
   public vm: VM
+  public merkleVm: VM | null = null
+  public verkleVm: VM | null = null
   public hardfork: string = ''
   /* Whether canonical chain execution has stayed valid or ran into an invalid block */
   public chainStatus: ChainStatus | null = null
@@ -61,51 +67,36 @@ export class VMExecution extends Execution {
   private _statsVm: VM | undefined
 
   /**
+   * Run a function after acquiring a lock. It is implied that we have already
+   * initialized the module (or we are calling this from the init function, like
+   * `_setCanonicalGenesisBlock`)
+   * @param action - function to run after acquiring a lock
+   * @hidden
+   */
+  private async runWithLock<T>(action: () => Promise<T>): Promise<T> {
+    try {
+      await this._lock.acquire()
+      const value = await action()
+      return value
+    } finally {
+      this._lock.release()
+    }
+  }
+
+  /**
    * Create new VM execution module
    */
   constructor(options: ExecutionOptions) {
     super(options)
 
     if (this.config.vm === undefined) {
-      const trie = new Trie({
-        db: new LevelDB(this.stateDB),
-        useKeyHashing: true,
-        cacheSize: this.config.trieCache,
-        valueEncoding: options.config.useStringValueTrieDB
-          ? ValueEncoding.String
-          : ValueEncoding.Bytes,
-      })
-
-      this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
-      this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
-      this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
-      this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
-      const stateManager = new DefaultStateManager({
-        trie,
-        prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
-        accountCacheOpts: {
-          deactivate: false,
-          type: CacheType.LRU,
-          size: this.config.accountCache,
-        },
-        storageCacheOpts: {
-          deactivate: false,
-          type: CacheType.LRU,
-          size: this.config.storageCache,
-        },
-        codeCacheOpts: {
-          deactivate: false,
-          type: CacheType.LRU,
-          size: this.config.codeCache,
-        },
-      })
-
-      this.vm = new (VM as any)({
-        common: this.config.execCommon,
-        blockchain: this.chain.blockchain,
-        stateManager,
-        profilerOpts: this.config.vmProfilerOpts,
-      })
+      if (this.config.chainCommon.gteHardfork(Hardfork.Prague)) {
+        this.setupVerkleVm()
+        this.vm = this.verkleVm!
+      } else {
+        this.setupMerkleVm()
+        this.vm = this.merkleVm!
+      }
     } else {
       this.vm = this.config.vm
       ;(this.vm as any).blockchain = this.chain.blockchain
@@ -133,21 +124,91 @@ export class VMExecution extends Execution {
     }
   }
 
-  /**
-   * Run a function after acquiring a lock. It is implied that we have already
-   * initialized the module (or we are calling this from the init function, like
-   * `_setCanonicalGenesisBlock`)
-   * @param action - function to run after acquiring a lock
-   * @hidden
-   */
-  private async runWithLock<T>(action: () => Promise<T>): Promise<T> {
-    try {
-      await this._lock.acquire()
-      const value = await action()
-      return value
-    } finally {
-      this._lock.release()
+  setupMerkleVm() {
+    if (this.merkleVm !== null) {
+      return
     }
+    const trie = new Trie({
+      db: new LevelDB(this.stateDB),
+      useKeyHashing: true,
+      cacheSize: this.config.trieCache,
+      valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
+    })
+
+    this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
+    this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
+    this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
+    this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
+
+    const stateManager = new DefaultStateManager({
+      trie,
+      prefixStorageTrieKeys: this.config.prefixStorageTrieKeys,
+      accountCacheOpts: {
+        deactivate: false,
+        type: CacheType.LRU,
+        size: this.config.accountCache,
+      },
+      storageCacheOpts: {
+        deactivate: false,
+        type: CacheType.LRU,
+        size: this.config.storageCache,
+      },
+      codeCacheOpts: {
+        deactivate: false,
+        type: CacheType.LRU,
+        size: this.config.codeCache,
+      },
+    })
+    this.merkleVm = new (VM as any)({
+      common: this.config.execCommon,
+      blockchain: this.chain.blockchain,
+      stateManager,
+      profilerOpts: this.config.vmProfilerOpts,
+    })
+  }
+
+  setupVerkleVm() {
+    if (this.verkleVm !== null) {
+      return
+    }
+
+    const stateManager = new StatelessVerkleStateManager()
+    this.verkleVm = new (VM as any)({
+      common: this.config.execCommon,
+      blockchain: this.chain.blockchain,
+      stateManager,
+      profilerOpts: this.config.vmProfilerOpts,
+    })
+  }
+
+  async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVm: boolean = true): Promise<void> {
+    if (this.vm instanceof StatelessVerkleStateManager) {
+      return
+    }
+
+    return this.runWithLock<void>(async () => {
+      if (this.merkleVm === null) {
+        this.setupMerkleVm()
+      }
+      const merkleVm = this.merkleVm!
+      const merkleStateManager = merkleVm.stateManager as DefaultStateManager
+
+      if (this.verkleVm === null) {
+        this.setupVerkleVm()
+      }
+      const verkleVm = this.verkleVm!
+      const verkleStateManager = verkleVm.stateManager as StatelessVerkleStateManager
+
+      const verkleStateRoot = await verkleStateManager.getTransitionStateRoot(
+        merkleStateManager,
+        merkleStateRoot
+      )
+      await verkleStateManager.setStateRoot(verkleStateRoot)
+
+      if (assignToVm) {
+        this.vm = verkleVm
+      }
+    })
   }
 
   /**
@@ -195,6 +256,42 @@ export class VMExecution extends Execution {
   }
 
   /**
+   * Reset the execution after the chain has been reset back
+   */
+  async reset(): Promise<void> {
+    await this.runWithLock<void>(async () => {
+      const headBlock = await this.vm.blockchain.getIteratorHead()
+      const { number, timestamp, stateRoot } = headBlock.header
+      this.chainStatus = {
+        height: number,
+        status: ExecStatus.VALID,
+        root: stateRoot,
+        hash: headBlock.hash(),
+      }
+
+      // there could to be checks here that the resetted head is a parent of the chainStatus
+      // but we can skip it for now trusting the chain reset has been correctly performed
+      const td = await this.chain.blockchain.getTotalDifficulty(headBlock.header.parentHash)
+      this.hardfork = this.config.execCommon.setHardforkBy({
+        blockNumber: number,
+        td,
+        timestamp,
+      })
+      if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
+        // verkleVm should already exist but we can still do an allocation just to be safe
+        this.setupVerkleVm()
+        this.vm = this.verkleVm!
+      } else {
+        // its could be a rest to a pre-merkle when the chain was never initialized
+        this.setupMerkleVm()
+        this.vm = this.merkleVm!
+      }
+
+      await this.vm.stateManager.setStateRoot(stateRoot)
+    })
+  }
+
+  /**
    * Executes the block, runs the necessary verification on it,
    * and persists the block and the associate state into the database.
    * The key difference is it won't do the canonical chain updating.
@@ -221,14 +318,44 @@ export class VMExecution extends Execution {
         this.running = true
         const { block, root } = opts
 
+        let vm = this.vm
         if (receipts === undefined) {
           // Check if we need to pass flag to clear statemanager cache or not
           const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
           // If root is not provided its mean to be run on the same set state
           const parentState = root ?? prevVMStateRoot
           const clearCache = !equalsBytes(prevVMStateRoot, parentState)
+          const td = await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
 
-          const result = await this.vm.runBlock({ clearCache, ...opts })
+          const hardfork = this.config.execCommon.getHardforkBy({
+            blockNumber: block.header.number,
+            td,
+            timestamp: block.header.timestamp,
+          })
+
+          if (
+            !this.config.execCommon.gteHardfork(Hardfork.Prague) &&
+            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
+          ) {
+            // see if this is a transition block
+            const parentBlock = await this.chain.getBlock(block.header.parentHash)
+            const parentTd = td - parentBlock.header.difficulty
+            const parentHf = this.config.execCommon.getHardforkBy({
+              blockNumber: parentBlock.header.number,
+              td: parentTd,
+              timestamp: parentBlock.header.timestamp,
+            })
+
+            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Prague)) {
+              await this.transitionToVerkle(parentBlock.header.stateRoot, false)
+            }
+            if (this.verkleVm === null) {
+              throw Error(`Invalid verkleVm=null`)
+            }
+            vm = this.verkleVm
+          }
+
+          const result = await vm.runBlock({ clearCache, ...opts })
           receipts = result.receipts
         }
         if (receipts !== undefined) {
@@ -312,6 +439,26 @@ export class VMExecution extends Execution {
         root: vmHeadBlock.header.stateRoot,
         hash: vmHeadBlock.hash(),
         status: ExecStatus.VALID,
+      }
+
+      const td = await this.chain.getTd(
+        vmHeadBlock.header.parentHash,
+        vmHeadBlock.header.number - BIGINT_1
+      )
+      const hardfork = this.config.execCommon.setHardforkBy({
+        blockNumber: vmHeadBlock.header.number,
+        td,
+        timestamp: vmHeadBlock.header.timestamp,
+      })
+      if (
+        !this.config.execCommon.gteHardfork(Hardfork.Prague) &&
+        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
+      ) {
+        // verkle transition should have happened by now
+        if (this.verkleVm === null) {
+          throw Error(`Invalid verkleVm=null`)
+        }
+        this.vm = this.verkleVm
       }
 
       if (safeBlock !== undefined) {
@@ -420,6 +567,7 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
+                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Prague)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`
@@ -429,7 +577,25 @@ export class VMExecution extends Execution {
                       td,
                       timestamp,
                     })
+                    const isPostPrague = this.config.execCommon.gteHardfork(Hardfork.Prague)
+                    if (wasPrePrague && isPostPrague) {
+                      await this.transitionToVerkle(parentState!)
+                      clearCache = false
+                    }
                   }
+                  if (
+                    (!this.config.execCommon.gteHardfork(Hardfork.Prague) &&
+                      this.vm instanceof StatelessVerkleStateManager) ||
+                    (this.config.execCommon.gteHardfork(Hardfork.Prague) &&
+                      this.vm instanceof DefaultStateManager)
+                  ) {
+                    throw Error(
+                      `Invalid vm stateManager type=${typeof this.vm.stateManager} for fork=${
+                        this.hardfork
+                      }`
+                    )
+                  }
+
                   let skipBlockValidation = false
                   if (this.config.execCommon.consensusType() === ConsensusType.ProofOfAuthority) {
                     // Block validation is redundant here and leads to consistency problems

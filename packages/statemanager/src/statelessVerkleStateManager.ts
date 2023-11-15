@@ -17,6 +17,7 @@ import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/util
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
+import type { DefaultStateManager } from './stateManager.js'
 import type { VerkleExecutionWitness } from '@ethereumjs/block'
 import type {
   AccountFields,
@@ -185,6 +186,13 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // const putCb: put = async (keyBuf, accountRlp) => {}
     // const deleteCb = async (keyBuf: Uint8Array) => {}
     // this._cache = new Cache({ get, putCb, deleteCb })
+  }
+
+  async getTransitionStateRoot(
+    merkleStateManager: DefaultStateManager,
+    merkleStateRoot: Uint8Array
+  ): Promise<Uint8Array> {
+    throw Error('not implemented')
   }
 
   public initVerkleExecutionWitness(executionWitness: VerkleExecutionWitness) {
