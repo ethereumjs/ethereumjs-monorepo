@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700146149646,
+  "lastUpdate": 1700175985377,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "25696acfeb0b4b0fa8a5bd14a85beb55cc189b55",
-          "message": "Util internal tests and fix (#3112)\n\n* Add tests for internal util functions\r\n\r\n* Reimplement fromUtf8 function to not double-add the hex prefix\r\n\r\n* Do not try to pad an already padded string\r\n\r\n* Use bytesToUnprefixedHex for fromUtf8\r\n\r\n* Add more tests\r\n\r\n* Remove unused import\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-10-25T19:24:46+02:00",
-          "tree_id": "99eb0b836cd54e4b1ca8f8bcabe425788f584830",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/25696acfeb0b4b0fa8a5bd14a85beb55cc189b55"
-        },
-        "date": 1698255109897,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 30120,
-            "range": "±4.46%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29721,
-            "range": "±2.42%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29527,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28810,
-            "range": "±2.60%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24365,
-            "range": "±9.55%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.07%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8209e396a23be23ef06f2531609f12bfa8935502",
+          "message": "Export originalStorageCache (#3161)",
+          "timestamp": "2023-11-16T18:03:33-05:00",
+          "tree_id": "2ea3a4cb1aff538c0001611a28d1b7bf6473578e",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8209e396a23be23ef06f2531609f12bfa8935502"
+        },
+        "date": 1700175984690,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40769,
+            "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39516,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39447,
+            "range": "±1.78%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36821,
+            "range": "±4.41%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37603,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
