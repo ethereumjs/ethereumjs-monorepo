@@ -2,7 +2,6 @@ import { Chain } from '@ethereumjs/common'
 
 import { goerliGenesis } from './genesisStates/goerli.js'
 import { holeskyGenesis } from './genesisStates/holesky.js'
-import { kaustinenGenesis } from './genesisStates/kaustinen.js'
 import { mainnetGenesis } from './genesisStates/mainnet.js'
 import { sepoliaGenesis } from './genesisStates/sepolia.js'
 
@@ -26,8 +25,6 @@ export function getGenesis(chainId: number): GenesisState | undefined {
       return sepoliaGenesis
     case Chain.Holesky:
       return holeskyGenesis
-    case Chain.Kaustinen:
-      return kaustinenGenesis
 
     default:
       return undefined
