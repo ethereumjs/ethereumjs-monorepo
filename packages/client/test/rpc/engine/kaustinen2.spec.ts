@@ -66,7 +66,7 @@ describe(`valid verkle network setup`, async () => {
     genesisStateRoot: genesisVerkleStateRoot,
   })
 
-  if (
+  it(
     ('genesis should be correctly setup',
     async () => {
       const req = params('eth_getBlockByNumber', ['0x0', false])
@@ -78,10 +78,10 @@ describe(`valid verkle network setup`, async () => {
       await baseRequest(server, req, 200, expectRes)
     })
   )
-    it(`reset TD`, () => {
-      BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-      td.reset()
-    })
+  it(`reset TD`, () => {
+    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
+    td.reset()
+  })
 })
 
 const merkleGenesisJsonBlock = {
