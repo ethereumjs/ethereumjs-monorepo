@@ -1,4 +1,4 @@
-// import { Chain } from '@ethereumjs/common'
+import { Chain, Common } from '@ethereumjs/common'
 // import { RLP } from '@ethereumjs/rlp'
 import {
   // KECCAK256_NULL,
@@ -19,25 +19,23 @@ import {
   // unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-// import debugDefault from 'debug'
+import { Account } from '@ethereumjs/util'
+import debugDefault from 'debug'
 // import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 // import { AccountCache, CodeCache, StorageCache } from './cache/index.js'
-// import { OriginalStorageCache } from './cache/originalStorageCache.js'
+
+import { OriginalStorageCache } from '../cache/originalStorageCache.js'
+
+import { Snapshot } from './snapshot.js'
 
 import type { CacheType } from '../cache/index.js'
-import type { OriginalStorageCache } from '../cache/originalStorageCache.js'
-import type {
-  AccountFields,
-  Common,
-  EVMStateManagerInterface,
-  StorageDump,
-} from '@ethereumjs/common'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { StorageRange } from '@ethereumjs/common/src'
 import type { Trie } from '@ethereumjs/trie'
-import type { Account, Address, /* DB, */ PrefixedHexString } from '@ethereumjs/util'
-// import type { Debugger } from 'debug'
-// const { debug: createDebugLogger } = debugDefault
+import type { Address, /* DB, */ PrefixedHexString } from '@ethereumjs/util'
+import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugDefault
 
 export type StorageProof = {
   key: PrefixedHexString
@@ -58,7 +56,44 @@ export type Proof = {
 /**
  * Options for constructing a {@link StateManager}.
  */
-export interface DefaultStateManagerOpts {}
+export interface DefaultStateManagerOpts {
+  snapshot?: Snapshot
+
+  /**
+   * A {@link Trie} instance
+   */
+  trie?: Trie
+  /**
+   * Option to prefix codehashes in the database. This defaults to `true`.
+   * If this is disabled, note that it is possible to corrupt the trie, by deploying code
+   * which code is equal to the preimage of a trie-node.
+   * E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted trie.
+   */
+  prefixCodeHashes?: boolean
+
+  /**
+   * Option to prefix the keys for the storage tries with the first 7 bytes from the
+   * associated account address. Activating this option gives a noticeable performance
+   * boost for storage DB reads when operating on larger tries.
+   *
+   * Note: Activating/deactivating this option causes continued state reads to be
+   * incompatible with existing databases.
+   *
+   * Default: false (for backwards compatibility reasons)
+   */
+  prefixStorageTrieKeys?: boolean
+
+  // accountCacheOpts?: CacheOptions
+
+  // storageCacheOpts?: CacheOptions
+
+  // codeCacheOpts?: CacheOptions
+
+  /**
+   * The common to use
+   */
+  common?: Common
+}
 
 /**
  * Default StateManager implementation for the VM.
@@ -71,13 +106,53 @@ export interface DefaultStateManagerOpts {}
  * `@ethereumjs/trie` trie as a data backend.
  */
 export class FlatStateManager implements EVMStateManagerInterface {
+  protected _debug: Debugger
+  // protected _accountCache?: AccountCache
+  // protected _storageCache?: StorageCache
+  // protected _codeCache?: CodeCache
+
   originalStorageCache: OriginalStorageCache
+
+  // protected readonly _prefixCodeHashes: boolean
+  // protected readonly _prefixStorageTrieKeys: boolean
+  // protected readonly _accountCacheSettings: CacheSettings
+  // protected readonly _storageCacheSettings: CacheSettings
+  // protected readonly _codeCacheSettings: CacheSettings
+
+  public readonly common: Common
+
+  // protected _checkpointCount: number
+
+  // protected _proofTrie: Trie
+
+  /**
+   * StateManager is run in DEBUG mode (default: false)
+   * Taken from DEBUG environment variable
+   *
+   * Safeguards on debug() calls are added for
+   * performance reasons to avoid string literal evaluation
+   * @hidden
+   */
+  protected readonly DEBUG: boolean = false
+
+  _snapshot: Snapshot
 
   /**
    * Instantiate the StateManager interface.
    */
-  constructor() {
-    throw new Error('Not yet implemented')
+  constructor(opts: DefaultStateManagerOpts = {}) {
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+
+    this._debug = createDebugLogger('statemanager:statemanager')
+
+    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+
+    this._snapshot = opts.snapshot ?? new Snapshot()
+
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+
+    // this._checkpointCount = 0
   }
 
   /**
@@ -85,7 +160,9 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
-    throw new Error('Not yet implemented')
+    const res = await this._snapshot.getAccount(address)
+    const account = res ? Account.fromRlpSerializedAccount(res) : undefined
+    return account
   }
 
   /**
@@ -94,7 +171,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param account - The account to store or undefined if to be deleted
    */
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
-    throw new Error('Not yet implemented')
+    if (account !== undefined) await this._snapshot.putAccount(address, account)
   }
 
   /**
