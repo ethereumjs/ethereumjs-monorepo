@@ -44,10 +44,9 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 
 export const batchBlocks = async (server: HttpServer) => {
   for (let i = 0; i < blocks.length; i++) {
-    const executionPayload = executionPayloadFromBeaconPayload(blocks[i])
+    const executionPayload = executionPayloadFromBeaconPayload(blocks[i] as any)
     const req = params('engine_newPayloadV2', [executionPayload])
     const expectRes = (res: any) => {
-      console.trace(res.body)
       assert.equal(res.body.result.status, 'VALID')
     }
     await baseRequest(server, req, 200, expectRes, false, false)
@@ -83,7 +82,7 @@ describe(`invalid verkle network setup`, () => {
         engine: true,
       })
       assert.fail('Should have failed to start')
-    } catch (e) {
+    } catch (e: any) {
       assert.equal(e.message, 'Verkle trie state not yet supported')
     }
   })
@@ -95,18 +94,15 @@ describe(`valid verkle network setup`, async () => {
     genesisStateRoot: genesisVerkleStateRoot,
   })
 
-  it(
-    ('genesis should be correctly setup',
-    async () => {
-      const req = params('eth_getBlockByNumber', ['0x0', false])
-      const expectRes = (res: any) => {
-        const block0 = res.body.result
-        assert.equal(block0.hash, genesisVerkleBlockHash)
-        assert.equal(block0.stateRoot, genesisVerkleStateRoot)
-      }
-      await baseRequest(server, req, 200, expectRes, false, false)
-    })
-  )
+  it('genesis should be correctly setup', async () => {
+    const req = params('eth_getBlockByNumber', ['0x0', false])
+    const expectRes = (res: any) => {
+      const block0 = res.body.result
+      assert.equal(block0.hash, genesisVerkleBlockHash)
+      assert.equal(block0.stateRoot, genesisVerkleStateRoot)
+    }
+    await baseRequest(server, req, 200, expectRes, false, false)
+  })
 
   it('should be able to apply new verkle payloads', async () => {
     await batchBlocks(server)
