@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -61,6 +61,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   const state = this.stateManager
+
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
@@ -133,8 +134,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       block.executionWitness!
     )
   } else {
-    if (!(state instanceof DefaultStateManager)) {
-      throw Error(`DefaultStateManager needed for execution of merkle blocks`)
+    if (state instanceof StatelessVerkleStateManager) {
+      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
 

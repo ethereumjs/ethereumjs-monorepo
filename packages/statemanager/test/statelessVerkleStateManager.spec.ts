@@ -20,10 +20,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager()
     stateManager.initVerkleExecutionWitness(block.executionWitness!)
 
-    assert.ok(
-      Object.keys((stateManager as any)._state).length !== 0,
-      'should initialize with state'
-    )
+    assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   it('getTreeKey()', async () => {

@@ -5,7 +5,6 @@ import {
   int32ToBytes,
   setLengthLeft,
   setLengthRight,
-  toBytes,
 } from '@ethereumjs/util'
 import { pedersen_hash, verify_update } from 'rust-verkle-wasm'
 
