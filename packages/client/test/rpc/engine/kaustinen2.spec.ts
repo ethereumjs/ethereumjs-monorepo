@@ -48,15 +48,40 @@ describe(`verkle genesis checks`, () => {
   assert.equal(genesisVerkleBlockHash, bytesToHex(verkleGenesisBlock.hash()))
 })
 
-describe(`verkle network setup`, async () => {
+describe(`invalid verkle network setup`, () => {
+  it('start client without verkle state root', async () => {
+    try {
+      const { server, common } = await setupChain(genesisJSON, 'post-merge', {
+        engine: true,
+      })
+    } catch (e) {
+      assert(e.message, 'Verkle trie state not yet supported')
+    }
+  })
+})
+
+describe(`valid verkle network setup`, async () => {
   const { server, common } = await setupChain(genesisJSON, 'post-merge', {
     engine: true,
+    genesisStateRoot: genesisVerkleStateRoot,
   })
 
-  it(`reset TD`, () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
-  })
+  if (
+    ('genesis should be correctly setup',
+    async () => {
+      const req = params('eth_getBlockByNumber', ['0x0', false])
+      const expectRes = (res: any) => {
+        const block0 = res.body.result
+        assert.equal(block0.hash, genesisVerkleBlockHash)
+        assert.equal(block0.stateRoot, genesisVerkleStateRoot)
+      }
+      await baseRequest(server, req, 200, expectRes)
+    })
+  )
+    it(`reset TD`, () => {
+      BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
+      td.reset()
+    })
 })
 
 const merkleGenesisJsonBlock = {
