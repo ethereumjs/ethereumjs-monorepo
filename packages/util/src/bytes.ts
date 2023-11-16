@@ -448,30 +448,28 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
  * @notice Convert a Uint8Array to a 32-bit integer
  * @param {Uint8Array} bytes The input Uint8Array from which to read the 32-bit integer.
  * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
- * @throws {Error} If the input Uint8Array has a length less than 4.
  * @return {number} The 32-bit integer read from the input Uint8Array.
  */
 export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): number {
   if (bytes.length < 4) {
-    throw new Error('The input Uint8Array must have at least 4 bytes.')
+    bytes = setLength(bytes, 4, littleEndian)
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  return dataView.getInt32(0, littleEndian)
+  return dataView.getUint32(0, littleEndian)
 }
 
 /**
  * @notice Convert a Uint8Array to a 64-bit bigint
  * @param {Uint8Array} bytes The input Uint8Array from which to read the 64-bit bigint.
  * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
- * @throws {Error} If the input Uint8Array has a length less than 8.
  * @return {bigint} The 64-bit bigint read from the input Uint8Array.
  */
 export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false): bigint {
   if (bytes.length < 8) {
-    throw new Error('The input Uint8Array must have at least 8 bytes.')
+    bytes = setLength(bytes, 8, littleEndian)
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  return dataView.getBigInt64(0, littleEndian)
+  return dataView.getBigUint64(0, littleEndian)
 }
 
 /**
@@ -483,7 +481,7 @@ export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false
 export function int32ToBytes(value: number, littleEndian: boolean = false): Uint8Array {
   const buffer = new ArrayBuffer(4)
   const dataView = new DataView(buffer)
-  dataView.setInt32(0, value, littleEndian)
+  dataView.setUint32(0, value, littleEndian)
   return new Uint8Array(buffer)
 }
 
@@ -496,7 +494,7 @@ export function int32ToBytes(value: number, littleEndian: boolean = false): Uint
 export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): Uint8Array {
   const buffer = new ArrayBuffer(8)
   const dataView = new DataView(buffer)
-  dataView.setBigInt64(0, value, littleEndian)
+  dataView.setBigUint64(0, value, littleEndian)
   return new Uint8Array(buffer)
 }
 
