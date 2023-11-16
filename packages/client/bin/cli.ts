@@ -90,7 +90,6 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe: 'State root of the verkle genesis genesis',
     string: true,
     coerce: (customGenesisStateRoot: string) => hexToBytes(customGenesisStateRoot),
-    implies: 'customChain',
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',

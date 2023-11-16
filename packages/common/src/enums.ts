@@ -52,7 +52,7 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
   [Chain.Kaustinen]: {
     name: 'kaustinen',
     blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x1a1a6c03c8fccb67eda2adad387d46bc9bfbf22830d1a08cd97f0591bc7fee5e'),
+    stateRoot: hexToBytes('0x5e8519756841faf0b2c28951c451b61a4b407b70a5ce5b57992f4bec973173ff'),
   },
 }
 
