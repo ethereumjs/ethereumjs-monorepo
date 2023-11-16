@@ -248,10 +248,14 @@ export class VMExecution extends Execution {
           throw Error(`Currently stateful verkle execution not supported`)
         }
         this.config.logger.info(`Skipping Vm verkle statemanager genesis hardfork=${this.hardfork}`)
+        this.setupVerkleVm()
+        this.vm = this.verkleVm!
       } else {
         this.config.logger.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
         )
+        this.setupMerkleVm()
+        this.vm = this.merkleVm!
         if (number === BIGINT_0) {
           const genesisState =
             this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))

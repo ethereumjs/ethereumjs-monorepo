@@ -47,7 +47,6 @@ export const batchBlocks = async (server: HttpServer) => {
     const executionPayload = executionPayloadFromBeaconPayload(blocks[i])
     const req = params('engine_newPayloadV2', [executionPayload])
     const expectRes = (res: any) => {
-      console.trace(res.body)
       assert.equal(res.body.result.status, 'VALID')
     }
     await baseRequest(server, req, 200, expectRes, false, false)
