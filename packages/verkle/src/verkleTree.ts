@@ -1,14 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  KeyEncoding,
-  Lock,
-  MapDB,
-  ValueEncoding,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-  zeros,
-} from '@ethereumjs/util'
+import { KeyEncoding, Lock, ValueEncoding, equalsBytes, zeros } from '@ethereumjs/util'
 
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
@@ -23,7 +14,7 @@ import {
 import { WalkController, matchingBytesLength } from './util/index.js'
 
 import type { VerkleNode } from './node/types.js'
-import type { FoundNodeFunction, Point } from './types.js'
+import type { FoundNodeFunction } from './types.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 
 interface Path {
