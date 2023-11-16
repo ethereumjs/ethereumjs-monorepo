@@ -43,10 +43,11 @@ const merkleGenesisJsonBlock = {
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 export const batchBlocks = async (server: HttpServer) => {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < blocks.length; i++) {
     const executionPayload = executionPayloadFromBeaconPayload(blocks[i])
     const req = params('engine_newPayloadV2', [executionPayload])
     const expectRes = (res: any) => {
+      console.trace(res.body)
       assert.equal(res.body.result.status, 'VALID')
     }
     await baseRequest(server, req, 200, expectRes, false, false)
