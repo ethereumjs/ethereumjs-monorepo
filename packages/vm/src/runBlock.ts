@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { DefaultStateManager, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -34,7 +35,6 @@ import type {
 } from './types.js'
 import type { VM } from './vm.js'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
-import type { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -119,6 +119,25 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     await state.setStateRoot(root, clearCache)
   }
 
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(state instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    if (block.executionWitness === undefined) {
+      throw Error(`StatelessVerkleStateManager needs executionWitness to initialize for runBlock`)
+    }
+    if (this.DEBUG) {
+      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+    }
+    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+      block.executionWitness!
+    )
+  } else {
+    if (!(state instanceof DefaultStateManager)) {
+      throw Error(`DefaultStateManager needed for execution of merkle blocks`)
+    }
+  }
+
   // check for DAO support and if we should apply the DAO fork
   if (
     this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
@@ -126,12 +145,6 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   ) {
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
-    }
-
-    if (this.common.isActivatedEIP(6800)) {
-      ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
-        block.executionWitness!
-      )
     }
 
     await this.evm.journal.checkpoint()
