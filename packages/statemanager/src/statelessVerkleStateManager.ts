@@ -143,6 +143,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   // State along execution (should update)
   private _state: VerkleState = {}
 
+  // Post-state provided from the executionWitness.
+  // Should not update. Used for comparing our computed post-state with the canonical one.
+  private _postState: VerkleState = {}
+
   // Checkpointing
   private _checkpoints: VerkleState[] = []
 
@@ -199,10 +203,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // this._cache = new Cache({ get, putCb, deleteCb })
   }
 
-  async getTransitionStateRoot(
-    merkleStateManager: DefaultStateManager,
-    merkleStateRoot: Uint8Array
-  ): Promise<Uint8Array> {
+  async getTransitionStateRoot(_: DefaultStateManager, __: Uint8Array): Promise<Uint8Array> {
     throw Error('not implemented')
   }
 
@@ -210,13 +211,28 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._executionWitness = executionWitness
     this._proof = executionWitness.verkleProof as unknown as Uint8Array
 
-    // Populate the pre-state from the executionWitness
+    // Populate the pre-state and post-state from the executionWitness
     const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ currentValue, suffix }) => {
         const key = `${stem}${padToEven(suffix.toString(16))}`
 
+        // TODO: Evaluate if we should store and handle null in a special way
+        // Currently we are replacing `null` with 0x00..00 (32 bytes) for simplifying handling and comparisons
+        // Also, test data has been inconsistent in this regard, so this simplifies things while things get more standardized
         return {
-          [key]: currentValue,
+          [key]: currentValue ?? bytesToHex(zeros(32)),
+        }
+      })
+
+      return suffixDiffPairs
+    })
+
+    const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
+      const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
+        const key = `${stem}${padToEven(suffix.toString(16))}`
+
+        return {
+          [key]: newValue ?? bytesToHex(zeros(32)),
         }
       })
 
@@ -228,8 +244,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       return acc
     }, {})
 
+    const postState = postStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
+
     this._state = preState
-    debug('initVerkleExecutionWitness', this._state)
+    this._postState = postState
+    debug('initVerkleExecutionWitness preState', this._state)
+    debug('initVerkleExecutionWitness postState', this._postState)
   }
 
   getTreeKeyForVersion(stem: Uint8Array) {
@@ -418,8 +441,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
-    const balanceBuf = bigIntToBytes(account.balance, true)
-    const nonceBuf = bigIntToBytes(account.nonce, true)
+    // console.log('address: ', address.toString(), ' | balance: ', account.balance)
+
+    const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
+    const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
 
     this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
     this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
@@ -472,6 +497,20 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     // Verify that updatedStateRoot matches the state root of the block
     return equalsBytes(updatedStateRoot, verkleRoot)
+  }
+
+  // Verifies that the witness post-state matches the computed post-state
+  verifyPostState(): boolean {
+    for (const [key, canonicalValue] of Object.entries(this._postState)) {
+      const computedValue = this._state[key]
+      if (canonicalValue !== computedValue) {
+        debug(
+          `verifyPostState failed for key ${key}. Canonical value: ${canonicalValue}, computed value: ${computedValue}`
+        )
+        return false
+      }
+    }
+    return true
   }
 
   /**

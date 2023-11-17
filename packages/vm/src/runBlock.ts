@@ -248,6 +248,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       const msg = _errorMsg('invalid block stateRoot', this, block)
       throw new Error(msg)
     }
+  } else if (this.common.isActivatedEIP(6800) === true) {
+    // If verkle is activated, only validate the post-state
+    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+    }
+    debug(`Verkle post state verification succeeded`)
   }
 
   if (enableProfiler) {
