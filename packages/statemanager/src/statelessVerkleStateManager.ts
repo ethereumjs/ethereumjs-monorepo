@@ -2,9 +2,8 @@
 
 import {
   Account,
-  bigInt64ToBytes,
+  bigIntToBytes,
   bytesToBigInt,
-  bytesToBigInt64,
   bytesToHex,
   bytesToInt32,
   padToEven,
@@ -419,8 +418,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
-    const balanceBuf = bigInt64ToBytes(account.balance, true)
-    const nonceBuf = bigInt64ToBytes(account.nonce, true)
+    const balanceBuf = bigIntToBytes(account.balance, true)
+    const nonceBuf = bigIntToBytes(account.nonce, true)
 
     this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
     this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
