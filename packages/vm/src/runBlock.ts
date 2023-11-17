@@ -221,7 +221,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
           )}`
         )
       }
-      const msg = _errorMsg('invalid block stateRoot', this, block)
+      const msg = _errorMsg(
+        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+          block.header.stateRoot
+        )}`,
+        this,
+        block
+      )
       throw new Error(msg)
     }
   }
