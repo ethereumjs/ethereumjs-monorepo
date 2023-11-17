@@ -113,6 +113,7 @@ describe(method, () => {
         maxFeePerGas: 10000000000n,
         maxPriorityFeePerGas: 100000000n,
         gasLimit: 30000000n,
+        to: Address.zero(),
       },
       { common }
     ).sign(pkey)
@@ -124,7 +125,7 @@ describe(method, () => {
       const { executionPayload, blobsBundle } = res.body.result
       assert.equal(
         executionPayload.blockHash,
-        '0xf63169fd7c38630ead561c84612d0e9e1eade2f54d729f48460042a3cee66609',
+        '0xe8175305416ee94c996164162044338b4f4d93a8dc458b574ecad4ce84323fb5',
         'built expected block'
       )
       assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')

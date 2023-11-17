@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { hexToBytes, initKZG } from '@ethereumjs/util'
+import { Address, hexToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -19,7 +19,7 @@ common.setHardfork('cancun')
 const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
 const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)
 const mockedBlobTx3 = BlobEIP4844Transaction.fromTxData(
-  { nonce: 2, blobsData: ['0x1234'] },
+  { nonce: 2, blobsData: ['0x1234'], to: Address.zero() },
   { common }
 ).sign(dummy.privKey)
 const blockHash = hexToBytes('0xdcf93da321b27bca12087d6526d2c10540a4c8dc29db1b36610c3004e0e5d2d5')
