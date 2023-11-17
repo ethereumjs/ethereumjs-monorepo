@@ -157,70 +157,87 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 128
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 129
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 130
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 131
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 132
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 133
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 134
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 135
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 136
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 137
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 138
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 139
           }
         ]
@@ -230,22 +247,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           }
         ]
@@ -255,70 +277,87 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 128
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 129
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 130
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 131
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 132
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 133
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 134
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 135
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 136
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 137
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 138
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 139
           }
         ]
@@ -328,22 +367,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 128
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 129
           }
         ]
@@ -353,22 +397,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0xb8ea48b767f7c48a000000000000000000000000000000000000000000000000",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x0300000000000000000000000000000000000000000000000000000000000000",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           }
         ]
@@ -378,22 +427,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           }
         ]
@@ -403,22 +457,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x525de5f1f51e4d4a201500000000000000000000000000000000000000000000",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x79793c0000000000000000000000000000000000000000000000000000000000",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           }
         ]
@@ -428,22 +487,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           }
         ]
@@ -453,22 +517,27 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           }
         ]
@@ -478,34 +547,42 @@
         "suffixDiffs": [
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 0
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 1
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 2
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 3
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 4
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 128
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 130
           },
           {
             "currentValue": "0x",
+            "newValue": "0x",
             "suffix": 131
           }
         ]
