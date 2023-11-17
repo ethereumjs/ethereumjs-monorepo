@@ -360,7 +360,7 @@ export async function accumulateParentBeaconBlockRoot(
    */
 
   if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-    await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
   await this.stateManager.putContractStorage(
