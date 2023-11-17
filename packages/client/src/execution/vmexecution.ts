@@ -949,7 +949,7 @@ export class VMExecution extends Execution {
   }
 
   stats() {
-    if (this._statsVm !== undefined) {
+    if (this._statsVm instanceof DefaultStateManager) {
       const sm = this._statsVm.stateManager as any
       const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
