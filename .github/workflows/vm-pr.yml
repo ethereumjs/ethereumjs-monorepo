@@ -159,7 +159,7 @@ jobs:
             '--fork=London --verify-test-amount-alltests',
             '--fork=Paris --verify-test-amount-alltests',
             '--fork=Shanghai --verify-test-amount-alltests',
-            '--fork=Cancun --verify-test-amount-alltests'
+            '--fork=Cancun --verify-test-amount-alltests',
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
