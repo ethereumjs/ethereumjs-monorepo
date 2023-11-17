@@ -3,15 +3,18 @@
 import {
   Account,
   bigInt64ToBytes,
+  bytesToBigInt,
   bytesToBigInt64,
   bytesToHex,
   bytesToInt32,
   padToEven,
   setLengthRight,
+  short,
   toBytes,
   zeros,
 } from '@ethereumjs/util'
 import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
+import debugDefault from 'debug'
 import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
@@ -28,6 +31,10 @@ import type {
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+
+const { debug: createDebugLogger } = debugDefault
+
+const debug = createDebugLogger('sm:verkle')
 
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString
@@ -174,6 +181,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     this._codeCache = {}
 
+    // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
+    // Additional window check is to prevent vite browser bundling (and potentially other) to break
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
+
     /*
      * For a custom StateManager implementation adopt these
      * callbacks passed to the `Cache` instantiated to perform
@@ -218,6 +230,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }, {})
 
     this._state = preState
+    debug('initVerkleExecutionWitness', this._state)
   }
 
   getTreeKeyForVersion(stem: Uint8Array) {
@@ -380,15 +393,24 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
-    const balanceLE = toBytes(this._state[bytesToHex(balanceKey)])
-    const nonceLE = toBytes(this._state[bytesToHex(nonceKey)])
-    const codeHash = toBytes(this._state[bytesToHex(codeHashKey)])
+    const balance = bytesToBigInt(toBytes(this._state[bytesToHex(balanceKey)]), true)
+    const nonce = bytesToBigInt(toBytes(this._state[bytesToHex(nonceKey)]), true)
+    const codeHashData = toBytes(this._state[bytesToHex(codeHashKey)])
+    const codeHash = codeHashData.length > 0 ? codeHashData : zeros(32)
 
-    return Account.fromAccountData({
-      balance: balanceLE.length > 0 ? bytesToBigInt64(balanceLE, true) : 0n,
-      codeHash: codeHash.length > 0 ? codeHash : zeros(32),
-      nonce: nonceLE.length > 0 ? bytesToBigInt64(nonceLE, true) : 0n,
+    const account = Account.fromAccountData({
+      balance,
+      nonce,
+      codeHash,
     })
+    if (this.DEBUG) {
+      debug(
+        `getAccount address=${address.toString()} balance=${account.balance} nonce=${
+          account.nonce
+        } codeHash=${short(account.codeHash)} storageHash=${short(account.storageRoot)}`
+      )
+    }
+    return account
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {

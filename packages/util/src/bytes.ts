@@ -52,7 +52,10 @@ for (let i = 0; i <= 256 * 256 - 1; i++) {
  * @param {Uint8Array} bytes the bytes to convert
  * @returns {bigint}
  */
-export const bytesToBigInt = (bytes: Uint8Array): bigint => {
+export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  if (littleEndian) {
+    bytes.reverse()
+  }
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
     return BIGINT_0
