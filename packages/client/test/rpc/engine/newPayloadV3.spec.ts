@@ -63,8 +63,8 @@ describe(`${method}: call with executionPayloadV3`, () => {
       withdrawals: [],
       blobGasUsed: '0x0',
       excessBlobGas: '0x0',
-      blockHash: '0x449c6da07b4fed636dca71e35c5c48bdea73c1e3cfd770638af05fcf015753f1',
-      stateRoot: '0x453898f64d0626f3bc2b50f57be5182d377b916186714ed51df749403c49b99d',
+      blockHash: '0xbb9bd9ec0b48b52556ce0180afcefc31d59dd288914b931ff32ff9813519fa7f',
+      stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
     }
     let expectRes, req
 
