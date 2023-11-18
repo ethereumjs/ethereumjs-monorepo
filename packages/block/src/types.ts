@@ -137,14 +137,22 @@ export interface BlockData {
   /**
    * EIP-6800: Verkle Proof Data (experimental)
    */
-  executionWitness?: VerkleExecutionWitness
+  executionWitness?: VerkleExecutionWitness | null
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
+export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+  | [
+      BlockHeaderBytes,
+      TransactionsBytes,
+      UncleHeadersBytes,
+      WithdrawalsBytes,
+      ExecutionWitnessBytes
+    ]
 
 /**
  * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
@@ -169,7 +177,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
-  executionWitness?: VerkleExecutionWitness
+  executionWitness?: VerkleExecutionWitness | null
 }
 
 /**
@@ -228,7 +236,7 @@ export interface JsonRpcBlock {
   blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
-  executionWitness?: VerkleExecutionWitness // If Verkle is enabled for this block
+  executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
 }
 
 // Note: all these strings are 0x-prefixed
@@ -260,5 +268,5 @@ export type ExecutionPayload = {
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   // VerkleExecutionWitness is already a hex serialized object
-  executionWitness?: VerkleExecutionWitness // QUANTITY, 64 Bits
+  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null imples not available
 }

@@ -17,7 +17,7 @@ describe('Verkle-enabled VM', async () => {
 
     const block = Block.fromBlockData(blockJSON, { common })
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initVerkleExecutionWitness(block.executionWitness!)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
     const vm = await VM.create({ common, stateManager })
     await vm.runBlock({
       block,

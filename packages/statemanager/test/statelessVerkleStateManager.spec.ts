@@ -18,14 +18,14 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it('initPreState()', async () => {
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initVerkleExecutionWitness(block.executionWitness!)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   it('getTreeKey()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness!)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
     const balanceKey = stateManager.getTreeKeyForBalance(
       getStem(Address.fromString('0x0000000000000000000000000000000000000000'))
@@ -38,7 +38,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it('getTreeKey()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness!)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
     const balanceKey = stateManager.getTreeKeyForBalance(
       getStem(Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7'))
@@ -51,7 +51,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it('getAccount()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness!)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
