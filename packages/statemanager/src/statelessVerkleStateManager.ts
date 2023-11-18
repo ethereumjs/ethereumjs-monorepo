@@ -2,6 +2,7 @@
 
 import {
   Account,
+  KECCAK256_NULL_S,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -227,29 +228,33 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       return suffixDiffPairs
     })
 
+    const preState = preStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
+
+    this._state = preState
+
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
         const key = `${stem}${padToEven(suffix.toString(16))}`
+        // A postState value of null means there was no change from the preState.
+        // In this implementation, we therefore replace null with the preState.
+        const value = newValue ?? this._state[key]
 
         return {
-          [key]: newValue ?? bytesToHex(zeros(32)),
+          [key]: value,
         }
       })
 
       return suffixDiffPairs
     })
 
-    const preState = preStateRaw.reduce((prevValue, currentValue) => {
-      const acc = { ...prevValue, ...currentValue }
-      return acc
-    }, {})
-
     const postState = postStateRaw.reduce((prevValue, currentValue) => {
       const acc = { ...prevValue, ...currentValue }
       return acc
     }, {})
 
-    this._state = preState
     this._postState = postState
     debug('initVerkleExecutionWitness preState', this._state)
     debug('initVerkleExecutionWitness postState', this._postState)
@@ -405,8 +410,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
+    const stem = getStem(address, 0)
+    const codeHashKey = this.getTreeKeyForCodeHash(stem)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
-    // Clear all storage slots (how?)
+    this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
+
+    // TODO: Clear all storage slots (how?)
   }
 
   async getAccount(address: Address): Promise<Account> {
@@ -440,8 +449,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
-
-    // console.log('address: ', address.toString(), ' | balance: ', account.balance)
 
     const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
     const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
