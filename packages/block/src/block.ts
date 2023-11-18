@@ -53,8 +53,10 @@ export class Block {
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
+   * null implies that the non default executionWitness might exist but not available
+   * and will not lead to execution of the block via vm with verkle stateless manager
    */
-  public readonly executionWitness?: VerkleExecutionWitness
+  public readonly executionWitness?: VerkleExecutionWitness | null
 
   private cache: {
     txTrieRoot?: Uint8Array
@@ -162,13 +164,13 @@ export class Block {
    * @param opts
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
-    if (values.length > 4) {
-      throw new Error('invalid block. More values than expected were received')
+    if (values.length > 5) {
+      throw new Error(`invalid block. More values=${values.length} than expected were received`)
     }
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes] = values
+    const [headerData, txsData, uhsData, withdrawalBytes, executionWitnessBytes] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
@@ -220,7 +222,16 @@ export class Block {
 
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api construced blocks
-    const executionWitness = undefined
+    let executionWitness
+    if (executionWitnessBytes !== undefined) {
+      executionWitness = JSON.parse(
+        Buffer.from(RLP.decode(executionWitnessBytes) as Uint8Array).toString()
+      )
+    } else {
+      // don't assign default witness if eip 6800 is implemeted as it leads to incorrect
+      // assumptions while executing the block. if not present in input implies its unavailable
+      executionWitness = null
+    }
 
     return new Block(header, transactions, uncleHeaders, withdrawals, executionWitness, opts)
   }
@@ -350,7 +361,10 @@ export class Block {
       { header, transactions: txs, withdrawals, executionWitness },
       options
     )
-    if (block.common.isActivatedEIP(6800) && executionWitness === undefined) {
+    if (
+      block.common.isActivatedEIP(6800) &&
+      (executionWitness === undefined || executionWitness === null)
+    ) {
       throw Error('Missing executionWitness for EIP-6800 activated executionPayload')
     }
     // Verify blockHash matches payload
@@ -387,7 +401,7 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
-    executionWitness?: VerkleExecutionWitness,
+    executionWitness?: VerkleExecutionWitness | null,
     opts: BlockOptions = {}
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
@@ -395,24 +409,25 @@ export class Block {
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
-    this.executionWitness =
-      executionWitness ??
-      (this.common.isActivatedEIP(6800)
-        ? {
-            stateDiff: [],
-            verkleProof: {
-              commitmentsByPath: [],
-              d: '0x',
-              depthExtensionPresent: '0x',
-              ipaProof: {
-                cl: [],
-                cr: [],
-                finalEvaluation: '0x',
-              },
-              otherStems: [],
-            },
-          }
-        : undefined)
+    this.executionWitness = executionWitness
+    // null executionWitness could mean that its not default and unavailable
+    // but undefined means a default allocation.
+    if (this.executionWitness === undefined && this.common.isActivatedEIP(6800)) {
+      this.executionWitness = {
+        stateDiff: [],
+        verkleProof: {
+          commitmentsByPath: [],
+          d: '0x',
+          depthExtensionPresent: '0x',
+          ipaProof: {
+            cl: [],
+            cr: [],
+            finalEvaluation: '0x',
+          },
+          otherStems: [],
+        },
+      }
+    }
 
     this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
@@ -435,7 +450,11 @@ export class Block {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
-    if (!this.common.isActivatedEIP(6800) && executionWitness !== undefined) {
+    if (
+      !this.common.isActivatedEIP(6800) &&
+      executionWitness !== undefined &&
+      executionWitness !== null
+    ) {
       throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
@@ -459,6 +478,10 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
+    }
+    if (this.executionWitness !== undefined && this.executionWitness !== null) {
+      const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
+      bytesArray.push(executionWitnessBytes as any)
     }
     return bytesArray
   }
@@ -609,6 +632,9 @@ export class Block {
     // Unnecessary in this implementation since we're providing defaults if those fields are undefined
     if (this.common.isActivatedEIP(6800)) {
       if (this.executionWitness === undefined) {
+        throw new Error(`Invalid block: missing executionWitness`)
+      }
+      if (this.executionWitness === null) {
         throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
       }
     }

@@ -137,7 +137,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   protected readonly DEBUG: boolean = false
 
-  private _executionWitness: VerkleExecutionWitness | undefined
+  private _executionWitness?: VerkleExecutionWitness
 
   private _proof: Uint8Array | undefined
 
@@ -208,7 +208,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw Error('not implemented')
   }
 
-  public initVerkleExecutionWitness(executionWitness: VerkleExecutionWitness) {
+  public initVerkleExecutionWitness(executionWitness?: VerkleExecutionWitness | null) {
+    if (executionWitness === null || executionWitness === undefined) {
+      throw Error(`Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`)
+    }
+
     this._executionWitness = executionWitness
     this._proof = executionWitness.verkleProof as unknown as Uint8Array
 

@@ -124,14 +124,11 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (!(state instanceof StatelessVerkleStateManager)) {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
-    if (block.executionWitness === undefined) {
-      throw Error(`StatelessVerkleStateManager needs executionWitness to initialize for runBlock`)
-    }
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
     ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
-      block.executionWitness!
+      block.executionWitness
     )
   } else {
     if (state instanceof StatelessVerkleStateManager) {
