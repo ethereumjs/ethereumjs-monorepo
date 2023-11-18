@@ -165,7 +165,7 @@ export class Block {
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
     if (values.length > 5) {
-      throw new Error('invalid block. More values than expected were received')
+      throw new Error(`invalid block. More values=${values.length} than expected were received`)
     }
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
@@ -224,7 +224,9 @@ export class Block {
     // they are currently only available via the engine api construced blocks
     let executionWitness
     if (executionWitnessBytes !== undefined) {
-      throw Error(`Decoding the execution witness from bytes is not implemented yet`)
+      executionWitness = JSON.parse(
+        Buffer.from(RLP.decode(executionWitnessBytes) as Uint8Array).toString()
+      )
     } else {
       // don't assign default witness if eip 6800 is implemeted as it leads to incorrect
       // assumptions while executing the block. if not present in input implies its unavailable
@@ -476,6 +478,10 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
+    }
+    if (this.executionWitness !== undefined && this.executionWitness !== null) {
+      const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
+      bytesArray.push(executionWitnessBytes as any)
     }
     return bytesArray
   }
