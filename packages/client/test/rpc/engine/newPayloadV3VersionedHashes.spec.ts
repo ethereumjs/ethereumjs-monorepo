@@ -59,7 +59,7 @@ describe(`${method}: Cancun validations`, () => {
     await baseRequest(server, req, 200, expectRes, false)
 
     const txString =
-      '0x03f87c01808405f5e1008502540be4008401c9c380808080c001e1a001317228841f747eac2b4987a0225753a4f81688b31b21192ad2d2a3f5d252c580a01146addbda4889ddeaa8e4d74baae37c55f9796ab17030c762260faa797ca33ea0555a673397ea115d81c390a560ab77d3f63e93a59270b1b8d12cd2a1fb8b9b11'
+      '0x03f89001808405f5e1008502540be4008401c9c3809400000000000000000000000000000000000000008080c001e1a001317228841f747eac2b4987a0225753a4f81688b31b21192ad2d2a3f5d252c580a01146addbda4889ddeaa8e4d74baae37c55f9796ab17030c762260faa797ca33ea0555a673397ea115d81c390a560ab77d3f63e93a59270b1b8d12cd2a1fb8b9b11'
     const txVersionedHashesString = [
       '0x01317228841f747eac2b4987a0225753a4f81688b31b21192ad2d2a3f5d252c5',
     ]
@@ -107,7 +107,7 @@ describe(`${method}: Cancun validations`, () => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
+        blockHash: '0xda4fd641baf437352c42dd2a46a28993854b51850938140cddc45ecc9e88b108',
         withdrawals: [],
         blobGasUsed: '0x40000',
         excessBlobGas: '0x0',
@@ -131,7 +131,7 @@ describe(`${method}: Cancun validations`, () => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
+        blockHash: '0xda4fd641baf437352c42dd2a46a28993854b51850938140cddc45ecc9e88b108',
         withdrawals: [],
         blobGasUsed: '0x40000',
         excessBlobGas: '0x0',
@@ -155,7 +155,7 @@ describe(`${method}: Cancun validations`, () => {
       {
         ...blockData,
         parentHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
-        blockHash: '0xeea272bb9ac158550c645a1b0666727a5fefa4a865f8d4c642a87143d2abef39',
+        blockHash: '0xda4fd641baf437352c42dd2a46a28993854b51850938140cddc45ecc9e88b108',
         withdrawals: [],
         blobGasUsed: '0x40000',
         excessBlobGas: '0x0',

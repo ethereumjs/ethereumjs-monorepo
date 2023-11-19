@@ -119,6 +119,8 @@ jobs:
             '--fork=ArrowGlacierToMergeAtDiffC0000',
             '--fork=Shanghai --dir=GeneralStateTests/stTimeConsuming',
             '--fork=Shanghai --excludeDir=stTimeConsuming',
+            '--fork=Cancun --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Cancun --excludeDir=stTimeConsuming',
           ]
       fail-fast: false
     steps:
@@ -157,6 +159,7 @@ jobs:
             '--fork=London --verify-test-amount-alltests',
             '--fork=Paris --verify-test-amount-alltests',
             '--fork=Shanghai --verify-test-amount-alltests',
+            '--fork=Cancun --verify-test-amount-alltests',
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
