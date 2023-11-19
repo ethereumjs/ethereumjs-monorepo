@@ -337,6 +337,7 @@ export class FullEthereumService extends Service {
    * @param peer peer
    */
   async handleEth(message: any, peer: Peer): Promise<void> {
+    // IN HERE: update peer status
     switch (message.name) {
       case 'GetBlockHeaders': {
         const { reqId, block, max, skip, reverse } = message.data

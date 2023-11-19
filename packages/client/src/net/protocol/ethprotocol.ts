@@ -356,25 +356,13 @@ export class EthProtocol extends Protocol {
   constructor(options: EthProtocolOptions) {
     super(options)
 
+    this.versions = [66, 67, 68]
+
     this.chain = options.chain
     const chainTTD = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
     if (chainTTD !== null && chainTTD !== undefined) {
       this.chainTTD = chainTTD
     }
-  }
-
-  /**
-   * Name of protocol
-   */
-  get name() {
-    return 'eth'
-  }
-
-  /**
-   * Protocol versions supported
-   */
-  get versions() {
-    return [66, 67, 68]
   }
 
   /**

@@ -11,7 +11,7 @@ import { RlpxSender } from '../protocol'
 
 import { Peer } from './peer'
 
-import type { Protocol } from '../protocol'
+import type { EthProtocol, LesProtocol, Protocol, SnapProtocol } from '../protocol'
 import type { RlpxServer } from '../server'
 import type { PeerOptions } from './peer'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
@@ -61,6 +61,11 @@ export class RlpxPeer extends Peer {
   public rlpx: Devp2pRLPx | null
   public rlpxPeer: Devp2pRlpxPeer | null
   public connected: boolean
+
+  // Protocols
+  public ETH?: EthProtocol
+  public SNAP?: SnapProtocol
+  public LES?: LesProtocol
 
   /**
    * Create new devp2p/rlpx peer
@@ -124,7 +129,7 @@ export class RlpxPeer extends Peer {
     const peerErrorHandlerBound = peerErrorHandler.bind(this)
     const peerAddedHandler = async (rlpxPeer: Devp2pRlpxPeer) => {
       try {
-        await this.bindProtocols(rlpxPeer)
+        // TODO await this.bindProtocols(rlpxPeer)
         this.config.events.emit(Event.PEER_CONNECTED, this)
       } catch (error: any) {
         this.config.events.emit(Event.PEER_ERROR, error, this)
@@ -151,46 +156,49 @@ export class RlpxPeer extends Peer {
     if (this.connected) {
       return
     }
-    await this.bindProtocols(rlpxPeer)
+    // TODO await this.bindProtocols(rlpxPeer)
     this.server = server
+  }
+
+  availableProtocols(): string[] {
+    const available = []
+    if (this.ETH !== undefined) {
+      available.push('ETH')
+    }
+    if (this.SNAP !== undefined) {
+      available.push('SNAP')
+    }
+    if (this.LES !== undefined) {
+      available.push('LES')
+    }
+    return available
+  }
+
+  async handleMessageQueue(): Promise<void> {
+    for (const protocol of [this.ETH, this.LES, this.SNAP]) {
+      if (protocol !== undefined) {
+        protocol.handleMessageQueue()
+      }
+    }
   }
 
   /**
    * Adds protocols to this peer given an rlpx native peer instance.
    * @param rlpxPeer rlpx native peer
    */
-  private async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
+  /*private async bindProtocols(rlpxPeer: Devp2pRlpxPeer): Promise<void> {
     this.rlpxPeer = rlpxPeer
     await Promise.all(
       rlpxPeer.getProtocols().map((rlpxProtocol) => {
         const name = rlpxProtocol.constructor.name.toLowerCase()
         const protocol = this.protocols.find((p) => p.name === name)
-        // Since snap is running atop/besides eth, it doesn't need a separate sender
-        // handshake, and can just use the eth handshake
-        if (protocol && name !== 'snap') {
-          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
-          return this.bindProtocol(protocol, sender).then(() => {
-            if (name === 'eth') {
-              const snapRlpxProtocol = rlpxPeer
-                .getProtocols()
-                .filter((p) => p.constructor.name.toLowerCase() === 'snap')[0]
-              const snapProtocol =
-                snapRlpxProtocol !== undefined
-                  ? this.protocols.find(
-                      (p) => p.name === snapRlpxProtocol?.constructor.name.toLowerCase()
-                    )
-                  : undefined
-              if (snapProtocol !== undefined) {
-                const snapSender = new RlpxSender(
-                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
-                )
-                return this.bindProtocol(snapProtocol, snapSender)
-              }
-            }
-          })
+        // TODO cant we use same `sender` for each protocol?
+        const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
+        if (protocol !== undefined) {
+          return protocol.bind(this, sender)
         }
       })
     )
     this.connected = true
-  }
+  }*/
 }
