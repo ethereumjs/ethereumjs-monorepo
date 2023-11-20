@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700250278398,
+  "lastUpdate": 1700482954641,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "876e56087698db18aa6f6cbf74f7f9d84843664b",
-          "message": "client/pendingBlock: ensure withdrawals only get added if they are not null && not undefined (#3119)\n\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-10-25T21:14:59+02:00",
-          "tree_id": "c19d74577c017451c3e361794ff93835fe56d54d",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/876e56087698db18aa6f6cbf74f7f9d84843664b"
-        },
-        "date": 1698261511353,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28410,
-            "range": "±4.95%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28383,
-            "range": "±2.92%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28452,
-            "range": "±2.99%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27475,
-            "range": "±3.25%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22653,
-            "range": "±12.06%",
-            "unit": "ops/sec",
-            "extra": "70 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.18%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "willcory10@gmail.com",
+            "name": "Will Cory",
+            "username": "roninjin10"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "37425390a619c423bcd6f5621f733e7ec4cb4df5",
+          "message": "fix: Check that code is not a precompile when checking code (#3158)\n\n* fix: Check that code is not a precompile when checking code\r\n\r\nI noticed a footgun that if your precompile takes no arguments the entire function will fail to recognize the code exists. This is because it checks code.length and code.length returns the number of arguments in the case of a function. Fix by checking if the code is a function\r\n\r\n* evm: lint\r\n\r\n* evm: add test\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-11-20T13:19:21+01:00",
+          "tree_id": "7c8d3a7efa39f663892d8654f1fd5519497abdc0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/37425390a619c423bcd6f5621f733e7ec4cb4df5"
+        },
+        "date": 1700482953663,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40182,
+            "range": "±2.31%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39318,
+            "range": "±1.92%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39062,
+            "range": "±1.89%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36457,
+            "range": "±4.07%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36973,
+            "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
