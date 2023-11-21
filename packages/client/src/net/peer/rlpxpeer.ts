@@ -7,7 +7,7 @@ import {
 import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
-import { RlpxSender } from '../protocol'
+import { BoundProtocol, RlpxSender } from '../protocol'
 
 import { Peer } from './peer'
 
@@ -61,7 +61,6 @@ export class RlpxPeer extends Peer {
   public rlpx: Devp2pRLPx | null
   public rlpxPeer: Devp2pRlpxPeer | null
   public connected: boolean
-
   /**
    * Create new devp2p/rlpx peer
    */
@@ -155,6 +154,30 @@ export class RlpxPeer extends Peer {
     this.server = server
   }
 
+  async addProtocol(sender: RlpxSender, protocol: Protocol): Promise<void> {
+    const bound = new BoundProtocol({
+      config: this.config,
+      protocol,
+      peer: this,
+      sender,
+    })
+    // Handshake only when snap, else
+    if (protocol.name !== 'snap') {
+      await bound.handshake(sender)
+    } else {
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+    }
+
+    if (protocol.name === 'eth') {
+      this.eth = <any>bound
+    } else if (protocol.name === 'snap') {
+      this.snap = <any>bound
+    } else if (protocol.name === 'les') {
+      this.les = <any>bound
+    }
+    this.boundProtocols.push(bound)
+  }
+
   /**
    * Adds protocols to this peer given an rlpx native peer instance.
    * @param rlpxPeer rlpx native peer
@@ -169,7 +192,7 @@ export class RlpxPeer extends Peer {
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
           const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
-          return this.bindProtocol(protocol, sender).then(() => {
+          return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
@@ -184,7 +207,7 @@ export class RlpxPeer extends Peer {
                 const snapSender = new RlpxSender(
                   snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
                 )
-                return this.bindProtocol(snapProtocol, snapSender)
+                return this.addProtocol(snapSender, snapProtocol)
               }
             }
           })

@@ -4,8 +4,11 @@ import { Event } from '../../types'
 
 import type { Config } from '../../config'
 import type { Peer } from '../peer/peer'
+import type { EthProtocolMethods } from './ethprotocol'
+import type { LesProtocolMethods } from './lesprotocol'
 import type { Message, Protocol } from './protocol'
 import type { Sender } from './sender'
+import type { SnapProtocolMethods } from './snapprotocol'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -215,4 +218,16 @@ export class BoundProtocol {
         })
     }
   }
+}
+
+export interface BoundEthProtocol extends BoundProtocol, EthProtocolMethods {
+  name: 'eth' // public name: string
+}
+
+export interface BoundSnapProtocol extends BoundProtocol, SnapProtocolMethods {
+  name: 'snap' // public name: string
+}
+
+export interface BoundLesProtocol extends BoundProtocol, LesProtocolMethods {
+  name: 'les' // public name: string
 }

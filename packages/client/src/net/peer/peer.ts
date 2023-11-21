@@ -2,12 +2,11 @@ import { EventEmitter } from 'events'
 
 import type { Config } from '../../config'
 import type {
+  BoundEthProtocol,
+  BoundLesProtocol,
   BoundProtocol,
-  EthProtocolMethods,
-  LesProtocolMethods,
+  BoundSnapProtocol,
   Protocol,
-  Sender,
-  SnapProtocolMethods,
 } from '../protocol'
 import type { Server } from '../server'
 
@@ -49,6 +48,10 @@ export abstract class Peer extends EventEmitter {
   protected boundProtocols: BoundProtocol[] = []
   private _idle: boolean
 
+  public eth?: BoundEthProtocol
+  public snap?: BoundSnapProtocol
+  public les?: BoundLesProtocol
+
   /*
     If the peer is in the PeerPool.
     If true, messages are handled immediately.
@@ -56,11 +59,6 @@ export abstract class Peer extends EventEmitter {
     which are handled after the peer is added to the pool.
   */
   public pooled: boolean = false
-
-  // Dynamically bound protocol properties
-  public eth: (BoundProtocol & EthProtocolMethods) | undefined
-  public snap: (BoundProtocol & SnapProtocolMethods) | undefined
-  public les: (BoundProtocol & LesProtocolMethods) | undefined
 
   /**
    * Create new peer
@@ -94,34 +92,6 @@ export abstract class Peer extends EventEmitter {
   }
 
   abstract connect(): Promise<void>
-
-  /**
-   * Adds a protocol to this peer given a sender instance. Protocol methods
-   * will be accessible via a field with the same name as protocol. New methods
-   * will be added corresponding to each message defined by the protocol, in
-   * addition to send() and request() methods that takes a message name and message
-   * arguments. send() only sends a message without waiting for a response, whereas
-   * request() also sends the message but will return a promise that resolves with
-   * the response payload.
-   * @param protocol protocol instance
-   * @param sender sender instance provided by subclass
-   * @example
-   * ```typescript
-   * await peer.bindProtocol(ethProtocol, sender)
-   * // Example: Directly call message name as a method on the bound protocol
-   * const headers1 = await peer.eth.getBlockHeaders({ block: BigInt(1), max: 100 })
-   * // Example: Call request() method with message name as first parameter
-   * const headers2 = await peer.eth.request('getBlockHeaders', { block: BigInt(1), max: 100 })
-   * // Example: Call send() method with message name as first parameter and
-   * // wait for response message as an event
-   * peer.eth.send('getBlockHeaders', { block: BigInt(1), max: 100 })
-   * peer.eth.on('message', ({ data }) => console.log(`Received ${data.length} headers`))
-   * ```
-   */
-  protected async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
-    const bound = await protocol.bind(this, sender)
-    this.boundProtocols.push(bound)
-  }
 
   /**
    * Handle unhandled messages along handshake
