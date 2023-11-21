@@ -8,7 +8,10 @@ import type { EthProtocolMethods } from './ethprotocol'
 import type { LesProtocolMethods } from './lesprotocol'
 import type { Message, Protocol } from './protocol'
 import type { Sender } from './sender'
-import type { SnapProtocolMethods } from './snapprotocol'
+import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol'
+import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { TxReceipt } from '@ethereumjs/vm'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -22,18 +25,6 @@ export interface BoundProtocolOptions {
 
   /* Sender */
   sender: Sender
-}
-
-export interface BoundEthProtocol extends BoundProtocol, EthProtocolMethods {
-  name: 'eth' // public name: string
-}
-
-export interface BoundSnapProtocol extends BoundProtocol, SnapProtocolMethods {
-  name: 'snap' // public name: string
-}
-
-export interface BoundLesProtocol extends BoundProtocol, LesProtocolMethods {
-  name: 'les' // public name: string
 }
 
 /**
@@ -86,7 +77,6 @@ export class BoundProtocol {
     this.sender.on('error', (error: Error) =>
       this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
     )
-    this.addMethods()
   }
 
   get status(): any {
@@ -176,7 +166,7 @@ export class BoundProtocol {
    * @param name message to wait for
    * @param args message arguments
    */
-  async request(name: string, args: any[]): Promise<any> {
+  async request(name: string, args: any): Promise<any> {
     const message = this.send(name, args)
     let lock
     if (
@@ -213,21 +203,105 @@ export class BoundProtocol {
       }, this.timeout)
     })
   }
+}
 
-  /**
-   * Add methods to the bound protocol for each protocol message that has a
-   * corresponding response message.
-   */
-  addMethods() {
-    const messages = this.protocol.messages.filter((m) => m.response)
-    for (const message of messages) {
-      const name = message.name
-      const camel = name[0].toLowerCase() + name.slice(1)
-      ;(this as any)[camel] = async (args: any[]) =>
-        this.request(name, args).catch((error: Error) => {
-          this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
-          return undefined
-        })
-    }
+export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethods {
+  name = 'eth' // public name: string
+
+  constructor(options: BoundProtocolOptions) {
+    super(options)
+  }
+
+  async getBlockHeaders(opts: {
+    reqId?: bigint | undefined
+    block: bigint | Uint8Array
+    max: number
+    skip?: number | undefined
+    reverse?: boolean | undefined
+  }): Promise<[bigint, BlockHeader[]]> {
+    return this.request('GetBlockBodies', opts)
+  }
+  async getBlockBodies(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+  }): Promise<[bigint, BlockBodyBytes[]]> {
+    return this.request('GetBlockBodies', opts)
+  }
+  async getPooledTransactions(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+  }): Promise<[bigint, TypedTransaction[]]> {
+    return this.request('GetPooledTransactions', opts)
+  }
+  async getReceipts(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+  }): Promise<[bigint, TxReceipt[]]> {
+    return this.request('GetReceipts', opts)
+  }
+}
+
+export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMethods {
+  name = 'snap' // public name: string
+
+  constructor(options: BoundProtocolOptions) {
+    super(options)
+  }
+  async getAccountRange(opts: {
+    reqId?: bigint | undefined
+    root: Uint8Array
+    origin: Uint8Array
+    limit: Uint8Array
+    bytes: bigint
+  }): Promise<{ reqId: bigint; accounts: AccountData[]; proof: Uint8Array[] }> {
+    return this.request('GetAccountRange', opts)
+  }
+  async getStorageRanges(opts: {
+    reqId?: bigint | undefined
+    root: Uint8Array
+    accounts: Uint8Array[]
+    origin: Uint8Array
+    limit: Uint8Array
+    bytes: bigint
+  }): Promise<{
+    reqId: bigint
+    slots: StorageData[][]
+    proof: Uint8Array[]
+  }> {
+    return this.request('GetStorageRanges', opts)
+  }
+  async getByteCodes(opts: {
+    reqId?: bigint | undefined
+    hashes: Uint8Array[]
+    bytes: bigint
+  }): Promise<{ reqId: bigint; codes: Uint8Array[] }> {
+    return this.request('GetByteCodes', opts)
+  }
+  async getTrieNodes(opts: {
+    reqId?: bigint | undefined // so this adds a guard here if something goes wrong
+    // so this adds a guard here if something goes wrong
+    root: Uint8Array
+    paths: Uint8Array[][]
+    bytes: bigint
+  }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
+    return this.request('GetTrieNodes', opts)
+  }
+}
+
+export class BoundLesProtocol extends BoundProtocol implements LesProtocolMethods {
+  name = 'les' // public name: string
+
+  constructor(options: BoundProtocolOptions) {
+    super(options)
+  }
+
+  async getBlockHeaders(opts: {
+    reqId?: bigint | undefined
+    block: bigint | Uint8Array
+    max: number
+    skip?: number | undefined
+    reverse?: boolean | undefined
+  }): Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }> {
+    return this.request('GetBlockHeaders', opts)
   }
 }
