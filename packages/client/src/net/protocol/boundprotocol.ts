@@ -24,6 +24,18 @@ export interface BoundProtocolOptions {
   sender: Sender
 }
 
+export interface BoundEthProtocol extends BoundProtocol, EthProtocolMethods {
+  name: 'eth' // public name: string
+}
+
+export interface BoundSnapProtocol extends BoundProtocol, SnapProtocolMethods {
+  name: 'snap' // public name: string
+}
+
+export interface BoundLesProtocol extends BoundProtocol, LesProtocolMethods {
+  name: 'les' // public name: string
+}
+
 /**
  * Binds a protocol implementation to the specified peer
  * @memberof module:net/protocol
@@ -218,16 +230,4 @@ export class BoundProtocol {
         })
     }
   }
-}
-
-export interface BoundEthProtocol extends BoundProtocol, EthProtocolMethods {
-  name: 'eth' // public name: string
-}
-
-export interface BoundSnapProtocol extends BoundProtocol, SnapProtocolMethods {
-  name: 'snap' // public name: string
-}
-
-export interface BoundLesProtocol extends BoundProtocol, LesProtocolMethods {
-  name: 'les' // public name: string
 }
