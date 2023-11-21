@@ -11,7 +11,7 @@ import { BoundProtocol, RlpxSender } from '../protocol'
 
 import { Peer } from './peer'
 
-import type { Protocol } from '../protocol'
+import type { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol, Protocol } from '../protocol'
 import type { RlpxServer } from '../server'
 import type { PeerOptions } from './peer'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
@@ -169,11 +169,11 @@ export class RlpxPeer extends Peer {
     }
 
     if (protocol.name === 'eth') {
-      this.eth = <any>bound
+      this.eth = <BoundEthProtocol>bound
     } else if (protocol.name === 'snap') {
-      this.snap = <any>bound
+      this.snap = <BoundSnapProtocol>bound
     } else if (protocol.name === 'les') {
-      this.les = <any>bound
+      this.les = <BoundLesProtocol>bound
     }
     this.boundProtocols.push(bound)
   }
