@@ -1,14 +1,19 @@
-import { BoundProtocol } from './boundprotocol'
-
 import type { Config } from '../../config'
 import type { Peer } from '../peer/peer'
 import type { Sender } from './sender'
+import { Event } from '../../types'
 
 export interface ProtocolOptions {
   config: Config
 
   /* Handshake timeout in ms (default: 8000) */
   timeout?: number
+
+  /* Peer */
+  peer: Peer
+
+  /* Sender */
+  sender: Sender
 }
 
 export type Message = {
@@ -38,10 +43,16 @@ export type Message = {
  * Base class for all wire protocols
  * @memberof module:net/protocol
  */
-export class Protocol {
+export abstract class Protocol {
   public config: Config
   public timeout: number
   public opened: boolean
+
+  private peer: Peer
+  private sender: Sender
+  private _status: any
+  private resolvers: Map<string | number, any>
+  private messageQueue: Message[] = []
 
   /**
    * Create new protocol
@@ -49,6 +60,31 @@ export class Protocol {
   constructor(options: ProtocolOptions) {
     this.config = options.config
     this.timeout = options.timeout ?? 8000
+
+    this.peer = options.peer
+    this.sender = options.sender
+    this._status = {}
+    this.resolvers = new Map()
+    this.sender.on('message', (message: any) => {
+      try {
+        if (this.peer.pooled) {
+          this.handle(message)
+        } else {
+          this.messageQueue.push(message)
+          // Expected message queue growth is in the single digits
+          // so this adds a guard here if something goes wrong
+          if (this.messageQueue.length >= 50) {
+            const error = new Error('unexpected message queue growth for peer')
+            this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+          }
+        }
+      } catch (error: any) {
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      }
+    })
+    this.sender.on('error', (error: Error) =>
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+    )
 
     this.opened = false
   }
@@ -88,39 +124,30 @@ export class Protocol {
   /**
    * Abstract getter for name of protocol
    */
-  get name() {
-    return 'protocol'
-  }
+  abstract get name(): string
 
   /**
-   * Protocol versions supported
+   * Abstract getter for versions of the protocol
    */
-  get versions(): number[] {
-    throw new Error('Unimplemented')
-  }
+  abstract get versions(): number[]
 
   /**
    * Messages defined by this protocol
    */
-  get messages(): Message[] {
-    throw new Error('Unimplemented')
-  }
+  abstract get messages(): Message[]
 
   /**
    * Encodes status into status message payload. Must be implemented by subclass.
+   * TODO: should be removed (?)
    */
-  encodeStatus(): any {
-    throw new Error('Unimplemented')
-  }
+  abstract encodeStatus(): any
 
   /**
    * Decodes status message payload into a status object.  Must be implemented
    * by subclass.
    * @param _status status message payload
    */
-  decodeStatus(_status: any): Object {
-    throw new Error('Unimplemented')
-  }
+  abstract decodeStatus(_status: any): any
 
   /**
    * Encodes message into proper format before sending
@@ -152,21 +179,133 @@ export class Protocol {
    * @param peer peer
    * @param sender sender
    */
-  async bind(peer: Peer, sender: Sender): Promise<BoundProtocol> {
-    const bound = new BoundProtocol({
-      config: this.config,
-      protocol: this,
-      peer,
-      sender,
-    })
+  async connect(): Promise<void> {
     // Handshake only when snap, else
     if (this.name !== 'snap') {
-      await bound.handshake(sender)
+      await this.handshake(this.sender)
     } else {
-      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+      if (this.sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
     }
-    //@ts-ignore TODO: evaluate this line
-    peer[this.name] = bound
-    return bound
+  }
+
+  get status(): any {
+    return this._status
+  }
+
+  set status(status: any) {
+    Object.assign(this._status, status)
+  }
+
+  /**
+   * Handle incoming message
+   * @param message message object
+   * @emits {@link Event.PROTOCOL_MESSAGE}
+   * @emits {@link Event.PROTOCOL_ERROR}
+   */
+  private handle(incoming: Message) {
+    const messages = this.messages
+    const message = messages.find((m) => m.code === incoming.code)
+    if (!message) {
+      return
+    }
+
+    let data
+    let error
+    try {
+      data = this.decode(message, incoming.payload)
+    } catch (e: any) {
+      error = new Error(`Could not decode message ${message.name}: ${e}`)
+    }
+    const resolver = this.resolvers.get(incoming.code)
+    if (resolver !== undefined) {
+      clearTimeout(resolver.timeout)
+      this.resolvers.delete(incoming.code)
+      if (error) {
+        resolver.reject(error)
+      } else {
+        resolver.resolve(data)
+      }
+    } else {
+      if (error) {
+        this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      } else {
+        this.config.events.emit(
+          Event.PROTOCOL_MESSAGE,
+          { name: message.name, data },
+          this.name,
+          this.peer
+        )
+      }
+    }
+  }
+
+  /**
+   * Handle unhandled messages along handshake
+   */
+  handleMessageQueue() {
+    for (const message of this.messageQueue) {
+      this.handle(message)
+    }
+  }
+
+  /**
+   * Send message with name and the specified args
+   * @param name message name
+   * @param args message arguments
+   */
+  send(name: string, args?: any) {
+    const messages = this.messages
+    const message = messages.find((m) => m.name === name)
+    if (message) {
+      const encoded = this.encode(message, args)
+      this.sender.sendMessage(message.code, encoded)
+    } else {
+      throw new Error(`Unknown message: ${name}`)
+    }
+    return message
+  }
+
+  /**
+   * Returns a promise that resolves with the message payload when a response
+   * to the specified message is received
+   * @param name message to wait for
+   * @param args message arguments
+   */
+  async request(name: string, args: any[]): Promise<any> {
+    const message = this.send(name, args)
+    let lock
+    if (
+      typeof message.response === 'number' &&
+      this.resolvers.get(message.response) !== undefined
+    ) {
+      const res = this.resolvers.get(message.response)
+      lock = res.lock
+      await res.lock.acquire()
+    }
+    const resolver: any = {
+      timeout: null,
+      resolve: null,
+      reject: null,
+      lock: lock ?? new Lock(),
+    }
+    this.resolvers.set(message.response!, resolver)
+    if (lock === undefined) {
+      await resolver.lock.acquire()
+    }
+    return new Promise((resolve, reject) => {
+      resolver.resolve = function (e: any) {
+        resolver.lock.release()
+        resolve(e)
+      }
+      resolver.reject = function (e: any) {
+        resolver.lock.release()
+        reject(e)
+      }
+      resolver.timeout = setTimeout(() => {
+        resolver.timeout = null
+        this.resolvers.delete(message.response!)
+        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`))
+      }, this.timeout)
+    })
   }
 }
