@@ -38,15 +38,15 @@ export interface PeerOptions {
  * Network peer
  * @memberof module:net/peer
  */
-export class Peer extends EventEmitter {
+export abstract class Peer extends EventEmitter {
   public config: Config
   public id: string
   public address: string
   public inbound: boolean
   public server: Server | undefined
-  public bound: Map<string, BoundProtocol>
   protected transport: string
   protected protocols: Protocol[]
+  protected boundProtocols: BoundProtocol[] = []
   private _idle: boolean
 
   /*
@@ -75,7 +75,6 @@ export class Peer extends EventEmitter {
     this.transport = options.transport
     this.inbound = options.inbound ?? false
     this.protocols = options.protocols ?? []
-    this.bound = new Map()
 
     this._idle = true
   }
@@ -94,7 +93,7 @@ export class Peer extends EventEmitter {
     this._idle = value
   }
 
-  async connect(): Promise<void> {}
+  abstract connect(): Promise<void>
 
   /**
    * Adds a protocol to this peer given a sender instance. Protocol methods
@@ -121,24 +120,14 @@ export class Peer extends EventEmitter {
    */
   protected async bindProtocol(protocol: Protocol, sender: Sender): Promise<void> {
     const bound = await protocol.bind(this, sender)
-    this.bound.set(bound.name, bound)
-  }
-
-  /**
-   * Return true if peer understand the specified protocol name
-   * @param protocolName
-   */
-  understands(protocolName: string): boolean {
-    return !!this.bound.get(protocolName)
+    this.boundProtocols.push(bound)
   }
 
   /**
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
-    for (const bound of this.bound.values()) {
-      bound.handleMessageQueue()
-    }
+    this.boundProtocols.map((e) => e.handleMessageQueue())
   }
 
   toString(withFullId = false): string {
@@ -146,7 +135,7 @@ export class Peer extends EventEmitter {
       id: withFullId ? this.id : this.id.substr(0, 8),
       address: this.address,
       transport: this.transport,
-      protocols: Array.from(this.bound.keys()),
+      protocols: this.boundProtocols.map((e) => e.name),
       inbound: this.inbound,
     }
     return Object.entries(properties)
