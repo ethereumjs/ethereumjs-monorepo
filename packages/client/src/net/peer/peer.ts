@@ -48,6 +48,7 @@ export abstract class Peer extends EventEmitter {
   protected boundProtocols: BoundProtocol[] = []
   private _idle: boolean
 
+  // TODO check if this should be moved into RlpxPeer
   public eth?: BoundEthProtocol
   public snap?: BoundSnapProtocol
   public les?: BoundLesProtocol
