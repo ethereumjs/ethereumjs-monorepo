@@ -25,7 +25,7 @@ const devp2pCapabilities = {
   les4: Devp2pLES.les4,
 }
 
-export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
+export interface RlpxPeerOptions extends PeerOptions {
   /* Peer hostname or ip address */
   host: string
 
