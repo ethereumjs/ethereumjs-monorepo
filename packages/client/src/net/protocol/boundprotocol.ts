@@ -35,7 +35,7 @@ export class BoundProtocol {
   public config: Config
   public name: string
   private protocol: Protocol
-  private peer: Peer
+  protected peer: Peer
   private sender: Sender
   private versions: number[]
   private timeout: number
@@ -219,25 +219,37 @@ export class BoundEthProtocol extends BoundProtocol implements EthProtocolMethod
     skip?: number | undefined
     reverse?: boolean | undefined
   }): Promise<[bigint, BlockHeader[]]> {
-    return this.request('GetBlockBodies', opts)
+    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getBlockBodies(opts: {
     reqId?: bigint | undefined
     hashes: Uint8Array[]
   }): Promise<[bigint, BlockBodyBytes[]]> {
-    return this.request('GetBlockBodies', opts)
+    return this.request('GetBlockBodies', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getPooledTransactions(opts: {
     reqId?: bigint | undefined
     hashes: Uint8Array[]
   }): Promise<[bigint, TypedTransaction[]]> {
-    return this.request('GetPooledTransactions', opts)
+    return this.request('GetPooledTransactions', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getReceipts(opts: {
     reqId?: bigint | undefined
     hashes: Uint8Array[]
   }): Promise<[bigint, TxReceipt[]]> {
-    return this.request('GetReceipts', opts)
+    return this.request('GetReceipts', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
 }
 
@@ -254,7 +266,10 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     limit: Uint8Array
     bytes: bigint
   }): Promise<{ reqId: bigint; accounts: AccountData[]; proof: Uint8Array[] }> {
-    return this.request('GetAccountRange', opts)
+    return this.request('GetAccountRange', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getStorageRanges(opts: {
     reqId?: bigint | undefined
@@ -268,14 +283,20 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     slots: StorageData[][]
     proof: Uint8Array[]
   }> {
-    return this.request('GetStorageRanges', opts)
+    return this.request('GetStorageRanges', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getByteCodes(opts: {
     reqId?: bigint | undefined
     hashes: Uint8Array[]
     bytes: bigint
   }): Promise<{ reqId: bigint; codes: Uint8Array[] }> {
-    return this.request('GetByteCodes', opts)
+    return this.request('GetByteCodes', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
   async getTrieNodes(opts: {
     reqId?: bigint | undefined // so this adds a guard here if something goes wrong
@@ -284,7 +305,10 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     paths: Uint8Array[][]
     bytes: bigint
   }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
-    return this.request('GetTrieNodes', opts)
+    return this.request('GetTrieNodes', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
 }
 
@@ -302,6 +326,9 @@ export class BoundLesProtocol extends BoundProtocol implements LesProtocolMethod
     skip?: number | undefined
     reverse?: boolean | undefined
   }): Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }> {
-    return this.request('GetBlockHeaders', opts)
+    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
+      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
+      return undefined
+    })
   }
 }

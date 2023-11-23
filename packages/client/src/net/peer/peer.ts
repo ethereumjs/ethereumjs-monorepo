@@ -1,13 +1,9 @@
 import { EventEmitter } from 'events'
 
+import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol'
+
 import type { Config } from '../../config'
-import type {
-  BoundEthProtocol,
-  BoundLesProtocol,
-  BoundProtocol,
-  BoundSnapProtocol,
-  Protocol,
-} from '../protocol'
+import type { BoundProtocol, Protocol, Sender } from '../protocol'
 import type { Server } from '../server'
 
 export interface PeerOptions {
@@ -99,6 +95,42 @@ export abstract class Peer extends EventEmitter {
    */
   handleMessageQueue() {
     this.boundProtocols.map((e) => e.handleMessageQueue())
+  }
+
+  async addProtocol(sender: Sender, protocol: Protocol): Promise<void> {
+    let bound: BoundProtocol
+    const boundOpts = {
+      config: protocol.config, // TODO: why cant we use `this.config`?
+      protocol,
+      peer: this,
+      sender,
+    }
+
+    if (protocol.name === 'eth') {
+      bound = new BoundEthProtocol(boundOpts)
+    } else if (protocol.name === 'les') {
+      bound = new BoundLesProtocol(boundOpts)
+    } else if (protocol.name === 'snap') {
+      bound = new BoundSnapProtocol(boundOpts)
+    } else {
+      throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
+    }
+
+    // Handshake only when snap, else
+    if (protocol.name !== 'snap') {
+      await bound!.handshake(sender)
+    } else {
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+    }
+
+    if (protocol.name === 'eth') {
+      this.eth = <BoundEthProtocol>bound
+    } else if (protocol.name === 'snap') {
+      this.snap = <BoundSnapProtocol>bound
+    } else if (protocol.name === 'les') {
+      this.les = <BoundLesProtocol>bound
+    }
+    this.boundProtocols.push(bound)
   }
 
   toString(withFullId = false): string {

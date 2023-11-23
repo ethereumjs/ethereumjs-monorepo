@@ -7,11 +7,11 @@ import {
 import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
-import { BoundProtocol, RlpxSender } from '../protocol'
+import { RlpxSender } from '../protocol'
 
 import { Peer } from './peer'
 
-import type { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol, Protocol } from '../protocol'
+import type { Protocol } from '../protocol'
 import type { RlpxServer } from '../server'
 import type { PeerOptions } from './peer'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
@@ -152,30 +152,6 @@ export class RlpxPeer extends Peer {
     }
     await this.bindProtocols(rlpxPeer)
     this.server = server
-  }
-
-  async addProtocol(sender: RlpxSender, protocol: Protocol): Promise<void> {
-    const bound = new BoundProtocol({
-      config: this.config,
-      protocol,
-      peer: this,
-      sender,
-    })
-    // Handshake only when snap, else
-    if (protocol.name !== 'snap') {
-      await bound.handshake(sender)
-    } else {
-      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
-    }
-
-    if (protocol.name === 'eth') {
-      this.eth = <BoundEthProtocol>bound
-    } else if (protocol.name === 'snap') {
-      this.snap = <BoundSnapProtocol>bound
-    } else if (protocol.name === 'les') {
-      this.les = <BoundLesProtocol>bound
-    }
-    this.boundProtocols.push(bound)
   }
 
   /**
