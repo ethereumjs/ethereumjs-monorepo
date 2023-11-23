@@ -144,10 +144,10 @@ describe('[RlpxPeer]', async () => {
     const rlpxPeer = {
       getProtocols: vi.fn().mockReturnValue([proto0]),
     } as any
-    peer['bindProtocol'] = vi.fn().mockResolvedValue(undefined)
+    peer['addProtocol'] = vi.fn().mockResolvedValue(undefined)
 
     await (peer as any).bindProtocols(rlpxPeer)
-    expect((peer as any).bindProtocol).toBeCalled()
+    expect((peer as any).addProtocol).toBeCalled()
     assert.ok(peer.connected, 'connected set to true')
   })
 })
