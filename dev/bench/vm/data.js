@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700482954641,
+  "lastUpdate": 1700797787504,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "2353bc7cc72c2f10c8b505c31f02dde6601421d3",
-          "message": "verkle: verkle package (#2923)\n\n* verkle: initial commit\r\n\r\n* verkle: scaffold verkle trie implementation and types\r\n\r\n* verkle: fix installation issues\r\n\r\n* verkle: move rust verkle wasm to verkle package\r\n\r\n* verkle: remove package json and readme from rust verkle wasm dir\r\n\r\n* util: add some bigint LE utils for verkle\r\n\r\n* verkle: refactor constants and cryptographic methods to the verkle package\r\n\r\n* verkle: remove unnecessary constants & methods\r\n\r\n* verkle: verkle node classes and types\r\n\r\n* verkle: get method and rawNode utils\r\n\r\n* verkle: handle case where array item is not found\r\n\r\n* verkle: wip findPath method\r\n\r\n* verkle: wip\r\n\r\n* verkle: fromRawNode method\r\n\r\n* verkle: update packages\r\n\r\n* verkle: minor adjustments\r\n\r\n* verkle: wip\r\n\r\n* verkle: add test case for put and get\r\n\r\n* verkle: wip insertstem and related methods for verkle nodes\r\n\r\n* verkle: internal node test\r\n\r\n* verkle: default values and minor fixes to internalNode\r\n\r\n* verkle: make internal verkle node options optional\r\n\r\n* verkle: leafNode basic test\r\n\r\n* verkle: remove unused import\r\n\r\n* verkle: setDepth method for leafNode and commented out code for create method\r\n\r\n* verkle: wip\r\n\r\n* verkle: add Point interface\r\n\r\n* verkle: general cleanup and improvements\r\n\r\n* verkle: minor test adjustments\r\n\r\n* verkle: readme and testing related updates\r\n\r\n* verkle: capital V for verkle workflow\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/verkle/README.md\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* verkle: use Lock from util package\r\n\r\n* client: undo removal of link\r\n\r\n* util: update byte<>int conversion helpers\r\n\r\n* verkle: use Uint8Array instead of hexstrings for db\r\n\r\n* verkle: add imports to example\r\n\r\n* verkle: update db to Uint8Arrays\r\n\r\n* verkle: revert to using strings as keys for cache\r\n\r\n* verkle: update crypto import\r\n\r\n* verkle: adjust Key and Value encoding in create method\r\n\r\n* verkle: adjust value encoding in db del method\r\n\r\n* verkle: add missing key and value encoding opts to batch options\r\n\r\n* verkle: remove extra line\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
-          "timestamp": "2023-10-26T09:19:07+02:00",
-          "tree_id": "ee121eff2f32221d7bcd8fdd078355eec4badada",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/2353bc7cc72c2f10c8b505c31f02dde6601421d3"
-        },
-        "date": 1698304974548,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 29388,
-            "range": "±4.76%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29271,
-            "range": "±2.41%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29116,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28459,
-            "range": "±2.55%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24549,
-            "range": "±8.78%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.32%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0170906f2880e01951bc56cc2c86fc263da21cc3",
+          "message": "Mitigate boundprotocol insanities (#3164)\n\n* client/peer: remove bound property\r\n\r\n* client: better typesafety for peers\r\n\r\n* client: add TODO\r\n\r\n* client: move boundprotocol interface\r\n\r\n* client: remove addMethods boundProtocol\r\n\r\n* client: fix net tests\r\n\r\n* Update typing\r\n\r\n* Fix many tests\r\n\r\n* Revert typing changes\r\n\r\n* client: fix more integration tests\r\n\r\n* Remove unused params\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-11-23T22:46:47-05:00",
+          "tree_id": "467813d4d35e1cfd2f5f8d77f9e3ecfe544749cc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0170906f2880e01951bc56cc2c86fc263da21cc3"
+        },
+        "date": 1700797786618,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39879,
+            "range": "±2.53%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38817,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38496,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36288,
+            "range": "±4.68%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37074,
+            "range": "±2.22%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
