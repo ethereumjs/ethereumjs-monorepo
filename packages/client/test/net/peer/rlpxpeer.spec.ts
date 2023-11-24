@@ -29,8 +29,6 @@ describe('[RlpxPeer]', async () => {
       id: 'abcdef0123',
       host: '10.0.0.1',
       port: 1234,
-      address: 'address0',
-      transport: 'string',
     })
     assert.equal(peer.address, '10.0.0.1:1234', 'address correct')
     assert.notOk(peer.connected, 'not connected')
@@ -67,8 +65,6 @@ describe('[RlpxPeer]', async () => {
       protocols: [proto0],
       host: '10.0.0.1',
       port: 1234,
-      address: 'address0',
-      transport: 'string',
     })
     proto0.open = vi.fn().mockResolvedValue(null)
     await peer.connect()
@@ -83,8 +79,6 @@ describe('[RlpxPeer]', async () => {
       id: 'abcdef0123',
       host: '10.0.0.1',
       port: 1234,
-      address: 'address0',
-      transport: 'string',
     })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: vi.fn() } as any
     ;(peer as any).bindProtocols = vi.fn().mockResolvedValue(undefined)
@@ -132,8 +126,6 @@ describe('[RlpxPeer]', async () => {
       id: 'abcdef0123',
       host: '10.0.0.1',
       port: 1234,
-      address: 'address0',
-      transport: 'string',
     })
     peer.bindProtocols = vi.fn().mockResolvedValue(null)
 
@@ -150,8 +142,6 @@ describe('[RlpxPeer]', async () => {
       protocols,
       host: '10.0.0.1',
       port: 1234,
-      address: 'address0',
-      transport: 'string',
     })
     class Proto0 {
       events: EventEmitter
