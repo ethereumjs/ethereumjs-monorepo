@@ -61,7 +61,6 @@ export class RlpxPeer extends Peer {
   public rlpx: Devp2pRLPx | null
   public rlpxPeer: Devp2pRlpxPeer | null
   public connected: boolean
-
   /**
    * Create new devp2p/rlpx peer
    */
@@ -169,7 +168,7 @@ export class RlpxPeer extends Peer {
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
           const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
-          return this.bindProtocol(protocol, sender).then(() => {
+          return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
@@ -184,7 +183,7 @@ export class RlpxPeer extends Peer {
                 const snapSender = new RlpxSender(
                   snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
                 )
-                return this.bindProtocol(snapProtocol, snapSender)
+                return this.addProtocol(snapSender, snapProtocol)
               }
             }
           })
