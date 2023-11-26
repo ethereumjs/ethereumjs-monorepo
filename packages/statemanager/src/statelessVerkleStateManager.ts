@@ -455,13 +455,14 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
-    const balance = bytesToBigInt(hexToBytes(this._state[bytesToHex(balanceKey)]), true)
-    const nonce = bytesToBigInt(hexToBytes(this._state[bytesToHex(nonceKey)]), true)
+    const balanceRaw = this._state[bytesToHex(balanceKey)]
+    const nonceRaw = this._state[bytesToHex(nonceKey)]
     const codeHash = this._state[bytesToHex(codeHashKey)]
 
     const account = Account.fromAccountData({
-      balance,
-      nonce,
+      balance:
+        typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : undefined,
+      nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : undefined,
       codeHash,
     })
     if (this.DEBUG) {
