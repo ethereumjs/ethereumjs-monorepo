@@ -15,6 +15,7 @@ import {
 } from '@ethereumjs/util'
 import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
@@ -349,7 +350,24 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    // TODO
+    const stem = getStem(address, 0)
+    const codeHashKey = this.getTreeKeyForCodeHash(stem)
+
+    const codeHash = bytesToHex(keccak256(value))
+
+    this._state[bytesToHex(codeHashKey)] = codeHash
+
+    if (this.DEBUG) {
+      debug(`putContractCode address=${address.toString()} value=${short(value)}`)
+    }
+
+    if (KECCAK256_NULL_S === codeHash) {
+      // If the code hash is the null hash, no code has to be stored
+      return
+    }
+
+    // TODO: Slice the code into chunks and add them to the state
+    throw new Error('Not implemented')
   }
 
   /**
@@ -359,6 +377,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
+    if (this.DEBUG) {
+      debug(`getContractCode address=${address.toString()}`)
+    }
     // Get the contract code size
     const codeSizeKey = this.getTreeKeyForCodeSize(getStem(address, 0))
 
@@ -428,10 +449,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
-    const balance = bytesToBigInt(toBytes(this._state[bytesToHex(balanceKey)]), true)
-    const nonce = bytesToBigInt(toBytes(this._state[bytesToHex(nonceKey)]), true)
-    const codeHashData = toBytes(this._state[bytesToHex(codeHashKey)])
-    const codeHash = codeHashData.length > 0 ? codeHashData : zeros(32)
+    const balance = bytesToBigInt(hexToBytes(this._state[bytesToHex(balanceKey)]), true)
+    const nonce = bytesToBigInt(hexToBytes(this._state[bytesToHex(nonceKey)]), true)
+    const codeHash = this._state[bytesToHex(codeHashKey)]
 
     const account = Account.fromAccountData({
       balance,
@@ -440,9 +460,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     })
     if (this.DEBUG) {
       debug(
-        `getAccount address=${address.toString()} balance=${account.balance} nonce=${
-          account.nonce
-        } codeHash=${short(account.codeHash)} storageHash=${short(account.storageRoot)}`
+        `getAccount address=${address.toString()} stem=${short(stem)} balance=${
+          account.balance
+        } nonce=${account.nonce} codeHash=${short(account.codeHash)} storageHash=${short(
+          account.storageRoot
+        )}`
       )
     }
     return account
@@ -460,6 +482,16 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
     this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
     this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
+
+    if (this.DEBUG) {
+      debug(
+        `putAccount address=${address.toString()} stem=${short(stem)} balance=${
+          account.balance
+        } nonce=${account.nonce} codeHash=${short(account.codeHash)} storageHash=${short(
+          account.storageRoot
+        )}`
+      )
+    }
   }
 
   /**
