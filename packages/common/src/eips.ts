@@ -478,7 +478,12 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasConfig: {},
-    gasPrices: {},
+    gasPrices: {
+      tx: {
+        v: 34300,
+        d: 'Per transaction. NOTE: Not payable on data of calls between transactions',
+      },
+    },
     vm: {},
     pow: {},
   },
