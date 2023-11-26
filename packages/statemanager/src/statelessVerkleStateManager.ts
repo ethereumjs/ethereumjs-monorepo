@@ -35,7 +35,7 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
-const debug = createDebugLogger('sm:verkle')
+const debug = createDebugLogger('statemanager:verkle')
 
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString
@@ -223,8 +223,13 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         const key = `${stem}${padToEven(suffix.toString(16))}`
 
         // TODO: Evaluate if we should store and handle null in a special way
-        // Currently we are replacing `null` with 0x00..00 (32 bytes) for simplifying handling and comparisons
+        // Currently we are replacing `null` with 0x00..00 (32 bytes) [expect for codeHash, suffix 3, where we use the empty codeHash] for simplifying handling and comparisons
         // Also, test data has been inconsistent in this regard, so this simplifies things while things get more standardized
+
+        if (equalsBytes(toBytes(suffix), CODE_KECCAK_LEAF_KEY)) {
+          return { [key]: currentValue ?? KECCAK256_NULL_S }
+        }
+
         return {
           [key]: currentValue ?? bytesToHex(zeros(32)),
         }
