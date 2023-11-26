@@ -7,6 +7,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt32,
+  hexToBytes,
   padToEven,
   setLengthRight,
   short,
@@ -16,7 +17,7 @@ import {
 import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { concatBytes, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import { concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
 
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
