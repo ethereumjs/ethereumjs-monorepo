@@ -582,7 +582,7 @@ export const chains: ChainsDict = {
       extraData: '0x',
       gasLimit: '0x17D7840',
       nonce: '0x0000000000001234',
-      timestamp: '0x65292bb8',
+      timestamp: '0x65608a64',
     },
     hardforks: [
       {
@@ -642,7 +642,7 @@ export const chains: ChainsDict = {
       {
         name: 'prague',
         block: null,
-        timestamp: '1697196984',
+        timestamp: '1700825700',
       },
     ],
     bootstrapNodes: [],
