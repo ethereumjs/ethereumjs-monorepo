@@ -226,7 +226,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         // Currently we are replacing `null` with 0x00..00 (32 bytes) [expect for codeHash, suffix 3, where we use the empty codeHash] for simplifying handling and comparisons
         // Also, test data has been inconsistent in this regard, so this simplifies things while things get more standardized
 
-        if (equalsBytes(toBytes(suffix), CODE_KECCAK_LEAF_KEY)) {
+        if (Number(suffix) === 3) {
           return { [key]: currentValue ?? KECCAK256_NULL_S }
         }
 
