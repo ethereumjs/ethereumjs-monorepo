@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1700797787504,
+  "lastUpdate": 1701082332757,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ffd9ede728b36f44ed631e0b6da261320eeff38e",
-          "message": "verkle: fix ci (#3121)\n\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-10-26T17:15:13-04:00",
-          "tree_id": "344a456b0569357cdf5b1c20a412a0e69973b809",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ffd9ede728b36f44ed631e0b6da261320eeff38e"
-        },
-        "date": 1698355176089,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 24543,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22532,
-            "range": "±7.00%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 23721,
-            "range": "±3.55%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 22752,
-            "range": "±3.75%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 23136,
-            "range": "±3.74%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.22%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1852414b11bd87d48b1fa87794b6dab45e1ce2f",
+          "message": "devp2p: add DEBUG everywhere, except util.ts (#3165)",
+          "timestamp": "2023-11-27T11:49:18+01:00",
+          "tree_id": "89f7e60f597c0ba95a851e035e9a49e4223fe6d5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c1852414b11bd87d48b1fa87794b6dab45e1ce2f"
+        },
+        "date": 1701082332097,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40156,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39062,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38837,
+            "range": "±1.87%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36289,
+            "range": "±4.33%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37180,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
