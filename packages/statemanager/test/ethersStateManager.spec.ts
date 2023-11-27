@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { EVM } from '@ethereumjs/evm'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
@@ -16,11 +17,13 @@ import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
 import { assert, describe, expect, it } from 'vitest'
 
-import { EthersStateManager } from '../src/ethersStateManager.js'
+import { ESMBlockChain, EthersStateManager } from '../src/ethersStateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { MockProvider } from './testdata/providerData/mockProvider.js'
 import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
+
+import type { EVMRunCallOpts } from '@ethereumjs/evm/dist/cjs/types.js'
 
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
@@ -347,5 +350,34 @@ describe('runBlock test', () => {
         assert.fail(`should have successfully ran block; got error ${err.message}`)
       }
     }
+  })
+})
+
+describe('blockchain', () => {
+  it.only('uses blockhash', async () => {
+    const provider = 'https://mainnet.infura.io/v3/c41bd90629a342a8b0b32504d23b2e70'
+    const blockchain = new ESMBlockChain({}, provider)
+    const blockTag = 18665499n
+    const state = new EthersStateManager({ provider, blockTag })
+    const evm = new EVM({ blockchain, stateManager: state })
+    const code = '0x4360019003406001f3'
+    const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
+
+    const caller = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    await evm.stateManager.setStateRoot(
+      hexToBytes('0xb4d5cf47a26e6e67b9287617721c7ce6b8418ba6aaa9dc4504773f697dc31d2a')
+    )
+    const block = await Block.fromJsonRpcProvider(provider, blockTag, { setHardfork: true })
+    await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
+    const runCallArgs: Partial<EVMRunCallOpts> = {
+      caller, // call address
+      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+      to: contractAddress, // call to the contract address
+      block,
+    }
+    const res = await evm.runCall(runCallArgs)
+    assert.ok(res.execResult.exceptionError !== undefined)
+    console.log(res.execResult.returnValue)
+    await new Promise((resolve) => setTimeout(() => resolve(undefined), 1000))
   })
 })
