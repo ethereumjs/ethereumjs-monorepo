@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1701082332757,
+  "lastUpdate": 1701100009386,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b8480333d91bacd97004c1c6e9f2ed2b28d9e448",
-          "message": "Client Discovery Improvements (#3120)\n\n* Client: add explicit discovery startup logging\r\n\r\n* Client: add bootnodes format hint on CLI option help\r\n\r\n* Client: add option to pass in bootnode.txt file to --bootnodes CLI param, add CLI test\r\n\r\n* Client: replace goerli -> holesky in list with networks with activated DNS discovery\r\n\r\n* Devp2p: add new confirmed-peer mechanism for a more fine grained peer discovery, reactivated discV4 for client\r\n\r\n* Devp2p: add test setup for DPT, initialization, bootstrap(), addPeer() and confirmed/unconfirmed refresh() tests, fix bug in getClosestPeers()\r\n\r\n* Client: make onlyConfirmed exception for mainnet (since most peers are mainnet peers and peering then goes quicker)\r\n\r\n* Devp2p: increase network resilience for the case that no initial confirmation is possible\r\n\r\n* Devp2p: remove peer from confirmed peers list when being removed from DPT, fix tests\r\n\r\n* Fix tests\r\n\r\n* Client: add missing bootnode.txt test file",
-          "timestamp": "2023-10-27T10:08:39-04:00",
-          "tree_id": "4ea32229f34b3ac03dcd176391c6aaf145caa619",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b8480333d91bacd97004c1c6e9f2ed2b28d9e448"
-        },
-        "date": 1698415942123,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28629,
-            "range": "±5.47%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28649,
-            "range": "±2.89%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28672,
-            "range": "±3.02%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28178,
-            "range": "±3.15%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22581,
-            "range": "±11.72%",
-            "unit": "ops/sec",
-            "extra": "69 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.14%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9d756c2c842df2ff08b6cf84539ea3c40df3d6fa",
+          "message": "Update `genesis` docs (#3166)",
+          "timestamp": "2023-11-27T10:43:51-05:00",
+          "tree_id": "34147c6367c9a17ef771cb5d1869620ccd7d366b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9d756c2c842df2ff08b6cf84539ea3c40df3d6fa"
+        },
+        "date": 1701100008414,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39999,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38705,
+            "range": "±1.86%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39102,
+            "range": "±1.91%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35552,
+            "range": "±5.53%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36265,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
