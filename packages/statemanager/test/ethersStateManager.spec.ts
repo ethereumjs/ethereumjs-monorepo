@@ -357,6 +357,7 @@ describe('blockchain', () => {
   it.only('uses blockhash', async () => {
     const provider = 'https://mainnet.infura.io/v3/c41bd90629a342a8b0b32504d23b2e70'
     const blockchain = new ESMBlockChain({}, provider)
+    // This needs to use a block less than 256 from the current head of the chain
     const blockTag = 18665499n
     const state = new EthersStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
