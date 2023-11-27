@@ -11,8 +11,12 @@ import type { Peer } from '../rlpx/peer.js'
 import type { SendMethod } from '../types.js'
 
 export class SNAP extends Protocol {
+  private DEBUG: boolean
+
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.SNAP, version, SNAP.MESSAGE_CODES)
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
@@ -21,14 +25,16 @@ export class SNAP extends Protocol {
     const payload = RLP.decode(data)
 
     // Note, this needs optimization, see issue #1882
-    this.debug(
-      this.getMsgPrefix(code),
-      // @ts-ignore
-      `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+    if (this.DEBUG) {
+      this.debug(
+        this.getMsgPrefix(code),
         // @ts-ignore
-        this._peer._socket.remotePort
-      }: ${formatLogData(bytesToHex(data), this._verbose)}`
-    )
+        `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
+          this._peer._socket.remotePort
+        }: ${formatLogData(bytesToHex(data), this._verbose)}`
+      )
+    }
 
     switch (code) {
       case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:
@@ -57,14 +63,16 @@ export class SNAP extends Protocol {
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
   sendMessage(code: SNAP.MESSAGE_CODES, payload: any) {
-    this.debug(
-      this.getMsgPrefix(code),
-      // @ts-ignore
-      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+    if (this.DEBUG) {
+      this.debug(
+        this.getMsgPrefix(code),
         // @ts-ignore
-        this._peer._socket.remotePort
-      }: ${formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)}`
-    )
+        `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
+          this._peer._socket.remotePort
+        }: ${formatLogData(utils.bytesToHex(RLP.encode(payload)), this._verbose)}`
+      )
+    }
 
     switch (code) {
       case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:
