@@ -151,7 +151,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BIGINT_0 && mLen === BigInt(0)) {
+  if (bLen === BIGINT_0 && mLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
       returnValue: new Uint8Array(),
