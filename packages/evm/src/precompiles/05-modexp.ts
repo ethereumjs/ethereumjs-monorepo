@@ -151,29 +151,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (mLen === BIGINT_0) {
-    return {
-      executionGasUsed: gasUsed,
-      returnValue: new Uint8Array(0),
-    }
-  }
-
-  if (bLen === BIGINT_0) {
-    const E = bytesToBigInt(
-      setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen))
-    )
-    if (E !== BIGINT_0) {
-      return {
-        executionGasUsed: gasUsed,
-        returnValue: setLengthLeft(new Uint8Array(), Number(mLen)),
-      }
-    } else {
-      return {
-        executionGasUsed: gasUsed,
-        returnValue: setLengthLeft(new Uint8Array([1]), Number(mLen)), // Note: mLen > 0 (this is checked before)
-      }
-    }
-  }
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
@@ -194,18 +171,23 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   let R
   if (M === BIGINT_0) {
-    R = BIGINT_0
+    R = new Uint8Array()
   } else {
     R = expmod(B, E, M)
+    if (R === BIGINT_0) {
+      R = new Uint8Array()
+    } else {
+      R = bigIntToBytes(R)
+    }
   }
 
-  const res = setLengthLeft(bigIntToBytes(R), Number(mLen))
+  const res = setLengthLeft(R, Number(mLen))
   if (opts._debug !== undefined) {
     opts._debug(`MODEXP (0x05) return value=${bytesToHex(res)}`)
   }
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: setLengthLeft(bigIntToBytes(R), Number(mLen)),
+    returnValue: R,
   }
 }
