@@ -355,18 +355,18 @@ describe('runBlock test', () => {
 
 describe('blockchain', () => {
   it.only('uses blockhash', async () => {
-    const provider = 'https://mainnet.infura.io/v3/c41bd90629a342a8b0b32504d23b2e70'
+    const provider = 'https://mainnet.infura.io/v3/[yourInfuraKeyHere]'
     const blockchain = new ESMBlockChain({}, provider)
     // This needs to use a block less than 256 from the current head of the chain
-    const blockTag = 18665499n
+    const blockTag = 18667271n
     const state = new EthersStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
-    const code = '0x4360019003406001f3'
+    const code = '0x600143034060005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
     const caller = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     await evm.stateManager.setStateRoot(
-      hexToBytes('0xb4d5cf47a26e6e67b9287617721c7ce6b8418ba6aaa9dc4504773f697dc31d2a')
+      hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7')
     )
     const block = await Block.fromJsonRpcProvider(provider, blockTag, { setHardfork: true })
     await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
@@ -377,8 +377,9 @@ describe('blockchain', () => {
       block,
     }
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError !== undefined)
-    console.log(res.execResult.returnValue)
-    await new Promise((resolve) => setTimeout(() => resolve(undefined), 1000))
+    assert.ok(
+      bytesToHex(res.execResult.returnValue),
+      '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6'
+    )
   })
 })
