@@ -151,7 +151,21 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  if (bLen === BIGINT_0 && mLen === BigInt(0)) {
+    return {
+      executionGasUsed: gasUsed,
+      returnValue: new Uint8Array(),
+    }
+  }
+
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
+    if (opts._debug !== undefined) {
+      opts._debug(`MODEXP (0x05) failed: OOG`)
+    }
+    return OOGResult(opts.gasLimit)
+  }
+
+  if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
     }
@@ -161,13 +175,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
   const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
   const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
-
-  if (mEnd > maxInt) {
-    if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
-    }
-    return OOGResult(opts.gasLimit)
-  }
 
   let R
   if (M === BIGINT_0) {
@@ -188,6 +195,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: R,
+    returnValue: res,
   }
 }
