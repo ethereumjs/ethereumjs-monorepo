@@ -20,6 +20,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { Account } from '@ethereumjs/util'
+import { KECCAK256_NULL } from '@ethereumjs/util'
 import debugDefault from 'debug'
 // import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -30,33 +31,19 @@ import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 import { Snapshot } from './snapshot.js'
 
 import type { CacheType } from '../cache/index.js'
+import type { Proof, StorageProof } from '../index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { StorageRange } from '@ethereumjs/common/src'
 import type { Trie } from '@ethereumjs/trie'
 import type { Address, /* DB, */ PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+
 const { debug: createDebugLogger } = debugDefault
-
-export type StorageProof = {
-  key: PrefixedHexString
-  proof: PrefixedHexString[]
-  value: PrefixedHexString
-}
-
-export type Proof = {
-  address: PrefixedHexString
-  balance: PrefixedHexString
-  codeHash: PrefixedHexString
-  nonce: PrefixedHexString
-  storageHash: PrefixedHexString
-  accountProof: PrefixedHexString[]
-  storageProof: StorageProof[]
-}
 
 /**
  * Options for constructing a {@link StateManager}.
  */
-export interface DefaultStateManagerOpts {
+export interface FlatStateManagerOpts {
   snapshot?: Snapshot
 
   /**
@@ -121,7 +108,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
 
   public readonly common: Common
 
-  // protected _checkpointCount: number
+  protected _checkpointCount: number
 
   // protected _proofTrie: Trie
 
@@ -140,7 +127,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
   /**
    * Instantiate the StateManager interface.
    */
-  constructor(opts: DefaultStateManagerOpts = {}) {
+  constructor(opts: FlatStateManagerOpts = {}) {
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
@@ -152,7 +139,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
-    // this._checkpointCount = 0
+    this._checkpointCount = 0
   }
 
   /**
@@ -182,7 +169,15 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param accountFields - Object containing account fields and values to modify
    */
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    throw new Error('Not yet implemented')
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
+    account.nonce = accountFields.nonce ?? account.nonce
+    account.balance = accountFields.balance ?? account.balance
+    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
+    account.codeHash = accountFields.codeHash ?? account.codeHash
+    await this.putAccount(address, account)
   }
 
   /**
@@ -190,7 +185,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
-    throw new Error('Not yet implemented')
+    await this._snapshot.delAccount(address)
   }
 
   /**
@@ -253,7 +248,8 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * `commit` or `reverted` by calling rollback.
    */
   async checkpoint(): Promise<void> {
-    throw new Error('Not yet implemented')
+    this._snapshot.checkpoint()
+    this._checkpointCount++
   }
 
   /**
@@ -261,7 +257,17 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * last call to checkpoint.
    */
   async commit(): Promise<void> {
-    throw new Error('Not yet implemented')
+    await this._snapshot.commit()
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this.flush()
+      this.originalStorageCache.clear()
+    }
+
+    if (this.DEBUG) {
+      this._debug(`state checkpoint committed`)
+    }
   }
 
   /**
@@ -269,14 +275,22 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * last call to checkpoint.
    */
   async revert(): Promise<void> {
-    throw new Error('Not yet implemented')
+    await this._snapshot.revert()
+
+    this._checkpointCount--
+
+    if (this._checkpointCount === 0) {
+      await this.flush()
+      this.originalStorageCache.clear()
+    }
   }
 
   /**
    * Writes all cache items to the trie
    */
   async flush(): Promise<void> {
-    throw new Error('Not yet implemented')
+    // currently, not using any caches, and so flush doesn't do anything
+    return
   }
 
   /**
@@ -303,7 +317,8 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @returns {Promise<Uint8Array>} - Returns the state-root of the `StateManager`
    */
   async getStateRoot(): Promise<Uint8Array> {
-    throw new Error('Not yet implemented')
+    await this.flush()
+    return this._snapshot.merkleize()
   }
 
   /**
@@ -314,6 +329,10 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param stateRoot - The state-root to reset the instance to
    */
   async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
+    // potentially don't need setStateRoot and can stub it out like in ethersStateManager
+    //
+    // can keep the supported state roots of the last n blocks in a set to check if root is valid and supported
+    // then can set a class field
     throw new Error('Not yet implemented')
   }
 
