@@ -151,13 +151,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BIGINT_0) {
-    return {
-      executionGasUsed: gasUsed,
-      returnValue: setLengthLeft(bigIntToBytes(BIGINT_0), Number(mLen)),
-    }
-  }
-
   if (mLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
@@ -165,6 +158,22 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     }
   }
 
+  if (bLen === BIGINT_0) {
+    const E = bytesToBigInt(
+      setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen))
+    )
+    if (E !== BIGINT_0) {
+      return {
+        executionGasUsed: gasUsed,
+        returnValue: setLengthLeft(new Uint8Array(), Number(mLen)),
+      }
+    } else {
+      return {
+        executionGasUsed: gasUsed,
+        returnValue: setLengthLeft(new Uint8Array([1]), Number(mLen)), // Note: mLen > 0 (this is checked before)
+      }
+    }
+  }
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
