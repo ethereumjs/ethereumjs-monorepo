@@ -14,13 +14,12 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { ethers } from 'ethers'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { EthersStateManager, RPCBlockChain } from '../src/ethersStateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
-import { MockProvider } from './testdata/providerData/mockProvider.js'
+import { getValues } from './testdata/providerData/mockProvider.js'
 import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
 import type { EVMRunCallOpts } from '@ethereumjs/evm/dist/cjs/types.js'
@@ -28,11 +27,42 @@ import type { EVMRunCallOpts } from '@ethereumjs/evm/dist/cjs/types.js'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-const provider = process.env.PROVIDER ?? ''
+const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
-describe('Ethers State Manager initialization tests', () => {
+describe('mock tests', () => {
+  it.skip('mock test', async () => {
+    vi.doMock('@ethereumjs/util', async () => {
+      const util = (await vi.importActual('@ethereumjs/util')) as any
+      return {
+        ...util,
+        fetchFromProvider: vi.fn().mockImplementation(async (url, { method, params }: any) => {
+          const res = await getValues(method, 1, params)
+          return res
+        }),
+      }
+    })
+    const util = await import('@ethereumjs/util')
+    await util.fetchFromProvider('hello', {
+      method: 'eth_getCode',
+      params: ['0xd8da6bf26964af9d7eed9e03e53415d37aa96046'],
+    })
+  })
+})
+describe('Ethers State Manager initialization tests', async () => {
+  vi.mock('@ethereumjs/util', async () => {
+    const util = (await vi.importActual('@ethereumjs/util')) as any
+    return {
+      ...util,
+      fetchFromProvider: vi.fn().mockImplementation(async (url, { method, params }: any) => {
+        const res = await getValues(method, 1, params)
+        return res.result
+      }),
+    }
+  })
+  await import('@ethereumjs/util')
+
   it('should work', () => {
     let state = new EthersStateManager({ provider, blockTag: 1n })
     assert.ok(state instanceof EthersStateManager, 'was able to instantiate state manager')
@@ -70,7 +100,7 @@ describe('Ethers State Manager API tests', () => {
     if (isBrowser() === true) {
       // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     } else {
-      const state = new EthersStateManager({ provider, blockTag: 18678452n })
+      const state = new EthersStateManager({ provider, blockTag: 1n })
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
       const account = await state.getAccount(vitalikDotEth)
 
@@ -135,16 +165,11 @@ describe('Ethers State Manager API tests', () => {
         ),
       })
 
-      // Verify that provider is not called for cached data
-      ;(provider as any).getStorageAt = function () {
-        throw new Error('should not be called!')
-      }
+      const spy = vi.spyOn(state, 'getAccountFromProvider')
+      spy.mockImplementation(() => {
+        throw new Error('shouldnt call me')
+      })
 
-      assert.doesNotThrow(
-        async () =>
-          state.getContractStorage(UNIerc20ContractAddress, setLengthLeft(bigIntToBytes(2n), 32)),
-        'should not call provider.getStorageAt'
-      )
       await state.checkpoint()
 
       await state.putContractStorage(
@@ -160,10 +185,6 @@ describe('Ethers State Manager API tests', () => {
         'modified account fields successfully'
       )
 
-      // Verify that provider is not called
-      ;(state as any).getAccountFromProvider = function () {
-        throw new Error('should not have called this!')
-      }
       assert.doesNotThrow(
         async () => state.getAccount(vitalikDotEth),
         'does not call getAccountFromProvider'
@@ -336,10 +357,10 @@ describe('runBlock test', () => {
   })
 })
 
-describe('blockchain', () => {
+describe('blockchain', () =>
   it('uses blockhash', async () => {
     const blockchain = new RPCBlockChain({}, provider)
-    const blockTag = 18667271n
+    const blockTag = 1n
     const state = new EthersStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
     const code = '0x600143034060005260206000F3'
@@ -349,7 +370,7 @@ describe('blockchain', () => {
     await evm.stateManager.setStateRoot(
       hexToBytes('0xf8506f559699a58a4724df4fcf2ad4fd242d20324db541823f128f5974feb6c7')
     )
-    const block = await Block.fromJsonRpcProvider(provider, blockTag, { setHardfork: true })
+    const block = await Block.fromJsonRpcProvider(provider, 500000n, { setHardfork: true })
     await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
       caller,
@@ -362,5 +383,4 @@ describe('blockchain', () => {
       bytesToHex(res.execResult.returnValue),
       '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6'
     )
-  })
-})
+  }))
