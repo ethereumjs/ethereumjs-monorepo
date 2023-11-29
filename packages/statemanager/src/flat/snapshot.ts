@@ -239,11 +239,27 @@ export class Snapshot {
     }
   }
 
+  async merge(): Promise<void> {
+    this._checkpoints -= 1
+    // if (this.DEBUG) {
+    //   this._debug(`Commit to checkpoint ${this._checkpoints}`)
+    // }
+    const diffMap = this._diffCache.pop()!
+    for (const entry of diffMap.entries()) {
+      const addressHex = entry[0]
+      const oldEntry = this._diffCache[this._checkpoints].has(addressHex)
+      if (!oldEntry) {
+        const elem = entry[1]
+        this._diffCache[this._checkpoints].set(addressHex, elem)
+      }
+    }
+  }
+
   // /**
   //  * Commits to current state of cache (no effect on trie).
   //  */
   async commit(): Promise<void> {
-    await this.revert()
+    await this.merge()
   }
 
   // /**
