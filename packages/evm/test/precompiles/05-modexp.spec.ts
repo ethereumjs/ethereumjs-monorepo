@@ -4,8 +4,9 @@ import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
 
-const fuzzerTests = require('./modexp-testdata.json').data
+import fuzzer from './modexp-testdata.json'
 
+const fuzzerTests = fuzzer.data
 describe('Precompiles: MODEXP', () => {
   const common = new Common({ chain: Chain.Mainnet })
   const evm = new EVM({
