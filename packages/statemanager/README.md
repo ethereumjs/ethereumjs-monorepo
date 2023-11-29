@@ -78,7 +78,7 @@ The `EthersStateManager` can be be used with any JSON-RPC provider that supports
 
 #### Instantiating the EVM
 
-In order to have a fully functioning EVM instance, you must also instantiate the `EthersStateManager` and the `RpcBlockChain` and use that when instantiating your EVM as below:
+In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `EthersStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
 
 ```js
 import { EthersStateManager, RPCBlockChain } from '../src/ethersStateManager.js'
