@@ -23,7 +23,7 @@ import { OrderedMap } from 'js-sdsl'
 import { Fetcher } from './fetcher'
 import { getInitFecherDoneFlags } from './types'
 
-import type { Peer } from '../../net/peer'
+import type { RlpxPeer } from '../../net/peer'
 import type { FetcherOptions } from './fetcher'
 import type { Job, SnapFetcherDoneFlags } from './types'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
@@ -452,7 +452,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
   /**
    * Returns an idle peer that can process a next job.
    */
-  peer(): Peer | undefined {
+  peer(): RlpxPeer | undefined {
     return this.pool.idle((peer) => 'snap' in peer)
   }
 

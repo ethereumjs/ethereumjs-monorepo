@@ -2,31 +2,29 @@ import { EventEmitter } from 'events'
 import { pipe } from 'it-pipe'
 import pushable from 'it-pushable'
 
-import { Peer } from '../../../src/net/peer'
+import { RlpxPeer } from '../../../src/net/peer'
 import { Event } from '../../../src/types'
 
 import { MockSender } from './mocksender'
 import { createStream } from './network'
 
-import type { PeerOptions } from '../../../src/net/peer'
-import type { MockServer } from './mockserver'
-import type { RemoteStream } from './network'
+import type { RlpxPeerOptions } from '../../../src/net/peer'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
 const wrapperPushable = () => pushable<Uint8Array>()
 export type Pushable = ReturnType<typeof wrapperPushable>
 
-interface MockPeerOptions extends PeerOptions {
+interface MockPeerOptions extends RlpxPeerOptions {
   location: string
 }
 
-export class MockPeer extends Peer {
+export class MockPeer extends RlpxPeer {
   public location: string
   public connected: boolean
 
   constructor(options: MockPeerOptions) {
-    super({ ...options, transport: 'mock', address: options.location })
+    super({ ...options })
     this.location = options.location
     this.connected = false
     this.pooled = true
@@ -40,22 +38,18 @@ export class MockPeer extends Peer {
     this.config.events.emit(Event.PEER_CONNECTED, this)
   }
 
-  async accept(server: MockServer) {
+  /*async accept(server: MockServer) {
     if (this.connected) {
       return
     }
     await this.createStream(server.location)
     this.server = server
     this.inbound = true
-  }
+  }*/
 
   async createStream(location: string) {
     const protocols = this.protocols.map((p) => `${p.name}/${p.versions[0]}`)
     const stream = createStream(this.id, location, protocols)
-    await this.bindProtocols(stream)
-  }
-
-  async bindProtocols(stream: RemoteStream) {
     const receiver = new EventEmitter()
     const pushableFn: Pushable = pushable()
     pipe(pushableFn, stream)

@@ -16,7 +16,7 @@ import { Service, type ServiceOptions } from './service'
 import { Skeleton } from './skeleton'
 import { TxPool } from './txpool'
 
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { Protocol } from '../net/protocol'
 import type { Block } from '@ethereumjs/block'
 import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
@@ -323,7 +323,7 @@ export class FullEthereumService extends Service {
    * @param protocol protocol name
    * @param peer peer
    */
-  async handle(message: any, protocol: string, peer: Peer): Promise<any> {
+  async handle(message: any, protocol: string, peer: RlpxPeer): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
     } else {
@@ -336,7 +336,7 @@ export class FullEthereumService extends Service {
    * @param message message object
    * @param peer peer
    */
-  async handleEth(message: any, peer: Peer): Promise<void> {
+  async handleEth(message: any, peer: RlpxPeer): Promise<void> {
     switch (message.name) {
       case 'GetBlockHeaders': {
         const { reqId, block, max, skip, reverse } = message.data
@@ -444,7 +444,7 @@ export class FullEthereumService extends Service {
    * @param message message object
    * @param peer peer
    */
-  async handleLes(message: any, peer: Peer): Promise<void> {
+  async handleLes(message: any, peer: RlpxPeer): Promise<void> {
     if (message.name === 'GetBlockHeaders' && this.config.lightserv) {
       const { reqId, block, max, skip, reverse } = message.data
       const bv = this.flow.handleRequest(peer, message.name, max)

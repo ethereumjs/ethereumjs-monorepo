@@ -5,7 +5,7 @@ import { Event } from '../types'
 import { type V8Engine, getV8Engine } from '../util'
 
 import type { Config } from '../config'
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { Protocol } from '../net/protocol'
 import type { Synchronizer } from '../sync'
 import type { AbstractLevel } from 'abstract-level'
@@ -220,5 +220,5 @@ export class Service {
    * @param protocol protocol name
    * @param peer peer
    */
-  async handle(_message: any, _protocol: string, _peer: Peer): Promise<any> {}
+  async handle(_message: any, _protocol: string, _peer: RlpxPeer): Promise<any> {}
 }

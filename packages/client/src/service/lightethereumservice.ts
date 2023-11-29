@@ -3,7 +3,7 @@ import { LightSynchronizer } from '../sync/lightsync'
 
 import { Service } from './service'
 
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { ServiceOptions } from './service'
 
 /**
@@ -48,7 +48,7 @@ export class LightEthereumService extends Service {
    * @param protocol protocol name
    * @param peer peer
    */
-  async handle(_message: any, _protocol: string, _peer: Peer) {}
+  async handle(_message: any, _protocol: string, _peer: RlpxPeer) {}
 
   /**
    * Stop service

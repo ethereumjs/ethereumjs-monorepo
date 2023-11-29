@@ -1,4 +1,4 @@
-import type { Peer } from '../../net/peer'
+import type { RlpxPeer } from '../../net/peer'
 
 export type Job<JobTask, JobResult, StorageItem> = {
   task: JobTask
@@ -7,7 +7,7 @@ export type Job<JobTask, JobResult, StorageItem> = {
   result?: JobResult | StorageItem[]
   partialResult?: StorageItem[]
   state: 'idle' | 'expired' | 'active'
-  peer: Peer | null
+  peer: RlpxPeer | null
 }
 
 export type SnapFetcherDoneFlags = {

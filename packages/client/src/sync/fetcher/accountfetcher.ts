@@ -27,7 +27,7 @@ import { StorageFetcher } from './storagefetcher'
 import { TrieNodeFetcher } from './trienodefetcher'
 import { getInitFecherDoneFlags } from './types'
 
-import type { Peer } from '../../net/peer'
+import type { RlpxPeer } from '../../net/peer'
 import type { AccountData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
 import type { StorageRequest } from './storagefetcher'
@@ -593,7 +593,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
   /**
    * Returns an idle peer that can process a next job.
    */
-  peer(): Peer | undefined {
+  peer(): RlpxPeer | undefined {
     return this.pool.idle((peer) => 'snap' in peer)
   }
 

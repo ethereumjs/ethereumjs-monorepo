@@ -3,7 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { Event } from '../types'
 
 import type { Config } from '../config'
-import type { Peer } from './peer'
+import type { RlpxPeer } from './peer'
 
 export interface PeerPoolOptions {
   /* Config */
@@ -21,7 +21,7 @@ export interface PeerPoolOptions {
 export class PeerPool {
   public config: Config
 
-  private pool: Map<string, Peer>
+  private pool: Map<string, RlpxPeer>
   private noPeerPeriods: number
   private opened: boolean
   public running: boolean
@@ -40,7 +40,7 @@ export class PeerPool {
   constructor(options: PeerPoolOptions) {
     this.config = options.config
 
-    this.pool = new Map<string, Peer>()
+    this.pool = new Map<string, RlpxPeer>()
     this.noPeerPeriods = 0
     this.opened = false
     this.running = false
@@ -118,8 +118,8 @@ export class PeerPool {
   /**
    * Connected peers
    */
-  get peers(): Peer[] {
-    const connectedPeers: Peer[] = Array.from(this.pool.values())
+  get peers(): RlpxPeer[] {
+    const connectedPeers: RlpxPeer[] = Array.from(this.pool.values())
     return connectedPeers
   }
 
@@ -134,7 +134,7 @@ export class PeerPool {
    * Return true if pool contains the specified peer
    * @param peer peer object or id
    */
-  contains(peer: Peer | string): boolean {
+  contains(peer: RlpxPeer | string): boolean {
     if (typeof peer !== 'string') {
       peer = peer.id
     }
@@ -145,7 +145,7 @@ export class PeerPool {
    * Returns a random idle peer from the pool
    * @param filterFn filter function to apply before finding idle peers
    */
-  idle(filterFn = (_peer: Peer) => true): Peer | undefined {
+  idle(filterFn = (_peer: RlpxPeer) => true): RlpxPeer | undefined {
     const idle = this.peers.filter((p) => p.idle && filterFn(p))
     if (idle.length > 0) {
       const index = Math.floor(Math.random() * idle.length)
@@ -158,7 +158,7 @@ export class PeerPool {
    * Handler for peer connections
    * @param peer peer
    */
-  private connected(peer: Peer) {
+  private connected(peer: RlpxPeer) {
     if (this.size >= this.config.maxPeers) return
     this.add(peer)
     peer.handleMessageQueue()
@@ -168,7 +168,7 @@ export class PeerPool {
    * Handler for peer disconnections
    * @param peer peer
    */
-  private disconnected(peer: Peer) {
+  private disconnected(peer: RlpxPeer) {
     this.remove(peer)
   }
 
@@ -178,7 +178,7 @@ export class PeerPool {
    * @param maxAge ban period in ms
    * @emits {@link Event.POOL_PEER_BANNED}
    */
-  ban(peer: Peer, maxAge: number = 60000) {
+  ban(peer: RlpxPeer, maxAge: number = 60000) {
     if (!peer.server) {
       return
     }
@@ -200,7 +200,7 @@ export class PeerPool {
    * @param peer peer
    * @emits {@link Event.POOL_PEER_ADDED}
    */
-  add(peer?: Peer) {
+  add(peer?: RlpxPeer) {
     if (peer && peer.id && !this.pool.get(peer.id)) {
       this.pool.set(peer.id, peer)
       peer.pooled = true
@@ -213,7 +213,7 @@ export class PeerPool {
    * @param peer peer
    * @emits {@link Event.POOL_PEER_REMOVED}
    */
-  remove(peer?: Peer) {
+  remove(peer?: RlpxPeer) {
     if (peer && peer.id) {
       if (this.pool.delete(peer.id)) {
         peer.pooled = false

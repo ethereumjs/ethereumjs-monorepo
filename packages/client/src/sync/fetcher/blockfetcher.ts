@@ -5,7 +5,7 @@ import { Event } from '../../types'
 
 import { BlockFetcherBase } from './blockfetcherbase'
 
-import type { Peer } from '../../net/peer'
+import type { RlpxPeer } from '../../net/peer'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import type { Job } from './types'
 import type { BlockBytes } from '@ethereumjs/block'
@@ -140,7 +140,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   /**
    * Returns an idle peer that can process a next job.
    */
-  peer(): Peer | undefined {
+  peer(): RlpxPeer | undefined {
     return this.pool.idle((peer) => 'eth' in peer)
   }
 }

@@ -18,7 +18,7 @@ import {
 } from '@ethereumjs/util'
 
 import type { Config } from '../config'
-import type { Peer } from '../net/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
 import type { FullEthereumService } from './fullethereumservice'
 import type { Block } from '@ethereumjs/block'
@@ -414,7 +414,7 @@ export class TxPool {
    * @param peer
    * @returns Array with txs which are new to the list
    */
-  addToKnownByPeer(txHashes: Uint8Array[], peer: Peer): Uint8Array[] {
+  addToKnownByPeer(txHashes: Uint8Array[], peer: RlpxPeer): Uint8Array[] {
     // Make sure data structure is initialized
     if (!this.knownByPeer.has(peer.id)) {
       this.knownByPeer.set(peer.id, [])
@@ -447,7 +447,7 @@ export class TxPool {
    * @param txHashes Array with transactions to send
    * @param peers
    */
-  sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
+  sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: RlpxPeer[]) {
     const txHashes = txs[2]
     for (const peer of peers) {
       // Make sure data structure is initialized
@@ -501,7 +501,7 @@ export class TxPool {
    * @param txs Array with transactions to send
    * @param peers
    */
-  sendTransactions(txs: TypedTransaction[], peers: Peer[]) {
+  sendTransactions(txs: TypedTransaction[], peers: RlpxPeer[]) {
     if (txs.length > 0) {
       const hashes = txs.map((tx) => tx.hash())
       for (const peer of peers) {
@@ -517,7 +517,7 @@ export class TxPool {
     }
   }
 
-  private markFailedSends(peer: Peer, failedHashes: Uint8Array[], e: Error): void {
+  private markFailedSends(peer: RlpxPeer, failedHashes: Uint8Array[], e: Error): void {
     for (const txHash of failedHashes) {
       const sendobject = this.knownByPeer
         .get(peer.id)
@@ -535,7 +535,7 @@ export class TxPool {
    * @param peer Announcing peer
    * @param peerPool Reference to the {@link PeerPool}
    */
-  async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
+  async handleAnnouncedTxs(txs: TypedTransaction[], peer: RlpxPeer, peerPool: PeerPool) {
     if (!this.running || txs.length === 0) return
     this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
     this.addToKnownByPeer(
@@ -570,7 +570,7 @@ export class TxPool {
    * @param peer Announcing peer
    * @param peerPool Reference to the peer pool
    */
-  async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
+  async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: RlpxPeer, peerPool: PeerPool) {
     if (!this.running || txHashes === undefined || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
 

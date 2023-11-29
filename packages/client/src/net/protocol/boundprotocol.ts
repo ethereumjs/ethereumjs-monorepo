@@ -3,7 +3,6 @@ import { Lock } from '@ethereumjs/util'
 import { Event } from '../../types'
 
 import type { Config } from '../../config'
-import type { Peer } from '../peer/peer'
 import type { EthProtocolMethods } from './ethprotocol'
 import type { LesProtocolMethods } from './lesprotocol'
 import type { Message, Protocol } from './protocol'
@@ -12,6 +11,7 @@ import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotoc
 import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { TxReceipt } from '@ethereumjs/vm'
+import { RlpxPeer } from '../peer'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -21,7 +21,7 @@ export interface BoundProtocolOptions {
   protocol: Protocol
 
   /* Peer */
-  peer: Peer
+  peer: RlpxPeer
 
   /* Sender */
   sender: Sender
@@ -35,7 +35,7 @@ export class BoundProtocol {
   public config: Config
   public name: string
   private protocol: Protocol
-  protected peer: Peer
+  protected peer: RlpxPeer
   private sender: Sender
   private versions: number[]
   private timeout: number

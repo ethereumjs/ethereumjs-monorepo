@@ -7,7 +7,7 @@ import { ReverseBlockFetcher } from './fetcher'
 import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { Skeleton } from '../service/skeleton'
 import type { SynchronizerOptions } from './sync'
 import type { Block } from '@ethereumjs/block'
@@ -102,7 +102,7 @@ export class BeaconSynchronizer extends Synchronizer {
   /**
    * Returns true if peer can be used for syncing
    */
-  syncable(peer: Peer): boolean {
+  syncable(peer: RlpxPeer): boolean {
     return peer.eth !== undefined
   }
 
@@ -110,8 +110,8 @@ export class BeaconSynchronizer extends Synchronizer {
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
    */
-  async best(): Promise<Peer | undefined> {
-    let best: [Peer, bigint] | undefined
+  async best(): Promise<RlpxPeer | undefined> {
+    let best: [RlpxPeer, bigint] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
@@ -129,7 +129,7 @@ export class BeaconSynchronizer extends Synchronizer {
   /**
    * Get latest header of peer
    */
-  async latest(peer: Peer) {
+  async latest(peer: RlpxPeer) {
     const result = await peer.eth?.getBlockHeaders({
       block: peer.eth!.status.bestHash,
       max: 1,
@@ -211,7 +211,7 @@ export class BeaconSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @return Resolves when sync completed
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
+  async syncWithPeer(peer?: RlpxPeer): Promise<boolean> {
     if (
       !this.skeleton.isStarted() ||
       this.skeleton.bounds() === undefined ||

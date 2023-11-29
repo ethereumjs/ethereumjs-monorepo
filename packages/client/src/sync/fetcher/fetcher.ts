@@ -4,7 +4,7 @@ import { Readable, Writable } from 'stream'
 import { Event } from '../../types'
 
 import type { Config } from '../../config'
-import type { Peer } from '../../net/peer'
+import type { RlpxPeer } from '../../net/peer'
 import type { PeerPool } from '../../net/peerpool'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 import type { Job } from './types'
@@ -117,7 +117,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    */
   abstract request(
     _job?: Job<JobTask, JobResult, StorageItem>,
-    _peer?: Peer
+    _peer?: RlpxPeer
   ): Promise<JobResult | undefined>
 
   /**

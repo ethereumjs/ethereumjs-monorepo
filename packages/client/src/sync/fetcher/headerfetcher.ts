@@ -2,7 +2,7 @@ import { Event } from '../../types'
 
 import { BlockFetcherBase } from './blockfetcherbase'
 
-import type { Peer } from '../../net/peer'
+import type { RlpxPeer } from '../../net/peer'
 import type { FlowControl } from '../../net/protocol'
 import type { BlockFetcherOptions, JobTask } from './blockfetcherbase'
 import type { Job } from './types'
@@ -101,7 +101,7 @@ export class HeaderFetcher extends BlockFetcherBase<BlockHeaderResult, BlockHead
   /**
    * Returns an idle peer that can process a next job.
    */
-  peer(): Peer | undefined {
+  peer(): RlpxPeer | undefined {
     return this.pool.idle((peer) => peer.les && peer.les.status.serveHeaders)
   }
 }

@@ -1,12 +1,12 @@
 import { EventEmitter } from 'events'
 
 import type { SyncMode } from '.'
-import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from 'multiaddr'
+import { RlpxPeer } from './net/peer'
 
 /**
  * Types for the central event bus, emitted
@@ -42,17 +42,17 @@ export interface EventParams {
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
   [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: DefaultStateManager]
   [Event.SYNC_ERROR]: [syncError: Error]
-  [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
-  [Event.PEER_CONNECTED]: [connectedPeer: Peer]
-  [Event.PEER_DISCONNECTED]: [disconnectedPeer: Peer]
-  [Event.PEER_ERROR]: [error: Error, peerCausingError: Peer]
+  [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: RlpxPeer | null | undefined]
+  [Event.PEER_CONNECTED]: [connectedPeer: RlpxPeer]
+  [Event.PEER_DISCONNECTED]: [disconnectedPeer: RlpxPeer]
+  [Event.PEER_ERROR]: [error: Error, peerCausingError: RlpxPeer]
   [Event.SERVER_LISTENING]: [{ transport: string; url: string }]
   [Event.SERVER_ERROR]: [serverError: Error, serverCausingError: Server]
-  [Event.POOL_PEER_ADDED]: [addedPeer: Peer]
-  [Event.POOL_PEER_REMOVED]: [removedPeer: Peer]
-  [Event.POOL_PEER_BANNED]: [bannedPeer: Peer]
-  [Event.PROTOCOL_ERROR]: [boundProtocolError: Error, peerCausingError: Peer]
-  [Event.PROTOCOL_MESSAGE]: [messageDetails: any, protocolName: string, sendingPeer: Peer]
+  [Event.POOL_PEER_ADDED]: [addedPeer: RlpxPeer]
+  [Event.POOL_PEER_REMOVED]: [removedPeer: RlpxPeer]
+  [Event.POOL_PEER_BANNED]: [bannedPeer: RlpxPeer]
+  [Event.PROTOCOL_ERROR]: [boundProtocolError: Error, peerCausingError: RlpxPeer]
+  [Event.PROTOCOL_MESSAGE]: [messageDetails: any, protocolName: string, sendingPeer: RlpxPeer]
 }
 
 export declare interface EventBus<T extends Event> {

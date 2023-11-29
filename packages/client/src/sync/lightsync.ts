@@ -7,7 +7,7 @@ import { short } from '../util'
 import { HeaderFetcher } from './fetcher'
 import { Synchronizer } from './sync'
 
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { SynchronizerOptions } from './sync'
 import type { BlockHeader } from '@ethereumjs/block'
 
@@ -57,7 +57,7 @@ export class LightSynchronizer extends Synchronizer {
   /**
    * Returns true if peer can be used for syncing
    */
-  syncable(peer: Peer): boolean {
+  syncable(peer: RlpxPeer): boolean {
     return peer.les?.status.serveHeaders ?? false
   }
 
@@ -66,7 +66,7 @@ export class LightSynchronizer extends Synchronizer {
    * We will synchronize to this peer's blockchain.
    * @returns undefined if no valid peer is found
    */
-  async best(): Promise<Peer | undefined> {
+  async best(): Promise<RlpxPeer | undefined> {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
@@ -87,7 +87,7 @@ export class LightSynchronizer extends Synchronizer {
   /**
    * Get latest header of peer
    */
-  async latest(peer: Peer) {
+  async latest(peer: RlpxPeer) {
     const result = await peer.les?.getBlockHeaders({
       block: peer.les!.status.headHash,
       max: 1,
@@ -100,7 +100,7 @@ export class LightSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @returns a boolean if the setup was successful
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
+  async syncWithPeer(peer?: RlpxPeer): Promise<boolean> {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 

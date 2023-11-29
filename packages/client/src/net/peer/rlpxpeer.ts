@@ -9,12 +9,18 @@ import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 import { Event } from '../../types'
 import { RlpxSender } from '../protocol'
 
-import { Peer } from './peer'
-
-import type { Protocol } from '../protocol'
-import type { RlpxServer } from '../server'
-import type { PeerOptions } from './peer'
+import {
+  BoundEthProtocol,
+  BoundLesProtocol,
+  BoundProtocol,
+  BoundSnapProtocol,
+  Protocol,
+  Sender,
+} from '../protocol'
+import type { RlpxServer, Server } from '../server'
 import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from '@ethereumjs/devp2p'
+import { Config } from '../../config'
+import { EventEmitter } from 'stream'
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
@@ -25,12 +31,27 @@ const devp2pCapabilities = {
   les4: Devp2pLES.les4,
 }
 
-export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transport'> {
+export interface RlpxPeerOptions {
   /* Peer hostname or ip address */
   host: string
 
   /* Peer port */
   port: number
+
+  /* Config */
+  config: Config
+
+  /* Peer id */
+  id?: string
+
+  /* Pass true if peer initiated connection (default: false) */
+  inbound?: boolean
+
+  /* Supported protocols */
+  protocols?: Protocol[]
+
+  /* Server */
+  server?: Server
 }
 
 /**
@@ -55,7 +76,29 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  *   .connect()
  * ```
  */
-export class RlpxPeer extends Peer {
+export class RlpxPeer extends EventEmitter {
+  public config: Config
+  public id: string
+  public address: string
+  public inbound: boolean
+  public server: Server | undefined
+  protected transport: string
+  protected protocols: Protocol[]
+  private _idle: boolean
+
+  // TODO check if this should be moved into RlpxPeer
+  public eth?: BoundEthProtocol
+  public snap?: BoundSnapProtocol
+  public les?: BoundLesProtocol
+
+  /*
+    If the peer is in the PeerPool.
+    If true, messages are handled immediately.
+    If false, adds incoming messages to handleMessageQueue,
+    which are handled after the peer is added to the pool.
+  */
+  public pooled: boolean = false
+
   private host: string
   private port: number
   public rlpx: Devp2pRLPx | null
@@ -65,12 +108,23 @@ export class RlpxPeer extends Peer {
    * Create new devp2p/rlpx peer
    */
   constructor(options: RlpxPeerOptions) {
-    const address = `${options.host}:${options.port}`
-    super({
+    super()
+
+    this.config = options.config
+
+    this.id = options.id ?? ''
+    this.address = `${options.host}:${options.port}`
+    this.transport = 'rlpx'
+    this.inbound = options.inbound ?? false
+    this.protocols = options.protocols ?? []
+
+    this._idle = true
+
+    /*super({
       ...options,
       transport: 'rlpx',
       address,
-    })
+    })*/
 
     this.host = options.host
     this.port = options.port
@@ -191,5 +245,81 @@ export class RlpxPeer extends Peer {
       })
     )
     this.connected = true
+  }
+
+  /**
+   * Get idle state of peer
+   */
+  get idle() {
+    return this._idle
+  }
+
+  /**
+   * Set idle state of peer
+   */
+  set idle(value) {
+    this._idle = value
+  }
+
+  /**
+   * Handle unhandled messages along handshake
+   */
+  handleMessageQueue() {
+    const protocols = [this.eth, this.snap, this.les]
+    protocols.map((e) => {
+      if (e !== undefined) {
+        e.handleMessageQueue()
+      }
+    })
+  }
+
+  async addProtocol(sender: Sender, protocol: Protocol): Promise<void> {
+    let bound: BoundProtocol
+    const boundOpts = {
+      config: protocol.config, // TODO: why cant we use `this.config`?
+      protocol,
+      peer: this,
+      sender,
+    }
+
+    if (protocol.name === 'eth') {
+      bound = new BoundEthProtocol(boundOpts)
+    } else if (protocol.name === 'les') {
+      bound = new BoundLesProtocol(boundOpts)
+    } else if (protocol.name === 'snap') {
+      bound = new BoundSnapProtocol(boundOpts)
+    } else {
+      throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
+    }
+
+    // Handshake only when snap, else
+    if (protocol.name !== 'snap') {
+      await bound!.handshake(sender)
+    } else {
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+    }
+
+    if (protocol.name === 'eth') {
+      this.eth = <BoundEthProtocol>bound
+    } else if (protocol.name === 'snap') {
+      this.snap = <BoundSnapProtocol>bound
+    } else if (protocol.name === 'les') {
+      this.les = <BoundLesProtocol>bound
+    }
+  }
+
+  toString(withFullId = false): string {
+    const protocols = [this.eth, this.snap, this.les]
+    const properties = {
+      id: withFullId ? this.id : this.id.substr(0, 8),
+      address: this.address,
+      transport: this.transport,
+      protocols: protocols.filter((e) => e !== undefined).map((e) => (<BoundProtocol>e).name),
+      inbound: this.inbound,
+    }
+    return Object.entries(properties)
+      .filter(([, value]) => value !== undefined && value !== null && value.toString() !== '')
+      .map((keyValue) => keyValue.join('='))
+      .join(' ')
   }
 }

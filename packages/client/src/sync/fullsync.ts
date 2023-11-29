@@ -8,7 +8,7 @@ import { BlockFetcher } from './fetcher'
 import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { TxPool } from '../service/txpool'
 import type { SynchronizerOptions } from './sync'
 import type { Block } from '@ethereumjs/block'
@@ -112,7 +112,7 @@ export class FullSynchronizer extends Synchronizer {
   /**
    * Returns true if peer can be used for syncing
    */
-  syncable(peer: Peer): boolean {
+  syncable(peer: RlpxPeer): boolean {
     return peer.eth !== undefined
   }
 
@@ -120,7 +120,7 @@ export class FullSynchronizer extends Synchronizer {
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
    */
-  async best(): Promise<Peer | undefined> {
+  async best(): Promise<RlpxPeer | undefined> {
     let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
@@ -141,7 +141,7 @@ export class FullSynchronizer extends Synchronizer {
   /**
    * Get latest header of peer
    */
-  async latest(peer: Peer) {
+  async latest(peer: RlpxPeer) {
     const result = await peer.eth?.getBlockHeaders({
       block: peer.eth!.status.bestHash,
       max: 1,
@@ -174,7 +174,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @returns a boolean if the setup was successful
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
+  async syncWithPeer(peer?: RlpxPeer): Promise<boolean> {
     const latest = peer ? await this.latest(peer) : undefined
     if (!latest) return false
 
@@ -288,7 +288,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param peer
    * @returns true if block has already been sent to peer
    */
-  private addToKnownByPeer(blockHash: Uint8Array, peer: Peer): boolean {
+  private addToKnownByPeer(blockHash: Uint8Array, peer: RlpxPeer): boolean {
     const knownBlocks = this.newBlocksKnownByPeer.get(peer.id) ?? []
     if (knownBlocks.find((knownBlock) => equalsBytes(knownBlock.hash, blockHash))) {
       return true
@@ -303,7 +303,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param Block
    * @param peers
    */
-  async sendNewBlock(block: Block, peers: Peer[]) {
+  async sendNewBlock(block: Block, peers: RlpxPeer[]) {
     for (const peer of peers) {
       const alreadyKnownByPeer = this.addToKnownByPeer(block.hash(), peer)
       if (!alreadyKnownByPeer) {
@@ -317,7 +317,7 @@ export class FullSynchronizer extends Synchronizer {
    * @param blockData `NEW_BLOCK` received from peer
    * @param peer `Peer` that sent `NEW_BLOCK` announcement
    */
-  async handleNewBlock(block: Block, peer?: Peer) {
+  async handleNewBlock(block: Block, peer?: RlpxPeer) {
     if (peer) {
       // Don't send NEW_BLOCK announcement to peer that sent original new block message
       this.addToKnownByPeer(block.hash(), peer)

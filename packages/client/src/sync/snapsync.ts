@@ -8,7 +8,7 @@ import { getInitFecherDoneFlags } from './fetcher/types'
 import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { Skeleton } from '../service/skeleton'
 import type { SnapFetcherDoneFlags } from './fetcher/types'
 import type { SynchronizerOptions } from './sync'
@@ -69,7 +69,7 @@ export class SnapSynchronizer extends Synchronizer {
   /**
    * Returns true if peer can be used for syncing
    */
-  syncable(peer: Peer): boolean {
+  syncable(peer: RlpxPeer): boolean {
     // Need eth as well to get the latest of the peer
     // TODO: review
     return peer.snap !== undefined && peer.eth !== undefined
@@ -79,8 +79,8 @@ export class SnapSynchronizer extends Synchronizer {
    * Finds the best peer to sync with. We will synchronize to this peer's
    * blockchain. Returns null if no valid peer is found
    */
-  async best(): Promise<Peer | undefined> {
-    let best: [Peer, bigint] | undefined
+  async best(): Promise<RlpxPeer | undefined> {
+    let best: [RlpxPeer, bigint] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
@@ -102,7 +102,7 @@ export class SnapSynchronizer extends Synchronizer {
   /**
    * Get latest header of peer
    */
-  async latest(peer: Peer) {
+  async latest(peer: RlpxPeer) {
     // TODO: refine the way to query latest to fetch for the peer
     const blockHash = peer.eth!.status.bestHash
     // const blockHash = this.skeleton?.headHash() ?? peer.eth!.status.bestHash
@@ -199,7 +199,7 @@ export class SnapSynchronizer extends Synchronizer {
    * @param peer remote peer to sync with
    * @returns a boolean if the setup was successful
    */
-  async syncWithPeer(peer?: Peer): Promise<boolean> {
+  async syncWithPeer(peer?: RlpxPeer): Promise<boolean> {
     // if skeleton is passed we have to wait for skeleton to be updated
     if (this.skeleton?.synchronized !== true || this.fetcherDoneFlags.done) {
       this.config.logger.info(`SnapSynchronizer - early return ${peer?.id}`)

@@ -7,7 +7,7 @@ import { wait } from '../util/wait'
 
 import type { Chain } from '../blockchain'
 import type { Config } from '../config'
-import type { Peer } from '../net/peer/peer'
+import type { RlpxPeer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
 import type { AccountFetcher, BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
 
@@ -102,7 +102,7 @@ export abstract class Synchronizer {
   /**
    * Returns true if peer can be used for syncing
    */
-  syncable(_peer: Peer) {
+  syncable(_peer: RlpxPeer) {
     // TODO: evaluate syncability of peer
     return true
   }
@@ -136,9 +136,9 @@ export abstract class Synchronizer {
     clearTimeout(timeout)
   }
 
-  abstract best(): Promise<Peer | undefined>
+  abstract best(): Promise<RlpxPeer | undefined>
 
-  abstract syncWithPeer(peer?: Peer): Promise<boolean>
+  abstract syncWithPeer(peer?: RlpxPeer): Promise<boolean>
 
   resolveSync(height?: number) {
     this.clearFetcher()

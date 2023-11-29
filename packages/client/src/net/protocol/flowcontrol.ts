@@ -1,4 +1,4 @@
-import type { Peer } from '../peer/peer'
+import type { RlpxPeer } from '../peer'
 
 interface Mrc {
   [key: string]: {
@@ -46,7 +46,7 @@ export class FlowControl {
    * @param peer LES peer
    * @param bv latest buffer value
    */
-  handleReply(peer: Peer, bv: number) {
+  handleReply(peer: RlpxPeer, bv: number) {
     const params = this.in.get(peer.id) ?? {}
     params.ble = bv
     params.last = Date.now()
@@ -59,7 +59,7 @@ export class FlowControl {
    * @param messageName message name
    * @returns maximum count
    */
-  maxRequestCount(peer: Peer, messageName: string): number {
+  maxRequestCount(peer: RlpxPeer, messageName: string): number {
     const now = Date.now()
     const mrcBase = peer.les!.status.mrc[messageName].base
     const mrcReq = peer.les!.status.mrc[messageName].req
@@ -85,7 +85,7 @@ export class FlowControl {
    * @param count number of items to request from peer
    * @returns new buffer value after request is sent (if negative, drop peer)
    */
-  handleRequest(peer: Peer, messageName: string, count: number): number {
+  handleRequest(peer: RlpxPeer, messageName: string, count: number): number {
     const now = Date.now()
     const params = this.out.get(peer.id) ?? {}
     if (
