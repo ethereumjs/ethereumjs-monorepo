@@ -17,7 +17,7 @@ import { VM } from '@ethereumjs/vm'
 import { ethers } from 'ethers'
 import { assert, describe, expect, it } from 'vitest'
 
-import { ESMBlockChain, EthersStateManager } from '../src/ethersStateManager.js'
+import { EthersStateManager, RPCBlockChain } from '../src/ethersStateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { MockProvider } from './testdata/providerData/mockProvider.js'
@@ -354,10 +354,9 @@ describe('runBlock test', () => {
 })
 
 describe('blockchain', () => {
-  it.only('uses blockhash', async () => {
+  it('uses blockhash', async () => {
     const provider = 'https://mainnet.infura.io/v3/[yourInfuraKeyHere]'
-    const blockchain = new ESMBlockChain({}, provider)
-    // This needs to use a block less than 256 from the current head of the chain
+    const blockchain = new RPCBlockChain({}, provider)
     const blockTag = 18667271n
     const state = new EthersStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
@@ -371,9 +370,9 @@ describe('blockchain', () => {
     const block = await Block.fromJsonRpcProvider(provider, blockTag, { setHardfork: true })
     await evm.stateManager.putContractCode(contractAddress, hexToBytes(code))
     const runCallArgs: Partial<EVMRunCallOpts> = {
-      caller, // call address
-      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
-      to: contractAddress, // call to the contract address
+      caller,
+      gasLimit: BigInt(0xffffffffff),
+      to: contractAddress,
       block,
     }
     const res = await evm.runCall(runCallArgs)

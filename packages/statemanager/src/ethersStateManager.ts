@@ -1,14 +1,13 @@
-import { Block } from '@ethereumjs/block'
-import { Blockchain } from '@ethereumjs/blockchain'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
-  TypeOutput,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
+  fetchFromProvider,
+  hexToBytes,
+  intToHex,
   toBytes,
-  toType,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -17,9 +16,12 @@ import { ethers } from 'ethers'
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
 import type { Proof } from './index.js'
-import type { BlockchainOptions } from '@ethereumjs/blockchain'
-import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { StorageRange } from '@ethereumjs/common/src'
+import type {
+  AccountFields,
+  EVMStateManagerInterface,
+  StorageDump,
+  StorageRange,
+} from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
@@ -417,25 +419,23 @@ export class EthersStateManager implements EVMStateManagerInterface {
   }
 }
 
-export class ESMBlockChain extends Blockchain {
+export class RPCBlockChain {
   provider: string
-  constructor(opts: BlockchainOptions = {}, provider?: string) {
+  constructor(opts: {}, provider?: string) {
     if (provider === undefined || provider === '') throw new Error('provider URL is required')
-    super(opts)
-
     this.provider = provider
   }
-  async getBlock(blockId: number | bigint | Uint8Array) {
-    try {
-      const block = await Block.fromJsonRpcProvider(
-        this.provider,
-        toType(blockId, TypeOutput.BigInt),
-        { setHardfork: true }
-      )
-      return block
-    } catch (err) {
-      console.log(err)
-      throw err
+  async getBlock(blockId: number) {
+    const block = await fetchFromProvider(this.provider, {
+      method: 'eth_getBlockByNumber',
+      params: [intToHex(blockId), false],
+    })
+    return {
+      hash: () => hexToBytes(block.hash),
     }
+  }
+
+  shallowCopy() {
+    return this
   }
 }
