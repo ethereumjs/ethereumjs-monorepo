@@ -24,12 +24,17 @@ export class DNS {
   protected _DNSTreeCache: { [key: string]: string }
   protected readonly _errorTolerance: number = 10
 
+  private DEBUG: boolean
+
   constructor(options: DNSOptions = {}) {
     this._DNSTreeCache = {}
 
     if (typeof options.dnsServerAddress === 'string') {
       dns.setServers([options.dnsServerAddress])
     }
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   /**
@@ -60,7 +65,9 @@ export class DNS {
 
       if (this._isNewPeer(peer, peers)) {
         peers.push(peer)
-        debug(`got new peer candidate from DNS address=${peer.address}`)
+        if (this.DEBUG) {
+          debug(`got new peer candidate from DNS address=${peer.address}`)
+        }
       }
 
       totalSearches++
@@ -98,7 +105,9 @@ export class DNS {
           return null
       }
     } catch (error: any) {
-      debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
+      if (this.DEBUG) {
+        debug(`Errored searching DNS tree at subdomain ${subdomain}: ${error}`)
+      }
       return null
     }
   }

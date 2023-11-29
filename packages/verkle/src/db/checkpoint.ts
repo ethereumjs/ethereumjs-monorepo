@@ -16,7 +16,7 @@ export class CheckpointDB implements DB {
   // Starting with lru-cache v8 undefined and null are not allowed any more
   // as cache values. At the same time our design works well, since undefined
   // indicates for us that we know that the value is not present in the
-  // underlying trie database as well (so it carries real value).
+  // underlying tree database as well (so it carries real value).
   //
   // Solution here seems therefore adequate, other solutions would rather
   // be some not so clean workaround.
@@ -43,7 +43,7 @@ export class CheckpointDB implements DB {
   constructor(opts: CheckpointDBOpts) {
     this.db = opts.db
     this.cacheSize = opts.cacheSize ?? 0
-    // Roots of trie at the moment of checkpoint
+    // Roots of tree at the moment of checkpoint
     this.checkpoints = []
 
     if (this.cacheSize > 0) {

@@ -4,8 +4,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ethers } from 'ethers'
 
-import { AccountCache, CacheType, StorageCache } from './cache/index.js'
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
+import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
 import type { Proof } from './index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'

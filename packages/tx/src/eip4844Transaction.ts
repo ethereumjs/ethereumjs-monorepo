@@ -168,6 +168,15 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     if (this.blobVersionedHashes.length > LIMIT_BLOBS_PER_TX) {
       const msg = this._errorMsg(`tx can contain at most ${LIMIT_BLOBS_PER_TX} blobs`)
       throw new Error(msg)
+    } else if (this.blobVersionedHashes.length === 0) {
+      const msg = this._errorMsg(`tx should contain at least one blob`)
+      throw new Error(msg)
+    }
+    if (this.to === undefined) {
+      const msg = this._errorMsg(
+        `tx should have a "to" field and cannot be used to create contracts`
+      )
+      throw new Error(msg)
     }
 
     this.blobs = txData.blobs?.map((blob) => toBytes(blob))
