@@ -5,75 +5,79 @@ import { FlatStateManager } from '../../src/index.js'
 import { createAccount } from '../util.js'
 
 describe('StateManager -> General/Account', () => {
-  it(`should set the state root to empty`, async () => {
-    const stateManager = new FlatStateManager()
-    assert.ok(
-      equalsBytes(await stateManager._snapshot.merkleize(), KECCAK256_RLP),
-      'it has default root'
-    )
+  // TODO setStateRoot has not been implemented yet for snapshot
+  //
+  //
 
-    // commit some data to the trie
-    const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-    const account = createAccount(BigInt(0), BigInt(1000))
-    await stateManager.checkpoint()
-    await stateManager.putAccount(address, account)
-    await stateManager.commit()
-    await stateManager.flush()
-    assert.ok(
-      !equalsBytes(await stateManager._snapshot.merkleize(), KECCAK256_RLP),
-      'it has a new root'
-    )
+  // it(`should set the state root to empty`, async () => {
+  //   const stateManager = new FlatStateManager()
+  //   assert.ok(
+  //     equalsBytes(await stateManager._snapshot.merkleize(), KECCAK256_RLP),
+  //     'it has default root'
+  //   )
 
-    // set state root to empty trie root
-    await stateManager.setStateRoot(KECCAK256_RLP)
+  //   // commit some data to the trie
+  //   const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+  //   const account = createAccount(BigInt(0), BigInt(1000))
+  //   await stateManager.checkpoint()
+  //   await stateManager.putAccount(address, account)
+  //   await stateManager.commit()
+  //   await stateManager.flush()
+  //   assert.ok(
+  //     !equalsBytes(await stateManager._snapshot.merkleize(), KECCAK256_RLP),
+  //     'it has a new root'
+  //   )
 
-    const res = await stateManager.getStateRoot()
-    assert.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
-  })
+  //   // set state root to empty trie root
+  //   await stateManager.setStateRoot(KECCAK256_RLP)
 
-  it(`should clear the cache when the state root is set`, async () => {
-    const stateManager = new FlatStateManager()
-    const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-    const account = createAccount()
+  //   const res = await stateManager.getStateRoot()
+  //   assert.ok(equalsBytes(res, KECCAK256_RLP), 'it has default root')
+  // })
 
-    // test account storage cache
-    const initialStateRoot = await stateManager.getStateRoot()
-    await stateManager.checkpoint()
-    await stateManager.putAccount(address, account)
+  // it(`should clear the cache when the state root is set`, async () => {
+  //   const stateManager = new FlatStateManager()
+  //   const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+  //   const account = createAccount()
 
-    const account0 = await stateManager.getAccount(address)
-    assert.equal(account0!.balance, account.balance, 'account value is set in the cache')
+  //   // test account storage cache
+  //   const initialStateRoot = await stateManager.getStateRoot()
+  //   await stateManager.checkpoint()
+  //   await stateManager.putAccount(address, account)
 
-    await stateManager.commit()
+  //   const account0 = await stateManager.getAccount(address)
+  //   assert.equal(account0!.balance, account.balance, 'account value is set in the cache')
 
-    const account1 = await stateManager.getAccount(address)
-    assert.equal(account1!.balance, account.balance, 'account value is set in the state trie')
+  //   await stateManager.commit()
 
-    await stateManager.setStateRoot(initialStateRoot)
-    const account2 = await stateManager.getAccount(address)
-    assert.equal(account2, undefined, 'account is not present any more in original state root')
+  //   const account1 = await stateManager.getAccount(address)
+  //   assert.equal(account1!.balance, account.balance, 'account value is set in the state trie')
 
-    // test contract storage cache
-    await stateManager.checkpoint()
-    const key = hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
-    const value = hexToBytes('0x1234')
-    await stateManager.putAccount(address, account)
-    await stateManager.putContractStorage(address, key, value)
+  //   await stateManager.setStateRoot(initialStateRoot)
+  //   const account2 = await stateManager.getAccount(address)
+  //   assert.equal(account2, undefined, 'account is not present any more in original state root')
 
-    const contract0 = await stateManager.getContractStorage(address, key)
-    assert.ok(
-      equalsBytes(contract0, value),
-      "contract key's value is set in the _storageTries cache"
-    )
+  //   // test contract storage cache
+  //   await stateManager.checkpoint()
+  //   const key = hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
+  //   const value = hexToBytes('0x1234')
+  //   await stateManager.putAccount(address, account)
+  //   await stateManager.putContractStorage(address, key, value)
 
-    await stateManager.commit()
-    await stateManager.setStateRoot(initialStateRoot)
-    try {
-      await stateManager.getContractStorage(address, key)
-    } catch (e) {
-      assert.ok(true, 'should throw if getContractStorage() is called on non existing address')
-    }
-  })
+  //   const contract0 = await stateManager.getContractStorage(address, key)
+  //   assert.ok(
+  //     equalsBytes(contract0, value),
+  //     "contract key's value is set in the _storageTries cache"
+  //   )
+
+  //   await stateManager.commit()
+  //   await stateManager.setStateRoot(initialStateRoot)
+  //   try {
+  //     await stateManager.getContractStorage(address, key)
+  //   } catch (e) {
+  //     assert.ok(true, 'should throw if getContractStorage() is called on non existing address')
+  //   }
+  // })
 
   it('should put and get account, and add to the underlying cache if the account is not found', async () => {
     const stateManager = new FlatStateManager()

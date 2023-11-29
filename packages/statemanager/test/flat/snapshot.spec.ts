@@ -1,6 +1,7 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, KECCAK256_RLP, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
 import { Snapshot } from '../../src/index.js'
@@ -229,7 +230,7 @@ describe('snapshot checkpointing', () => {
   it('should commit change after checkpoint', async () => {
     const snapshot = new Snapshot()
     const addr = new Address(hexToBytes('0x' + '3'.repeat(40)))
-    const acc = new Account()
+    let acc = new Account()
 
     await snapshot.putAccount(addr, acc)
 
@@ -246,11 +247,14 @@ describe('snapshot checkpointing', () => {
     await snapshot.commit()
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(
-      JSON.stringify(res),
-      JSON.stringify(
-        Account.fromAccountData({ codeHash: keccak256(hexToBytes('0x' + 'abab')) }).serialize()
-      )
+
+    acc = new Account()
+    acc.codeHash = keccak256(hexToBytes('0x' + 'abab'))
+
+    assert.ok(
+      res !== undefined &&
+        JSON.stringify(Account.fromAccountData(res)) ===
+          JSON.stringify(Account.fromAccountData(acc.serialize()))
     )
   })
 })
