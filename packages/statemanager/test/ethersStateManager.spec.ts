@@ -28,17 +28,14 @@ import type { EVMRunCallOpts } from '@ethereumjs/evm/dist/cjs/types.js'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
+const provider = process.env.PROVIDER ?? ''
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
 describe('Ethers State Manager initialization tests', () => {
   it('should work', () => {
-    const provider = new MockProvider()
     let state = new EthersStateManager({ provider, blockTag: 1n })
-    assert.ok(
-      state instanceof EthersStateManager,
-      'was able to instantiate state manager with JsonRpcProvider subclass'
-    )
+    assert.ok(state instanceof EthersStateManager, 'was able to instantiate state manager')
     assert.equal(
       (state as any)._blockTag,
       '0x1',
@@ -58,7 +55,7 @@ describe('Ethers State Manager initialization tests', () => {
       'was able to instantiate state manager with valid url'
     )
 
-    const invalidProvider = new ethers.SocketProvider('mainnet')
+    const invalidProvider = 'google.com'
     assert.throws(
       () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
       undefined,
@@ -73,13 +70,10 @@ describe('Ethers State Manager API tests', () => {
     if (isBrowser() === true) {
       // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     } else {
-      const provider =
-        process.env.PROVIDER !== undefined
-          ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
-          : new MockProvider()
-      const state = new EthersStateManager({ provider, blockTag: 1n })
+      const state = new EthersStateManager({ provider, blockTag: 18678452n })
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
       const account = await state.getAccount(vitalikDotEth)
+
       assert.ok(account!.nonce > 0n, 'Vitalik.eth returned a valid nonce')
 
       await state.putAccount(vitalikDotEth, account!)
@@ -254,10 +248,7 @@ describe('runTx custom transaction test', () => {
       // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     } else {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-      const provider =
-        process.env.PROVIDER !== undefined
-          ? new ethers.JsonRpcProvider(process.env.PROVIDER, 1)
-          : new MockProvider()
+
       const state = new EthersStateManager({ provider, blockTag: 1n })
       const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
@@ -288,11 +279,6 @@ describe('runTx test: replay mainnet transactions', () => {
     } else {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-      const provider =
-        process.env.PROVIDER !== undefined
-          ? new ethers.JsonRpcProvider(process.env.PROVIDER)
-          : new MockProvider()
-
       const blockTag = 15496077n
       common.setHardforkBy({ blockNumber: blockTag })
       const tx = await TransactionFactory.fromRPC(txData, { common })
@@ -318,10 +304,7 @@ describe('runBlock test', () => {
       // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     } else {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-      const provider =
-        process.env.PROVIDER !== undefined
-          ? new ethers.JsonRpcProvider(process.env.PROVIDER)
-          : new MockProvider()
+
       const blockTag = 500000n
       const state = new EthersStateManager({
         provider,
@@ -355,7 +338,6 @@ describe('runBlock test', () => {
 
 describe('blockchain', () => {
   it('uses blockhash', async () => {
-    const provider = 'https://mainnet.infura.io/v3/[yourInfuraKeyHere]'
     const blockchain = new RPCBlockChain({}, provider)
     const blockTag = 18667271n
     const state = new EthersStateManager({ provider, blockTag })
