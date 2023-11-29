@@ -420,7 +420,7 @@ export class EthersStateManager implements EVMStateManagerInterface {
 
 export class RPCBlockChain {
   provider: string
-  constructor(opts: {}, provider?: string) {
+  constructor(provider: string) {
     if (provider === undefined || provider === '') throw new Error('provider URL is required')
     this.provider = provider
   }

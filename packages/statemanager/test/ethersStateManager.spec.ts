@@ -341,7 +341,7 @@ describe('runBlock test', () => {
 
 describe('blockchain', () =>
   it('uses blockhash', async () => {
-    const blockchain = new RPCBlockChain({}, provider)
+    const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
     const state = new EthersStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
