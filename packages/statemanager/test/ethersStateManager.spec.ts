@@ -31,25 +31,7 @@ const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
-describe('mock tests', () => {
-  it.skip('mock test', async () => {
-    vi.doMock('@ethereumjs/util', async () => {
-      const util = (await vi.importActual('@ethereumjs/util')) as any
-      return {
-        ...util,
-        fetchFromProvider: vi.fn().mockImplementation(async (url, { method, params }: any) => {
-          const res = await getValues(method, 1, params)
-          return res
-        }),
-      }
-    })
-    const util = await import('@ethereumjs/util')
-    await util.fetchFromProvider('hello', {
-      method: 'eth_getCode',
-      params: ['0xd8da6bf26964af9d7eed9e03e53415d37aa96046'],
-    })
-  })
-})
+
 describe('Ethers State Manager initialization tests', async () => {
   vi.mock('@ethereumjs/util', async () => {
     const util = (await vi.importActual('@ethereumjs/util')) as any

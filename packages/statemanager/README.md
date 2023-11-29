@@ -62,24 +62,38 @@ First, a simple example of usage:
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
 import { EthersStateManager } from '@ethereumjs/statemanager'
-import { ethers } from 'ethers'
 
-const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
+const provider = 'https://path.to.my.provider.com'
 const stateManager = new EthersStateManager({ provider, blockTag: 500000n })
 const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
 const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
 ```
 
-The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
+The `EthersStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
 **Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
 
 ### Points on usage:
 
+#### Instantiating the EVM
+
+In order to have a fully functioning EVM instance, you must also instantiate the `EthersStateManager` and the `RpcBlockChain` and use that when instantiating your EVM as below:
+
+```js
+import { EthersStateManager, RPCBlockChain } from '../src/ethersStateManager.js'
+import { EVM } from '@ethereumjs/evm'
+
+const blockchain = new RPCBlockChain({}, provider)
+const blockTag = 1n
+const state = new EthersStateManager({ provider, blockTag })
+const evm = new EVM({ blockchain, stateManager: state })
+```
+
+Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM means that the `BLOCKHASH` opcode will fail to work correctly during EVM execution.
+
 #### Provider selection
 
-- If you don't have access to a provider, you can use the `CloudFlareProvider` from the `@ethersproject/providers` module to get a quickstart.
 - The provider you select must support the `eth_getProof`, `eth_getCode`, and `eth_getStorageAt` RPC methods.
 - Not all providers support retrieving state from all block heights so refer to your provider's documentation. Trying to use a block height not supported by your provider (e.g. any block older than the last 256 for CloudFlare) will result in RPC errors when using the state manager.
 
