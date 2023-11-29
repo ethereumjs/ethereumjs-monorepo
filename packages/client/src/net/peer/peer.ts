@@ -41,7 +41,6 @@ export abstract class Peer extends EventEmitter {
   public server: Server | undefined
   protected transport: string
   protected protocols: Protocol[]
-  protected boundProtocols: BoundProtocol[] = []
   private _idle: boolean
 
   // TODO check if this should be moved into RlpxPeer
@@ -94,7 +93,12 @@ export abstract class Peer extends EventEmitter {
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
-    this.boundProtocols.map((e) => e.handleMessageQueue())
+    const protocols = [this.eth, this.snap, this.les]
+    protocols.map((e) => {
+      if (e !== undefined) {
+        e.handleMessageQueue()
+      }
+    })
   }
 
   async addProtocol(sender: Sender, protocol: Protocol): Promise<void> {
@@ -130,15 +134,15 @@ export abstract class Peer extends EventEmitter {
     } else if (protocol.name === 'les') {
       this.les = <BoundLesProtocol>bound
     }
-    this.boundProtocols.push(bound)
   }
 
   toString(withFullId = false): string {
+    const protocols = [this.eth, this.snap, this.les]
     const properties = {
       id: withFullId ? this.id : this.id.substr(0, 8),
       address: this.address,
       transport: this.transport,
-      protocols: this.boundProtocols.map((e) => e.name),
+      protocols: protocols.filter((e) => e !== undefined).map((e) => (<BoundProtocol>e).name),
       inbound: this.inbound,
     }
     return Object.entries(properties)
