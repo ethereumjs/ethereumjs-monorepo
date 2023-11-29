@@ -1,5 +1,6 @@
 import { Chain, Common } from '@ethereumjs/common'
 // import { RLP } from '@ethereumjs/rlp'
+import { RLP } from '@ethereumjs/rlp'
 import {
   // KECCAK256_NULL,
   // KECCAK256_NULL_S,
@@ -18,13 +19,17 @@ import {
   // unpadBytes,
   // unprefixedHexToBytes,
   utf8ToBytes,
+  Account,
+  KECCAK256_NULL,
+  equalsBytes,
+  unpadBytes,
 } from '@ethereumjs/util'
-import { Account } from '@ethereumjs/util'
-import { KECCAK256_NULL } from '@ethereumjs/util'
 import debugDefault from 'debug'
 // import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 // import { AccountCache, CodeCache, StorageCache } from './cache/index.js'
+
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 
@@ -190,12 +195,16 @@ export class FlatStateManager implements EVMStateManagerInterface {
 
   /**
    * Adds `value` to the state trie as code, and sets `codeHash` on the account
-   * corresponding to `address` to reference this.
+   * corresponding to `address` to reference this. If account does not exist, a
+   * new account will be created.
    * @param address - Address of the `account` to add the `code` for
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    throw new Error('Not yet implemented')
+    if ((await this.getAccount(address)) === undefined) {
+      await this.putAccount(address, new Account())
+    }
+    await this._snapshot.putCode(address, value)
   }
 
   /**
@@ -205,7 +214,8 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Returns an empty `Uint8Array` if the account has no associated code.
    */
   async getContractCode(address: Address): Promise<Uint8Array> {
-    throw new Error('Not yet implemented')
+    const code = (await this._snapshot.getCode(address)) ?? new Uint8Array(0)
+    return code
   }
 
   /**
@@ -218,7 +228,15 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * If this does not exist an empty `Uint8Array` is returned.
    */
   async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    throw new Error('Not yet implemented')
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    const value = await this._snapshot.getStorageSlot(address, key)
+    if (!value) return new Uint8Array(0)
+
+    const decoded = RLP.decode(value ?? new Uint8Array(0)) as Uint8Array
+    return decoded
   }
 
   /**
@@ -231,7 +249,21 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * If it is a empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    throw new Error('Not yet implemented')
+    if (key.length !== 32) {
+      throw new Error('Storage key must be 32 bytes long')
+    }
+
+    if (value.length > 32) {
+      throw new Error('Storage value cannot be longer than 32 bytes')
+    }
+
+    value = unpadBytes(value)
+    if (value instanceof Uint8Array && value.length) {
+      const encodedValue = RLP.encode(value)
+      await this._snapshot.putStorageSlot(address, key, encodedValue)
+    } else {
+      await this._snapshot.delStorageSlot(address, key)
+    }
   }
 
   /**
@@ -239,7 +271,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param address - Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    throw new Error('Not yet implemented')
+    return this._snapshot.clearAccountStorage(address)
   }
 
   /**
