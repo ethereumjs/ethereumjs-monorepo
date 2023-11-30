@@ -9,7 +9,7 @@ import {
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
-import { Server as RPCServer } from 'jayson/promise'
+import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
@@ -32,6 +32,7 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
+import type { AddressInfo } from 'node:net'
 
 const request = require('supertest')
 
@@ -191,10 +192,12 @@ export function baseSetup(clientOpts: any = {}) {
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
+  const host = server.address() as AddressInfo
+  const rpc = Client.http({ port: host.port })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
-  return { server, manager, client }
+  return { server, manager, client, rpc }
 }
 
 export function params(method: string, params: Array<any> = []) {
