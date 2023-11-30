@@ -1,4 +1,24 @@
-export const getValues = async (method: string, id: number, params: any[]): Promise<any> => {
+import type { JsonBlock } from '@ethereumjs/block'
+
+export type SupportedMethods =
+  | 'eth_getProof'
+  | 'eth_getStorageAt'
+  | 'eth_getCode'
+  | 'eth_getBlockByNumber'
+  | 'eth_getTransactionByHash'
+
+export type JsonReturnType = {
+  eth_getProof: { id: number; result: any }
+  eth_getStorageAt: { id: number; result: any }
+  eth_getCode: { id: number; result: string }
+  eth_getBlockByNumber: { id: number; result: JsonBlock }
+  eth_getTransactionByHash: { id: number; result: any }
+}
+export const getValues = async <Method extends SupportedMethods>(
+  method: Method,
+  id: number,
+  params: any[]
+): Promise<JsonReturnType[Method]> => {
   switch (method) {
     case 'eth_getProof':
       return {
@@ -12,11 +32,6 @@ export const getValues = async (method: string, id: number, params: any[]): Prom
         result: await getBlockValues(params as any),
       }
 
-    case 'eth_chainId': // Always pretends to be mainnet
-      return {
-        id,
-        result: 1,
-      }
     case 'eth_getTransactionByHash':
       return {
         id,
@@ -40,12 +55,7 @@ export const getValues = async (method: string, id: number, params: any[]): Prom
       }
 
     default:
-      return {
-        id,
-        result: {
-          error: 'method not implemented',
-        },
-      }
+      throw new Error(`${method} not supported in tests`)
   }
 }
 
