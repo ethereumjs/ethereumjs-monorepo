@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseSetup } from '../helpers'
 
 const method = 'web3_sha3'
 

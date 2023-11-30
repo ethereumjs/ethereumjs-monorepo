@@ -1,4 +1,5 @@
-import { randomBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import { Client } from 'jayson/promise'
 import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
 
@@ -7,53 +8,48 @@ import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 import { baseRequest, closeRPC, createClient, createManager, params, startRPC } from './helpers'
 
 import type { TAlgorithm } from 'jwt-simple'
+import type { AddressInfo } from 'net'
 
 const request = require('supertest')
 
 const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {
-  it('without Content-Type header', () => {
+  it('without Content-Type header', async () => {
     const server = startRPC({})
+    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
     const req = 'plaintext'
-
-    request(server)
-      .post('/')
-      .send(req)
-      .expect(415)
-      .end((err: any) => {
-        closeRPC(server)
-        assert.notOk(err)
-      })
+    const res = await rpc.request(req, [])
+    assert.equal(res.error.code, -32601)
   })
 
-  it('auth protected server without any auth headers', () => {
+  it('auth protected server without any auth headers', async () => {
     const server = startRPC({}, undefined, { jwtSecret })
+    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
     const req = 'plaintext'
-
-    request(server)
-      .post('/')
-      .send(req)
-      .expect(401)
-      .end((err: any) => {
-        closeRPC(server)
-        assert.notOk(err)
-      })
+    try {
+      await rpc.request(req, [])
+      assert.notOk(undefined, 'should error when request not authenticated by JWT')
+    } catch (err: any) {
+      assert.equal(err.code, 401, 'unauthorized request')
+    }
   })
 
-  it('auth protected server with invalid token', () => {
+  it('auth protected server with invalid token', async () => {
     const server = startRPC({}, undefined, { jwtSecret })
+    const rpc = Client.http({
+      port: (server.address()! as AddressInfo).port,
+      headers: {
+        Authorization: `Bearer invalidToken`,
+      },
+    })
     const req = 'plaintext'
-
-    request(server)
-      .post('/')
-      .set('Authorization', 'Bearer invalidtoken')
-      .send(req)
-      .expect(401)
-      .end((err: any) => {
-        closeRPC(server)
-        assert.notOk(err)
-      })
+    try {
+      await rpc.request(req, [])
+      assert.notOk(undefined, 'should have thrown an error')
+    } catch (err: any) {
+      assert.equal(err.code, 401, 'errored with invalid token')
+    }
   })
 
   it('auth protected server with an invalid algorithm token', () => {
