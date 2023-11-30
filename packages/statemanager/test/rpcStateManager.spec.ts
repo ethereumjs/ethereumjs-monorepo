@@ -22,9 +22,6 @@ import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
 import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
-// Hack to detect if running in browser or not
-const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
