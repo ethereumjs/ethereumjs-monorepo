@@ -419,7 +419,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
 }
 
 export class RPCBlockChain {
-  provider: string
+  readonly provider: string
   constructor(provider: string) {
     if (provider === undefined || provider === '') throw new Error('provider URL is required')
     this.provider = provider

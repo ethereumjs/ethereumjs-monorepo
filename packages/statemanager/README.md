@@ -70,7 +70,7 @@ const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
 ```
 
-The `EthersStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
+The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
 **Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
 
@@ -78,7 +78,7 @@ The `EthersStateManager` can be be used with any JSON-RPC provider that supports
 
 #### Instantiating the EVM
 
-In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `EthersStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
+In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
 
 ```js
 import { RPCStateManager, RPCBlockChain } from '../src/rpcStateManager.js'
