@@ -16,7 +16,7 @@ import {
 import { VM } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { EthersStateManager, RPCBlockChain } from '../src/ethersStateManager.js'
+import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
@@ -30,9 +30,9 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
-// `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/ethersStateManager.spec.ts'
+// `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npm run tape -- 'test/rpcStateManager.spec.ts'
 
-describe('Ethers State Manager initialization tests', async () => {
+describe('RPC State Manager initialization tests', async () => {
   vi.mock('@ethereumjs/util', async () => {
     const util = (await vi.importActual('@ethereumjs/util')) as any
     return {
@@ -46,30 +46,30 @@ describe('Ethers State Manager initialization tests', async () => {
   await import('@ethereumjs/util')
 
   it('should work', () => {
-    let state = new EthersStateManager({ provider, blockTag: 1n })
-    assert.ok(state instanceof EthersStateManager, 'was able to instantiate state manager')
+    let state = new RPCStateManager({ provider, blockTag: 1n })
+    assert.ok(state instanceof RPCStateManager, 'was able to instantiate state manager')
     assert.equal(
       (state as any)._blockTag,
       '0x1',
       'State manager starts with default block tag of 1'
     )
 
-    state = new EthersStateManager({ provider, blockTag: 1n })
+    state = new RPCStateManager({ provider, blockTag: 1n })
     assert.equal(
       (state as any)._blockTag,
       '0x1',
       'State Manager instantiated with predefined blocktag'
     )
 
-    state = new EthersStateManager({ provider: 'https://google.com', blockTag: 1n })
+    state = new RPCStateManager({ provider: 'https://google.com', blockTag: 1n })
     assert.ok(
-      state instanceof EthersStateManager,
+      state instanceof RPCStateManager,
       'was able to instantiate state manager with valid url'
     )
 
     const invalidProvider = 'google.com'
     assert.throws(
-      () => new EthersStateManager({ provider: invalidProvider as any, blockTag: 1n }),
+      () => new RPCStateManager({ provider: invalidProvider as any, blockTag: 1n }),
       undefined,
       undefined,
       'cannot instantiate state manager with invalid provider'
@@ -77,12 +77,12 @@ describe('Ethers State Manager initialization tests', async () => {
   })
 })
 
-describe('Ethers State Manager API tests', () => {
+describe('RPC State Manager API tests', () => {
   it('should work', async () => {
     if (isBrowser() === true) {
       // The `MockProvider` is not able to load JSON files dynamically in browser so skipped in browser tests
     } else {
-      const state = new EthersStateManager({ provider, blockTag: 1n })
+      const state = new RPCStateManager({ provider, blockTag: 1n })
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
       const account = await state.getAccount(vitalikDotEth)
 
@@ -252,7 +252,7 @@ describe('runTx custom transaction test', () => {
     } else {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-      const state = new EthersStateManager({ provider, blockTag: 1n })
+      const state = new RPCStateManager({ provider, blockTag: 1n })
       const vm = await VM.create({ common, stateManager: <any>state }) // TODO fix the type DefaultStateManager back to StateManagerInterface in VM
 
       const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -285,7 +285,7 @@ describe('runTx test: replay mainnet transactions', () => {
       const blockTag = 15496077n
       common.setHardforkBy({ blockNumber: blockTag })
       const tx = await TransactionFactory.fromRPC(txData, { common })
-      const state = new EthersStateManager({
+      const state = new RPCStateManager({
         provider,
         // Set the state manager to look at the state of the chain before the block has been executed
         blockTag: blockTag - 1n,
@@ -309,7 +309,7 @@ describe('runBlock test', () => {
       const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
       const blockTag = 500000n
-      const state = new EthersStateManager({
+      const state = new RPCStateManager({
         provider,
         // Set the state manager to look at the state of the chain before the block has been executed
         blockTag: blockTag - 1n,
@@ -343,7 +343,7 @@ describe('blockchain', () =>
   it('uses blockhash', async () => {
     const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
-    const state = new EthersStateManager({ provider, blockTag })
+    const state = new RPCStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
     const code = '0x600143034060005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))

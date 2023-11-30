@@ -81,12 +81,12 @@ The `EthersStateManager` can be be used with any JSON-RPC provider that supports
 In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `EthersStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
 
 ```js
-import { EthersStateManager, RPCBlockChain } from '../src/ethersStateManager.js'
+import { RPCStateManager, RPCBlockChain } from '../src/rpcStateManager.js'
 import { EVM } from '@ethereumjs/evm'
 
 const blockchain = new RPCBlockChain({}, provider)
 const blockTag = 1n
-const state = new EthersStateManager({ provider, blockTag })
+const state = new RPCStateManager({ provider, blockTag })
 const evm = new EVM({ blockchain, stateManager: state })
 ```
 

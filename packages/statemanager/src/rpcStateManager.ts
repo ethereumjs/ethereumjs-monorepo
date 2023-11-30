@@ -24,12 +24,12 @@ import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-export interface EthersStateManagerOpts {
+export interface RPCStateManagerOpts {
   provider: string
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager implements EVMStateManagerInterface {
+export class RPCStateManager implements EVMStateManagerInterface {
   protected _provider: string
   protected _contractCache: Map<string, Uint8Array>
   protected _storageCache: StorageCache
@@ -38,13 +38,13 @@ export class EthersStateManager implements EVMStateManagerInterface {
   originalStorageCache: OriginalStorageCache
   protected _debug: Debugger
   protected DEBUG: boolean
-  constructor(opts: EthersStateManagerOpts) {
+  constructor(opts: RPCStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:ethersStateManager')
+    this._debug = createDebugLogger('statemanager:rpcStateManager')
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
       this._provider = opts.provider
     } else {
@@ -63,10 +63,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
   /**
    * Note that the returned statemanager will share the same JsonRpcProvider as the original
    *
-   * @returns EthersStateManager
+   * @returns RPCStateManager
    */
-  shallowCopy(): EthersStateManager {
-    const newState = new EthersStateManager({
+  shallowCopy(): RPCStateManager {
+    const newState = new RPCStateManager({
       provider: this._provider,
       blockTag: BigInt(this._blockTag),
     })
@@ -395,19 +395,19 @@ export class EthersStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   getStateRoot = async () => {
     return new Uint8Array(32)
   }
 
   /**
-   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   setStateRoot = async (_root: Uint8Array) => {}
 
   /**
-   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
     throw new Error('function not implemented')
