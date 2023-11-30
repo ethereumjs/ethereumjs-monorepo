@@ -25,7 +25,7 @@ Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
-The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager` as well as an `EthersStateManager` implementation that sources state and history data from an external `ethers` provider.
+The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager` as well as an `RPCStateManager` implementation that sources state and history data from an external JSON-RPC provider.
 
 It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need for direct state accesses.
 
@@ -55,16 +55,16 @@ Caches now "survive" a flush operation and especially long-lived usage scenarios
 
 Have a loot at the extended `CacheOptions` on how to use and leverage the new cache system.
 
-### `EthersStateManager`
+### `RPCStateManager`
 
 First, a simple example of usage:
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
-import { EthersStateManager } from '@ethereumjs/statemanager'
+import { RPCStateManager } from '@ethereumjs/statemanager'
 
 const provider = 'https://path.to.my.provider.com'
-const stateManager = new EthersStateManager({ provider, blockTag: 500000n })
+const stateManager = new RPCStateManager({ provider, blockTag: 500000n })
 const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
 const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
@@ -72,7 +72,7 @@ console.log('Vitalik has a current ETH balance of ', account.balance)
 
 The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
-**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
+**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with a JSON-RPC provider connecting to a third-party API service like Infura!
 
 ### Points on usage:
 
@@ -106,12 +106,12 @@ Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM
 
 #### Potential gotchas
 
-- The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
+- The RPC State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
 - If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
 
 #### Further reference
 
-Refer to [this test script](./test/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
 ## Browser
 
