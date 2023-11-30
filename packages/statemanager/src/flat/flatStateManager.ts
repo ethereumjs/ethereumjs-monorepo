@@ -163,7 +163,11 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param account - The account to store or undefined if to be deleted
    */
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
-    if (account !== undefined) await this._snapshot.putAccount(address, account)
+    if (account === undefined) {
+      await this._snapshot.delAccount(address)
+    } else {
+      await this._snapshot.putAccount(address, account)
+    }
   }
 
   /**

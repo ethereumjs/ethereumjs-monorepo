@@ -234,7 +234,11 @@ export class Snapshot {
       if (elem === undefined) {
         await this._db.del(hexToBytes(addressHex))
       } else {
-        await this._db.put(hexToBytes(addressHex), elem.data ?? KECCAK256_NULL) // TODO or instead of putting null you should delete
+        if (elem.data !== undefined) {
+          await this._db.put(hexToBytes(addressHex), elem.data)
+        } else {
+          await this._db.del(hexToBytes(addressHex))
+        }
       }
     }
   }
