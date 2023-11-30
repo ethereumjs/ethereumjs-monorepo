@@ -438,6 +438,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Clears all underlying caches
    */
   clearCaches() {
-    throw new Error('Not yet implemented')
+    // throw new Error('Not yet implemented')
+    return
   }
 }
