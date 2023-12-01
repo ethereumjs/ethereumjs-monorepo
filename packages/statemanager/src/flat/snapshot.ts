@@ -147,14 +147,14 @@ export class Snapshot {
   }
 
   async putCode(address: Address, code: Uint8Array): Promise<void> {
-    const codeHash = keccak256(code)
-    if (equalsBytes(codeHash, KECCAK256_NULL)) {
-      return
-    }
-
     const key = concatenateUint8Arrays([CODE_PREFIX, keccak256(address.bytes)])
     await this._saveCachePreState(key)
-    await this._db.put(key, code)
+    const codeHash = keccak256(code)
+    if (equalsBytes(codeHash, KECCAK256_NULL)) {
+      await this._db.del(key)
+    } else {
+      await this._db.put(key, code)
+    }
 
     // update codeHash field of associated account
     const rawAccount = await this.getAccount(address)
