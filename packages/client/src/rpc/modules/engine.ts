@@ -13,7 +13,9 @@ import {
   zeros,
 } from '@ethereumjs/util'
 
+import { ExecStatus } from '../../execution'
 import { PendingBlock } from '../../miner'
+import { PutStatus } from '../../sync'
 import { short } from '../../util'
 import {
   INTERNAL_ERROR,
@@ -834,6 +836,53 @@ export class Engine {
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
       const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
+      if (
+        this.skeleton.fillStatus?.status === PutStatus.INVALID &&
+        optimisticLookup &&
+        headBlock.header.number >= this.skeleton.fillStatus.height
+      ) {
+        const latestValidHash =
+          this.chain.blocks.latest !== null
+            ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+            : bytesToHex(zeros(32))
+        const response = {
+          status: Status.INVALID,
+          validationError: this.skeleton.fillStatus.validationError ?? '',
+          latestValidHash,
+        }
+        return response
+      }
+
+      if (
+        this.execution.chainStatus?.status === ExecStatus.INVALID &&
+        optimisticLookup &&
+        headBlock.header.number >= this.execution.chainStatus.height
+      ) {
+        // if the invalid block is canonical along the current chain return invalid
+        const invalidBlock = await this.skeleton.getBlockByHash(
+          this.execution.chainStatus.hash,
+          true
+        )
+        if (invalidBlock !== undefined) {
+          // hard luck: block along canonical chain is invalid
+          const latestValidHash = await validHash(
+            invalidBlock.header.parentHash,
+            this.chain,
+            this.chainCache
+          )
+          const validationError = `Block number=${invalidBlock.header.number} hash=${short(
+            invalidBlock.hash()
+          )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
+
+          const response = {
+            status: Status.INVALID,
+            latestValidHash,
+            validationError,
+          }
+          return response
+        }
+      }
+
       const status =
         // If the transitioned to beacon sync and this block can extend beacon chain then
         optimisticLookup === true ? Status.SYNCING : Status.ACCEPTED
@@ -849,6 +898,23 @@ export class Engine {
     // Call skeleton.setHead without forcing head change to return if the block is reorged or not
     // Do optimistic lookup if not reorged
     const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
+    if (
+      this.skeleton.fillStatus?.status === PutStatus.INVALID &&
+      optimisticLookup &&
+      headBlock.header.number >= this.skeleton.fillStatus.height
+    ) {
+      const latestValidHash =
+        this.chain.blocks.latest !== null
+          ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+          : bytesToHex(zeros(32))
+      const response = {
+        status: Status.INVALID,
+        validationError: this.skeleton.fillStatus.validationError ?? '',
+        latestValidHash,
+      }
+      return response
+    }
+
     this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
     // we should check if the block exists executed in remoteBlocks or in chain as a check since stateroot
@@ -864,6 +930,33 @@ export class Engine {
         validationError: null,
       }
       return response
+    }
+
+    if (
+      this.execution.chainStatus?.status === ExecStatus.INVALID &&
+      optimisticLookup &&
+      headBlock.header.number >= this.execution.chainStatus.height
+    ) {
+      // if the invalid block is canonical along the current chain return invalid
+      const invalidBlock = await this.skeleton.getBlockByHash(this.execution.chainStatus.hash, true)
+      if (invalidBlock !== undefined) {
+        // hard luck: block along canonical chain is invalid
+        const latestValidHash = await validHash(
+          invalidBlock.header.parentHash,
+          this.chain,
+          this.chainCache
+        )
+        const validationError = `Block number=${invalidBlock.header.number} hash=${short(
+          invalidBlock.hash()
+        )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
+
+        const response = {
+          status: Status.INVALID,
+          latestValidHash,
+          validationError,
+        }
+        return response
+      }
     }
 
     const vmHead = await this.chain.blockchain.getIteratorHead()
@@ -1153,6 +1246,22 @@ export class Engine {
       finalizedBlockHash: finalized,
     })
 
+    if (this.skeleton.fillStatus?.status === PutStatus.INVALID) {
+      const latestValidHash =
+        this.chain.blocks.latest !== null
+          ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
+          : bytesToHex(zeros(32))
+      const response = {
+        payloadStatus: {
+          status: Status.INVALID,
+          validationError: this.skeleton.fillStatus.validationError ?? '',
+          latestValidHash,
+        },
+        payloadId: null,
+      }
+      return response
+    }
+
     if (reorged) await this.service.beaconSync?.reorged(headBlock)
 
     // Only validate this as terminal block if this block's difficulty is non-zero,
@@ -1177,6 +1286,33 @@ export class Engine {
       (this.executedBlocks.get(headBlockHash.slice(2)) ??
         (await validExecutedChainBlock(headBlock, this.chain))) !== null
     if (!isHeadExecuted) {
+      if (this.execution.chainStatus?.status === ExecStatus.INVALID) {
+        // see if the invalid block is canonical along the current skeleton/chain return invalid
+        const invalidBlock = await this.skeleton.getBlockByHash(
+          this.execution.chainStatus.hash,
+          true
+        )
+        if (invalidBlock !== undefined) {
+          // hard luck: block along canonical chain is invalid
+          const latestValidHash = await validHash(
+            invalidBlock.header.parentHash,
+            this.chain,
+            this.chainCache
+          )
+          const validationError = `Block number=${invalidBlock.header.number} hash=${short(
+            invalidBlock.hash()
+          )} root=${short(invalidBlock.header.stateRoot)} along the canonical chain is invalid`
+
+          const payloadStatus = {
+            status: Status.INVALID,
+            latestValidHash,
+            validationError,
+          }
+          const response = { payloadStatus, payloadId: null }
+          return response
+        }
+      }
+
       // Trigger the statebuild here since we have finalized and safeblock available
       void this.service.buildHeadState()
 

@@ -19,7 +19,33 @@ function customPrecompile(_input: PrecompileInput): ExecResult {
   }
 }
 
+function customPrecompileNoInput(): ExecResult {
+  return {
+    executionGasUsed: expectedGas,
+    returnValue: expectedReturn,
+  }
+}
+
 describe('EVM -> custom precompiles', () => {
+  it('should work on precompiles without input arguments', async () => {
+    const EVMOverride = new EVM({
+      customPrecompiles: [
+        {
+          address: Address.zero(),
+          function: customPrecompileNoInput,
+        },
+      ],
+    })
+    const result = await EVMOverride.runCall({
+      to: Address.zero(),
+      gasLimit: BigInt(30000),
+      data: utf8ToBytes(''),
+      caller: sender,
+    })
+
+    assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
+    assert.equal(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
+  })
   it('should override existing precompiles', async () => {
     const EVMOverride = new EVM({
       customPrecompiles: [

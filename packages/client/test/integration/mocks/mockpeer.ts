@@ -70,7 +70,7 @@ export class MockPeer extends Peer {
       this.protocols.map(async (p) => {
         if (!(stream.protocols as string[]).includes(`${p.name}/${p.versions[0]}`)) return
         await p.open()
-        await this.bindProtocol(p, new MockSender(p.name, pushableFn, receiver))
+        await this.addProtocol(new MockSender(p.name, pushableFn, receiver), p)
       })
     )
     this.connected = true

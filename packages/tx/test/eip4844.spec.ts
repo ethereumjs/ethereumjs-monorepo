@@ -1,5 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import {
+  Address,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -39,6 +40,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
         type: 0x03,
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
         maxFeePerBlobGas: 1n,
+        to: Address.zero(),
       }
       const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
       assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
@@ -132,6 +134,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       const baseTxData = {
         type: 0x03,
         maxFeePerBlobGas: 1n,
+        to: Address.zero(),
       }
       const shortVersionHash = {
         blobVersionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
@@ -307,26 +310,22 @@ describe('Network wrapper tests', () => {
         'throws on blobsData and KZG proofs in txData'
       )
 
-      const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
-        {
-          blobVersionedHashes: [],
-          blobs: [],
-          kzgCommitments: [],
-          kzgProofs: [],
-          maxFeePerBlobGas: 100000000n,
-          gasLimit: 0xffffffn,
-          to: randomBytes(20),
-        },
-        { common }
-      )
-
-      const serializedWithEmptyBlob = txWithEmptyBlob.serializeNetworkWrapper()
       assert.throws(
-        () =>
-          BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithEmptyBlob, {
-            common,
-          }),
-        'Invalid transaction with empty blobs',
+        () => {
+          BlobEIP4844Transaction.fromTxData(
+            {
+              blobVersionedHashes: [],
+              blobs: [],
+              kzgCommitments: [],
+              kzgProofs: [],
+              maxFeePerBlobGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common }
+          )
+        },
+        'tx should contain at least one blob',
         undefined,
         'throws a transaction with no blobs'
       )
@@ -439,12 +438,13 @@ describe('hash() and signature verification', () => {
               storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
             },
           ],
+          to: Address.zero(),
         },
         { common }
       )
       assert.equal(
         bytesToHex(unsignedTx.getHashedMessageToSign()),
-        '0x8ce8c3544ca173c0e8dd0e86319d4ebfe649e15a730137a6659ba3a721a9ff8b',
+        '0x02560c5173b0d793ce019cfa515ece6a04a4b3f3d67eab67fbca78dd92d4ed76',
         'produced the correct transaction hash'
       )
       const signedTx = unsignedTx.sign(

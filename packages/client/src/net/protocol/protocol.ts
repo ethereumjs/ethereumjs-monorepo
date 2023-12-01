@@ -1,7 +1,4 @@
-import { BoundProtocol } from './boundprotocol'
-
 import type { Config } from '../../config'
-import type { Peer } from '../peer/peer'
 import type { Sender } from './sender'
 
 export interface ProtocolOptions {
@@ -144,29 +141,5 @@ export class Protocol {
       return message.decode(payload)
     }
     return payload
-  }
-
-  /**
-   * Binds this protocol to a given peer using the specified sender to handle
-   * message communication.
-   * @param peer peer
-   * @param sender sender
-   */
-  async bind(peer: Peer, sender: Sender): Promise<BoundProtocol> {
-    const bound = new BoundProtocol({
-      config: this.config,
-      protocol: this,
-      peer,
-      sender,
-    })
-    // Handshake only when snap, else
-    if (this.name !== 'snap') {
-      await bound.handshake(sender)
-    } else {
-      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
-    }
-    //@ts-ignore TODO: evaluate this line
-    peer[this.name] = bound
-    return bound
   }
 }

@@ -74,7 +74,12 @@ describe('[RlpxPeer]', async () => {
 
   it('should handle peer events', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
-    const peer = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const peer = new RlpxPeer({
+      config,
+      id: 'abcdef0123',
+      host: '10.0.0.1',
+      port: 1234,
+    })
     const rlpxPeer = { id: 'zyx321', getDisconnectPrefix: vi.fn() } as any
     ;(peer as any).bindProtocols = vi.fn().mockResolvedValue(undefined)
     peer.rlpxPeer = rlpxPeer
@@ -116,7 +121,12 @@ describe('[RlpxPeer]', async () => {
 
   it('should accept peer connection', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
-    const peer: any = new RlpxPeer({ config, id: 'abcdef0123', host: '10.0.0.1', port: 1234 })
+    const peer: any = new RlpxPeer({
+      config,
+      id: 'abcdef0123',
+      host: '10.0.0.1',
+      port: 1234,
+    })
     peer.bindProtocols = vi.fn().mockResolvedValue(null)
 
     await peer.accept('rlpxpeer' as any, 'server')
@@ -144,10 +154,10 @@ describe('[RlpxPeer]', async () => {
     const rlpxPeer = {
       getProtocols: vi.fn().mockReturnValue([proto0]),
     } as any
-    peer['bindProtocol'] = vi.fn().mockResolvedValue(undefined)
+    peer['addProtocol'] = vi.fn().mockResolvedValue(undefined)
 
-    await (peer as any).bindProtocols(rlpxPeer)
-    expect((peer as any).bindProtocol).toBeCalled()
+    await peer['bindProtocols'](rlpxPeer)
+    expect(peer.addProtocol).toBeCalled()
     assert.ok(peer.connected, 'connected set to true')
   })
 })

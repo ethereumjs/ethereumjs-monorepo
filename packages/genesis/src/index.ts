@@ -13,9 +13,6 @@ import type { GenesisState } from '@ethereumjs/util'
  * @returns genesisState of the chain
  */
 export function getGenesis(chainId: number): GenesisState | undefined {
-  // Use require statements here in favor of import statements
-  // to load json files on demand
-  // (high memory usage by large mainnet.json genesis state file)
   switch (chainId) {
     case Chain.Mainnet:
       return mainnetGenesis
