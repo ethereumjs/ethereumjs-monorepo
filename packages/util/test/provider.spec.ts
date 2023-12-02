@@ -30,6 +30,28 @@ describe('getProvider', () => {
 })
 
 describe('fetchFromProvider', () => {
+  it('should return the response of the jsonrpc request', async () => {
+    vi.stubGlobal('fetch', async (_url: string, _req: any) => {
+      return {
+        json: async () => {
+          return {
+            result: '0x1',
+          }
+        },
+        text: async () => {
+          return 'ERROR'
+        },
+        ok: true,
+      }
+    })
+    const res = await fetchFromProvider(providerUrl, {
+      method: 'eth_getBalance',
+      params: ['0xabcd'],
+    })
+    assert.equal(res, '0x1', 'returned correct response')
+    vi.unstubAllGlobals()
+  })
+
   it('should work', async () => {
     try {
       await fetchFromProvider(providerUrl, {
