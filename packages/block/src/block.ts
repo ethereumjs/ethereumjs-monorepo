@@ -8,6 +8,7 @@ import {
   Withdrawal,
   bigIntToHex,
   bytesToHex,
+  bytesToUtf8,
   equalsBytes,
   fetchFromProvider,
   getProvider,
@@ -224,11 +225,9 @@ export class Block {
     // they are currently only available via the engine api construced blocks
     let executionWitness
     if (executionWitnessBytes !== undefined) {
-      executionWitness = JSON.parse(
-        Buffer.from(RLP.decode(executionWitnessBytes) as Uint8Array).toString()
-      )
+      executionWitness = JSON.parse(bytesToUtf8(RLP.decode(executionWitnessBytes) as Uint8Array))
     } else {
-      // don't assign default witness if eip 6800 is implemeted as it leads to incorrect
+      // don't assign default witness if eip 6800 is implemented as it leads to incorrect
       // assumptions while executing the block. if not present in input implies its unavailable
       executionWitness = null
     }
