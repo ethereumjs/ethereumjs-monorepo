@@ -222,7 +222,7 @@ export class Block {
       ?.map(Withdrawal.fromWithdrawalData)
 
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
-    // they are currently only available via the engine api construced blocks
+    // they are currently only available via the engine api constructed blocks
     let executionWitness
     if (executionWitnessBytes !== undefined) {
       executionWitness = JSON.parse(bytesToUtf8(RLP.decode(executionWitnessBytes) as Uint8Array))
