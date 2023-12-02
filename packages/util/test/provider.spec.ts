@@ -45,7 +45,7 @@ describe('fetchFromProvider', () => {
   it('should throw a formatted error when an error is returned from the RPC', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {
-        text: () => {
+        text: async () => {
           return 'ERROR'
         },
         ok: false,
@@ -60,8 +60,29 @@ describe('fetchFromProvider', () => {
     } catch (err: any) {
       assert.ok(err.message.includes('ERROR'), 'received a formatted RPC error')
       assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
-    } finally {
-      vi.unstubAllGlobals()
     }
+    vi.unstubAllGlobals()
+  })
+
+  it('handles the corner case of res.text() failing because of a network error not recieving the full response', async () => {
+    vi.stubGlobal('fetch', async (_url: string, _req: any) => {
+      return {
+        text: async () => {
+          throw new Error('network dropped request halfway through')
+        },
+        ok: false,
+      }
+    })
+    try {
+      await fetchFromProvider(providerUrl, {
+        method: 'eth_getBalance',
+        params: ['0xabcd'],
+      })
+      assert.fail('should throw')
+    } catch (err: any) {
+      assert.ok(err.message.includes('Could not parse error'), 'received a formatted RPC error')
+      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+    }
+    vi.unstubAllGlobals()
   })
 })

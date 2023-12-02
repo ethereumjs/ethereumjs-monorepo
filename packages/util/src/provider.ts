@@ -40,7 +40,13 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
   if (!res.ok) {
     throw new Error(
       `JSONRpcError: ${JSON.stringify(
-        { method: params.method, status: res.status, message: res.text() },
+        {
+          method: params.method,
+          status: res.status,
+          message: await res.text().catch(() => {
+            return 'Could not parse error message likely because of a network error'
+          }),
+        },
         null,
         2
       )}`
