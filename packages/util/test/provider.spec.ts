@@ -1,4 +1,4 @@
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { fetchFromProvider, getProvider } from '../src/index.js'
 
@@ -11,6 +11,7 @@ const fakeEthersProvider = {
     return fakeConnection
   },
 }
+
 describe('getProvider', () => {
   it('should work', () => {
     assert.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
@@ -38,6 +39,29 @@ describe('fetchFromProvider', () => {
       assert.fail('should throw')
     } catch (err: any) {
       assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
+    }
+  })
+
+  it('should throw a formatted error when an error is returned from the RPC', async () => {
+    vi.stubGlobal('fetch', async (_url: string, _req: any) => {
+      return {
+        text: () => {
+          return 'ERROR'
+        },
+        ok: false,
+      }
+    })
+    try {
+      await fetchFromProvider(providerUrl, {
+        method: 'eth_getBalance',
+        params: ['0xabcd'],
+      })
+      assert.fail('should throw')
+    } catch (err: any) {
+      assert.ok(err.message.includes('ERROR'), 'received a formatted RPC error')
+      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+    } finally {
+      vi.unstubAllGlobals()
     }
   })
 })
