@@ -1,0 +1,119 @@
+{
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"],
+      "cache": true
+    },
+    "coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/coverage"],
+      "cache": true
+    },
+    "docs:build": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test:browser": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test:node": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "tsc": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "build:browser": {
+      "dependsOn": ["^build"]
+    },
+    "build:common": {
+      "dependsOn": ["^build"]
+    },
+    "client:start:ts": {
+      "dependsOn": ["^build"]
+    },
+    "client:start:js": {
+      "dependsOn": ["^build"]
+    },
+    "client:start": {
+      "dependsOn": ["^build"]
+    },
+    "client:start:dev1": {
+      "dependsOn": ["^build"]
+    },
+    "client:start:dev2": {
+      "dependsOn": ["^build"]
+    },
+    "test:cli": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "coverage:test": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "profiling": {
+      "dependsOn": ["^build"]
+    },
+    "benchmarks": {
+      "dependsOn": ["^build"]
+    },
+    "build:benchmarks": {
+      "dependsOn": ["^build"]
+    },
+    "test:API": {
+      "dependsOn": ["^build"]
+    },
+    "test:blockchain": {
+      "dependsOn": ["^build"]
+    },
+    "test:blockchain:allForks": {
+      "dependsOn": ["^build"]
+    },
+    "test:blockchain:transitionForks": {
+      "dependsOn": ["^build"]
+    },
+    "test:buildIntegrity": {
+      "dependsOn": ["^build"]
+    },
+    "test:state": {
+      "dependsOn": ["^build"]
+    },
+    "test:state:allForks": {
+      "dependsOn": ["^build"]
+    },
+    "test:state:selectedForks": {
+      "dependsOn": ["^build"]
+    },
+    "test:state:slow": {
+      "dependsOn": ["^build"]
+    },
+    "lint": {
+      "cache": true
+    },
+    "lint:diff": {
+      "cache": true
+    },
+    "lint:fix": {
+      "cache": true
+    }
+  },
+  "affected": {
+    "defaultBase": "master"
+  },
+  "nxCloudAccessToken": "NDU2NDU3NmMtZjBiYy00MzBiLTkwMjEtNzczOGZhY2NiMDUzfHJlYWQtd3JpdGU="
+}

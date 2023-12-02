@@ -5,16 +5,20 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "nx run-many --target=build",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
+    "lint": "nx run-many --target=lint",
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces",
     "prepare": "git config --local core.hooksPath .githooks",
     "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
+    "test": "nx run-many --target=test",
+    "test:coverage": "nx run-many --target=test:coverage",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
   },
   "devDependencies": {
@@ -48,7 +52,8 @@
     "typescript": "4.7.4",
     "vite-plugin-top-level-await": "^1.3.1",
     "vite-plugin-wasm": "^3.2.2",
-    "vitest": "0.32.2"
+    "vitest": "0.32.2",
+    "nx": "17.0.2"
   },
   "peerDependencies": {
     "playwright": "^1.35.1",
