@@ -672,7 +672,6 @@ export class VMExecution extends Execution {
                   headBlock = block
                   parentState = block.header.stateRoot
                 } catch (error: any) {
-                  console.log(error,{block:block.header.number})
                   // only marked the block as invalid if it was an actual execution error
                   // for e.g. absense of executionWitness doesn't make a block invalid
                   if (!`${error.message}`.includes('Invalid executionWitness=null')) {
