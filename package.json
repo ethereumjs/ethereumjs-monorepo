@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "all": "nx run-many --targets=build,test:coverage,lint",
     "build": "nx run-many --target=build",
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
