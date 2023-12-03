@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1701371977138,
+  "lastUpdate": 1701568426310,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ac9830ff501e5ee4f77a7ec866b7704b247fb540",
-          "message": "monorepo: fix browserify vulnerability (#3124)",
-          "timestamp": "2023-10-30T13:36:37-04:00",
-          "tree_id": "29f37fc5d3cb904aad73816eb597da4fbb703fa3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ac9830ff501e5ee4f77a7ec866b7704b247fb540"
-        },
-        "date": 1698688133798,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 23190,
-            "range": "±3.23%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 22234,
-            "range": "±5.07%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 22653,
-            "range": "±3.53%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 22720,
-            "range": "±3.54%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 21999,
-            "range": "±3.76%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.14%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "willcory10@gmail.com",
+            "name": "Will Cory",
+            "username": "roninjin10"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f9525af55b4c2068a003e8035184913c0adcd980",
+          "message": "chore: Improve error handling of fetchFromProvider (#3171)\n\n* chore: Improve error handling of fetchFromProvider\r\n\r\n* test: Update mocks\r\n\r\n* fix: linter\r\n\r\n* test: Add test for fetchFromProvider\r\n\r\n* fix bug with not awaiting res.text()\r\n\r\n* test: Add a hapy path test\r\n\r\n---------\r\n\r\nCo-authored-by: Will Cory <willcory@Wills-MacBook-Pro.local>",
+          "timestamp": "2023-12-02T20:48:28-05:00",
+          "tree_id": "4bb203f94438a67b1538412199205284d6e76aff",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f9525af55b4c2068a003e8035184913c0adcd980"
+        },
+        "date": 1701568425690,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39356,
+            "range": "±3.38%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38730,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38540,
+            "range": "±2.01%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36037,
+            "range": "±5.10%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36932,
+            "range": "±2.27%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
