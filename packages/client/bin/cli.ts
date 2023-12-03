@@ -392,6 +392,16 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
+  .option('engineNewpayloadMaxExecute', {
+    describe:
+      'Number of unexecuted blocks (including ancestors) that can be blockingly executed in engine`s new payload (if required and possible) to determine the validity of the block',
+    number: true,
+  })
+  .option('skipEngineExec', {
+    describe:
+      'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
+    boolean: true,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict()
@@ -906,6 +916,7 @@ async function run() {
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
     statelessVerkle: args.statelessVerkle,
+    engineNewpayloadMaxExecute: args.skipEngineExec === true ? 0 : args.engineNewpayloadMaxExecute,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
