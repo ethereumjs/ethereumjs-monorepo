@@ -31,10 +31,8 @@ import type { FullEthereumService } from '../../src/service'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
-import type { HttpServer } from 'jayson/promise'
+import type { HttpClient, HttpServer } from 'jayson/promise'
 import type { AddressInfo } from 'node:net'
-
-const request = require('supertest')
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -210,33 +208,6 @@ export function params(method: string, params: Array<any> = []) {
   return req
 }
 
-export async function baseRequest(
-  server: HttpServer,
-  req: Object,
-  expect: number,
-  expectRes: Function,
-  endOnFinish = true,
-  doCloseRPCOnSuccess = true
-) {
-  try {
-    await request(server)
-      .post('/')
-      .set('Content-Type', 'application/json')
-      .send(req)
-      .expect(expect)
-      .expect(expectRes)
-    if (doCloseRPCOnSuccess) {
-      closeRPC(server)
-    }
-    if (endOnFinish) {
-      assert.ok(true)
-    }
-  } catch (err) {
-    closeRPC(server)
-    assert.notOk(err)
-  }
-}
-
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */
@@ -346,12 +317,9 @@ export const dummy = {
  * @param server HttpServer
  * @param inputBlocks Array of valid ExecutionPayloadV1 data
  */
-export const batchBlocks = async (server: HttpServer, inputBlocks: any[]) => {
+export const batchBlocks = async (rpc: HttpClient, inputBlocks: any[]) => {
   for (let i = 0; i < inputBlocks.length; i++) {
-    const req = params('engine_newPayloadV1', [inputBlocks[i]])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
+    assert.equal(res.result, 'VALID')
   }
 }
