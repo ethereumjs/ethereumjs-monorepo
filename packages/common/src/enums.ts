@@ -44,11 +44,6 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
   },
-  [Chain.Holesky]: {
-    name: 'holesky',
-    blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
-  },
   [Chain.Kaustinen]: {
     name: 'kaustinen',
     blockNumber: BIGINT_0,
