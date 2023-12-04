@@ -7,7 +7,7 @@ import { assert, describe, it } from 'vitest'
 import { StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
-import * as verkleBlockJSON from './testdata/verkleKaustinenBlock1.json'
+import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
