@@ -1,48 +1,18 @@
 import { Chain, Common } from '@ethereumjs/common'
-// import { RLP } from '@ethereumjs/rlp'
 import { RLP } from '@ethereumjs/rlp'
 import { merkleizeList } from '@ethereumjs/trie'
-import {
-  // KECCAK256_NULL,
-  // KECCAK256_NULL_S,
-  // KECCAK256_RLP,
-  // KECCAK256_RLP_S,
-  // bigIntToHex,
-  // bytesToBigInt,
-  // bytesToHex,
-  // bytesToUnprefixedHex,
-  // concatBytes,
-  // equalsBytes,
-  // hexToBytes,
-  // setLengthLeft,
-  // short,
-  // toBytes,
-  // unpadBytes,
-  // unprefixedHexToBytes,
-  utf8ToBytes,
-  Account,
-  KECCAK256_NULL,
-  equalsBytes,
-  unpadBytes,
-  bytesToHex,
-} from '@ethereumjs/util'
+import { Account, unpadBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
-// import { keccak256 } from 'ethereum-cryptography/keccak.js'
-
-// import { AccountCache, CodeCache, StorageCache } from './cache/index.js'
-
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 
 import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
 
-import type { CacheType } from '../cache/index.js'
-import type { Proof, StorageProof } from '../index.js'
+import type { Proof } from '../index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { StorageRange } from '@ethereumjs/common/src'
 import type { Trie } from '@ethereumjs/trie'
-import type { Address, /* DB, */ PrefixedHexString } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 const { debug: createDebugLogger } = debugDefault
