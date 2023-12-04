@@ -305,23 +305,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       code = setLengthRight(code, code.length + paddingLength)
     }
 
-    /* # Figure out how much pushdata there is after+including each byte
-    bytes_to_exec_data = [0] * (len(code) + 32)
-    pos = 0
-    while pos < len(code):
-        if PUSH1 <= code[pos] <= PUSH32:
-            pushdata_bytes = code[pos] - PUSH_OFFSET
-        else:
-            pushdata_bytes = 0
-        pos += 1
-        for x in range(pushdata_bytes):
-            bytes_to_exec_data[pos + x] = pushdata_bytes - x
-        pos += pushdata_bytes
-    # Output chunks
-    return [
-        bytes([min(bytes_to_exec_data[pos], 31)]) + code[pos: pos+31]
-        for pos in range(0, len(code), 31)
-    ] */
+    throw new Error('Not implemented')
   }
 
   getTreeKeyForStorageSlot(address: Address, storageKey: number) {

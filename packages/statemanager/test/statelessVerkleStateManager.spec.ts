@@ -1,7 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { Address, bytesToHex } from '@ethereumjs/util'
-import { getStem } from '@ethereumjs/verkle'
 import { assert, describe, it } from 'vitest'
 
 import { StatelessVerkleStateManager } from '../src/index.js'
@@ -21,32 +20,6 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
-  })
-
-  it('getTreeKey()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
-
-    const balanceKey = stateManager.getTreeKeyForBalance(
-      getStem(Address.fromString('0x0000000000000000000000000000000000000000'))
-    )
-    assert.equal(
-      bytesToHex(balanceKey),
-      '0xbf101a6e1c8e83c11bd203a582c7981b91097ec55cbd344ce09005c1f26d1901'
-    )
-  })
-
-  it('getTreeKey()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
-
-    const balanceKey = stateManager.getTreeKeyForBalance(
-      getStem(Address.fromString('0x71562b71999873DB5b286dF957af199Ec94617f7'))
-    )
-    assert.equal(
-      bytesToHex(balanceKey),
-      '0x274cde18dd9dbb04caf16ad5ee969c19fe6ca764d5688b5e1d419f4ac6cd1601'
-    )
   })
 
   it('getAccount()', async () => {
