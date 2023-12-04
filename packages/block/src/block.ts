@@ -409,9 +409,9 @@ export class Block {
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.executionWitness = executionWitness
-    // null executionWitness could mean that its not default and unavailable
-    // but undefined means a default allocation.
-    if (this.executionWitness === undefined && this.common.isActivatedEIP(6800)) {
+    // null indicates an intentional absence of value or unavailability
+    // undefined indicates that the executionWitness should be initialized with the default state
+    if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
       this.executionWitness = {
         stateDiff: [],
         verkleProof: {
