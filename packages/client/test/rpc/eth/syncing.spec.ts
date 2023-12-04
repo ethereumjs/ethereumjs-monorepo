@@ -2,7 +2,7 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { baseRequest, createClient, createManager, params, startRPC } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { FullSynchronizer } from '../../../src/sync'
@@ -13,14 +13,14 @@ describe(method, () => {
   it('should return false when the client is synchronized', async () => {
     const client = createClient()
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
     client.config.synchronized = true
     assert.equal(client.config.synchronized, true, 'synchronized')
 
-    const req = params(method, [])
+    const res = await rpc.request(method, [])
     const expectRes = (res: any) => {
       const msg = 'should return false'
       assert.equal(res.body.result, false, msg)
@@ -36,7 +36,7 @@ describe(method, () => {
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
-    const req = params(method, [])
+    const res = await rpc.request(method, [])
 
     const expectRes = checkError(INTERNAL_ERROR, 'no peer available for synchronization')
     await baseRequest(rpcServer, req, 200, expectRes)
@@ -54,7 +54,7 @@ describe(method, () => {
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
-    const req = params(method, [])
+    const res = await rpc.request(method, [])
 
     const expectRes = checkError(INTERNAL_ERROR, 'highest block header unavailable')
     await baseRequest(rpcServer, req, 200, expectRes)
@@ -74,7 +74,7 @@ describe(method, () => {
     client.config.synchronized = false
     assert.equal(client.config.synchronized, false, 'not synchronized yet')
 
-    const req = params(method, [])
+    const res = await rpc.request(method, [])
     const expectRes = (res: any) => {
       const msg = 'should return syncing status object'
       if (

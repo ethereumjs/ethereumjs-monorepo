@@ -17,7 +17,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 // Since the genesis is copy of withdrawals with just sharding hardfork also started

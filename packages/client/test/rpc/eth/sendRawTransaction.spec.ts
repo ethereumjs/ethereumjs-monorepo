@@ -20,7 +20,7 @@ import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code'
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseRequest, baseSetup, params } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { FullEthereumService } from '../../../src/service'
@@ -58,7 +58,7 @@ describe(method, () => {
     account!.balance = BigInt('40100000')
     await vm.stateManager.putAccount(address, account!)
 
-    const req = params(method, [txData])
+    const res = await rpc.request(method, [txData])
     const expectRes = (res: any) => {
       const msg = 'should return the correct tx hash'
       assert.equal(
@@ -88,7 +88,7 @@ describe(method, () => {
 
     const txData = bytesToHex(transaction.serialize())
 
-    const req = params(method, [txData])
+    const res = await rpc.request(method, [txData])
     const expectRes = (res: any) => {
       assert.equal(
         res.body.result,
@@ -113,7 +113,7 @@ describe(method, () => {
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
 
-    const req = params(method, [txData])
+    const res = await rpc.request(method, [txData])
     const expectRes = checkError(INVALID_PARAMS, 'insufficient balance')
     await baseRequest(server, req, 200, expectRes)
 
@@ -128,7 +128,7 @@ describe(method, () => {
     // Mainnet EIP-1559 tx
     const txData =
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const req = params(method, [txData])
+    const res = await rpc.request(method, [txData])
 
     const expectRes = checkError(
       INTERNAL_ERROR,
@@ -144,7 +144,7 @@ describe(method, () => {
     // Baikal EIP-1559 tx
     const txData =
       '0x02f9010a82066a8001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
-    const req = params(method, [txData])
+    const res = await rpc.request(method, [txData])
 
     const expectRes = checkError(PARSE_ERROR, 'serialized tx data could not be parsed')
     await baseRequest(server, req, 200, expectRes)
@@ -166,7 +166,7 @@ describe(method, () => {
     ;(tx as any).r = undefined
     ;(tx as any).s = undefined
     const txHex = bytesToHex(tx.serialize())
-    const req = params(method, [txHex])
+    const res = await rpc.request(method, [txHex])
 
     const expectRes = checkError(INVALID_PARAMS, 'tx needs to be signed')
     await baseRequest(server, req, 200, expectRes)
@@ -202,7 +202,7 @@ describe(method, () => {
     account!.balance = BigInt('40100000')
     await vm.stateManager.putAccount(address, account!)
 
-    const req = params(method, [txData])
+    const res = await rpc.request(method, [txData])
 
     const expectRes = checkError(INTERNAL_ERROR, 'no peer connection available')
     await baseRequest(server, req, 200, expectRes)
@@ -278,7 +278,7 @@ describe(method, () => {
     account!.balance = BigInt(0xfffffffffffff)
     await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
-    const req = params(method, [bytesToHex(tx.serializeNetworkWrapper())])
+    const res = await rpc.request(method, [bytesToHex(tx.serializeNetworkWrapper())])
     const req2 = params(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
     const expectRes = (res: any) => {
       assert.equal(res.body.error, undefined, 'initial blob transaction accepted')

@@ -4,7 +4,7 @@ import { assert, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
-import { baseRequest, params, setupChain } from '../helpers'
+import { baseRequest, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { ExecutionPayload } from '@ethereumjs/block'

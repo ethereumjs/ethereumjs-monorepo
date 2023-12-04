@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { baseRequest, params, setupChain } from '../helpers'
+import { baseRequest, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { HttpServer } from 'jayson'

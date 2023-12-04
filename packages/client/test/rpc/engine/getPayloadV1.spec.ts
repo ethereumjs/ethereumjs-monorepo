@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { ExecutionPayload } from '@ethereumjs/block'

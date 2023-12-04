@@ -6,7 +6,7 @@ import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { createClient, createManager, getRpcClient, params, startRPC } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { FullEthereumService } from '../../../src/service'
@@ -24,7 +24,7 @@ describe(method, () => {
 
     const client = createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -96,26 +96,22 @@ describe(method, () => {
     })
 
     // verify return value is accurate
-    let req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
-    let expectRes = (res: any) => {
-      const msg = 'should return the correct return value'
-      assert.equal(res.body.result, bytesToHex(execResult.returnValue), msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    let res = await rpc.request(method, [
+      { ...estimateTxData, gas: estimateTxData.gasLimit },
+      'latest',
+    ])
+    let msg = 'should return the correct return value'
+    assert.equal(res.result, bytesToHex(execResult.returnValue), msg)
 
-    req = params(method, [{ ...estimateTxData }, 'latest'])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct return value with no gas limit provided'
-      assert.equal(res.body.result, bytesToHex(execResult.returnValue), msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
 
-    req = params(method, [{ gasLimit, data }, 'latest'])
-    expectRes = (res: any) => {
-      const msg = `should let run call without 'to' for contract creation`
-      assert.equal(res.body.result, bytesToHex(result.results[0].execResult.returnValue), msg)
-    }
-    await baseRequest(server, req, 200, expectRes, true)
+    msg = 'should return the correct return value with no gas limit provided'
+    assert.equal(res.result, bytesToHex(execResult.returnValue), msg)
+
+    res = await rpc.request(method, [{ gasLimit, data }, 'latest'])
+
+    msg = `should let run call without 'to' for contract creation`
+    assert.equal(res.result, bytesToHex(result.results[0].execResult.returnValue), msg)
   })
 
   it('call with unsupported block argument', async () => {
@@ -123,7 +119,7 @@ describe(method, () => {
 
     const client = createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     // genesis address with balance
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -136,9 +132,12 @@ describe(method, () => {
       gasLimit: bigIntToHex(BigInt(53000)),
     }
 
-    const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [
+      { ...estimateTxData, gas: estimateTxData.gasLimit },
+      'pending',
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with invalid hex params', async () => {
@@ -146,7 +145,7 @@ describe(method, () => {
 
     const client = createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     // genesis address with balance
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -157,11 +156,11 @@ describe(method, () => {
       gasLimit: bigIntToHex(BigInt(53000)),
     }
 
-    const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
-    const expectRes = checkError(
-      INVALID_PARAMS,
-      'invalid argument data: hex string without 0x prefix'
-    )
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [
+      { ...estimateTxData, gas: estimateTxData.gasLimit },
+      'latest',
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
   })
 })

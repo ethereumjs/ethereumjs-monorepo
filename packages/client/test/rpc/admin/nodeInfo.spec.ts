@@ -1,24 +1,21 @@
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'admin_nodeInfo'
 
 describe(method, () => {
   it('works', async () => {
     const manager = createManager(createClient({ opened: true }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, [])
+    const res = await rpc.request(method, [])
 
-    const expectRes = (res: any) => {
-      const { result } = res.body
-      if (result !== undefined) {
-        assert.ok(true, 'admin_nodeInfo returns a value')
-      } else {
-        throw new Error('no return value')
-      }
+    const { result } = res
+    if (result !== undefined) {
+      assert.ok(true, 'admin_nodeInfo returns a value')
+    } else {
+      throw new Error('no return value')
     }
-    await baseRequest(server, req, 200, expectRes)
   })
 })

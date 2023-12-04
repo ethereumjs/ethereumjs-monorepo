@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, params, setupChain } from '../helpers'
+import { baseRequest, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { HttpServer } from 'jayson'

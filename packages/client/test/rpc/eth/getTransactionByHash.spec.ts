@@ -10,7 +10,7 @@ import {
   params,
   runBlockWithTxs,
   setupChain,
-} from '../helpers'
+} from '../helpers.js'
 
 const method = 'eth_getTransactionByHash'
 
@@ -88,7 +88,7 @@ describe(method, () => {
     const { server } = await setupChain(pow, 'pow')
 
     // get a random tx hash
-    const req = params(method, [
+    const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
     const expectRes = (res: any) => {

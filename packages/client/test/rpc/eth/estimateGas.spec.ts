@@ -7,10 +7,9 @@ import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
-import { checkError } from '../util'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_estimateGas'
 
@@ -29,7 +28,7 @@ describe(
 
       const client = createClient({ blockchain, commonChain: common, includeVM: true })
       const manager = createManager(client)
-      const server = startRPC(manager.getMethods())
+      const rpc = getRpcClient(startRPC(manager.getMethods()))
 
       const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
       assert.notEqual(execution, undefined, 'should have valid execution')
@@ -102,19 +101,17 @@ describe(
       })
 
       // verify estimated gas is accurate
-      const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'latest'])
-      const expectRes = (res: any) => {
-        const msg = 'should return the correct gas estimate'
-        assert.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
-      }
-      await baseRequest(server, req, 200, expectRes, false)
+      const res = await rpc.request(method, [
+        { ...estimateTxData, gas: estimateTxData.gasLimit },
+        'latest',
+      ])
+
+      let msg = 'should return the correct gas estimate'
+      assert.equal(res.result, '0x' + totalGasSpent.toString(16), msg)
 
       // Test without blockopt as its optional and should default to latest
-      const reqWithoutBlockOpt = params(method, [
-        { ...estimateTxData, gas: estimateTxData.gasLimit },
-      ])
-      await baseRequest(server, reqWithoutBlockOpt, 200, expectRes, false)
-
+      const res2 = await rpc.request(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
+      assert.equal(res2.result, '0x' + totalGasSpent.toString(16), msg)
       // Setup chain to run an EIP1559 tx
       const service = client.services[0] as FullEthereumService
       service.execution.vm.common.setHardfork('london')
@@ -143,27 +140,23 @@ describe(
       await vm.blockchain.putBlock(ranBlock!)
 
       // Test EIP1559 tx
-      const EIP1559req = params(method, [
+      const EIP1559res = await rpc.request(method, [
         { ...estimateTxData, type: 2, maxFeePerGas: '0x' + 10000000000n.toString(16) },
       ])
-      const expect1559Res = (res: any) => {
-        const msg = 'should return the correct gas estimate for EIP1559 tx'
-        assert.equal(res.body.result, '0x' + totalGasSpent.toString(16), msg)
-      }
-
-      await baseRequest(server, EIP1559req, 200, expect1559Res, false)
+      msg = 'should return the correct gas estimate for EIP1559 tx'
+      assert.equal(EIP1559res.result, '0x' + totalGasSpent.toString(16), msg)
 
       // Test EIP1559 tx with no maxFeePerGas
-      const EIP1559reqNoGas = params(method, [
+      const EIP1559reqNoGas = await rpc.request(method, [
         { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
       ])
-      await baseRequest(server, EIP1559reqNoGas, 200, expect1559Res, false)
+      assert.equal(EIP1559reqNoGas.result, '0x' + totalGasSpent.toString(16), msg)
 
       // Test legacy tx with London head block
-      const legacyTxNoGas = params(method, [
+      const legacyTxNoGas = await rpc.request(method, [
         { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
       ])
-      await baseRequest(server, legacyTxNoGas, 200, expect1559Res)
+      assert.equal(legacyTxNoGas.result, '0x' + totalGasSpent.toString(16), msg)
     })
 
     it('call with unsupported block argument', async () => {
@@ -171,7 +164,7 @@ describe(
 
       const client = createClient({ blockchain, includeVM: true })
       const manager = createManager(client)
-      const server = startRPC(manager.getMethods())
+      const rpc = getRpcClient(startRPC(manager.getMethods()))
 
       // genesis address with balance
       const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
@@ -184,9 +177,12 @@ describe(
         gasLimit: bigIntToHex(BigInt(53000)),
       }
 
-      const req = params(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }, 'pending'])
-      const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-      await baseRequest(server, req, 200, expectRes)
+      const res = await rpc.request(method, [
+        { ...estimateTxData, gas: estimateTxData.gasLimit },
+        'pending',
+      ])
+      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.ok(res.error.message.includes('"pending" is not yet supported'))
     })
   },
   20000

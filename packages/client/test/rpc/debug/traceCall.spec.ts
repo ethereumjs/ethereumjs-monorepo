@@ -14,7 +14,7 @@ import {
   runBlockWithTxs,
   setupChain,
   startRPC,
-} from '../helpers'
+} from '../helpers.js'
 
 import type { RpcTx } from '../../../src/rpc/types'
 

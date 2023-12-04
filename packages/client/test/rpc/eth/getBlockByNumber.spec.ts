@@ -6,7 +6,7 @@ import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, dummy, params, startRPC } from '../helpers'
+import { baseRequest, createClient, createManager, dummy, params, startRPC } from '../helpers.js'
 import { checkError } from '../util'
 
 try {
@@ -68,9 +68,9 @@ const method = 'eth_getBlockByNumber'
 describe(method, async () => {
   it('call with valid arguments', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0x0', false])
+    const res = await rpc.request(method, ['0x0', false])
     const expectRes = (res: any) => {
       const msg = 'should return a valid block'
       assert.equal(res.body.result.number, '0x0', msg)
@@ -80,9 +80,9 @@ describe(method, async () => {
 
   it('call with false for second argument', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0x0', false])
+    const res = await rpc.request(method, ['0x0', false])
     const expectRes = (res: any) => {
       let msg = 'should return a valid block'
       assert.equal(res.body.result.number, '0x0', msg)
@@ -94,9 +94,9 @@ describe(method, async () => {
 
   it('call with earliest param', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['earliest', false])
+    const res = await rpc.request(method, ['earliest', false])
     const expectRes = (res: any) => {
       const msg = 'should return the genesis block number'
       assert.equal(res.body.result.number, '0x0', msg)
@@ -106,9 +106,9 @@ describe(method, async () => {
 
   it('call with latest param', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['latest', false])
+    const res = await rpc.request(method, ['latest', false])
     const expectRes = (res: any) => {
       const msg = 'should return a block number'
       assert.equal(res.body.result.number, '0x1', msg)
@@ -123,9 +123,9 @@ describe(method, async () => {
 
   it('call with unimplemented pending param', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['pending', true])
+    const res = await rpc.request(method, ['pending', true])
 
     const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
     await baseRequest(server, req, 200, expectRes)
@@ -133,18 +133,18 @@ describe(method, async () => {
 
   it('call with non-string block number', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, [10, true])
+    const res = await rpc.request(method, [10, true])
     const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: argument must be a string')
     await baseRequest(server, req, 200, expectRes)
   })
 
   it('call with invalid block number', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['WRONG BLOCK NUMBER', true])
+    const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     const expectRes = checkError(
       INVALID_PARAMS,
       'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"'
@@ -155,26 +155,26 @@ describe(method, async () => {
 
   it('call without second parameter', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0x0'])
+    const res = await rpc.request(method, ['0x0'])
     const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 1')
     await baseRequest(server, req, 200, expectRes)
   })
 
   it('call with invalid second parameter', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0x0', 'INVALID PARAMETER'])
+    const res = await rpc.request(method, ['0x0', 'INVALID PARAMETER'])
     const expectRes = checkError(INVALID_PARAMS)
     await baseRequest(server, req, 200, expectRes)
   })
 
   it('call with transaction objects', async () => {
     const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
-    const req = params(method, ['latest', true])
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const res = await rpc.request(method, ['latest', true])
 
     const expectRes = (res: any) => {
       assert.equal(typeof res.body.result.transactions[0], 'object', 'should include tx objects')
@@ -194,8 +194,8 @@ describe('call with block with blob txs', () => {
       { common }
     )
     const manager = createManager(createClient({ chain: createChain(block1 as any) }))
-    const server = startRPC(manager.getMethods())
-    const req = params(method, ['latest', true])
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
+    const res = await rpc.request(method, ['latest', true])
 
     const expectRes = (res: any) => {
       assert.equal(

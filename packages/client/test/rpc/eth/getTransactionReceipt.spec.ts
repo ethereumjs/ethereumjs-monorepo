@@ -23,7 +23,7 @@ import {
   params,
   runBlockWithTxs,
   setupChain,
-} from '../helpers'
+} from '../helpers.js'
 
 const method = 'eth_getTransactionReceipt'
 
@@ -44,7 +44,7 @@ describe(method, () => {
     await runBlockWithTxs(chain, execution, [tx])
 
     // get the tx
-    const req = params(method, [bytesToHex(tx.hash())])
+    const res = await rpc.request(method, [bytesToHex(tx.hash())])
     const expectRes = (res: any) => {
       const msg = 'should return the correct tx'
       assert.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
@@ -72,7 +72,7 @@ describe(method, () => {
     await runBlockWithTxs(chain, execution, [tx])
 
     // get the tx
-    const req = params(method, [bytesToHex(tx.hash())])
+    const res = await rpc.request(method, [bytesToHex(tx.hash())])
     const expectRes = (res: any) => {
       const msg = 'should return the correct tx'
       assert.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
@@ -84,7 +84,7 @@ describe(method, () => {
     const { server } = await setupChain(pow, 'pow')
 
     // get a random tx hash
-    const req = params(method, [
+    const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
     const expectRes = (res: any) => {
@@ -134,7 +134,7 @@ describe(method, () => {
 
       await runBlockWithTxs(chain, execution, [tx], true)
 
-      const req = params(method, [bytesToHex(tx.hash())])
+      const res = await rpc.request(method, [bytesToHex(tx.hash())])
       const expectRes = (res: any) => {
         assert.equal(res.body.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
         assert.equal(res.body.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')

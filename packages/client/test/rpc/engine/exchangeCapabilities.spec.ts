@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseRequest, baseSetup, params } from '../helpers.js'
 
 const method = 'engine_exchangeCapabilities'
 

@@ -5,7 +5,7 @@ import { assert, beforeEach, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code'
 import genesisJSON from '../../testdata/geth-genesis/debug.json'
-import { baseRequest, dummy, params, setupChain } from '../helpers'
+import { baseRequest, dummy, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 import type { Block } from '@ethereumjs/block'

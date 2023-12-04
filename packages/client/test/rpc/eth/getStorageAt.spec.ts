@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import pow from '../../testdata/geth-genesis/pow.json'
-import { baseRequest, params, setupChain } from '../helpers'
+import { baseRequest, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 const method = 'eth_getStorageAt'

@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseRequest, baseSetup, params } from '../helpers.js'
 import { checkError } from '../util'
 
 const method = 'eth_getBlockByHash'
@@ -35,7 +35,7 @@ describe(method, () => {
   it('call with false for second argument', async () => {
     const { server } = baseSetup()
 
-    const req = params(method, [
+    const res = await rpc.request(method, [
       '0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae',
       false,
     ])
@@ -51,7 +51,7 @@ describe(method, () => {
   it('call with invalid block hash without 0x', async () => {
     const { server } = baseSetup()
 
-    const req = params(method, ['WRONG BLOCK NUMBER', true])
+    const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: hex string without 0x prefix')
     await baseRequest(server, req, 200, expectRes)
   })
@@ -59,7 +59,7 @@ describe(method, () => {
   it('call with invalid hex string as block hash', async () => {
     const { server } = baseSetup()
 
-    const req = params(method, ['0xWRONG BLOCK NUMBER', true])
+    const res = await rpc.request(method, ['0xWRONG BLOCK NUMBER', true])
     const expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: invalid block hash')
     await baseRequest(server, req, 200, expectRes)
   })
@@ -67,7 +67,7 @@ describe(method, () => {
   it('call without second parameter', async () => {
     const { server } = baseSetup()
 
-    const req = params(method, ['0x0'])
+    const res = await rpc.request(method, ['0x0'])
     const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 1')
     await baseRequest(server, req, 200, expectRes)
   })
@@ -75,7 +75,7 @@ describe(method, () => {
   it('call with invalid second parameter', async () => {
     const { server } = baseSetup()
 
-    const req = params(method, ['0x0', 'INVALID PARAMETER'])
+    const res = await rpc.request(method, ['0x0', 'INVALID PARAMETER'])
     const expectRes = checkError(INVALID_PARAMS)
     await baseRequest(server, req, 200, expectRes)
   })

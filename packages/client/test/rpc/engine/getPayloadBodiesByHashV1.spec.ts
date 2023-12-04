@@ -8,7 +8,7 @@ import { assert, describe, it } from 'vitest'
 import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import preShanghaiGenesisJson from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
+import { baseRequest, baseSetup, params, setupChain } from '../helpers.js'
 import { checkError } from '../util'
 
 const method = 'engine_getPayloadBodiesByHashV1'
