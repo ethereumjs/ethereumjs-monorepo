@@ -6,11 +6,10 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers.js'
-import { checkError } from '../util'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getBlockTransactionCountByNumber'
 
@@ -61,11 +60,9 @@ describe(method, () => {
 
     // verify that the transaction count is 1
     const res = await rpc.request(method, ['latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct block transaction count(1)'
-      assert.equal(res.body.result, '0x1', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    const msg = 'should return the correct block transaction count(1)'
+    assert.equal(res.result, '0x1', msg)
   })
 
   it('call with valid arguments (multiple transactions)', async () => {
@@ -130,11 +127,9 @@ describe(method, () => {
     // verify that the transaction count is 3
     // specify the block number instead of using latest
     const res = await rpc.request(method, ['0x1'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct block transaction count(3)'
-      assert.equal(res.body.result, '0x3', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    const msg = 'should return the correct block transaction count(3)'
+    assert.equal(res.result, '0x3', msg)
   })
 
   it('call with unsupported block argument', async () => {
@@ -145,7 +140,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 })

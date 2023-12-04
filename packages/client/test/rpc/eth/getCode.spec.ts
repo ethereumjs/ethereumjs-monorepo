@@ -6,11 +6,10 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers.js'
-import { checkError } from '../util'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getCode'
 
@@ -34,11 +33,8 @@ describe(method, () => {
 
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct code'
-      assert.equal(res.body.result, '0x', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const msg = 'should return the correct code'
+    assert.equal(res.result, '0x', msg)
   })
 
   it('ensure returns correct code', async () => {
@@ -99,11 +95,8 @@ describe(method, () => {
 
     // verify contract has code
     const res = await rpc.request(method, [expectedContractAddress.toString(), 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct code'
-      assert.equal(res.body.result, code, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const msg = 'should return the correct code'
+    assert.equal(res.result, code, msg)
   })
 
   it('call with unsupported block argument', async () => {
@@ -114,7 +107,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 })
