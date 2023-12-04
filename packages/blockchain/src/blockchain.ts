@@ -46,6 +46,37 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 /**
+ * Verkle or Merkle genesis root
+ * @param genesisState
+ * @param common
+ * @returns
+ */
+async function genGenesisStateRoot(
+  genesisState: GenesisState,
+  common: Common
+): Promise<Uint8Array> {
+  const genCommon = common.copy()
+  genCommon.setHardforkBy({
+    blockNumber: 0,
+    td: BigInt(genCommon.genesis().difficulty),
+    timestamp: genCommon.genesis().timestamp,
+  })
+  if (genCommon.gteHardfork(Hardfork.Prague)) {
+    throw Error(`Verkle trie state not yet supported`)
+  } else {
+    return genMerkleGenesisStateRoot(genesisState)
+  }
+}
+
+/**
+ * Returns the genesis state root if chain is well known or an empty state's root otherwise
+ */
+async function getGenesisStateRoot(chainId: Chain, common: Common): Promise<Uint8Array> {
+  const chainGenesis = ChainGenesis[chainId]
+  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({}, common)
+}
+
+/**
  * This class stores and interacts with blocks.
  */
 export class Blockchain implements BlockchainInterface {
@@ -234,10 +265,8 @@ export class Blockchain implements BlockchainInterface {
     let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
     if (stateRoot === undefined) {
       if (this._customGenesisState !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         stateRoot = await genGenesisStateRoot(this._customGenesisState, this.common)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain, this.common)
       }
     }
@@ -1419,35 +1448,4 @@ export class Blockchain implements BlockchainInterface {
       { common }
     )
   }
-}
-
-/**
- * Verkle or Merkle genesis root
- * @param genesisState
- * @param common
- * @returns
- */
-async function genGenesisStateRoot(
-  genesisState: GenesisState,
-  common: Common
-): Promise<Uint8Array> {
-  const genCommon = common.copy()
-  genCommon.setHardforkBy({
-    blockNumber: 0,
-    td: BigInt(genCommon.genesis().difficulty),
-    timestamp: genCommon.genesis().timestamp,
-  })
-  if (genCommon.gteHardfork(Hardfork.Prague)) {
-    throw Error(`Verkle trie state not yet supported`)
-  } else {
-    return genMerkleGenesisStateRoot(genesisState)
-  }
-}
-
-/**
- * Returns the genesis state root if chain is well known or an empty state's root otherwise
- */
-async function getGenesisStateRoot(chainId: Chain, common: Common): Promise<Uint8Array> {
-  const chainGenesis = ChainGenesis[chainId]
-  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({}, common)
 }
