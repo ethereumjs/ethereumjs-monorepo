@@ -3,7 +3,7 @@ import { Client } from 'jayson/promise'
 import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, startRPC } from './helpers'
+import { createClient, createManager, getRpcClient, startRPC } from './helpers'
 
 import type { TAlgorithm } from 'jwt-simple'
 import type { AddressInfo } from 'net'
@@ -12,8 +12,7 @@ const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {
   it('without Content-Type header', async () => {
-    const server = startRPC({})
-    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
+    const rpc = getRpcClient(startRPC({}))
     const req = 'plaintext'
     const res = await rpc.request(req, [])
     assert.equal(res.error.code, -32601)
