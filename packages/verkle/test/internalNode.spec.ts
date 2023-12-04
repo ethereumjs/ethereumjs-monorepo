@@ -1,11 +1,11 @@
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { NODE_WIDTH, VerkleNodeType } from '../../src/node/index.js'
-import { InternalNode } from '../../src/node/internalNode.js'
-import { POINT_IDENTITY } from '../../src/util/crypto.js'
+import { NODE_WIDTH, VerkleNodeType } from '../src/node/index.js'
+import { InternalNode } from '../src/node/internalNode.js'
+import { POINT_IDENTITY } from '../src/util/crypto.js'
 
-import type { Point } from '../../src/types.js'
+import type { Point } from '../src/types.js'
 
 describe('verkle node - internal', () => {
   it('constructor should create an internal node', async () => {
