@@ -184,6 +184,8 @@ export class Snapshot {
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
     const accounts = await this.getAccounts()
     const leaves: [Uint8Array, Uint8Array][] = []
+    // console.log('dbg200')
+    // console.log(accounts)
     accounts.map(([key, value]) => {
       const accountKey = key.slice(ACCOUNT_PREFIX.length)
       // TODO update the account's stateRoot field if there exist
@@ -192,6 +194,10 @@ export class Snapshot {
 
       const storageRoot = storageRoots[bytesToHex(accountKey)]
       let v = value
+      // console.log('dbg201')
+      // console.log(bytesToHex(key))
+      // console.log(value)
+      // console.log(v)
       if (storageRoot !== undefined) {
         const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
         acc.storageRoot = storageRoot
@@ -199,22 +205,29 @@ export class Snapshot {
       }
       leaves.push([accountKey, v ?? KECCAK256_NULL])
     })
+    // console.log(leaves)
     return merkleizeList(leaves)
   }
 
   async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
     const tries: any = {}
     const prefix = STORAGE_PREFIX
-    for await (const [key, value] of this._db._leveldb.iterator({ gt: prefix })) {
+    for await (const [key, value] of this._db._leveldb.iterator({
+      gte: prefix,
+      keyEncoding: 'view',
+      valueEncoding: 'view',
+    })) {
       const hashedAddr = key.slice(STORAGE_PREFIX.length, STORAGE_PREFIX.length + 32)
       const hashedAddrString = bytesToHex(hashedAddr)
       if (hashedAddrString in tries === false) {
         tries[hashedAddrString] = []
       }
       const slotKey = key.slice(STORAGE_PREFIX.length + 32)
-      tries[hashedAddrString] = tries[hashedAddrString].push([slotKey, value])
+      tries[hashedAddrString].push([slotKey, value])
     }
     const roots: any = {}
+    // console.log('dbg300')
+    // console.log(tries)
     for (const [address, leaves] of Object.entries(tries)) {
       roots[address] = merkleizeList(leaves as Uint8Array[][])
     }
