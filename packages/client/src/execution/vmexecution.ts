@@ -294,7 +294,10 @@ export class VMExecution extends Execution {
 
     // there could to be checks here that the resetted head is a parent of the chainStatus
     // but we can skip it for now trusting the chain reset has been correctly performed
-    const td = await this.chain.blockchain.getTotalDifficulty(headBlock.header.parentHash)
+    const td =
+      headBlock.header.number === BIGINT_0
+        ? headBlock.header.difficulty
+        : await this.chain.blockchain.getTotalDifficulty(headBlock.header.parentHash)
     this.hardfork = this.config.execCommon.setHardforkBy({
       blockNumber: number,
       td,
@@ -669,9 +672,11 @@ export class VMExecution extends Execution {
                   headBlock = block
                   parentState = block.header.stateRoot
                 } catch (error: any) {
-                  // Store error block and throw which will make iterator stop, exit and save
-                  // last successfully executed head as vmHead
-                  errorBlock = block
+                  // only marked the block as invalid if it was an actual execution error
+                  // for e.g. absense of executionWitness doesn't make a block invalid
+                  if (!`${error.message}`.includes('Invalid executionWitness=null')) {
+                    errorBlock = block
+                  }
                   throw error
                 }
               },

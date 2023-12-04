@@ -165,4 +165,6 @@ export interface ClientOpts {
   pruneEngineCache?: boolean
   verkleGenesisStateRoot?: Uint8Array
   statelessVerkle?: boolean
+  engineNewpayloadMaxExecute?: number
+  skipEngineExec?: boolean
 }
