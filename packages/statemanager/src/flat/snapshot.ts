@@ -1,4 +1,4 @@
-import { merkleizeList } from '@ethereumjs/trie'
+import { EmptyNode, byteTypeToNibbleType, bytesToNibbles, merkleizeList } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
@@ -10,13 +10,14 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { Level } from 'level'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x' + '00')
-const STORAGE_PREFIX: Uint8Array = hexToBytes('0x' + '11')
-const CODE_PREFIX: Uint8Array = hexToBytes('0x' + '22')
+export const ACCOUNT_PREFIX: Uint8Array = hexToBytes('0x' + '00')
+export const STORAGE_PREFIX: Uint8Array = hexToBytes('0x' + '11')
+export const CODE_PREFIX: Uint8Array = hexToBytes('0x' + '22')
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -130,6 +131,8 @@ export class Snapshot {
 
   async getStorageSlots(address: Address): Promise<[Uint8Array, Uint8Array | undefined][]> {
     const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
+
+    // figure out how to unprefix keys because keys neet to be only slot keys here for merklize call later to calculate the right root
     return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 

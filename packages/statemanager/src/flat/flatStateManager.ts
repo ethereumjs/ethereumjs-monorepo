@@ -1,6 +1,7 @@
 import { Chain, Common } from '@ethereumjs/common'
 // import { RLP } from '@ethereumjs/rlp'
 import { RLP } from '@ethereumjs/rlp'
+import { merkleizeList } from '@ethereumjs/trie'
 import {
   // KECCAK256_NULL,
   // KECCAK256_NULL_S,
@@ -23,6 +24,7 @@ import {
   KECCAK256_NULL,
   equalsBytes,
   unpadBytes,
+  bytesToHex,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 // import { keccak256 } from 'ethereum-cryptography/keccak.js'
@@ -33,7 +35,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 
-import { Snapshot } from './snapshot.js'
+import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
 
 import type { CacheType } from '../cache/index.js'
 import type { Proof, StorageProof } from '../index.js'
@@ -243,6 +245,10 @@ export class FlatStateManager implements EVMStateManagerInterface {
     return decoded
   }
 
+  removeStorageSlotKeyPrefix(leaf: Uint8Array[]) {
+    leaf[0] = leaf[0].slice(STORAGE_PREFIX.length + 32)
+    return leaf
+  }
   /**
    * Adds value to the state trie for the `account`
    * corresponding to `address` at the provided `key`.
@@ -261,6 +267,11 @@ export class FlatStateManager implements EVMStateManagerInterface {
       throw new Error('Storage value cannot be longer than 32 bytes')
     }
 
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error('putContractStorage() called on non-existing account')
+    }
+
     value = unpadBytes(value)
     if (value instanceof Uint8Array && value.length) {
       const encodedValue = RLP.encode(value)
@@ -268,6 +279,19 @@ export class FlatStateManager implements EVMStateManagerInterface {
     } else {
       await this._snapshot.delStorageSlot(address, key)
     }
+
+    const slots = (await this._snapshot.getStorageSlots(address)) as Uint8Array[][]
+
+    // remove any prefixes from keys to ensure it's the post-hash that will result in accurate storageRoot
+    slots.map((leaf) => {
+      this.removeStorageSlotKeyPrefix(leaf)
+    })
+
+    // TODO merkleizing like this is an expensive operation - see if it's possible to use a trie for updating roots
+    // update contract storageRoot
+    account.storageRoot = merkleizeList(slots)
+
+    await this.putAccount(address, account)
   }
 
   /**
