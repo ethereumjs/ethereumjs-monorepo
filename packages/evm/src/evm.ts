@@ -252,7 +252,7 @@ export class EVM implements EVMInterface {
     // Load code
     await this._loadCode(message)
     let exit = false
-    if (!message.code || message.code.length === 0) {
+    if (!message.code || (typeof message.code !== 'function' && message.code.length === 0)) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code (CALL)`)
@@ -397,7 +397,10 @@ export class EVM implements EVMInterface {
     }
 
     let exit = false
-    if (message.code === undefined || message.code.length === 0) {
+    if (
+      message.code === undefined ||
+      (typeof message.code !== 'function' && message.code.length === 0)
+    ) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code (CREATE)`)

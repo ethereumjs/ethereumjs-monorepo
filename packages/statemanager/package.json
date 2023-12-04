@@ -55,7 +55,6 @@
     "@ethereumjs/verkle": "^0.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
-    "ethers": "^6.4.0",
     "js-sdsl": "^4.1.4",
     "lru-cache": "^10.0.0"
   },

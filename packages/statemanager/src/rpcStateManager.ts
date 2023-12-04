@@ -1,26 +1,36 @@
 import { Trie } from '@ethereumjs/trie'
-import { Account, bigIntToHex, bytesToBigInt, bytesToHex, toBytes } from '@ethereumjs/util'
+import {
+  Account,
+  bigIntToHex,
+  bytesToHex,
+  fetchFromProvider,
+  hexToBytes,
+  intToHex,
+  toBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ethers } from 'ethers'
 
-import { AccountCache, CacheType, StorageCache } from './cache/index.js'
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
+import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
 import type { Proof } from './index.js'
-import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { StorageRange } from '@ethereumjs/common/src'
+import type {
+  AccountFields,
+  EVMStateManagerInterface,
+  StorageDump,
+  StorageRange,
+} from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-export interface EthersStateManagerOpts {
-  provider: string | ethers.JsonRpcProvider
+export interface RPCStateManagerOpts {
+  provider: string
   blockTag: bigint | 'earliest'
 }
 
-export class EthersStateManager implements EVMStateManagerInterface {
-  protected _provider: ethers.JsonRpcProvider
+export class RPCStateManager implements EVMStateManagerInterface {
+  protected _provider: string
   protected _contractCache: Map<string, Uint8Array>
   protected _storageCache: StorageCache
   protected _blockTag: string
@@ -28,19 +38,17 @@ export class EthersStateManager implements EVMStateManagerInterface {
   originalStorageCache: OriginalStorageCache
   protected _debug: Debugger
   protected DEBUG: boolean
-  constructor(opts: EthersStateManagerOpts) {
+  constructor(opts: RPCStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
 
-    this._debug = createDebugLogger('statemanager:ethersStateManager')
-    if (typeof opts.provider === 'string') {
-      this._provider = new ethers.JsonRpcProvider(opts.provider)
-    } else if (opts.provider instanceof ethers.JsonRpcProvider) {
+    this._debug = createDebugLogger('statemanager:rpcStateManager')
+    if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
       this._provider = opts.provider
     } else {
-      throw new Error(`valid JsonRpcProvider or url required; got ${opts.provider}`)
+      throw new Error(`valid RPC provider url required; got ${opts.provider}`)
     }
 
     this._blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
@@ -55,10 +63,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
   /**
    * Note that the returned statemanager will share the same JsonRpcProvider as the original
    *
-   * @returns EthersStateManager
+   * @returns RPCStateManager
    */
-  shallowCopy(): EthersStateManager {
-    const newState = new EthersStateManager({
+  shallowCopy(): RPCStateManager {
+    const newState = new RPCStateManager({
       provider: this._provider,
       blockTag: BigInt(this._blockTag),
     })
@@ -104,7 +112,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
   async getContractCode(address: Address): Promise<Uint8Array> {
     let codeBytes = this._contractCache.get(address.toString())
     if (codeBytes !== undefined) return codeBytes
-    const code = await this._provider.getCode(address.toString(), this._blockTag)
+    const code = await fetchFromProvider(this._provider, {
+      method: 'eth_getCode',
+      params: [address.toString(), this._blockTag],
+    })
     codeBytes = toBytes(code)
     this._contractCache.set(address.toString(), codeBytes)
     return codeBytes
@@ -142,11 +153,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
     }
 
     // Retrieve storage slot from provider if not found in cache
-    const storage = await this._provider.getStorage(
-      address.toString(),
-      bytesToBigInt(key),
-      this._blockTag
-    )
+    const storage = await fetchFromProvider(this._provider, {
+      method: 'eth_getStorageAt',
+      params: [address.toString(), bytesToHex(key), this._blockTag],
+    })
     value = toBytes(storage)
 
     await this.putContractStorage(address, key, value)
@@ -207,11 +217,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
     const localAccount = this._accountCache.get(address)
     if (localAccount !== undefined) return true
     // Get merkle proof for `address` from provider
-    const proof = await this._provider.send('eth_getProof', [
-      address.toString(),
-      [],
-      this._blockTag,
-    ])
+    const proof = await fetchFromProvider(this._provider, {
+      method: 'eth_getProof',
+      params: [address.toString(), [] as any, this._blockTag],
+    })
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
@@ -248,11 +257,10 @@ export class EthersStateManager implements EVMStateManagerInterface {
    */
   async getAccountFromProvider(address: Address): Promise<Account> {
     if (this.DEBUG) this._debug(`retrieving account data from ${address.toString()} from provider`)
-    const accountData = await this._provider.send('eth_getProof', [
-      address.toString(),
-      [],
-      this._blockTag,
-    ])
+    const accountData = await fetchFromProvider(this._provider, {
+      method: 'eth_getProof',
+      params: [address.toString(), [] as any, this._blockTag],
+    })
     const account = Account.fromAccountData({
       balance: BigInt(accountData.balance),
       nonce: BigInt(accountData.nonce),
@@ -335,11 +343,14 @@ export class EthersStateManager implements EVMStateManagerInterface {
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
     if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
-    const proof = await this._provider.send('eth_getProof', [
-      address.toString(),
-      [storageSlots.map((slot) => bytesToHex(slot))],
-      this._blockTag,
-    ])
+    const proof = await fetchFromProvider(this._provider, {
+      method: 'eth_getProof',
+      params: [
+        address.toString(),
+        [storageSlots.map((slot) => bytesToHex(slot))],
+        this._blockTag,
+      ] as any,
+    })
 
     return proof
   }
@@ -384,19 +395,19 @@ export class EthersStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   getStateRoot = async () => {
     return new Uint8Array(32)
   }
 
   /**
-   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   setStateRoot = async (_root: Uint8Array) => {}
 
   /**
-   * @deprecated This method is not used by the Ethers State Manager and is a stub required by the State Manager interface
+   * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
     throw new Error('function not implemented')
@@ -404,5 +415,26 @@ export class EthersStateManager implements EVMStateManagerInterface {
 
   generateCanonicalGenesis(_initState: any): Promise<void> {
     return Promise.resolve()
+  }
+}
+
+export class RPCBlockChain {
+  readonly provider: string
+  constructor(provider: string) {
+    if (provider === undefined || provider === '') throw new Error('provider URL is required')
+    this.provider = provider
+  }
+  async getBlock(blockId: number) {
+    const block = await fetchFromProvider(this.provider, {
+      method: 'eth_getBlockByNumber',
+      params: [intToHex(blockId), false],
+    })
+    return {
+      hash: () => hexToBytes(block.hash),
+    }
+  }
+
+  shallowCopy() {
+    return this
   }
 }

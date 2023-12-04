@@ -242,7 +242,13 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
           )}`
         )
       }
-      const msg = _errorMsg('invalid block stateRoot', this, block)
+      const msg = _errorMsg(
+        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+          block.header.stateRoot
+        )}`,
+        this,
+        block
+      )
       throw new Error(msg)
     }
   } else if (this.common.isActivatedEIP(6800) === true) {
@@ -387,7 +393,7 @@ export async function accumulateParentBeaconBlockRoot(
    */
 
   if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-    await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
   await this.stateManager.putContractStorage(
