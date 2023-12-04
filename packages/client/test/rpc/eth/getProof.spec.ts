@@ -5,9 +5,9 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getProof'
 
@@ -130,10 +130,8 @@ describe(method, async () => {
 
     // verify proof is accurate
     const res = await rpc.request(method, [createdAddress!.toString(), ['0x0'], 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct proof'
-      assert.deepEqual(res.body.result, expectedProof, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    const msg = 'should return the correct proof'
+    assert.deepEqual(res.body.result, expectedProof, msg)
   })
 })

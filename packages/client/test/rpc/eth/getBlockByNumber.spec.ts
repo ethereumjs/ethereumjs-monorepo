@@ -5,9 +5,8 @@ import { Address, hexToBytes, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
-import { checkError } from '../util'
 
 try {
   initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')

@@ -6,9 +6,8 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers.js'
-import { checkError } from '../util'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service'
 
@@ -40,12 +39,10 @@ describe(method, () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // verify nonce is 0
-    let req = params(method, [address.toString(), 'latest'])
-    let expectRes = (res: any) => {
-      const msg = 'should return the correct nonce (0)'
-      assert.equal(res.body.result, '0x0', msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    let res = await rpc.request(method, [address.toString(), 'latest'])
+
+    let msg = 'should return the correct nonce (0)'
+    assert.equal(res.result, '0x0', msg)
 
     // construct block with tx
     const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
@@ -71,20 +68,16 @@ describe(method, () => {
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify nonce increments after a tx
-    req = params(method, [address.toString(), 'latest'])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct nonce (1)'
-      assert.equal(res.body.result, '0x1', msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [address.toString(), 'latest'])
+
+    msg = 'should return the correct nonce (1)'
+    assert.equal(res.result, '0x1', msg)
 
     // call with nonexistent account
-    req = params(method, [`0x${'11'.repeat(20)}`, 'latest'])
-    expectRes = (res: any) => {
-      const msg = 'should return 0x0 for nonexistent account'
-      assert.equal(res.body.result, `0x0`, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
+
+    msg = 'should return 0x0 for nonexistent account'
+    assert.equal(res.result, `0x0`, msg)
   })
 
   it('call with unsupported block argument', async () => {
@@ -95,7 +88,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 })

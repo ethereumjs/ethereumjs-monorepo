@@ -1,8 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { baseSetup } from '../helpers.js'
-import { checkError } from '../util'
 
 const method = 'eth_getBlockByHash'
 

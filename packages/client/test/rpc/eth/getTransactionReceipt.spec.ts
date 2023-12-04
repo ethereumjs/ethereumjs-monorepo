@@ -17,10 +17,9 @@ import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
 import {
-  baseRequest,
   dummy,
+  getRpcClient,
   gethGenesisStartLondon,
-  params,
   runBlockWithTxs,
   setupChain,
 } from '../helpers.js'
@@ -30,7 +29,7 @@ const method = 'eth_getTransactionReceipt'
 describe(method, () => {
   it('call with legacy tx', async () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
-
+    const rpc = getRpcClient(server)
     // construct tx
     const tx = LegacyTransaction.fromTxData(
       {
@@ -45,11 +44,9 @@ describe(method, () => {
 
     // get the tx
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct tx'
-      assert.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    const msg = 'should return the correct tx'
+    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), msg)
   })
 
   it('call with 1559 tx', async () => {
@@ -57,7 +54,7 @@ describe(method, () => {
       gethGenesisStartLondon(pow),
       'powLondon'
     )
-
+    const rpc = getRpcClient(server)
     // construct tx
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
@@ -73,25 +70,21 @@ describe(method, () => {
 
     // get the tx
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct tx'
-      assert.equal(res.body.result.transactionHash, bytesToHex(tx.hash()), msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    const msg = 'should return the correct tx'
+    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), msg)
   })
 
   it('call with unknown tx hash', async () => {
     const { server } = await setupChain(pow, 'pow')
-
+    const rpc = getRpcClient(server)
     // get a random tx hash
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
-    const expectRes = (res: any) => {
-      const msg = 'should return null'
-      assert.equal(res.body.result, null, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    const msg = 'should return null'
+    assert.equal(res.result, null, msg)
   })
 
   it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {
@@ -111,6 +104,7 @@ describe(method, () => {
       })
       const { chain, execution, server } = await setupChain(gethGenesis, 'customChain')
       common.setHardfork(Hardfork.Cancun)
+      const rpc = getRpcClient(server)
 
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(blobs)
@@ -135,12 +129,9 @@ describe(method, () => {
       await runBlockWithTxs(chain, execution, [tx], true)
 
       const res = await rpc.request(method, [bytesToHex(tx.hash())])
-      const expectRes = (res: any) => {
-        assert.equal(res.body.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
-        assert.equal(res.body.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
-      }
 
-      await baseRequest(server, req, 200, expectRes)
+      assert.equal(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
+      assert.equal(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
     }
   })
 })
