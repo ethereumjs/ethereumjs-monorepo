@@ -1,5 +1,6 @@
 import { MemoryLevel } from 'memory-level'
 
+import { bigIntToBytes, bytesToBigInt } from './bytes.js'
 import { KeyEncoding, ValueEncoding } from './db.js'
 
 import type { BatchDBOp, DB, DBObject, EncodingOpts } from './db.js'
@@ -113,11 +114,15 @@ export class LevelDB<
    * Returns a readable stream for all
    * kv pairs where key starts with `prefix`.
    */
-  async keysByPrefix(prefix: TKey, opts?: EncodingOpts): Promise<TKey[]> {
+  async keysByPrefix(prefix: Uint8Array, opts?: EncodingOpts): Promise<Uint8Array[]> {
     const encodings = getEncodings(opts)
-    const ret: TKey[] = []
+    const ret: Uint8Array[] = []
     try {
-      for await (const key of this._leveldb.keys({ gte: prefix, ...encodings })) {
+      for await (const key of this._leveldb.keys({
+        gte: prefix,
+        lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
+        ...encodings,
+      })) {
         // eslint-disable-next-line
         ret.push(key)
       }
@@ -137,12 +142,19 @@ export class LevelDB<
    * Returns a readable stream for all
    * kv pairs where key starts with `prefix`.
    */
-  async byPrefix(prefix: TKey, opts?: EncodingOpts): Promise<[TKey, TValue | undefined][]> {
+  async byPrefix(
+    prefix: Uint8Array,
+    opts?: EncodingOpts
+  ): Promise<[Uint8Array, TValue | undefined][]> {
     const encodings = getEncodings(opts)
 
-    const ret: [TKey, TValue][] = []
+    const ret: [Uint8Array, TValue][] = []
     try {
-      for await (const [key, val] of this._leveldb.iterator({ gte: prefix, ...encodings })) {
+      for await (const [key, val] of this._leveldb.iterator({
+        gte: prefix,
+        lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
+        ...encodings,
+      })) {
         const data = [
           // eslint-disable-next-line
           key instanceof Buffer ? Uint8Array.from(key) : key,
@@ -167,9 +179,13 @@ export class LevelDB<
    * Returns a readable stream for all
    * kv pairs where key starts with `prefix`.
    */
-  async delByPrefix(prefix: TKey, opts?: EncodingOpts): Promise<void> {
+  async delByPrefix(prefix: Uint8Array, opts?: EncodingOpts): Promise<void> {
     const encodings = getEncodings(opts)
-    await this._leveldb.clear({ gte: prefix, ...encodings })
+    await this._leveldb.clear({
+      gte: prefix,
+      lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
+      ...encodings,
+    })
   }
 
   async clear() {
