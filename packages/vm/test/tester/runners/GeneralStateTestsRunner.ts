@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { FlatStateManager } from '@ethereumjs/statemanager'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
@@ -75,7 +75,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
   const state = new Trie({ useKeyHashing: true })
-  const stateManager = new FlatStateManager({
+  const stateManager = new DefaultStateManager({
     trie: state,
     common,
   })
