@@ -619,9 +619,9 @@ export class VMExecution extends Execution {
                   }
                   if (
                     (!this.config.execCommon.gteHardfork(Hardfork.Prague) &&
-                      this.vm instanceof StatelessVerkleStateManager) ||
+                      this.vm.stateManager instanceof StatelessVerkleStateManager) ||
                     (this.config.execCommon.gteHardfork(Hardfork.Prague) &&
-                      this.vm instanceof DefaultStateManager)
+                      this.vm.stateManager instanceof DefaultStateManager)
                   ) {
                     throw Error(
                       `Invalid vm stateManager type=${typeof this.vm.stateManager} for fork=${
