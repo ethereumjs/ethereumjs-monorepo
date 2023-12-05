@@ -3,7 +3,7 @@ import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { INVALID_PARAMS, TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
@@ -30,10 +30,7 @@ describe(method, () => {
   })
 
   it('call with valid parameters', async () => {
-    // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
+    DefaultStateManager.prototype.setStateRoot = vi.fn()
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
@@ -112,17 +109,10 @@ describe(method, () => {
       0,
       'got empty array when start of requested range is beyond current chain head'
     )
-
-    // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 
   it('call with valid parameters on pre-Shanghai hardfork', async () => {
-    // Disable stateroot validation in TxPool since valid state root isn't available
-    const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-    const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
-    DefaultStateManager.prototype.setStateRoot = function (): any {}
+    DefaultStateManager.prototype.setStateRoot = vi.fn()
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
@@ -192,8 +182,5 @@ describe(method, () => {
     )
 
     service.execution.vm.common.setHardfork(Hardfork.London)
-    // Restore setStateRoot
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
-    DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
 })

@@ -2,18 +2,16 @@ import { bytesToHex } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
-import { EthereumClient } from '../../src/client'
-import { Config } from '../../src/config'
-import { RPCManager } from '../../src/rpc'
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
+import { EthereumClient } from '../../src/client.js'
+import { Config } from '../../src/config.js'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
+import { RPCManager } from '../../src/rpc/index.js'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../../src/util/rpc'
-
-const request = require('supertest')
+} from '../../src/util/rpc.js'
 
 describe('[Util/RPC]', () => {
   it('should return enabled RPC servers', async () => {
