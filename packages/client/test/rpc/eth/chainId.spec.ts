@@ -1,12 +1,9 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
 import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'eth_chainId'
-
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 describe(method, () => {
   it('calls', async () => {
@@ -36,9 +33,5 @@ describe(method, () => {
 
     const msg = 'should return chainId 5'
     assert.equal(res.result, '0x5', msg)
-  })
-
-  it('reset mocks', () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
   })
 })

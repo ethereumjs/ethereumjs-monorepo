@@ -12,6 +12,8 @@ import {
   createRPCServerListener,
   createWsRPCServerListener,
 } from '../../src/util/rpc.js'
+import { getRpcClient, setupChain } from '../rpc/helpers.js'
+import pow from '../testdata/geth-genesis/pow.json'
 
 describe('[Util/RPC]', () => {
   it('should return enabled RPC servers', async () => {
@@ -60,19 +62,8 @@ describe('[Util/RPC]', () => {
 })
 
 describe('[Util/RPC/Engine eth methods]', async () => {
-  const config = new Config({
-    accountCache: 10000,
-    storageCache: 1000,
-    saveReceipts: true,
-  })
-  const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
-  const manager = new RPCManager(client, config)
-  const { server } = createRPCServer(manager, {
-    methodConfig: MethodConfig.EngineOnly,
-    rpcDebug: '',
-    rpcDebugVerbose: '',
-  })
-  const httpServer = createRPCServerListener({ server })
+  const { server } = await setupChain(pow, 'pow')
+  const rpc = getRpcClient(server)
   const methods = [
     'eth_blockNumber',
     'eth_call',
@@ -84,26 +75,11 @@ describe('[Util/RPC/Engine eth methods]', async () => {
     'eth_sendRawTransaction',
     'eth_syncing',
   ]
-  for (const method of methods) {
-    it(`should have method ${method}`, () => {
-      const req = {
-        jsonrpc: '2.0',
-        method,
-        id: 1,
-      }
 
-      request(httpServer)
-        .post('/')
-        .set('Content-Type', 'application/json')
-        .send(req)
-        .expect((res: any) => {
-          if (res.body.error?.code === METHOD_NOT_FOUND) {
-            throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
-          }
-        })
-        .end((err: any) => {
-          assert.notOk(err)
-        })
+  for (const method of methods) {
+    it(`should have method ${method}`, async () => {
+      const res = await rpc.request(method, [])
+      assert.notEqual(res.error?.code, METHOD_NOT_FOUND, `should have ${method}`)
     })
   }
 })
