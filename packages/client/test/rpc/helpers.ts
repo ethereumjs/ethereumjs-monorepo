@@ -204,16 +204,6 @@ export function baseSetup(clientOpts: any = {}) {
   return { server, manager, client, rpc }
 }
 
-export function params(method: string, params: Array<any> = []) {
-  const req = {
-    jsonrpc: '2.0',
-    method,
-    params,
-    id: 1,
-  }
-  return req
-}
-
 /**
  * Sets up a custom chain with metaDB enabled (saving receipts, logs, indexes)
  */

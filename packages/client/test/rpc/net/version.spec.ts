@@ -2,18 +2,9 @@ import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
-import {
-  baseSetup,
-  createClient,
-  createManager,
-  getRpcClient,
-  params,
-  startRPC,
-} from '../helpers.js'
+import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'net_version'
-
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
 function compareResult(result: any, chainId: any) {
   let msg = 'result should be a string'

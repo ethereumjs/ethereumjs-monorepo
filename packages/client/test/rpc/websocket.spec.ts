@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
 
-import { closeRPC, startRPC } from './helpers'
+import { startRPC } from './helpers'
 
 import type { TAlgorithm } from 'jwt-simple'
 
@@ -14,7 +14,7 @@ const jwtSecret = randomBytes(32)
 describe('JSON-RPC call', () => {
   it.skip('auth protected server with valid token', async () => {
     const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-    const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const _token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
     const server = startRPC({}, { wsServer: true }, { jwtSecret })
     server.listen(1234, 'localhost')
     const rpc = Client.websocket({

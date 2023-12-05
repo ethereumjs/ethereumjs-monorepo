@@ -6,8 +6,7 @@ import { Address, bigIntToHex, bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { createClient, createManager, getRpcClient, params, startRPC } from '../helpers.js'
-import { checkError } from '../util'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service'
 
