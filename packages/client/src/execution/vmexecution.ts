@@ -247,7 +247,7 @@ export class VMExecution extends Execution {
         if (!this.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
         }
-        this.config.logger.info(`Skipping Vm verkle statemanager genesis hardfork=${this.hardfork}`)
+        this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
         this.setupVerkleVM()
         this.vm = this.verkleVM!
       } else {
