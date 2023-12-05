@@ -5,27 +5,23 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code'
+import { TOO_LARGE_REQUEST } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import preShanghaiGenesisJson from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'engine_getPayloadBodiesByHashV1'
 
 describe(method, () => {
   it('call with too many hashes', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = baseSetup({ engine: true, includeVM: true })
     const tooManyHashes: string[] = []
     for (let x = 0; x < 35; x++) {
       tooManyHashes.push(bytesToHex(randomBytes(32)))
     }
-    const req = params(method, [tooManyHashes])
-    const expectRes = checkError(
-      TOO_LARGE_REQUEST,
-      'More than 32 execution payload bodies requested'
-    )
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [tooManyHashes])
+    assert.equal(res.error.code, TOO_LARGE_REQUEST)
+    assert.ok(res.error.message.includes('More than 32 execution payload bodies requested'))
   })
 
   it('call with valid parameters', async () => {
@@ -40,6 +36,7 @@ describe(method, () => {
       engine: true,
       hardfork: Hardfork.Cancun,
     })
+    const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
@@ -92,23 +89,18 @@ describe(method, () => {
 
     await chain.putBlocks([block, block2], true)
 
-    const req = params(method, [
+    const res = await rpc.request(method, [
       [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
     ])
-    const expectRes = (res: any) => {
-      assert.equal(
-        res.body.result[0].transactions[0],
-        bytesToHex(tx.serialize()),
-        'got expected transaction from first payload'
-      )
-      assert.equal(res.body.result[1], null, 'got null for block not found in chain')
-      assert.equal(
-        res.body.result.length,
-        3,
-        'length of response matches number of block hashes sent'
-      )
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    assert.equal(
+      res.result[0].transactions[0],
+      bytesToHex(tx.serialize()),
+      'got expected transaction from first payload'
+    )
+    assert.equal(res.result[1], null, 'got null for block not found in chain')
+    assert.equal(res.result.length, 3, 'length of response matches number of block hashes sent')
+
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
     DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
@@ -130,6 +122,7 @@ describe(method, () => {
         hardfork: Hardfork.London,
       }
     )
+    const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.London)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
     const address = Address.fromPrivateKey(pkey)
@@ -182,17 +175,16 @@ describe(method, () => {
 
     await chain.putBlocks([block, block2], true)
 
-    const req = params(method, [
+    const res = await rpc.request(method, [
       [bytesToHex(block.hash()), bytesToHex(randomBytes(32)), bytesToHex(block2.hash())],
     ])
-    const expectRes = (res: any) => {
-      assert.equal(
-        res.body.result[0].withdrawals,
-        null,
-        'got null for withdrawals field on pre-Shanghai block'
-      )
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    assert.equal(
+      res.result[0].withdrawals,
+      null,
+      'got null for withdrawals field on pre-Shanghai block'
+    )
+
     // Restore setStateRoot
     DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
     DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy

@@ -1,9 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 
@@ -24,69 +23,56 @@ const validPayload = [validForkChoiceState, validPayloadAttributes]
 
 describe(method, () => {
   it('call with invalid payloadId', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = baseSetup({ engine: true, includeVM: true })
 
-    const req = params(method, [1])
-    const expectRes = checkError(
-      INVALID_PARAMS,
-      'invalid argument 0: argument must be a hex string'
-    )
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [1])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 0: argument must be a hex string'))
   })
 
   it('call with unknown payloadId', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = baseSetup({ engine: true, includeVM: true })
 
-    const req = params(method, ['0x123'])
-    const expectRes = checkError(-32001, 'Unknown payload')
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['0x123'])
+    assert.equal(res.error.code, -32001, 'Unknown payload')
   })
 
   it('call with known payload', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-    let req = params('engine_forkchoiceUpdatedV1', validPayload)
-    let payloadId
-    let expectRes = (res: any) => {
-      payloadId = res.body.result.payloadId
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    const rpc = getRpcClient(server)
+    let res = await rpc.request('engine_forkchoiceUpdatedV1', validPayload)
+
+    const payloadId = res.result.payloadId
 
     let payload: ExecutionPayload | undefined = undefined
-    req = params(method, [payloadId])
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.blockNumber, '0x1')
-      payload = res.body.result
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    res = await rpc.request(method, [payloadId])
 
+    assert.equal(res.result.blockNumber, '0x1')
+    payload = res.result
+    console.log(res)
     // Without newpayload the fcU response should be syncing or accepted
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
-    }
-    req = params('engine_forkchoiceUpdatedV1', [
+
+    assert.equal(res.payloadStatus.status, 'SYNCING')
+
+    res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
         ...validPayload[0],
         headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       },
     ])
-    await baseRequest(server, req, 200, expectRes, false, false)
 
     // post new payload , the fcu should give valid
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    req = params('engine_newPayloadV1', [payload])
-    await baseRequest(server, req, 200, expectRes, false, false)
+    assert.equal(res.result.status, 'VALID')
 
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
-    }
-    req = params('engine_forkchoiceUpdatedV1', [
+    res = await rpc.request('engine_newPayloadV1', [payload])
+
+    assert.equal(res.result.payloadStatus.status, 'VALID')
+
+    res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
         ...validPayload[0],
         headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       },
     ])
-    await baseRequest(server, req, 200, expectRes)
   })
 })
