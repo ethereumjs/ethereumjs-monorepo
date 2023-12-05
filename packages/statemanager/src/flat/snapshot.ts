@@ -86,6 +86,8 @@ export class Snapshot {
   }
 
   // TODO make this a private internal function
+  // TODO make sure this function isn't returning prefixed keys
+  //  since keys can be used to construct tries
   getAccounts(): Promise<[Uint8Array, Uint8Array | undefined][]> {
     const prefix = ACCOUNT_PREFIX
     return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
