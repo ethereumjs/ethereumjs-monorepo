@@ -169,7 +169,6 @@ export type BlockBytes =
 
 /**
  * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
- * TODO: The verkle prestate type properly
  */
 export type BlockHeaderBytes = Uint8Array[]
 export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
