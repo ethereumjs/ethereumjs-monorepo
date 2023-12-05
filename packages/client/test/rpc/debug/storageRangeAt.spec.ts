@@ -3,15 +3,14 @@ import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } fro
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, beforeEach, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/debug.json'
-import { baseRequest, dummy, params, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { dummy, getRpcClient, setupChain } from '../helpers.js'
 
 import type { Block } from '@ethereumjs/block'
 import type { StorageRange } from '@ethereumjs/common/src'
 import type { Address } from '@ethereumjs/util'
-import type { HttpServer } from 'jayson/promise'
+import type { HttpClient } from 'jayson/promise'
 
 const method = 'debug_storageRangeAt'
 
@@ -63,9 +62,9 @@ describe(method, () => {
    */
   interface TestSetup {
     /**
-     * The server object to query for the tests.
+     * The rpc client used to query for the tests.
      */
-    server: HttpServer
+    rpc: HttpClient
     /**
      * The block that contains the transactions to be tested.
      */
@@ -88,7 +87,7 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(genesisJSON, 'post-merge', {
       txLookupLimit: 0,
     })
-
+    const rpc = getRpcClient(server)
     const firstTx = TransactionFactory.fromTxData(
       {
         type: 0x2,
@@ -150,140 +149,134 @@ describe(method, () => {
     const block = await blockBuilder.build()
     await chain.putBlocks([block], true)
 
-    context.server = server
+    context.rpc = rpc
     context.block = await chain.getCanonicalHeadBlock()
     context.createdAddress = result.createdAddress!!
     context.createdAddressNoStorage = thirdResult.createdAddress!!
   })
 
   it<TestSetup>('Should return the correct (number of) key value pairs.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       1,
       createdAddress.toString(),
       '0x00',
       100,
     ])
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
 
-      const firstVariableHash = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
-      assert.equal(
-        storageRange.storage[bytesToHex(firstVariableHash)].value,
-        '0x43',
-        'First variable correctly included.'
-      )
+    const storageRange: StorageRange = res.result
 
-      const secondVariableHash = keccak256(setLengthLeft(hexToBytes('0x01'), 32))
-      assert.equal(
-        storageRange.storage[bytesToHex(secondVariableHash)].value,
-        '0x01',
-        'Second variable correctly included.'
-      )
+    const firstVariableHash = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
+    assert.equal(
+      storageRange.storage[bytesToHex(firstVariableHash)].value,
+      '0x43',
+      'First variable correctly included.'
+    )
 
-      const thirdVariableHash = keccak256(setLengthLeft(hexToBytes('0x02'), 32))
-      assert.equal(
-        storageRange.storage[bytesToHex(thirdVariableHash)].value,
-        '0x02',
-        'Third variable correctly included.'
-      )
+    const secondVariableHash = keccak256(setLengthLeft(hexToBytes('0x01'), 32))
+    assert.equal(
+      storageRange.storage[bytesToHex(secondVariableHash)].value,
+      '0x01',
+      'Second variable correctly included.'
+    )
 
-      assert.equal(
-        Object.keys(storageRange.storage).length,
-        3,
-        'Call returned the correct number of key value pairs.'
-      )
-    }
+    const thirdVariableHash = keccak256(setLengthLeft(hexToBytes('0x02'), 32))
+    assert.equal(
+      storageRange.storage[bytesToHex(thirdVariableHash)].value,
+      '0x02',
+      'Third variable correctly included.'
+    )
 
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.equal(
+      Object.keys(storageRange.storage).length,
+      3,
+      'Call returned the correct number of key value pairs.'
+    )
   })
 
   it<TestSetup>('Should return an old storage state if requested.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
     // Call the method with txIndex = 0.
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       0,
       createdAddress.toString(),
       '0x00',
       100,
     ])
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
 
-      const hashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
-      assert.equal(
-        storageRange.storage[bytesToHex(hashedKey)].value,
-        '0x42',
-        'Old value was correctly reported.'
-      )
-    }
+    const storageRange: StorageRange = res.result
 
-    await baseRequest(server, req, 200, expectRes, true)
+    const hashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
+    assert.equal(
+      storageRange.storage[bytesToHex(hashedKey)].value,
+      '0x42',
+      'Old value was correctly reported.'
+    )
   })
 
   it<TestSetup>('Should not return too many storage keys.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    const req = params(method, [bytesToHex(block.hash()), 1, createdAddress.toString(), '0x00', 2])
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
+    const res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      1,
+      createdAddress.toString(),
+      '0x00',
+      2,
+    ])
 
-      assert.equal(
-        Object.keys(storageRange.storage).length,
-        2,
-        'Call returned the correct number of key value pairs.'
-      )
-    }
+    const storageRange: StorageRange = res.result
 
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.equal(
+      Object.keys(storageRange.storage).length,
+      2,
+      'Call returned the correct number of key value pairs.'
+    )
   })
 
   it<TestSetup>('Should return an empty result for accounts without storage.', async ({
-    server,
+    rpc,
     block,
     createdAddressNoStorage,
   }) => {
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       2,
       createdAddressNoStorage.toString(),
       '0x00',
       2,
     ])
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
 
-      assert.equal(
-        Object.keys(storageRange.storage).length,
-        0,
-        'Call returned the correct number of key value pairs.'
-      )
+    const storageRange: StorageRange = res.result
 
-      assert.isNull(storageRange.nextKey, 'nextKey was correctly set to null.')
-    }
+    assert.equal(
+      Object.keys(storageRange.storage).length,
+      0,
+      'Call returned the correct number of key value pairs.'
+    )
 
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.isNull(storageRange.nextKey, 'nextKey was correctly set to null.')
   })
 
   it<TestSetup>('Should not return keys falling outside the requested range.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
     // The lowest hashed key in our example contract corresponds to storage slot 0x00.
     const smallestHashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
 
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       1,
       createdAddress.toString(),
@@ -292,192 +285,201 @@ describe(method, () => {
       100,
     ])
 
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
+    const storageRange: StorageRange = res.result
 
-      assert.equal(
-        Object.keys(storageRange.storage).length,
-        2,
-        'Call returned the correct number of key value pairs.'
-      )
+    assert.equal(
+      Object.keys(storageRange.storage).length,
+      2,
+      'Call returned the correct number of key value pairs.'
+    )
 
-      assert.isUndefined(
-        storageRange.storage[bytesToHex(smallestHashedKey)],
-        'Smallest hashed key was correctly excluded from result.'
-      )
-    }
-
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.isUndefined(
+      storageRange.storage[bytesToHex(smallestHashedKey)],
+      'Smallest hashed key was correctly excluded from result.'
+    )
   })
 
   it<TestSetup>('Should provide a null value for nextKey if there is no next key.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       1,
       createdAddress.toString(),
       '0x00',
       100,
     ])
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
 
-      assert.isNull(storageRange.nextKey, 'nextKey was correctly set to null.')
-    }
+    const storageRange: StorageRange = res.result
 
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.isNull(storageRange.nextKey, 'nextKey was correctly set to null.')
   })
 
   it<TestSetup>('Should provide a valid nextKey if there is one.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    const req = params(method, [bytesToHex(block.hash()), 1, createdAddress.toString(), '0x00', 2])
-    const expectRes = (res: any) => {
-      // The largest hashed key in our example contract corresponds to storage slot 0x01.
-      const largestHashedKey = bytesToHex(keccak256(setLengthLeft(hexToBytes('0x01'), 32)))
+    const res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      1,
+      createdAddress.toString(),
+      '0x00',
+      2,
+    ])
 
-      const storageRange: StorageRange = res.body.result
+    // The largest hashed key in our example contract corresponds to storage slot 0x01.
+    const largestHashedKey = bytesToHex(keccak256(setLengthLeft(hexToBytes('0x01'), 32)))
 
-      assert.equal(storageRange.nextKey, largestHashedKey, 'nextKey was correctly set.')
-    }
+    const storageRange: StorageRange = res.result
 
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.equal(storageRange.nextKey, largestHashedKey, 'nextKey was correctly set.')
   })
 
   it<TestSetup>('Should provide a null value for preimages (until this is implemented).', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       1,
       createdAddress.toString(),
       '0x00',
       100,
     ])
-    const expectRes = (res: any) => {
-      const storageRange: StorageRange = res.body.result
 
-      for (const [_, KVPair] of Object.entries(storageRange.storage)) {
-        assert.isNull(KVPair.key, 'Storage key preimage was intentionally set to null.')
-      }
+    const storageRange: StorageRange = res.result
+
+    for (const [_, KVPair] of Object.entries(storageRange.storage)) {
+      assert.isNull(KVPair.key, 'Storage key preimage was intentionally set to null.')
     }
-
-    await baseRequest(server, req, 200, expectRes, true)
   })
 
   it<TestSetup>('Should throw an error if the requested block does not exist.', async ({
-    server,
+    rpc,
     createdAddress,
   }) => {
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(setLengthLeft(hexToBytes('0x00'), 32)),
       1,
       createdAddress.toString(),
       '0x00',
       100,
     ])
-    const expectRes = checkError(INTERNAL_ERROR, 'Could not get requested block hash.')
-
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.ok(res.error.message.includes('Could not get requested block hash.'))
   })
 
   it<TestSetup>('Should throw an error if txIndex is too small or too large.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    let req = params(method, [bytesToHex(block.hash()), -1, createdAddress.toString(), '0x00', 100])
-    let expectRes = checkError(INVALID_PARAMS, 'invalid argument 1: argument must be larger than 0')
+    let res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      -1,
+      createdAddress.toString(),
+      '0x00',
+      100,
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 1: argument must be larger than 0'))
 
-    await baseRequest(server, req, 200, expectRes, false)
-
-    req = params(method, [bytesToHex(block.hash()), 3, createdAddress.toString(), '0x00', 100])
-    expectRes = checkError(
-      INTERNAL_ERROR,
-      'txIndex cannot be larger than the number of transactions in the block.'
+    res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      3,
+      createdAddress.toString(),
+      '0x00',
+      100,
+    ])
+    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.ok(
+      res.error.message.includes(
+        'txIndex cannot be larger than the number of transactions in the block.'
+      )
     )
-
-    await baseRequest(server, req, 200, expectRes, true)
   })
 
   it<TestSetup>('Should throw an error if the address is not formatted correctly.', async ({
-    server,
+    rpc,
     block,
   }) => {
-    const req = params(method, [bytesToHex(block.hash()), 0, '0xabcd'.toString(), '0x00', 100])
-    const expectRes = checkError(INVALID_PARAMS, 'invalid argument 2: invalid address')
-
-    await baseRequest(server, req, 200, expectRes, true)
+    const res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      0,
+      '0xabcd'.toString(),
+      '0x00',
+      100,
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 2: invalid address'))
   })
 
-  it<TestSetup>('Should throw an error if the address does not exist.', async ({
-    server,
-    block,
-  }) => {
+  it<TestSetup>('Should throw an error if the address does not exist.', async ({ rpc, block }) => {
     // The address is formatted correctly but is not associated with any account.
-    const req = params(method, [
+    const res = await rpc.request(method, [
       bytesToHex(block.hash()),
       0,
       '0xabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd'.toString(),
       '0x00',
       100,
     ])
-    const expectRes = checkError(INTERNAL_ERROR, 'Account does not exist.')
-
-    await baseRequest(server, req, 200, expectRes, true)
+    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.ok(res.error.message.includes('Account does not exist.'))
   })
 
   it<TestSetup>('Should throw an error if limit is too small.', async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    const req = params(method, [bytesToHex(block.hash()), 0, createdAddress.toString(), '0x00', -1])
-    const expectRes = checkError(
-      INVALID_PARAMS,
-      'invalid argument 4: argument must be larger than 0'
-    )
-
-    await baseRequest(server, req, 200, expectRes, true)
+    const res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      0,
+      createdAddress.toString(),
+      '0x00',
+      -1,
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 4: argument must be larger than 0'))
   })
 
   it<TestSetup>("Should throw an error if hex parameters do not start with '0x'.", async ({
-    server,
+    rpc,
     block,
     createdAddress,
   }) => {
-    let req = params(method, [
+    let res = await rpc.request(method, [
       bytesToHex(block.hash()).slice(2),
       0,
       createdAddress.toString(),
       '0x00',
       -1,
     ])
-    let expectRes = checkError(INVALID_PARAMS, 'invalid argument 0: hex string without 0x prefix')
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
 
-    await baseRequest(server, req, 200, expectRes, false)
-
-    req = params(method, [
+    res = await rpc.request(method, [
       bytesToHex(block.hash()),
       0,
       createdAddress.toString().slice(2),
       '0x00',
       -1,
     ])
-    expectRes = checkError(INVALID_PARAMS, 'invalid argument 2: missing 0x prefix')
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 2: missing 0x prefix'))
 
-    await baseRequest(server, req, 200, expectRes, false)
-
-    req = params(method, [bytesToHex(block.hash()), 0, createdAddress.toString(), '00', -1])
-    expectRes = checkError(INVALID_PARAMS, 'invalid argument 3: hex string without 0x prefix')
-
-    await baseRequest(server, req, 200, expectRes, true)
+    res = await rpc.request(method, [
+      bytesToHex(block.hash()),
+      0,
+      createdAddress.toString(),
+      '00',
+      -1,
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('invalid argument 3: hex string without 0x prefix'))
   })
 })

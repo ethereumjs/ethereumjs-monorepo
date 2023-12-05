@@ -1,14 +1,9 @@
-import { BlockHeader } from '@ethereumjs/block'
-import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
-import { baseRequest, params, setupChain } from '../helpers.js'
-import { checkError } from '../util'
-
-import type { HttpServer } from 'jayson'
+import { getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
 
@@ -16,22 +11,10 @@ const method = 'engine_newPayloadV3'
 // however its not required to set to correct value to test for versioned hashes test cases
 const [blockData] = blocks
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-
-export const batchBlocks = async (server: HttpServer) => {
-  for (let i = 0; i < 3; i++) {
-    const req = params(method, [blocks[i], []])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false)
-  }
-}
-
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-
+    const rpc = getRpcClient(server)
     const parentBeaconBlockRoot =
       '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
     const blockDataExtraVersionedHashes = [
@@ -47,16 +30,13 @@ describe(`${method}: Cancun validations`, () => {
       ['0x3434', '0x2334'],
       parentBeaconBlockRoot,
     ]
-    let req = params(method, blockDataExtraVersionedHashes)
-    let expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-      assert.equal(
-        res.body.result.validationError,
-        'Error verifying blobVersionedHashes: expected=0 received=2'
-      )
-    }
+    let res = await rpc.request(method, blockDataExtraVersionedHashes)
 
-    await baseRequest(server, req, 200, expectRes, false)
+    assert.equal(res.result.status, 'INVALID')
+    assert.equal(
+      res.result.validationError,
+      'Error verifying blobVersionedHashes: expected=0 received=2'
+    )
 
     const txString =
       '0x03f89001808405f5e1008502540be4008401c9c3809400000000000000000000000000000000000000008080c001e1a001317228841f747eac2b4987a0225753a4f81688b31b21192ad2d2a3f5d252c580a01146addbda4889ddeaa8e4d74baae37c55f9796ab17030c762260faa797ca33ea0555a673397ea115d81c390a560ab77d3f63e93a59270b1b8d12cd2a1fb8b9b11'
@@ -76,12 +56,9 @@ describe(`${method}: Cancun validations`, () => {
         excessBlobGas: '0x0',
       },
     ]
-    req = params(method, blockDataNoneHashes)
-    expectRes = checkError(
-      INVALID_PARAMS,
-      'missing value for required argument blobVersionedHashes'
-    )
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, blockDataNoneHashes)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('missing value for required argument blobVersionedHashes'))
 
     const blockDataMissingParentBeaconRoot = [
       {
@@ -96,12 +73,11 @@ describe(`${method}: Cancun validations`, () => {
       },
       txVersionedHashesString,
     ]
-    req = params(method, blockDataMissingParentBeaconRoot)
-    expectRes = checkError(
-      INVALID_PARAMS,
-      'missing value for required argument parentBeaconBlockRoot'
+    res = await rpc.request(method, blockDataMissingParentBeaconRoot)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(
+      res.error.message.includes('missing value for required argument parentBeaconBlockRoot')
     )
-    await baseRequest(server, req, 200, expectRes, false)
 
     const blockDataExtraMissingHashes1 = [
       {
@@ -117,15 +93,13 @@ describe(`${method}: Cancun validations`, () => {
       txVersionedHashesString,
       parentBeaconBlockRoot,
     ]
-    req = params(method, blockDataExtraMissingHashes1)
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-      assert.equal(
-        res.body.result.validationError,
-        'Error verifying blobVersionedHashes: expected=2 received=1'
-      )
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, blockDataExtraMissingHashes1)
+
+    assert.equal(res.result.status, 'INVALID')
+    assert.equal(
+      res.result.validationError,
+      'Error verifying blobVersionedHashes: expected=2 received=1'
+    )
 
     const blockDataExtraMisMatchingHashes1 = [
       {
@@ -141,15 +115,13 @@ describe(`${method}: Cancun validations`, () => {
       [...txVersionedHashesString, '0x3456'],
       parentBeaconBlockRoot,
     ]
-    req = params(method, blockDataExtraMisMatchingHashes1)
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-      assert.equal(
-        res.body.result.validationError,
-        'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…'
-      )
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, blockDataExtraMisMatchingHashes1)
+
+    assert.equal(res.result.status, 'INVALID')
+    assert.equal(
+      res.result.validationError,
+      'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…'
+    )
 
     const blockDataMatchingVersionedHashes = [
       {
@@ -165,15 +137,7 @@ describe(`${method}: Cancun validations`, () => {
       [...txVersionedHashesString, ...txVersionedHashesString],
       parentBeaconBlockRoot,
     ]
-    req = params(method, blockDataMatchingVersionedHashes)
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'ACCEPTED')
-    }
-    await baseRequest(server, req, 200, expectRes)
-  })
-
-  it(`reset TD`, () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
+    res = await rpc.request(method, blockDataMatchingVersionedHashes)
+    assert.equal(res.result.status, 'ACCEPTED')
   })
 })

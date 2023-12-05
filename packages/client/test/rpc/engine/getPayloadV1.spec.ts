@@ -4,8 +4,6 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, getRpcClient, setupChain } from '../helpers.js'
 
-import type { ExecutionPayload } from '@ethereumjs/block'
-
 const method = 'engine_getPayloadV1'
 
 const validForkChoiceState = {
@@ -41,32 +39,27 @@ describe(method, () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
     const rpc = getRpcClient(server)
     let res = await rpc.request('engine_forkchoiceUpdatedV1', validPayload)
-
     const payloadId = res.result.payloadId
 
-    let payload: ExecutionPayload | undefined = undefined
     res = await rpc.request(method, [payloadId])
 
     assert.equal(res.result.blockNumber, '0x1')
-    payload = res.result
-    console.log(res)
+    const payload = res.result
+
     // Without newpayload the fcU response should be syncing or accepted
-
-    assert.equal(res.payloadStatus.status, 'SYNCING')
-
     res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
         ...validPayload[0],
         headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       },
     ])
+
+    assert.equal(res.result.payloadStatus.status, 'SYNCING')
 
     // post new payload , the fcu should give valid
-    assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_newPayloadV1', [payload])
-
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.equal(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
@@ -74,5 +67,6 @@ describe(method, () => {
         headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       },
     ])
+    assert.equal(res.result.payloadStatus.status, 'VALID')
   })
 })

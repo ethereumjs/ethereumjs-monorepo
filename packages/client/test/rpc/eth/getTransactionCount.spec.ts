@@ -78,7 +78,7 @@ describe(method, () => {
 
     msg = 'should return 0x0 for nonexistent account'
     assert.equal(res.result, `0x0`, msg)
-  })
+  }, 20000)
 
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()

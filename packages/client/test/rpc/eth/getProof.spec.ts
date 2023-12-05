@@ -132,6 +132,6 @@ describe(method, async () => {
     const res = await rpc.request(method, [createdAddress!.toString(), ['0x0'], 'latest'])
 
     const msg = 'should return the correct proof'
-    assert.deepEqual(res.body.result, expectedProof, msg)
+    assert.deepEqual(res.result, expectedProof, msg)
   })
 })

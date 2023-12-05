@@ -2,10 +2,9 @@ import { Block } from '@ethereumjs/block'
 import { Withdrawal, bigIntToHex, bytesToHex, intToHex } from '@ethereumjs/util'
 import { assert, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/withdrawals.json'
-import { baseRequest, params, setupChain } from '../helpers.js'
-import { checkError } from '../util'
+import { getRpcClient, setupChain } from '../helpers.js'
 
 import type { ExecutionPayload } from '@ethereumjs/block'
 
@@ -112,39 +111,36 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       'withdrawalsRoot compuation should match'
     )
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-
-    let req = params('engine_forkchoiceUpdatedV2', [validForkChoiceState, validPayloadAttributes])
-    let expectRes = checkError(
-      INVALID_PARAMS,
-      'PayloadAttributesV2 MUST be used after Shanghai is activated'
+    const rpc = getRpcClient(server)
+    let res = await rpc.request('engine_forkchoiceUpdatedV2', [
+      validForkChoiceState,
+      validPayloadAttributes,
+    ])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(
+      res.error.message.includes('PayloadAttributesV2 MUST be used after Shanghai is activated')
     )
-    await baseRequest(server, req, 200, expectRes, false, false)
 
-    req = params('engine_forkchoiceUpdatedV2', [
+    res = await rpc.request('engine_forkchoiceUpdatedV2', [
       validForkChoiceState,
       validPayloadAttributesWithWithdrawals,
     ])
-    let payloadId
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadId !== undefined, true)
-      payloadId = res.body.result.payloadId
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+
+    assert.equal(res.result.payloadId !== undefined, true)
+    const payloadId = res.result.payloadId
 
     let payload: ExecutionPayload | undefined = undefined
-    req = params('engine_getPayloadV2', [payloadId])
-    expectRes = (res: any) => {
-      const { executionPayload, blockValue } = res.body.result
-      assert.equal(executionPayload!.blockNumber, '0x1')
-      assert.equal(
-        executionPayload!.withdrawals!.length,
-        withdrawals.length,
-        'withdrawals should match'
-      )
-      assert.equal(blockValue, '0x0', 'No value should be returned')
-      payload = executionPayload
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    res = await rpc.request('engine_getPayloadV2', [payloadId])
+
+    const { executionPayload, blockValue } = res.result
+    assert.equal(executionPayload!.blockNumber, '0x1')
+    assert.equal(
+      executionPayload!.withdrawals!.length,
+      withdrawals.length,
+      'withdrawals should match'
+    )
+    assert.equal(blockValue, '0x0', 'No value should be returned')
+    payload = executionPayload
 
     if (gethBlockRlp !== undefined) {
       // check if stateroot matches
@@ -155,21 +151,17 @@ for (const { name, withdrawals, withdrawalsRoot, gethBlockRlp } of testCases) {
       )
     }
 
-    req = params('engine_newPayloadV2', [payload])
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    res = await rpc.request('engine_newPayloadV2', [payload])
 
-    req = params('engine_forkchoiceUpdatedV2', [
+    assert.equal(res.result.status, 'VALID')
+
+    res = await rpc.request('engine_forkchoiceUpdatedV2', [
       {
         ...validForkChoiceState,
         headBlockHash: payload!.blockHash,
       },
     ])
-    expectRes = async (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes)
+
+    assert.equal(res.result.payloadStatus.status, 'VALID')
   })
 }

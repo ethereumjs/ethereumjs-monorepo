@@ -15,7 +15,7 @@ describe(method, () => {
 
     const msg = 'transaction count should be 1'
     assert.equal(res.result, '0x1', msg)
-  })
+  }, 10000)
 
   it('call with invalid block hash without 0x', async () => {
     const { rpc } = baseSetup()

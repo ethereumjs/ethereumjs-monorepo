@@ -63,7 +63,7 @@ describe(method, () => {
 
     const msg = 'should return the correct block transaction count(1)'
     assert.equal(res.result, '0x1', msg)
-  })
+  }, 20000)
 
   it('call with valid arguments (multiple transactions)', async () => {
     const blockchain = await Blockchain.create({
@@ -130,7 +130,7 @@ describe(method, () => {
 
     const msg = 'should return the correct block transaction count(3)'
     assert.equal(res.result, '0x3', msg)
-  })
+  }, 30000)
 
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()

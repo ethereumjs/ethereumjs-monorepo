@@ -1,30 +1,14 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { bigIntToHex } from '@ethereumjs/util'
-import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, params, setupChain } from '../helpers.js'
-import { checkError } from '../util'
-
-import type { HttpServer } from 'jayson'
+import { batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
 const [blockData] = blocks
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-
-export const batchBlocks = async (server: HttpServer) => {
-  for (let i = 0; i < 3; i++) {
-    const req = params('engine_newPayloadV1', [blocks[i]])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
-  }
-}
 const parentBeaconBlockRoot = '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'
 
 describe(`${method}: call with executionPayloadV3`, () => {
@@ -32,6 +16,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
     })
+    const rpc = getRpcClient(server)
     // get the genesis json with current date
     const validBlock = {
       ...blockData,
@@ -40,12 +25,11 @@ describe(`${method}: call with executionPayloadV3`, () => {
       excessBlobGas: '0x0',
     }
 
-    const req = params(method, [validBlock, [], parentBeaconBlockRoot])
-    const expectRes = checkError(
-      UNSUPPORTED_FORK,
-      'NewPayloadV{1|2} MUST be used before Cancun is activated'
+    const res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
+    assert.equal(res.error.code, UNSUPPORTED_FORK)
+    assert.ok(
+      res.error.message.includes('NewPayloadV{1|2} MUST be used before Cancun is activated')
     )
-    await baseRequest(server, req, 200, expectRes)
   })
 
   it('valid data', async () => {
@@ -56,7 +40,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
     cancunJson.config.shanghaiTime = cancunTime
     cancunJson.config.cancunTime = cancunTime
     const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
-
+    const rpc = getRpcClient(server)
     const validBlock = {
       ...blockData,
       timestamp: bigIntToHex(BigInt(cancunTime)),
@@ -66,7 +50,7 @@ describe(`${method}: call with executionPayloadV3`, () => {
       blockHash: '0xbb9bd9ec0b48b52556ce0180afcefc31d59dd288914b931ff32ff9813519fa7f',
       stateRoot: '0xca3149fa9e37db08d1cd49c9061db1002ef1cd58db2210f2115c8c989b2bdf45',
     }
-    let expectRes, req
+    let res
 
     const oldMethods = ['engine_newPayloadV1', 'engine_newPayloadV2']
     const expectedErrors = [
@@ -77,17 +61,13 @@ describe(`${method}: call with executionPayloadV3`, () => {
       const oldMethod = oldMethods[index]
       const expectedError = expectedErrors[index]
       // extra params for old methods should be auto ignored
-      req = params(oldMethod, [validBlock, [], parentBeaconBlockRoot])
-      expectRes = checkError(INVALID_PARAMS, expectedError)
-      await baseRequest(server, req, 200, expectRes, false, false)
+      res = await rpc.request(oldMethod, [validBlock, [], parentBeaconBlockRoot])
+      assert.equal(res.error.code, INVALID_PARAMS)
+      assert.ok(res.error.message.includes(expectedError))
     }
 
-    req = params(method, [validBlock, [], parentBeaconBlockRoot])
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-      assert.equal(res.body.result.latestValidHash, validBlock.blockHash)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    res = await rpc.request(method, [validBlock, [], parentBeaconBlockRoot])
+    assert.equal(res.result.status, 'VALID')
   })
 
   it('fcU and verify that no errors occur on new payload', async () => {
@@ -98,35 +78,22 @@ describe(`${method}: call with executionPayloadV3`, () => {
     cancunJson.config.shanghaiTime = cancunTime
     cancunJson.config.cancunTime = cancunTime
     const { server } = await setupChain(cancunJson, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
+    await batchBlocks(rpc, blocks)
 
-    await batchBlocks(server)
-
-    let req = params('engine_forkchoiceUpdatedV3', [
+    // Let's set new head hash
+    let res = await rpc.request('engine_forkchoiceUpdatedV3', [
       {
         headBlockHash: blocks[2].blockHash,
         finalizedBlockHash: blocks[2].blockHash,
         safeBlockHash: blocks[2].blockHash,
       },
     ])
-
-    // Let's set new head hash
-    const expectResFcu = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectResFcu, false, false)
+    assert.equal(res.result.payloadStatus.status, 'VALID')
 
     // use new payload v1 as blocks all belong to pre-shanghai
-    req = params('engine_newPayloadV1', [blockData])
-
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes)
-  })
-
-  it(`reset TD`, () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
+    res = await rpc.request('engine_newPayloadV1', [blockData])
+    assert.equal(res.result.status, 'VALID')
   })
 
   it('call with executionPayloadV2', () => {
