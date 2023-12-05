@@ -43,8 +43,8 @@ export class VMExecution extends Execution {
   private _lock = new Lock()
 
   public vm: VM
-  public merkleVm: VM | null = null
-  public verkleVm: VM | null = null
+  public merkleVM: VM | null = null
+  public verkleVM: VM | null = null
   public hardfork: string = ''
   /* Whether canonical chain execution has stayed valid or ran into an invalid block */
   public chainStatus: ChainStatus | null = null
@@ -64,7 +64,7 @@ export class VMExecution extends Execution {
   private STATS_INTERVAL = 1000 * 90 // 90 seconds
 
   private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
-  private _statsVm: VM | undefined
+  private _statsVM: VM | undefined
 
   /**
    * Run a function after acquiring a lock. It is implied that we have already
@@ -91,11 +91,11 @@ export class VMExecution extends Execution {
 
     if (this.config.vm === undefined) {
       if (this.config.chainCommon.gteHardfork(Hardfork.Prague)) {
-        this.setupVerkleVm()
-        this.vm = this.verkleVm!
+        this.setupVerkleVM()
+        this.vm = this.verkleVM!
       } else {
-        this.setupMerkleVm()
-        this.vm = this.merkleVm!
+        this.setupMerkleVM()
+        this.vm = this.merkleVM!
       }
     } else {
       this.vm = this.config.vm
@@ -124,8 +124,8 @@ export class VMExecution extends Execution {
     }
   }
 
-  setupMerkleVm() {
-    if (this.merkleVm !== null) {
+  setupMerkleVM() {
+    if (this.merkleVM !== null) {
       return
     }
     const trie = new Trie({
@@ -135,7 +135,7 @@ export class VMExecution extends Execution {
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
 
-    this.config.logger.info(`Setting up merkleVm`)
+    this.config.logger.info(`Setting up merkleVM`)
     this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
     this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
     this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
@@ -160,7 +160,7 @@ export class VMExecution extends Execution {
         size: this.config.codeCache,
       },
     })
-    this.merkleVm = new (VM as any)({
+    this.merkleVM = new (VM as any)({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -168,14 +168,14 @@ export class VMExecution extends Execution {
     })
   }
 
-  setupVerkleVm() {
-    if (this.verkleVm !== null) {
+  setupVerkleVM() {
+    if (this.verkleVM !== null) {
       return
     }
 
-    this.config.logger.info(`Setting up verkleVm`)
+    this.config.logger.info(`Setting up verkleVM`)
     const stateManager = new StatelessVerkleStateManager()
-    this.verkleVm = new (VM as any)({
+    this.verkleVM = new (VM as any)({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -183,23 +183,23 @@ export class VMExecution extends Execution {
     })
   }
 
-  async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVm: boolean = true): Promise<void> {
-    if (this.vm instanceof StatelessVerkleStateManager) {
+  async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVM: boolean = true): Promise<void> {
+    if (this.vm.stateManager instanceof StatelessVerkleStateManager) {
       return
     }
 
     return this.runWithLock<void>(async () => {
-      if (this.merkleVm === null) {
-        this.setupMerkleVm()
+      if (this.merkleVM === null) {
+        this.setupMerkleVM()
       }
-      const merkleVm = this.merkleVm!
-      const merkleStateManager = merkleVm.stateManager as DefaultStateManager
+      const merkleVM = this.merkleVM!
+      const merkleStateManager = merkleVM.stateManager as DefaultStateManager
 
-      if (this.verkleVm === null) {
-        this.setupVerkleVm()
+      if (this.verkleVM === null) {
+        this.setupVerkleVM()
       }
-      const verkleVm = this.verkleVm!
-      const verkleStateManager = verkleVm.stateManager as StatelessVerkleStateManager
+      const verkleVM = this.verkleVM!
+      const verkleStateManager = verkleVM.stateManager as StatelessVerkleStateManager
 
       const verkleStateRoot = await verkleStateManager.getTransitionStateRoot(
         merkleStateManager,
@@ -207,8 +207,8 @@ export class VMExecution extends Execution {
       )
       await verkleStateManager.setStateRoot(verkleStateRoot)
 
-      if (assignToVm) {
-        this.vm = verkleVm
+      if (assignToVM) {
+        this.vm = verkleVM
       }
     })
   }
@@ -248,14 +248,14 @@ export class VMExecution extends Execution {
           throw Error(`Currently stateful verkle execution not supported`)
         }
         this.config.logger.info(`Skipping Vm verkle statemanager genesis hardfork=${this.hardfork}`)
-        this.setupVerkleVm()
-        this.vm = this.verkleVm!
+        this.setupVerkleVM()
+        this.vm = this.verkleVM!
       } else {
         this.config.logger.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
         )
-        this.setupMerkleVm()
-        this.vm = this.merkleVm!
+        this.setupMerkleVM()
+        this.vm = this.merkleVM!
         if (number === BIGINT_0) {
           const genesisState =
             this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
@@ -304,13 +304,13 @@ export class VMExecution extends Execution {
       timestamp,
     })
     if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
-      // verkleVm should already exist but we can still do an allocation just to be safe
-      this.setupVerkleVm()
-      this.vm = this.verkleVm!
+      // verkleVM should already exist but we can still do an allocation just to be safe
+      this.setupVerkleVM()
+      this.vm = this.verkleVM!
     } else {
       // its could be a rest to a pre-merkle when the chain was never initialized
-      this.setupMerkleVm()
-      this.vm = this.merkleVm!
+      this.setupMerkleVM()
+      this.vm = this.merkleVM!
     }
 
     await this.vm.stateManager.setStateRoot(stateRoot)
@@ -377,10 +377,10 @@ export class VMExecution extends Execution {
             if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Prague)) {
               await this.transitionToVerkle(parentBlock.header.stateRoot, false)
             }
-            if (this.verkleVm === null) {
-              throw Error(`Invalid verkleVm=null`)
+            if (this.verkleVM === null) {
+              throw Error(`Invalid verkleVM=null`)
             }
-            vm = this.verkleVm
+            vm = this.verkleVM
           }
 
           const result = await vm.runBlock({ clearCache, ...opts })
@@ -487,10 +487,10 @@ export class VMExecution extends Execution {
         this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
       ) {
         // verkle transition should have happened by now
-        if (this.verkleVm === null) {
-          throw Error(`Invalid verkleVm=null`)
+        if (this.verkleVM === null) {
+          throw Error(`Invalid verkleVM=null`)
         }
-        this.vm = this.verkleVm
+        this.vm = this.verkleVM
       }
 
       if (safeBlock !== undefined) {
@@ -644,7 +644,7 @@ export class VMExecution extends Execution {
                     throw Error('Execution stopped')
                   }
 
-                  this._statsVm = this.vm
+                  this._statsVM = this.vm
                   const beforeTS = Date.now()
                   const result = await this.vm.runBlock({
                     block,
@@ -906,7 +906,7 @@ export class VMExecution extends Execution {
       })
 
       if (txHashes.length === 0) {
-        this._statsVm = vm
+        this._statsVM = vm
 
         // we are skipping header validation because the block has been picked from the
         // blockchain and header should have already been validated while putBlock
@@ -954,8 +954,8 @@ export class VMExecution extends Execution {
   }
 
   stats() {
-    if (this._statsVm instanceof DefaultStateManager) {
-      const sm = this._statsVm.stateManager as any
+    if (this._statsVM instanceof DefaultStateManager) {
+      const sm = this._statsVM.stateManager as any
       const disactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
