@@ -122,6 +122,8 @@ const PUSH32 = PUSH_OFFSET + 32
 /**
  * Stateless Verkle StateManager implementation for the VM.
  *
+ * Experimental.
+ *
  * This State Manager enables stateless block execution by building a
  * temporary (1-block) state from the verkle block witness.
  * The Stateless Verkle State Manager then uses that populated state
