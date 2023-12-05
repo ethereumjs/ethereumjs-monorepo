@@ -1,5 +1,3 @@
-/* eslint @typescript-eslint/no-unused-vars: 0 */
-
 import {
   Account,
   KECCAK256_NULL_S,
@@ -116,9 +114,20 @@ const VERKLE_NODE_WIDTH = 256
 const MAIN_STORAGE_OFFSET = 256 ** 31
 
 const PUSH_OFFSET = 95
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PUSH1 = PUSH_OFFSET + 1
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PUSH32 = PUSH_OFFSET + 32
 
+/**
+ * Stateless Verkle StateManager implementation for the VM.
+ *
+ * This State Manager enables stateless block execution by building a
+ * temporary (1-block) state from the verkle block witness.
+ * The Stateless Verkle State Manager then uses that populated state
+ * to fetch data requested by the the VM.
+ *
+ */
 export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
@@ -507,7 +516,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     await this.putAccount(address, account)
   }
 
-  getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+  getProof(address: Address, _: Uint8Array[] = []): Promise<Proof> {
     throw new Error('Not implemented yet')
   }
 
@@ -568,7 +577,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   // TODO
-  async hasStateRoot(root: Uint8Array): Promise<boolean> {
+  async hasStateRoot(_: Uint8Array): Promise<boolean> {
     return true
   }
 
@@ -603,7 +612,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Maybe in this context: reset to original pre state suffice
    * @param stateRoot - The verkle root to reset the instance to
    */
-  async setStateRoot(stateRoot: Uint8Array): Promise<void> {}
+  async setStateRoot(_: Uint8Array): Promise<void> {}
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
@@ -612,11 +621,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Keys are are the storage keys, values are the storage values as strings.
    * Both are represented as hex strings without the `0x` prefix.
    */
-  async dumpStorage(address: Address): Promise<StorageDump> {
+  async dumpStorage(_: Address): Promise<StorageDump> {
     throw Error('not implemented')
   }
 
-  dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+  dumpStorageRange(_: Address, __: bigint, ___: number): Promise<StorageRange> {
     throw Error('not implemented')
   }
 
