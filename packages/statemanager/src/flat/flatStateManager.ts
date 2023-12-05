@@ -8,8 +8,10 @@ import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 
 import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
 
-// import type { Proof } from '../index.js'
-import type { AccountFields, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { Proof } from '../index.js'
+import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type { StorageRange } from '@ethereumjs/common/src'
+import type { Trie } from '@ethereumjs/trie'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -301,17 +303,17 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param address address to get proof of
    * @param storageSlots storage slots to get proof of
    */
-  // async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-  //   throw new Error('Not yet implemented')
-  // }
+  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    throw new Error('Not yet implemented')
+  }
 
   /**
    * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
    * @param proof the proof to prove
    */
-  // async verifyProof(proof: Proof): Promise<boolean> {
-  //   throw new Error('Not yet implemented')
-  // }
+  async verifyProof(proof: Proof): Promise<boolean> {
+    throw new Error('Not yet implemented')
+  }
 
   /**
    * Gets the state-root of the Merkle-Patricia trie representation
@@ -331,13 +333,13 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * the state trie.
    * @param stateRoot - The state-root to reset the instance to
    */
-  // async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
-  //   // potentially don't need setStateRoot and can stub it out like in ethersStateManager
-  //   //
-  //   // can keep the supported state roots of the last n blocks in a set to check if root is valid and supported
-  //   // then can set a class field
-  //   throw new Error('Not yet implemented')
-  // }
+  async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
+    // potentially don't need setStateRoot and can stub it out like in ethersStateManager
+    //
+    // can keep the supported state roots of the last n blocks in a set to check if root is valid and supported
+    // then can set a class field
+    throw new Error('Not yet implemented')
+  }
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
@@ -346,9 +348,9 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Keys are are the storage keys, values are the storage values as strings.
    * Both are represented as hex strings without the `0x` prefix.
    */
-  // async dumpStorage(address: Address): Promise<StorageDump> {
-  //   throw new Error('Not yet implemented')
-  // }
+  async dumpStorage(address: Address): Promise<StorageDump> {
+    throw new Error('Not yet implemented')
+  }
 
   /**
    Dumps a limited number of RLP-encoded storage values for an account specified by `address`,
@@ -359,25 +361,25 @@ export class FlatStateManager implements EVMStateManagerInterface {
    @returns {Promise<StorageRange>} - A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
    The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
-  // async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
-  //   throw new Error('Not yet implemented')
-  // }
+  async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
+    throw new Error('Not yet implemented')
+  }
 
   /**
    * Initializes the provided genesis state into the state trie.
    * Will error if there are uncommitted checkpoints on the instance.
    * @param initState address -> balance | [balance, code, storage]
    */
-  // async generateCanonicalGenesis(initState: any): Promise<void> {
-  //   throw new Error('Not yet implemented')
-  // }
+  async generateCanonicalGenesis(initState: any): Promise<void> {
+    throw new Error('Not yet implemented')
+  }
 
   /**
    * Checks whether there is a state corresponding to a stateRoot
    */
-  // async hasStateRoot(root: Uint8Array): Promise<boolean> {
-  //   throw new Error('Not yet implemented')
-  // }
+  async hasStateRoot(root: Uint8Array): Promise<boolean> {
+    throw new Error('Not yet implemented')
+  }
 
   /**
    * Copies the current instance of the `StateManager`
@@ -401,7 +403,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Cache values are generally not copied along regardless of the
    * `downlevelCaches` setting.
    */
-  shallowCopy(): FlatStateManager {
+  shallowCopy(downlevelCaches: boolean = true): FlatStateManager {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
 

@@ -2,6 +2,7 @@ import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { FlatStateManager } from '../../src/index.js'
+import { createAccount } from '../util.js'
 
 describe('StateManager -> Code', () => {
   it(`should set and get code`, async () => {
@@ -60,17 +61,17 @@ describe('StateManager -> Code', () => {
     assert.ok(equalsBytes(codeRetrieved, code))
   })
 
-  // it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
-  //   const stateManager = new FlatStateManager({
-  //     prefixCodeHashes: false,
-  //   })
-  //   const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-  //   const code = hexToBytes('0x80')
-  //   try {
-  //     await stateManager.putContractCode(address, code)
-  //     assert.fail('should throw')
-  //   } catch (e) {
-  //     assert.ok(true, 'successfully threw')
-  //   }
-  // })
+  it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
+    const stateManager = new FlatStateManager({
+      prefixCodeHashes: false,
+    })
+    const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+    const code = hexToBytes('0x80')
+    try {
+      await stateManager.putContractCode(address, code)
+      assert.fail('should throw')
+    } catch (e) {
+      assert.ok(true, 'successfully threw')
+    }
+  })
 })
