@@ -1,4 +1,4 @@
-import { EmptyNode, byteTypeToNibbleType, bytesToNibbles, merkleizeList } from '@ethereumjs/trie'
+import { merkleizeList } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
@@ -10,7 +10,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Level } from 'level'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'

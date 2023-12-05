@@ -1,4 +1,4 @@
-import { Address, KECCAK256_RLP, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { FlatStateManager } from '../../src/index.js'
