@@ -2,7 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager, FlatStateManager } from '@ethereumjs/statemanager'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
@@ -49,7 +49,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   let cacheDB = new MapDB()
   let state = new Trie({ useKeyHashing: true })
-  let stateManager = new FlatStateManager({
+  let stateManager = new DefaultStateManager({
     trie: state,
     common,
   })

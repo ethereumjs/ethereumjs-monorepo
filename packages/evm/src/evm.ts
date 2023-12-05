@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { DefaultStateManager, FlatStateManager } from '@ethereumjs/statemanager'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -159,8 +159,7 @@ export class EVM implements EVMInterface {
     }
 
     this.blockchain = blockchain
-    // this.stateManager = opts.stateManager ?? new DefaultStateManager()
-    this.stateManager = new FlatStateManager()
+    this.stateManager = opts.stateManager ?? new DefaultStateManager()
 
     // Supported EIPs
     const supportedEIPs = [
