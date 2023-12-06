@@ -87,7 +87,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     implies: 'customChain',
   })
   .option('verkleGenesisStateRoot', {
-    describe: 'State root of the verkle genesis genesis',
+    describe: 'State root of the verkle genesis genesis (experimental)',
     string: true,
     coerce: (customGenesisStateRoot: string) => hexToBytes(customGenesisStateRoot),
   })
@@ -388,7 +388,7 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     default: true,
   })
   .option('statelessVerkle', {
-    describe: 'Run verkle+ hardforks using stateless verkle stateManager',
+    describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
     boolean: true,
     default: true,
   })

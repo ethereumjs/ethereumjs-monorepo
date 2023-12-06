@@ -472,7 +472,7 @@ export const EIPs: EIPsDict = {
     requiredEIPs: [],
   },
   6800: {
-    comment: 'Ethereum state using a unified verkle tree',
+    comment: 'Ethereum state using a unified verkle tree (experimental)',
     url: 'https://github.com/ethereum/EIPs/pull/6800',
     status: Status.Draft,
     minimumHardfork: Hardfork.London,

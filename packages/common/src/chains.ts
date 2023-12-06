@@ -575,7 +575,7 @@ export const chains: ChainsDict = {
       type: 'pos',
       algorithm: 'casper',
     },
-    comment: 'Verkle kaustinen testnet 2',
+    comment: 'Verkle kaustinen testnet 2 (likely temporary, do not hard-wire into production code)',
     url: 'https://github.com/eth-clients/kaustinen/',
     genesis: {
       difficulty: '0x01',
