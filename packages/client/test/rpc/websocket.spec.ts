@@ -1,4 +1,5 @@
 import { randomBytes } from '@ethereumjs/util'
+import WebSocket from 'isomorphic-ws'
 import { Client } from 'jayson/promise'
 import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
@@ -12,13 +13,19 @@ import type { TAlgorithm } from 'jwt-simple'
 const jwtSecret = randomBytes(32)
 
 describe('JSON-RPC call', () => {
-  it.skip('auth protected server with valid token', async () => {
+  it('auth protected server with valid token', async () => {
     const claims = { iat: Math.floor(new Date().getTime() / 1000) }
-    const _token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const token = encode(claims, jwtSecret as never as string, 'HS256' as TAlgorithm)
     const server = startRPC({}, { wsServer: true }, { jwtSecret })
     server.listen(1234, 'localhost')
+    const socket = new WebSocket('ws://localhost:1234', undefined, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
     const rpc = Client.websocket({
-      url: 'ws://localhost:1234/',
+      //@ts-ignore -- `isomorphic-ws` types aren't perfectly mapped to jayson.WebSocketClient but works fine for this test
+      ws: socket,
     })
     try {
       await new Promise((resolve) => {
@@ -33,23 +40,19 @@ describe('JSON-RPC call', () => {
     }
   })
 
-  it.skip('auth protected server without any auth headers', async () => {
+  it('auth protected server without any auth headers', async () => {
     const server = startRPC({}, { wsServer: true }, { jwtSecret })
     server.listen(1236, 'localhost')
     const rpc = Client.websocket({
       url: 'ws://localhost:1236/',
     })
-    try {
-      await new Promise((resolve) => {
-        ;(rpc as any).ws.on('open', async () => {
-          await rpc.request('plaintext', [])
-          assert.fail('should have thrown')
-          resolve(undefined)
-        })
+
+    await new Promise((resolve) => {
+      ;(rpc as any).ws.on('error', async (err: any) => {
+        assert.ok(err.message.includes('401'), 'Unauthorized')
+        resolve(undefined)
       })
-    } catch (err: any) {
-      assert.ok(err.message.includes('Unauthorized'))
-    }
+    })
   }, 3000)
 
   it('server without any auth headers', async () => {

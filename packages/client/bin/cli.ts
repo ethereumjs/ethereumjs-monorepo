@@ -943,7 +943,9 @@ async function run() {
   })
     .then((client) => {
       const servers =
-        args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []
+        args.rpc === true || args.rpcEngine === true || args.ws === true
+          ? startRPCServers(client, args as RPCArgs)
+          : []
       if (
         client.config.chainCommon.gteHardfork(Hardfork.Paris) === true &&
         (args.rpcEngine === false || args.rpcEngine === undefined)
