@@ -52,7 +52,6 @@
     "@ethereumjs/rlp": "^5.0.1",
     "@ethereumjs/trie": "^6.0.1",
     "@ethereumjs/util": "^9.0.1",
-    "@ethereumjs/verkle": "^0.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "js-sdsl": "^4.1.4",
@@ -62,5 +61,8 @@
     "@ethereumjs/block": "^5.0.1",
     "@ethereumjs/genesis": "^0.2.0",
     "@types/debug": "^4.1.9"
+  },
+  "peerDependencies": {
+    "@ethereumjs/verkle": "^0.0.1"
   }
 }
