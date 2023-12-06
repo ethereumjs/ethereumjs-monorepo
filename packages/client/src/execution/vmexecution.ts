@@ -43,8 +43,8 @@ export class VMExecution extends Execution {
   private _lock = new Lock()
 
   public vm: VM
-  public merkleVM: VM | null = null
-  public verkleVM: VM | null = null
+  public merkleVM: VM | undefined
+  public verkleVM: VM | undefined
   public hardfork: string = ''
   /* Whether canonical chain execution has stayed valid or ran into an invalid block */
   public chainStatus: ChainStatus | null = null
@@ -125,7 +125,7 @@ export class VMExecution extends Execution {
   }
 
   setupMerkleVM() {
-    if (this.merkleVM !== null) {
+    if (this.merkleVM !== undefined) {
       return
     }
     const trie = new Trie({
@@ -169,7 +169,7 @@ export class VMExecution extends Execution {
   }
 
   setupVerkleVM() {
-    if (this.verkleVM !== null) {
+    if (this.verkleVM !== undefined) {
       return
     }
 
@@ -189,13 +189,13 @@ export class VMExecution extends Execution {
     }
 
     return this.runWithLock<void>(async () => {
-      if (this.merkleVM === null) {
+      if (this.merkleVM === undefined) {
         this.setupMerkleVM()
       }
       const merkleVM = this.merkleVM!
       const merkleStateManager = merkleVM.stateManager as DefaultStateManager
 
-      if (this.verkleVM === null) {
+      if (this.verkleVM === undefined) {
         this.setupVerkleVM()
       }
       const verkleVM = this.verkleVM!
@@ -377,8 +377,8 @@ export class VMExecution extends Execution {
             if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Prague)) {
               await this.transitionToVerkle(parentBlock.header.stateRoot, false)
             }
-            if (this.verkleVM === null) {
-              throw Error(`Invalid verkleVM=null`)
+            if (this.verkleVM === undefined) {
+              throw Error(`Invalid verkleVM=undefined`)
             }
             vm = this.verkleVM
           }
@@ -487,8 +487,8 @@ export class VMExecution extends Execution {
         this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
       ) {
         // verkle transition should have happened by now
-        if (this.verkleVM === null) {
-          throw Error(`Invalid verkleVM=null`)
+        if (this.verkleVM === undefined) {
+          throw Error(`Invalid verkleVM=undefined`)
         }
         this.vm = this.verkleVM
       }
