@@ -518,7 +518,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     await this.putAccount(address, account)
   }
 
-  getProof(address: Address, _: Uint8Array[] = []): Promise<Proof> {
+  getProof(_: Address, __: Uint8Array[] = []): Promise<Proof> {
     throw new Error('Not implemented yet')
   }
 
