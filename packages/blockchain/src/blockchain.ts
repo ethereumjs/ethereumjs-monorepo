@@ -61,7 +61,7 @@ async function genGenesisStateRoot(
     td: BigInt(genCommon.genesis().difficulty),
     timestamp: genCommon.genesis().timestamp,
   })
-  if (genCommon.gteHardfork(Hardfork.Prague)) {
+  if (genCommon.isActivatedEIP(6800)) {
     throw Error(`Verkle trie state not yet supported`)
   } else {
     return genMerkleGenesisStateRoot(genesisState)
