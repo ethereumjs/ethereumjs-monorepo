@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1701568426310,
+  "lastUpdate": 1701830897524,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9f91d225c9cce0fabc19086668591a70cadeadb4",
-          "message": "client: integrate snapsync on experimental basis (#3031)\n\n* client: integrate snapsync on experimental basis\r\n\r\nuse statemanager in snap fetchers and fix the snapsync startup and snapsync test\r\n\r\nfunctional snapsync integration with static peer state with hacks\r\n\r\nrebase fixes\r\n\r\nget static snapsync working again\r\n\r\ntypefix\r\n\r\nfix spec\r\n\r\ntrack safe and finalized in finalized\r\n\r\nintegrate building stat e with skeleton\r\n\r\nintegrate account fetcher with the skeleton\r\n\r\n* move naive snapprogess tracker to synchronizer\r\n\r\n* code cleanup and refactor\r\n\r\n* update the fetching strategy and small progress flags refac\r\n\r\n* add missing commit\r\n\r\n* track cl syncsyncronization for snapsync start\r\n\r\n* handle the sync failure and non completion scenarios\r\n\r\n* add rudimentary snap progress to el status logs\r\n\r\n* debug and fix the snapfetcher premature exits and add accountranges %age logging\r\n\r\n* fix vmstep back\r\n\r\n* track and log storage and byetcode progress\r\n\r\n* pretty print stateroot\r\n\r\n* Terminate storagefetcher after all storage and fragmented requests have been processed\r\n\r\n* further fixes and improvements\r\n\r\n* add early detection for snapsync state mismatch\r\n\r\n* storage and codefetcher fixes\r\n\r\n* lint\r\n\r\n* fix statemanager test\r\n\r\n* refactor finalized and safe block checks for availability and canonicality\r\n\r\n* fix skeleton spec\r\n\r\n* fix snap fetcher spec tests\r\n\r\n* simplify fetcher's fetchPromise assignment\r\n\r\n* fix cli spec\r\n\r\n* fix fullsync spec\r\n\r\n* improve the snapsync fetch flow\r\n\r\n* small fix\r\n\r\n* fix refac slip\r\n\r\n* further code improvs\r\n\r\n* fix valid log info\r\n\r\n* cleanup\r\n\r\n* increase coevragee\r\n\r\n* sim cleanup\r\n\r\n* add spec for formatBigDecimal\r\n\r\n* keep unfinalized non canonical blocks around to handle some reorgs without backfill\r\n\r\n* store annoucements in unfinalized\r\n\r\n* improvements for the backfill from skeleton unfinalized blocks\r\n\r\n* handle simple head reorg\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-10-31T11:05:12+01:00",
-          "tree_id": "7d19da58047bb47c2b13ab5e6fb7697a6088b215",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9f91d225c9cce0fabc19086668591a70cadeadb4"
-        },
-        "date": 1698747001137,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 19242,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "72 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 18052,
-            "range": "±7.17%",
-            "unit": "ops/sec",
-            "extra": "74 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 17995,
-            "range": "±3.30%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 17901,
-            "range": "±3.40%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 18203,
-            "range": "±3.71%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.27%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1bb7bc2db3c2177995ec48e788661510ebb2d819",
+          "message": "monorepo: address dependabot vuln 66 (#3177)",
+          "timestamp": "2023-12-05T21:37:03-05:00",
+          "tree_id": "ada964254d121cba6b7e2d49f8d993e3dd3eacff",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1bb7bc2db3c2177995ec48e788661510ebb2d819"
+        },
+        "date": 1701830896883,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41101,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38270,
+            "range": "±3.48%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39362,
+            "range": "±1.92%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38593,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37396,
+            "range": "±2.25%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
