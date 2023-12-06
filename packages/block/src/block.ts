@@ -139,7 +139,7 @@ export class Block {
     // stub till that time
     const executionWitness = executionWitnessData
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, executionWitness, opts)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
   }
 
   /**
@@ -176,7 +176,7 @@ export class Block {
 
     if (
       header.common.isActivatedEIP(4895) &&
-      (values[3] === undefined || !Array.isArray(values[3]))
+      (withdrawalBytes === undefined || !Array.isArray(withdrawalBytes))
     ) {
       throw new Error(
         'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
@@ -224,7 +224,7 @@ export class Block {
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
     let executionWitness
-    if (executionWitnessBytes !== undefined) {
+    if (header.common.isActivatedEIP(6800) && executionWitnessBytes !== undefined) {
       executionWitness = JSON.parse(bytesToUtf8(RLP.decode(executionWitnessBytes) as Uint8Array))
     } else {
       // don't assign default witness if eip 6800 is implemented as it leads to incorrect
@@ -232,7 +232,7 @@ export class Block {
       executionWitness = null
     }
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, executionWitness, opts)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
   }
 
   /**
@@ -400,8 +400,8 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
-    executionWitness?: VerkleExecutionWitness | null,
-    opts: BlockOptions = {}
+    opts: BlockOptions = {},
+    executionWitness?: VerkleExecutionWitness | null
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common

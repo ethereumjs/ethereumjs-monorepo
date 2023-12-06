@@ -506,16 +506,14 @@ export class Blockchain implements BlockchainInterface {
       try {
         const block =
           item instanceof BlockHeader
-            ? new Block(item, undefined, undefined, undefined, undefined, {
-                common: item.common,
-              })
+            ? new Block(item, undefined, undefined, undefined, { common: item.common }, undefined)
             : item
         const isGenesis = block.isGenesis()
 
         // we cannot overwrite the Genesis block after initializing the Blockchain
         if (isGenesis) {
           if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
-            // Try to re-put the exisiting genesis block, accept this
+            // Try to re-put the existing genesis block, accept this
             return
           }
           throw new Error(
