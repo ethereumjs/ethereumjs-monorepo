@@ -2,8 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -15,14 +14,17 @@ import { _accountRangeRLP } from './accountfetcher.spec'
 const _byteCodesRLP =
   '0xf89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
 const useKeyHashing = true
+;(BigInt.prototype as any).toJSON = function () {
+  return this.toString()
+}
 
 describe('[ByteCodeFetcher]', async () => {
   class PeerPool {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
+  PeerPool.prototype.idle = vi.fn()
+  PeerPool.prototype.ban = vi.fn()
 
   const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher')
 
@@ -134,10 +136,14 @@ describe('[ByteCodeFetcher]', async () => {
     const resData = RLP.decode(hexToBytes(_byteCodesRLP)) as unknown
     const res = p.decode(p.messages.filter((message) => message.name === 'ByteCodes')[0], resData)
     const { reqId, codes } = res
-    const mockedGetByteCodes = td.func<any>()
-    td.when(mockedGetByteCodes(td.matchers.anything())).thenReturn({
-      reqId,
-      codes,
+    const mockedGetByteCodes = vi.fn((input) => {
+      const expected = {
+        hashes: task.hashes,
+        bytes: BigInt(50000),
+      }
+      if (JSON.stringify(input) !== JSON.stringify(expected)) throw Error('Input not as expected')
+
+      return { reqId, codes }
     })
     const peer = {
       snap: { getByteCodes: mockedGetByteCodes },
@@ -146,12 +152,6 @@ describe('[ByteCodeFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getByteCodes({
-        hashes: task.hashes,
-        bytes: BigInt(50000),
-      })
-    )
     assert.ok(results?.completed === true, 'response processed and matched properly')
     assert.equal((results![0] as any).size, 5, 'matched code in the response')
 
@@ -166,13 +166,15 @@ describe('[ByteCodeFetcher]', async () => {
   it('should find a fetchable peer', async () => {
     const config = new Config({})
     const pool = new PeerPool() as any
+    pool.idle = vi.fn(() => {
+      return 'peer0'
+    })
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
       trie: new Trie({ useKeyHashing }),
       hashes: [utf8ToBytes('')],
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
