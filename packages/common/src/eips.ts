@@ -478,6 +478,7 @@ export const EIPs: EIPsDict = {
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
     gasConfig: {},
+    /* TODO: Replace with correct implementation */
     gasPrices: {
       tx: {
         v: 34300,
