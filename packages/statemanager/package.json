@@ -64,5 +64,10 @@
   },
   "peerDependencies": {
     "@ethereumjs/verkle": "^0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@ethereumjs/verkle": {
+      "optional": true
+    }
   }
 }
