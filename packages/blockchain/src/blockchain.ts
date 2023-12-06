@@ -7,7 +7,7 @@ import {
   ConsensusType,
   Hardfork,
 } from '@ethereumjs/common'
-import { genesisStateRoot as genGenesisStateRoot } from '@ethereumjs/trie'
+import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
 import {
   AsyncEventEmitter,
   BIGINT_0,
@@ -44,6 +44,37 @@ import type {
 import type { BlockData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
+
+/**
+ * Verkle or Merkle genesis root
+ * @param genesisState
+ * @param common
+ * @returns
+ */
+async function genGenesisStateRoot(
+  genesisState: GenesisState,
+  common: Common
+): Promise<Uint8Array> {
+  const genCommon = common.copy()
+  genCommon.setHardforkBy({
+    blockNumber: 0,
+    td: BigInt(genCommon.genesis().difficulty),
+    timestamp: genCommon.genesis().timestamp,
+  })
+  if (genCommon.isActivatedEIP(6800)) {
+    throw Error(`Verkle trie state not yet supported`)
+  } else {
+    return genMerkleGenesisStateRoot(genesisState)
+  }
+}
+
+/**
+ * Returns the genesis state root if chain is well known or an empty state's root otherwise
+ */
+async function getGenesisStateRoot(chainId: Chain, common: Common): Promise<Uint8Array> {
+  const chainGenesis = ChainGenesis[chainId]
+  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({}, common)
+}
 
 /**
  * This class stores and interacts with blocks.
@@ -234,10 +265,9 @@ export class Blockchain implements BlockchainInterface {
     let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
     if (stateRoot === undefined) {
       if (this._customGenesisState !== undefined) {
-        stateRoot = await genGenesisStateRoot(this._customGenesisState)
+        stateRoot = await genGenesisStateRoot(this._customGenesisState, this.common)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain)
+        stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain, this.common)
       }
     }
 
@@ -476,16 +506,14 @@ export class Blockchain implements BlockchainInterface {
       try {
         const block =
           item instanceof BlockHeader
-            ? new Block(item, undefined, undefined, undefined, {
-                common: item.common,
-              })
+            ? new Block(item, undefined, undefined, undefined, { common: item.common }, undefined)
             : item
         const isGenesis = block.isGenesis()
 
         // we cannot overwrite the Genesis block after initializing the Blockchain
         if (isGenesis) {
           if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
-            // Try to re-put the exisiting genesis block, accept this
+            // Try to re-put the existing genesis block, accept this
             return
           }
           throw new Error(
@@ -1418,12 +1446,4 @@ export class Blockchain implements BlockchainInterface {
       { common }
     )
   }
-}
-
-/**
- * Returns the genesis state root if chain is well known or an empty state's root otherwise
- */
-async function getGenesisStateRoot(chainId: Chain): Promise<Uint8Array> {
-  const chainGenesis = ChainGenesis[chainId]
-  return chainGenesis !== undefined ? chainGenesis.stateRoot : genGenesisStateRoot({})
 }

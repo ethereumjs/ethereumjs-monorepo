@@ -1,6 +1,6 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain as ChainEnum, Common, parseGethGenesis } from '@ethereumjs/common'
+import { Chain as ChainEnum, Common, Hardfork, parseGethGenesis } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import {
   Address,
@@ -53,6 +53,7 @@ type createClientArgs = {
   chain: any // Could be anything that implements a portion of the Chain interface (varies by test)
   opened: boolean
   genesisState: GenesisState
+  genesisStateRoot: Uint8Array
 }
 export function startRPC(
   methods: any,
@@ -240,6 +241,7 @@ export async function baseRequest(
 export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts: any = {}) {
   const genesisParams = parseGethGenesis(genesisFile, chainName)
   const genesisState = parseGethGenesisState(genesisFile)
+  const genesisStateRoot = clientOpts.genesisStateRoot
 
   const common = new Common({
     chain: chainName,
@@ -248,14 +250,21 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   common.setHardforkBy({
     blockNumber: 0,
     td: genesisParams.genesis.difficulty,
+    timestamp: genesisParams.genesis.timestamp,
   })
 
+  // currently we don't have a way to create verkle genesis root so we will
+  // use genesisStateRoot for blockchain init as well as to start of the stateless
+  // client. else the stateroot could have been generated out of box
+  const genesisMeta = common.gteHardfork(Hardfork.Prague) ? { genesisStateRoot } : { genesisState }
   const blockchain = await Blockchain.create({
     common,
     validateBlocks: false,
     validateConsensus: false,
-    genesisState,
+    ...genesisMeta,
   })
+
+  // for the client we can pass both genesisState and genesisStateRoot and let it s
   const client = createClient({
     ...clientOpts,
     commonChain: common,
@@ -263,6 +272,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
     includeVM: true,
     enableMetaDB: true,
     genesisState,
+    genesisStateRoot,
   })
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}

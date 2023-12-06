@@ -30,6 +30,8 @@ export interface ChainOptions {
   blockchain?: Blockchain
 
   genesisState?: GenesisState
+
+  genesisStateRoot?: Uint8Array
 }
 
 /**
@@ -117,6 +119,7 @@ export class Chain {
   public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
   public _customGenesisState?: GenesisState
+  public _customGenesisStateRoot?: Uint8Array
 
   public opened: boolean
 
@@ -177,6 +180,7 @@ export class Chain {
 
     this.chainDB = this.blockchain.db
     this._customGenesisState = options.genesisState
+    this._customGenesisStateRoot = options.genesisStateRoot
     this.opened = false
   }
 
@@ -237,7 +241,10 @@ export class Chain {
   async open(): Promise<boolean | void> {
     if (this.opened) return false
     await this.blockchain.db.open()
-    await (this.blockchain as any)._init({ genesisState: this._customGenesisState })
+    await (this.blockchain as any)._init({
+      genesisState: this._customGenesisState,
+      genesisStateRoot: this._customGenesisStateRoot,
+    })
     this.opened = true
     await this.update(false)
 
