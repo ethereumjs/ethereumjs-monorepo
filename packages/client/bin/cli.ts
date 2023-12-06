@@ -86,6 +86,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
     implies: 'customChain',
   })
+  .option('verkleGenesisStateRoot', {
+    describe: 'State root of the verkle genesis genesis (experimental)',
+    string: true,
+    coerce: (customGenesisStateRoot: string) => hexToBytes(customGenesisStateRoot),
+  })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
     coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
@@ -382,6 +387,21 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     boolean: true,
     default: true,
   })
+  .option('statelessVerkle', {
+    describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
+    boolean: true,
+    default: true,
+  })
+  .option('engineNewpayloadMaxExecute', {
+    describe:
+      'Number of unexecuted blocks (including ancestors) that can be blockingly executed in engine`s new payload (if required and possible) to determine the validity of the block',
+    number: true,
+  })
+  .option('skipEngineExec', {
+    describe:
+      'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
+    boolean: true,
+  })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
   .strict()
@@ -485,7 +505,10 @@ async function startBlock(client: EthereumClient) {
 /**
  * Starts and returns the {@link EthereumClient}
  */
-async function startClient(config: Config, customGenesisState?: GenesisState) {
+async function startClient(
+  config: Config,
+  genesisMeta: { genesisState?: GenesisState; genesisStateRoot?: Uint8Array } = {}
+) {
   config.logger.info(`Data directory: ${config.datadir}`)
   if (config.lightserv) {
     config.logger.info(`Serving light peer requests`)
@@ -494,11 +517,11 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   const dbs = initDBs(config)
 
   let blockchain
-  if (customGenesisState !== undefined) {
+  if (genesisMeta.genesisState !== undefined || genesisMeta.genesisStateRoot !== undefined) {
     const validateConsensus = config.chainCommon.consensusAlgorithm() === ConsensusAlgorithm.Clique
     blockchain = await Blockchain.create({
       db: new LevelDB(dbs.chainDB),
-      genesisState: customGenesisState,
+      ...genesisMeta,
       common: config.chainCommon,
       hardforkByHeadBlockNumber: true,
       validateConsensus,
@@ -510,7 +533,7 @@ async function startClient(config: Config, customGenesisState?: GenesisState) {
   const client = await EthereumClient.create({
     config,
     blockchain,
-    genesisState: customGenesisState,
+    ...genesisMeta,
     ...dbs,
   })
   await client.open()
@@ -892,6 +915,8 @@ async function run() {
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
+    statelessVerkle: args.statelessVerkle,
+    engineNewpayloadMaxExecute: args.skipEngineExec === true ? 0 : args.engineNewpayloadMaxExecute,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -908,10 +933,14 @@ async function run() {
     const numAccounts = Object.keys(customGenesisState).length
     config.logger.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
+  const customGenesisStateRoot = args.verkleGenesisStateRoot
 
   // Do not wait for client to be fully started so that we can hookup SIGINT handling
   // else a SIGINT before may kill the process in unclean manner
-  const clientStartPromise = startClient(config, customGenesisState)
+  const clientStartPromise = startClient(config, {
+    genesisState: customGenesisState,
+    genesisStateRoot: customGenesisStateRoot,
+  })
     .then((client) => {
       const servers =
         args.rpc === true || args.rpcEngine === true ? startRPCServers(client, args as RPCArgs) : []

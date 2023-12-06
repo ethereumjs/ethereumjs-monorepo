@@ -52,7 +52,10 @@ for (let i = 0; i <= 256 * 256 - 1; i++) {
  * @param {Uint8Array} bytes the bytes to convert
  * @returns {bigint}
  */
-export const bytesToBigInt = (bytes: Uint8Array): bigint => {
+export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  if (littleEndian) {
+    bytes.reverse()
+  }
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
     return BIGINT_0
@@ -132,9 +135,11 @@ export const intToBytes = (i: number): Uint8Array => {
  *  * @param {bigint} num the bigint to convert
  * @returns {Uint8Array}
  */
-export const bigIntToBytes = (num: bigint): Uint8Array => {
+export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return toBytes('0x' + padToEven(num.toString(16)))
+  const bytes = toBytes('0x' + padToEven(num.toString(16)))
+
+  return littleEndian ? bytes.reverse() : bytes
 }
 
 /**

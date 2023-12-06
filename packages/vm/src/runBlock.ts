@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -60,6 +61,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   const state = this.stateManager
+
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
@@ -118,6 +120,22 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     await state.setStateRoot(root, clearCache)
   }
 
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(state instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    if (this.DEBUG) {
+      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+    }
+    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+      block.executionWitness
+    )
+  } else {
+    if (state instanceof StatelessVerkleStateManager) {
+      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
+    }
+  }
+
   // check for DAO support and if we should apply the DAO fork
   if (
     this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
@@ -126,6 +144,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
+
     await this.evm.journal.checkpoint()
     await _applyDAOHardfork(this.evm)
     await this.evm.journal.commit()
@@ -137,7 +156,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint`)
   }
 
-  let result
+  let result: Awaited<ReturnType<typeof applyBlock>>
+
   try {
     result = await applyBlock.bind(this)(block, opts)
     if (this.DEBUG) {
@@ -183,7 +203,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else {
+  } else if (this.common.isActivatedEIP(6800) === false) {
+    // Only validate the following headers if verkle blocks aren't activated
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
@@ -230,6 +251,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       )
       throw new Error(msg)
     }
+  } else if (this.common.isActivatedEIP(6800) === true) {
+    // If verkle is activated, only validate the post-state
+    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+    }
+    debug(`Verkle post state verification succeeded`)
   }
 
   if (enableProfiler) {
