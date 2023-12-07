@@ -175,7 +175,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', '0x4'])
 
-    assert.equal(
+    assert.isNull(
       res.result[0].withdrawals,
       null,
       'withdrawals field is null for pre-shanghai blocks'
