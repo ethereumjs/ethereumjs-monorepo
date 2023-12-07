@@ -161,6 +161,6 @@ describe(method, () => {
 
     const res = await rpc.request(method, [bytesToHex(tx.hash()), { disableStack: true }])
 
-    assert.ok(res.result.structLogs[1].stack === undefined, 'returns no stack with trace')
+    assert.isUndefined(res.result.structLogs[1].stack, 'returns no stack with trace')
   })
 })
