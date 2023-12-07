@@ -10,8 +10,7 @@ describe(method, () => {
     const { rpc } = baseSetup()
 
     const res = await rpc.request(method, [])
-    const msg = 'chainId should be a string'
-    assert.equal(typeof res.result, 'string', msg)
+    assert.equal(typeof res.result, 'string', 'chainId should be a string')
   })
 
   it('returns 1 for Mainnet', async () => {
