@@ -19,8 +19,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    const msg = 'should return chainId 1'
-    assert.equal(res.result, '0x1', msg)
+    assert.equal(res.result, '0x1', 'should return chainId 1')
   })
 
   it('returns 3 for Goerli', async () => {
