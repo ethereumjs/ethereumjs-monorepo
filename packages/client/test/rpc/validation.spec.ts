@@ -20,7 +20,7 @@ describe(prefix, () => {
     const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
 
     const res = await rpc.request(mockMethodName, [])
-    assert.equal(res.error, undefined, 'should not return an error object')
+    assert.isUndefined(res.error, 'should not return an error object')
   })
 
   it('should return error without `params` when it is required', async () => {
