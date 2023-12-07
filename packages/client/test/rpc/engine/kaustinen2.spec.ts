@@ -1,15 +1,13 @@
-import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
+import { Block, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
-import { HttpClient } from 'jayson/promise'
-import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen2.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
-import { batchBlocks, getRpcClient, setupChain } from '../helpers'
+import { getRpcClient, setupChain } from '../helpers.js'
 
-import type { HttpServer } from 'jayson'
+import type { HttpClient } from 'jayson/promise'
 
 // this verkle genesis stateroot and blockhash of the local generated kaustinen2 network
 const genesisVerkleStateRoot = '0x30d24fe15e1281600a15328add431b906597d83cf33d23050627c51936bb0d1a'
@@ -39,6 +37,14 @@ const merkleGenesisJsonBlock = {
   baseFeePerGas: '0x3b9aca00',
   withdrawalsRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
   withdrawals: [],
+}
+
+export const batchBlocks = async (rpc: HttpClient) => {
+  for (let i = 0; i < blocks.length; i++) {
+    const executionPayload = executionPayloadFromBeaconPayload(blocks[i] as any)
+    const res = await rpc.request('engine_newPayloadV2', [executionPayload])
+    assert.equal(res.result.status, 'VALID')
+  }
 }
 
 describe(`verkle genesis checks`, () => {
@@ -91,6 +97,6 @@ describe(`valid verkle network setup`, async () => {
   })
 
   it('should be able to apply new verkle payloads', async () => {
-    await batchBlocks(rpc, blocks)
+    await batchBlocks(rpc)
   })
 })
