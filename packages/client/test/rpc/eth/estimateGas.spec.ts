@@ -113,7 +113,11 @@ describe(
 
       // Test without blockopt as its optional and should default to latest
       const res2 = await rpc.request(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
-      assert.equal(res2.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(
+        res2.result,
+        '0x' + totalGasSpent.toString(16),
+        'should return the correct gas estimate'
+      )
       // Setup chain to run an EIP1559 tx
       const service = client.services[0] as FullEthereumService
       service.execution.vm.common.setHardfork('london')
@@ -155,13 +159,21 @@ describe(
       const EIP1559reqNoGas = await rpc.request(method, [
         { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
       ])
-      assert.equal(EIP1559reqNoGas.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(
+        EIP1559reqNoGas.result,
+        '0x' + totalGasSpent.toString(16),
+        'should return the correct gas estimate'
+      )
 
       // Test legacy tx with London head block
       const legacyTxNoGas = await rpc.request(method, [
         { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
       ])
-      assert.equal(legacyTxNoGas.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(
+        legacyTxNoGas.result,
+        '0x' + totalGasSpent.toString(16),
+        'should return the correct gas estimate'
+      )
     })
 
     it('call with unsupported block argument', async () => {
