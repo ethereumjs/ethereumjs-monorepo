@@ -177,7 +177,6 @@ describe(method, () => {
 
     assert.isNull(
       res.result[0].withdrawals,
-      null,
       'withdrawals field is null for pre-shanghai blocks'
     )
 
