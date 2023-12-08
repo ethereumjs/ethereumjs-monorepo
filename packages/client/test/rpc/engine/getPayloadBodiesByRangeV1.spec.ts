@@ -175,11 +175,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x1', '0x4'])
 
-    assert.isNull(
-      res.result[0].withdrawals,
-      null,
-      'withdrawals field is null for pre-shanghai blocks'
-    )
+    assert.isNull(res.result[0].withdrawals, 'withdrawals field is null for pre-shanghai blocks')
 
     service.execution.vm.common.setHardfork(Hardfork.London)
   })
