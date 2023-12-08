@@ -1,5 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
+import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
