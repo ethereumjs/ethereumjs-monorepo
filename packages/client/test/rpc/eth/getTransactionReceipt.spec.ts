@@ -44,9 +44,7 @@ describe(method, () => {
 
     // get the tx
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
-
-    const msg = 'should return the correct tx'
-    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), msg)
+    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), 'should return the correct tx')
   })
 
   it('call with 1559 tx', async () => {
@@ -71,8 +69,7 @@ describe(method, () => {
     // get the tx
     const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
-    const msg = 'should return the correct tx'
-    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), msg)
+    assert.equal(res.result.transactionHash, bytesToHex(tx.hash()), 'should return the correct tx')
   })
 
   it('call with unknown tx hash', async () => {
@@ -82,9 +79,7 @@ describe(method, () => {
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
-
-    const msg = 'should return null'
-    assert.equal(res.result, null, msg)
+    assert.equal(res.result, null, 'should return null')
   })
 
   it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {

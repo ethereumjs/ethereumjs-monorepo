@@ -31,9 +31,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x1'])
-
-    const msg = 'should return the correct number'
-    assert.equal(res.result, mockUncleCount, msg)
+    assert.equal(res.result, mockUncleCount, 'should return the correct number')
   })
 
   it('call with invalid block number', async () => {

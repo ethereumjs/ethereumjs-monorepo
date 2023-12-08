@@ -10,12 +10,7 @@ describe(method, () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
-
     const { result } = res
-    if (result !== undefined) {
-      assert.ok(true, 'admin_nodeInfo returns a value')
-    } else {
-      throw new Error('no return value')
-    }
+    assert.notEqual(result, undefined, 'admin_nodeInfo returns a value')
   })
 })

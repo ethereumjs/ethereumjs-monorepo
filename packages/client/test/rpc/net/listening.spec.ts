@@ -11,10 +11,9 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
     const { result } = res
-    let msg = 'result should be a boolean'
-    assert.equal(typeof result, 'boolean', msg)
-    msg = 'should be listening'
-    assert.equal(result, true, msg)
+
+    assert.equal(typeof result, 'boolean', 'result should be a boolean')
+    assert.equal(result, true, 'should be listening')
   })
 
   it('call while not listening', async () => {
@@ -23,9 +22,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
     const { result } = res
-    let msg = 'result should be a boolean'
-    assert.equal(typeof result, 'boolean', msg)
-    msg = 'should not be listening'
-    assert.equal(result, false, msg)
+    assert.equal(typeof result, 'boolean', 'result should be a boolean')
+    assert.equal(result, false, 'should not be listening')
   })
 })

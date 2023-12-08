@@ -40,8 +40,11 @@ describe(
       const genesisBalance = BigInt(0x15ac56edc4d12c0000)
       let res = await rpc.request(method, [address.toString(), 'latest'])
 
-      let msg = 'should return the correct genesis balance'
-      assert.equal(res.result, bigIntToHex(genesisBalance), msg)
+      assert.equal(
+        res.result,
+        bigIntToHex(genesisBalance),
+        'should return the correct genesis balance'
+      )
 
       // construct block with tx
       const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
@@ -57,21 +60,27 @@ describe(
       // verify balance is genesis amount minus amountSpent
       const expectedNewBalance = genesisBalance - amountSpent
       res = await rpc.request(method, [address.toString(), 'latest'])
-
-      msg = 'should return the correct balance after a tx'
-      assert.equal(res.result, bigIntToHex(expectedNewBalance), msg)
+      assert.equal(
+        res.result,
+        bigIntToHex(expectedNewBalance),
+        'should return the correct balance after a tx'
+      )
 
       // verify we can query with "earliest"
       res = await rpc.request(method, [address.toString(), 'earliest'])
-
-      msg = "should return the correct balance with 'earliest'"
-      assert.equal(res.result, bigIntToHex(genesisBalance), msg)
+      assert.equal(
+        res.result,
+        bigIntToHex(genesisBalance),
+        "should return the correct balance with 'earliest'"
+      )
 
       // verify we can query with a past block number
       res = await rpc.request(method, [address.toString(), '0x0'])
-
-      msg = 'should return the correct balance with a past block number'
-      assert.equal(res.result, bigIntToHex(genesisBalance), msg)
+      assert.equal(
+        res.result,
+        bigIntToHex(genesisBalance),
+        'should return the correct balance with a past block number'
+      )
 
       // call with height that exceeds chain height
       res = await rpc.request(method, [address.toString(), '0x1'])
@@ -80,9 +89,7 @@ describe(
 
       // call with nonexistent account
       res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
-
-      msg = 'should return 0x0 for nonexistent account'
-      assert.equal(res.result, `0x0`, msg)
+      assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
     })
 
     it('call with unsupported block argument', async () => {

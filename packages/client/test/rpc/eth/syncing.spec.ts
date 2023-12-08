@@ -20,8 +20,7 @@ describe(method, () => {
     assert.equal(client.config.synchronized, true, 'synchronized')
 
     const res = await rpc.request(method, [])
-    const msg = 'should return false'
-    assert.equal(res.result, false, msg)
+    assert.equal(res.result, false, 'should return false')
   })
 
   it('should return no peer available error', async () => {
@@ -72,15 +71,14 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    const msg = 'should return syncing status object'
     if (
       res.result.startingBlock === '0x0' &&
       res.result.currentBlock === '0x0' &&
       res.result.highestBlock === '0x2'
     ) {
-      assert.ok(true, msg)
+      assert.ok(true, 'should return syncing status object')
     } else {
-      assert.fail(msg)
+      assert.fail('should return syncing status object')
     }
   })
 

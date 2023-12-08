@@ -9,7 +9,6 @@ describe(method, () => {
     const { rpc } = baseSetup()
 
     const res = await rpc.request(method, [])
-    const msg = 'protocol version should be a string'
-    assert.equal(typeof res.result, 'string', msg)
+    assert.equal(typeof res.result, 'string', 'protocol version should be a string')
   })
 })

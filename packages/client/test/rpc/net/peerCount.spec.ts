@@ -12,7 +12,6 @@ describe(method, () => {
     const res = await rpc.request(method, [])
 
     const { result } = res
-    const msg = 'result should be a hex number'
-    assert.equal(result.substring(0, 2), '0x', msg)
+    assert.equal(result.substring(0, 2), '0x', 'result should be a hex number')
   })
 })

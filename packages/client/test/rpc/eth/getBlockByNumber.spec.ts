@@ -70,9 +70,7 @@ describe(method, async () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
-
-    const msg = 'should return a valid block'
-    assert.equal(res.result.number, '0x0', msg)
+    assert.equal(res.result.number, '0x0', 'should return a valid block')
   })
 
   it('call with false for second argument', async () => {
@@ -80,11 +78,12 @@ describe(method, async () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
-
-    let msg = 'should return a valid block'
-    assert.equal(res.result.number, '0x0', msg)
-    msg = 'should return only the hashes of the transactions'
-    assert.equal(typeof res.result.transactions[0], 'string', msg)
+    assert.equal(res.result.number, '0x0', 'should return a valid block')
+    assert.equal(
+      typeof res.result.transactions[0],
+      'string',
+      'should return only the hashes of the transactions'
+    )
   })
 
   it('call with earliest param', async () => {
@@ -92,9 +91,7 @@ describe(method, async () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest', false])
-
-    const msg = 'should return the genesis block number'
-    assert.equal(res.result.number, '0x0', msg)
+    assert.equal(res.result.number, '0x0', 'should return the genesis block number')
   })
 
   it('call with latest param', async () => {
@@ -102,8 +99,7 @@ describe(method, async () => {
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest', false])
-    const msg = 'should return a block number'
-    assert.equal(res.result.number, '0x1', msg)
+    assert.equal(res.result.number, '0x1', 'should return a block number')
     assert.equal(typeof res.result.transactions[0], 'string', 'should only include tx hashes')
   })
 

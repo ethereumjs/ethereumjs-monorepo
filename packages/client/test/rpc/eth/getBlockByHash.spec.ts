@@ -29,11 +29,12 @@ describe(method, () => {
       '0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae',
       false,
     ])
-
-    let msg = 'should return the correct number'
-    assert.equal(res.result.number, '0x444444', msg)
-    msg = 'should return only the hashes of the transactions'
-    assert.equal(typeof res.result.transactions[0], 'string', msg)
+    assert.equal(res.result.number, '0x444444', 'should return the correct number')
+    assert.equal(
+      typeof res.result.transactions[0],
+      'string',
+      'should return only the hashes of the transactions'
+    )
   })
 
   it('call with invalid block hash without 0x', async () => {

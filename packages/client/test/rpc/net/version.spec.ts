@@ -7,12 +7,14 @@ import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '
 const method = 'net_version'
 
 function compareResult(result: any, chainId: any) {
-  let msg = 'result should be a string'
-  assert.equal(typeof result, 'string', msg)
-  msg = 'result string should not be empty'
-  assert.notEqual(result.length, 0, msg)
-  msg = `should be the correct chain ID (expected: ${chainId}, received: ${result})`
-  assert.equal(result, chainId, msg)
+  assert.equal(typeof result, 'string', 'result should be a string')
+  assert.notEqual(result.length, 0, 'result string should not be empty')
+
+  assert.equal(
+    result,
+    chainId,
+    `should be the correct chain ID (expected: ${chainId}, received: ${result})`
+  )
 }
 
 describe(method, () => {

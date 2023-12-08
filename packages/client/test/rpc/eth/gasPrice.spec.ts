@@ -27,8 +27,11 @@ describe(method, () => {
     await runBlockWithTxs(chain, execution, [tx])
 
     const res = await rpc.request(method, [])
-    const msg = 'should return the correct suggested gas price with 1 legacy transaction'
-    assert.equal(res.result, intToHex(GAS_PRICE), msg)
+    assert.equal(
+      res.result,
+      intToHex(GAS_PRICE),
+      'should return the correct suggested gas price with 1 legacy transaction'
+    )
   })
 
   it('call with multiple legacy transactions', async () => {
@@ -48,9 +51,11 @@ describe(method, () => {
 
     averageGasPrice = averageGasPrice / iterations
     const res = await rpc.request(method, [])
-
-    const msg = 'should return the correct gas price with multiple legacy transactions'
-    assert.equal(res.result, bigIntToHex(averageGasPrice), msg)
+    assert.equal(
+      res.result,
+      bigIntToHex(averageGasPrice),
+      'should return the correct gas price with multiple legacy transactions'
+    )
   })
 
   it('call with multiple legacy transactions in a single block', async () => {
@@ -72,9 +77,11 @@ describe(method, () => {
 
     const averageGasPrice = (G1 + G2) / 2
     const res = await rpc.request(method, [])
-
-    const msg = 'should return the correct gas price with multiple legacy transactions in a block'
-    assert.equal(res.result, intToHex(Math.trunc(averageGasPrice)), msg)
+    assert.equal(
+      res.result,
+      intToHex(Math.trunc(averageGasPrice)),
+      'should return the correct gas price with multiple legacy transactions in a block'
+    )
   })
 
   it('call with 1559 transaction data', async () => {
@@ -98,9 +105,11 @@ describe(method, () => {
     const latest = await chain.getCanonicalHeadHeader()
     const baseFee = latest.calcNextBaseFee()
     const gasPrice = BigInt(baseFee + tx.maxPriorityFeePerGas)
-
-    const msg = 'should return the correct gas price with 1 1559 transaction'
-    assert.equal(res.result, bigIntToHex(gasPrice), msg)
+    assert.equal(
+      res.result,
+      bigIntToHex(gasPrice),
+      'should return the correct gas price with 1 1559 transaction'
+    )
   })
 
   it('call with multiple 1559 transactions', async () => {
@@ -137,9 +146,11 @@ describe(method, () => {
     const latest = await chain.getCanonicalHeadHeader()
     const baseFee = latest.calcNextBaseFee()
     const gasPrice = BigInt(baseFee + averagePriorityFee)
-
-    const msg = 'should return the correct gas price with 1 1559 transaction'
-    assert.equal(res.result, bigIntToHex(gasPrice), msg)
+    assert.equal(
+      res.result,
+      bigIntToHex(gasPrice),
+      'should return the correct gas price with 1 1559 transaction'
+    )
   })
 
   it('compute average gas price for 21 blocks', async () => {
@@ -181,8 +192,10 @@ describe(method, () => {
     assert.equal(blockNumber, 21n)
 
     const res = await rpc.request(method, [])
-
-    const msg = 'should return the correct gas price for 21 blocks'
-    assert.equal(res.result, bigIntToHex(gasPrice), msg)
+    assert.equal(
+      res.result,
+      bigIntToHex(gasPrice),
+      'should return the correct gas price for 21 blocks'
+    )
   })
 })

@@ -60,9 +60,7 @@ describe(method, () => {
 
     // verify that the transaction count is 1
     const res = await rpc.request(method, ['latest'])
-
-    const msg = 'should return the correct block transaction count(1)'
-    assert.equal(res.result, '0x1', msg)
+    assert.equal(res.result, '0x1', 'should return the correct block transaction count(1)')
   }, 20000)
 
   it('call with valid arguments (multiple transactions)', async () => {
@@ -127,9 +125,7 @@ describe(method, () => {
     // verify that the transaction count is 3
     // specify the block number instead of using latest
     const res = await rpc.request(method, ['0x1'])
-
-    const msg = 'should return the correct block transaction count(3)'
-    assert.equal(res.result, '0x3', msg)
+    assert.equal(res.result, '0x3', 'should return the correct block transaction count(3)')
   }, 30000)
 
   it('call with unsupported block argument', async () => {

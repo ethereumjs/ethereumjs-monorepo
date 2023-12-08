@@ -99,18 +99,25 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
-    let msg = 'should return the correct return value'
-    assert.equal(res.result, bytesToHex(execResult.returnValue), msg)
+    assert.equal(
+      res.result,
+      bytesToHex(execResult.returnValue),
+      'should return the correct return value'
+    )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
-
-    msg = 'should return the correct return value with no gas limit provided'
-    assert.equal(res.result, bytesToHex(execResult.returnValue), msg)
+    assert.equal(
+      res.result,
+      bytesToHex(execResult.returnValue),
+      'should return the correct return value with no gas limit provided'
+    )
 
     res = await rpc.request(method, [{ gasLimit, data }, 'latest'])
-
-    msg = `should let run call without 'to' for contract creation`
-    assert.equal(res.result, bytesToHex(result.results[0].execResult.returnValue), msg)
+    assert.equal(
+      res.result,
+      bytesToHex(result.results[0].execResult.returnValue),
+      `should let run call without 'to' for contract creation`
+    )
   })
 
   it('call with unsupported block argument', async () => {

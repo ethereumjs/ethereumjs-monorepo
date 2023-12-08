@@ -58,12 +58,10 @@ describe(method, () => {
     await vm.stateManager.putAccount(address, account!)
 
     const res = await rpc.request(method, [txData])
-
-    const msg = 'should return the correct tx hash'
     assert.equal(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',
-      msg
+      'should return the correct tx hash'
     )
 
     // Restore setStateRoot

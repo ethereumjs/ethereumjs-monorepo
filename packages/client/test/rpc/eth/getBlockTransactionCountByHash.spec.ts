@@ -12,9 +12,7 @@ describe(method, () => {
     const res = await rpc.request(method, [
       '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf',
     ])
-
-    const msg = 'transaction count should be 1'
-    assert.equal(res.result, '0x1', msg)
+    assert.equal(res.result, '0x1', 'transaction count should be 1')
   }, 10000)
 
   it('call with invalid block hash without 0x', async () => {

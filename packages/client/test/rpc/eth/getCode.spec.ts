@@ -33,8 +33,7 @@ describe(method, () => {
 
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
-    const msg = 'should return the correct code'
-    assert.equal(res.result, '0x', msg)
+    assert.equal(res.result, '0x', 'should return the correct code')
   }, 20000)
 
   it('ensure returns correct code', async () => {
@@ -95,8 +94,7 @@ describe(method, () => {
 
     // verify contract has code
     const res = await rpc.request(method, [expectedContractAddress.toString(), 'latest'])
-    const msg = 'should return the correct code'
-    assert.equal(res.result, code, msg)
+    assert.equal(res.result, code, 'should return the correct code')
   })
 
   it('call with unsupported block argument', async () => {

@@ -79,7 +79,6 @@ describe(method, async () => {
 
     // compare the logs
     let res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
-    let msg = `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`
     if (
       res.result.length === 20 &&
       res.result[0].address === contractAddr1.toString() &&
@@ -93,64 +92,73 @@ describe(method, async () => {
       res.result[0].topics[3] ===
         '0x0000000000000000000000000000000000000000000000000000000000000003'
     ) {
-      assert.ok(true, msg)
+      assert.ok(
+        true,
+        `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`
+      )
     } else {
-      assert.fail(msg)
+      assert.fail(`should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`)
     }
 
     // get the logs using fromBlock/toBlock as numbers
     res = await rpc.request(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
-
-    msg = 'should return the correct logs (fromBlock/toBlock as block numbers)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (fromBlock/toBlock as block numbers)'
+    )
 
     // test filtering by single address
     res = await rpc.request(method, [{ address: contractAddr1.toString() }])
-    msg = 'should return the correct logs (filter by single address)'
     if (
       res.result.length === 10 &&
       res.result.every((r: any) => r.address === contractAddr1.toString()) === true
     ) {
-      assert.ok(true, msg)
+      assert.ok(true, 'should return the correct logs (filter by single address)')
     } else {
-      assert.fail(msg)
+      assert.fail('should return the correct logs (filter by single address)')
     }
 
     // test filtering by multiple addresses
     const addresses = [contractAddr1.toString(), contractAddr2.toString()]
     res = await rpc.request(method, [{ address: addresses }])
 
-    msg = 'should return the correct logs (filter by multiple addresses)'
     if (
       res.result.length === 20 &&
       res.result.every((r: any) => addresses.includes(r.address)) === true
     ) {
-      assert.ok(true, msg)
+      assert.ok(true, 'should return the correct logs (filter by multiple addresses)')
     } else {
-      assert.fail(msg)
+      assert.fail('should return the correct logs (filter by multiple addresses)')
     }
 
     // test filtering by topics (empty means anything)
     res = await rpc.request(method, [{ topics: [] }])
-
-    msg = 'should return the correct logs (filter by topic - empty means anything)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - empty means anything)'
+    )
 
     // test filtering by topics (exact match)
     res = await rpc.request(method, [
       { topics: ['0xbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb'] },
     ])
-
-    msg = 'should return the correct logs (filter by topic - exact match)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - exact match)'
+    )
 
     // test filtering by topics (exact match for second topic)
     res = await rpc.request(method, [
       { topics: [null, '0x0000000000000000000000000000000000000000000000000000000000000001'] },
     ])
-
-    msg = 'should return the correct logs (filter by topic - exact match for second topic)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - exact match for second topic)'
+    )
 
     // test filtering by topics (A or B in first position)
     res = await rpc.request(method, [
@@ -166,8 +174,11 @@ describe(method, async () => {
       },
     ])
 
-    msg = 'should return the correct logs (filter by topic - A or B in first position)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - A or B in first position)'
+    )
 
     // test filtering by topics (null means anything)
     res = await rpc.request(method, [
@@ -176,8 +187,11 @@ describe(method, async () => {
       },
     ])
 
-    msg = 'should return the correct logs (filter by topic - null means anything)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - null means anything)'
+    )
 
     // test filtering by blockHash
     const latestHeader = chain.headers.latest!
@@ -187,8 +201,7 @@ describe(method, async () => {
       },
     ])
 
-    msg = 'should return the correct logs (filter by blockHash)'
-    assert.equal(res.result.length, 20, msg)
+    assert.equal(res.result.length, 20, 'should return the correct logs (filter by blockHash)')
   })
 
   it('call with invalid params', async () => {
@@ -240,14 +253,10 @@ describe(method, async () => {
 
     // unknown address
     res = await rpc.request(method, [{ address: '0x0000000000000000000000000000000000000001' }])
-
-    let msg = 'should return empty logs'
-    assert.equal(res.result.length, 0, msg)
+    assert.equal(res.result.length, 0, 'should return empty logs')
 
     // invalid topic
     res = await rpc.request(method, [{ topics: ['0x1234'] }])
-
-    msg = 'should return empty logs'
-    assert.equal(res.result.length, 0, msg)
+    assert.equal(res.result.length, 0, 'should return empty logs')
   })
 })

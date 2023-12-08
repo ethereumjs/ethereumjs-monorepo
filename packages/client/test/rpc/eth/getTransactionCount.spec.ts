@@ -40,9 +40,7 @@ describe(method, () => {
 
     // verify nonce is 0
     let res = await rpc.request(method, [address.toString(), 'latest'])
-
-    let msg = 'should return the correct nonce (0)'
-    assert.equal(res.result, '0x0', msg)
+    assert.equal(res.result, '0x0', 'should return the correct nonce (0)')
 
     // construct block with tx
     const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
@@ -69,15 +67,11 @@ describe(method, () => {
 
     // verify nonce increments after a tx
     res = await rpc.request(method, [address.toString(), 'latest'])
-
-    msg = 'should return the correct nonce (1)'
-    assert.equal(res.result, '0x1', msg)
+    assert.equal(res.result, '0x1', 'should return the correct nonce (1)')
 
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
-
-    msg = 'should return 0x0 for nonexistent account'
-    assert.equal(res.result, `0x0`, msg)
+    assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
   }, 20000)
 
   it('call with unsupported block argument', async () => {

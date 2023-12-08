@@ -105,9 +105,11 @@ describe(
         { ...estimateTxData, gas: estimateTxData.gasLimit },
         'latest',
       ])
-
-      let msg = 'should return the correct gas estimate'
-      assert.equal(res.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(
+        res.result,
+        '0x' + totalGasSpent.toString(16),
+        'should return the correct gas estimate'
+      )
 
       // Test without blockopt as its optional and should default to latest
       const res2 = await rpc.request(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
@@ -143,8 +145,11 @@ describe(
       const EIP1559res = await rpc.request(method, [
         { ...estimateTxData, type: 2, maxFeePerGas: '0x' + 10000000000n.toString(16) },
       ])
-      msg = 'should return the correct gas estimate for EIP1559 tx'
-      assert.equal(EIP1559res.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(
+        EIP1559res.result,
+        '0x' + totalGasSpent.toString(16),
+        'should return the correct gas estimate for EIP1559 tx'
+      )
 
       // Test EIP1559 tx with no maxFeePerGas
       const EIP1559reqNoGas = await rpc.request(method, [
