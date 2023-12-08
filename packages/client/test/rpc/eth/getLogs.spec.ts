@@ -2,10 +2,9 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import pow from '../../testdata/geth-genesis/pow.json'
-import { baseRequest, dummy, params, runBlockWithTxs, setupChain } from '../helpers'
-import { checkError } from '../util'
+import { dummy, getRpcClient, runBlockWithTxs, setupChain } from '../helpers.js'
 
 const method = 'eth_getLogs'
 
@@ -30,7 +29,7 @@ const logExampleBytecode = hexToBytes(
 describe(method, async () => {
   it('call with valid arguments', async () => {
     const { chain, common, execution, server } = await setupChain(pow, 'pow')
-
+    const rpc = getRpcClient(server)
     // deploy contracts at two different addresses
     const txData = { gasLimit: 2000000, gasPrice: 100 }
     const tx1 = LegacyTransaction.fromTxData(
@@ -79,98 +78,90 @@ describe(method, async () => {
     await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
 
     // compare the logs
-    let req = params(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
-    let expectRes = (res: any) => {
-      const msg = `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`
-      if (
-        res.body.result.length === 20 &&
-        res.body.result[0].address === contractAddr1.toString() &&
-        res.body.result[10].address === contractAddr2.toString() &&
-        res.body.result[0].topics[0] ===
-          '0xbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb' &&
-        res.body.result[0].topics[1] ===
-          '0x0000000000000000000000000000000000000000000000000000000000000001' &&
-        res.body.result[0].topics[2] ===
-          '0x0000000000000000000000000000000000000000000000000000000000000002' &&
-        res.body.result[0].topics[3] ===
-          '0x0000000000000000000000000000000000000000000000000000000000000003'
-      ) {
-        assert.ok(true, msg)
-      } else {
-        assert.fail(msg)
-      }
+    let res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
+    if (
+      res.result.length === 20 &&
+      res.result[0].address === contractAddr1.toString() &&
+      res.result[10].address === contractAddr2.toString() &&
+      res.result[0].topics[0] ===
+        '0xbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb' &&
+      res.result[0].topics[1] ===
+        '0x0000000000000000000000000000000000000000000000000000000000000001' &&
+      res.result[0].topics[2] ===
+        '0x0000000000000000000000000000000000000000000000000000000000000002' &&
+      res.result[0].topics[3] ===
+        '0x0000000000000000000000000000000000000000000000000000000000000003'
+    ) {
+      assert.ok(
+        true,
+        `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`
+      )
+    } else {
+      assert.fail(`should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`)
     }
-    await baseRequest(server, req, 200, expectRes, false)
 
     // get the logs using fromBlock/toBlock as numbers
-    req = params(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (fromBlock/toBlock as block numbers)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (fromBlock/toBlock as block numbers)'
+    )
 
     // test filtering by single address
-    req = params(method, [{ address: contractAddr1.toString() }])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by single address)'
-      if (
-        res.body.result.length === 10 &&
-        res.body.result.every((r: any) => r.address === contractAddr1.toString()) === true
-      ) {
-        assert.ok(true, msg)
-      } else {
-        assert.fail(msg)
-      }
+    res = await rpc.request(method, [{ address: contractAddr1.toString() }])
+    if (
+      res.result.length === 10 &&
+      res.result.every((r: any) => r.address === contractAddr1.toString()) === true
+    ) {
+      assert.ok(true, 'should return the correct logs (filter by single address)')
+    } else {
+      assert.fail('should return the correct logs (filter by single address)')
     }
-    await baseRequest(server, req, 200, expectRes, false)
 
     // test filtering by multiple addresses
     const addresses = [contractAddr1.toString(), contractAddr2.toString()]
-    req = params(method, [{ address: addresses }])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by multiple addresses)'
-      if (
-        res.body.result.length === 20 &&
-        res.body.result.every((r: any) => addresses.includes(r.address)) === true
-      ) {
-        assert.ok(true, msg)
-      } else {
-        assert.fail(msg)
-      }
+    res = await rpc.request(method, [{ address: addresses }])
+
+    if (
+      res.result.length === 20 &&
+      res.result.every((r: any) => addresses.includes(r.address)) === true
+    ) {
+      assert.ok(true, 'should return the correct logs (filter by multiple addresses)')
+    } else {
+      assert.fail('should return the correct logs (filter by multiple addresses)')
     }
-    await baseRequest(server, req, 200, expectRes, false)
 
     // test filtering by topics (empty means anything)
-    req = params(method, [{ topics: [] }])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by topic - empty means anything)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [{ topics: [] }])
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - empty means anything)'
+    )
 
     // test filtering by topics (exact match)
-    req = params(method, [
+    res = await rpc.request(method, [
       { topics: ['0xbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb'] },
     ])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by topic - exact match)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - exact match)'
+    )
 
     // test filtering by topics (exact match for second topic)
-    req = params(method, [
+    res = await rpc.request(method, [
       { topics: [null, '0x0000000000000000000000000000000000000000000000000000000000000001'] },
     ])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by topic - exact match for second topic)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - exact match for second topic)'
+    )
 
     // test filtering by topics (A or B in first position)
-    req = params(method, [
+    res = await rpc.request(method, [
       {
         topics: [
           [
@@ -182,96 +173,90 @@ describe(method, async () => {
         ],
       },
     ])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by topic - A or B in first position)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - A or B in first position)'
+    )
 
     // test filtering by topics (null means anything)
-    req = params(method, [
+    res = await rpc.request(method, [
       {
         topics: [null, null, '0x0000000000000000000000000000000000000000000000000000000000000002'],
       },
     ])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by topic - null means anything)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+
+    assert.equal(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by topic - null means anything)'
+    )
 
     // test filtering by blockHash
     const latestHeader = chain.headers.latest!
-    req = params(method, [
+    res = await rpc.request(method, [
       {
         blockHash: bytesToHex(latestHeader.hash()),
       },
     ])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct logs (filter by blockHash)'
-      assert.equal(res.body.result.length, 20, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, true) // pass endOnFinish=true for last test
+
+    assert.equal(res.result.length, 20, 'should return the correct logs (filter by blockHash)')
   })
 
   it('call with invalid params', async () => {
     const { server } = await setupChain(pow, 'pow')
-
+    const rpc = getRpcClient(server)
     // fromBlock greater than current height
-    let req = params(method, [{ fromBlock: '0x1234' }])
-    let expectRes = checkError(INVALID_PARAMS, 'specified `fromBlock` greater than current height')
-    await baseRequest(server, req, 200, expectRes, false)
+    let res = await rpc.request(method, [{ fromBlock: '0x1234' }])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('specified `fromBlock` greater than current height'))
 
     // toBlock greater than current height
-    req = params(method, [{ toBlock: '0x1234' }])
-    expectRes = checkError(INVALID_PARAMS, 'specified `toBlock` greater than current height')
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [{ toBlock: '0x1234' }])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('specified `toBlock` greater than current height'))
 
     // unknown blockHash
-    req = params(method, [
+    res = await rpc.request(method, [
       { blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001' },
     ])
-    expectRes = checkError(INVALID_PARAMS, 'unknown blockHash')
-    await baseRequest(server, req, 200, expectRes, false)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('unknown blockHash'))
 
     // specifying fromBlock or toBlock with blockHash
-    req = params(method, [
+    res = await rpc.request(method, [
       {
         fromBlock: 'latest',
         blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001',
       },
     ])
-    expectRes = checkError(
-      INVALID_PARAMS,
-      'Can only specify a blockHash if fromBlock or toBlock are not provided'
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(
+      res.error.message.includes(
+        'Can only specify a blockHash if fromBlock or toBlock are not provided'
+      )
     )
-    await baseRequest(server, req, 200, expectRes, false)
-    req = params(method, [
+
+    res = await rpc.request(method, [
       {
         toBlock: 'latest',
         blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001',
       },
     ])
-    expectRes = checkError(
-      INVALID_PARAMS,
-      'Can only specify a blockHash if fromBlock or toBlock are not provided'
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(
+      res.error.message.includes(
+        'Can only specify a blockHash if fromBlock or toBlock are not provided'
+      )
     )
-    await baseRequest(server, req, 200, expectRes, false)
 
     // unknown address
-    req = params(method, [{ address: '0x0000000000000000000000000000000000000001' }])
-    expectRes = (res: any) => {
-      const msg = 'should return empty logs'
-      assert.equal(res.body.result.length, 0, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [{ address: '0x0000000000000000000000000000000000000001' }])
+    assert.equal(res.result.length, 0, 'should return empty logs')
 
     // invalid topic
-    req = params(method, [{ topics: ['0x1234'] }])
-    expectRes = (res: any) => {
-      const msg = 'should return empty logs'
-      assert.equal(res.body.result.length, 0, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, true) // pass endOnFinish=true for last test
+    res = await rpc.request(method, [{ topics: ['0x1234'] }])
+    assert.equal(res.result.length, 0, 'should return empty logs')
   })
 })
