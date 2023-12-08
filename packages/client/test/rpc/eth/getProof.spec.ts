@@ -5,9 +5,9 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getProof'
 
@@ -45,7 +45,7 @@ describe(method, async () => {
 
     const client = createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -129,11 +129,7 @@ describe(method, async () => {
     await vm.blockchain.putBlock(ranBlock2!)
 
     // verify proof is accurate
-    const req = params(method, [createdAddress!.toString(), ['0x0'], 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct proof'
-      assert.deepEqual(res.body.result, expectedProof, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [createdAddress!.toString(), ['0x0'], 'latest'])
+    assert.deepEqual(res.result, expectedProof, 'should return the correct proof')
   })
 })

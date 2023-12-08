@@ -1,68 +1,56 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
-import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
+import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'net_version'
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-
 function compareResult(result: any, chainId: any) {
-  let msg = 'result should be a string'
-  assert.equal(typeof result, 'string', msg)
-  msg = 'result string should not be empty'
-  assert.notEqual(result.length, 0, msg)
-  msg = `should be the correct chain ID (expected: ${chainId}, received: ${result})`
-  assert.equal(result, chainId, msg)
+  assert.equal(typeof result, 'string', 'result should be a string')
+  assert.notEqual(result.length, 0, 'result string should not be empty')
+
+  assert.equal(
+    result,
+    chainId,
+    `should be the correct chain ID (expected: ${chainId}, received: ${result})`
+  )
 }
 
 describe(method, () => {
   it('call on mainnet', async () => {
-    const { server } = baseSetup()
+    const { rpc } = baseSetup()
 
-    const req = params(method, [])
-    const expectRes = (res: any) => {
-      const { result } = res.body
-      compareResult(result, '1')
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [])
+
+    const { result } = res
+    compareResult(result, '1')
   })
 
   it('call on sepolia', async () => {
     // Stub out block consensusFormatValidation checks
-    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
     const manager = createManager(
       createClient({ opened: true, commonChain: new Common({ chain: Chain.Sepolia }) })
     )
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, [])
-    const expectRes = (res: any) => {
-      const { result } = res.body
-      compareResult(result, '11155111')
-    }
-    await baseRequest(server, req, 200, expectRes)
-    td.reset()
+    const res = await rpc.request(method, [])
+
+    const { result } = res
+    compareResult(result, '11155111')
+
+    vi.resetAllMocks()
   })
 
   it('call on goerli', async () => {
     const manager = createManager(
       createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, [])
-    const expectRes = (res: any) => {
-      const { result } = res.body
-      compareResult(result, '5')
-    }
-    await baseRequest(server, req, 200, expectRes)
-  })
-
-  it('reset TD', () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
+    const res = await rpc.request(method, [])
+    const { result } = res
+    compareResult(result, '5')
   })
 })
