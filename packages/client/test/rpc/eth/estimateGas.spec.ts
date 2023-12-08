@@ -161,7 +161,7 @@ describe(
       const legacyTxNoGas = await rpc.request(method, [
         { ...estimateTxData, maxFeePerGas: undefined, gasLimit: undefined },
       ])
-      assert.equal(legacyTxNoGas.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(legacyTxNoGas.result, '0x' + totalGasSpent.toString(16), 'should return the correct gas estimate for EIP1559 tx')
     })
 
     it('call with unsupported block argument', async () => {
