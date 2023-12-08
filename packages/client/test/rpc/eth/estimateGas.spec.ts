@@ -113,7 +113,7 @@ describe(
 
       // Test without blockopt as its optional and should default to latest
       const res2 = await rpc.request(method, [{ ...estimateTxData, gas: estimateTxData.gasLimit }])
-      assert.equal(res2.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(res2.result, '0x' + totalGasSpent.toString(16), 'should return the correct gas estimate')
       // Setup chain to run an EIP1559 tx
       const service = client.services[0] as FullEthereumService
       service.execution.vm.common.setHardfork('london')
