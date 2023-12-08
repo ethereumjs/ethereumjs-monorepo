@@ -155,7 +155,7 @@ describe(
       const EIP1559reqNoGas = await rpc.request(method, [
         { ...estimateTxData, type: 2, maxFeePerGas: undefined, gasLimit: undefined },
       ])
-      assert.equal(EIP1559reqNoGas.result, '0x' + totalGasSpent.toString(16), msg)
+      assert.equal(EIP1559reqNoGas.result, '0x' + totalGasSpent.toString(16), 'should return the correct gas estimate for EIP1559 tx')
 
       // Test legacy tx with London head block
       const legacyTxNoGas = await rpc.request(method, [
