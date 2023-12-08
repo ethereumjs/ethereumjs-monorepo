@@ -177,8 +177,4 @@ describe('[ByteCodeFetcher]', async () => {
     })
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
-
-  it('should reset td', () => {
-    td.reset()
-  })
 })
