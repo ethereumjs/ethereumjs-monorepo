@@ -12,8 +12,8 @@ const _r = 'b814eaab5953337fed2cf504a5b887cddd65a54b7429d7b191ff1331ca0726b1'
 const _s = '264de2660d307112075c15f08ba9c25c9a0cc6f8119aff3e7efb0a942773abb0'
 const address = '0xa6fb229e9b0a4e4ef52ea6991adcfc59207c7711'
 
-describe('Precompiles: ECADD', () => {
-  it('ECADD', async () => {
+describe('Precompiles: ECRECOVER', () => {
+  it('ECRECOVER', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = new EVM({
       common,
@@ -30,6 +30,6 @@ describe('Precompiles: ECADD', () => {
       _EVM: evm,
     })
 
-    assert.deepEqual(bytesToHex(result.returnValue), address, 'should use petersburg gas costs')
+    assert.deepEqual(bytesToHex(result.returnValue), address, 'should recover expected address')
   })
 })
