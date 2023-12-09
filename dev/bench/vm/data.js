@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702140290060,
+  "lastUpdate": 1702141738335,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c6d8b3998522612ea0f1a6c1c256fe5226c0fddf",
-          "message": "New Minor Releases (Holesky, Dencun devnet-10, Client UX, Performance) (#3113)\n\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/rlp v5.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/util v9.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/common v4.1.0)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/genesis v0.2.0)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/trie v6.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/devp2p v6.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/tx v5.1.0)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/block v5.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/blockchain v7.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/statemanager v2.1.0)\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/ethash v3.0.1)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/wallet v2.0.1)\r\n\r\n* Add dedicated EVM profiling section to README\r\n\r\n* Add EVM profiler image\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/evm v2.1.0)\r\n\r\n* Update CHANGELOG, version bump, updated upstream dependency versions (@ethereumjs/vm v7.1.0)\r\n\r\n* Bump @ethereumjs/client version to v0.9.0, update CHANGELOG\r\n\r\n* Rebuild docs\r\n\r\n* README updates\r\n\r\n* Rebuild package-lock.json\r\n\r\n* evm: fix typo\r\n\r\n* blockchain: update changelog\r\n\r\n* Update packages/tx/CHANGELOG.md\r\n\r\n* Update packages/tx/CHANGELOG.md\r\n\r\n* Minor adjustements\r\n\r\n* Update packages/vm/CHANGELOG.md\r\n\r\n* VM: fix block profiler\r\n\r\n* Update CHANGELOG files with recent changes\r\n\r\n* Rebuild package-lock.json\r\n\r\n* verkle: update rlp and util to x.0.1\r\n\r\n* Update devnet-10 -> devnet-11 in CHANGELOG files\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
-          "timestamp": "2023-11-02T09:31:20+01:00",
-          "tree_id": "d43f2135bb2fdf549977fb45c3d97798423eafbc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c6d8b3998522612ea0f1a6c1c256fe5226c0fddf"
-        },
-        "date": 1698914093784,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 29888,
-            "range": "±4.18%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 29444,
-            "range": "±2.31%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 29117,
-            "range": "±2.54%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 28905,
-            "range": "±2.40%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 24795,
-            "range": "±9.16%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.28%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "de706125473e2188de382d95861fa1daac67713d",
+          "message": "Add test for ecrecover precompile (#3184)\n\n* Add test for ecrecover precompile\r\n\r\n* Update test messages\r\n\r\n* evm: fix ecrecover test\r\n\r\n* evm: add test comment ecrecover test\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-12-09T10:06:06-07:00",
+          "tree_id": "5daaaaae1c0707a135102e76a1539a1c8a8efed3",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/de706125473e2188de382d95861fa1daac67713d"
+        },
+        "date": 1702141736874,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41061,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38798,
+            "range": "±2.74%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39038,
+            "range": "±2.09%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38448,
+            "range": "±2.07%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34673,
+            "range": "±5.71%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
