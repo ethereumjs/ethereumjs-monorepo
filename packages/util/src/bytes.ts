@@ -101,6 +101,9 @@ export const hexToBytes = (hex: string): Uint8Array => {
   const bytes = new Uint8Array(byteLen)
   for (let i = 0; i < byteLen; i++) {
     const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
+    if (Number.isNaN(byte)) {
+      throw 'Invalid hex'
+    }
     bytes[i] = byte
   }
   return bytes
