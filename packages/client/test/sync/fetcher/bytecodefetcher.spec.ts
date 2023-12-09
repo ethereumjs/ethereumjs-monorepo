@@ -14,9 +14,6 @@ import { _accountRangeRLP } from './accountfetcher.spec'
 const _byteCodesRLP =
   '0xf89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
 const useKeyHashing = true
-;(BigInt.prototype as any).toJSON = function () {
-  return this.toString()
-}
 
 describe('[ByteCodeFetcher]', async () => {
   class PeerPool {
@@ -141,7 +138,7 @@ describe('[ByteCodeFetcher]', async () => {
         hashes: task.hashes,
         bytes: BigInt(50000),
       }
-      if (JSON.stringify(input) !== JSON.stringify(expected)) throw Error('Input not as expected')
+      assert.deepEqual(input, expected)
 
       return { reqId, codes }
     })

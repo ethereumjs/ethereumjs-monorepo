@@ -7,9 +7,6 @@ import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
-;(BigInt.prototype as any).toJSON = function () {
-  return this.toString()
-}
 
 describe('[BlockFetcher]', async () => {
   class PeerPool {
@@ -178,8 +175,7 @@ describe('[BlockFetcher]', async () => {
             max: task.count - partialResult.length,
             reverse: false,
           }
-          if (JSON.stringify(input) !== JSON.stringify(expected))
-            throw Error('Input not as expected')
+          assert.deepEqual(input, expected)
         }),
       },
       id: 'random',

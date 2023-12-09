@@ -8,9 +8,6 @@ import { getLogger } from '../../../src/logging'
 import { Skeleton } from '../../../src/service/skeleton'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
-;(BigInt.prototype as any).toJSON = function () {
-  return this.toString()
-}
 
 describe('[ReverseBlockFetcher]', async () => {
   class PeerPool {
@@ -168,8 +165,7 @@ describe('[ReverseBlockFetcher]', async () => {
             max: task.count - partialResult.length,
             reverse: true,
           }
-          if (JSON.stringify(expected) !== JSON.stringify(input))
-            throw new Error('Input not as expected')
+          assert.deepEqual(expected, input)
         }),
       },
       id: 'random',
