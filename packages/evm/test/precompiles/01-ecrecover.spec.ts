@@ -14,6 +14,8 @@ const address = '0xa6fb229e9b0a4e4ef52ea6991adcfc59207c7711'
 
 describe('Precompiles: ECRECOVER', () => {
   it('ECRECOVER', async () => {
+    // Test reference: https://github.com/ethereum/go-ethereum/issues/3731#issuecomment-293866868
+
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = new EVM({
       common,
