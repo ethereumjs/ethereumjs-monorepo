@@ -420,6 +420,13 @@ describe('hexToBytes', () => {
       hexToBytes('aabbcc112233')
     })
   })
+
+  it('should throw on invalid hex', () => {
+    assert.throws(() => {
+      hexToBytes('0xinvalidhexstring')
+    })
+  })
+
   it('should convert prefixed hex-strings', () => {
     const converted = hexToBytes('0x1')
     assert.deepEqual(converted, new Uint8Array([1]))
