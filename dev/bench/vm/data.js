@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702040639457,
+  "lastUpdate": 1702140290060,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ab4ba34e81fcc1e01b733fe37d2b657a67da5099",
-          "message": "Minimal `rlpx` test suite (#3126)\n\n* Add rlpx tests and remove ts-ignore\r\n\r\n* Remove excess robot comments\r\n\r\n* Upload code coverage for devp2p\r\n\r\n* bump coverage\r\n\r\n* Update RLP coverage\r\n\r\n* update ci\r\n\r\n* use default coverage script\r\n\r\n* Update rlp test script\r\n\r\n* Revert non devp2p changes\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-11-01T11:45:32+01:00",
-          "tree_id": "b50989b3e6d8817fec12d94f63ceba3aca87e868",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/ab4ba34e81fcc1e01b733fe37d2b657a67da5099"
-        },
-        "date": 1698835722776,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40074,
-            "range": "±2.40%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38433,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38618,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35942,
-            "range": "±4.26%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36867,
-            "range": "±2.26%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.21%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "253e0a4cf60ea24ab802f3eb713b20f3b49ac955",
+          "message": "testdouble to vi refactoring (#3182)\n\n* Refactor blockfetcher tests to use vi instead of td\r\n\r\n* Refactor bytecodefetcher tests to use vi instead of td\r\n\r\n* Refactor trienodefetcher tests to use vi instead of td\r\n\r\n* Refactor reverseBlockFetcher tests to use vi instead of td\r\n\r\n* Refactor accountfetcher tests to use vi instead of td\r\n\r\n* Remove td usage\r\n\r\n* Fix lint error\r\n\r\n* simplify tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-12-09T09:42:04-07:00",
+          "tree_id": "8a5f893aaeea359d62fdce1980cc788a29187d2c",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/253e0a4cf60ea24ab802f3eb713b20f3b49ac955"
+        },
+        "date": 1702140289421,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41343,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39076,
+            "range": "±3.11%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39462,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38520,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37685,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
