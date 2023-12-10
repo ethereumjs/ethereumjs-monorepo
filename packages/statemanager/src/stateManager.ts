@@ -705,6 +705,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param storageSlots storage slots to get proof of
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
       // throw new Error(`getProof() can only be called for an existing account`)
@@ -746,6 +747,91 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       storageProof,
     }
     return returnValue
+  }
+
+  /**
+   * Create a StateManager and initialize this with proof(s) gotten previously from getProof
+   * This generates a (partial) StateManager where one can retrieve all items from the proof
+   * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
+   * @param safe Wether or not to verify that the roots of the proof items match the reported roots
+   * @param opts DefaultStateManagerOpts
+   * @returns
+   */
+  static async fromProof(
+    proof: Proof | Proof[],
+    safe: boolean = false,
+    opts: DefaultStateManagerOpts = {}
+  ): Promise<DefaultStateManager> {
+    if (Array.isArray(proof)) {
+      if (proof.length === 0) {
+        return new DefaultStateManager(opts)
+      } else {
+        const trie =
+          opts.trie ??
+          (await Trie.createTrieFromProof(
+            proof[0].accountProof.map((e) => hexToBytes(e)),
+            { useKeyHashing: true }
+          ))
+        const sm = new DefaultStateManager({ ...opts, trie })
+        const address = Address.fromString(proof[0].address)
+        await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
+        for (let i = 1; i < proof.length; i++) {
+          const proofItem = proof[i]
+          await sm.addProofItems(proofItem, true)
+        }
+        await sm.flush() // TODO verify if this is necessary
+        return sm
+      }
+    } else {
+      return DefaultStateManager.fromProof([proof])
+    }
+  }
+
+  /**
+   * Adds a storage proof to the state manager
+   * @param storageProof The storage proof
+   * @param storageHash The root hash of the storage trie
+   * @param address The address
+   * @param safe Whether or not to verify if the reported roots match the current storage root
+   */
+  private async addStorageProof(
+    storageProof: StorageProof[],
+    storageHash: string,
+    address: Address,
+    safe: boolean = false
+  ) {
+    const trie = this._getStorageTrie(address)
+    trie.root(hexToBytes(storageHash))
+    for (let i = 0; i < storageProof.length; i++) {
+      await trie.updateTrieFromProof(
+        storageProof[i].proof.map((e) => hexToBytes(e)),
+        safe
+      )
+    }
+  }
+
+  /**
+   * Add proof(s) into an already existing trie
+   * @param proof The proof(s) retrieved from `getProof`
+   * @param safe Whether or not to verify if the reported roots match the current state root
+   */
+  async addProofItems(proof: Proof | Proof[], safe: boolean = false) {
+    if (Array.isArray(proof)) {
+      for (let i = 0; i < proof.length; i++) {
+        await this._trie.updateTrieFromProof(
+          proof[i].accountProof.map((e) => hexToBytes(e)),
+          safe
+        )
+        await this.addStorageProof(
+          proof[i].storageProof,
+          proof[i].storageHash,
+          Address.fromString(proof[i].address),
+          safe
+        )
+      }
+    } else {
+      await this.addProofItems([proof], safe)
+    }
   }
 
   /**
