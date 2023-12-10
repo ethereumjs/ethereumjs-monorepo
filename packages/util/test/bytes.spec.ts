@@ -425,6 +425,9 @@ describe('hexToBytes', () => {
     assert.throws(() => {
       hexToBytes('0xinvalidhexstring')
     })
+    assert.throws(() => {
+      hexToBytes('0xfz')
+    })
   })
 
   it('should convert prefixed hex-strings', () => {
