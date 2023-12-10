@@ -883,8 +883,28 @@ export class Trie {
   /**
    * Saves the nodes from a proof into the trie.
    * @param proof
+   * @deprecated Use `updateTrieFromProof`
    */
   async fromProof(proof: Proof): Promise<void> {
+    await this.updateTrieFromProof(proof, false)
+
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
+      let rootKey = Uint8Array.from(this.hash(proof[0]))
+      // TODO: what if we have keyPrefix and we set root? This should not work, right? (all trie nodes are non-reachable)
+      rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
+      this.root(rootKey)
+      await this.persistRoot()
+    }
+    return
+  }
+
+  /**
+   * Updates a trie from a proof
+   * @param proof The proof
+   * @param safe If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
+   * @returns The root of the proof
+   */
+  async updateTrieFromProof(proof: Proof, safe: boolean = false) {
     this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       let key = Uint8Array.from(this.hash(nodeValue))
@@ -896,18 +916,26 @@ export class Trie {
       } as PutBatch
     })
 
-    if (
-      equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) &&
-      opStack[0] !== undefined &&
-      opStack[0] !== null
-    ) {
-      this.DEBUG && this.debug(`Setting Trie root from Proof Node 0`, ['FROM_PROOF'])
-      this.root(opStack[0].key)
+    if (safe) {
+      if (opStack[0] !== undefined && opStack[0] !== null) {
+        if (!equalsBytes(this.root(), opStack[0].key)) {
+          throw new Error('The provided proof does not have the expected trie root')
+        }
+      }
     }
 
     await this._db.batch(opStack)
-    await this.persistRoot()
-    return
+    if (opStack[0] !== undefined) {
+      return opStack[0].key
+    }
+  }
+
+  static async createTrieFromProof(proof: Proof, trieOpts?: TrieOpts) {
+    const trie = new Trie(trieOpts)
+    const root = await trie.updateTrieFromProof(proof, false)
+    trie.root(root)
+    await trie.persistRoot()
+    return trie
   }
 
   /**
