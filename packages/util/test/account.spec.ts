@@ -596,7 +596,7 @@ describe('Utility Functions', () => {
     ],
   }
 
-  it('toChecksumAddress()', () => {
+  describe('toChecksumAddress()', () => {
     it('EIP55', () => {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         const tmp = eip55ChecksumAddresses[i]
@@ -604,7 +604,7 @@ describe('Utility Functions', () => {
       }
     })
 
-    it('EIP1191', () => {
+    describe('EIP1191', () => {
       it('Should encode the example addresses correctly', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
@@ -657,7 +657,7 @@ describe('Utility Functions', () => {
     })
   })
 
-  it('isValidChecksumAddress()', () => {
+  describe('isValidChecksumAddress()', () => {
     it('EIP55', () => {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         assert.ok(isValidChecksumAddress(eip55ChecksumAddresses[i]))
@@ -665,7 +665,7 @@ describe('Utility Functions', () => {
       assert.notOk(isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
     })
 
-    it('EIP1191', () => {
+    describe('EIP1191', () => {
       it('Should return true for the example addresses', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksummAddresses)) {
           for (const addr of addresses) {
@@ -702,7 +702,7 @@ describe('Utility Functions', () => {
     })
   })
 
-  it('isValidAddress()', () => {
+  describe('isValidAddress()', () => {
     it('should return true', () => {
       assert.ok(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
       assert.ok(isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'))

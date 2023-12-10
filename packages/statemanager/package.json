@@ -54,7 +54,6 @@
     "@ethereumjs/util": "^9.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
-    "ethers": "^6.4.0",
     "js-sdsl": "^4.1.4",
     "lru-cache": "^10.0.0"
   },
@@ -62,5 +61,13 @@
     "@ethereumjs/block": "^5.0.1",
     "@ethereumjs/genesis": "^0.2.0",
     "@types/debug": "^4.1.9"
+  },
+  "peerDependencies": {
+    "@ethereumjs/verkle": "^0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@ethereumjs/verkle": {
+      "optional": true
+    }
   }
 }

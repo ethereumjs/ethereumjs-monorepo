@@ -571,7 +571,7 @@ export class TxPool {
    * @param peerPool Reference to the peer pool
    */
   async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
-    if (!this.running || txHashes.length === 0) return
+    if (!this.running || txHashes === undefined || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
 
     const reqHashes = []

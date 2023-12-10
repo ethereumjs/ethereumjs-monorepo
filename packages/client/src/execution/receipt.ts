@@ -107,6 +107,11 @@ export class ReceiptsManager extends MetaDBManager {
     void this.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
   }
 
+  async deleteReceipts(block: Block) {
+    await this.delete(DBKey.Receipts, block.hash())
+    void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
+  }
+
   /**
    * Returns receipts for given blockHash
    * @param blockHash the block hash

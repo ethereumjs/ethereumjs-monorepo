@@ -36,7 +36,8 @@ describe('[BoundProtocol]', () => {
       peer,
       sender,
     })
-    assert.ok(/this.request/.test((bound as any).testMessage.toString()), 'added testMessage')
+
+    assert.equal(bound['protocol'].messages[0].name, 'TestMessage')
   })
 
   it('should get/set status', () => {
@@ -121,11 +122,11 @@ describe('[BoundProtocol]', () => {
         sender.emit('message', { code: 0x02, payload: '2' })
       }, 100)
     })
-    const response = await (bound as any).testMessage(1)
+    const response = await bound.request('TestMessage', 1)
     assert.equal(response, 2, 'got response')
     td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
     try {
-      await (bound as any).testMessage(1)
+      await bound.request('TestMessage', 1)
     } catch (err: any) {
       assert.ok(/error1/.test(err.message), 'got error')
     }
@@ -141,7 +142,7 @@ describe('[BoundProtocol]', () => {
       sender,
     })
     try {
-      await (bound as any).testMessage(1)
+      await bound.request('TestMessage', {})
     } catch (err: any) {
       assert.ok(/timed out/.test(err.message), 'got error')
     }

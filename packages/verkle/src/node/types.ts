@@ -30,7 +30,7 @@ interface VerkleInternalNodeOptions extends BaseVerkleNodeOptions {
   // Children nodes of this internal node.
   children?: VerkleNode[]
 
-  // Values of the child commitments before the trie is modified by inserts.
+  // Values of the child commitments before the tree is modified by inserts.
   // This is useful because the delta of the child commitments can be used to efficiently update the node's commitment
   copyOnWrite?: Record<string, Point>
 }

@@ -1,19 +1,14 @@
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseSetup } from '../helpers.js'
 
 const method = 'eth_protocolVersion'
 
 describe(method, () => {
   it('call', async () => {
-    const { server } = baseSetup()
+    const { rpc } = baseSetup()
 
-    const req = params(method, [])
-    const expectRes = (res: any) => {
-      const responseBlob = res.body
-      const msg = 'protocol version should be a string'
-      assert.equal(typeof responseBlob.result, 'string', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [])
+    assert.equal(typeof res.result, 'string', 'protocol version should be a string')
   })
 })

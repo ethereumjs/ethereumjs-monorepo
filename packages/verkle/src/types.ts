@@ -60,14 +60,14 @@ export interface Point {
 
 export type Proof = Uint8Array[]
 
-export interface VerkleTrieOpts {
+export interface VerkleTreeOpts {
   /**
    * A database instance.
    */
   db?: DB<Uint8Array, Uint8Array>
 
   /**
-   * A `Uint8Array` for the root of a previously stored trie
+   * A `Uint8Array` for the root of a previously stored tree
    */
   root?: Uint8Array
 
@@ -77,14 +77,14 @@ export interface VerkleTrieOpts {
   useRootPersistence?: boolean
 
   /**
-   * LRU cache for trie nodes to allow for faster node retrieval.
+   * LRU cache for tree nodes to allow for faster node retrieval.
    *
    * Default: 0 (deactivated)
    */
   cacheSize?: number
 }
 
-export type VerkleTrieOptsWithDefaults = VerkleTrieOpts & {
+export type VerkleTreeOptsWithDefaults = VerkleTreeOpts & {
   useRootPersistence: boolean
   cacheSize: number
 }

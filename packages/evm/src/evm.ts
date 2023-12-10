@@ -80,6 +80,7 @@ export class EVM implements EVMInterface {
     Hardfork.Paris,
     Hardfork.Shanghai,
     Hardfork.Cancun,
+    Hardfork.Prague,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -164,7 +165,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 7516,
+      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -251,7 +252,7 @@ export class EVM implements EVMInterface {
     // Load code
     await this._loadCode(message)
     let exit = false
-    if (!message.code || message.code.length === 0) {
+    if (!message.code || (typeof message.code !== 'function' && message.code.length === 0)) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code (CALL)`)
@@ -396,7 +397,10 @@ export class EVM implements EVMInterface {
     }
 
     let exit = false
-    if (message.code === undefined || message.code.length === 0) {
+    if (
+      message.code === undefined ||
+      (typeof message.code !== 'function' && message.code.length === 0)
+    ) {
       exit = true
       if (this.DEBUG) {
         debug(`Exit early on no code (CREATE)`)
