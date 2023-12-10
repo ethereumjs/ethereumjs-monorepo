@@ -88,7 +88,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
   }
 
   if (!/^0x[0-9a-fA-F]*$/.test(hex)) {
-    throw new Error(`Input must be a hexadecimal string, got ${hex}`)
+    throw new Error(`Input must be a 0x-prefixed hexadecimal string, got ${hex}`)
   }
 
   hex = hex.slice(2)
