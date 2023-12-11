@@ -1,16 +1,17 @@
-import { EmptyNode, byteTypeToNibbleType, bytesToNibbles, merkleizeList } from '@ethereumjs/trie'
+import { merkleizeList } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
   KeyEncoding,
   LevelDB,
+  bigIntToBytes,
+  bytesToBigInt,
   bytesToHex,
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { Level } from 'level'
 
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
@@ -216,6 +217,7 @@ export class Snapshot {
     const prefix = STORAGE_PREFIX
     for await (const [key, value] of this._db._leveldb.iterator({
       gte: prefix,
+      lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
       keyEncoding: 'view',
       valueEncoding: 'view',
     })) {
