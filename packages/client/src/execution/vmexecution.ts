@@ -42,7 +42,7 @@ type ChainStatus = {
 export class VMExecution extends Execution {
   private _lock = new Lock()
 
-  public vm: VM
+  public vm!: VM
   public merkleVM: VM | undefined
   public verkleVM: VM | undefined
   public hardfork: string = ''
@@ -89,15 +89,7 @@ export class VMExecution extends Execution {
   constructor(options: ExecutionOptions) {
     super(options)
 
-    if (this.config.vm === undefined) {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Prague)) {
-        this.setupVerkleVM()
-        this.vm = this.verkleVM!
-      } else {
-        this.setupMerkleVM()
-        this.vm = this.merkleVM!
-      }
-    } else {
+    if (this.config.vm !== undefined) {
       this.vm = this.config.vm
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
@@ -223,26 +215,6 @@ export class VMExecution extends Execution {
         return
       }
 
-      await this.vm.init()
-      if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
-      }
-      const headBlock = await this.vm.blockchain.getIteratorHead()
-      const { number, timestamp, stateRoot } = headBlock.header
-      this.chainStatus = {
-        height: number,
-        status: ExecStatus.VALID,
-        root: stateRoot,
-        hash: headBlock.hash(),
-      }
-
-      if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-      }
-      const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
-      this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
-      this.hardfork = this.config.execCommon.hardfork()
-
       if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
         if (!this.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
@@ -256,15 +228,35 @@ export class VMExecution extends Execution {
         )
         this.setupMerkleVM()
         this.vm = this.merkleVM!
-        if (number === BIGINT_0) {
-          const genesisState =
-            this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
-          if (!genesisState) {
-            throw new Error('genesisState not available')
-          }
-          await this.vm.stateManager.generateCanonicalGenesis(genesisState)
-        }
       }
+
+      await this.vm.init()
+      if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+      }
+      const headBlock = await this.vm.blockchain.getIteratorHead()
+      const { number, timestamp, stateRoot } = headBlock.header
+      this.chainStatus = {
+        height: number,
+        status: ExecStatus.VALID,
+        root: stateRoot,
+        hash: headBlock.hash(),
+      }
+      if (number === BIGINT_0) {
+        const genesisState =
+          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
+        if (!genesisState) {
+          throw new Error('genesisState not available')
+        }
+        await this.vm.stateManager.generateCanonicalGenesis(genesisState)
+      }
+
+      if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+      }
+      const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
+      this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
+      this.hardfork = this.config.execCommon.hardfork()
 
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
