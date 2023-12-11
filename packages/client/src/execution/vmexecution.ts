@@ -158,6 +158,7 @@ export class VMExecution extends Execution {
       stateManager,
       profilerOpts: this.config.vmProfilerOpts,
     })
+    this.vm = this.merkleVM
   }
 
   async setupVerkleVM() {

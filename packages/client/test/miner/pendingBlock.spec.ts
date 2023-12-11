@@ -80,6 +80,7 @@ const setup = () => {
         shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
+        common: new Common({ chain: 'mainnet' }),
       },
     },
   }
@@ -218,7 +219,7 @@ describe('[PendingBlock]', async () => {
 
     // set gas limit low so that can accomodate 2 txs
     const prevGasLimit = common['_chainParams'].genesis.gasLimit
-    common['_chainParams'].genesis.gasLimit = BigInt(50000)
+    common['_chainParams'].genesis.gasLimit = 50000
 
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -337,7 +338,9 @@ describe('[PendingBlock]', async () => {
   it('should throw when blockchain does not have getTotalDifficulty function', async () => {
     const { txPool } = setup()
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = (txPool as any).vm
+    const vm = txPool['service'].execution.vm
+    // override total difficulty function to trigger error case
+    vm.blockchain.getTotalDifficulty = undefined
     try {
       await pendingBlock.start(vm, new Block())
       assert.fail('should have thrown')
