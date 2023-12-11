@@ -13,7 +13,7 @@ import type { FullEthereumService } from '../../../src/service'
 
 const method = 'eth_getTransactionCount'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
@@ -23,7 +23,7 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -77,7 +77,7 @@ describe(method, () => {
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()
 
-    const client = createClient({ blockchain, includeVM: true })
+    const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

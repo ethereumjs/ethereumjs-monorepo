@@ -66,7 +66,7 @@ const method = 'eth_getBlockByNumber'
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
@@ -74,7 +74,7 @@ describe(method, async () => {
   })
 
   it('call with false for second argument', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', false])
@@ -87,7 +87,7 @@ describe(method, async () => {
   })
 
   it('call with earliest param', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest', false])
@@ -95,7 +95,7 @@ describe(method, async () => {
   })
 
   it('call with latest param', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest', false])
@@ -104,7 +104,7 @@ describe(method, async () => {
   })
 
   it('call with unimplemented pending param', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['pending', true])
@@ -114,7 +114,7 @@ describe(method, async () => {
   })
 
   it('call with non-string block number', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [10, true])
@@ -123,7 +123,7 @@ describe(method, async () => {
   })
 
   it('call with invalid block number', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
@@ -136,7 +136,7 @@ describe(method, async () => {
   })
 
   it('call without second parameter', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0'])
@@ -145,7 +145,7 @@ describe(method, async () => {
   })
 
   it('call with invalid second parameter', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0', 'INVALID PARAMETER'])
@@ -153,7 +153,7 @@ describe(method, async () => {
   })
 
   it('call with transaction objects', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['latest', true])
 
@@ -170,7 +170,7 @@ describe(method, async () => {
         },
         { common }
       )
-      const manager = createManager(createClient({ chain: createChain(block1 as any) }))
+      const manager = createManager(await createClient({ chain: createChain(block1 as any) }))
       const rpc = getRpcClient(startRPC(manager.getMethods()))
       const res = await rpc.request(method, ['latest', true])
 

@@ -49,7 +49,7 @@ const method = 'engine_getPayloadV3'
 
 describe(method, () => {
   it('call with invalid payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, [1])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -57,7 +57,7 @@ describe(method, () => {
   })
 
   it('call with unknown payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x123'])
     assert.equal(res.error.code, -32001, 'Unknown payload')

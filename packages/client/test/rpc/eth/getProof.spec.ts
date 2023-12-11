@@ -33,7 +33,7 @@ const expectedProof = {
   ],
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
@@ -43,7 +43,7 @@ describe(method, async () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

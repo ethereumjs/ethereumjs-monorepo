@@ -14,7 +14,7 @@ const [blockData] = blocks
 
 describe(`${method}: call with executionPayloadV1`, () => {
   it('call with invalid block hash without 0x', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidParentHash = [
       {
@@ -33,7 +33,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
   })
 
   it('call with invalid hex string as block hash', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
     const res = await rpc.request(method, blockDataWithInvalidBlockHash)

@@ -26,7 +26,7 @@ describe(
         validateConsensus: false,
       })
 
-      const client = createClient({ blockchain, commonChain: common, includeVM: true })
+      const client = await createClient({ blockchain, commonChain: common, includeVM: true })
       const manager = createManager(client)
       const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -179,7 +179,7 @@ describe(
     it('call with unsupported block argument', async () => {
       const blockchain = await Blockchain.create()
 
-      const client = createClient({ blockchain, includeVM: true })
+      const client = await createClient({ blockchain, includeVM: true })
       const manager = createManager(client)
       const rpc = getRpcClient(startRPC(manager.getMethods()))
 

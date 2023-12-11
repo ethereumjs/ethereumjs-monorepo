@@ -72,6 +72,7 @@ describe('[Miner]', async () => {
         validateDifficulty: () => undefined,
       },
       validateHeader: () => {},
+      getIteratorHead: () => {},
       // eslint-disable-next-line no-invalid-this
       shallowCopy: () => this.blockchain,
       _init: async () => undefined,
@@ -225,6 +226,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
 
     txPool.start()

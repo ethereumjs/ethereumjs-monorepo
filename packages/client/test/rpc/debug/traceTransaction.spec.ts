@@ -11,7 +11,7 @@ const method = 'debug_traceTransaction'
 
 describe(method, () => {
   it('call with invalid configuration', async () => {
-    const { rpc } = baseSetup({ engine: false, includeVM: true })
+    const { rpc } = await baseSetup({ engine: false, includeVM: true })
 
     const res = await rpc.request(method, ['0xabcd', {}])
     assert.equal(res.error.code, INTERNAL_ERROR)

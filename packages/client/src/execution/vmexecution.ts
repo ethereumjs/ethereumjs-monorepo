@@ -116,11 +116,11 @@ export class VMExecution extends Execution {
     }
   }
 
-  setupMerkleVM() {
+  async setupMerkleVM() {
     if (this.merkleVM !== undefined) {
       return
     }
-    const trie = new Trie({
+    const trie = await Trie.create({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
       cacheSize: this.config.trieCache,
@@ -152,7 +152,7 @@ export class VMExecution extends Execution {
         size: this.config.codeCache,
       },
     })
-    this.merkleVM = new (VM as any)({
+    this.merkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -160,14 +160,14 @@ export class VMExecution extends Execution {
     })
   }
 
-  setupVerkleVM() {
+  async setupVerkleVM() {
     if (this.verkleVM !== undefined) {
       return
     }
 
     this.config.logger.info(`Setting up verkleVM`)
     const stateManager = new StatelessVerkleStateManager()
-    this.verkleVM = new (VM as any)({
+    this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -182,13 +182,13 @@ export class VMExecution extends Execution {
 
     return this.runWithLock<void>(async () => {
       if (this.merkleVM === undefined) {
-        this.setupMerkleVM()
+        await this.setupMerkleVM()
       }
       const merkleVM = this.merkleVM!
       const merkleStateManager = merkleVM.stateManager as DefaultStateManager
 
       if (this.verkleVM === undefined) {
-        this.setupVerkleVM()
+        await this.setupVerkleVM()
       }
       const verkleVM = this.verkleVM!
       const verkleStateManager = verkleVM.stateManager as StatelessVerkleStateManager
@@ -220,17 +220,16 @@ export class VMExecution extends Execution {
           throw Error(`Currently stateful verkle execution not supported`)
         }
         this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
-        this.setupVerkleVM()
+        await this.setupVerkleVM()
         this.vm = this.verkleVM!
       } else {
         this.config.logger.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
         )
-        this.setupMerkleVM()
+        await this.setupMerkleVM()
         this.vm = this.merkleVM!
       }
 
-      await this.vm.init()
       if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
@@ -297,11 +296,11 @@ export class VMExecution extends Execution {
     })
     if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
       // verkleVM should already exist but we can still do an allocation just to be safe
-      this.setupVerkleVM()
+      await this.setupVerkleVM()
       this.vm = this.verkleVM!
     } else {
       // its could be a rest to a pre-merkle when the chain was never initialized
-      this.setupMerkleVM()
+      await this.setupMerkleVM()
       this.vm = this.merkleVM!
     }
 

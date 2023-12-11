@@ -19,8 +19,8 @@ import type { RpcTx } from '../../../src/rpc/types.js'
 
 const method = 'debug_traceCall'
 
-describe(method, () => {
-  const manager = createManager(createClient({ opened: true }))
+describe(method, async () => {
+  const manager = createManager(await createClient({ opened: true }))
   const methods = manager.getMethods()
   const server = startRPC(methods)
   const rpc = getRpcClient(server)

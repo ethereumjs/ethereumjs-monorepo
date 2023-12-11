@@ -21,7 +21,7 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService

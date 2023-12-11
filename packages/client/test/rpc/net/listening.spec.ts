@@ -6,7 +6,7 @@ const method = 'net_listening'
 
 describe(method, () => {
   it('call while listening', async () => {
-    const manager = createManager(createClient({ opened: true }))
+    const manager = createManager(await createClient({ opened: true }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
@@ -17,7 +17,7 @@ describe(method, () => {
   })
 
   it('call while not listening', async () => {
-    const manager = createManager(createClient({ opened: false }))
+    const manager = createManager(await createClient({ opened: false }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])

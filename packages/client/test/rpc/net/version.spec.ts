@@ -19,7 +19,7 @@ function compareResult(result: any, chainId: any) {
 
 describe(method, () => {
   it('call on mainnet', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
 
@@ -31,7 +31,7 @@ describe(method, () => {
     // Stub out block consensusFormatValidation checks
     BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Sepolia }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Sepolia }) })
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -45,7 +45,7 @@ describe(method, () => {
 
   it('call on goerli', async () => {
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
