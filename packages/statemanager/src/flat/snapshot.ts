@@ -264,7 +264,6 @@ export class Snapshot {
   }
 
   async merge(): Promise<void> {
-    this._checkpoints -= 1
     // if (this.DEBUG) {
     //   this._debug(`Commit to checkpoint ${this._checkpoints}`)
     // }
@@ -283,6 +282,9 @@ export class Snapshot {
   //  * Commits to current state of cache (no effect on trie).
   //  */
   async commit(): Promise<void> {
+    if (this._checkpoints === 0) throw new Error('No outstanding checkpoints to commit')
+    this._checkpoints -= 1
+
     await this.merge()
   }
 
