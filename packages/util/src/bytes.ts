@@ -87,8 +87,8 @@ export const hexToBytes = (hex: string): Uint8Array => {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
 
-  if (!hex.startsWith('0x')) {
-    throw new Error(`prefixed hex input should start with 0x, got ${hex.substring(0, 2)}`)
+  if (!/^0x[0-9a-fA-F]*$/.test(hex)) {
+    throw new Error(`Input must be a 0x-prefixed hexadecimal string, got ${hex}`)
   }
 
   hex = hex.slice(2)
@@ -97,11 +97,11 @@ export const hexToBytes = (hex: string): Uint8Array => {
     hex = padToEven(hex)
   }
 
-  const byteLen = hex.length / 2
-  const bytes = new Uint8Array(byteLen)
-  for (let i = 0; i < byteLen; i++) {
-    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
-    bytes[i] = byte
+  const byteLen = hex.length
+  const bytes = new Uint8Array(byteLen / 2)
+  for (let i = 0; i < byteLen; i += 2) {
+    const byte = parseInt(hex.slice(i, i + 2), 16)
+    bytes[i / 2] = byte
   }
   return bytes
 }
