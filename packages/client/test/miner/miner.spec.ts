@@ -231,7 +231,6 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
-    await service.execution.setupMerkleVM()
     await service.execution.open()
     const { vm } = service.execution
 
@@ -305,7 +304,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
-    await service.execution.setupMerkleVM()
+    await service.execution.open()
     const { vm } = service.execution
     txPool.start()
     miner.start()
@@ -355,7 +354,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
-    await service.execution.setupMerkleVM()
+    await service.execution.open()
     const { vm, receiptsManager } = service.execution
     txPool.start()
     miner.start()
@@ -427,7 +426,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
-    await service.execution.setupMerkleVM()
+    await service.execution.open()
     const { vm } = service.execution
     txPool.start()
     miner.start()
@@ -474,7 +473,7 @@ describe('[Miner]', async () => {
       config: customConfig,
       chain,
     })
-    await service.execution.setupMerkleVM()
+    await service.execution.open()
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
