@@ -49,7 +49,7 @@ const method = 'engine_getPayloadV3'
 
 describe(method, () => {
   it('call with invalid payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, [1])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -57,7 +57,7 @@ describe(method, () => {
   })
 
   it('call with unknown payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x123'])
     assert.equal(res.error.code, -32001, 'Unknown payload')
@@ -87,7 +87,6 @@ describe(method, () => {
     let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
     assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
-    ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(txBlobs)
@@ -110,7 +109,6 @@ describe(method, () => {
       { common }
     ).sign(pkey)
 
-    service.txPool['vm'].common.setHardfork(Hardfork.Cancun)
     await service.txPool.add(tx, true)
     res = await rpc.request('engine_getPayloadV3', [payloadId])
 

@@ -7,7 +7,7 @@ const method = 'web3_clientVersion'
 
 describe(method, () => {
   it('call', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
 

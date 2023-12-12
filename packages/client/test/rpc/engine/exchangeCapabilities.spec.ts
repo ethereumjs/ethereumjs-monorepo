@@ -6,7 +6,7 @@ const method = 'engine_exchangeCapabilities'
 
 describe(method, () => {
   it('call with invalid payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true })
+    const { rpc } = await baseSetup({ engine: true })
 
     const res = await rpc.request(method, [])
 
