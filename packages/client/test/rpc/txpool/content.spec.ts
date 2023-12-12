@@ -79,5 +79,5 @@ describe(method, () => {
       1,
       'received one pending transaction back from response'
     )
-  }, 20000)
+  })
 })

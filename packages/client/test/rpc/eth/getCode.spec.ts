@@ -34,7 +34,7 @@ describe(method, () => {
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
     assert.equal(res.result, '0x', 'should return the correct code')
-  }, 20000)
+  })
 
   it('ensure returns correct code', async () => {
     const blockchain = await Blockchain.create({
