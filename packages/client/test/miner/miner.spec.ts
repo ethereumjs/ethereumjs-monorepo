@@ -458,7 +458,10 @@ describe('[Miner]', async () => {
   it("assembleBlocks() -> should stop assembling a block after it's full", async () => {
     const chain = new FakeChain() as any
     const gasLimit = 100000
-    const block = Block.fromBlockData({ header: { gasLimit } }, { common: customCommon })
+    const block = Block.fromBlockData(
+      { header: { gasLimit } },
+      { common: customCommon, setHardfork: true }
+    )
     Object.defineProperty(chain, 'headers', {
       get() {
         return { latest: block.header, height: BigInt(0) }
@@ -503,7 +506,7 @@ describe('[Miner]', async () => {
       miner.stop()
       txPool.stop()
     }
-    await (miner as any).queueNextAssembly(0)
+    await miner['queueNextAssembly'](0)
     await wait(500)
   })
   /*****************************************************************************************
