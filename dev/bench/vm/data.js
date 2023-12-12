@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702395710883,
+  "lastUpdate": 1702410446105,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3a00a3241c00ed0e82ad27a6f014b78b38822fdd",
-          "message": "common: fix readme eip links (#3136)\n\n* common: fix readme eip links\r\n\r\n* evm: fix eip links\r\n\r\n* evm: undo bad replacing\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-11-02T10:42:43-04:00",
-          "tree_id": "327b9d9d291a4b3a103c1d7dcbcf2aa27911d7d3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3a00a3241c00ed0e82ad27a6f014b78b38822fdd"
-        },
-        "date": 1698936346576,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39970,
-            "range": "±2.49%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38773,
-            "range": "±1.85%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38294,
-            "range": "±1.89%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35862,
-            "range": "±5.02%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36881,
-            "range": "±2.14%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.17%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "98fc3abbc87aaa347cf6447716f03966485c12eb",
+          "message": "Client: Async VM Initialization (#3187)\n\n* Avoid VM double initialization, prepare for async setup for VM & friends\r\n\r\n* Move to async VM setup, fix tests\r\n\r\n* Remove unnecessary vm property in tx pool\r\n\r\n* Test fixes\r\n\r\n* Fix getPayloadV3.spec.ts test\r\n\r\n* Fix client.spec.ts test\r\n\r\n* Small miner test optimization\r\n\r\n* Fix RPC net_version test\r\n\r\n* Small lint fix\r\n\r\n* client: fix getProof test\r\n\r\n* client: lint\r\n\r\n* Fix miner test\r\n\r\n* adjust test timeouts\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-12-12T20:34:28+01:00",
+          "tree_id": "1afebee4250d85c83f472f8b434d003e4f2724c1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/98fc3abbc87aaa347cf6447716f03966485c12eb"
+        },
+        "date": 1702410444850,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40837,
+            "range": "±3.03%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39670,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39442,
+            "range": "±2.07%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38678,
+            "range": "±2.15%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35260,
+            "range": "±5.21%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
