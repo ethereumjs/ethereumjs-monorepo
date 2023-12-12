@@ -62,6 +62,7 @@ describe('[EthereumClient]', async () => {
     const server = new Server() as any
     const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
     const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
+    await client.services[0]['execution'].setupMerkleVM()
     await client.start()
     assert.ok(client.started, 'started')
     assert.equal(await client.start(), false, 'already started')
