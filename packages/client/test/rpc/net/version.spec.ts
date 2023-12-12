@@ -1,4 +1,3 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
