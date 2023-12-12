@@ -1,7 +1,7 @@
-import * as minimist from 'minimist'
-import * as path from 'path'
-import * as process from 'process'
-import * as tape from 'tape'
+import minimist from 'minimist'
+import path from 'path'
+import process from 'process'
+import tape from 'tape'
 
 import {
   DEFAULT_FORK_CONFIG,

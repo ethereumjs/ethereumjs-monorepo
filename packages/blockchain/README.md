@@ -189,7 +189,7 @@ The following is an example for a logger run:
 Run with the clique logger:
 
 ```shell
-DEBUG=ethjs,blockchain:clique ts-node test.ts
+DEBUG=ethjs,blockchain:clique tsx test.ts
 ```
 
 ## EthereumJS

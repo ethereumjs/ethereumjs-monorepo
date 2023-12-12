@@ -1,4 +1,4 @@
-This folder contains a script to run with `ts-node` together with `retesteth`.
+This folder contains a script to run with `tsx` together with `retesteth`.
 
 # Instructions
 
@@ -10,7 +10,7 @@ Note: All paths are relative paths to the `VM` package root.
 
 1. If you change the port number in `transition-cluster.ts` to anything other than 3000 (or run `transition-cluster` on a separate machine or different IP address from retesteth), update `test/vm/retesteth/clients/ethereumjs/start.sh` to reflect the right IP and port.
 
-2. From VM package root directory, run `npx ts-node test/retesteth/transition-cluster.cts`
+2. From VM package root directory, run `npx tsx test/retesteth/transition-cluster.cts`
 
 Configure and run `retesteth`:
 
