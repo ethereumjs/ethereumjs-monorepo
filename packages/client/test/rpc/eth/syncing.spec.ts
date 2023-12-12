@@ -10,7 +10,7 @@ const method = 'eth_syncing'
 
 describe(method, () => {
   it('should return false when the client is synchronized', async () => {
-    const client = createClient()
+    const client = await createClient()
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -24,7 +24,7 @@ describe(method, () => {
   })
 
   it('should return no peer available error', async () => {
-    const client = createClient({ noPeers: true })
+    const client = await createClient({ noPeers: true })
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRpcClient(rpcServer)
@@ -38,7 +38,7 @@ describe(method, () => {
   })
 
   it('should return highest block header unavailable error', async () => {
-    const client = createClient()
+    const client = await createClient()
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRpcClient(rpcServer)
@@ -56,7 +56,7 @@ describe(method, () => {
   })
 
   it('should return syncing status object when unsynced', async () => {
-    const client = createClient()
+    const client = await createClient()
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRpcClient(rpcServer)

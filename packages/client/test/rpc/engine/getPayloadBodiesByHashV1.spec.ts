@@ -14,7 +14,7 @@ const method = 'engine_getPayloadBodiesByHashV1'
 
 describe(method, () => {
   it('call with too many hashes', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
     const tooManyHashes: string[] = []
     for (let x = 0; x < 35; x++) {
       tooManyHashes.push(bytesToHex(randomBytes(32)))

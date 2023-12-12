@@ -7,14 +7,14 @@ const method = 'eth_chainId'
 
 describe(method, () => {
   it('calls', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
     assert.equal(typeof res.result, 'string', 'chainId should be a string')
   })
 
   it('returns 1 for Mainnet', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
 
@@ -23,7 +23,7 @@ describe(method, () => {
 
   it('returns 3 for Goerli', async () => {
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

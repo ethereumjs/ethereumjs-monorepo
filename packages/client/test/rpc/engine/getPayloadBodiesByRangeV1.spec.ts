@@ -14,7 +14,7 @@ const method = 'engine_getPayloadBodiesByRangeV1'
 
 describe(method, () => {
   it('call with too many hashes', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x1', '0x55'])
     assert.equal(res.error.code, TOO_LARGE_REQUEST)
@@ -22,7 +22,7 @@ describe(method, () => {
   })
 
   it('call with invalid parameters', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x0', '0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)

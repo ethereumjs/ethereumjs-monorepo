@@ -43,7 +43,7 @@ describe(method, () => {
         hf.timestamp = undefined
       })
     const syncTargetHeight = common.hardforkBlock(Hardfork.London)
-    const { rpc, client } = baseSetup({ syncTargetHeight, includeVM: true })
+    const { rpc, client } = await baseSetup({ syncTargetHeight, includeVM: true })
 
     // Mainnet EIP-1559 tx
     const txData =
@@ -74,7 +74,7 @@ describe(method, () => {
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     DefaultStateManager.prototype.setStateRoot = (): any => {}
     const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
-    const { rpc } = baseSetup({ syncTargetHeight, includeVM: true })
+    const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
     const transaction = LegacyTransaction.fromTxData({
       gasLimit: 21000,
@@ -101,7 +101,7 @@ describe(method, () => {
     const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
     DefaultStateManager.prototype.setStateRoot = (): any => {}
     const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
-    const { rpc } = baseSetup({ syncTargetHeight, includeVM: true })
+    const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
     // Mainnet EIP-1559 tx
     const txData =
@@ -116,7 +116,7 @@ describe(method, () => {
   })
 
   it('call with sync target height not set yet', async () => {
-    const { rpc, client } = baseSetup()
+    const { rpc, client } = await baseSetup()
     client.config.synchronized = false
 
     // Mainnet EIP-1559 tx
@@ -134,7 +134,7 @@ describe(method, () => {
 
   it('call with invalid tx (wrong chain ID)', async () => {
     const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
-    const { rpc } = baseSetup({ syncTargetHeight, includeVM: true })
+    const { rpc } = await baseSetup({ syncTargetHeight, includeVM: true })
 
     // Baikal EIP-1559 tx
     const txData =
@@ -147,7 +147,7 @@ describe(method, () => {
 
   it('call with unsigned tx', async () => {
     const syncTargetHeight = new Common({ chain: Chain.Mainnet }).hardforkBlock(Hardfork.London)
-    const { rpc } = baseSetup({ syncTargetHeight })
+    const { rpc } = await baseSetup({ syncTargetHeight })
 
     // Mainnet EIP-1559 tx
     const txData =
@@ -178,7 +178,7 @@ describe(method, () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
     const syncTargetHeight = common.hardforkBlock(Hardfork.London)
-    const { rpc, client } = baseSetup({
+    const { rpc, client } = await baseSetup({
       commonChain: common,
       syncTargetHeight,
       includeVM: true,
@@ -228,7 +228,7 @@ describe(method, () => {
       hardfork: Hardfork.Cancun,
     })
     common.setHardfork(Hardfork.Cancun)
-    const { rpc, client } = baseSetup({
+    const { rpc, client } = await baseSetup({
       commonChain: common,
       includeVM: true,
       syncTargetHeight: 100n,
