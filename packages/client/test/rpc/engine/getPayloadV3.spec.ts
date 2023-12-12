@@ -87,7 +87,6 @@ describe(method, () => {
     let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
     assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
-    ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(txBlobs)
@@ -110,7 +109,6 @@ describe(method, () => {
       { common }
     ).sign(pkey)
 
-    service.txPool['vm'].common.setHardfork(Hardfork.Cancun)
     await service.txPool.add(tx, true)
     res = await rpc.request('engine_getPayloadV3', [payloadId])
 
