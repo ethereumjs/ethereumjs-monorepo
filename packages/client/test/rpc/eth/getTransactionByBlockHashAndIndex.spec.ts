@@ -45,7 +45,7 @@ describe(method, async () => {
   })
 
   it('call with no argument', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -64,7 +64,7 @@ describe(method, async () => {
   })
 
   it('call with invalid block hash', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const mockBlockHash = 'INVALID_BLOCKHASH'
     const mockTxIndex = '0x1'
@@ -75,7 +75,7 @@ describe(method, async () => {
   })
 
   it('call without tx hash', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
 
@@ -85,7 +85,7 @@ describe(method, async () => {
   })
 
   it('call with invalid tx hash', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
     const mockTxIndex = 'INVALIDA_TXINDEX'
@@ -96,7 +96,7 @@ describe(method, async () => {
   })
 
   it('call with out-of-bound tx hash ', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
     const mockTxIndex = '0x10'

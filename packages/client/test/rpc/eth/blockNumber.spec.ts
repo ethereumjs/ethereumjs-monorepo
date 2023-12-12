@@ -16,7 +16,7 @@ describe(method, () => {
         }
       },
     }
-    const manager = createManager(createClient({ chain: mockChain }))
+    const manager = createManager(await createClient({ chain: mockChain }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
