@@ -27,18 +27,16 @@ describe(method, () => {
     compareResult(result, '1')
   })
 
-  it('call on sepolia', async () => {
-    // Stub out block consensusFormatValidation checks
-    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+  it('call on holesky', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Sepolia }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Holesky }) })
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
 
     const { result } = res
-    compareResult(result, '11155111')
+    compareResult(result, '17000')
 
     vi.resetAllMocks()
   })
