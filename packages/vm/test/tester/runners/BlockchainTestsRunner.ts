@@ -2,8 +2,8 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { FlatStateManager, Snapshot } from '@ethereumjs/statemanager'
+// import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -48,9 +48,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true })
-  let stateManager = new DefaultStateManager({
-    trie: state,
+
+  // let state = new Trie({ useKeyHashing: true })
+  // let stateManager = new DefaultStateManager({
+  //   trie: state,
+  //   common,
+  // })
+  let state = new Snapshot()
+  let stateManager = new FlatStateManager({
+    snapshot: state,
     common,
   })
 
@@ -196,11 +202,12 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       //vm.common.genesis().stateRoot = await vm.stateManager.getStateRoot()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
-          const parentBlock = await blockchain!.getBlock(block.header.parentHash)
-          const parentState = parentBlock.header.stateRoot
+          // const parentBlock = await blockchain!.getBlock(block.header.parentHash)
+          // const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await vm.runBlock({ block, root: parentState, setHardfork: TD })
+            // await vm.runBlock({ block, root: parentState, setHardfork: TD })
+            await vm.runBlock({ block, setHardfork: TD })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
