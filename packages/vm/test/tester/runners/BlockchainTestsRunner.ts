@@ -2,11 +2,10 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { DefaultStateManager, FlatStateManager, Snapshot } from '@ethereumjs/statemanager'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
-  Address,
   MapDB,
   bytesToBigInt,
   bytesToHex,
@@ -19,11 +18,10 @@ import {
 import * as kzg from 'c-kzg'
 
 import { VM } from '../../../dist/cjs'
-import { format, setupPreConditions, verifyPostConditions } from '../../util'
+import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
-import type { Account } from '@ethereumjs/util'
 import type * as tape from 'tape'
 
 initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
@@ -34,20 +32,6 @@ function formatBlockHeader(data: any) {
     formatted[key] = isHexPrefixed(value) ? value : BigInt(value)
   }
   return formatted
-}
-
-function prettyPrintAccount(addr: Uint8Array, acc: Account | undefined) {
-  console.log('\n')
-  console.log(`address: ${bytesToHex(addr)}`)
-  if (acc === undefined) {
-    console.log('Account is undefined')
-    return
-  }
-  console.log(`nonce: ${acc.nonce}`)
-  console.log(`balance: ${acc.balance}`)
-  console.log(`storageRoot: ${bytesToHex(acc.storageRoot)}`)
-  console.log(`codeHash: ${bytesToHex(acc.codeHash)}`)
-  console.log('\n')
 }
 
 export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
@@ -64,12 +48,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  // let state = new Trie({ useKeyHashing: true })
-  let state = new Snapshot()
-  let stateManager = new FlatStateManager({
-    // trie: state,
+  let state = new Trie({ useKeyHashing: true })
+  let stateManager = new DefaultStateManager({
+    trie: state,
     common,
-    snapshot: state,
   })
 
   let validatePow = false
@@ -116,34 +98,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     },
   })
 
-  console.log('dbg100')
-  console.log(testData)
-  console.log(bytesToHex(await vm.stateManager.getStateRoot()))
-
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  console.log('dbg101')
-  for (const addressStr of Object.keys(testData.pre)) {
-    const addressBuf = format(addressStr)
-    const address = new Address(addressBuf)
-    const a = await vm.stateManager.getAccount(address)
-    prettyPrintAccount(addressBuf, a)
-  }
-
-  // console.log('dbg102')
-  // // @ts-ignore
-  // const snapshot = vm.stateManager['_snapshot']
-  // const accounts: Uint8Array[][] = await snapshot.getAccounts()
-  // console.log(accounts)
-  // for (const a in accounts) {
-  //   // @ts-ignore
-  //   const [key, body]: Uint8Array[] = a
-  //   console.log(`key ${bytesToHex(key)}`)
-  //   console.log(`body ${Account.fromRlpSerializedAccount(body)}`)
-  // }
-  console.log(bytesToHex(await vm.stateManager.getStateRoot()))
-  console.log(bytesToHex(genesisBlock.header.stateRoot))
   t.deepEquals(
     await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
@@ -238,23 +195,16 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       //
       //vm.common.genesis().stateRoot = await vm.stateManager.getStateRoot()
       try {
-        console.log('dbg105')
         await blockchain.iterator('vm', async (block: Block) => {
-          console.log('dbg106')
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
-          console.log('dbg107')
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            console.log('dbg108')
             await vm.runBlock({ block, root: parentState, setHardfork: TD })
-            console.log('dbg109')
             // set as new head block
           } catch (error: any) {
             // remove invalid block
-            console.log('dbg110')
             await blockchain!.delBlock(block.header.hash())
-            console.log('dbg111')
             throw error
           }
         })
@@ -267,12 +217,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-
-          console.log('dbg105')
-          await verifyPostConditions(state, testData.postState, t)
-          console.log('dbg105.5')
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
-          console.log('dbg106')
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }
