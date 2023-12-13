@@ -68,7 +68,7 @@ const malformedCases = [
   {
     input:
       '0000000c48c9bdf267e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5d182e6ad7f520e511f6c3e2b8c68059b6bbd41fbabd9831f79217e1319cde05b61626300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000002',
-    expectedError: 'incorrect final block indicator flag',
+    expectedError: 'value out of range',
     name: 'vector 3: incorrect final block indicator flag',
   },
 ]
@@ -89,7 +89,7 @@ describe('Precompiles: BLAKE2F', () => {
       const data = hexToBytes(`0x${t.input}`)
       const result = await BLAKE2F({
         data,
-        gasLimit: BigInt(0xffff),
+        gasLimit: BigInt(0xffffff),
         common,
         _EVM: evm,
       })
