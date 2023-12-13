@@ -17,6 +17,17 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
 
+import {
+  BALANCE_LEAF_KEY,
+  CODE_KECCAK_LEAF_KEY,
+  CODE_OFFSET,
+  CODE_SIZE_LEAF_KEY,
+  HEADER_STORAGE_OFFSET,
+  MAIN_STORAGE_OFFSET,
+  NONCE_LEAF_KEY,
+  VERKLE_NODE_WIDTH,
+  VERSION_LEAF_KEY,
+} from './accessWitness.js'
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
@@ -98,20 +109,6 @@ export interface StatelessVerkleStateManagerOpts {
   common?: Common
   storageCacheOpts?: CacheOptions
 }
-
-/**
- * Tree key constants.
- */
-const VERSION_LEAF_KEY = toBytes(0)
-const BALANCE_LEAF_KEY = toBytes(1)
-const NONCE_LEAF_KEY = toBytes(2)
-const CODE_KECCAK_LEAF_KEY = toBytes(3)
-const CODE_SIZE_LEAF_KEY = toBytes(4)
-
-const HEADER_STORAGE_OFFSET = 64
-const CODE_OFFSET = 128
-const VERKLE_NODE_WIDTH = 256
-const MAIN_STORAGE_OFFSET = 256 ** 31
 
 const PUSH_OFFSET = 95
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
