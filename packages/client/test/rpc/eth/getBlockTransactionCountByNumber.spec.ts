@@ -6,15 +6,14 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
-import { checkError } from '../util'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getBlockTransactionCountByNumber'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
@@ -24,9 +23,9 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -60,12 +59,8 @@ describe(method, () => {
     await vm.blockchain.putBlock(ranBlock!)
 
     // verify that the transaction count is 1
-    const req = params(method, ['latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct block transaction count(1)'
-      assert.equal(res.body.result, '0x1', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['latest'])
+    assert.equal(res.result, '0x1', 'should return the correct block transaction count(1)')
   })
 
   it('call with valid arguments (multiple transactions)', async () => {
@@ -75,9 +70,9 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -129,23 +124,19 @@ describe(method, () => {
 
     // verify that the transaction count is 3
     // specify the block number instead of using latest
-    const req = params(method, ['0x1'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct block transaction count(3)'
-      assert.equal(res.body.result, '0x3', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['0x1'])
+    assert.equal(res.result, '0x3', 'should return the correct block transaction count(3)')
   })
 
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()
 
-    const client = createClient({ blockchain, includeVM: true })
+    const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['pending'])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 })

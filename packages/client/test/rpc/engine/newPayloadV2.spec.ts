@@ -3,31 +3,18 @@ import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { Address, bytesToHex, hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, baseSetup, params, setupChain } from '../helpers'
-import { checkError } from '../util'
-
-import type { HttpServer } from 'jayson'
+import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV2'
 
 const [blockData] = blocks
 
-export const batchBlocks = async (server: HttpServer) => {
-  for (let i = 0; i < 3; i++) {
-    const req = params(method, [blocks[i]])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
-  }
-}
-
 describe(`${method}: call with executionPayloadV1`, () => {
   it('call with invalid block hash without 0x', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidParentHash = [
       {
@@ -36,46 +23,43 @@ describe(`${method}: call with executionPayloadV1`, () => {
       },
     ]
 
-    const req = params(method, blockDataWithInvalidParentHash)
-    const expectRes = checkError(
-      INVALID_PARAMS,
-      "invalid argument 0 for key 'parentHash': hex string without 0x prefix"
+    const res = await rpc.request(method, blockDataWithInvalidParentHash)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(
+      res.error.message.includes(
+        "invalid argument 0 for key 'parentHash': hex string without 0x prefix"
+      )
     )
-    await baseRequest(server, req, 200, expectRes)
   })
 
   it('call with invalid hex string as block hash', async () => {
-    const { server } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const blockDataWithInvalidBlockHash = [{ ...blockData, blockHash: '0x-invalid-block-hash' }]
-    const req = params(method, blockDataWithInvalidBlockHash)
-    const expectRes = checkError(
-      INVALID_PARAMS,
-      "invalid argument 0 for key 'blockHash': invalid block hash"
+    const res = await rpc.request(method, blockDataWithInvalidBlockHash)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(
+      res.error.message.includes("invalid argument 0 for key 'blockHash': invalid block hash")
     )
-    await baseRequest(server, req, 200, expectRes)
   })
 
   it('call with non existent block hash', async () => {
     const { server } = await setupChain(genesisJSON, 'merge', { engine: true })
-
+    const rpc = getRpcClient(server)
     const blockDataNonExistentBlockHash = [
       {
         ...blockData,
         blockHash: '0x2559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       },
     ]
-    const req = params(method, blockDataNonExistentBlockHash)
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-    }
+    const res = await rpc.request(method, blockDataNonExistentBlockHash)
 
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.result.status, 'INVALID')
   })
 
   it('call with non existent parent hash', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-
+    const rpc = getRpcClient(server)
     const blockDataNonExistentParentHash = [
       {
         ...blockData,
@@ -83,46 +67,35 @@ describe(`${method}: call with executionPayloadV1`, () => {
         blockHash: '0xf31969a769bfcdbcc1c05f2542fdc7aa9336fc1ea9a82c4925320c035095d649',
       },
     ]
-    const req = params(method, blockDataNonExistentParentHash)
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'ACCEPTED')
-    }
+    const res = await rpc.request(method, blockDataNonExistentParentHash)
 
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.result.status, 'ACCEPTED')
   })
 
   it('call with unknown parent hash to store in remoteBlocks, then call valid ancestor in fcU', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
+    let res = await rpc.request(method, [blocks[1]])
 
-    let req = params(method, [blocks[1]])
-    let expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'ACCEPTED')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    assert.equal(res.result.status, 'ACCEPTED')
 
-    req = params(method, [blocks[0]])
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    res = await rpc.request(method, [blocks[0]])
+
+    assert.equal(res.result.status, 'VALID')
 
     const state = {
       headBlockHash: blocks[1].blockHash,
       safeBlockHash: blocks[1].blockHash,
       finalizedBlockHash: blocks[0].blockHash,
     }
-    req = params('engine_forkchoiceUpdatedV1', [state])
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'SYNCING')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    res = await rpc.request('engine_forkchoiceUpdatedV1', [state])
+
+    assert.equal(res.result.payloadStatus.status, 'SYNCING')
 
     // now block2 should be executed
-    req = params(method, [blocks[1]])
-    expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes)
+    res = await rpc.request(method, [blocks[1]])
+
+    assert.equal(res.result.status, 'VALID')
   })
 
   it('invalid terminal block', async () => {
@@ -140,50 +113,43 @@ describe(`${method}: call with executionPayloadV1`, () => {
     const { server } = await setupChain(genesisWithHigherTtd, 'post-merge', {
       engine: true,
     })
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, [blockData, null])
 
-    const req = params(method, [blockData, null])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-      assert.equal(res.body.result.latestValidHash, bytesToHex(zeros(32)))
-    }
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.result.status, 'INVALID')
+    assert.equal(res.result.latestValidHash, bytesToHex(zeros(32)))
   })
 
   it('call with valid data', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, [blockData])
 
-    const req = params(method, [blockData])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-      assert.equal(res.body.result.latestValidHash, blockData.blockHash)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.result.status, 'VALID')
+    assert.equal(res.result.latestValidHash, blockData.blockHash)
   })
 
   it('call with valid data but invalid transactions', async () => {
     const { chain, server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
     chain.config.logger.silent = true
     const blockDataWithInvalidTransaction = {
       ...blockData,
       transactions: ['0x1'],
     }
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-      assert.equal(res.body.result.latestValidHash, blockData.parentHash)
-      const expectedError =
-        'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
-      assert.ok(
-        res.body.result.validationError.includes(expectedError),
-        `should error with - ${expectedError}`
-      )
-    }
-
-    const req = params(method, [blockDataWithInvalidTransaction])
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [blockDataWithInvalidTransaction])
+    assert.equal(res.result.status, 'INVALID')
+    assert.equal(res.result.latestValidHash, blockData.parentHash)
+    const expectedError = 'Invalid tx at index 0: Error: Invalid serialized tx input: must be array'
+    assert.ok(
+      res.result.validationError.includes(expectedError),
+      `should error with - ${expectedError}`
+    )
   })
 
   it('call with valid data & valid transaction but not signed', async () => {
     const { server, common, chain } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
     chain.config.logger.silent = true
 
     // Let's mock a non-signed transaction so execution fails
@@ -203,15 +169,10 @@ describe(`${method}: call with executionPayloadV1`, () => {
       transactions,
       blockHash: '0x308f490332a31fade8b2b46a8e1132cd15adeaffbb651cb523c067b3f007dd9e',
     }
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-      assert.isTrue(
-        res.body.result.validationError.includes('Error verifying block while running:')
-      )
-    }
 
-    const req = params(method, [blockDataWithValidTransaction])
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [blockDataWithValidTransaction])
+    assert.equal(res.result.status, 'INVALID')
+    assert.isTrue(res.result.validationError.includes('Error verifying block while running:'))
   })
 
   it('call with valid data & valid transaction', async () => {
@@ -230,7 +191,7 @@ describe(`${method}: call with executionPayloadV1`, () => {
     }
 
     const { server, common } = await setupChain(newGenesisJSON, 'post-merge', { engine: true })
-
+    const rpc = getRpcClient(server)
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
         maxFeePerGas: '0x7',
@@ -249,19 +210,18 @@ describe(`${method}: call with executionPayloadV1`, () => {
       stateRoot: '0x5a7123ab8bdd4f172438671a2a3de143f2105aa1ac3338c97e5f433e8e380d8d',
       blockHash: '0x625f2fd36bf278f92211376cbfe5acd7ac5da694e28f3d94d59488b7dbe213a4',
     }
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    const req = params(method, [blockDataWithValidTransaction])
-    await baseRequest(server, req, 200, expectRes)
+
+    const res = await rpc.request(method, [blockDataWithValidTransaction])
+    assert.equal(res.result.status, 'VALID')
   })
 
   it('re-execute payload and verify that no errors occur', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
+    await batchBlocks(rpc, blocks)
 
-    await batchBlocks(server)
-
-    let req = params('engine_forkchoiceUpdatedV1', [
+    // Let's set new head hash
+    let res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
         headBlockHash: blocks[2].blockHash,
         finalizedBlockHash: blocks[2].blockHash,
@@ -269,35 +229,26 @@ describe(`${method}: call with executionPayloadV1`, () => {
       },
     ])
 
-    // Let's set new head hash
-    const expectResFcu = (res: any) => {
-      assert.equal(res.body.result.payloadStatus.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectResFcu, false, false)
+    assert.equal(res.result.payloadStatus.status, 'VALID')
 
     // Now let's try to re-execute payload
-    req = params(method, [blockData])
+    res = await rpc.request(method, [blockData])
 
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.result.status, 'VALID')
   })
 
   it('parent hash equals to block hash', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const rpc = getRpcClient(server)
     const blockDataHasBlockHashSameAsParentHash = [
       {
         ...blockData,
         blockHash: blockData.parentHash,
       },
     ]
-    const req = params(method, blockDataHasBlockHashSameAsParentHash)
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'INVALID')
-    }
+    const res = await rpc.request(method, blockDataHasBlockHashSameAsParentHash)
 
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.result.status, 'INVALID')
   })
 
   it('call with executionPayloadV2', () => {

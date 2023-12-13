@@ -127,6 +127,7 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: mergeForkIdPostMerge },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -152,19 +153,22 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     }))
     .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
 
-  for (const hf of params.hardforks) {
-    if (hf.timestamp === genesisTimestamp) {
-      hf.timestamp = 0
-    }
-  }
-
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
 
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
-    return (a.timestamp ?? genesisTimestamp) - (b.timestamp ?? genesisTimestamp)
+    // non timestamp forks come before any timestamp forks
+    return (a.timestamp ?? 0) - (b.timestamp ?? 0)
   })
+
+  // only set the genesis timestamp forks to zero post the above sort has happended
+  // to get the correct sorting
+  for (const hf of params.hardforks) {
+    if (hf.timestamp === genesisTimestamp) {
+      hf.timestamp = 0
+    }
+  }
 
   if (config.terminalTotalDifficulty !== undefined) {
     // Following points need to be considered for placement of merge hf

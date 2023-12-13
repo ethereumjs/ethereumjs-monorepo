@@ -61,5 +61,13 @@
     "@ethereumjs/block": "^5.0.1",
     "@ethereumjs/genesis": "^0.2.0",
     "@types/debug": "^4.1.9"
+  },
+  "peerDependencies": {
+    "@ethereumjs/verkle": "^0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@ethereumjs/verkle": {
+      "optional": true
+    }
   }
 }

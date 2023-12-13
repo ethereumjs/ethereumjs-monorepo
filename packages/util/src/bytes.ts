@@ -52,7 +52,10 @@ for (let i = 0; i <= 256 * 256 - 1; i++) {
  * @param {Uint8Array} bytes the bytes to convert
  * @returns {bigint}
  */
-export const bytesToBigInt = (bytes: Uint8Array): bigint => {
+export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  if (littleEndian) {
+    bytes.reverse()
+  }
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
     return BIGINT_0
@@ -84,8 +87,8 @@ export const hexToBytes = (hex: string): Uint8Array => {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
 
-  if (!hex.startsWith('0x')) {
-    throw new Error(`prefixed hex input should start with 0x, got ${hex.substring(0, 2)}`)
+  if (!/^0x[0-9a-fA-F]*$/.test(hex)) {
+    throw new Error(`Input must be a 0x-prefixed hexadecimal string, got ${hex}`)
   }
 
   hex = hex.slice(2)
@@ -94,11 +97,11 @@ export const hexToBytes = (hex: string): Uint8Array => {
     hex = padToEven(hex)
   }
 
-  const byteLen = hex.length / 2
-  const bytes = new Uint8Array(byteLen)
-  for (let i = 0; i < byteLen; i++) {
-    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
-    bytes[i] = byte
+  const byteLen = hex.length
+  const bytes = new Uint8Array(byteLen / 2)
+  for (let i = 0; i < byteLen; i += 2) {
+    const byte = parseInt(hex.slice(i, i + 2), 16)
+    bytes[i / 2] = byte
   }
   return bytes
 }
@@ -132,9 +135,11 @@ export const intToBytes = (i: number): Uint8Array => {
  *  * @param {bigint} num the bigint to convert
  * @returns {Uint8Array}
  */
-export const bigIntToBytes = (num: bigint): Uint8Array => {
+export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return toBytes('0x' + padToEven(num.toString(16)))
+  const bytes = toBytes('0x' + padToEven(num.toString(16)))
+
+  return littleEndian ? bytes.reverse() : bytes
 }
 
 /**
