@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
+import { FlatStateManager, Snapshot } from '@ethereumjs/statemanager'
+// import { Trie } from '@ethereumjs/trie'
 import { Account, Address, bytesToHex, equalsBytes, toBytes } from '@ethereumjs/util'
 
 import { VM } from '../../../dist/cjs'
@@ -74,9 +74,15 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new Trie({ useKeyHashing: true })
-  const stateManager = new DefaultStateManager({
-    trie: state,
+
+  // let state = new Trie({ useKeyHashing: true })
+  // let stateManager = new DefaultStateManager({
+  //   trie: state,
+  //   common,
+  // })
+  const state = new Snapshot()
+  const stateManager = new FlatStateManager({
+    snapshot: state,
     common,
   })
 
