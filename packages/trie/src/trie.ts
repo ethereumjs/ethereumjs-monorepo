@@ -901,10 +901,10 @@ export class Trie {
   /**
    * Updates a trie from a proof
    * @param proof The proof
-   * @param safe If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
+   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
    * @returns The root of the proof
    */
-  async updateTrieFromProof(proof: Proof, safe: boolean = false) {
+  async updateTrieFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
     this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       let key = Uint8Array.from(this.hash(nodeValue))
@@ -916,7 +916,7 @@ export class Trie {
       } as PutBatch
     })
 
-    if (safe) {
+    if (shouldVerifyRoot) {
       if (opStack[0] !== undefined && opStack[0] !== null) {
         if (!equalsBytes(this.root(), opStack[0].key)) {
           throw new Error('The provided proof does not have the expected trie root')

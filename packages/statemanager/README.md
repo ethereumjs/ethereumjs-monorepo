@@ -59,7 +59,17 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 
 #### Instantiating from a proof
 
-The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](packages/statemanager/src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s).
+The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
+
+```typescript
+// setup `stateManager` with some existing address
+const proof = await stateManager.getProof(address)
+
+const partialStateManager = await DefaultStateManager.fromProof(proof)
+const accountFromNewSM = await partialStateManager.getAccount(address)
+const accountFromOldSM = await stateManager.getAccount(address)
+console.log(accountFromNewSM, accountFromOldSM) // should match
+```
 
 ### `RPCStateManager`
 

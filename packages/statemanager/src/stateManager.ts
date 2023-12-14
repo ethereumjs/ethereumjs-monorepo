@@ -754,8 +754,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * This generates a (partial) StateManager where one can retrieve all items from the proof
    * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
    * @param safe Wether or not to verify that the roots of the proof items match the reported roots
-   * @param opts DefaultStateManagerOpts
-   * @returns
+   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
+   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+   * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
    */
   static async fromProof(
     proof: Proof | Proof[],
@@ -777,7 +778,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
         for (let i = 1; i < proof.length; i++) {
           const proofItem = proof[i]
-          await sm.addProofItems(proofItem, true)
+          await sm.addProofData(proofItem, true)
         }
         await sm.flush() // TODO verify if this is necessary
         return sm
@@ -813,9 +814,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   /**
    * Add proof(s) into an already existing trie
    * @param proof The proof(s) retrieved from `getProof`
-   * @param safe Whether or not to verify if the reported roots match the current state root
+   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
+   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
    */
-  async addProofItems(proof: Proof | Proof[], safe: boolean = false) {
+  async addProofData(proof: Proof | Proof[], safe: boolean = false) {
     if (Array.isArray(proof)) {
       for (let i = 0; i < proof.length; i++) {
         await this._trie.updateTrieFromProof(
@@ -830,7 +832,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         )
       }
     } else {
-      await this.addProofItems([proof], safe)
+      await this.addProofData([proof], safe)
     }
   }
 

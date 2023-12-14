@@ -201,7 +201,7 @@ describe('StateManager -> General', () => {
     verifyAccount(account1!, state1)
 
     const proof2 = await stateManager.getProof(address2)
-    await partialStateManager.addProofItems(proof2)
+    await partialStateManager.addProofData(proof2)
 
     let account2 = await partialStateManager.getAccount(address2)
     verifyAccount(account2!, state2)
@@ -211,7 +211,6 @@ describe('StateManager -> General', () => {
 
     // Input proofs
     const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
-    await partialStateManager.addProofItems(stProof)
 
     let stSlot1_0 = await partialStateManager.getContractStorage(address1, state1.keys[0])
     assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
@@ -251,13 +250,13 @@ describe('StateManager -> General', () => {
     const newPartialStateManager2 = await DefaultStateManager.fromProof([])
 
     try {
-      await newPartialStateManager2.addProofItems([proof2, stProof], true)
+      await newPartialStateManager2.addProofData([proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
       assert.ok(e.message.includes('proof does not have the expected trie root'))
     }
 
-    await newPartialStateManager2.addProofItems([proof2, stProof])
+    await newPartialStateManager2.addProofData([proof2, stProof])
     await newPartialStateManager2.setStateRoot(await partialStateManager.getStateRoot())
     await postVerify(newPartialStateManager2)
 
@@ -272,7 +271,7 @@ describe('StateManager -> General', () => {
       assert.ok(e.message.includes('proof does not have the expected trie root'))
     }
 
-    await newPartialStateManager2.addProofItems(zeroAddressProof)
+    await newPartialStateManager2.addProofData(zeroAddressProof)
 
     let zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
     assert.ok(zeroAccount === undefined)
