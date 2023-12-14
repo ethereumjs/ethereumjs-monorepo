@@ -211,6 +211,7 @@ describe('StateManager -> General', () => {
 
     // Input proofs
     const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
+    await partialStateManager.addProofData(stProof)
 
     let stSlot1_0 = await partialStateManager.getContractStorage(address1, state1.keys[0])
     assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
