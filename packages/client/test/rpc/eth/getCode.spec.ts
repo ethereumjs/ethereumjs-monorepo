@@ -13,13 +13,13 @@ import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getCode'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
     const blockchain = await Blockchain.create({ common })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -34,7 +34,7 @@ describe(method, () => {
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
     assert.equal(res.result, '0x', 'should return the correct code')
-  }, 20000)
+  })
 
   it('ensure returns correct code', async () => {
     const blockchain = await Blockchain.create({
@@ -43,7 +43,7 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -100,7 +100,7 @@ describe(method, () => {
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()
 
-    const client = createClient({ blockchain, includeVM: true })
+    const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

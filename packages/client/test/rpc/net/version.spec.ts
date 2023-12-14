@@ -1,4 +1,3 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 import { assert, describe, it, vi } from 'vitest'
 
@@ -19,7 +18,7 @@ function compareResult(result: any, chainId: any) {
 
 describe(method, () => {
   it('call on mainnet', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
 
@@ -27,25 +26,23 @@ describe(method, () => {
     compareResult(result, '1')
   })
 
-  it('call on sepolia', async () => {
-    // Stub out block consensusFormatValidation checks
-    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+  it('call on holesky', async () => {
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Sepolia }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Holesky }) })
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
 
     const { result } = res
-    compareResult(result, '11155111')
+    compareResult(result, '17000')
 
     vi.resetAllMocks()
   })
 
   it('call on goerli', async () => {
     const manager = createManager(
-      createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
     )
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 

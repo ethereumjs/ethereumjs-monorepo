@@ -4,6 +4,7 @@ import {
   Address,
   bytesToHex,
   bytesToUnprefixedHex,
+  equalsBytes,
   hexToBytes,
   randomBytes,
   zeros,
@@ -26,6 +27,20 @@ describe('ProofStateManager', () => {
     const proof = await stateManager.getProof(address, [key])
     assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
     assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+  })
+
+  it(`should correctly return the right storage root / account root`, async () => {
+    const address = Address.zero()
+    const key = zeros(32)
+    const stateManager = new DefaultStateManager()
+
+    await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
+    const storageRoot = (await stateManager.getAccount(address))!.storageRoot
+
+    await stateManager.putContractStorage(address, key, new Uint8Array([10]))
+
+    const proof = await stateManager.getProof(address, [key])
+    assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
@@ -132,7 +147,6 @@ describe('ProofStateManager', () => {
       await trie._db.put(key, bufferData)
     }
     trie.root(stateRoot!)
-    await stateManager.putAccount(address, new Account())
     const proof = await stateManager.getProof(address)
     assert.deepEqual((ropsten_nonexistentAccount as any).default, proof)
     assert.ok(await stateManager.verifyProof(ropsten_nonexistentAccount))

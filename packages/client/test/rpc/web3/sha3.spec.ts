@@ -18,7 +18,7 @@ function compareErrorMsg(error: any, errorMsg: any) {
 
 describe(method, () => {
   it('call with one valid parameter', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, ['0x68656c6c6f20776f726c64'])
     const { result } = res
@@ -31,7 +31,7 @@ describe(method, () => {
   })
 
   it('call with one non-hex parameter', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, ['hello world'])
     const { error } = res
@@ -41,7 +41,7 @@ describe(method, () => {
   })
 
   it('call with no parameters', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
     const { error } = res

@@ -1025,7 +1025,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf1: CALL
   [
     0xf1,
-    async function (runState: RunState) {
+    async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
       const toAddress = new Address(addresstoBytes(toAddr))
@@ -1035,7 +1035,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
-      const gasLimit = runState.messageGasLimit!
+      let gasLimit = runState.messageGasLimit!
+      if (value !== BIGINT_0) {
+        const callStipend = common.param('gasPrices', 'callStipend')
+        runState.interpreter.addStipend(callStipend)
+        gasLimit += callStipend
+      }
+
       runState.messageGasLimit = undefined
 
       const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
@@ -1047,12 +1053,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf2: CALLCODE
   [
     0xf2,
-    async function (runState: RunState) {
+    async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
       const toAddress = new Address(addresstoBytes(toAddr))
 
-      const gasLimit = runState.messageGasLimit!
+      let gasLimit = runState.messageGasLimit!
+      if (value !== BIGINT_0) {
+        const callStipend = common.param('gasPrices', 'callStipend')
+        runState.interpreter.addStipend(callStipend)
+        gasLimit += callStipend
+      }
+
       runState.messageGasLimit = undefined
 
       let data = new Uint8Array(0)
