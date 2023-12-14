@@ -15,17 +15,7 @@ export function createSuite(db: DB<string, string>) {
   const ROUNDS = 1000
   const KEY_SIZE = 32
 
-  const snapshot = new Snapshot(new LevelDB<Uint8Array, Uint8Array>())
-
   run(async () => {
-    for (const samples of [100, 500, 1000, 5000]) {
-      await mark(`Snapshot: Checkpointing: ${samples} iterations`, samples, async (i: number) => {
-        snapshot.checkpoint()
-        await snapshot.putAccount(new Address(keys[i].slice(0, 20)), new Account())
-        await snapshot.commit()
-      })
-    }
-
     // random.ts
     // Test ID is defined as: `pair_count`-`era_size`-`key_size`-`value_type`
     // where value_type = symmetric ? 'mir' : 'ran'
