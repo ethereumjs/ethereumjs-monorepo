@@ -51,7 +51,7 @@ const validPayload = [validForkChoiceState, validPayloadAttributes]
 
 describe(method, () => {
   it('call with invalid head block hash without 0x', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
     const invalidForkChoiceState = {
       ...validForkChoiceState,
       headBlockHash: 'invalid formatted head block hash',
@@ -66,7 +66,7 @@ describe(method, () => {
   })
 
   it('call with invalid hex string as block hash', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const invalidForkChoiceState = {
       ...validForkChoiceState,

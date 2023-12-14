@@ -13,7 +13,7 @@ import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getBlockTransactionCountByNumber'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
@@ -23,7 +23,7 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -61,7 +61,7 @@ describe(method, () => {
     // verify that the transaction count is 1
     const res = await rpc.request(method, ['latest'])
     assert.equal(res.result, '0x1', 'should return the correct block transaction count(1)')
-  }, 20000)
+  })
 
   it('call with valid arguments (multiple transactions)', async () => {
     const blockchain = await Blockchain.create({
@@ -70,7 +70,7 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
@@ -126,12 +126,12 @@ describe(method, () => {
     // specify the block number instead of using latest
     const res = await rpc.request(method, ['0x1'])
     assert.equal(res.result, '0x3', 'should return the correct block transaction count(3)')
-  }, 30000)
+  })
 
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()
 
-    const client = createClient({ blockchain, includeVM: true })
+    const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
