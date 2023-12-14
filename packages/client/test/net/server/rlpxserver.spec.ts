@@ -294,25 +294,15 @@ describe('[RlpxServer]', async () => {
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
     })
-    config.events.on(Event.PEER_CONNECTED, (peer) =>
-      it('should connect', async () => {
-        assert.ok(peer instanceof RlpxPeer, 'connected')
-      })
+    config.events.on(Event.PEER_CONNECTED, async (peer) =>
+      assert.ok(peer instanceof RlpxPeer, 'connected')
     )
-    config.events.on(Event.PEER_DISCONNECTED, (peer) =>
-      it('should disconnect', async () => {
-        assert.equal(peer.id, '01', 'disconnected')
-      })
+    config.events.on(Event.PEER_DISCONNECTED, async (peer) =>
+      assert.equal(peer.id, '01', 'disconnected')
     )
-    config.events.on(Event.SERVER_ERROR, (err) =>
-      it('should throw error', async () => {
-        assert.equal(err.message, 'err0', 'got error')
-      })
-    )
+    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
     config.events.on(Event.SERVER_LISTENING, (info) =>
-      it('should listen', async () => {
-        assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
-      })
+      assert.deepEqual(info, { transport: 'rlpx', url: 'enode://ff@0.0.0.0:30303' }, 'listening')
     )
     server.rlpx!.events.emit('peer:added', rlpxPeer)
     ;(server as any).peers.set('01', { id: '01' } as any)
@@ -339,11 +329,7 @@ describe('[RlpxServer]', async () => {
     ;(server as any).initRlpx().catch((error: Error) => {
       throw error
     })
-    config.events.on(Event.SERVER_ERROR, (err) =>
-      it('should throw', async () => {
-        assert.equal(err.message, 'err0', 'got error')
-      })
-    )
+    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
     server.rlpx!.events.emit('peer:error', rlpxPeer, new Error('err0'))
   })
 })
