@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702569492670,
+  "lastUpdate": 1702590584832,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "49f3ccaeb11442f93e5e20ae0ee8e834397c5cd5",
-          "message": "Client: fix rpc debug (#3125)\n\n* client: fix rpc debug\r\n\r\n* client/rpc: add verbosity filter\r\n\r\n* client: fix rpc test",
-          "timestamp": "2023-11-05T15:40:24-07:00",
-          "tree_id": "ad09314841b8c7c4a085d458e18aeea11f4d0973",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/49f3ccaeb11442f93e5e20ae0ee8e834397c5cd5"
-        },
-        "date": 1699224250010,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 29399,
-            "range": "±2.98%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 27099,
-            "range": "±4.44%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28030,
-            "range": "±3.19%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27565,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 27289,
-            "range": "±3.32%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.00%",
             "unit": "ops/sec",
             "extra": "78 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "44e069e41b13eddd8cd09ab62e75f4641eb234d0",
+          "message": "Trie/StateManager: create partial state tries / state managers from proofs (#3186)\n\n* trie: add methods to create and update tries from proofs\r\n\r\n* stateManager: add fromProof support\r\n\r\n* Add readme updates for new fromProof constructors\r\n\r\n* Apply suggested changes\r\n\r\n* Add missing line\r\n\r\n* statemanager/trie: further update readme examples\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-12-14T16:46:52-05:00",
+          "tree_id": "dc2121dec8fcda93f019c44d58b8f52784013a9b",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/44e069e41b13eddd8cd09ab62e75f4641eb234d0"
+        },
+        "date": 1702590584214,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40505,
+            "range": "±3.17%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39832,
+            "range": "±2.11%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39477,
+            "range": "±2.02%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38409,
+            "range": "±2.65%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34265,
+            "range": "±6.83%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
