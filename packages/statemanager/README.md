@@ -64,11 +64,16 @@ The `DefaultStateManager` has a static constructor `fromProof` that accepts one 
 ```typescript
 // setup `stateManager` with some existing address
 const proof = await stateManager.getProof(address)
+const proofWithStorage = await stateManger.getProof(contractAddress, [storageKey1, storageKey2])
 
 const partialStateManager = await DefaultStateManager.fromProof(proof)
+// To add more proof data, use `addProofData`
+await partialStateManager.addProofData(proofWithStorage)
 const accountFromNewSM = await partialStateManager.getAccount(address)
 const accountFromOldSM = await stateManager.getAccount(address)
 console.log(accountFromNewSM, accountFromOldSM) // should match
+const slot1FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
+const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1) // should also match
 ```
 
 ### `RPCStateManager`

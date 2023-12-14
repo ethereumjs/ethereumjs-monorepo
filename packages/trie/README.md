@@ -74,8 +74,13 @@ async function test() {
   // someOtherTrie is another trie used as an example here for generating merkle proofs necessary for the
   const proof = await someOtherTrie.createProof(someKey)
   const trie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
-  const value = await trie.get(key)
+  const otherProof = await someOtherTrie.createProof(someOtherKey)
+  // To add more proofs to the trie, use `updateTrieFromProof`
+  await trie.updateTrieFromProof(otherProof)
+  const value = await trie.get(someKey)
   console.log(value)
+  const otherValue = await trie.get(someOtherKey)
+  console.log(otherValue)
 }
 
 test()
