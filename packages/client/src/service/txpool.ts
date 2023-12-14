@@ -86,7 +86,6 @@ type GasPrice = {
 export class TxPool {
   private config: Config
   private service: FullEthereumService
-  private vm: VM
 
   private opened: boolean
 
@@ -170,7 +169,6 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
     this.service = options.service
-    this.vm = this.service.execution.vm
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.txsInPool = 0
@@ -316,7 +314,7 @@ export class TxPool {
     }
 
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
-    const vmCopy = await this.vm.shallowCopy()
+    const vmCopy = await this.service.execution.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     let account = await vmCopy.stateManager.getAccount(senderAddress)

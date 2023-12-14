@@ -566,4 +566,86 @@ export const chains: ChainsDict = {
       'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.holesky.ethdisco.net',
     ],
   },
+  kaustinen: {
+    name: 'kaustinen',
+    chainId: 69420,
+    networkId: 69420,
+    defaultHardfork: 'prague',
+    consensus: {
+      type: 'pos',
+      algorithm: 'casper',
+    },
+    comment: 'Verkle kaustinen testnet 2 (likely temporary, do not hard-wire into production code)',
+    url: 'https://github.com/eth-clients/kaustinen/',
+    genesis: {
+      difficulty: '0x01',
+      extraData: '0x',
+      gasLimit: '0x17D7840',
+      nonce: '0x0000000000001234',
+      timestamp: '0x65608a64',
+    },
+    hardforks: [
+      {
+        name: 'chainstart',
+        block: 0,
+      },
+      {
+        name: 'homestead',
+        block: 0,
+      },
+      {
+        name: 'tangerineWhistle',
+        block: 0,
+      },
+      {
+        name: 'spuriousDragon',
+        block: 0,
+      },
+      {
+        name: 'byzantium',
+        block: 0,
+      },
+      {
+        name: 'constantinople',
+        block: 0,
+      },
+      {
+        name: 'petersburg',
+        block: 0,
+      },
+      {
+        name: 'istanbul',
+        block: 0,
+      },
+      {
+        name: 'berlin',
+        block: 0,
+      },
+      {
+        name: 'london',
+        block: 0,
+      },
+      {
+        name: 'paris',
+        ttd: '0',
+        block: 0,
+      },
+      {
+        name: 'mergeForkIdTransition',
+        block: 0,
+      },
+      {
+        name: 'shanghai',
+        block: null,
+        timestamp: '0',
+      },
+      {
+        name: 'prague',
+        block: null,
+        timestamp: '1700825700',
+      },
+    ],
+    bootstrapNodes: [],
+    dnsNetworks: [],
+  },
 }

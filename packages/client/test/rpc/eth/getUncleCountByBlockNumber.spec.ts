@@ -1,8 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
-import { checkError } from '../util'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 function createChain() {
   const block = {
@@ -28,24 +27,20 @@ describe(method, () => {
   it('call with valid arguments', async () => {
     const mockUncleCount = 3
 
-    const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const manager = createManager(await createClient({ chain: createChain() }))
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0x1'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct number'
-      assert.equal(res.body.result, mockUncleCount, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['0x1'])
+    assert.equal(res.result, mockUncleCount, 'should return the correct number')
   })
 
   it('call with invalid block number', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
-    const server = startRPC(manager.getMethods())
+    const manager = createManager(await createClient({ chain: createChain() }))
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0x5a'])
+    const res = await rpc.request(method, ['0x5a'])
 
-    const expectRes = checkError(INVALID_PARAMS, 'specified block greater than current height')
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('specified block greater than current height'))
   })
 })

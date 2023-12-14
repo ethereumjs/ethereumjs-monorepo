@@ -326,6 +326,8 @@ export interface ConfigOptions {
   pruneEngineCache?: boolean
   snapAvailabilityDepth?: bigint
   snapTransitionSafeDepth?: bigint
+
+  statelessVerkle?: boolean
 }
 
 export class Config {
@@ -430,6 +432,8 @@ export class Config {
   public readonly enableSnapSync: boolean
   public readonly useStringValueTrieDB: boolean
 
+  public readonly statelessVerkle: boolean
+
   public synchronized: boolean
   public lastsyncronized?: boolean
   /** lastSyncDate in ms */
@@ -513,6 +517,8 @@ export class Config {
     this.prefixStorageTrieKeys = options.prefixStorageTrieKeys ?? true
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
+
+    this.statelessVerkle = options.statelessVerkle ?? true
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine

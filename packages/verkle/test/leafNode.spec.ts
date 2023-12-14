@@ -1,10 +1,10 @@
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VerkleNodeType } from '../../src/node/index.js'
-import { LeafNode } from '../../src/node/leafNode.js'
+import { VerkleNodeType } from '../src/node/index.js'
+import { LeafNode } from '../src/node/leafNode.js'
 
-import type { Point } from '../../src/types.js'
+import type { Point } from '../src/types.js'
 
 describe('verkle node - leaf', () => {
   it('constructor should create an leaf node', async () => {

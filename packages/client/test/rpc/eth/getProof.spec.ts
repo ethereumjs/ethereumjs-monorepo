@@ -1,13 +1,13 @@
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address, bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getProof'
 
@@ -33,7 +33,59 @@ const expectedProof = {
   ],
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+// Note: this is all added to ensure to run on Istanbul hardfork, and without a mainnet genesis state setup
+// Without this, the test will fail because the store() method uses SHR
+// Which is only available since Constantinople (and thus also in Istanbul)
+// Preserving to use Istanbul as hardfork as per the original test
+const testnetData = {
+  name: 'testnet2',
+  chainId: 12345,
+  networkId: 12345,
+  defaultHardfork: 'istanbul',
+  consensus: {
+    type: 'pow',
+    algorithm: 'ethash',
+  },
+  genesis: {
+    gasLimit: 1000000,
+    difficulty: 1,
+    nonce: '0x0000000000000000',
+    extraData: '0x',
+  },
+  hardforks: [
+    {
+      name: 'chainstart',
+      block: 0,
+    },
+    {
+      name: 'homestead',
+      block: 0,
+    },
+    {
+      name: 'tangerineWhistle',
+      block: 0,
+    },
+    {
+      name: 'spuriousDragon',
+      block: 0,
+    },
+    {
+      name: 'byzantium',
+      block: 0,
+    },
+    {
+      name: 'constantinople',
+      block: 0,
+    },
+    {
+      name: 'istanbul',
+      block: 0,
+    },
+  ],
+  bootstrapNodes: [],
+}
+
+const common = new Common({ chain: 'testnet2', customChains: [testnetData] })
 
 describe(method, async () => {
   it('call with valid arguments', async () => {
@@ -43,9 +95,9 @@ describe(method, async () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -129,11 +181,7 @@ describe(method, async () => {
     await vm.blockchain.putBlock(ranBlock2!)
 
     // verify proof is accurate
-    const req = params(method, [createdAddress!.toString(), ['0x0'], 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct proof'
-      assert.deepEqual(res.body.result, expectedProof, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [createdAddress!.toString(), ['0x0'], 'latest'])
+    assert.deepEqual(res.result, expectedProof, 'should return the correct proof')
   })
 })
