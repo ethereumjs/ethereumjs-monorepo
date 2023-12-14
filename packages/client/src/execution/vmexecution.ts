@@ -14,6 +14,7 @@ import {
 import { Trie } from '@ethereumjs/trie'
 import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
+import { keccak256 as keccak256WASM, waitReady } from '@polkadot/wasm-crypto'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -123,6 +124,7 @@ export class VMExecution extends Execution {
     const trie = await Trie.create({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
+      //useKeyHashingFunction: keccak256WASM,
       cacheSize: this.config.trieCache,
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
@@ -215,6 +217,9 @@ export class VMExecution extends Execution {
       if (this.started || this.vmPromise !== undefined) {
         return
       }
+
+      // Wait until WASM has loaded (@polkadot/wasm-crypto)
+      await waitReady()
 
       if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
         if (!this.config.statelessVerkle) {
