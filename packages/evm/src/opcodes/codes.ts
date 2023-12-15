@@ -53,7 +53,7 @@ type OpcodeEntry = { [key: number]: { name: string; isAsync: boolean; dynamicGas
 type OpcodeEntryFee = OpcodeEntry & { [key: number]: { fee: number } }
 
 // Base opcode list. The opcode list is extended in future hardforks
-const opcodes: OpcodeEntry = {
+export const opcodes: OpcodeEntry = {
   // 0x0 range - arithmetic ops
   // name, async
   0x00: { name: 'STOP', isAsync: false, dynamicGas: false },
@@ -212,7 +212,7 @@ const opcodes: OpcodeEntry = {
 // If the base gas cost of any of the operations change, then these should also be added to this list.
 // If there are context variables changed (such as "warm slot reads") which are not the base gas fees,
 // Then this does not have to be added.
-const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
+export const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   {
     hardfork: Hardfork.Homestead,
     opcodes: {
@@ -266,7 +266,7 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   },
 ]
 
-const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
+export const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
     eip: 1153,
     opcodes: {
