@@ -1,5 +1,7 @@
 import {
+  BIGINT_1,
   BIGINT_160,
+  BIGINT_2,
   BIGINT_224,
   BIGINT_2EXP160,
   BIGINT_2EXP224,
@@ -24,6 +26,11 @@ function sign(input: bigint | number) {
   }
   return toTwos(input)
 }
+
+// The lowest signed number (-2^255)
+const SIGNED_LOW = sign(-(BigInt(2) ** BigInt(255)))
+// The highest signed number (2^255 - 1)
+const SIGNED_HIGH = sign(-SIGNED_LOW - BigInt(1))
 
 export const opcodeTests: {
   [testSetName: string]: OpcodeTests
@@ -145,6 +152,136 @@ export const opcodeTests: {
       { stack: [0, 0b1111111100000011], expected: 3 },
       { stack: [32, STACK_MAX_NUMBER], expected: STACK_MAX_NUMBER },
       { stack: [32, 1], expected: 1 },
+    ],
+  },
+  byteOperations: {
+    LT: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 1], expected: 1 },
+      { stack: [1, 0], expected: 0 },
+      { stack: [1, 1], expected: 0 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER], expected: 0 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER - BIGINT_1], expected: 0 },
+      { stack: [STACK_MAX_NUMBER - BIGINT_1, STACK_MAX_NUMBER], expected: 1 },
+    ],
+    GT: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 1], expected: 0 },
+      { stack: [1, 0], expected: 1 },
+      { stack: [1, 1], expected: 0 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER], expected: 0 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER - BIGINT_1], expected: 1 },
+      { stack: [STACK_MAX_NUMBER - BIGINT_1, STACK_MAX_NUMBER], expected: 0 },
+    ],
+    SLT: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 1], expected: 1 },
+      { stack: [1, 0], expected: 0 },
+      { stack: [1, 1], expected: 0 },
+      { stack: [0, sign(-1)], expected: 0 },
+      { stack: [sign(-1), 0], expected: 1 },
+      { stack: [sign(-1), sign(-1)], expected: 0 },
+      { stack: [SIGNED_HIGH, SIGNED_HIGH], expected: 0 },
+      { stack: [SIGNED_HIGH, SIGNED_HIGH - BIGINT_1], expected: 0 },
+      { stack: [SIGNED_HIGH - BIGINT_1, SIGNED_HIGH], expected: 1 },
+      { stack: [SIGNED_LOW, SIGNED_LOW], expected: 0 },
+      { stack: [SIGNED_LOW, SIGNED_LOW + BIGINT_1], expected: 1 },
+      { stack: [SIGNED_LOW + BIGINT_1, SIGNED_LOW], expected: 0 },
+      { stack: [SIGNED_HIGH, SIGNED_LOW], expected: 0 },
+      { stack: [SIGNED_LOW, SIGNED_HIGH], expected: 1 },
+    ],
+    SGT: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 1], expected: 0 },
+      { stack: [1, 0], expected: 1 },
+      { stack: [1, 1], expected: 0 },
+      { stack: [0, sign(-1)], expected: 1 },
+      { stack: [sign(-1), 0], expected: 0 },
+      { stack: [sign(-1), sign(-1)], expected: 0 },
+      { stack: [SIGNED_HIGH, SIGNED_HIGH], expected: 0 },
+      { stack: [SIGNED_HIGH, SIGNED_HIGH - BIGINT_1], expected: 1 },
+      { stack: [SIGNED_HIGH - BIGINT_1, SIGNED_HIGH], expected: 0 },
+      { stack: [SIGNED_LOW, SIGNED_LOW], expected: 0 },
+      { stack: [SIGNED_LOW, SIGNED_LOW + BIGINT_1], expected: 0 },
+      { stack: [SIGNED_LOW + BIGINT_1, SIGNED_LOW], expected: 1 },
+      { stack: [SIGNED_HIGH, SIGNED_LOW], expected: 1 },
+      { stack: [SIGNED_LOW, SIGNED_HIGH], expected: 0 },
+    ],
+    EQ: [
+      { stack: [0, 0], expected: 1 },
+      { stack: [1, 0], expected: 0 },
+      { stack: [0, 1], expected: 0 },
+      { stack: [1, 1], expected: 1 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER], expected: 1 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER - BIGINT_1], expected: 0 },
+      { stack: [STACK_MAX_NUMBER - BIGINT_1, STACK_MAX_NUMBER], expected: 0 },
+    ],
+    ISZERO: [
+      { stack: [0], expected: 1 },
+      { stack: [1], expected: 0 },
+      { stack: [STACK_MAX_NUMBER], expected: 0 },
+    ],
+    AND: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0b0110, 0b0101], expected: 0b0100 },
+      { stack: [STACK_MAX_NUMBER, 128], expected: 128 },
+    ],
+    OR: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0b0110, 0b0101], expected: 0b0111 },
+      { stack: [STACK_MAX_NUMBER, 128], expected: STACK_MAX_NUMBER },
+    ],
+    XOR: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0b0110, 0b0101], expected: 0b0011 },
+      // 0b10000000 = 128
+      { stack: [STACK_MAX_NUMBER, 0b10000000], expected: STACK_MAX_NUMBER - BigInt(0b10000000) },
+    ],
+    NOT: [
+      { stack: [0], expected: STACK_MAX_NUMBER },
+      { stack: [STACK_MAX_NUMBER], expected: 0 },
+      { stack: [1], expected: STACK_MAX_NUMBER - BIGINT_1 },
+      { stack: [12345], expected: STACK_MAX_NUMBER - BigInt(12345) },
+    ],
+    BYTE: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [31, 0], expected: 0 },
+      { stack: [31, 0xffee], expected: 0xee },
+      { stack: [30, 0xffee], expected: 0xff },
+      { stack: [29, 0xffee], expected: 0 },
+      { stack: [0, STACK_MAX_NUMBER], expected: 0xff },
+      { stack: [31, STACK_MAX_NUMBER], expected: 0xff },
+      { stack: [32, STACK_MAX_NUMBER], expected: 0 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER], expected: 0 },
+    ],
+    SHL: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 0xff], expected: 0xff },
+      { stack: [1, 0xff], expected: 0xff << 1 },
+      { stack: [8, 0xff], expected: 0xff << 8 },
+      { stack: [1, STACK_MAX_NUMBER], expected: STACK_MAX_NUMBER - BIGINT_1 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER], expected: 0 },
+    ],
+    SHR: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 0xff], expected: 0xff },
+      { stack: [1, 0xff], expected: 0xff >> 1 },
+      { stack: [8, 0xff], expected: 0xff >> 8 },
+      { stack: [1, STACK_MAX_NUMBER], expected: STACK_MAX_NUMBER / BIGINT_2 },
+      { stack: [STACK_MAX_NUMBER, STACK_MAX_NUMBER], expected: 0 },
+    ],
+    SAR: [
+      { stack: [0, 0], expected: 0 },
+      { stack: [0, 0xff], expected: 0xff },
+      { stack: [1, 0xff], expected: 0xff >> 1 },
+      { stack: [8, 0xff], expected: 0xff >> 8 },
+      { stack: [1, sign(-1)], expected: sign(-1 >> 1) },
+      { stack: [2, sign(-1)], expected: sign(-1 >> 2) },
+      { stack: [2, sign(-2)], expected: sign(-2 >> 2) },
+      { stack: [2, sign(-1)], expected: sign(-2 >> 1) },
+      { stack: [STACK_MAX_NUMBER, sign(-12345)], expected: sign(-1) },
+      { stack: [STACK_MAX_NUMBER, SIGNED_LOW], expected: sign(-1) },
+      { stack: [STACK_MAX_NUMBER, SIGNED_HIGH], expected: 0 },
     ],
   },
 }
