@@ -75,7 +75,7 @@ async function profile() {
         }
         evm.clearPerformanceLogs()
         progress++
-        console.log(`Progress: ${progress}/${testCount}`)
+        console.log(`Progress: ${progress}/${testCount} [ ${testSet}:${opcodeName} ]`)
       }
     }
   }
