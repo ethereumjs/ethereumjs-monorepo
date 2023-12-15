@@ -18,6 +18,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
 
 import {
+  AccessWitness,
   BALANCE_LEAF_KEY,
   CODE_KECCAK_LEAF_KEY,
   CODE_OFFSET,
@@ -108,6 +109,7 @@ export interface StatelessVerkleStateManagerOpts {
    */
   common?: Common
   storageCacheOpts?: CacheOptions
+  accesses?: AccessWitness
 }
 
 const PUSH_OFFSET = 95
@@ -160,6 +162,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   // Checkpointing
   private _checkpoints: VerkleState[] = []
+  accessWitness?: AccessWitness
 
   /**
    * Instantiate the StateManager interface.
@@ -218,12 +221,17 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw Error('not implemented')
   }
 
-  public initVerkleExecutionWitness(executionWitness?: VerkleExecutionWitness | null) {
+  public initVerkleExecutionWitness(
+    executionWitness?: VerkleExecutionWitness | null,
+    accessWitness?: AccessWitness
+  ) {
     if (executionWitness === null || executionWitness === undefined) {
       throw Error(`Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`)
     }
 
     this._executionWitness = executionWitness
+    this.accessWitness = accessWitness ?? new AccessWitness()
+
     this._proof = executionWitness.verkleProof as unknown as Uint8Array
 
     // Populate the pre-state and post-state from the executionWitness

@@ -238,4 +238,14 @@ export class AccessWitness {
 
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
+
+  /**Create a shallow copy, could clone some caches in future for optimizations */
+  shallowCopy(): AccessWitness {
+    return new AccessWitness()
+  }
+
+  merge(_accessWitness: AccessWitness): void {
+    // TODO - add merging accessWitnesses into the current one
+    return
+  }
 }

@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -202,6 +203,20 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = this.stateManager
+
+  let stateAccesses
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(this.stateManager instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
+  } else {
+    // assign an empty witness to prevent unnecessary code spagetti of null/undefined checks while usage
+    // but its totally possible that merkle can also accumulate witnesses if such feature was to be made
+    // available there
+    stateAccesses = new AccessWitness()
+  }
+  const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -468,7 +483,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value,
     data,
     blobVersionedHashes,
+    accessWitness: txAccesses,
   })) as RunTxResult
+
+  if (this.common.isActivatedEIP(6800)) {
+    stateAccesses?.merge(txAccesses!)
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console

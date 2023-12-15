@@ -24,6 +24,7 @@ import type { EVMPerformanceLogger, Timer } from './logger.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { AccessWitness } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
@@ -67,6 +68,7 @@ export interface Env {
   containerCode?: Uint8Array /** Full container code for EOF1 contracts */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
+  accessWitness?: AccessWitness
 }
 
 export interface RunState {

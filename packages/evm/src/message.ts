@@ -1,6 +1,7 @@
 import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
+import type { AccessWitness } from '@ethereumjs/statemanager'
 
 const defaults = {
   value: BIGINT_0,
@@ -37,6 +38,7 @@ interface MessageOpts {
   authcallOrigin?: Address
   gasRefund?: bigint
   blobVersionedHashes?: Uint8Array[]
+  accessWitness?: AccessWitness
 }
 
 export class Message {
@@ -71,6 +73,7 @@ export class Message {
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
   blobVersionedHashes?: Uint8Array[]
+  accessWitness?: AccessWitness
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -90,6 +93,7 @@ export class Message {
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
     this.blobVersionedHashes = opts.blobVersionedHashes
+    this.accessWitness = opts.accessWitness
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }

@@ -575,6 +575,7 @@ export class EVM implements EVMInterface {
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
       blobVersionedHashes: message.blobVersionedHashes ?? [],
+      accessWitness: message.accessWitness,
       createdAddresses: message.createdAddresses,
     }
 
@@ -675,6 +676,7 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
+        accessWitness: opts.accessWitness,
       })
     }
 

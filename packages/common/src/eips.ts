@@ -477,16 +477,6 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
-    gasConfig: {},
-    /* TODO: Replace with correct implementation */
-    gasPrices: {
-      tx: {
-        v: 34300,
-        d: 'Per transaction. NOTE: Not payable on data of calls between transactions',
-      },
-    },
-    vm: {},
-    pow: {},
   },
   7516: {
     comment: 'BLOBBASEFEE opcode',
