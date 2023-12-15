@@ -1,4 +1,4 @@
-import { bytesToHex, toBytes } from '@ethereumjs/util'
+import { bytesToHex, toBytes, BIGINT_0 } from '@ethereumjs/util'
 import { getKey, getStem } from '@ethereumjs/verkle'
 
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -17,11 +17,11 @@ export const CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
 export const MAIN_STORAGE_OFFSET = 256 ** 31
 
-const WitnessBranchReadCost = 1900
-const WitnessChunkReadCost = 200
-const WitnessBranchWriteCost = 3000
-const WitnessChunkWriteCost = 500
-const WitnessChunkFillCost = 6200
+const WitnessBranchReadCost = BigInt(1900)
+const WitnessChunkReadCost = BigInt(200)
+const WitnessBranchWriteCost = BigInt(3000)
+const WitnessChunkWriteCost = BigInt(500)
+const WitnessChunkFillCost = BigInt(6200)
 
 // read is a default access event if stem or chunk is present
 type StemAccessEvent = { write?: boolean }
@@ -52,8 +52,8 @@ export class AccessWitness {
     this.chunks = opts.chunks ?? new Map<PrefixedHexString, ChunkAccessEvent>()
   }
 
-  touchAndChargeProofOfAbsence(address: Address): number {
-    let gas = 0
+  touchAndChargeProofOfAbsence(address: Address): bigint {
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(address, 0, BALANCE_LEAF_KEY)
@@ -64,8 +64,8 @@ export class AccessWitness {
     return gas
   }
 
-  touchAndChargeMessageCall(address: Address): number {
-    let gas = 0
+  touchAndChargeMessageCall(address: Address): bigint {
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
@@ -73,8 +73,8 @@ export class AccessWitness {
     return gas
   }
 
-  touchAndChargeValueTransfer(caller: Address, target: Address): number {
-    let gas = 0
+  touchAndChargeValueTransfer(caller: Address, target: Address): bigint {
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnWriteAndComputeGas(caller, 0, BALANCE_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
@@ -84,22 +84,22 @@ export class AccessWitness {
 
   touchAndChargeContractCreateInit(
     address: Address,
-    { createSendsValue }: { createSendsValue?: boolean } = {}
-  ): number {
-    let gas = 0
+    { sendsValue }: { sendsValue?: boolean } = {}
+  ): bigint {
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
-    if (createSendsValue === true) {
+    if (sendsValue === true) {
       gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
     }
 
     return gas
   }
 
-  touchAndChargeContractCreateCompleted(address: Address): number {
-    let gas = 0
+  touchAndChargeContractCreateCompleted(address: Address): bigint {
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
@@ -110,8 +110,8 @@ export class AccessWitness {
     return gas
   }
 
-  touchTxOriginAndComputeGas(origin: Address): number {
-    let gas = 0
+  touchTxOriginAndComputeGas(origin: Address): bigint {
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_SIZE_LEAF_KEY)
@@ -124,7 +124,7 @@ export class AccessWitness {
   }
 
   touchTxExistingAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
-    let gas = 0
+    let gas = BIGINT_0
 
     gas += this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_SIZE_LEAF_KEY)
@@ -144,7 +144,7 @@ export class AccessWitness {
     address: Address,
     treeIndex: number,
     subIndex: number | Uint8Array
-  ): number {
+  ): bigint {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: true })
   }
 
@@ -152,7 +152,7 @@ export class AccessWitness {
     address: Address,
     treeIndex: number,
     subIndex: number | Uint8Array
-  ): number {
+  ): bigint {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: false })
   }
 
@@ -161,8 +161,9 @@ export class AccessWitness {
     treeIndex: number,
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean }
-  ): number {
-    let gas = 0
+  ): bigint {
+    let gas = BIGINT_0
+
     const { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill } = this.touchAddress(
       address,
       treeIndex,

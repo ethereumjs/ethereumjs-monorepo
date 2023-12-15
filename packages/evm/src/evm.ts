@@ -222,6 +222,18 @@ export class EVM implements EVMInterface {
   }
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
+    let accessGasUsed = BIGINT_0
+    if (this.common.isActivatedEIP(6800)) {
+      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
+        message.authcallOrigin ?? message.caller
+      )
+      accessGasUsed += originAccessGas
+      message.gasLimit -= originAccessGas
+      if (this.DEBUG) {
+        debugGas(`Origin access used (${originAccessGas} gas (-> ${message.gasLimit}))`)
+      }
+    }
+
     let account = await this.stateManager.getAccount(message.authcallOrigin ?? message.caller)
     if (!account) {
       account = new Account()
@@ -235,6 +247,19 @@ export class EVM implements EVMInterface {
         errorMessage = e
       }
     }
+
+    if (this.common.isActivatedEIP(6800)) {
+      const sendsValue = message.value !== BIGINT_0
+      const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
+        sendsValue,
+      })
+      accessGasUsed += destAccessGas
+      message.gasLimit -= destAccessGas
+      if (this.DEBUG) {
+        debugGas(`Destination access used (${destAccessGas} gas (-> ${message.gasLimit}))`)
+      }
+    }
+
     // Load `to` account
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
@@ -268,7 +293,7 @@ export class EVM implements EVMInterface {
       return {
         execResult: {
           gasRefund: message.gasRefund,
-          executionGasUsed: BIGINT_0,
+          executionGasUsed: accessGasUsed,
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: new Uint8Array(0),
         },
@@ -306,12 +331,24 @@ export class EVM implements EVMInterface {
       this.postMessageCleanup()
     }
 
+    result.executionGasUsed += accessGasUsed
+
     return {
       execResult: result,
     }
   }
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
+    let accessGasUsed = BIGINT_0
+    if (this.common.isActivatedEIP(6800)) {
+      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(message.caller)
+      accessGasUsed += originAccessGas
+      message.gasLimit -= originAccessGas
+      if (this.DEBUG) {
+        debugGas(`Origin access used (${originAccessGas} gas (-> ${message.gasLimit}))`)
+      }
+    }
+
     let account = await this.stateManager.getAccount(message.caller)
     if (!account) {
       account = new Account()
@@ -338,6 +375,21 @@ export class EVM implements EVMInterface {
     message.code = message.data
     message.data = new Uint8Array(0)
     message.to = await this._generateAddress(message)
+
+    if (this.common.isActivatedEIP(6800)) {
+      const sendsValue = message.value !== BIGINT_0
+      const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
+        message.to,
+        { sendsValue }
+      )
+      accessGasUsed += contractCreateAccessGas
+      message.gasLimit -= contractCreateAccessGas
+      if (this.DEBUG) {
+        debugGas(
+          `Contract creation access used (${contractCreateAccessGas} gas (-> ${message.gasLimit}))`
+        )
+      }
+    }
 
     if (this.common.isActivatedEIP(6780)) {
       message.createdAddresses!.add(message.to.toString())
@@ -416,7 +468,7 @@ export class EVM implements EVMInterface {
       return {
         createdAddress: message.to,
         execResult: {
-          executionGasUsed: BIGINT_0,
+          executionGasUsed: accessGasUsed,
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
@@ -429,6 +481,7 @@ export class EVM implements EVMInterface {
     }
 
     let result = await this.runInterpreter(message)
+    result.executionGasUsed += accessGasUsed
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
