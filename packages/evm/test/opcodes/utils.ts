@@ -18,10 +18,17 @@ const allHardforks = Object.keys(Hardfork)
 export type Expected = string | 'fails' | number | bigint
 export type InputStackItems = (number | bigint | Uint8Array)[]
 export type TestReturnType = 'topStack' | 'memory' | 'none'
+export type OpcodeTests = {
+  [opcodeName: string]: {
+    stack: InputStackItems
+    expected: Expected
+    name?: string
+  }[]
+}
 
 type OpcodeTestOpts = {
   hardforks?: Hardfork[]
-  testName: string
+  testName?: string
   opcodeName: string
   expected: Expected
   expectedReturnType: TestReturnType
@@ -51,7 +58,10 @@ const defaultTestOpts: Partial<TestOpts> = {
 }
 
 function removeHexPrefix(input: string) {
-  return input.startsWith('0x') ? input.slice(2) : input
+  while (input.startsWith('0x')) {
+    input = input.slice(2)
+  }
+  return input
 }
 
 export function getOpcodeByte(name: string) {
@@ -85,7 +95,14 @@ export function getOpcodeByte(name: string) {
  * @param stack Stack items to push. The first item of the stack is the topmost item of the resulting stack
  * @returns Hex string output to setup this stack
  */
-export function initStack(stack: (bigint | Uint8Array)[]) {
+export function initStack(stack: (number | bigint | Uint8Array)[]) {
+  stack = stack.map((e) => {
+    if (typeof e === 'number') {
+      return BigInt(e)
+    } else {
+      return e
+    }
+  })
   let output = ''
   for (const entry of stack.reverse()) {
     if (entry === BIGINT_0) {
@@ -118,7 +135,7 @@ export const returnMemory = '596000F3'
  * Returns code which loops forever
  */
 export function makeLoopCode(input: string) {
-  '5B' + removeHexPrefix(input) + '600056'
+  return '0x5B' + removeHexPrefix(input) + '600056'
 }
 
 export function createBytecode(input: string[]) {
@@ -130,13 +147,6 @@ export function createOpcodeTest(
   opcodeName: string,
   returnType: TestReturnType = 'topStack'
 ) {
-  input = input.map((e) => {
-    if (typeof e === 'number') {
-      return BigInt(e)
-    } else {
-      return e
-    }
-  })
   const opcode = getOpcodeByte(opcodeName)
   const inputStack = initStack(<(bigint | Uint8Array)[]>input)
   let returnCode = ''
@@ -168,6 +178,14 @@ export async function runTest(opts: TestOpts) {
       code: hexToBytes(testCode),
       gasLimit,
     })
+  }
+}
+
+export function getOpcodeTestName(opcodeName: string, stack: InputStackItems, testName?: string) {
+  if (testName === undefined) {
+    return `${opcodeName}: ${stack.join()}`
+  } else {
+    return `${opcodeName}: ${testName}`
   }
 }
 
@@ -207,9 +225,13 @@ export async function runOpcodeTest(opts: OpcodeTestOpts) {
       expectedReturn = setLengthLeft(expectedReturn, Math.ceil(expectedReturn.length / 32) * 32)
       assert.ok(
         equalsBytes(result.returnValue, expectedReturn),
-        `Test ${opts.testName} failed. Output expected: ${bytesToHex(
-          expectedReturn
-        )}, got ${bytesToHex(result.returnValue)}, hardfork: ${hf}, input code: ${code}`
+        `Test ${getOpcodeTestName(
+          opcodeName,
+          input,
+          opts.testName
+        )} failed. Output expected: ${bytesToHex(expectedReturn)}, got ${bytesToHex(
+          result.returnValue
+        )}, hardfork: ${hf}, input code: ${code}`
       )
     }
   }

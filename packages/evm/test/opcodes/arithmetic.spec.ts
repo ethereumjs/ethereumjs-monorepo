@@ -15,7 +15,7 @@ import { toTwos } from '../../src/opcodes/util.js'
 
 import { runOpcodeTest } from './utils.js'
 
-import type { Expected, InputStackItems } from './utils.js'
+import type { OpcodeTests } from './utils.js'
 
 const BIGINT_2EXP256 = BigInt(2) ** BigInt(256)
 const STACK_MAX_NUMBER = BIGINT_2EXP256 - BigInt(1)
@@ -31,17 +31,12 @@ function sign(input: bigint | number) {
   return toTwos(input)
 }
 
-const testCases: {
-  [opcodeName: string]: {
-    stack: InputStackItems
-    expected: Expected
-    name?: string
-  }[]
-} = {
+export const testCases: OpcodeTests = {
   ADD: [
     { stack: [0, 0], expected: 0 },
     { stack: [1, 0], expected: 1 },
     { stack: [0, 1], expected: 1 },
+    { stack: [1, 1], expected: 2 },
     { stack: [STACK_MAX_NUMBER, 1], expected: 0, name: 'overflow check' },
   ],
   MUL: [
@@ -161,14 +156,8 @@ describe('Arithmetic tests', () => {
     it(`should test arithmetic opcode ${opcodeName}`, async () => {
       const testDataArray = testCases[opcodeName]
       for (const testData of testDataArray) {
-        let testName: string
-        if (testData.name === undefined) {
-          testName = `${opcodeName}: ${testData.stack.join()}`
-        } else {
-          testName = `${opcodeName}: ${testData.name}`
-        }
         await runOpcodeTest({
-          testName,
+          testName: testData.name,
           opcodeName,
           expected: testData.expected,
           expectedReturnType: 'topStack',
