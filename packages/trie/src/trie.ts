@@ -1,3 +1,6 @@
+// Some more secure presets when using e.g. JS `call`
+'use strict'
+
 import {
   KeyEncoding,
   Lock,
@@ -139,7 +142,7 @@ export class Trie {
       opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
 
     if (opts?.useKeyHashing === true) {
-      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
+      key = (opts?.useKeyHashingFunction ?? keccak256).call(undefined, ROOT_DB_KEY) as Uint8Array
     }
     if (opts?.keyPrefix !== undefined) {
       key = concatBytes(opts.keyPrefix, key)
@@ -1160,7 +1163,7 @@ export class Trie {
   }
 
   protected hash(msg: Uint8Array): Uint8Array {
-    return Uint8Array.from(this._opts.useKeyHashingFunction(msg))
+    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, msg))
   }
 
   /**
