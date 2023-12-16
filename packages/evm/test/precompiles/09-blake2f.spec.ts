@@ -1,5 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -114,4 +114,38 @@ describe('Precompiles: BLAKE2F', () => {
       assert.equal(result.exceptionError?.error, t.expectedError, 'should generate expected error')
     })
   }
+
+  it('should also work on non-zero aligned inputs', async () => {
+    const addr = Address.zero()
+    // Blake2f calldata from https://etherscan.io/tx/0x4f2e13a0a3f14033630ab2b8cdad09d316826375f761ded5b31253bb42e0a476
+    // (This tx calls into Blake2f multiple times, but one of them is taken)
+    const calldata =
+      '0x0000000c28c9bdf267e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5d182e6ad7f520e511f6c3e2b8c68059b3dd8338ed89de6791854126751ac933302810c04147014e9eb472e4dbc09d3c96abb531c9ae39c9e6c454cb83913d688795e237837d30258d11ea7c75201003000454cb83913d688795e237837d30258d11ea7c752011af5b8015c64d39ab44c60ead8317f9f5a9b6c4c01000000000100ca9a3b000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000'
+
+    // This code:
+    // -> Copies the CALLDATA into memory, but at offset 0x20 (32)
+    // -> Calls Blake2F with this data (so, with the calldata)
+    // -> Returns the data from Blake2F
+    const code = '0x366000602037' + '600080366020600060095AF1593D6000593E3D90F3'
+    await evm.stateManager.putContractCode(addr, hexToBytes(code))
+
+    const res = await evm.runCall({
+      data: hexToBytes(calldata),
+      to: addr,
+    })
+
+    /*
+      Note: this value is retrieved from infura by calling directly into Blake2F with the above `calldata`:
+
+        curl https://mainnet.infura.io/v3/API_KEY_HERE \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"jsonrpc":"2.0","method":"eth_call","params": [{"to": "0x0000000000000000000000000000000000000009","data": "0x0000000c28c9bdf267e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5d182e6ad7f520e511f6c3e2b8c68059b3dd8338ed89de6791854126751ac933302810c04147014e9eb472e4dbc09d3c96abb531c9ae39c9e6c454cb83913d688795e237837d30258d11ea7c75201003000454cb83913d688795e237837d30258d11ea7c752011af5b8015c64d39ab44c60ead8317f9f5a9b6c4c01000000000100ca9a3b000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000"}, "latest"],"id":1}'
+    */
+
+    const expected =
+      '0x772acbd3f30b0c3f5f53e8b836ab406f7d8d46fd4b27e2ce2ecd67dbf18c958741e2c49d1f1b1a463907a484f970c057dab9684062b82fda69e8a0057e14766f'
+
+    assert.equal(bytesToHex(res.execResult.returnValue), expected)
+  })
 })
