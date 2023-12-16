@@ -82,6 +82,19 @@ export const bytesToInt = (bytes: Uint8Array): number => {
   return res
 }
 
+const hexToBytesMapFirstKey: { [key: string]: number } = {}
+const hexToBytesMapSecondKey: { [key: string]: number } = {}
+
+for (let i = 0; i < 16; i++) {
+  const vSecondKey = i
+  const vFirstKey = i * 16
+  const key = i.toString(16).toLowerCase()
+  hexToBytesMapSecondKey[key] = vSecondKey
+  hexToBytesMapSecondKey[key.toUpperCase()] = vSecondKey
+  hexToBytesMapFirstKey[key] = vFirstKey
+  hexToBytesMapFirstKey[key.toUpperCase()] = vFirstKey
+}
+
 export const hexToBytes = (hex: string): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
@@ -100,8 +113,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
   const byteLen = hex.length
   const bytes = new Uint8Array(byteLen / 2)
   for (let i = 0; i < byteLen; i += 2) {
-    const byte = parseInt(hex.slice(i, i + 2), 16)
-    bytes[i / 2] = byte
+    bytes[i / 2] = hexToBytesMapFirstKey[hex[i]] + hexToBytesMapSecondKey[hex[i + 1]]
   }
   return bytes
 }
