@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702590584832,
+  "lastUpdate": 1702693815149,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "76ed351cba0b1a70c5551ea2c30a712e637c1a0b",
-          "message": "tsconfig: fix references (#3147)",
-          "timestamp": "2023-11-07T10:54:33+01:00",
-          "tree_id": "0c4bfe9eb62cf3dc9ab462d9a263da6845070bc3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/76ed351cba0b1a70c5551ea2c30a712e637c1a0b"
-        },
-        "date": 1699351046849,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40205,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39697,
-            "range": "±1.77%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38676,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36048,
-            "range": "±4.64%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37067,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.83%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "karolchojnowski95@gmail.com",
+            "name": "Karol Chojnowski",
+            "username": "kchojn"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a58c6cb1c5f034dfbb2bffd0bb369803b69c5109",
+          "message": "Fix Blake2F gas + output calculation on non-zero aligned inputs (#3201)\n\n* refactor(precompiles/09-blake2f.ts): improve readability and performance by using DataView with byteOffset instead of subarray\r\n\r\nThe changes in this commit refactor the code in the `precompile09` function in the `09-blake2f.ts` file. The changes improve the readability and performance of the code by using the `DataView` constructor with `byteOffset` instead of using `subarray` to create new `DataView` instances.\r\n\r\nBefore the changes:\r\n- The `rounds`, `hRaw`, `mRaw`, and `tRaw` variables were created using `subarray` to extract specific parts of the `data` array buffer.\r\n- The `subarray` method was used with specific indices to create new `DataView` instances.\r\n\r\nAfter the changes:\r\n- The `rounds`, `hRaw`, `mRaw`, and `tRaw` variables are created using the `DataView` constructor with `byteOffset` to directly access the desired parts of the `data` array buffer.\r\n- The `DataView` constructor is used with the appropriate `byteOffset` values to create new `DataView` instances.\r\n\r\nThese changes improve the readability of the code by making it clearer which parts of the `data` array buffer are being accessed. Additionally, using `DataView` with `byteOffset` instead of `subarray` can improve performance by avoiding unnecessary memory allocations.\r\n\r\n* evm: add blake2f test\r\n\r\n* evm: blake2f test: add extra comment\r\n\r\n* evm: fix blake2f \"it.only\"\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2023-12-15T21:25:10-05:00",
+          "tree_id": "0de4800ed6093cbb01d9b0c75e5a8480ccb4637a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a58c6cb1c5f034dfbb2bffd0bb369803b69c5109"
+        },
+        "date": 1702693814468,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40060,
+            "range": "±2.98%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39669,
+            "range": "±1.86%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39223,
+            "range": "±1.85%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37705,
+            "range": "±3.27%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34709,
+            "range": "±5.41%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
