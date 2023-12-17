@@ -224,13 +224,28 @@ export class EVM implements EVMInterface {
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
     let accessGasUsed = BIGINT_0
     if (this.common.isActivatedEIP(6800)) {
-      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
-        message.authcallOrigin ?? message.caller
-      )
-      accessGasUsed += originAccessGas
-      message.gasLimit -= originAccessGas
-      if (this.DEBUG) {
-        debugGas(`Origin access used (${originAccessGas} gas (-> ${message.gasLimit}))`)
+      if (message.depth === 0) {
+        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
+          message.authcallOrigin ?? message.caller
+        )
+        accessGasUsed += originAccessGas
+        message.gasLimit -= originAccessGas
+        if (message.gasLimit < BIGINT_0) {
+          // remove this negative amount from accessGasUsed to get the real gas used and set
+          // gasLimit back to zero and throw OOG
+          accessGasUsed += message.gasLimit
+          message.gasLimit = BIGINT_0
+          if (this.DEBUG) {
+            debugGas(
+              `Origin access charged(${originAccessGas}) caused OOG (-> ${message.gasLimit})`
+            )
+          }
+          return { execResult: OOGResult(accessGasUsed) }
+        } else {
+          if (this.DEBUG) {
+            debugGas(`Origin access used (${originAccessGas} gas (-> ${message.gasLimit}))`)
+          }
+        }
       }
     }
 
@@ -249,20 +264,60 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const sendsValue = message.value !== BIGINT_0
-      const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
-        sendsValue,
-      })
-      accessGasUsed += destAccessGas
-      message.gasLimit -= destAccessGas
-      if (this.DEBUG) {
-        debugGas(`Destination access used (${destAccessGas} gas (-> ${message.gasLimit}))`)
+      if (message.depth === 0) {
+        const sendsValue = message.value !== BIGINT_0
+        const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
+          sendsValue,
+        })
+        accessGasUsed += destAccessGas
+        message.gasLimit -= destAccessGas
+        if (message.gasLimit < BIGINT_0) {
+          // remove this negative amount from accessGasUsed to get the real gas used and set
+          // gasLimit back to zero and throw OOG
+          accessGasUsed += message.gasLimit
+          message.gasLimit = BIGINT_0
+          if (this.DEBUG) {
+            debugGas(
+              `Destination access charged(${destAccessGas}) caused OOG (-> ${message.gasLimit})`
+            )
+          }
+          return { execResult: OOGResult(accessGasUsed) }
+        } else {
+          if (this.DEBUG) {
+            debugGas(`Destination access used (${destAccessGas} gas (-> ${message.gasLimit}))`)
+          }
+        }
       }
     }
 
     // Load `to` account
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
+      if (this.common.isActivatedEIP(6800)) {
+        const absenceProofAccessGas = message.accessWitness!.touchAndChargeProofOfAbsence(
+          message.to
+        )
+        accessGasUsed += absenceProofAccessGas
+        message.gasLimit -= accessGasUsed
+        if (message.gasLimit < BIGINT_0) {
+          // remove this negative amount from accessGasUsed to get the real gas used and set
+          // gasLimit back to zero and throw OOG
+          accessGasUsed += message.gasLimit
+          message.gasLimit = BIGINT_0
+          if (this.DEBUG) {
+            debugGas(
+              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${message.gasLimit})`
+            )
+          }
+          return { execResult: OOGResult(accessGasUsed) }
+        } else {
+          if (this.DEBUG) {
+            debugGas(
+              `Proof of absense access used (${absenceProofAccessGas} gas (-> ${message.gasLimit}))`
+            )
+          }
+        }
+      }
       toAccount = new Account()
     }
     // Add tx value to the `to` account
@@ -340,12 +395,25 @@ export class EVM implements EVMInterface {
 
   protected async _executeCreate(message: Message): Promise<EVMResult> {
     let accessGasUsed = BIGINT_0
+    let gasLimit = message.gasLimit
+
     if (this.common.isActivatedEIP(6800)) {
       const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(message.caller)
       accessGasUsed += originAccessGas
-      message.gasLimit -= originAccessGas
-      if (this.DEBUG) {
-        debugGas(`Origin access used (${originAccessGas} gas (-> ${message.gasLimit}))`)
+      gasLimit -= originAccessGas
+      if (gasLimit < BIGINT_0) {
+        // remove this negative amount from accessGasUsed to get the real gas used and set
+        // gasLimit back to zero and throw OOG
+        accessGasUsed += message.gasLimit
+        gasLimit = BIGINT_0
+        if (this.DEBUG) {
+          debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
+        }
+        return { execResult: OOGResult(accessGasUsed) }
+      } else {
+        if (this.DEBUG) {
+          debugGas(`Origin access used (${originAccessGas} gas (-> ${gasLimit}))`)
+        }
       }
     }
 
@@ -383,11 +451,20 @@ export class EVM implements EVMInterface {
         { sendsValue }
       )
       accessGasUsed += contractCreateAccessGas
-      message.gasLimit -= contractCreateAccessGas
-      if (this.DEBUG) {
-        debugGas(
-          `Contract creation access used (${contractCreateAccessGas} gas (-> ${message.gasLimit}))`
-        )
+      gasLimit -= contractCreateAccessGas
+      if (gasLimit < BIGINT_0) {
+        // remove this negative amount from accessGasUsed to get the real gas used and set
+        // gasLimit back to zero and throw OOG
+        accessGasUsed += message.gasLimit
+        gasLimit = BIGINT_0
+        if (this.DEBUG) {
+          debugGas(`Origin access charged(${contractCreateAccessGas}) caused OOG (-> ${gasLimit})`)
+        }
+        return { execResult: OOGResult(message.gasLimit) }
+      } else {
+        if (this.DEBUG) {
+          debugGas(`Origin access used (${contractCreateAccessGas} gas (-> ${gasLimit}))`)
+        }
       }
     }
 
@@ -409,6 +486,7 @@ export class EVM implements EVMInterface {
       !(equalsBytes(toAccount.codeHash, KECCAK256_NULL) === true)
     ) {
       if (this.DEBUG) {
+        accessGasUsed
         debug(`Returning on address collision`)
       }
       return {
@@ -468,7 +546,8 @@ export class EVM implements EVMInterface {
       return {
         createdAddress: message.to,
         execResult: {
-          executionGasUsed: accessGasUsed,
+          // Query? is there any gas used here i.e. accessGasUsed ?
+          executionGasUsed: BIGINT_0,
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
@@ -480,8 +559,10 @@ export class EVM implements EVMInterface {
       debug(`Start bytecode processing...`)
     }
 
-    let result = await this.runInterpreter(message)
+    // run the message with the updated gas limit and add accessed gas used to the result
+    let result = await this.runInterpreter({ ...message, gasLimit } as Message)
     result.executionGasUsed += accessGasUsed
+
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
@@ -493,6 +574,7 @@ export class EVM implements EVMInterface {
         debugGas(`Add return value size fee (${returnFee} to gas used (-> ${totalGas}))`)
       }
     }
+    gasLimit = message.gasLimit - totalGas
 
     // Check for SpuriousDragon EIP-170 code size limit
     let allowedCodeSize = true
@@ -578,9 +660,22 @@ export class EVM implements EVMInterface {
       result.returnValue !== undefined &&
       result.returnValue.length !== 0
     ) {
-      await this.stateManager.putContractCode(message.to, result.returnValue)
-      if (this.DEBUG) {
-        debug(`Code saved on new contract creation`)
+      const createCompleteAccessGas = message.accessWitness!.touchAndChargeContractCreateCompleted(
+        message.to
+      )
+      gasLimit -= createCompleteAccessGas
+      if (gasLimit < BIGINT_0) {
+        if (this.DEBUG) {
+          debug(`Contract create access (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`)
+        }
+        result = { ...result, ...OOGResult(message.gasLimit) }
+      } else {
+        debug(`Contract create access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`)
+        result.executionGasUsed += createCompleteAccessGas
+        await this.stateManager.putContractCode(message.to, result.returnValue)
+        if (this.DEBUG) {
+          debug(`Code saved on new contract creation`)
+        }
       }
     } else if (CodestoreOOG) {
       // This only happens at Frontier. But, let's do a sanity check;
