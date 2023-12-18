@@ -28,7 +28,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { CLIQUE_EXTRA_SEAL, CLIQUE_EXTRA_VANITY } from './clique.js'
 import { fakeExponential, valuesArrayToHeaderData } from './helpers.js'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JsonHeader } from './types.js'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike } from '@ethereumjs/util'
 
