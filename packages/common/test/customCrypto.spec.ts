@@ -18,6 +18,9 @@ describe('[Common]: Custom Crypto', () => {
     let msg = 'Should initialize with custom keccak256 function and use properly (main constructor)'
     assert.deepEqual(c.customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
 
+    msg = 'Should still work on a copied instance'
+    assert.deepEqual(c.copy().customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
+
     const customChainParams = { name: 'custom', chainId: 123, networkId: 678 }
     c = Common.custom(customChainParams, { customCrypto })
     msg = 'Should initialize with custom keccak256 function and use properly (custom() constructor)'

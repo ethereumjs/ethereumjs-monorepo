@@ -399,13 +399,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x20: KECCAK256
   [
     0x20,
-    function (runState) {
+    function (runState, common) {
       const [offset, length] = runState.stack.popN(2)
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt(bytesToHex(keccak256(data)))
+      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak256)(data)))
       runState.stack.push(r)
     },
   ],
