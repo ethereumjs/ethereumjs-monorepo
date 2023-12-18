@@ -15,18 +15,31 @@ describe('Precompiles: MODEXP', () => {
   const addressStr = '0000000000000000000000000000000000000005'
   const MODEXP = getActivePrecompiles(common).get(addressStr)!
 
-  let n = 0
-  for (const [input, expect] of fuzzerTests) {
-    n++
-    it(`MODEXP edge cases (issue 3168) - case ${n}`, async () => {
-      const result = await MODEXP({
-        data: hexToBytes(input),
-        gasLimit: BigInt(0xffff),
-        common,
-        _EVM: evm,
+  it('should run testdata', async () => {
+    let n = 0
+    for (const [input, expect] of fuzzerTests) {
+      n++
+      it(`MODEXP edge cases (issue 3168) - case ${n}`, async () => {
+        const result = await MODEXP({
+          data: hexToBytes(input),
+          gasLimit: BigInt(0xffff),
+          common,
+          _EVM: evm,
+        })
+        const oput = bytesToHex(result.returnValue)
+        assert.equal(oput, expect)
       })
-      const oput = bytesToHex(result.returnValue)
-      assert.equal(oput, expect)
+    }
+  })
+
+  it.only('should correctly right-pad data if input length is too short', async () => {
+    const gas = BigInt(0xffff)
+    const result = await MODEXP({
+      data: hexToBytes('0x41'),
+      gasLimit: gas,
+      common,
+      _EVM: evm,
     })
-  }
+    assert.ok(result.executionGasUsed === gas)
+  })
 })

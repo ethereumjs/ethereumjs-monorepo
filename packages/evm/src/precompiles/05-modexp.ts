@@ -103,7 +103,7 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
-  const data = opts.data
+  const data = setLengthRight(opts.data, 96)
 
   let adjustedELen = getAdjustedExponentLength(data)
   if (adjustedELen < BIGINT_1) {
