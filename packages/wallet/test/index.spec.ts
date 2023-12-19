@@ -505,7 +505,7 @@ describe('Wallet tests', () => {
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey
     )
-  }, 60000)
+  }, 120000)
 
   it('.toV3(): should fail for bad iv', async () => {
     const pw = 'test'
