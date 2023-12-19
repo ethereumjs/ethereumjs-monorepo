@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-import type { VerkleNode } from './node'
-import type { WalkController } from './util/walkController'
+import type { VerkleNode } from './node/index.js'
+import type { WalkController } from './util/walkController.js'
 import type { DB } from '@ethereumjs/util'
 
 // Field representation of a commitment
