@@ -1,9 +1,6 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 // eslint-disable-next-line no-restricted-imports
-import {
-  bytesToHex as _bytesToUnprefixedHex,
-  hexToBytes as _unprefixedHexToBytes,
-} from 'ethereum-cryptography/utils.js'
+import { bytesToHex as _bytesToUnprefixedHex } from 'ethereum-cryptography/utils.js'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
@@ -16,6 +13,34 @@ const BIGINT_0 = BigInt(0)
  * @deprecated
  */
 export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+
+// hexToBytes cache
+const hexToBytesMapFirstKey: { [key: string]: number } = {}
+const hexToBytesMapSecondKey: { [key: string]: number } = {}
+
+for (let i = 0; i < 16; i++) {
+  const vSecondKey = i
+  const vFirstKey = i * 16
+  const key = i.toString(16).toLowerCase()
+  hexToBytesMapSecondKey[key] = vSecondKey
+  hexToBytesMapSecondKey[key.toUpperCase()] = vSecondKey
+  hexToBytesMapFirstKey[key] = vFirstKey
+  hexToBytesMapFirstKey[key.toUpperCase()] = vFirstKey
+}
+
+/**
+ * NOTE: only use this function if the string is even, and only consists of hex characters
+ * If this is not the case, this function could return weird results
+ * @deprecated
+ */
+function _unprefixedHexToBytes(hex: string): Uint8Array {
+  const byteLen = hex.length
+  const bytes = new Uint8Array(byteLen / 2)
+  for (let i = 0; i < byteLen; i += 2) {
+    bytes[i / 2] = hexToBytesMapFirstKey[hex[i]] + hexToBytesMapSecondKey[hex[i + 1]]
+  }
+  return bytes
+}
 
 /**
  * @deprecated
@@ -96,14 +121,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
   if (hex.length % 2 !== 0) {
     hex = padToEven(hex)
   }
-
-  const byteLen = hex.length
-  const bytes = new Uint8Array(byteLen / 2)
-  for (let i = 0; i < byteLen; i += 2) {
-    const byte = parseInt(hex.slice(i, i + 2), 16)
-    bytes[i / 2] = byte
-  }
-  return bytes
+  return _unprefixedHexToBytes(hex)
 }
 
 /******************************************/
