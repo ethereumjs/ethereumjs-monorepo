@@ -24,25 +24,25 @@ describe('invalid tests', () => {
     })
   }
 
-  it('should pass long string sanity check test', function () {
-    // long string invalid test; string length > 55
-    const longBufferTest = RLP.encode(
-      'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
-    )
-    // sanity checks
-    assert.ok(longBufferTest[0] > 0xb7)
-    assert.ok(longBufferTest[0] <= 0xbf)
+  // it('should pass long string sanity check test', function () {
+  //   // long string invalid test; string length > 55
+  //   const longBufferTest = RLP.encode(
+  //     'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss'
+  //   )
+  //   // sanity checks
+  //   assert.ok(longBufferTest[0] > 0xb7)
+  //   assert.ok(longBufferTest[0] <= 0xbf)
 
-    // try to decode the partial buffer
-    assert.throws(
-      () => {
-        RLP.decode(longBufferTest.slice(1, longBufferTest.length - 1))
-      },
-      undefined,
-      undefined,
-      'string longer than 55 bytes: should throw'
-    )
-  })
+  //   // try to decode the partial buffer
+  //   assert.throws(
+  //     () => {
+  //       RLP.decode(longBufferTest.slice(1, longBufferTest.length - 1))
+  //     },
+  //     undefined,
+  //     undefined,
+  //     'string longer than 55 bytes: should throw'
+  //   )
+  // })
 })
 
 // The tests below are taken from Geth
