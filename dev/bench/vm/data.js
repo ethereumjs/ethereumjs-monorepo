@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1703063568732,
+  "lastUpdate": 1703068265816,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0b03c8a858f7d77f3ccc1cf6ea95cb63489de5d7",
-          "message": "util/wallet: fix more nested tests (#3152)",
-          "timestamp": "2023-11-09T11:09:18+01:00",
-          "tree_id": "5525e9dc00043f5966058008a21c4303a2c78181",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0b03c8a858f7d77f3ccc1cf6ea95cb63489de5d7"
-        },
-        "date": 1699524735172,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40283,
-            "range": "±2.46%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39581,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38817,
-            "range": "±2.25%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36249,
-            "range": "±4.00%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37436,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.92%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1b035d020733f6fdc8c0bf6204408838386748c8",
+          "message": "Codecov tuning (#3207)\n\n* Add coverage checking and reporting for wallet CI runs\r\n\r\n* Add coverage checking and reporting for genesis CI runs\r\n\r\n* Add coverage run to rlp package workflow\r\n\r\n* Use coverage script for CI coverage report generation\r\n\r\n* Just run node tests for RLP\r\n\r\n* Increase wallet test timeouts\r\n\r\n* Increase wallet test timeout\r\n\r\n* Only run node tests for coverage\r\n\r\n* Comment out tests to see how codecov handles report generation and processing\r\n\r\n* Add arguments for codecov upload action\r\n\r\n* Add arguments for codecov upload action\r\n\r\n* Revert \"Comment out tests to see how codecov handles report generation and processing\"\r\n\r\nThis reverts commit 783dae067e6d6ea43e0295e1dfddd61fb33652a8.\r\n\r\n* Revert \"Add arguments for codecov upload action\"\r\n\r\nThis reverts commit 553bcd5ed89c4c101bc53d4ff0deaa4407f2ae7a.\r\n\r\n* Revert \"Add arguments for codecov upload action\"\r\n\r\nThis reverts commit dff18e5ec968206bf64f5882f1b9be9686da1ea4.\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2023-12-20T11:28:14+01:00",
+          "tree_id": "34c9f04542ff382fae366db3cc24e41de0346627",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1b035d020733f6fdc8c0bf6204408838386748c8"
+        },
+        "date": 1703068264568,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41397,
+            "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38896,
+            "range": "±3.57%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39088,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39055,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37530,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
