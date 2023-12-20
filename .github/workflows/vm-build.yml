@@ -39,6 +39,7 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
+          verbose: true
 
   test-vm-state:
     runs-on: ubuntu-latest
