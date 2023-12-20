@@ -32,7 +32,7 @@ Here are some use cases:
 - Sync the main Ethereum networks (`mainnet` (experimental), `sepolia`, `holesky`, ...)
 - Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
-- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./lib/sync/txpool.ts)
+- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./src/sync/txpool.ts)
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
@@ -61,7 +61,7 @@ The client can also be easily installed and built from source:
 1. Clone the EthereumJS monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Run `npm i` from the root folder to install dependencies and build
 3. Now the client can be run from the `packages/client` folder with `npm run client:start`
-4. Run `npm client:start -- --help` for help on the CLI parameters
+4. Run `npm run client:start -- --help` for help on the CLI parameters
 
 ### Docker
 
@@ -328,7 +328,7 @@ ethereumjs --rpc --maxPeers=0
 ```
 
 Currently only a small subset of `RPC` methods are implemented.(\*) You can have a look at the
-[./lib/rpc/modules/](./lib/rpc/modules) source folder or the tracking issue
+[./src/rpc/modules/](./src/rpc/modules) source folder or the tracking issue
 [#1114](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1114) for an overview.
 
 (*) Side note: implementing RPC methods is actually an extremely thankful task for a first-time
@@ -419,7 +419,7 @@ For an overview on the design goals which served as a guideline on design decisi
 
 ### Client Customization
 
-To get a start on customizing the client and using it programmatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea of how an [EthereumClient](./lib/client.ts) instance is invoked programmatically.
+To get a start on customizing the client and using it programmatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea of how an [EthereumClient](./src/client.ts) instance is invoked programmatically.
 
 We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
 
