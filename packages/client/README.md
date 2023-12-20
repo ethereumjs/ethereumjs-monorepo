@@ -61,7 +61,7 @@ The client can also be easily installed and built from source:
 1. Clone the EthereumJS monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Run `npm i` from the root folder to install dependencies and build
 3. Now the client can be run from the `packages/client` folder with `npm run client:start`
-4. Run `npm client:start -- --help` for help on the CLI parameters
+4. Run `npm run client:start -- --help` for help on the CLI parameters
 
 ### Docker
 
