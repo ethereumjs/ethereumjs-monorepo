@@ -94,25 +94,25 @@ describe('HD Key tests', () => {
     )
   }, 30000)
 
-  // it('.getWallet()', () => {
-  //   assert.deepEqual(
-  //     fixturehd.getWallet().getPrivateKeyString(),
-  //     '0x26cc9417b89cd77c4acdbe2e3cd286070a015d8e380f9cd1244ae103b7d89d81'
-  //   )
-  //   assert.deepEqual(
-  //     fixturehd.getWallet().getPublicKeyString(),
-  //     '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1'
-  //   )
-  //   const hdnode = EthereumHDKey.fromExtendedKey(
-  //     'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
-  //   )
-  //   assert.throws(function () {
-  //     hdnode.getWallet().getPrivateKeyString()
-  //   }, /^This is a public key only wallet$/)
-  //   assert.deepEqual(
-  //     hdnode.getWallet().getPublicKeyString(),
-  //     '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
-  //     'should work with public nodes'
-  //   )
-  // }, 30000)
+  it('.getWallet()', () => {
+    assert.deepEqual(
+      fixturehd.getWallet().getPrivateKeyString(),
+      '0x26cc9417b89cd77c4acdbe2e3cd286070a015d8e380f9cd1244ae103b7d89d81'
+    )
+    assert.deepEqual(
+      fixturehd.getWallet().getPublicKeyString(),
+      '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1'
+    )
+    const hdnode = EthereumHDKey.fromExtendedKey(
+      'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
+    )
+    assert.throws(function () {
+      hdnode.getWallet().getPrivateKeyString()
+    }, /^This is a public key only wallet$/)
+    assert.deepEqual(
+      hdnode.getWallet().getPublicKeyString(),
+      '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
+      'should work with public nodes'
+    )
+  }, 30000)
 })
