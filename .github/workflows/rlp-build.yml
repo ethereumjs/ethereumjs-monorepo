@@ -43,5 +43,3 @@ jobs:
         with:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: rlp
-          fail_ci_if_error: true
-          verbose: true
