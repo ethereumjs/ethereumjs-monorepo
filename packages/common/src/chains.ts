@@ -1,4 +1,4 @@
-import type { ChainConfig } from './types'
+import type { ChainConfig } from './types.js'
 
 type ChainsDict = {
   [key: string]: ChainConfig

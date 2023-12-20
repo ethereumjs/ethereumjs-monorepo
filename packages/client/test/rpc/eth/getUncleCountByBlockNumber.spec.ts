@@ -27,7 +27,7 @@ describe(method, () => {
   it('call with valid arguments', async () => {
     const mockUncleCount = 3
 
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x1'])
@@ -35,7 +35,7 @@ describe(method, () => {
   })
 
   it('call with invalid block number', async () => {
-    const manager = createManager(createClient({ chain: createChain() }))
+    const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x5a'])

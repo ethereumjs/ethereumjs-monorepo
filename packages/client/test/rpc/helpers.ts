@@ -84,7 +84,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: Partial<createClientArgs> = {}) {
+export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
@@ -145,6 +145,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
+    await execution.open()
   }
 
   let peers = [1, 2, 3]
@@ -192,8 +193,8 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   return client as EthereumClient
 }
 
-export function baseSetup(clientOpts: any = {}) {
-  const client = createClient(clientOpts)
+export async function baseSetup(clientOpts: any = {}) {
+  const client = await createClient(clientOpts)
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
@@ -235,7 +236,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
 
   // for the client we can pass both genesisState and genesisStateRoot and let it s
-  const client = createClient({
+  const client = await createClient({
     ...clientOpts,
     commonChain: common,
     blockchain,
