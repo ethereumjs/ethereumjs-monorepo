@@ -5,8 +5,7 @@ import { run, mark, logMem } from 'micro-bmark'
 import { Trie } from '../dist/cjs/index.js'
 import { keys } from './keys'
 
-import { type DB, Address, Account, LevelDB } from '@ethereumjs/util'
-import { Snapshot } from '@ethereumjs/statemanager'
+import type { DB } from '@ethereumjs/util'
 
 export function createSuite(db: DB<string, string>) {
   const trie = new Trie({ db })
