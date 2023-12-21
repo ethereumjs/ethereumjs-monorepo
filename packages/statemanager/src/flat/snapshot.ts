@@ -39,7 +39,6 @@ function concatenateUint8Arrays(arrays: Uint8Array[]) {
   return concatenatedArray
 }
 
-// TODO don't extend Cache
 export class Snapshot {
   _db: LevelDB<Uint8Array, Uint8Array>
   _debug: Debugger
@@ -86,10 +85,7 @@ export class Snapshot {
     return this._db.get(key)
   }
 
-  // TODO make this a private internal function
-  // TODO make sure this function isn't returning prefixed keys
-  //  since keys can be used to construct tries
-  getAccounts(): Promise<[Uint8Array, Uint8Array | undefined][]> {
+  _getAccounts(): Promise<[Uint8Array, Uint8Array | undefined][]> {
     const prefix = ACCOUNT_PREFIX
     return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
@@ -119,8 +115,6 @@ export class Snapshot {
     await this.clearAccountStorage(address)
   }
 
-  // TODO why do we update codeRoot of account for putCode but not storageRoot for putStorageSlot?
-  // ANSWER I'm seeing it's because during merklize account storageRoot's are updated en masse
   async putStorageSlot(address: Address, slot: Uint8Array, value: Uint8Array): Promise<void> {
     const key = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot)])
     await this._saveCachePreState(key)
@@ -135,7 +129,6 @@ export class Snapshot {
   async getStorageSlots(address: Address): Promise<[Uint8Array, Uint8Array | undefined][]> {
     const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
 
-    // figure out how to unprefix keys because keys neet to be only slot keys here for merklize call later to calculate the right root
     return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 
@@ -185,10 +178,8 @@ export class Snapshot {
   async merkleize(): Promise<Uint8Array> {
     // Merkleize all the storage tries in the db
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
-    const accounts = await this.getAccounts()
+    const accounts = await this._getAccounts()
     const leaves: [Uint8Array, Uint8Array][] = []
-    // console.log('dbg200')
-    // console.log(accounts)
     accounts.map(([key, value]) => {
       const accountKey = key.slice(ACCOUNT_PREFIX.length)
       // TODO update the account's stateRoot field if there exist
@@ -197,10 +188,6 @@ export class Snapshot {
 
       const storageRoot = storageRoots[bytesToHex(accountKey)]
       let v = value
-      // console.log('dbg201')
-      // console.log(bytesToHex(key))
-      // console.log(value)
-      // console.log(v)
       if (storageRoot !== undefined) {
         const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
         acc.storageRoot = storageRoot
@@ -208,7 +195,6 @@ export class Snapshot {
       }
       leaves.push([accountKey, v ?? KECCAK256_NULL])
     })
-    // console.log(leaves)
     return merkleizeList(leaves)
   }
 
@@ -230,8 +216,6 @@ export class Snapshot {
       tries[hashedAddrString].push([slotKey, value])
     }
     const roots: any = {}
-    // console.log('dbg300')
-    // console.log(tries)
     for (const [address, leaves] of Object.entries(tries)) {
       roots[address] = merkleizeList(leaves as Uint8Array[][])
     }
@@ -244,9 +228,6 @@ export class Snapshot {
   // TODO need to implement more performant way of deleting by prefix diffs
   async revert(): Promise<void> {
     this._checkpoints -= 1
-    // if (this.DEBUG) {
-    //   this._debug(`Revert to checkpoint ${this._checkpoints}`)
-    // }
     const diffMap = this._diffCache.pop()!
     for (const entry of diffMap.entries()) {
       const addressHex = entry[0]
@@ -264,9 +245,6 @@ export class Snapshot {
   }
 
   async merge(): Promise<void> {
-    // if (this.DEBUG) {
-    //   this._debug(`Commit to checkpoint ${this._checkpoints}`)
-    // }
     const diffMap = this._diffCache.pop()!
     for (const entry of diffMap.entries()) {
       const addressHex = entry[0]
@@ -278,9 +256,9 @@ export class Snapshot {
     }
   }
 
-  // /**
-  //  * Commits to current state of cache (no effect on trie).
-  //  */
+  /**
+   * Commits to current state of cache (no effect on trie).
+   */
   async commit(): Promise<void> {
     if (this._checkpoints === 0) throw new Error('No outstanding checkpoints to commit')
     this._checkpoints -= 1
@@ -288,15 +266,12 @@ export class Snapshot {
     await this.merge()
   }
 
-  // /**
-  //  * Marks current state of cache as checkpoint, which can
-  //  * later on be reverted or committed.
-  //  */
+  /**
+   * Marks current state of cache as checkpoint, which can
+   * later on be reverted or committed.
+   */
   checkpoint(): void {
     this._checkpoints += 1
-    // if (this.DEBUG) {
-    //   this._debug(`New checkpoint ${this._checkpoints}`)
-    // }
     this._diffCache.push(new Map<string, SnapshotElement | undefined>())
   }
 }
