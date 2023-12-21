@@ -52,8 +52,6 @@ export class FlatStateManager implements EVMStateManagerInterface {
 
   originalStorageCache: OriginalStorageCache
 
-  // protected readonly _prefixCodeHashes: boolean
-  // protected readonly _prefixStorageTrieKeys: boolean
   // protected readonly _accountCacheSettings: CacheSettings
   // protected readonly _storageCacheSettings: CacheSettings
   // protected readonly _codeCacheSettings: CacheSettings
@@ -61,8 +59,6 @@ export class FlatStateManager implements EVMStateManagerInterface {
   public readonly common: Common
 
   protected _checkpointCount: number
-
-  // protected _proofTrie: Trie
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -227,14 +223,13 @@ export class FlatStateManager implements EVMStateManagerInterface {
 
     const slots = (await this._snapshot.getStorageSlots(address)) as Uint8Array[][]
 
-    // remove any prefixes from keys to ensure it's the post-hash that will result in accurate storageRoot
+    // remove any prefixes from keys to ensure raw keys are being used for root calcuation
     slots.map((leaf) => {
       this.removeStorageSlotKeyPrefix(leaf)
     })
 
-    // TODO merkleizing like this is an expensive operation - see if it's possible to use a trie for updating roots
     // update contract storageRoot
-    account.storageRoot = merkleizeList(slots)
+    account.storageRoot = merkleizeList(slots) // TODO merkleizing like this is an expensive operation - see if it's possible to use a trie for updating roots
 
     await this.putAccount(address, account)
   }
@@ -419,7 +414,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Clears all underlying caches
    */
   clearCaches() {
-    // throw new Error('Not yet implemented')
+    // currently, not using any caches, and so clearCaches doesn't do anything
     return
   }
 }
