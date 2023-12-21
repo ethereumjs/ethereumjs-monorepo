@@ -85,6 +85,7 @@ describe('StateManager -> General', () => {
         },
       })
 
+      // TODO caches are not yet integrated with the FSM, so this test will fail for it until caches are implemented
       smCopy = sm.shallowCopy()
       assert.equal(
         smCopy['_accountCacheSettings'].type,
