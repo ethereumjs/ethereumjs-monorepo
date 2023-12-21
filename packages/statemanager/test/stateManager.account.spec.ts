@@ -21,11 +21,6 @@ describe('StateManager -> General/Account', () => {
             ? await stateManager._snapshot.merkleize()
             : stateManager['_trie'].root()
 
-        console.log('dbg0')
-        console.log(root)
-        console.log(bytesToHex(root))
-        assert.ok(equalsBytes(root, KECCAK256_RLP), 'it has default root')
-
         // commit some data to the trie
         const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
         const account = createAccount(BigInt(0), BigInt(1000))

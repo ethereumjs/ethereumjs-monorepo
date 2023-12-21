@@ -11,7 +11,6 @@ import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
 import type { Proof } from '../index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
 import type { StorageRange } from '@ethereumjs/common/src'
-import type { Trie } from '@ethereumjs/trie'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
@@ -22,11 +21,6 @@ const { debug: createDebugLogger } = debugDefault
  */
 export interface FlatStateManagerOpts {
   snapshot?: Snapshot
-
-  /**
-   * A {@link Trie} instance
-   */
-  // trie?: Trie
 
   /**
    * The common to use
@@ -298,6 +292,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * @param address address to get proof of
    * @param storageSlots storage slots to get proof of
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
     throw new Error('Not yet implemented')
   }
@@ -306,6 +301,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
    * @param proof the proof to prove
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async verifyProof(proof: Proof): Promise<boolean> {
     throw new Error('Not yet implemented')
   }
@@ -328,6 +324,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * the state trie.
    * @param stateRoot - The state-root to reset the instance to
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async setStateRoot(stateRoot: Uint8Array, clearCache: boolean = true): Promise<void> {
     // potentially don't need setStateRoot and can stub it out like in ethersStateManager
     //
@@ -343,6 +340,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Keys are are the storage keys, values are the storage values as strings.
    * Both are represented as hex strings without the `0x` prefix.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async dumpStorage(address: Address): Promise<StorageDump> {
     throw new Error('Not yet implemented')
   }
@@ -356,6 +354,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    @returns {Promise<StorageRange>} - A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
    The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
     throw new Error('Not yet implemented')
   }
@@ -365,6 +364,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Will error if there are uncommitted checkpoints on the instance.
    * @param initState address -> balance | [balance, code, storage]
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async generateCanonicalGenesis(initState: any): Promise<void> {
     throw new Error('Not yet implemented')
   }
@@ -372,6 +372,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
   /**
    * Checks whether there is a state corresponding to a stateRoot
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async hasStateRoot(root: Uint8Array): Promise<boolean> {
     throw new Error('Not yet implemented')
   }
@@ -398,6 +399,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * Cache values are generally not copied along regardless of the
    * `downlevelCaches` setting.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   shallowCopy(downlevelCaches: boolean = true): FlatStateManager {
     const common = this.common.copy()
     common.setHardfork(this.common.hardfork())
