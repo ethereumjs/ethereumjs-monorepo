@@ -1,15 +1,12 @@
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, KECCAK256_RLP, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { equalsBytes } from 'ethereum-cryptography/utils.js'
 import { assert, describe, it } from 'vitest'
 
-import { Snapshot } from '../../src/index.js'
+import { FlatStateManager, Snapshot } from '../../src/index.js'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
-
-// const StateManager = require('../../../../dist/state/stateManager').default
 
 async function merkleizeViaTrie(leaves: [Address, Uint8Array][]) {
   const trie = new Trie({ useKeyHashing: true })
@@ -99,7 +96,15 @@ describe('snapshot get storage slots for address', () => {
 
     // TODO assert to check accuracy of returned accounts
     // Should only get slots for given address
-    // const val = await snapshot.getStorageSlots(addrs[0])
+    // for (let i = 0; i < addrs.length; i++) {
+    //   const actualSlots = await snapshot.getStorageSlots(addrs[0])
+    //   assert.ok(slots.length === actualSlots.length)
+    //   for (let j = 0; j < actualSlots.length; j++) {
+    //     const s = actualSlots[j]
+    //     assert.deepEqual(bytesToHex(s[0]), bytesToHex(slots[i][0]))
+    //     assert.deepEqual(bytesToHex(s[1]), bytesToHex(slots[i][1]))
+    //   }
+    // }
   })
 })
 
@@ -133,51 +138,51 @@ describe('snapshot merkleize', () => {
     )
   })
 
-  //   it('should merkleize accounts with storage', async () => {
-  //     const snapshot = new Snapshot()
-  //     const addrs = [
-  //       hexToBytes('0x' + '3'.repeat(40)), // Hash starts with 0x5b
-  //       hexToBytes('0x' + '4'.repeat(40)), // Hash starts with 0xa8
-  //       hexToBytes('0x' + '5'.repeat(40)), // Hash starts with 0x42
-  //     ].map((e) => new Address(e))
+  // it('should merkleize accounts with storage', async () => {
+  //   const snapshot = new Snapshot()
+  //   const addrs = [
+  //     hexToBytes('0x' + '3'.repeat(40)), // Hash starts with 0x5b
+  //     hexToBytes('0x' + '4'.repeat(40)), // Hash starts with 0xa8
+  //     hexToBytes('0x' + '5'.repeat(40)), // Hash starts with 0x42
+  //   ].map((e) => new Address(e))
 
-  //     // Insert an empty account for all the addresses
-  //     const acc = new Account()
-  //     for (const addr of addrs) {
-  //       await snapshot.putAccount(addr, acc)
-  //     }
+  //   // Insert an empty account for all the addresses
+  //   const acc = new Account()
+  //   for (const addr of addrs) {
+  //     await snapshot.putAccount(addr, acc)
+  //   }
 
-  //     const state = new StateManager()
-  //     await state.checkpoint()
-  //     for (const addr of addrs) {
-  //       await state.putAccount(addr, new Account())
-  //     }
+  //   const state = new FlatStateManager()
+  //   await state.checkpoint()
+  //   for (const addr of addrs) {
+  //     await state.putAccount(addr, new Account())
+  //   }
 
-  //     // Insert two of these slots for each account
-  //     const slots = [
-  //       [hexToBytes('0x' + '21'.repeat(32)), hexToBytes('0x' + '2222')],
-  //       [hexToBytes('0x' + '22'.repeat(32)), hexToBytes('0x' + '3333')],
-  //       [hexToBytes('0x' + '23'.repeat(32)), hexToBytes('0x' + '4444')],
-  //     ]
-  //     for (let i = 0; i < addrs.length; i++) {
-  //       const j1 = i
-  //       const j2 = (i + 1) % addrs.length
-  //       await snapshot.putStorageSlot(addrs[i], slots[j1][0], slots[j1][1])
-  //       await state.putContractStorage(addrs[i], slots[j1][0], slots[j1][1])
-  //       await snapshot.putStorageSlot(addrs[i], slots[j2][0], slots[j2][1])
-  //       await state.putContractStorage(addrs[i], slots[j2][0], slots[j2][1])
-  //     }
+  //   // Insert two of these slots for each account
+  //   const slots = [
+  //     [hexToBytes('0x' + '21'.repeat(32)), hexToBytes('0x' + '2222')],
+  //     [hexToBytes('0x' + '22'.repeat(32)), hexToBytes('0x' + '3333')],
+  //     [hexToBytes('0x' + '23'.repeat(32)), hexToBytes('0x' + '4444')],
+  //   ]
+  //   for (let i = 0; i < addrs.length; i++) {
+  //     const j1 = i
+  //     const j2 = (i + 1) % addrs.length
+  //     await snapshot.putStorageSlot(addrs[i], slots[j1][0], slots[j1][1])
+  //     await state.putContractStorage(addrs[i], slots[j1][0], slots[j1][1])
+  //     await snapshot.putStorageSlot(addrs[i], slots[j2][0], slots[j2][1])
+  //     await state.putContractStorage(addrs[i], slots[j2][0], slots[j2][1])
+  //   }
 
-  //     await state.commit()
-  //     const expectedRoot = await state.getStateRoot()
+  //   await state.commit()
+  //   const expectedRoot = await state.getStateRoot()
 
-  //     const root = await snapshot.merkleize()
-  //     assert.equal(
-  //       JSON.stringify(root),
-  //       JSON.stringify(expectedRoot),
-  //       `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
-  //     )
-  //   })
+  //   const root = await snapshot.merkleize()
+  //   assert.equal(
+  //     bytesToHex(root),
+  //     bytesToHex(expectedRoot),
+  //     `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
+  //   )
+  // })
 })
 
 describe('snapshot checkpointing', () => {
@@ -230,7 +235,7 @@ describe('snapshot checkpointing', () => {
   it('should commit change after checkpoint', async () => {
     const snapshot = new Snapshot()
     const addr = new Address(hexToBytes('0x' + '3'.repeat(40)))
-    let acc = new Account()
+    const acc = new Account()
 
     await snapshot.putAccount(addr, acc)
 
@@ -247,14 +252,7 @@ describe('snapshot checkpointing', () => {
     await snapshot.commit()
 
     const res = await snapshot.getAccount(addr)
-
-    acc = new Account()
-    acc.codeHash = keccak256(hexToBytes('0x' + 'abab'))
-
-    assert.ok(
-      res !== undefined &&
-        JSON.stringify(Account.fromAccountData(res)) ===
-          JSON.stringify(Account.fromAccountData(acc.serialize()))
-    )
+    assert.ok(res !== undefined, 'Account exists in snapshot')
+    assert.deepEqual(Account.fromRlpSerializedAccount(res as Uint8Array), acc)
   })
 })
