@@ -72,6 +72,13 @@ export interface CustomCrypto {
    * Test
    */
   keccak256?: (msg: Uint8Array) => Uint8Array
+  ecrecover?: (
+    msgHash: Uint8Array,
+    v: bigint,
+    r: Uint8Array,
+    s: Uint8Array,
+    chainId?: bigint
+  ) => Uint8Array
 }
 
 interface BaseOpts {

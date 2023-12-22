@@ -45,14 +45,16 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
     throw new Error(msg)
   }
 
+  const keccackFunction = tx.common.customCrypto.keccak256 ?? keccak256
+
   if (Object.isFrozen(tx)) {
     if (!tx.cache.hash) {
-      tx.cache.hash = keccak256(tx.serialize())
+      tx.cache.hash = keccackFunction(tx.serialize())
     }
     return tx.cache.hash
   }
 
-  return keccak256(tx.serialize())
+  return keccackFunction(tx.serialize())
 }
 
 /**
@@ -82,7 +84,8 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
   validateHighS(tx)
 
   try {
-    const sender = ecrecover(
+    const erecoverFunction = tx.common.customCrypto.ecrecover ?? ecrecover
+    const sender = erecoverFunction(
       msgHash,
       v!,
       bigIntToUnpaddedBytes(r!),
