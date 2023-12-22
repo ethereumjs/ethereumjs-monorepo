@@ -10,7 +10,8 @@ import type { EIP2718CompatibleTx } from '../types'
 import type { Input } from '@ethereumjs/rlp'
 
 export function getHashedMessageToSign(tx: EIP2718CompatibleTx): Uint8Array {
-  return keccak256(tx.getMessageToSign())
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  return keccakFunction(tx.getMessageToSign())
 }
 
 export function serialize(tx: EIP2718CompatibleTx, base?: Input): Uint8Array {
