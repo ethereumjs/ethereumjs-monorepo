@@ -2,6 +2,7 @@ import {
   KECCAK256_RLP,
   MapDB,
   bytesToHex,
+  concatBytes,
   equalsBytes,
   randomBytes,
   unprefixedHexToBytes,
@@ -251,3 +252,26 @@ for (const { constructor, defaults, title } of [
     })
   })
 }
+
+describe('keyHashingFunction', async () => {
+  it('uses correct hash function', async () => {
+    const keyHashingFunction = (msg: Uint8Array) => {
+      return concatBytes(msg, Uint8Array.from([1]))
+    }
+    const c = {
+      customCrypto: {
+        keccak256: (msg: Uint8Array) => msg,
+      },
+    }
+
+    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithCommon = await Trie.create({ common: c })
+
+    assert.equal(
+      bytesToHex(trieWithHashFunction.root()),
+      '0x8001',
+      'used hash function from customKeyHashingFunction'
+    )
+    assert.equal(bytesToHex(trieWithCommon.root()), '0x80', 'used hash function from common')
+  })
+})

@@ -96,6 +96,8 @@ export class Trie {
         throw new Error('`valueEncoding` can only be set if a `db` is provided')
       }
       this._opts = { ...this._opts, ...opts }
+      this._opts.useKeyHashingFunction =
+        opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak256
 
       valueEncoding =
         opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
@@ -136,13 +138,15 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
+    const keccakFunction =
+      opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
     let key = ROOT_DB_KEY
 
     const encoding =
       opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
 
     if (opts?.useKeyHashing === true) {
-      key = (opts?.useKeyHashingFunction ?? keccak256).call(undefined, ROOT_DB_KEY) as Uint8Array
+      key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
     }
     if (opts?.keyPrefix !== undefined) {
       key = concatBytes(opts.keyPrefix, key)
