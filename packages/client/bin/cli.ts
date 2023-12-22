@@ -21,7 +21,7 @@ import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
 import readline from 'readline'
-import yargs from 'yargs'
+import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../src/client'
@@ -47,7 +47,8 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-const args: ClientOpts = yargs(hideBin(process.argv))
+const args: ClientOpts = yargs
+  .default(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
   })
