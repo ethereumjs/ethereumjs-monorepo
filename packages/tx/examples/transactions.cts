@@ -1,6 +1,6 @@
 // This files contain examples on how to use this module.
-// You can run them with ts-node, as this project is developed in TypeScript.
-// Install the dependencies and run `npx ts-node examples/transactions.ts`
+// You can run them with tsx, as this project is developed in TypeScript.
+// Install the dependencies and run `npx tsx examples/transactions.ts`
 
 import { LegacyTransaction } from '../dist/cjs'
 import { bytesToHex, toBytes, hexToBytes } from '@ethereumjs/util'
