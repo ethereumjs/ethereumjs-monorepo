@@ -142,7 +142,7 @@ export class AccessWitness {
 
   touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number) {
     let gas = BIGINT_0
-    for (let chunkNum = startPc / 31; chunkNum <= endPc / 31; chunkNum++) {
+    for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
       gas += this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
     }

@@ -421,7 +421,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    this._state[bytesToHex(storageKey)] = bytesToHex(value)
+    this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
   }
 
   /**
