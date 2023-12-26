@@ -21,13 +21,11 @@ import {
   AccessWitness,
   BALANCE_LEAF_KEY,
   CODE_KECCAK_LEAF_KEY,
-  CODE_OFFSET,
   CODE_SIZE_LEAF_KEY,
-  HEADER_STORAGE_OFFSET,
-  MAIN_STORAGE_OFFSET,
   NONCE_LEAF_KEY,
-  VERKLE_NODE_WIDTH,
   VERSION_LEAF_KEY,
+  getTreeIndexesForStorageSlot,
+  getTreeIndicesForCodeChunk,
 } from './accessWitness.js'
 import { AccountCache, CacheType, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
@@ -308,10 +306,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   getTreeKeyForCodeChunk(address: Address, chunkId: number) {
-    return getKey(
-      getStem(address, Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)),
-      toBytes((CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH)
-    )
+    const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
+    return getKey(getStem(address, treeIndex), toBytes(subIndex))
   }
 
   chunkifyCode(code: Uint8Array) {
@@ -325,17 +321,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   getTreeKeyForStorageSlot(address: Address, storageKey: number) {
-    let position: number
-    if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
-      position = HEADER_STORAGE_OFFSET + storageKey
-    } else {
-      position = MAIN_STORAGE_OFFSET + storageKey
-    }
+    const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
-    return getKey(
-      getStem(address, Math.floor(position / VERKLE_NODE_WIDTH)),
-      toBytes(position % VERKLE_NODE_WIDTH)
-    )
+    return getKey(getStem(address, treeIndex), toBytes(subIndex))
   }
 
   /**

@@ -911,6 +911,18 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_RANGE)
       }
 
+      if (common.isActivatedEIP(6800)) {
+        const contract = runState.interpreter.getAddress()
+        const startOffset = Math.min(runState.code.length, runState.programCounter - numToPush + 1)
+        const endOffset = Math.min(runState.code.length, startOffset + numToPush)
+        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+          contract,
+          startOffset,
+          endOffset
+        )
+        runState.interpreter.useGas(statelessGas, `PUSH`)
+      }
+
       if (!runState.shouldDoJumpAnalysis) {
         runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush

@@ -1,4 +1,4 @@
-import { bytesToHex, toBytes, BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0, bytesToHex, toBytes } from '@ethereumjs/util'
 import { getKey, getStem } from '@ethereumjs/verkle'
 
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
@@ -140,6 +140,15 @@ export class AccessWitness {
     return gas
   }
 
+  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number) {
+    let gas = BIGINT_0
+    for (let chunkNum = startPc / 31; chunkNum <= endPc / 31; chunkNum++) {
+      const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
+      gas += this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
+    }
+    return gas
+  }
+
   touchAddressOnWriteAndComputeGas(
     address: Address,
     treeIndex: number,
@@ -249,4 +258,27 @@ export class AccessWitness {
     // TODO - add merging accessWitnesses into the current one
     return
   }
+}
+
+export function getTreeIndexesForStorageSlot(storageKey: number): {
+  treeIndex: number
+  subIndex: number
+} {
+  let position: number
+  if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
+    position = HEADER_STORAGE_OFFSET + storageKey
+  } else {
+    position = MAIN_STORAGE_OFFSET + storageKey
+  }
+
+  const treeIndex = Math.floor(position / VERKLE_NODE_WIDTH)
+  const subIndex = position % VERKLE_NODE_WIDTH
+
+  return { treeIndex, subIndex }
+}
+
+export function getTreeIndicesForCodeChunk(chunkId: number) {
+  const treeIndex = Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
+  const subIndex = (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
+  return { treeIndex, subIndex }
 }
