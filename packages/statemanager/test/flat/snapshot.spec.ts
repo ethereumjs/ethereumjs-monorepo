@@ -3,7 +3,7 @@ import { Account, Address, KECCAK256_RLP, bytesToHex, hexToBytes } from '@ethere
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { FlatStateManager, Snapshot } from '../../src/index.js'
+import { /* FlatStateManager, */ Snapshot } from '../../src/index.js'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
