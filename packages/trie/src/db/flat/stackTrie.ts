@@ -71,6 +71,7 @@ export class HashNode extends BaseNode {
     return this._serialized.length < 32
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   insert(key: Nibbles, value: Uint8Array): BaseNode {
     throw new Error("Can't insert into hash node")
   }
