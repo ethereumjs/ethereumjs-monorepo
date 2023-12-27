@@ -37,18 +37,22 @@ type AccessEventFlags = {
   chunkFill: boolean
 }
 
+// Since stem is predersen hashed, it is useful to maintain the reverse relationship
+type StemMeta = { address: Address; treeIndex: number }
+type AccessedState = { address: Address; treeIndex: number; chunkIndex: number }
+
 export class AccessWitness {
-  stems: Map<PrefixedHexString, StemAccessEvent>
+  stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
 
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
 
   constructor(
     opts: {
-      stems?: Map<PrefixedHexString, StemAccessEvent>
+      stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
       chunks?: Map<PrefixedHexString, ChunkAccessEvent>
     } = {}
   ) {
-    this.stems = opts.stems ?? new Map<PrefixedHexString, StemAccessEvent>()
+    this.stems = opts.stems ?? new Map<PrefixedHexString, StemAccessEvent & StemMeta>()
     this.chunks = opts.chunks ?? new Map<PrefixedHexString, ChunkAccessEvent>()
   }
 
@@ -219,7 +223,7 @@ export class AccessWitness {
     let accessedStem = this.stems.get(accessedStemHex)
     if (accessedStem === undefined) {
       stemRead = true
-      accessedStem = {}
+      accessedStem = { address, treeIndex }
       this.stems.set(accessedStemHex, accessedStem)
     }
 
@@ -254,9 +258,44 @@ export class AccessWitness {
     return new AccessWitness()
   }
 
-  merge(_accessWitness: AccessWitness): void {
-    // TODO - add merging accessWitnesses into the current one
-    return
+  merge(accessWitness: AccessWitness): void {
+    for (const [chunkKey, chunkValue] of accessWitness.chunks.entries()) {
+      const stemKey = chunkKey.slice(0, chunkKey.length - 2)
+      const stem = accessWitness.stems.get(stemKey)
+      if (stem === undefined) {
+        throw Error(`Internal error: missing stem for the chunkKey=${chunkKey}`)
+      }
+
+      const thisStem = this.stems.get(stemKey)
+      if (thisStem === undefined) {
+        this.stems.set(stemKey, stem)
+      } else {
+        thisStem.write = thisStem.write !== true ? stem.write : true
+      }
+
+      const thisChunk = this.chunks.get(chunkKey)
+      if (thisChunk === undefined) {
+        this.chunks.set(chunkKey, chunkValue)
+      } else {
+        thisChunk.write = thisChunk.write !== true ? chunkValue.write : true
+        thisChunk.fill = thisChunk.fill !== true ? thisChunk.fill : true
+      }
+    }
+  }
+
+  *accesses(): Generator<AccessedState> {
+    for (const chunkKey of this.chunks.keys()) {
+      // drop the last byte
+      const stemKey = chunkKey.slice(0, chunkKey.length - 2)
+      const stem = this.stems.get(stemKey)
+      if (stem === undefined) {
+        throw Error(`Internal error: missing stem for the chunkKey=${chunkKey}`)
+      }
+      const { address, treeIndex } = stem
+      const chunkIndex = Number(`0x${chunkKey.slice(chunkKey.length - 2)}`)
+      const accessedState = { address, treeIndex, chunkIndex }
+      yield accessedState
+    }
   }
 }
 
