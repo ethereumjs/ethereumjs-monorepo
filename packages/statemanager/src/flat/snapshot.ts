@@ -7,6 +7,7 @@ import {
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
+  concatBytes,
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
@@ -26,18 +27,18 @@ type SnapshotElement = {
   data: Uint8Array | undefined
 }
 
-function concatenateUint8Arrays(arrays: Uint8Array[]) {
-  const l = arrays.reduce((prev, curr) => prev + curr.length, 0)
-  const concatenatedArray = new Uint8Array(l)
+// function concatenateUint8Arrays(arrays: Uint8Array[]) {
+//   const l = arrays.reduce((prev, curr) => prev + curr.length, 0)
+//   const concatenatedArray = new Uint8Array(l)
 
-  let offset = 0
-  for (const array of arrays) {
-    concatenatedArray.set(array, offset)
-    offset += array.length
-  }
+//   let offset = 0
+//   for (const array of arrays) {
+//     concatenatedArray.set(array, offset)
+//     offset += array.length
+//   }
 
-  return concatenatedArray
-}
+//   return concatenatedArray
+// }
 
 export class Snapshot {
   _db: LevelDB<Uint8Array, Uint8Array>
@@ -72,7 +73,7 @@ export class Snapshot {
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
-    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(address.bytes)])
+    const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
 
     const value = account.serialize()
@@ -80,7 +81,7 @@ export class Snapshot {
   }
 
   async getAccount(address: Address): Promise<Uint8Array | undefined> {
-    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(address.bytes)])
+    const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
 
     return this._db.get(key)
   }
@@ -91,7 +92,7 @@ export class Snapshot {
   }
 
   async delAccount(address: Address): Promise<void> {
-    const key = concatenateUint8Arrays([ACCOUNT_PREFIX, keccak256(address.bytes)])
+    const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
 
     return this._db.del(key)
@@ -116,37 +117,37 @@ export class Snapshot {
   }
 
   async putStorageSlot(address: Address, slot: Uint8Array, value: Uint8Array): Promise<void> {
-    const key = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot)])
+    const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     await this._saveCachePreState(key)
     await this._db.put(key, value)
   }
 
   async getStorageSlot(address: Address, slot: Uint8Array): Promise<Uint8Array | undefined> {
-    const key = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot)])
+    const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     return this._db.get(key)
   }
 
   async getStorageSlots(address: Address): Promise<[Uint8Array, Uint8Array | undefined][]> {
-    const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
+    const prefix = concatBytes(STORAGE_PREFIX, keccak256(address.bytes))
 
     return this._db.byPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 
   async delStorageSlot(address: Address, slot: Uint8Array): Promise<void> {
-    const key = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot)])
+    const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     await this._saveCachePreState(key)
     await this._db.del(key)
   }
 
   async clearAccountStorage(address: Address): Promise<void> {
-    const prefix = concatenateUint8Arrays([STORAGE_PREFIX, keccak256(address.bytes)])
+    const prefix = concatBytes(STORAGE_PREFIX, keccak256(address.bytes))
     const keys = await this._db.keysByPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
     for (const key of keys) await this._saveCachePreState(key)
     await this._db.delByPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
   }
 
   async putCode(address: Address, code: Uint8Array): Promise<void> {
-    const key = concatenateUint8Arrays([CODE_PREFIX, keccak256(address.bytes)])
+    const key = concatBytes(CODE_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
     const codeHash = keccak256(code)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
@@ -171,7 +172,7 @@ export class Snapshot {
       return new Uint8Array(0)
     }
 
-    const key = concatenateUint8Arrays([CODE_PREFIX, keccak256(address.bytes)])
+    const key = concatBytes(CODE_PREFIX, keccak256(address.bytes))
     return this._db.get(key)
   }
 
