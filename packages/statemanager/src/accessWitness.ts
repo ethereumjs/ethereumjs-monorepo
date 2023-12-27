@@ -39,7 +39,12 @@ type AccessEventFlags = {
 
 // Since stem is predersen hashed, it is useful to maintain the reverse relationship
 type StemMeta = { address: Address; treeIndex: number }
-type AccessedState = { address: Address; treeIndex: number; chunkIndex: number }
+type AccessedState = {
+  address: Address
+  treeIndex: number
+  chunkIndex: number
+  chunkKey: PrefixedHexString
+}
 
 export class AccessWitness {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
@@ -293,7 +298,7 @@ export class AccessWitness {
       }
       const { address, treeIndex } = stem
       const chunkIndex = Number(`0x${chunkKey.slice(chunkKey.length - 2)}`)
-      const accessedState = { address, treeIndex, chunkIndex }
+      const accessedState = { address, treeIndex, chunkIndex, chunkKey }
       yield accessedState
     }
   }
