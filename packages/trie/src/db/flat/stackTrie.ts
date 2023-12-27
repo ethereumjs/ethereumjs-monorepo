@@ -27,7 +27,7 @@ function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
 
 abstract class BaseNode {
   abstract insert(key: Nibbles, value: Uint8Array): BaseNode
-  abstract raw(): (Uint8Array | null)[] | null
+  abstract raw(): any
   serialize(): Uint8Array {
     return RLP.encode(this.raw())
   }
@@ -75,7 +75,7 @@ export class HashNode extends BaseNode {
     throw new Error("Can't insert into hash node")
   }
 
-  raw(): (Uint8Array | null)[] | null {
+  raw(): Uint8Array[] {
     return this._ref.raw()
   }
 
@@ -118,7 +118,7 @@ export class STBranchNode extends BaseNode {
     return this
   }
 
-  raw(): (Uint8Array | null)[] | null {
+  raw(): Uint8Array[] {
     const raw = []
     for (let i = 0; i < 16; i++) {
       const child = this._children[i]
@@ -221,12 +221,12 @@ export class STExtensionNode extends BaseNode {
     return root
   }
 
-  raw(): (Uint8Array | null)[] | null {
+  raw(): [Uint8Array, Uint8Array] {
     const childRaw = this._child.raw()
     const childSerialized = RLP.encode(childRaw)
     const value = childSerialized.length < 32 ? childRaw : keccak256(childSerialized)
     const encodedKey = addHexPrefix(this._key.slice(0), false)
-    return [nibbleTypeToPackedBytes(encodedKey), value] as Uint8Array[]
+    return [nibbleTypeToPackedBytes(encodedKey), value]
   }
 }
 
