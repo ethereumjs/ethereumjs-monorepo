@@ -55,16 +55,16 @@ export class EmptyNode extends BaseNode {
   }
 }
 
-// TODO: Either remove HashNode or precompute hash
-//       to save on iterating already visited sub-tries.
 export class HashNode extends BaseNode {
   _ref: BaseNode
   _serialized: Uint8Array
+  _hash: Uint8Array
 
   constructor(ref: BaseNode) {
     super()
     this._ref = ref
     this._serialized = ref.serialize()
+    this._hash = keccak256(this._serialized)
   }
 
   get embedded(): boolean {
@@ -84,7 +84,7 @@ export class HashNode extends BaseNode {
   }
 
   hash(): Uint8Array {
-    return keccak256(this._serialized)
+    return this._hash
   }
 }
 
