@@ -1,30 +1,28 @@
 import { EventEmitter } from 'events'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config'
 import { Event } from '../../src/types'
 import { MockPeer } from '../integration/mocks/mockpeer'
 
-import type { RlpxServer } from '../../src/net/server'
-
 describe('[PeerPool]', async () => {
-  const Peer = td.replace<any>('../../src/net/peer/peer', function (this: any, id: string) {
+  const Peer = function (this: any, id: string) {
     this.id = id // eslint-disable-line no-invalid-this
-  })
+  }
+  vi.doMock('../../src/net/peer/peer', () => Peer)
   const { PeerPool } = await import('../../src/net/peerpool')
 
   it('should initialize', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     assert.notOk((pool as any).pool.size, 'empty pool')
     assert.notOk((pool as any).opened, 'not open')
   })
 
   it('should open/close', async () => {
-    const server = {}
+    const server = {} as any
     const config = new Config({
-      servers: [server as RlpxServer],
+      server,
       accountCache: 10000,
       storageCache: 1000,
     })
@@ -52,10 +50,10 @@ describe('[PeerPool]', async () => {
 
   it('should connect/disconnect peer', () => {
     const peer = new EventEmitter() as any
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     ;(peer as any).id = 'abc'
-    ;(peer as any).handleMessageQueue = td.func()
+    ;(peer as any).handleMessageQueue = vi.fn()
     ;(pool as any).connected(peer)
     pool.config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, p: any) => {
       assert.ok(msg === 'msg0' && proto === 'proto0' && p === peer, 'got message')
@@ -68,7 +66,7 @@ describe('[PeerPool]', async () => {
 
   it('should check contains', () => {
     const peer = new Peer('abc')
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     pool.add(peer)
     assert.ok(pool.contains(peer.id), 'found peer')
@@ -76,7 +74,7 @@ describe('[PeerPool]', async () => {
 
   it('should get idle peers', () => {
     const peers = [new Peer(1), new Peer(2), new Peer(3)]
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     peers[1].idle = true
     for (const p of peers) {
@@ -91,8 +89,8 @@ describe('[PeerPool]', async () => {
   })
 
   it('should ban peer', () => {
-    const peers = [{ id: 1 }, { id: 2, server: { ban: td.func() } }]
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const peers = [{ id: 1 }, { id: 2, server: { ban: vi.fn() } }]
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     for (const p of peers as any) {
       pool.add(p)
@@ -105,9 +103,5 @@ describe('[PeerPool]', async () => {
       assert.equal(peer, peers[1] as any, 'removed peer')
     )
     assert.equal(pool.peers[0], peers[0] as any, 'outbound peer not banned')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

@@ -53,8 +53,11 @@ export class Service {
 
   /**
    * Interval for client stats output (e.g. memory) (in ms)
+   * for debug log level
+   *
+   * (for info there will be somewhat reduced output)
    */
-  private STATS_INTERVAL = 30000
+  private STATS_INTERVAL = 1000 * 20 // 20 seconds
 
   /**
    * Shutdown the client when memory threshold is reached (in percent)
@@ -63,6 +66,7 @@ export class Service {
   private MEMORY_SHUTDOWN_THRESHOLD = 92
 
   private _statsInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _statsCounter = 0
   /**
    * Create new service and associated peer pool
    */
@@ -119,7 +123,7 @@ export class Service {
       return false
     }
     const protocols = this.protocols
-    this.config.servers.map((s) => s.addProtocols(protocols))
+    this.config.server && this.config.server.addProtocols(protocols)
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
       this.config.logger.debug(`Peer banned: ${peer}`)
@@ -193,12 +197,20 @@ export class Service {
 
       const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
       const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
-      this.config.logger.info(`Memory stats usage=${heapUsed} MB percentage=${percentage}%`)
+      const msg = `Memory stats usage=${heapUsed} MB percentage=${percentage}%`
+
+      if (this._statsCounter % 4 === 0) {
+        this.config.logger.info(msg)
+        this._statsCounter = 0
+      } else {
+        this.config.logger.debug(msg)
+      }
 
       if (percentage >= this.MEMORY_SHUTDOWN_THRESHOLD && !this.config.shutdown) {
         this.config.logger.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
         process.kill(process.pid, 'SIGINT')
       }
+      this._statsCounter += 1
     }
   }
 

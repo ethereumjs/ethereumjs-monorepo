@@ -2,7 +2,7 @@ import { utf8ToBytes } from '@ethereumjs/util'
 
 import type { BranchNode, ExtensionNode, LeafNode } from './node/index.js'
 import type { WalkController } from './util/walkController.js'
-import type { DB } from '@ethereumjs/util'
+import type { DB, ValueEncoding } from '@ethereumjs/util'
 
 export type TrieNode = BranchNode | ExtensionNode | LeafNode
 
@@ -27,7 +27,7 @@ export interface TrieOpts {
   /**
    * A database instance.
    */
-  db?: DB<string, string>
+  db?: DB<string, string | Uint8Array>
 
   /**
    * A `Uint8Array` for the root of a previously stored trie
@@ -52,6 +52,19 @@ export interface TrieOpts {
    * Hash function used for hashing trie node and securing key.
    */
   useKeyHashingFunction?: HashKeysFunction
+
+  /**
+   * Add a prefix to the trie node keys
+   *
+   * (potential performance benefits if multiple tries are stored within the same DB,
+   * e.g. all storage tries being stored in the outer account state DB)
+   */
+  keyPrefix?: Uint8Array
+
+  /**
+   * ValueEncoding of the database (the values which are `put`/`get` in the db are of this type). Defaults to `string`
+   */
+  valueEncoding?: ValueEncoding
 
   /**
    * Store the root inside the database after every `write` operation
@@ -80,11 +93,21 @@ export type TrieOptsWithDefaults = TrieOpts & {
   cacheSize: number
 }
 
+export interface TrieShallowCopyOpts {
+  keyPrefix?: Uint8Array
+  cacheSize?: number
+}
+
 export interface CheckpointDBOpts {
   /**
    * A database instance.
    */
-  db: DB<string, string>
+  db: DB<string, string | Uint8Array>
+
+  /**
+   * ValueEncoding of the database (the values which are `put`/`get` in the db are of this type). Defaults to `string`
+   */
+  valueEncoding?: ValueEncoding
 
   /**
    * Cache size (default: 0)

@@ -1,6 +1,8 @@
 import { Block, BlockHeader, valuesArrayToHeaderData } from '@ethereumjs/block'
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
+  BIGINT_1,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToBigInt,
@@ -118,20 +120,20 @@ export class DBManager {
         // Do extra validations for withdrawal before assuming empty withdrawals
         if (
           !equalsBytes(header.withdrawalsRoot, KECCAK256_RLP) &&
-          (body.length !== 3 || body[2]?.length === 0)
+          (body.length < 3 || body[2]?.length === 0)
         ) {
           throw new Error('withdrawals root shoot be equal to hash of null when no withdrawals')
         }
-        if (body.length !== 3) body.push([])
+        if (body.length <= 3) body.push([])
       }
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
     const opts: BlockOptions = { common: this.common }
-    if (number === BigInt(0)) {
-      opts.setHardfork = await this.getTotalDifficulty(hash, BigInt(0))
+    if (number === BIGINT_0) {
+      opts.setHardfork = await this.getTotalDifficulty(hash, BIGINT_0)
     } else {
-      opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BigInt(1))
+      opts.setHardfork = await this.getTotalDifficulty(header.parentHash, number - BIGINT_1)
     }
     return Block.fromValuesArray(blockData, opts)
   }
@@ -155,14 +157,14 @@ export class DBManager {
     const headerValues = RLP.decode(encodedHeader)
 
     const opts: BlockOptions = { common: this.common }
-    if (blockNumber === BigInt(0)) {
-      opts.setHardfork = await this.getTotalDifficulty(blockHash, BigInt(0))
+    if (blockNumber === BIGINT_0) {
+      opts.setHardfork = await this.getTotalDifficulty(blockHash, BIGINT_0)
     } else {
       // Lets fetch the parent hash but not by number since this block might not
       // be in canonical chain
       const headerData = valuesArrayToHeaderData(headerValues as Uint8Array[])
       const parentHash = headerData.parentHash as Uint8Array
-      opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BigInt(1))
+      opts.setHardfork = await this.getTotalDifficulty(parentHash, blockNumber - BIGINT_1)
     }
     return BlockHeader.fromValuesArray(headerValues as Uint8Array[], opts)
   }

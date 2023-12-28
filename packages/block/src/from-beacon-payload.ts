@@ -1,6 +1,6 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
-import type { ExecutionPayload } from './types.js'
+import type { ExecutionPayload, VerkleExecutionWitness } from './types.js'
 
 type BeaconWithdrawal = {
   index: string
@@ -30,6 +30,8 @@ export type BeaconPayloadJson = {
   blob_gas_used?: string
   excess_blob_gas?: string
   parent_beacon_block_root?: string
+  // the casing of VerkleExecutionWitness remains same camel case for now
+  execution_witness?: VerkleExecutionWitness
 }
 
 /**
@@ -48,7 +50,7 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     gasLimit: bigIntToHex(BigInt(payload.gas_limit)),
     gasUsed: bigIntToHex(BigInt(payload.gas_used)),
     timestamp: bigIntToHex(BigInt(payload.timestamp)),
-    extraData: bigIntToHex(BigInt(payload.extra_data)),
+    extraData: payload.extra_data,
     baseFeePerGas: bigIntToHex(BigInt(payload.base_fee_per_gas)),
     blockHash: payload.block_hash,
     transactions: payload.transactions,
@@ -71,6 +73,11 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
   }
   if (payload.parent_beacon_block_root !== undefined && payload.parent_beacon_block_root !== null) {
     executionPayload.parentBeaconBlockRoot = payload.parent_beacon_block_root
+  }
+  if (payload.execution_witness !== undefined && payload.execution_witness !== null) {
+    // the casing structure in payload is already camel case, might be updated in
+    // kaustinen relaunch
+    executionPayload.executionWitness = payload.execution_witness
   }
 
   return executionPayload

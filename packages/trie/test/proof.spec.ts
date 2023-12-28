@@ -1,4 +1,5 @@
-import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { bytesToUtf8, equalsBytes, setLengthLeft, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../src/index.js'
@@ -141,5 +142,68 @@ describe('simple merkle proofs generation and verification', () => {
     proof = await trie.createProof(utf8ToBytes('c'))
     val = await Trie.verifyProof(utf8ToBytes('c'), proof)
     assert.equal(bytesToUtf8(val!), 'c')
+  })
+
+  it('creates and updates tries from proof', async () => {
+    const trie = new Trie({ useKeyHashing: true })
+
+    const key = setLengthLeft(new Uint8Array([1, 2, 3]), 32)
+    const encodedValue = RLP.encode(new Uint8Array([5]))
+
+    const key2 = setLengthLeft(new Uint8Array([2]), 32)
+    const key3 = setLengthLeft(new Uint8Array([3]), 32)
+
+    const encodedValue2 = RLP.encode(new Uint8Array([6]))
+    const encodedValue3 = RLP.encode(new Uint8Array([7]))
+
+    await trie.put(key, encodedValue)
+    await trie.put(key2, encodedValue2)
+    await trie.put(key3, encodedValue3)
+    const proof = await trie.createProof(key)
+
+    const newTrie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
+    const trieValue = await newTrie.get(key)
+
+    assert.ok(equalsBytes(trieValue!, encodedValue), 'trie value sucessfully copied')
+    assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
+
+    const proof2 = await trie.createProof(key2)
+    await newTrie.updateTrieFromProof(proof2)
+    const trieValue2 = await newTrie.get(key2)
+
+    assert.ok(equalsBytes(trieValue2!, encodedValue2), 'trie value succesfully updated')
+    assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
+
+    const trieValue3 = await newTrie.get(key3)
+    assert.equal(trieValue3, null, 'cannot reach the third key')
+
+    const safeTrie = new Trie({ useKeyHashing: true })
+    const safeKey = setLengthLeft(new Uint8Array([100]), 32)
+    const safeValue = RLP.encode(new Uint8Array([1337]))
+
+    await safeTrie.put(safeKey, safeValue)
+    const safeProof = await safeTrie.createProof(safeKey)
+
+    try {
+      await newTrie.updateTrieFromProof(safeProof, true)
+      assert.fail('cannot reach this')
+    } catch (e) {
+      assert.ok(true, 'throws on unmatching proof')
+    }
+
+    await newTrie.updateTrieFromProof(safeProof)
+    assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
+
+    const newSafeValue = await newTrie.get(safeKey)
+
+    assert.equal(newSafeValue, null, 'cannot reach the trie item unless the root is set')
+
+    newTrie.root(safeTrie.root())
+
+    const updatedNewSafeValue = await newTrie.get(safeKey)
+    assert.ok(
+      equalsBytes(updatedNewSafeValue!, safeValue),
+      'succesfully set the trie to the new root and got the correct value'
+    )
   })
 })

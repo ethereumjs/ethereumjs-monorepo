@@ -79,7 +79,7 @@ interface EVMRunOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  versionedHashes?: Uint8Array[]
+  blobVersionedHashes?: Uint8Array[]
 }
 
 export interface EVMRunCodeOpts extends EVMRunOpts {
@@ -158,6 +158,11 @@ export interface EVMInterface {
   events?: AsyncEventEmitter<EVMEvents>
 }
 
+export type EVMProfilerOpts = {
+  enabled: boolean
+  // extra options here (such as use X hardfork for gas)
+}
+
 /**
  * Options for instantiating a {@link EVM}.
  */
@@ -192,8 +197,10 @@ export interface EVMOpts {
    * - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
    * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun) (`experimental`)
    * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
+   * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
    * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
    * - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+   * - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
    *
    * *Annotations:*
    *
@@ -254,6 +261,11 @@ export interface EVMOpts {
    *
    */
   blockchain?: Blockchain
+
+  /**
+   *
+   */
+  profiler?: EVMProfilerOpts
 }
 
 /**
@@ -328,6 +340,7 @@ export type Block = {
     prevRandao: Uint8Array
     gasLimit: bigint
     baseFeePerGas?: bigint
+    getBlobGasPrice(): bigint | undefined
   }
 }
 

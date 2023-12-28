@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.1.0 - 2023-10-26
+
+### New EVM Profiler / EVM Performance
+
+This releases ships with a completely new dedicated EVM profiler (❤️ to Jochem for the integration) to measure how the different opcode implementations are doing, see PR [#2988](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2988), [#3011](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3011), [#3013](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3013) and [#3041](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3041).
+
+See the new dedicated [README section](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/README.md#profiling-the-evm) for a detailed usage instruction.
+
+We were already able to do various performance related improvements using this tool (and we hope that you will be too) 🤩:
+
+- Substantial stack optimizations (`PUSH` and `POPn` +30-40%, `DUP` +40%), PR [#3000](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3000)
+- `JUMPDEST` optimizations, PR [#3000](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3000)
+- Various EVM interpreter optimizations (overall 7-15% performance gain), PR [#2996](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2996)
+- Memory optimizations (`MLOAD` and `MSTORE` + 10-20%), PR [#3032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3032)
+- Reused BigInts cache, PR [#3034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3034) and [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- `EXP` opcode optimizations (real-world 3x gain, not attack resistant), PR [#3034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3034)
+
+### EIP-7516 BLOBBASEFEE Opcode
+
+This release supports [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) with a new `BLOBBASEFEE` opcode added to and scheduled for the Dencun HF, see PR [#3035](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3035) and [#3068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3068). The opcode returns the value of the blob base-fee of the current block it is executing in.
+
+### Dencun devnet-11 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update `EIP-4788`: do not use precompile anymore but use the pre-deployed bytecode, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
+
+### Other Changes
+
+- Add missing `debug` dependency types, PR [#3072](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3072)
+
 ## 2.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳

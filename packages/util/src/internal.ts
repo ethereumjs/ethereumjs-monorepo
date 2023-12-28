@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE
  */
 
-import { bytesToHex, utf8ToBytes } from './bytes.js'
+import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
 
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
@@ -129,7 +129,8 @@ export function toAscii(hex: string): string {
 }
 
 /**
- * Should be called to get hex representation (prefixed by 0x) of utf8 string
+ * Should be called to get hex representation (prefixed by 0x) of utf8 string.
+ * Strips leading and trailing 0's.
  *
  * @param string
  * @param optional padding
@@ -138,7 +139,7 @@ export function toAscii(hex: string): string {
 export function fromUtf8(stringValue: string) {
   const str = utf8ToBytes(stringValue)
 
-  return `0x${padToEven(bytesToHex(str)).replace(/^0+|0+$/g, '')}`
+  return `0x${padToEven(bytesToUnprefixedHex(str)).replace(/^0+|0+$/g, '')}`
 }
 
 /**

@@ -19,6 +19,7 @@
 - [publicExtendedKey](hdkey.EthereumHDKey.md#publicextendedkey)
 - [fromExtendedKey](hdkey.EthereumHDKey.md#fromextendedkey)
 - [fromMasterSeed](hdkey.EthereumHDKey.md#frommasterseed)
+- [fromMnemonic](hdkey.EthereumHDKey.md#frommnemonic)
 
 ## Constructors
 
@@ -34,7 +35,7 @@
 
 #### Defined in
 
-[hdkey.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L23)
+[hdkey.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L28)
 
 ## Methods
 
@@ -56,7 +57,7 @@ Derive a node based on a child index
 
 #### Defined in
 
-[hdkey.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L52)
+[hdkey.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L57)
 
 ___
 
@@ -78,7 +79,7 @@ Derives a node based on a path (e.g. m/44'/0'/0/1)
 
 #### Defined in
 
-[hdkey.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L45)
+[hdkey.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L50)
 
 ___
 
@@ -94,7 +95,7 @@ Return a `Wallet` instance as seen above
 
 #### Defined in
 
-[hdkey.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L59)
+[hdkey.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L64)
 
 ___
 
@@ -110,7 +111,7 @@ Returns a BIP32 extended private key (xprv)
 
 #### Defined in
 
-[hdkey.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L28)
+[hdkey.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L33)
 
 ___
 
@@ -126,7 +127,7 @@ Return a BIP32 extended public key (xpub)
 
 #### Defined in
 
-[hdkey.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L38)
+[hdkey.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L43)
 
 ___
 
@@ -148,7 +149,7 @@ Create an instance based on a BIP32 extended private or public key.
 
 #### Defined in
 
-[hdkey.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L19)
+[hdkey.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L24)
 
 ___
 
@@ -157,9 +158,6 @@ ___
 ▸ `Static` **fromMasterSeed**(`seedBuffer`): [`EthereumHDKey`](hdkey.EthereumHDKey.md)
 
 Creates an instance based on a seed.
-
-For the seed we suggest to use [bip39](https://npmjs.org/package/bip39) to
-create one from a BIP39 mnemonic.
 
 #### Parameters
 
@@ -173,4 +171,27 @@ create one from a BIP39 mnemonic.
 
 #### Defined in
 
-[hdkey.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L12)
+[hdkey.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L10)
+
+___
+
+### fromMnemonic
+
+▸ `Static` **fromMnemonic**(`mnemonic`, `passphrase?`): [`EthereumHDKey`](hdkey.EthereumHDKey.md)
+
+Creates an instance based on BIP39 mnemonic phrases
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `mnemonic` | `string` |
+| `passphrase?` | `string` |
+
+#### Returns
+
+[`EthereumHDKey`](hdkey.EthereumHDKey.md)
+
+#### Defined in
+
+[hdkey.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/hdkey.ts#L17)

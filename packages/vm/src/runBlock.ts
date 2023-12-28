@@ -1,12 +1,16 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  BIGINT_0,
+  BIGINT_8,
   GWEI_TO_WEI,
+  KECCAK256_RLP,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -30,26 +34,49 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { EVMInterface } from '@ethereumjs/evm'
+import type { EVM, EVMInterface } from '@ethereumjs/evm'
 
 const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:block')
 
 const parentBeaconBlockRootAddress = Address.fromString(
-  '0x000000000000000000000000000000000000000b'
+  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
 )
+
+let enableProfiler = false
+const stateRootCPLabel = 'New state root, DAO HF, checkpoints, block validation'
+const processTxsLabel = 'Tx processing [ use per-tx profiler for more details ]'
+const withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
+const entireBlockLabel = 'Entire block'
 
 /**
  * @ignore
  */
 export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  if (this._opts.profilerOpts?.reportAfterBlock === true) {
+    enableProfiler = true
+    // eslint-disable-next-line no-console
+    console.time(entireBlockLabel)
+  }
+
   const state = this.stateManager
+
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
+
+  if (enableProfiler) {
+    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
+      block.transactions.length
+    } txs`
+    // eslint-disable-next-line no-console
+    console.log(title)
+    // eslint-disable-next-line no-console
+    console.time(stateRootCPLabel)
+  }
 
   /**
    * The `beforeBlock` event.
@@ -93,6 +120,22 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     await state.setStateRoot(root, clearCache)
   }
 
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(state instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    if (this.DEBUG) {
+      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+    }
+    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+      block.executionWitness
+    )
+  } else {
+    if (state instanceof StatelessVerkleStateManager) {
+      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
+    }
+  }
+
   // check for DAO support and if we should apply the DAO fork
   if (
     this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
@@ -101,6 +144,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
+
     await this.evm.journal.checkpoint()
     await _applyDAOHardfork(this.evm)
     await this.evm.journal.commit()
@@ -112,7 +156,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint`)
   }
 
-  let result
+  let result: Awaited<ReturnType<typeof applyBlock>>
+
   try {
     result = await applyBlock.bind(this)(block, opts)
     if (this.DEBUG) {
@@ -128,6 +173,10 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     await this.evm.journal.revert()
     if (this.DEBUG) {
       debug(`block checkpoint reverted`)
+    }
+    if (enableProfiler) {
+      // eslint-disable-next-line no-console
+      console.timeEnd(withdrawalsRewardsCommitLabel)
     }
     throw err
   }
@@ -154,7 +203,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else {
+  } else if (this.common.isActivatedEIP(6800) === false) {
+    // Only validate the following headers if verkle blocks aren't activated
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
@@ -192,9 +242,26 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
           )}`
         )
       }
-      const msg = _errorMsg('invalid block stateRoot', this, block)
+      const msg = _errorMsg(
+        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+          block.header.stateRoot
+        )}`,
+        this,
+        block
+      )
       throw new Error(msg)
     }
+  } else if (this.common.isActivatedEIP(6800) === true) {
+    // If verkle is activated, only validate the post-state
+    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+    }
+    debug(`Verkle post state verification succeeded`)
+  }
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(withdrawalsRewardsCommitLabel)
   }
 
   const results: RunBlockResult = {
@@ -222,6 +289,20 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
         block.header.number
       } hardfork=${this.common.hardfork()}`
     )
+  }
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(entireBlockLabel)
+    const logs = (<EVM>this.evm).getPerformanceLogs()
+    if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+      // eslint-disable-next-line no-console
+      console.log('No block txs with precompile or opcode execution.')
+    }
+
+    this.emitEVMProfile(logs.precompiles, 'Precompile performance')
+    this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
+    ;(<EVM>this.evm).clearPerformanceLogs()
   }
 
   return results
@@ -266,11 +347,22 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     )
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(stateRootCPLabel)
+  }
+
   // Apply transactions
   if (this.DEBUG) {
     debug(`Apply transactions`)
   }
   const blockResults = await applyTransactions.bind(this)(block, opts)
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.time(withdrawalsRewardsCommitLabel)
+  }
+
   if (this.common.isActivatedEIP(4895)) {
     await assignWithdrawals.bind(this)(block)
     await this.evm.journal.cleanup()
@@ -301,7 +393,7 @@ export async function accumulateParentBeaconBlockRoot(
    */
 
   if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-    await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
   await this.stateManager.putContractStorage(
@@ -324,10 +416,20 @@ export async function accumulateParentBeaconBlockRoot(
  * @param {RunBlockOpts} opts
  */
 async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.time(processTxsLabel)
+  }
+
   const bloom = new Bloom()
   // the total amount of gas used processing these transactions
-  let gasUsed = BigInt(0)
-  const receiptTrie = new Trie()
+  let gasUsed = BIGINT_0
+
+  let receiptTrie: Trie | undefined = undefined
+  if (block.transactions.length !== 0) {
+    receiptTrie = new Trie()
+  }
+
   const receipts = []
   const txResults = []
 
@@ -377,13 +479,20 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie.put(RLP.encode(txIdx), encodedReceipt)
+    await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
   }
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(processTxsLabel)
+  }
+
+  const receiptsRoot = receiptTrie !== undefined ? receiptTrie.root() : KECCAK256_RLP
 
   return {
     bloom,
     gasUsed,
-    receiptsRoot: receiptTrie.root(),
+    receiptsRoot,
     receipts,
     results: txResults,
   }
@@ -433,9 +542,9 @@ function calculateOmmerReward(
   minerReward: bigint
 ): bigint {
   const heightDiff = blockNumber - ommerBlockNumber
-  let reward = ((BigInt(8) - heightDiff) * minerReward) / BigInt(8)
-  if (reward < BigInt(0)) {
-    reward = BigInt(0)
+  let reward = ((BIGINT_8 - heightDiff) * minerReward) / BIGINT_8
+  if (reward < BIGINT_0) {
+    reward = BIGINT_0
   }
   return reward
 }
@@ -511,7 +620,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
-    account.balance = BigInt(0)
+    account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
   }
 
@@ -520,6 +629,9 @@ async function _applyDAOHardfork(evm: EVMInterface) {
 }
 
 async function _genTxTrie(block: Block) {
+  if (block.transactions.length === 0) {
+    return KECCAK256_RLP
+  }
   const trie = new Trie()
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())

@@ -1,4 +1,4 @@
-import { bytesToInt, randomBytes } from '@ethereumjs/util'
+import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 
@@ -32,6 +32,11 @@ export class DPT {
   protected _dnsNetworks: string[]
   protected _dnsAddr: string
 
+  protected _onlyConfirmed: boolean
+  protected _confirmedPeers: Set<string>
+
+  private DEBUG: boolean
+
   constructor(privateKey: Uint8Array, options: DPTOptions) {
     this.events = new EventEmitter()
     this._privateKey = privateKey
@@ -45,6 +50,9 @@ export class DPT {
 
     this._dns = new DNS({ dnsServerAddress: this._dnsAddr })
     this._banlist = new BanList()
+
+    this._onlyConfirmed = options.onlyConfirmed ?? false
+    this._confirmedPeers = new Set()
 
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
@@ -70,6 +78,9 @@ export class DPT {
     // By default calls refresh every 3s
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? 60000) / 10) // 60 sec * 1000
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   bind(...args: any[]): void {
@@ -118,6 +129,9 @@ export class DPT {
   async bootstrap(peer: PeerInfo): Promise<void> {
     try {
       peer = await this.addPeer(peer)
+      if (peer.id !== undefined) {
+        this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
+      }
     } catch (error: any) {
       this.events.emit('error', error)
       return
@@ -130,7 +144,9 @@ export class DPT {
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
     if (this._banlist.has(obj)) throw new Error('Peer is banned')
-    this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
+    if (this.DEBUG) {
+      this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
+    }
 
     // check k-bucket first
     const peer = this._kbucket.get(obj)
@@ -148,6 +164,20 @@ export class DPT {
     }
   }
 
+  /**
+   * Add peer to a confirmed list of peers (peers meeting some
+   * level of quality, e.g. being on the same network) to allow
+   * for a more selective findNeighbours request and sending
+   * (with activated `onlyConfirmed` setting)
+   *
+   * @param id Unprefixed hex id
+   */
+  confirmPeer(id: string) {
+    if (this._confirmedPeers.size < 5000) {
+      this._confirmedPeers.add(id)
+    }
+  }
+
   getPeer(obj: string | Uint8Array | PeerInfo) {
     return this._kbucket.get(obj)
   }
@@ -156,11 +186,25 @@ export class DPT {
     return this._kbucket.getAll()
   }
 
+  numPeers() {
+    return this._kbucket.getAll().length
+  }
+
   getClosestPeers(id: Uint8Array) {
-    return this._kbucket.closest(id)
+    let peers = this._kbucket.closest(id)
+    if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
+      peers = peers.filter((peer) =>
+        this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false
+      )
+    }
+    return peers
   }
 
   removePeer(obj: string | PeerInfo | Uint8Array) {
+    const peer = this._kbucket.get(obj)
+    if (peer?.id !== undefined) {
+      this._confirmedPeers.delete(bytesToUnprefixedHex(peer.id as Uint8Array))
+    }
     this._kbucket.remove(obj)
   }
 
@@ -179,15 +223,24 @@ export class DPT {
       this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
 
       const peers = this.getPeers()
-      this._debug(
-        `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
-      )
+      if (this.DEBUG) {
+        this._debug(
+          `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+        )
+      }
 
       for (const peer of peers) {
         // Randomly distributed selector based on peer ID
         // to decide on subdivided execution
         const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
-        if (selector === this._refreshIntervalSelectionCounter) {
+        let confirmed = true
+        if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
+          const id = bytesToUnprefixedHex(peer.id as Uint8Array)
+          if (!this._confirmedPeers.has(id)) {
+            confirmed = false
+          }
+        }
+        if (confirmed && selector === this._refreshIntervalSelectionCounter) {
           this._server.findneighbours(peer, randomBytes(64))
         }
       }
@@ -196,11 +249,13 @@ export class DPT {
     if (this._shouldGetDnsPeers) {
       const dnsPeers = await this.getDnsPeers()
 
-      this._debug(
-        `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
-          this.getPeers().length
-        } current peers in table)`
-      )
+      if (this.DEBUG) {
+        this._debug(
+          `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
+            this.getPeers().length
+          } current peers in table)`
+        )
+      }
 
       this._addPeerBatch(dnsPeers)
     }

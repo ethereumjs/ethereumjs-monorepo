@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { BIGINT_0, BIGINT_1 } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -106,7 +107,7 @@ export class LightSynchronizer extends Synchronizer {
     const height = peer!.les!.status.headNum
     if (
       this.config.syncTargetHeight === undefined ||
-      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight === BIGINT_0 ||
       this.config.syncTargetHeight < height
     ) {
       this.config.syncTargetHeight = height
@@ -117,10 +118,10 @@ export class LightSynchronizer extends Synchronizer {
     // due to a reorg, it would make sense to step back and refetch.
     const first =
       this.chain.headers.height >= BigInt(this.config.safeReorgDistance)
-        ? this.chain.headers.height - BigInt(this.config.safeReorgDistance) + BigInt(1)
-        : BigInt(1)
-    const count = height - first + BigInt(1)
-    if (count < BigInt(0)) return false
+        ? this.chain.headers.height - BigInt(this.config.safeReorgDistance) + BIGINT_1
+        : BIGINT_1
+    const count = height - first + BIGINT_1
+    if (count < BIGINT_0) return false
     if (!this.fetcher || this.fetcher.syncErrored) {
       this.fetcher = new HeaderFetcher({
         config: this.config,
@@ -133,7 +134,7 @@ export class LightSynchronizer extends Synchronizer {
         destroyWhenDone: false,
       })
     } else {
-      const fetcherHeight = this.fetcher.first + this.fetcher.count - BigInt(1)
+      const fetcherHeight = this.fetcher.first + this.fetcher.count - BIGINT_1
       if (height > fetcherHeight) {
         this.fetcher.count += height - fetcherHeight
         this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)

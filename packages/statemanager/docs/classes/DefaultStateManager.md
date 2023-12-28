@@ -34,6 +34,7 @@ The default state manager implementation uses a
 - [commit](DefaultStateManager.md#commit)
 - [deleteAccount](DefaultStateManager.md#deleteaccount)
 - [dumpStorage](DefaultStateManager.md#dumpstorage)
+- [dumpStorageRange](DefaultStateManager.md#dumpstoragerange)
 - [flush](DefaultStateManager.md#flush)
 - [generateCanonicalGenesis](DefaultStateManager.md#generatecanonicalgenesis)
 - [getAccount](DefaultStateManager.md#getaccount)
@@ -67,7 +68,7 @@ Instantiate the StateManager interface.
 
 #### Defined in
 
-[stateManager.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L174)
+[stateManager.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L192)
 
 ## Properties
 
@@ -77,7 +78,7 @@ Instantiate the StateManager interface.
 
 #### Defined in
 
-[stateManager.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L155)
+[stateManager.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L173)
 
 ___
 
@@ -91,7 +92,7 @@ EVMStateManagerInterface.originalStorageCache
 
 #### Defined in
 
-[stateManager.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L145)
+[stateManager.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L162)
 
 ## Methods
 
@@ -113,7 +114,7 @@ EVMStateManagerInterface.checkpoint
 
 #### Defined in
 
-[stateManager.ts:528](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L528)
+[stateManager.ts:584](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L584)
 
 ___
 
@@ -129,7 +130,7 @@ Clears all underlying caches
 
 #### Defined in
 
-[stateManager.ts:885](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L885)
+[stateManager.ts:1047](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1047)
 
 ___
 
@@ -155,7 +156,7 @@ EVMStateManagerInterface.clearContractStorage
 
 #### Defined in
 
-[stateManager.ts:511](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L511)
+[stateManager.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L567)
 
 ___
 
@@ -176,7 +177,7 @@ EVMStateManagerInterface.commit
 
 #### Defined in
 
-[stateManager.ts:539](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L539)
+[stateManager.ts:596](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L596)
 
 ___
 
@@ -202,7 +203,7 @@ EVMStateManagerInterface.deleteAccount
 
 #### Defined in
 
-[stateManager.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L299)
+[stateManager.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L333)
 
 ___
 
@@ -232,7 +233,39 @@ EVMStateManagerInterface.dumpStorage
 
 #### Defined in
 
-[stateManager.ts:778](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L778)
+[stateManager.ts:861](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L861)
+
+___
+
+### dumpStorageRange
+
+▸ **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`<`StorageRange`\>
+
+Dumps a limited number of RLP-encoded storage values for an account specified by `address`,
+starting from `startKey` or greater.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | `Address` | The address of the `account` to return storage for. |
+| `startKey` | `bigint` | The bigint representation of the smallest storage key that will be returned. |
+| `limit` | `number` | The maximum number of storage values that will be returned. |
+
+#### Returns
+
+`Promise`<`StorageRange`\>
+
+- A StorageRange object that will contain at most `limit` entries in its `storage` field.
+The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
+
+#### Implementation of
+
+EVMStateManagerInterface.dumpStorageRange
+
+#### Defined in
+
+[stateManager.ts:894](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L894)
 
 ___
 
@@ -248,7 +281,7 @@ Writes all cache items to the trie
 
 #### Defined in
 
-[stateManager.ts:579](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L579)
+[stateManager.ts:638](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L638)
 
 ___
 
@@ -275,7 +308,7 @@ EVMStateManagerInterface.generateCanonicalGenesis
 
 #### Defined in
 
-[stateManager.ts:809](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L809)
+[stateManager.ts:950](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L950)
 
 ___
 
@@ -301,7 +334,7 @@ EVMStateManagerInterface.getAccount
 
 #### Defined in
 
-[stateManager.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L226)
+[stateManager.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L260)
 
 ___
 
@@ -330,7 +363,7 @@ EVMStateManagerInterface.getContractCode
 
 #### Defined in
 
-[stateManager.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L347)
+[stateManager.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L379)
 
 ___
 
@@ -362,7 +395,7 @@ EVMStateManagerInterface.getContractStorage
 
 #### Defined in
 
-[stateManager.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L397)
+[stateManager.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L453)
 
 ___
 
@@ -389,7 +422,7 @@ EVMStateManagerInterface.getProof
 
 #### Defined in
 
-[stateManager.ts:617](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L617)
+[stateManager.ts:698](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L698)
 
 ___
 
@@ -413,7 +446,7 @@ EVMStateManagerInterface.getStateRoot
 
 #### Defined in
 
-[stateManager.ts:738](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L738)
+[stateManager.ts:819](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L819)
 
 ___
 
@@ -439,7 +472,7 @@ EVMStateManagerInterface.hasStateRoot
 
 #### Defined in
 
-[stateManager.ts:845](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L845)
+[stateManager.ts:986](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L986)
 
 ___
 
@@ -468,7 +501,7 @@ EVMStateManagerInterface.modifyAccountFields
 
 #### Defined in
 
-[stateManager.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L283)
+[stateManager.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L317)
 
 ___
 
@@ -495,7 +528,7 @@ EVMStateManagerInterface.putAccount
 
 #### Defined in
 
-[stateManager.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L250)
+[stateManager.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L284)
 
 ___
 
@@ -523,7 +556,7 @@ EVMStateManagerInterface.putContractCode
 
 #### Defined in
 
-[stateManager.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L319)
+[stateManager.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L356)
 
 ___
 
@@ -552,7 +585,7 @@ EVMStateManagerInterface.putContractStorage
 
 #### Defined in
 
-[stateManager.ts:484](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L484)
+[stateManager.ts:540](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L540)
 
 ___
 
@@ -573,7 +606,7 @@ EVMStateManagerInterface.revert
 
 #### Defined in
 
-[stateManager.ts:560](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L560)
+[stateManager.ts:618](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L618)
 
 ___
 
@@ -603,25 +636,40 @@ EVMStateManagerInterface.setStateRoot
 
 #### Defined in
 
-[stateManager.ts:750](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L750)
+[stateManager.ts:831](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L831)
 
 ___
 
 ### shallowCopy
 
-▸ **shallowCopy**(): [`DefaultStateManager`](DefaultStateManager.md)
+▸ **shallowCopy**(`downlevelCaches?`): [`DefaultStateManager`](DefaultStateManager.md)
 
 Copies the current instance of the `StateManager`
 at the last fully committed point, i.e. as if all current
 checkpoints were reverted.
 
-Note on caches:
+Caches are downleveled (so: adopted for short-term usage)
+by default.
+
+This means in particular:
 1. For caches instantiated as an LRU cache type
 the copy() method will instantiate with an ORDERED_MAP cache
 instead, since copied instantances are mostly used in
 short-term usage contexts and LRU cache instantation would create
 a large overhead here.
-2. Cache values are generally not copied along
+2. The underlying trie object is initialized with 0 cache size
+
+Both adoptions can be deactivated by setting `downlevelCaches` to
+`false`.
+
+Cache values are generally not copied along regardless of the
+`downlevelCaches` setting.
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `downlevelCaches` | `boolean` | `true` |
 
 #### Returns
 
@@ -633,7 +681,7 @@ EVMStateManagerInterface.shallowCopy
 
 #### Defined in
 
-[stateManager.ts:862](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L862)
+[stateManager.ts:1012](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L1012)
 
 ___
 
@@ -655,4 +703,4 @@ Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
 
 #### Defined in
 
-[stateManager.ts:665](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L665)
+[stateManager.ts:746](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L746)

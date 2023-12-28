@@ -42,6 +42,7 @@ import type { Common } from '@ethereumjs/common'
  * --expected-test-amount: number.        If passed, check after tests are ran if at least this amount of tests have passed (inclusive)
  * --verify-test-amount-alltests: number. If passed, get the expected amount from tests and verify afterwards if this is the count of tests (expects tests are ran with default settings)
  * --reps: number.                        If passed, each test case will be run the number of times indicated
+ * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
 const argv = minimist(process.argv.slice(2))
@@ -59,6 +60,8 @@ async function runTests() {
     console.log(`Test type not supported or provided`)
     process.exit(1)
   }
+
+  const RUN_PROFILER: boolean = argv.profile ?? false
 
   const FORK_CONFIG: string = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
   const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
@@ -106,6 +109,7 @@ async function runTests() {
     value?: number
     debug?: boolean
     reps?: number
+    profile: boolean
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -117,6 +121,7 @@ async function runTests() {
     value: argv.value, // GeneralStateTests
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
+    profile: RUN_PROFILER,
   }
 
   /**
@@ -200,7 +205,6 @@ async function runTests() {
     tape(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
-
       ;(t as any).on('result', (o: any) => {
         if (
           typeof o.ok !== 'undefined' &&
@@ -218,6 +222,7 @@ async function runTests() {
       // https://github.com/ethereum/tests/releases/tag/v7.0.0-beta.1
 
       const dirs = getTestDirs(FORK_CONFIG_VM, name)
+      console.time('Total (including setup)')
       for (const dir of dirs) {
         await new Promise<void>((resolve, reject) => {
           if (argv.customTestsPath !== undefined) {
@@ -262,6 +267,9 @@ async function runTests() {
         const { assertCount } = t as any
         t.ok(assertCount >= expectedTests, `expected ${expectedTests} checks, got ${assertCount}`)
       }
+
+      console.log()
+      console.timeEnd('Total (including setup)')
 
       t.end()
     })

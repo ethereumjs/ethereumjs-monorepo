@@ -158,11 +158,11 @@ describe('transaction validation tests', () => {
     if (isBrowser() === false) {
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(blobs)
-      const versionedHashes = commitmentsToVersionedHashes(commitments)
+      const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
       const tx1 = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs,
           kzgCommitments: commitments,
           maxFeePerBlobGas: 100000000n,
@@ -173,7 +173,7 @@ describe('transaction validation tests', () => {
       ).sign(randomBytes(32))
       const tx2 = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes,
+          blobVersionedHashes,
           blobs,
           kzgCommitments: commitments,
           maxFeePerBlobGas: 1n,

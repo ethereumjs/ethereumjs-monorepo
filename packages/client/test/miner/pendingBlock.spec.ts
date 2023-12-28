@@ -21,8 +21,7 @@ import {
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 import * as kzg from 'c-kzg'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
 import { Config } from '../../src/config'
@@ -59,7 +58,6 @@ common
   })
 
 const config = new Config({
-  transports: [],
   common,
   accountCache: 10000,
   storageCache: 1000,
@@ -82,6 +80,7 @@ const setup = () => {
         shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
+        common: new Common({ chain: 'mainnet' }),
       },
     },
   }
@@ -90,12 +89,14 @@ const setup = () => {
 }
 
 describe('[PendingBlock]', async () => {
-  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-  td.replace<any>('@ethereumjs/block', { BlockHeader })
+  BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+  vi.doMock('@ethereumjs/block', () => {
+    {
+      BlockHeader
+    }
+  })
 
-  const originalSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
+  DefaultStateManager.prototype.setStateRoot = vi.fn()
 
   const createTx = (
     from = A,
@@ -218,7 +219,7 @@ describe('[PendingBlock]', async () => {
 
     // set gas limit low so that can accomodate 2 txs
     const prevGasLimit = common['_chainParams'].genesis.gasLimit
-    common['_chainParams'].genesis.gasLimit = BigInt(50000)
+    common['_chainParams'].genesis.gasLimit = 50000
 
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -337,7 +338,9 @@ describe('[PendingBlock]', async () => {
   it('should throw when blockchain does not have getTotalDifficulty function', async () => {
     const { txPool } = setup()
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = (txPool as any).vm
+    const vm = txPool['service'].execution.vm
+    // override total difficulty function to trigger error case
+    vm.blockchain.getTotalDifficulty = undefined
     try {
       await pendingBlock.start(vm, new Block())
       assert.fail('should have thrown')
@@ -362,14 +365,18 @@ describe('[PendingBlock]', async () => {
 
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(blobs, commitments)
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
       const txA01 = BlobEIP4844Transaction.fromTxData(
         {
-          versionedHashes: [...versionedHashes, ...versionedHashes, ...versionedHashes],
+          blobVersionedHashes: [
+            ...blobVersionedHashes,
+            ...blobVersionedHashes,
+            ...blobVersionedHashes,
+          ],
           blobs: [...blobs, ...blobs, ...blobs],
           kzgCommitments: [...commitments, ...commitments, ...commitments],
           kzgProofs: [...proofs, ...proofs, ...proofs],
@@ -437,13 +444,13 @@ describe('[PendingBlock]', async () => {
 
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
-    const versionedHashes = commitmentsToVersionedHashes(commitments)
+    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
     const proofs = blobsToProofs(blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
     const missingBlobTx = BlobEIP4844Transaction.fromTxData(
       {
-        versionedHashes,
+        blobVersionedHashes,
         kzgCommitments: commitments,
         kzgProofs: proofs,
         maxFeePerBlobGas: 100000000n,
@@ -472,14 +479,5 @@ describe('[PendingBlock]', async () => {
 
     assert.ok(block !== undefined && blobsBundles !== undefined)
     assert.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
-  })
-
-  it('should reset td', () => {
-    td.reset()
-    // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
-    // mocking indirect dependencies is not properly supported, but it works for us in this file,
-    // so we will replace the original functions to avoid issues in other tests that come after
-    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
-    DefaultStateManager.prototype.setStateRoot = originalSetStateRoot
   })
 })

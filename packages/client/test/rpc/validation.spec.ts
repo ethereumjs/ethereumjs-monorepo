@@ -1,11 +1,13 @@
 import { bytesToHex, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import { Client } from 'jayson/promise'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../src/rpc/error-code'
 import { middleware, validators } from '../../src/rpc/validation'
 
-import { baseRequest, startRPC } from './helpers'
-import { checkError } from './util'
+import { startRPC } from './helpers'
+
+import type { AddressInfo } from 'node:net'
 
 const prefix = 'rpc/validation:'
 
@@ -15,16 +17,10 @@ describe(prefix, () => {
     const server = startRPC({
       [mockMethodName]: middleware((_params: any) => true, 0, []),
     })
+    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
 
-    const req = {
-      jsonrpc: '2.0',
-      method: mockMethodName,
-      id: 1,
-    }
-    const expectRes = (res: any) => {
-      assert.equal(res.body.error, undefined, 'should not return an error object')
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(mockMethodName, [])
+    assert.isUndefined(res.error, 'should not return an error object')
   })
 
   it('should return error without `params` when it is required', async () => {
@@ -32,16 +28,11 @@ describe(prefix, () => {
     const server = startRPC({
       [mockMethodName]: middleware((_params: any) => true, 1, []),
     })
+    const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
 
-    const req = {
-      jsonrpc: '2.0',
-      method: mockMethodName,
-      id: 1,
-    }
+    const res = await rpc.request(mockMethodName, [])
 
-    const expectRes = checkError(INVALID_PARAMS, 'missing value for required argument 0')
-
-    await baseRequest(server, req, 200, expectRes)
+    assert.equal(res.error.code, INVALID_PARAMS, 'missing value for required argument 0')
   })
 
   const validatorResult = (result: Object | undefined) => {

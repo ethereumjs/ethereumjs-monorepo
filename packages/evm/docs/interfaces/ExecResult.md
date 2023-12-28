@@ -29,7 +29,7 @@ Amount of blob gas consumed by the transaction
 
 #### Defined in
 
-[types.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L313)
+[types.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L323)
 
 ___
 
@@ -41,7 +41,7 @@ Map of addresses which were created (used in EIP 6780)
 
 #### Defined in
 
-[types.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L305)
+[types.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L315)
 
 ___
 
@@ -53,7 +53,7 @@ Description of the exception, if any occurred
 
 #### Defined in
 
-[types.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L281)
+[types.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L291)
 
 ___
 
@@ -65,7 +65,7 @@ Amount of gas the code used to run
 
 #### Defined in
 
-[types.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L289)
+[types.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L299)
 
 ___
 
@@ -77,7 +77,7 @@ Amount of gas left
 
 #### Defined in
 
-[types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L285)
+[types.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L295)
 
 ___
 
@@ -89,7 +89,7 @@ The gas refund counter
 
 #### Defined in
 
-[types.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L309)
+[types.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L319)
 
 ___
 
@@ -101,7 +101,7 @@ Array of logs that the contract emitted
 
 #### Defined in
 
-[types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L297)
+[types.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L307)
 
 ___
 
@@ -113,7 +113,7 @@ Return value from the contract
 
 #### Defined in
 
-[types.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L293)
+[types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L303)
 
 ___
 
@@ -123,7 +123,7 @@ ___
 
 #### Defined in
 
-[types.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L277)
+[types.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L287)
 
 ___
 
@@ -135,4 +135,4 @@ A set of accounts to selfdestruct
 
 #### Defined in
 
-[types.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L301)
+[types.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L311)

@@ -2,13 +2,12 @@ import { Block, BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
 import { getLogger } from '../../src/logging'
-import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/skeleton'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync'
 import { short } from '../../src/util'
 import { wait } from '../integration/util'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
@@ -36,6 +35,39 @@ const block51 = Block.fromBlockData(
   { common }
 )
 
+describe('[Skeleton]/ startup scenarios ', () => {
+  it('starts the chain when starting the skeleton', async () => {
+    const config = new Config({
+      common,
+    })
+    const chain = await Chain.create({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    assert.equal(chain.opened, false, 'chain is not started')
+    await skeleton.open()
+    assert.equal(chain.opened, true, 'chain is opened by skeleton')
+  })
+
+  it('throws when reset called before being started', async () => {
+    const config = new Config({
+      common,
+    })
+    const chain = await Chain.create({ config })
+    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+    assert.equal(chain.opened, false, 'chain is not started')
+    try {
+      await skeleton.reset()
+      assert.fail('should have thrown')
+    } catch (err: any) {
+      assert.ok(err.message.includes('skeleton reset'), 'throws when skeleton sync not started')
+    }
+    await skeleton.open()
+    assert.equal(skeleton['status'].linked, false)
+    skeleton['status'].linked = true
+    await skeleton.reset()
+    assert.equal(skeleton['status'].linked, false, 'status.linked reset to false')
+  })
+})
+
 describe('[Skeleton] / initSync', async () => {
   // Tests various sync initializations based on previous leftovers in the database
   // and announced heads.
@@ -51,6 +83,13 @@ describe('[Skeleton] / initSync', async () => {
     // to create a single subchain with the requested head.
     {
       name: 'Completely empty database with only the genesis set',
+      head: block50,
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
+    },
+    // Completely empty database with only the trivial genesis subchain
+    {
+      name: 'Completely empty database with only the genesis set',
+      oldState: [{ head: BigInt(0), tail: BigInt(0) }],
       head: block50,
       newState: [{ head: BigInt(50), tail: BigInt(50) }],
     },
@@ -179,22 +218,18 @@ describe('[Skeleton] / initSync', async () => {
     // header. We expect the old subchain to be truncated and a new chain
     // be created for the dangling head.
     {
-      name: 'The old subchain to be truncated and a new chain be created for the dangling head',
+      name: 'The old subchains to be truncated/cleared and a new chain be created for the dangling head',
       blocks: [block49B],
       oldState: [{ head: BigInt(100), tail: BigInt(5) }],
       head: block50,
-      newState: [
-        { head: BigInt(50), tail: BigInt(50) },
-        { head: BigInt(49), tail: BigInt(5) },
-      ],
+      newState: [{ head: BigInt(50), tail: BigInt(50) }],
     },
   ]
   for (const [testCaseIndex, testCase] of testCases.entries()) {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        transports: [],
-        logger: getLogger({ loglevel: 'debug' }),
+        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -234,6 +269,7 @@ describe('[Skeleton] / initSync', async () => {
     })
   }
 })
+
 describe('[Skeleton] / setHead', async () => {
   // Tests that a running skeleton sync can be extended with properly linked up
   // headers but not with side chains.
@@ -309,8 +345,8 @@ describe('[Skeleton] / setHead', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        transports: [],
-        logger: getLogger({ loglevel: 'debug' }),
+
+        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -379,7 +415,7 @@ describe('[Skeleton] / setHead', async () => {
       difficulty: '0x1',
     }
     const common = Common.fromGethGenesis(genesis, { chain: 'merge-not-set' })
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     try {
@@ -390,7 +426,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should init/setHead properly from genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -424,9 +460,15 @@ describe('[Skeleton] / setHead', async () => {
 
     assert.equal(
       (skeleton as any).status.progress.subchains.length,
-      0,
-      'no subchain should have been created'
+      1,
+      'trivial subchain0 should have been created'
     )
+    assert.equal(
+      (skeleton as any).status.progress.subchains[0]!.head,
+      BigInt(0),
+      'trivial subchain0 should have been created'
+    )
+
     try {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
@@ -439,9 +481,15 @@ describe('[Skeleton] / setHead', async () => {
     assert.equal(reorg, false, 'should not reorg on valid first block')
     assert.equal(
       (skeleton as any).status.progress.subchains.length,
-      0,
-      'no subchain should have been created'
+      1,
+      'trivial subchain should have been created'
     )
+    assert.equal(
+      (skeleton as any).status.progress.subchains[0]!.head,
+      BigInt(0),
+      'trivial subchain0 should have been created'
+    )
+
     reorg = await skeleton.setHead(block1, true)
     assert.equal(reorg, false, 'should not reorg on valid first block')
     assert.equal(
@@ -494,7 +542,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -542,13 +590,17 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should not change when setHead is set with force=false'
     )
     await skeleton.setHead(block5, true)
+    await skeleton.blockingFillWithCutoff(10)
     await wait(200)
+
     assert.equal(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead is set with force=true'
     )
 
+    // unlink the skeleton for the below check to check all blocks cleared
+    skeleton.status.linked = false
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -566,7 +618,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should fill the canonical chain after being linked to a canonical block past genesis', async () => {
-    const config = new Config({ common, transports: [] })
+    const config = new Config({ common, engineNewpayloadMaxExecute: 10 })
     const chain = await Chain.create({ config })
     ;(chain.blockchain as any)._validateBlocks = false
 
@@ -614,13 +666,20 @@ describe('[Skeleton] / setHead', async () => {
       BigInt(4),
       'canonical height should not change when setHead with force=false'
     )
-    await skeleton.setHead(block5, true)
+
+    // test sethead and blockingFillWithCutoff true via forkchoice update
+    await skeleton.forkchoiceUpdate(block5)
+
     await wait(200)
     assert.equal(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead with force=true'
     )
+
+    // unlink the skeleton for the below check to check all blocks cleared
+    const prevLinked = skeleton.status.linked
+    skeleton.status.linked = false
     for (const block of [block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -635,6 +694,112 @@ describe('[Skeleton] / setHead', async () => {
         )} should be cleaned up after filling canonical chain`
       )
     }
+    // restore linkedStatus
+    skeleton.status.linked = prevLinked
+
+    const block41 = Block.fromBlockData(
+      { header: { number: 4, parentHash: block3.hash(), difficulty: 101 } },
+      { common, setHardfork: true }
+    )
+    const block51 = Block.fromBlockData(
+      { header: { number: 5, parentHash: block41.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+    const block61 = Block.fromBlockData(
+      { header: { number: 6, parentHash: block51.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+
+    await skeleton.setHead(block41, false)
+    await skeleton.setHead(block51, false)
+
+    // should link the chains including the 41, 51 block backfilled from the unfinalized
+    await skeleton.forkchoiceUpdate(block61)
+    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(6), 'head should be correct')
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(4),
+      'tail should be backfilled'
+    )
+    assert.equal(skeleton.status.linked, true, 'should be linked')
+    assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
+
+    const block71 = Block.fromBlockData(
+      { header: { number: 7, parentHash: block61.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+    const block81 = Block.fromBlockData(
+      { header: { number: 8, parentHash: block71.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+    const block91 = Block.fromBlockData(
+      { header: { number: 9, parentHash: block81.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+
+    // lets jump ahead and add the block 81 and 71 with annoucements and trigger tryTailBackfill
+    await skeleton.forkchoiceUpdate(block91)
+    assert.equal(skeleton.status.progress.subchains.length, 1, '1 subchain with older dropped')
+    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(9),
+      'new subchain should be created'
+    )
+    await skeleton.setHead(block81, false)
+    await skeleton.setHead(block71, false)
+    await skeleton.tryTailBackfill()
+
+    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(7),
+      'tail should be backfilled'
+    )
+    assert.equal(skeleton.status.linked, true, 'should be linked')
+    // async wait needed here so the async fillCanonicalChain can fill the chain
+    await wait(50)
+    assert.equal(chain.blocks.height, BigInt(9), 'all blocks should be in chain')
+    assert.equal(
+      equalsBytes(chain.blocks.latest!.hash(), block91.hash()),
+      true,
+      'correct head hash'
+    )
+
+    // do a very common reorg that happens in a network: reorged head block
+    const block92 = Block.fromBlockData(
+      { header: { number: 9, parentHash: block81.hash(), difficulty: 101 } },
+      { common, setHardfork: true }
+    )
+    const block102 = Block.fromBlockData(
+      { header: { number: 10, parentHash: block92.hash(), difficulty: 100 } },
+      { common, setHardfork: true }
+    )
+
+    await skeleton.forkchoiceUpdate(block92)
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.head,
+      BigInt(9),
+      'head number should be same'
+    )
+    assert.equal(
+      skeleton.status.progress.subchains[0]?.tail,
+      BigInt(9),
+      'tail should be truncated to head'
+    )
+    assert.equal(
+      equalsBytes(chain.blocks.latest!.hash(), block92.hash()),
+      true,
+      'correct reorged head hash'
+    )
+
+    // should be able to build on top of the next block
+    await skeleton.forkchoiceUpdate(block102)
+    assert.equal(
+      equalsBytes(chain.blocks.latest!.hash(), block102.hash()),
+      true,
+      'continue reorged chain'
+    )
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
@@ -652,7 +817,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       accountCache: 10000,
       storageCache: 1000,
@@ -757,7 +921,6 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
       accountCache: 10000,
       storageCache: 1000,
@@ -800,8 +963,8 @@ describe('[Skeleton] / setHead', async () => {
     )
     assert.equal(
       (skeleton as any).status.progress.subchains[0].tail,
-      BigInt(4),
-      `Subchain should have been backstepped to 4`
+      BigInt(1),
+      `Subchain should have been backstepped to 1`
     )
   })
 
@@ -818,9 +981,8 @@ describe('[Skeleton] / setHead', async () => {
     const common = Common.fromGethGenesis(genesis, { chain: 'post-merge' })
     common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
     const config = new Config({
-      transports: [],
       common,
-      logger: getLogger({ loglevel: 'debug' }),
+      logger: getLogger({ logLevel: 'debug' }),
       accountCache: 10000,
       storageCache: 1000,
     })
@@ -839,8 +1001,8 @@ describe('[Skeleton] / setHead', async () => {
     }
 
     const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-    td.replace<any>('@ethereumjs/block', { BlockHeader })
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+    vi.doMock('@ethereumjs/block', () => BlockHeader)
     await chain.open()
     const genesisBlock = await chain.getBlock(BigInt(0))
 
@@ -895,6 +1057,5 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
   })
 })

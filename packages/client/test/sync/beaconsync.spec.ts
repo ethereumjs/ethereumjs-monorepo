@@ -33,7 +33,7 @@ describe('[BeaconSynchronizer]', async () => {
   const { BeaconSynchronizer } = await import('../../src/sync/beaconsync')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -42,7 +42,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should open', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -56,7 +56,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should get height', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -71,7 +71,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should find best', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -98,7 +98,6 @@ describe('[BeaconSynchronizer]', async () => {
 
   it('should sync to next subchain head or chain height', async () => {
     const config = new Config({
-      transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 0,
       accountCache: 10000,
@@ -151,7 +150,6 @@ describe('[BeaconSynchronizer]', async () => {
 
   it('should not sync pre-genesis', async () => {
     const config = new Config({
-      transports: [],
       safeReorgDistance: 0,
       skeletonSubchainMergeMinimum: 1000,
       accountCache: 10000,
@@ -185,7 +183,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('should extend and set with a valid head', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -216,7 +214,7 @@ describe('[BeaconSynchronizer]', async () => {
   })
 
   it('syncWithPeer should return early if skeleton is already linked', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })

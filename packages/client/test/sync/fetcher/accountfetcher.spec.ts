@@ -1,11 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
 import { SnapProtocol } from '../../../src/net/protocol'
+import { ByteCodeFetcher } from '../../../src/sync/fetcher/bytecodefetcher'
+import { StorageFetcher } from '../../../src/sync/fetcher/storagefetcher'
 import { TrieNodeFetcher } from '../../../src/sync/fetcher/trienodefetcher'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
@@ -21,12 +23,10 @@ describe('[AccountFetcher]', async () => {
   PeerPool.prototype.idle = td.func<any>()
   PeerPool.prototype.ban = td.func<any>()
 
-  const { AccountFetcher, snapFetchersCompleted } = await import(
-    '../../../src/sync/fetcher/accountfetcher'
-  )
+  const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -46,8 +46,40 @@ describe('[AccountFetcher]', async () => {
     assert.notOk((fetcher as any).running, 'stopped')
   })
 
+  it('should update highest known hash', () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new AccountFetcher({
+      config,
+      pool,
+      root: new Uint8Array(0),
+      first: BigInt(1),
+      count: BigInt(10),
+    })
+
+    const highestReceivedHash = Uint8Array.from([6])
+    const accountDataResponse: any = [
+      {
+        hash: Uint8Array.from([4]),
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
+      {
+        hash: highestReceivedHash,
+        body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+      },
+    ]
+    fetcher.highestKnownHash = Uint8Array.from([4])
+    fetcher.process({} as any, accountDataResponse)
+
+    assert.deepEqual(
+      fetcher.highestKnownHash,
+      highestReceivedHash,
+      'highest known hash correctly updated'
+    )
+  })
+
   it('should process', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -77,12 +109,13 @@ describe('[AccountFetcher]', async () => {
       },
     ]
     accountDataResponse.completed = true
+
     assert.deepEqual(fetcher.process({} as any, accountDataResponse), fullResult, 'got results')
-    assert.notOk(fetcher.process({} as any, { accountDataResponse: [] } as any), 'bad results')
+    assert.notOk(fetcher.process({} as any, []), 'bad results')
   })
 
   it('should adopt correctly', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -122,8 +155,45 @@ describe('[AccountFetcher]', async () => {
     assert.equal(results?.length, 3, 'Should return full results')
   })
 
+  it('should skip job with limit lower than highest known hash', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new AccountFetcher({
+      config,
+      pool,
+      root: new Uint8Array(0),
+      first: BigInt(1),
+      count: BigInt(3),
+    })
+    fetcher.highestKnownHash = Uint8Array.from([5])
+    const task = { count: 3, first: BigInt(1) }
+    const peer = {
+      snap: { getAccountRange: vi.fn() },
+      id: 'random',
+      address: 'random',
+    }
+    const partialResult: any = [
+      [
+        {
+          hash: new Uint8Array(0),
+          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+        },
+        {
+          hash: new Uint8Array(0),
+          body: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
+        },
+      ],
+    ]
+    const job = { peer, partialResult, task }
+    const result = (await fetcher.request(job as any)) as any
+    assert.ok(
+      JSON.stringify(result[0]) === JSON.stringify({ skipped: true }),
+      'skipped fetching task with limit lower than highest known key hash'
+    )
+  })
+
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -147,24 +217,26 @@ describe('[AccountFetcher]', async () => {
 
     const task = { count: 3, first: BigInt(1) }
     const peer = {
-      snap: { getAccountRange: td.func<any>() },
+      snap: {
+        getAccountRange: vi.fn((input) => {
+          const expected = {
+            root: new Uint8Array(0),
+            origin: hexToBytes('0x000000000000000000000000000000000000000000000000000000000000001'),
+            limit: hexToBytes('0x000000000000000000000000000000000000000000000000000000000000003'),
+            bytes: BigInt(50000),
+          }
+          assert.deepEqual(input, expected)
+        }),
+      },
       id: 'random',
       address: 'random',
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getAccountRange({
-        root: new Uint8Array(0),
-        origin: td.matchers.anything(),
-        limit: td.matchers.anything(),
-        bytes: BigInt(50000),
-      })
-    )
   })
 
   it('should verify proof correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new SnapProtocol({ config, chain })
     const pool = new PeerPool() as any
@@ -187,11 +259,12 @@ describe('[AccountFetcher]', async () => {
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData
     )
-    const mockedGetAccountRange = td.func<any>()
-    td.when(mockedGetAccountRange(td.matchers.anything())).thenReturn({
-      reqId: BigInt(1),
-      accounts,
-      proof,
+    const mockedGetAccountRange = vi.fn(() => {
+      return {
+        reqId: BigInt(1),
+        accounts,
+        proof,
+      }
     })
     const peer = {
       snap: { getAccountRange: mockedGetAccountRange },
@@ -207,28 +280,24 @@ describe('[AccountFetcher]', async () => {
     )
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
-    fetcher.storageFetcher.enqueueByStorageRequestList = td.func<any>()
-    fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = td.func<any>()
+    fetcher.storageFetcher.enqueueByStorageRequestList = vi.fn()
+    fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = vi.fn()
     try {
       await fetcher.store(results!)
       assert.ok(true, 'fetcher stored results successfully')
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
-    const fetcherDoneFlags = fetcher.fetcherDoneFlags
 
     const snapCompleted = new Promise((resolve) => {
       config.events.once(Event.SYNC_SNAPSYNC_COMPLETE, (stateRoot: any) => resolve(stateRoot))
     })
     // test snapfetcher complete, since the storage fetcher is already empty it should anyway lead
     // call to snapFetchersCompleted with storageFetcher
-    snapFetchersCompleted(fetcherDoneFlags, TrieNodeFetcher)
-    snapFetchersCompleted(
-      fetcherDoneFlags,
-      AccountFetcher,
-      fetcher.accountTrie.root(),
-      config.events
-    )
+    fetcher.snapFetchersCompleted(TrieNodeFetcher)
+    fetcher.snapFetchersCompleted(StorageFetcher)
+    fetcher.snapFetchersCompleted(ByteCodeFetcher)
+    fetcher.snapFetchersCompleted(AccountFetcher)
     const snapSyncTimeout = new Promise((_resolve, reject) => setTimeout(reject, 10000))
     try {
       await Promise.race([snapCompleted, snapSyncTimeout])
@@ -242,8 +311,9 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
+    pool.idle = vi.fn(() => 'peer0')
     const fetcher = new AccountFetcher({
       config,
       pool,
@@ -251,11 +321,6 @@ describe('[AccountFetcher]', async () => {
       first: BigInt(1),
       count: BigInt(10),
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

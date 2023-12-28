@@ -6,8 +6,8 @@
 [![Code Coverage][client-coverage-badge]][client-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Ethereum Execution (Eth 1.0) Client built in TypeScript/JavaScript. |
-| ------------------------------------------------------------------- |
+| Ethereum Execution Layer (EL) Client built in TypeScript/JavaScript. |
+| -------------------------------------------------------------------- |
 
 ## Table of Contents
 
@@ -29,10 +29,10 @@ The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](
 
 Here are some use cases:
 
-- Sync the main Ethereum networks (`mainnet` (experimental), `goerli`, `sepolia`, ...)
+- Sync the main Ethereum networks (`mainnet` (experimental), `sepolia`, `holesky`, ...)
 - Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
 - Run a network with your own custom [EthereumJS VM](../vm)
-- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./lib/sync/txpool.ts)
+- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./src/sync/txpool.ts)
 
 The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
 
@@ -61,15 +61,27 @@ The client can also be easily installed and built from source:
 1. Clone the EthereumJS monorepo with `git clone https://github.com/ethereumjs/ethereumjs-monorepo.git`
 2. Run `npm i` from the root folder to install dependencies and build
 3. Now the client can be run from the `packages/client` folder with `npm run client:start`
-4. Run `npm client:start -- --help` for help on the CLI parameters
+4. Run `npm run client:start -- --help` for help on the CLI parameters
 
 ### Docker
 
-Docker images are not yet published on a regular basis. You can build your own image by going to the repository
+A Docker image is built nightly from the current master branch and can be retrieved via the below command:
+
+```sh
+docker pull ethpandaops/ethereumjs:master
+```
+
+Alternatively, an image from the most recent stable releast can be accessed via:
+
+```sh
+docker pull ethpandaops/ethereumjs:stable
+```
+
+You can also build your own image by going to the repository
 root directory and run:
 
 ```shell
-docker build . -f Dockerfile.fromSource --tag ethereumjs:latest
+docker build . -f Dockerfile --tag ethereumjs:latest
 ```
 
 You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
@@ -84,7 +96,7 @@ You can get the client up and running by going to the shell and run:
 # npm installation
 ethereumjs
 
-# GitHub installation
+# Source installation
 npm run client:start
 ```
 
@@ -92,10 +104,10 @@ And pass in CLI parameters like:
 
 ```shell
 # npm installation
-ethereumjs --network=goerli
+ethereumjs --network=holesky
 
-# GitHub installation
-npm run client:start -- --network=goerli
+# Source installation
+npm run client:start -- --network=holesky
 ```
 
 To see a help page with the full list of client options available run:
@@ -113,20 +125,26 @@ The EthereumJS client is tightly integrated with the EthereumJS [Common](../comm
 The main supported networks are:
 
 - `mainnet` (experimental)
-- `goerli`
 - `sepolia` (`v0.3.0`+)
+- `holesky` (`v0.9.0`+)
 
 Use the CLI `--network` option to switch the network:
 
 ```shell
-ethereumjs --network=sepolia
+ethereumjs --network=holesky
 ```
 
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
 ## Running with a Consensus Layer (CL) Client
 
-In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client. The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Other possible options are to run with [Prysm](https://github.com/prysmaticlabs/prysm) (Go), [Lighthouse](https://github.com/sigp/lighthouse) (Rust), [Nimbus](https://github.com/status-im/nimbus-eth2) (Nim) or [Teku](https://github.com/ConsenSys/teku) (Java).
+In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client. The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Lodestar provides a [quick-start repository](https://github.com/ChainSafe/lodestar-quickstart) that allows users to get started quickly with minimal configuration. After cloning the linked quick-start repository, all that should be necessary to get the Lodestar consensus client started with EthereumJS is to run the following command:
+
+```shell
+./setup.sh --network sepolia --dataDir sepolia-data --elClient ethereumjs
+```
+
+Other possible options are to run with [Prysm](https://github.com/prysmaticlabs/prysm) (Go), [Lighthouse](https://github.com/sigp/lighthouse) (Rust), [Nimbus](https://github.com/status-im/nimbus-eth2) (Nim) or [Teku](https://github.com/ConsenSys/teku) (Java).
 
 ### Necessary CLI Options
 
@@ -161,11 +179,11 @@ JWT authentication can be disabled by adding the `--rpcEngineAuth false` flag (d
 The following is a rough guidance to run Lodestar as a beacon (non-validating) Node, see Lodestar [docs](https://chainsafe.github.io/lodestar/usage/beacon-management/) for more complete and up-to-date instructions on beacon management with Lodestar.
 
 1. Use lodestar branch `stable` and run `yarn && yarn build`
-2. Run cmd: `./lodestar beacon --network sepolia --jwt-secret /path/to/jwtsecret/file`
+2. Run cmd: `./lodestar beacon --network holesky --jwt-secret /path/to/jwtsecret/file`
 
 This will by default try connecting to `ethereumjs` over the endpoint `8551`. (You may customize this in conjunction with `ethereumjs`, see lodestar cli help via `--help`).
 
-You may provide `--checkpointSyncUrl` (with a synced `sepolia` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `sepolia` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
+You may provide `--checkpointSyncUrl` (with a synced `holesky` beacon node endpoint as arg value) to start directly off the head/provided checkpoint on the `holesky` beacon chain, possibly triggering (backfill) beacon sync on ethereumjs.
 
 #### (Optional) Validator
 
@@ -181,26 +199,20 @@ For a testnet chain, you may skip keystore generation and directly provide lodes
 
 (Modify the mnemonic and range indices as per your validator configuration).
 
-#### Running EthereumJS/Lodestar on Sepolia
+#### Running EthereumJS/Lodestar on Holesky
 
-A suited network to test the EthereumJS/Lodestar client combination is the Sepolia network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
+A suited network to test the EthereumJS/Lodestar client combination is the Holesky network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
 
-To sync the EthereumJS client pre-Merge run:
-
-```shell
-ethereumjs --network=sepolia
-```
-
-After the Merge you need to expand and start with JSON RPC and Engine API endpoints exposed:
+To start the EthereumJS client with JSON RPC and Engine API endpoints exposed:
 
 ```shell
-ethereumjs --network=sepolia --rpc --rpcEngine
+ethereumjs --network=holesky --rpc --rpcEngine
 ```
 
 Then start the Lodestar client with:
 
 ```shell
-./lodestar beacon --network=sepolia --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
+./lodestar beacon --network=holesky --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
 ```
 
 ## Custom Chains
@@ -242,7 +254,7 @@ Note that this feature is in `beta` and shouldn't be used with accounts holding 
 The client provides a quick way to get a local instance of a blockchain up and running using the `--dev` command. This will start up a private PoA clique network with a prefunded account that mines block on 10 second intervals. The prefunded account and its private key are printed to the screen when the client starts. When paired with the `--rpc` command, you have a ready-made environment for local development.
 
 ```shell
-ethereumjs --dev --rpc
+ethereumjs --dev=poa --rpc
 
 ==================================================
 Account generated for mining blocks:
@@ -257,14 +269,41 @@ Please **heed** the warning and do not use the provided account/private key for 
 This can also be paired with the `--unlock` command if you would like to specify the miner/prefunded account:
 
 ```shell
-ethereumjs --dev --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
+ethereumjs --dev=poa --rpc --unlock=0xd8066d5822138e7c76d1565deb249f5f7ae370fa
 ```
 
-Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
+Note: If the `--dev` command is used in conjunction with `--unlock` to use a predefined account, the blockchain's state will be preserved between consecutive runs. If you try to use a different predefined account, you may see errors related to incompatible genesis blocks. Simply run the client with the `--dev=poa` flag by itself and use the new prefunded account provided by the client in further rounds of execution.
 
 To explicitly set the miner coinbase (etherbase) specify `--minerCoinbase=[ADDRESS]` - otherwise this will default to the primary account.
 
-The `--dev` command defaults to `--dev=poa`. If you would like to use PoW ethash with CPU miner (warning: slow) then pass `--dev=pow`.
+The `--dev` command must be passed with a value (either 'poa' or 'pow') or you will receive an error.
+
+### CLI Parameter Autocompletion (experimental)
+
+The client supports a primitive form of autocompletion for CLI parameters. To enable, first ensure you have built the client (or installed from NPM).
+
+Then, configure the client to use autocompletion. This works with either `bash` or `zsh` shells.
+
+Set up the autocompletion script.
+
+```
+dist/bin/cli.js completion >> ~/.zshrc
+```
+
+Close and reopen the your terminal window (or else run `source ~/.zshrc`).
+When you next type `dist/bin/cli.js --d` and then press `tab`, you should see something like:
+
+```sh
+dist/bin/cli.js --d
+--dataDir            -- Data directory for the blockchain
+--debugCode          -- Generate code for local debugging (internal usage mostly)
+--dev                -- Start an ephemeral PoA blockchain with a single miner and prefunded accounts
+--disableBeaconSync  -- Disables beacon (optimistic) sync if the CL provides blocks at the head of the chain
+--discDns            -- Query EIP-1459 DNS TXT records for peer discovery
+--discV4             -- Use v4 ("findneighbour" node requests) for peer discovery
+--dnsAddr            -- IPv4 address of DNS server to use when acquiring peer discovery targets
+--dnsNetworks        -- EIP-1459 ENR tree urls to query for peer discovery targets
+```
 
 ## API
 
@@ -289,7 +328,7 @@ ethereumjs --rpc --maxPeers=0
 ```
 
 Currently only a small subset of `RPC` methods are implemented.(\*) You can have a look at the
-[./lib/rpc/modules/](./lib/rpc/modules) source folder or the tracking issue
+[./src/rpc/modules/](./src/rpc/modules) source folder or the tracking issue
 [#1114](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1114) for an overview.
 
 (*) Side note: implementing RPC methods is actually an extremely thankful task for a first-time
@@ -372,13 +411,15 @@ Output:
 
 ## Development
 
+See also [DEVELOPER.md](./DEVELOPER.md).
+
 ### Design
 
 For an overview on the design goals which served as a guideline on design decisions as well as some structural client overview see the dedicated [DESIGN.md](./DESIGN.md) document.
 
 ### Client Customization
 
-To get a start on customizing the client and using it programmatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea of how an [EthereumClient](./lib/client.ts) instance is invoked programmatically.
+To get a start on customizing the client and using it programmatically see the code from [./bin/cli.ts](./bin/cli.ts) to get an idea of how an [EthereumClient](./src/client.ts) instance is invoked programmatically.
 
 We would love to hear feedback from you on what you are planning and exchange on ideas how a programmatic exposure of the client API can be achieved more systematically and useful for third-party development use.
 
@@ -408,6 +449,10 @@ The above command outputs the log messages from all `devp2p` debug loggers avail
 ```shell
 DEBUG=ethjs,devp2p:rlpx,devp2p:eth,-babel [CLIENT_START_COMMAND]
 ```
+
+#### Hive testing
+
+See [DEVELOPER.md](./DEVELOPER.md)
 
 ### Diagram Updates
 

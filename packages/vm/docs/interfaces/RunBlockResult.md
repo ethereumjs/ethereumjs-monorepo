@@ -31,7 +31,7 @@ The gas used after executing the block
 
 #### Defined in
 
-[vm/src/types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L285)
+[vm/src/types.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L298)
 
 ___
 
@@ -43,7 +43,7 @@ The bloom filter of the LOGs (events) after executing the block
 
 #### Defined in
 
-[vm/src/types.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L289)
+[vm/src/types.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L302)
 
 ___
 
@@ -55,7 +55,7 @@ Receipts generated for transactions in the block
 
 #### Defined in
 
-[vm/src/types.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L273)
+[vm/src/types.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L286)
 
 ___
 
@@ -67,7 +67,7 @@ The receipt root after executing the block
 
 #### Defined in
 
-[vm/src/types.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L293)
+[vm/src/types.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L306)
 
 ___
 
@@ -79,7 +79,7 @@ Results of executing the transactions in the block
 
 #### Defined in
 
-[vm/src/types.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L277)
+[vm/src/types.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L290)
 
 ___
 
@@ -91,4 +91,4 @@ The stateRoot after executing the block
 
 #### Defined in
 
-[vm/src/types.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L281)
+[vm/src/types.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L294)

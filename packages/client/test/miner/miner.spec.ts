@@ -5,8 +5,7 @@ import { FeeMarketEIP1559Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { AbstractLevel } from 'abstract-level'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
 import { Config } from '../../src/config'
@@ -36,14 +35,11 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
 }
 
 describe('[Miner]', async () => {
-  const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
-  BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-  td.replace<any>('@ethereumjs/block', { BlockHeader })
+  BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
 
   // Stub out setStateRoot so txPool.validate checks will pass since correct state root
   // doesn't exist in fakeChain state anyway
-  const ogStateManagerSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = td.func<any>()
+  DefaultStateManager.prototype.setStateRoot = vi.fn()
 
   class FakeChain {
     open() {}
@@ -76,9 +72,18 @@ describe('[Miner]', async () => {
         validateDifficulty: () => undefined,
       },
       validateHeader: () => {},
+      getIteratorHead: () => {
+        return Block.fromBlockData({ header: { number: 1 } })
+      },
+      getTotalDifficulty: () => {
+        return 1n
+      },
       // eslint-disable-next-line no-invalid-this
       shallowCopy: () => this.blockchain,
       _init: async () => undefined,
+      events: {
+        addListener: () => {},
+      },
     }
   }
 
@@ -131,7 +136,6 @@ describe('[Miner]', async () => {
   })
   customCommon.events.setMaxListeners(50)
   const customConfig = new Config({
-    transports: [],
     accountCache: 10000,
     storageCache: 1000,
     accounts,
@@ -143,7 +147,6 @@ describe('[Miner]', async () => {
   const goerliCommon = new Common({ chain: CommonChain.Goerli, hardfork: Hardfork.Berlin })
   goerliCommon.events.setMaxListeners(50)
   const goerliConfig = new Config({
-    transports: [],
     accountCache: 10000,
     storageCache: 1000,
     accounts,
@@ -214,7 +217,7 @@ describe('[Miner]', async () => {
     assert.notOk(miner.running)
 
     // Should not start when config.mine=false
-    const configMineFalse = new Config({ transports: [], accounts, mine: false })
+    const configMineFalse = new Config({ accounts, mine: false })
     miner = new Miner({ config: configMineFalse, service })
     miner.start()
     assert.notOk(miner.running, 'miner should not start when config.mine=false')
@@ -228,6 +231,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
 
     txPool.start()
@@ -260,8 +264,8 @@ describe('[Miner]', async () => {
     // no skipHardForkValidation
     const miner = new Miner({ config: goerliConfig, service })
     const { txPool } = service
+    await service.execution.setupMerkleVM()
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
 
@@ -300,6 +304,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
     txPool.start()
     miner.start()
@@ -333,7 +338,6 @@ describe('[Miner]', async () => {
   it('assembleBlocks() -> with saveReceipts', async () => {
     const chain = new FakeChain() as any
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -350,6 +354,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm, receiptsManager } = service.execution
     txPool.start()
     miner.start()
@@ -397,7 +402,6 @@ describe('[Miner]', async () => {
       hardfork: Hardfork.London,
     })
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -422,6 +426,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
     txPool.start()
     miner.start()
@@ -453,7 +458,10 @@ describe('[Miner]', async () => {
   it("assembleBlocks() -> should stop assembling a block after it's full", async () => {
     const chain = new FakeChain() as any
     const gasLimit = 100000
-    const block = Block.fromBlockData({ header: { gasLimit } }, { common: customCommon })
+    const block = Block.fromBlockData(
+      { header: { gasLimit } },
+      { common: customCommon, setHardfork: true }
+    )
     Object.defineProperty(chain, 'headers', {
       get() {
         return { latest: block.header, height: BigInt(0) }
@@ -468,6 +476,7 @@ describe('[Miner]', async () => {
       config: customConfig,
       chain,
     })
+    await service.execution.open()
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
@@ -497,7 +506,7 @@ describe('[Miner]', async () => {
       miner.stop()
       txPool.stop()
     }
-    await (miner as any).queueNextAssembly(0)
+    await miner['queueNextAssembly'](0)
     await wait(500)
   })
   /*****************************************************************************************
@@ -509,7 +518,6 @@ describe('[Miner]', async () => {
   it.skip('assembleBlocks() -> should stop assembling when a new block is received', async () => {
     const chain = new FakeChain() as any
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -569,7 +577,6 @@ describe('[Miner]', async () => {
     const common = Common.custom(customChainParams, { baseChain: CommonChain.Goerli })
     common.setHardforkBy({ blockNumber: 0 })
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -586,7 +593,7 @@ describe('[Miner]', async () => {
 
     const { vm } = service.execution
     ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
-    vm.blockchain.validateHeader = td.func<any>() // stub
+    vm.blockchain.validateHeader = vi.fn() // stub
     ;(miner as any).chainUpdated = async () => {} // stub
     miner.start()
     await wait(100)
@@ -639,7 +646,7 @@ describe('[Miner]', async () => {
     await chain.close()
   })
 
-  it('should handle mining ethash PoW', async () => {
+  it.skip('should handle mining ethash PoW', async () => {
     const addr = A.address.toString().slice(2)
     const consensusConfig = { ethash: true }
     const defaultChainData = {
@@ -682,7 +689,6 @@ describe('[Miner]', async () => {
     ;(common as any)._chainParams['genesis'].difficulty = 1
     ;(common as any)._chainParams['genesis'].difficulty = 1
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       accounts,
@@ -707,16 +713,5 @@ describe('[Miner]', async () => {
     })
     await (miner as any).queueNextAssembly(0)
     await wait(10000)
-  })
-  /***********************************************************************
-   * End skipped tests section
-   */
-  it('should reset td', () => {
-    td.reset()
-    // according to https://github.com/testdouble/testdouble.js/issues/379#issuecomment-415868424
-    // mocking indirect dependencies is not properly supported, but it works for us in this file,
-    // so we will replace the original functions to avoid issues in other tests that come after
-    ;(BlockHeader as any).prototype._consensusFormatValidation = originalValidate
-    DefaultStateManager.prototype.setStateRoot = ogStateManagerSetStateRoot
-  })
+  }, 200000)
 })

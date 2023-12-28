@@ -2,6 +2,7 @@ import { bytesToHex, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { getClientVersion } from '../../util'
+import { callWithStackTrace } from '../helpers'
 import { middleware, validators } from '../validation'
 
 import type { EthereumClient } from '../..'
@@ -14,18 +15,20 @@ import type { Service } from '../../service'
  */
 export class Web3 {
   private _chain?: Chain
-
+  private _rpcDebug: boolean
   /**
    * Create web3_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
-
+    this._rpcDebug = rpcDebug
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
 
-    this.sha3 = middleware(this.sha3.bind(this), 1, [[validators.hex]])
+    this.sha3 = middleware(callWithStackTrace(this.sha3.bind(this), this._rpcDebug), 1, [
+      [validators.hex],
+    ])
   }
 
   /**

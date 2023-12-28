@@ -3,10 +3,9 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import pow from '../../testdata/geth-genesis/pow.json'
-import { baseRequest, params, setupChain } from '../helpers'
-import { checkError } from '../util'
+import { getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'eth_getStorageAt'
 
@@ -16,13 +15,9 @@ describe(method, async () => {
     const emptySlotStr = `0x${'00'.repeat(32)}`
 
     const { execution, common, server, chain } = await setupChain(pow, 'pow')
-
-    let req = params(method, [address.toString(), '0x0', 'latest'])
-    let expectRes = (res: any) => {
-      const msg = 'should return the empty slot for nonexistent account'
-      assert.equal(res.body.result, emptySlotStr, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    const rpc = getRpcClient(server)
+    let res = await rpc.request(method, [address.toString(), '0x0', 'latest'])
+    assert.equal(res.result, emptySlotStr, 'should return the empty slot for nonexistent account')
 
     // sample contract from https://ethereum.stackexchange.com/a/70791
     const data =
@@ -55,34 +50,28 @@ describe(method, async () => {
     await chain.putBlocks([ranBlock as unknown as Block])
 
     // call with 'latest tag to see if account storage reflects newly put storage value
-    req = params(method, [createdAddress!.toString(), '0x0', 'latest'])
-    expectRes = (res: any) => {
-      const msg = 'should return the correct slot value'
-      assert.equal(res.body.result, expectedSlotValue, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [createdAddress!.toString(), '0x0', 'latest'])
+    assert.equal(res.result, expectedSlotValue, 'should return the correct slot value')
 
     // call with 'earliest' tag to see if getStorageAt allows addressing blocks that are older than the latest block by tag
-    req = params(method, [createdAddress!.toString(), '0x0', 'earliest'])
-    expectRes = (res: any) => {
-      const msg =
-        'should not have new slot value for block that is addressed by "earliest" tag and is older than latest'
-      assert.equal(res.body.result, emptySlotStr, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [createdAddress!.toString(), '0x0', 'earliest'])
+    assert.equal(
+      res.result,
+      emptySlotStr,
+      'should not have new slot value for block that is addressed by "earliest" tag and is older than latest'
+    )
 
     // call with integer for block number to see if getStorageAt allows addressing blocks by number index
-    req = params(method, [createdAddress!.toString(), '0x0', '0x1'])
-    expectRes = (res: any) => {
-      const msg =
-        'should return the correct slot value when addressing the latest block by integer index'
-      assert.equal(res.body.result, expectedSlotValue, msg)
-    }
-    await baseRequest(server, req, 200, expectRes, false)
+    res = await rpc.request(method, [createdAddress!.toString(), '0x0', '0x1'])
+    assert.equal(
+      res.result,
+      expectedSlotValue,
+      'should return the correct slot value when addressing the latest block by integer index'
+    )
 
     // call with unsupported block argument
-    req = params(method, [address.toString(), '0x0', 'pending'])
-    expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    res = await rpc.request(method, [address.toString(), '0x0', 'pending'])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 })

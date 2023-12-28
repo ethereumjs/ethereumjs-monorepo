@@ -49,15 +49,15 @@ export class AccountCache extends Cache {
   }
 
   _saveCachePreState(cacheKeyHex: string) {
-    const it = this._diffCache[this._checkpoints].get(cacheKeyHex)
-    if (it === undefined) {
+    const diffMap = this._diffCache[this._checkpoints]
+    if (!diffMap.has(cacheKeyHex)) {
       let oldElem: AccountCacheElement | undefined
       if (this._lruCache) {
         oldElem = this._lruCache!.get(cacheKeyHex)
       } else {
         oldElem = this._orderedMapCache!.getElementByKey(cacheKeyHex)
       }
-      this._diffCache[this._checkpoints].set(cacheKeyHex, oldElem)
+      diffMap.set(cacheKeyHex, oldElem)
     }
   }
 

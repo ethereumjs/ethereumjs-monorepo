@@ -1,19 +1,46 @@
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 // eslint-disable-next-line no-restricted-imports
-import {
-  bytesToHex as _bytesToUnprefixedHex,
-  hexToBytes as _unprefixedHexToBytes,
-} from 'ethereum-cryptography/utils.js'
+import { bytesToHex as _bytesToUnprefixedHex } from 'ethereum-cryptography/utils.js'
 
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.js'
 import { isHexPrefixed, isHexString, padToEven, stripHexPrefix } from './internal.js'
 
 import type { PrefixedHexString, TransformabletoBytes } from './types.js'
 
+const BIGINT_0 = BigInt(0)
+
 /**
  * @deprecated
  */
 export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+
+// hexToBytes cache
+const hexToBytesMapFirstKey: { [key: string]: number } = {}
+const hexToBytesMapSecondKey: { [key: string]: number } = {}
+
+for (let i = 0; i < 16; i++) {
+  const vSecondKey = i
+  const vFirstKey = i * 16
+  const key = i.toString(16).toLowerCase()
+  hexToBytesMapSecondKey[key] = vSecondKey
+  hexToBytesMapSecondKey[key.toUpperCase()] = vSecondKey
+  hexToBytesMapFirstKey[key] = vFirstKey
+  hexToBytesMapFirstKey[key.toUpperCase()] = vFirstKey
+}
+
+/**
+ * NOTE: only use this function if the string is even, and only consists of hex characters
+ * If this is not the case, this function could return weird results
+ * @deprecated
+ */
+function _unprefixedHexToBytes(hex: string): Uint8Array {
+  const byteLen = hex.length
+  const bytes = new Uint8Array(byteLen / 2)
+  for (let i = 0; i < byteLen; i += 2) {
+    bytes[i / 2] = hexToBytesMapFirstKey[hex[i]] + hexToBytesMapSecondKey[hex[i + 1]]
+  }
+  return bytes
+}
 
 /**
  * @deprecated
@@ -39,15 +66,31 @@ export const bytesToHex = (bytes: Uint8Array): string => {
   return hex
 }
 
+// BigInt cache for the numbers 0 - 256*256-1 (two-byte bytes)
+const BIGINT_CACHE: bigint[] = []
+for (let i = 0; i <= 256 * 256 - 1; i++) {
+  BIGINT_CACHE[i] = BigInt(i)
+}
+
 /**
  * Converts a {@link Uint8Array} to a {@link bigint}
  * @param {Uint8Array} bytes the bytes to convert
  * @returns {bigint}
  */
-export const bytesToBigInt = (bytes: Uint8Array): bigint => {
+export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  if (littleEndian) {
+    bytes.reverse()
+  }
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
-    return BigInt(0)
+    return BIGINT_0
+  }
+  if (hex.length === 4) {
+    // If the byte length is 1 (this is faster than checking `bytes.length === 1`)
+    return BIGINT_CACHE[bytes[0]]
+  }
+  if (hex.length === 6) {
+    return BIGINT_CACHE[bytes[0] * 256 + bytes[1]]
   }
   return BigInt(hex)
 }
@@ -69,8 +112,8 @@ export const hexToBytes = (hex: string): Uint8Array => {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
 
-  if (!hex.startsWith('0x')) {
-    throw new Error(`prefixed hex input should start with 0x, got ${hex.substring(0, 2)}`)
+  if (!/^0x[0-9a-fA-F]*$/.test(hex)) {
+    throw new Error(`Input must be a 0x-prefixed hexadecimal string, got ${hex}`)
   }
 
   hex = hex.slice(2)
@@ -78,14 +121,7 @@ export const hexToBytes = (hex: string): Uint8Array => {
   if (hex.length % 2 !== 0) {
     hex = padToEven(hex)
   }
-
-  const byteLen = hex.length / 2
-  const bytes = new Uint8Array(byteLen)
-  for (let i = 0; i < byteLen; i++) {
-    const byte = parseInt(hex.slice(i * 2, (i + 1) * 2), 16)
-    bytes[i] = byte
-  }
-  return bytes
+  return _unprefixedHexToBytes(hex)
 }
 
 /******************************************/
@@ -117,9 +153,11 @@ export const intToBytes = (i: number): Uint8Array => {
  *  * @param {bigint} num the bigint to convert
  * @returns {Uint8Array}
  */
-export const bigIntToBytes = (num: bigint): Uint8Array => {
+export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return toBytes('0x' + padToEven(num.toString(16)))
+  const bytes = toBytes('0x' + padToEven(num.toString(16)))
+
+  return littleEndian ? bytes.reverse() : bytes
 }
 
 /**
@@ -267,7 +305,7 @@ export const toBytes = (v: ToBytesInputTypes): Uint8Array => {
   }
 
   if (typeof v === 'bigint') {
-    if (v < BigInt(0)) {
+    if (v < BIGINT_0) {
       throw new Error(`Cannot convert negative bigint to Uint8Array. Given: ${v}`)
     }
     let n = v.toString(16)
@@ -427,6 +465,60 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
     pad += arr.length
   }
   return result
+}
+
+/**
+ * @notice Convert a Uint8Array to a 32-bit integer
+ * @param {Uint8Array} bytes The input Uint8Array from which to read the 32-bit integer.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @return {number} The 32-bit integer read from the input Uint8Array.
+ */
+export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): number {
+  if (bytes.length < 4) {
+    bytes = setLength(bytes, 4, littleEndian)
+  }
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  return dataView.getUint32(0, littleEndian)
+}
+
+/**
+ * @notice Convert a Uint8Array to a 64-bit bigint
+ * @param {Uint8Array} bytes The input Uint8Array from which to read the 64-bit bigint.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @return {bigint} The 64-bit bigint read from the input Uint8Array.
+ */
+export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false): bigint {
+  if (bytes.length < 8) {
+    bytes = setLength(bytes, 8, littleEndian)
+  }
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  return dataView.getBigUint64(0, littleEndian)
+}
+
+/**
+ * @notice Convert a 32-bit integer to a Uint8Array.
+ * @param {number} value The 32-bit integer to convert.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @return {Uint8Array} A Uint8Array of length 4 containing the integer.
+ */
+export function int32ToBytes(value: number, littleEndian: boolean = false): Uint8Array {
+  const buffer = new ArrayBuffer(4)
+  const dataView = new DataView(buffer)
+  dataView.setUint32(0, value, littleEndian)
+  return new Uint8Array(buffer)
+}
+
+/**
+ * @notice Convert a 64-bit bigint to a Uint8Array.
+ * @param {bigint} value The 64-bit bigint to convert.
+ * @param {boolean} littleEndian True for little-endian, undefined or false for big-endian.
+ * @return {Uint8Array} A Uint8Array of length 8 containing the bigint.
+ */
+export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): Uint8Array {
+  const buffer = new ArrayBuffer(8)
+  const dataView = new DataView(buffer)
+  dataView.setBigUint64(0, value, littleEndian)
+  return new Uint8Array(buffer)
 }
 
 // eslint-disable-next-line no-restricted-imports

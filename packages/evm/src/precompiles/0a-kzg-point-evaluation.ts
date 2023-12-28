@@ -41,8 +41,8 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     return EvmErrorResult(new EvmError(ERROR.INVALID_INPUT_LENGTH), opts.gasLimit)
   }
 
-  const version = Number(opts.common.paramByEIP('sharding', 'blobCommitmentVersionKzg', 4844))
-  const fieldElementsPerBlob = opts.common.paramByEIP('sharding', 'fieldElementsPerBlob', 4844)!
+  const version = Number(opts.common.param('sharding', 'blobCommitmentVersionKzg'))
+  const fieldElementsPerBlob = opts.common.param('sharding', 'fieldElementsPerBlob')
   const versionedHash = opts.data.subarray(0, 32)
   const z = opts.data.subarray(32, 64)
   const y = opts.data.subarray(64, 96)

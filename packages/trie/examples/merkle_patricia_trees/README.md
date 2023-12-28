@@ -40,98 +40,94 @@ Let's begin right away with a simple example. Don't worry if things aren't too c
 
 ```jsx
 const { Trie } = require('@ethereumjs/trie') // We import the library required to create a basic Merkle Patricia Tree
+const { bytesToHex, bytesToUtf8, utf8ToBytes } = require('@ethereumjs/util')
 
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 ```
 
-and then store and retrieve a single key-value pair within it. Note that we needed to convert the strings (`testKey` and `testValue`) to buffers, as that is what the Trie methods expect:
+and then store and retrieve a single key-value pair within it. Note that we needed to convert the strings (`testKey` and `testValue`) to bytes, as that is what the Trie methods expect:
 
 ```jsx
 async function test() {
-  const key = Buffer.from('testKey')
-  const value = Buffer.from('testValue')
+  const key = utf8ToBytes('testKey')
+  const value = utf8ToBytes('testValue')
   await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const retrievedValue = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (Bytes): ', retrievedValue)
-  console.log('Value (String): ', retrievedValue.toString())
-  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
+  console.log('Value (Bytes): ', bytesToHex(retrievedValue))
+  console.log('Value (String): ', bytesToUtf8(retrievedValue))
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
 test()
 
 // RESULT
-Empty trie root (Bytes):  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
-Value (Bytes):  <Buffer 74 65 73 74 56 61 6c 75 65>
+Empty trie root (Bytes):  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+Value (Bytes):  0x7465737456616c7565
 Value (String):  testValue
-Updated trie root: <Buffer 8e 81 43 67 21 33 dd 5a b0 0d fc 4b 01 14 60 ea 2a 7b 00 d9 10 dc 42 78 94 2a e9 10 5c b6 20 74>
+Updated trie root: 0x8e8143672133dd5ab00dfc4b011460ea2a7b00d910dc4278942ae9105cb62074
 ```
 
 Quite simple. As expected, we can retrieve our value using the key. We can also note that the root hash of the tree has automatically been updated. We'll explore what tree roots stand for later; for now, simply know that each distinct tree will have a distinct root (we can therefore quickly verify if two trees are identical by comparing their roots!).
 
 However, the example above does not reflect exactly how key-value pairs are stored and retrieved in Ethereum's Merkle Patricia Trees. Here are some things to keep in mind:
 
-- As mentioned, keys and values are stored and retrieved as raw bytes. We already covered that in the previous example by converting our strings to buffers using `Buffer.from()`.
+- As mentioned, keys and values are stored and retrieved as raw bytes. We already covered that in the previous example by converting our strings to bytes using `utf8ToBytes`.
 - Values undergo an additional transformation before they are stored. They are encoded using the [Recursive Length Prefix encoding function](https://github.com/ethereum/wiki/wiki/RLP). This allows the serialization of strings and arrays. The "Trie" class does that automatically.
 - Last but not least: in Ethereum, the keys also undergo another transformation: they are converted using a hash function (keccak256). The Trie class **does not** do this.
 
 ### Example 1b - Manually Creating and Updating a Secure Trie
 
-Let's retry the example above while respecting the rules we just mentioned. We will therefore use the keccak256 hash of the key instead of the key itself (using the "@ethereumjs/util" package).
+Let's retry the example above while respecting the rules we just mentioned. We will therefore use the keccak256 hash of the key instead of the key itself.
 
 Here's what this looks like:
 
 ```jsx
-const { Trie } = require('@ethereumjs/trie')
-const { keccak256 } = require('@ethereumjs/util')
-
 const trie = new Trie() // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
+console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {
-  await trie.put(keccak256(Buffer.from('testKey')), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair hash("testKey"): "testValue"
-  const value = await trie.get(keccak256(Buffer.from('testKey'))) // We retrieve (using "get") the value at hash("testKey"_
-  console.log('Value (Bytes): ', value)
-  console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
+  await trie.put(keccak256(utf8ToBytes('testKey')), utf8ToBytes('testValue')) // We update (using "put") the trie with the key-value pair hash("testKey"): "testValue"
+  const value = await trie.get(keccak256(utf8ToBytes('testKey'))) // We retrieve (using "get") the value at hash("testKey")
+  console.log('Value (Bytes): ', bytesToHex(value))
+  console.log('Value (String): ', bytesToUtf8(value))
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
 test()
 
 // RESULT
-Empty trie root (Bytes):  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
-Value (Bytes):  <Buffer 74 65 73 74 56 61 6c 75 65>
+Empty trie root (Bytes):  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+Value (Bytes):  0x7465737456616c7565
 Value (String):  testValue
-Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb>
+Updated trie root: 0xbeade913ab37dca0dca2e42924b918c2a1cac457833bd82b9e3245decb87d0fb
 ```
 
-Nothing spectacular: only the root hash of the tree has changed, as the key has changed from Buffer.from("testKey") to keccak256(Buffer.from("testKey")).
+Nothing spectacular: only the root hash of the tree has changed, as the key has changed from hexToBytes("testKey") to keccak256(hexToBytes("testKey")).
 
 ### Example 1c - Automatically Creating and Updating a Secure Trie
 
 Fortunately, we also have an option called "useKeyHashing" that automatically takes care of the keccak256 hashing for us. We can see that it outputs the same root hash as example1b.js
 
 ```jsx
-const { Trie } = require('@ethereumjs/trie')// We import the class required to create a secure Merkle Patricia Tree
-
-const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree
-console.log('Empty trie root (Bytes): ', trie.root()) // The trie root (32 bytes)
+const trie = new Trie({ useKeyHashing: true }) // We create an empty Merkle Patricia Tree with key hashing enabled
+console.log('Empty trie root (Bytes): ', bytesToHex(trie.root())) // The trie root (32 bytes)
 
 async function test() {
-  await trie.put(Buffer.from('testKey'), Buffer.from('testValue')) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
-  const value = await trie.get(Buffer.from('testKey')) // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (Bytes): ', value)
-  console.log('Value (String): ', value.toString())
-  console.log('Updated trie root:', trie.root()) // The new trie root (32 bytes)
+  await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue')) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
+  const value = await trie.get(utf8ToBytes('testKey')) // We retrieve (using "get") the value at key "testKey"
+  console.log('Value (Bytes): ', bytesToHex(value))
+  console.log('Value (String): ', bytesToUtf8(value))
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root (32 bytes)
 }
 
 test()
 
 // RESULT
-Empty trie root (Bytes):  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
-Value (Bytes):  <Buffer 74 65 73 74 56 61 6c 75 65>
+Empty trie root (Bytes):  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+Value (Bytes):  0x7465737456616c7565
 Value (String):  testValue
-Updated trie root: <Buffer be ad e9 13 ab 37 dc a0 dc a2 e4 29 24 b9 18 c2 a1 ca c4 57 83 3b d8 2b 9e 32 45 de cb 87 d0 fb> // Same hash!
+Updated trie root: 0xbeade913ab37dca0dca2e42924b918c2a1cac457833bd82b9e3245decb87d0fb // Same hash as the previous example.
 ```
 
 To make the examples easier to follow, we won't be using the keccak256 of the keys (or the `useKeyHashing` option) in this tutorial. However, keep in mind that in Ethereum's Merkle Patricia Trees, keys are always hashed. If you're curious, the reason for hashing the keys is balancing the tree.
@@ -142,27 +138,27 @@ In addition to retrieving (using the method `get`) and adding (using the method 
 
 ```jsx
 async function test() {
-  const key = Buffer.from('testKey')
-  const value = Buffer.from('testValue')
+  const key = utf8ToBytes('testKey')
+  const value = utf8ToBytes('testValue')
   await trie.put(key, value) // We update (using "put") the trie with the key-value pair "testKey": "testValue"
   const valuePre = await trie.get(key) // We retrieve (using "get") the value at key "testKey"
-  console.log('Value (String): ', valuePre.toString()) // We retrieve our value
-  console.log('Updated trie root:', trie.root()) // The new trie root
+  console.log('Value (String): ', bytesToUtf8(valuePre)) // We retrieve our value
+  console.log('Updated trie root:', bytesToHex(trie.root())) // The new trie root
 
   await trie.del(key)
   const valuePost = await trie.get(key) // We try to retrieve the value at (deleted) key "testKey"
   console.log('Value at key "testKey": ', valuePost) // Key not found. Value is therefore null.
-  console.log('Trie root after deletion:', trie.root()) // Our trie root is back to its initial value
+  console.log('Trie root after deletion:', bytesToHex(trie.root())) // Our trie root is back to its initial value
 }
 
 test()
 
 // RESULT
-Empty trie root:  <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
+Empty trie root:  0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
 Value (String):  testValue
-Updated trie root: <Buffer 8e 81 43 67 21 33 dd 5a b0 0d fc 4b 01 14 60 ea 2a 7b 00 d9 10 dc 42 78 94 2a e9 10 5c b6 20 74>
+Updated trie root: 0x8e8143672133dd5ab00dfc4b011460ea2a7b00d910dc4278942ae9105cb62074
 Value at key "testKey":  null
-Trie root after deletion: <Buffer 56 e8 1f 17 1b cc 55 a6 ff 83 45 e6 92 c0 f8 6e 5b 48 e0 1b 99 6c ad c0 01 62 2f b5 e3 63 b4 21>
+Trie root after deletion: 0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
 ```
 
 Quite simple, isn't it? Notice that our tree root after deletion is the same as our initial tree root. This is exactly what we should expect: having deleted the only value-key pair from our tree, we are left with an empty tree!
@@ -190,7 +186,7 @@ This first example is quite straightforward. We'll simply look up a node (using 
 
 ```jsx
 async function test() {
-  const node1 = await trie.findPath(Buffer.from('testKey')) // We attempt to retrieve the node using the key "testKey"
+  const node1 = await trie.findPath(utf8ToBytes('testKey')) // We attempt to retrieve the node using our key "testKey"
   console.log('Node 1: ', node1.node) // null
 }
 
@@ -209,97 +205,65 @@ Creating a branch node is a bit more complicated. For a branch to exist, we need
 First, notice how similar the following keys are (specifically, look at the bytes):
 
 ```jsx
-console.log(Buffer.from('testKey'))
-console.log(Buffer.from('testKey0'))
-console.log(Buffer.from('testKeyA'))
+console.log(bytesToHex(utf8ToBytes('testKey')))
+console.log(bytesToHex(utf8ToBytes('testKey0')))
+console.log(bytesToHex(utf8ToBytes('testKeyA')))
 
 // RESULT (BYTES)
-<Buffer 74 65 73 74 4b 65 79>
-<Buffer 74 65 73 74 4b 65 79 30>
-<Buffer 74 65 73 74 4b 65 79 41>
+0x746573744b6579
+0x746573744b657930
+0x746573744b657941
 ```
 
-We can see that the bytes representations of our keys branch off at byte `<79>`. This makes sense: `<79>` stands for the letter `y`. Let's now add those keys to our trie.
+We can see that the bytes representations of our keys branch off at byte `79`. This makes sense: `79` stands for the letter `y`. Let's now add those keys to our trie.
 
 ```jsx
 // Add a key-value pair to the trie for each key
-await trie.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie.put(Buffer.from('testKey0'), Buffer.from('testValue0'))
-await trie.put(Buffer.from('testKeyA'), Buffer.from('testValueA'))
+await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+await trie.put(utf8ToBytes('testKey0'), utf8ToBytes('testValue0'))
+await trie.put(utf8ToBytes('testKeyA'), utf8ToBytes('testValueA'))
 
-const node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
+const node1 = await trie.findPath(utf8ToBytes('testKey')) // We retrieve the node at the "branching" off of the keys
 console.log('Node: ', node1.node) // A branch node!
 
 // RESULTS
-Node:  BranchNode {
+Node 1: BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    [ [Uint8Array], [Uint8Array] ],
+    [ [Uint8Array], [Uint8Array] ],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) []
   ],
-  _value: <Buffer 74 65 73 74 56 61 6c 75 65>
+  _value: Uint8Array(9) [
+    116, 101, 115, 116,
+     86,  97, 108, 117,
+    101
+  ]
 }
 ```
 
 And indeed, the node at path "testKey" is a branch, containing 16 branches and a value. Let's first look at the value located at the branch itself.
 
 ```jsx
-console.log('Node value: ', node1.node._value.toString()) // The branch node's value
+console.log('Node value: ', bytesToUtf8(node1.node._value)) // The branch node's value
 
 // RESULT
 Node 1 value:  testValue
 ```
 
-Note that it's possible for a branch node to not have a value itself, but only branches. This would simply mean that the keys (i.e. the paths) branch off at a certain point, but that there is no end-value assigned at that specific point. See for example:
-
-```jsx
-await trie.put(Buffer.from('testKey0'), Buffer.from('testValue0'))
-await trie.put(Buffer.from('testKeyA'), Buffer.from('testValueA'))
-
-const node1 = await trie.findPath(Buffer.from('testKey')) // We retrieve the node at the "branching" off of the keys
-console.log('Node: ', node1.node) // A branch node!
-
-console.log('Node value: ', node1.node._value) // The branch node's value, in this case an empty buffer since the key "testValue" isn't assigned a value
-
-// RESULT
-Node:  BranchNode {
-  _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
-  ],
-  _value: <Buffer >
-}
-Node value:  <Buffer >
-```
-
-In this example, there is no value assigned to the key (path) "testKey" (an empty `<Buffer >`). However, the node at "testKey" is still a branch node, containing two branches (one leading to "testValue0", the other leading to "testValueA").
+Note that it's possible for a branch node to not have a value itself, but only branches. This would simply mean that the keys (i.e. the paths) branch off at a certain point, but that there is no end-value assigned at that specific point.
 
 Let's take a closer look at the branches of our branch node.
 
@@ -307,47 +271,63 @@ Let's take a closer look at the branches of our branch node.
 console.log('Node branches: ', node1.node._branches)
 
 // RESULT
-Node branches:  [
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  [ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ],
-  [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >,
-  <Buffer >
+Node 1 branches:  [
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  [
+    Uint8Array(1) [ 48 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  48
+    ]
+  ],
+  [
+    Uint8Array(1) [ 49 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  65
+    ]
+  ],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) []
 ]
 ```
 
-14/16 of its branches are empty (`<Buffer >`). Only the branches at indexes `3` and `4` contain values. Now here's an important point. These indexes are not determined at random: **they correspond to the next hex-value of the path of our two keys (hex values `3` and `4`)**. This makes sense, as this is the value at which our keys diverge:
+14/16 of its branches are empty (`Uint8Array`s). Only the branches at indexes `3` and `4` contain values. Now here's an important point. These indexes are not determined at random: **they correspond to the next hex-value of the path of our two keys (hex values `3` and `4`)**. This makes sense, as this is the value at which our keys diverge (converted to hex for easier comparison):
 
 ```jsx
-//      <------ same ------> <-> (different)
-<Buffer 74 65 73 74 4b 65 79 30>           // "testKey0", "0" = 30 in bytes
-<Buffer 74 65 73 74 4b 65 79 41>           // "testKeyA", "A" = 41 in bytes
+// <---- same----> <-> (different)
+0x7465737456616c756530 // "testKey0", "0" = 30 in bytes
+0x7465737456616c756541 // "testKeyA", "A" = 41 in bytes
 ```
 
-Going back to the branches above, we see that our two branches (at index `3` and `4`) are:
+Going back to the branches above, we see that our two branches (at index `3` and `4`) are (converted to hex again for better readability):
+
+Node 1 branch 3 (hex): 0x30 - 0x7465737456616c756530
+Node 1 branch 4 (hex): 0x31 - 0x7465737456616c756541
 
 ```jsx
-// <--path-->  <------------- value ----------------->
-[ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ] // going down the path of "testKey0"
-[ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ] // going down the path of "testKeyA"
+[path:  0x30  | value:  0x7465737456616c756530] // going down the path of "testKey0"
+[path:  0x31  | value:  0x7465737456616c756541] // going down the path of "testKeyA"
 ```
 
-I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two "buffers" (buffers are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second buffer is the value at that path. We can confirm that the values are what we'd expect:
+I'm getting ahead of myself here, but here's a spoiler: these are leaf nodes. We see that each line contains two byte arrays (byte arrays are sequences of bytes). And indeed: leaf nodes are arrays containing two items. The first item is the remaining path (we'll get back to what the hex values stand for in a minute), while the second byte array is the value at that path. We can confirm that the values are what we'd expect:
 
 ```jsx
-console.log('Value of branch at index 3: ', node1.node._branches[3][1].toString())
-console.log('Value of branch at index 4: ', node1.node._branches[4][1].toString())
+console.log('Value of branch at index 3: ', bytesToUtf8(node1.node._branches[3][1]))
+console.log('Value of branch at index 4: ', bytesToUtf8(node1.node._branches[4][1]))
 
 // RESULT
 Value of branch at index 3:  testValue0
@@ -359,8 +339,8 @@ Now here's a question for you:
 **What type of node do you think exists at path "testKe"?** After all, this is also a common path, the first part of our 3 keys. Let's try it:
 
 ```jsx
-const node2 = await trie.findPath(Buffer.from('testKe')) // We retrieve the node at "testKe"
-console.log('Node 2: ', node2.node)
+  const node2 = await trie.findPath(utf8ToBytes('testKe')) // We retrieve the node at "testKe"
+  console.log('Node 2: ', node2.node)
 
 // RESULT
 Node 2:  null
@@ -368,19 +348,18 @@ Node 2:  null
 
 A null node! Did you expect a branch node?
 
-This reveals a **key difference between standard ("Radix") tries and Patricia tries**. In standards tries, each step of the "path" would be a branch itself (i.e. branch node at `<7>`, `<74>`, `<74 6>`, `<74 65>`, and so on). However, creating a branch node for every step of the path is inefficient when there is only one valid "branch" for many of those steps. This is inefficient because each branch is a 17-item array, so using them to store only one non-null value is wasteful. Patricia tries avoid these unnecessary `branch` nodes by creating `extension` nodes at the beginning of the common path to act as "shortcuts". This explains why there is no branch node at key "testKe": it's bypassed by an extension node that begins higher-up (i.e. earlier in the path) in the trie.
+This reveals a **key difference between standard ("Radix") tries and Patricia tries**. In standards tries, each step of the "path" would be a branch itself (i.e. branch node at `0x7>`, `0x74`, `0x746`, `0x7465`, and so on). However, creating a branch node for every step of the path is inefficient when there is only one valid "branch" for many of those steps. This is inefficient because each branch is a 17-item array, so using them to store only one non-null value is wasteful. Patricia tries avoid these unnecessary `branch` nodes by creating `extension` nodes at the beginning of the common path to act as "shortcuts". This explains why there is no branch node at key "testKe": it's bypassed by an extension node that begins higher-up (i.e. earlier in the path) in the trie.
 
 ### The Encoded Path in Leaf and Extension Nodes
 
 We saw in one of our previous examples that the individual branches were in fact pointing to leaf nodes:
 
 ```jsx
-// <--path-->  <------------- value ----------------->
-[ <Buffer 30>, <Buffer 74 65 73 74 56 61 6c 75 65 30> ] // leaf node down the path of "testKey0"
-[ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ] // leaf node down the path of "testKeyA"
+[path:  0x30  | value:  0x7465737456616c756530] // leaf node down the path of "testKey0"
+[path:  0x31  | value:  0x7465737456616c756541] // leaf node down the path of "testKeyA"
 ```
 
-As we said above, leaf nodes are arrays that contain two items: `[ remainingPath, value ]`. We can see in the code above that the "remainingPath" of our first leaf node is `<30>`, while the second is `<31>`. What does this mean?
+As we said above, leaf nodes are arrays that contain two items: `[ remainingPath, value ]`. We can see in the code above that the "remainingPath" of our first leaf node is `0x30`, while the second is `0x31`. What does this mean?
 
 The first hex character `3` indicates whether the node is a leaf node, or an extension node (this is to prevent ambiguity, as both nodes have a similar 2-item structure). This first hex character also indicates whether or not the remaining path is of "odd" or "even" length (required to write complete bytes: this indicates if the first hex character is appended with a `0`).
 
@@ -395,15 +374,7 @@ hex char    bits    |        node type         path length
    3        0011    |          leaf                odd
 ```
 
-In our code above, the first hexadecimal characters for the encodedPath of both nodes (`<30>` and `<31>`) was `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `<0>` and `<1>` respectively) indicates the last part of the path (the last hex character of our key).
-
-```jsx
-//      <------ same ------> <-> (different)
-<Buffer 74 65 73 74 4b 65 79 30>           // "testKey0", note that "0" = 30 in bytes
-<Buffer 74 65 73 74 4b 65 79 41>           // "testKeyA", note that "A" = 41 in bytes
-```
-
-But what happened with the second to last hex character (`3` and `4` respectively)? Recall that these are not necessary: **they were already provided by the indexes of the previous branch node!**
+In our code above, the first hexadecimal character for the encodedPath of both nodes (`0x30` and `0x31`) is `3`. This correctly indicates that the node is of type `leaf` and that the path that follows is of odd length. The second character ( `0x0` and `0x1` respectively) indicates the last part of the path (the last hex character of our key).
 
 With this in mind, let's take a closer look at leaf and extension nodes.
 
@@ -412,80 +383,99 @@ With this in mind, let's take a closer look at leaf and extension nodes.
 In the last example, we inferred that the two branches of our branch node (at key/path "testKey") pointed to leaf nodes. We can confirm this by looking one of them up directly
 
 ```jsx
-const node1 = await trie.findPath(Buffer.from('testKey0')) // We retrieve one of the leaf nodes
-console.log('Node 1: ', node1.node) // A leaf node! We can see that it contains 2 items: the encodedPath (nibbles) and the value
-console.log('Node 1 value: ', node1.node._value.toString()) // The leaf node's value
+const node1 = await trie.findPath(utf8ToBytes('testKey0')) // We retrieve one of the leaf nodes
+console.log('Node 1: ', node1.node) // A leaf node! We can see that it contains 2 items: the nibbles and the value
+console.log('Node 1 value: ', bytesToUtf8(node1.node._value)) // The leaf node's value
 
 // RESULT
 Node 1:  LeafNode {
   _nibbles: [ 0 ],
-  _value: <Buffer 74 65 73 74 56 61 6c 75 65 30>
+  _value: Uint8Array(10) [
+    116, 101, 115, 116,
+     86,  97, 108, 117,
+    101,  48
+  ],
+  _terminator: true
 }
 Node 1 value:  testValue0
 ```
 
-Indeed! A leaf node with value "testValue0". The "nibble" indicates the last hex character(s) that differentiate this leaf from the parent branch. Since our branch node was "testKey" (in bytes = `<74 65 73 74 56 61 6c 75 65>`) , and since we took the branch corresponding to hex value `3`, we only need the last `0` to complete our full key/path of "testKey0" (in bytes = `<74 65 73 74 56 61 6c 75 65 30>`).
+Indeed! A leaf node with value "testValue0". The "nibble" indicates the last hex character(s) that differentiate this leaf from the parent branch. Since our branch node was "testKey" (in bytes = `0x7465737456616c7565`) , and since we took the branch corresponding to hex value `3`, we only need the last `0` to complete our full key/path of "testKey0" (in bytes = `0x7465737456616c756530`).
 
 ### Example 2d - Creating and Looking Up an Extension Node
 
 To create an extension node, we need to slightly change our keys. We'll keep our branch node at path "testKey", but we'll change the two other keys so that they lead down a lengthy common path.
 
 ```jsx
-console.log(Buffer.from('testKey'))
-console.log(Buffer.from('testKey0001'))
-console.log(Buffer.from('testKey000A'))
+console.log(bytesToHex(utf8ToBytes('testKey')))
+console.log(bytesToHex(utf8ToBytes('testKey0001')))
+console.log(bytesToHex(utf8ToBytes('testKey000A')))
 
 // RESULT
-<Buffer 74 65 73 74 4b 65 79>
-<Buffer 74 65 73 74 4b 65 79 30 30 30 31>
-<Buffer 74 65 73 74 4b 65 79 30 30 30 41>
+0x746573744b6579
+0x746573744b657930303031
+0x746573744b657930303041
 ```
 
-As you can see, the bytes `<30 30 30>` (standing for `000`> are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
+As you can see, the bytes `303030` (standing for `000` are common to both keys. We therefore should assume an extension that begins at index `3` of the branch node at "testKey". Let's see:
 
 ```jsx
-await trie.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie.put(Buffer.from('testKey0001'), Buffer.from('testValue0'))
-await trie.put(Buffer.from('testKey000A'), Buffer.from('testValueA'))
+await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+await trie.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue0'))
+await trie.put(utf8ToBytes('testKey000A'), utf8ToBytes('testValueA'))
 
-const node1 = await trie.findPath(Buffer.from('testKey')) // Looking up our branch node
+const node1 = await trie.findPath(utf8ToBytes('testKey')) // Looking up our branch node
 console.log(node1.node) // The branch node
 
 // RESULT
-
 BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(32) [
+       57,  29,  72, 48, 222,   0, 135,  87,
+       70, 152,  76, 79, 211, 239,  90,  12,
+      247, 202, 123, 64, 249, 194, 138, 206,
+      226, 186,  34, 73, 132,  65, 143, 107
+    ],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) []
   ],
-  _value: <Buffer 74 65 73 74 56 61 6c 75 65>
+  _value: Uint8Array(9) [
+    116, 101, 115, 116,
+     86,  97, 108, 117,
+    101
+  ]
 }
 ```
 
 As we should expect, there is a branch at index `3`. The branch contains a hash that we can use to lookup the child node:
 
 ```jsx
- const node2 = await trie.lookupNode(Buffer.from(node1.node._branches[3])) // Looking up the child node from its hash (using lookupNode)
+ const node2 = await trie.lookupNode(node1.node._branches[3]) // Looking up the child node from its hash (using lookupNode)
  console.log(node2) // An extension node!
 
 // RESULT
 ExtensionNode {
   _nibbles: [ 0, 3, 0, 3, 0 ],
-  _value: <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+  _value: Uint8Array(32) [
+    112, 179, 208,  32, 173, 133, 143, 214,
+      0,  40, 164,  35, 233, 143,  29, 153,
+    197,  55, 205, 185,  31,  39,  73,  22,
+     64,   6, 111, 234, 199, 156,  47, 114
+  ],
+  _terminator: false
 }
 ```
 
@@ -496,43 +486,43 @@ You might have noticed that this child node is a "hash", while in the previous e
 Similarly to leaf nodes, extension nodes are two-item arrays: `[ encodedPath, hash ]` . The encodedPath (denoted above as "\_nibbles") stands for the "remaining path". In the case of extension nodes this is the path that we "shortcut". Recall our two keys:
 
 ```jsx
-console.log(Buffer.from('testKey0001'))
-console.log(Buffer.from('testKey000A'))
+console.log(bytesToHex(utf8ToBytes('testKey0001')))
+console.log(bytesToHex(utf8ToBytes('testKey000A')))
 
 // RESULT
-<Buffer 74 65 73 74 4b 65 79 30 30 30 31>
-<Buffer 74 65 73 74 4b 65 79 30 30 30 41>
+0x746573744b657930303031
+0x746573744b657930303041
 ```
 
-The first part of the path ("testKey" = `<74 65 73 74 4b 65 79>`) led us to the branch node. Next, taking the branch at index `3` (for hex value `<3>`) led us to our extension node, which automatically leads us down the path `[ 0, 3, 0, 3, 0 ]`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `<30 30 30>` part of the path! With a standard trie, this would have required 6 successive branch nodes!
+The first part of the path ("testKey" = `0x746573744b6579`) led us to the branch node. Next, taking the branch at index `3` (for hex value `3`) led us to our extension node, which automatically leads us down the path `03030`. Using only two nodes (branch + extension), we are therefore able to "shortcut" the whole `303030` part of the path! With a standard trie, this would have required 6 successive branch nodes!
 
 Again, the value of the extension node leads us down to another node... can you guess what it will be?
 
 ```jsx
-const node3 = await trie.lookupNode(Buffer.from(node2._value))
-  console.log(node3)
+const node3 = await trie.lookupNode(node2._value)
+console.log(node3)
 
 // RESULT
 BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 31> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    [ [Uint8Array], [Uint8Array] ],
+    [ [Uint8Array], [Uint8Array] ],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) [],
+    Uint8Array(0) []
   ],
-  _value: <Buffer >
+  _value: Uint8Array(0) []
 }
 ```
 
@@ -558,40 +548,45 @@ So, how is are hashes calculated in Ethereum?
 We saw in our example above that our extension node was referenced to by its hash. In this example, we'll try to manually compute its hash from its value. First, we look at the extension node's hash and its value.
 
 ```jsx
-const node1 = await trie.findPath(Buffer.from('testKey'))
-console.log('Extension node hash: ', node1.node._branches[3])
+const node1 = await trie.findPath(utf8ToBytes('testKey'))
+console.log('Extension node hash: ', bytesToHex(node1.node._branches[3]))
 
-const node2 = await trie.lookupNode(Buffer.from(node1.node._branches[3]))
-console.log('Value of extension node: ', node2)
+const node2 = await trie.lookupNode(node1.node._branches[3])
+console.log('Extension node: ', node2)
 
 // RESULT
-Extension node hash:  <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>
+Extension node hash: 0x391d4830de00875746984c4fd3ef5a0cf7ca7b40f9c28acee2ba224984418f6b
 
-Value of extension node:  ExtensionNode {
+Extension node: ExtensionNode {
   _nibbles: [ 0, 3, 0, 3, 0 ],
-  _value: <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+  _value: Uint8Array(32) [
+    112, 179, 208,  32, 173, 133, 143, 214,
+      0,  40, 164,  35, 233, 143,  29, 153,
+    197,  55, 205, 185,  31,  39,  73,  22,
+     64,   6, 111, 234, 199, 156,  47, 114
+  ],
+  _terminator: false
 }
 ```
 
 As we learned, we should first use the [Recursive Length Prefix encoding function](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) on the node to serialize the values of the extension node. RLP-encoding the "raw" version (as an array of bytes) of our node gives us:
 
 ```jsx
-
-console.log(rlp.encode(node2.raw()))
+console.log(bytesToHex(rlp.encode(node2.raw())))
 
 // RESULT
-<Buffer e5 83 10 30 30 a0 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+0xe583103030a070b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72
 ```
 
 A neatly serialized sequence of bytes! Our last step is simply to take the hash of this RLP output (and convert it to bytes):
 
 ```jsx
-console.log('Our computed hash:       ', Buffer.from(keccak256(rlp.encode(node2.raw()))))
-console.log('The extension node hash: ', node1.node._branches[3])
+console.log('Our computed hash:       ', bytesToHex(keccak256(rlp.encode(node2.raw()))))
+console.log('The extension node hash: ', bytesToHex(node1.node._branches[3]))
 
 // RESULT
-Our computed hash:        <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>
-The extension node hash:  <Buffer 39 1d 48 30 de 00 87 57 46 98 4c 4f d3 ef 5a 0c f7 ca 7b 40 f9 c2 8a ce e2 ba 22 49 84 41 8f 6b>
+Our computed hash:        0x391d4830de00875746984c4fd3ef5a0cf7ca7b40f9c28acee2ba224984418f6b
+The extension node hash:  0x391d4830de00875746984c4fd3ef5a0cf7ca7b40f9c28acee2ba224984418f6b
 ```
 
 Easy, wasn't it?
@@ -601,38 +596,58 @@ Easy, wasn't it?
 Merkle trees allow us to verify the integrity of their data contained without requiring us to download the full tree. To demonstrate this we will re-use the example above. As we saw, we had an extension node that pointed to a branch node:
 
 ```jsx
-console.log('Value of extension node: ', node2)
+console.log('Extension node: ', node2)
 
-const node3 = await trie.lookupNode(Buffer.from(node2._value))
-  console.log(node3)
+const node3 = await trie.lookupNode(node2._value)
+console.log(node3)
 
 // RESULT
 
-Value of extension node:  ExtensionNode {
+Extension node: ExtensionNode {
   _nibbles: [ 0, 3, 0, 3, 0 ],
-  _value: <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
+  _value: Uint8Array(32) [
+    112, 179, 208,  32, 173, 133, 143, 214,
+      0,  40, 164,  35, 233, 143,  29, 153,
+    197,  55, 205, 185,  31,  39,  73,  22,
+     64,   6, 111, 234, 199, 156,  47, 114
+  ],
+  _terminator: false
 }
 
 BranchNode {
   _branches: [
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 31> ],
-    [ <Buffer 31>, <Buffer 74 65 73 74 56 61 6c 75 65 41> ],
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >,
-    <Buffer >
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  [
+    Uint8Array(1) [ 49 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  49
+    ]
   ],
-  _value: <Buffer >
+  [
+    Uint8Array(1) [ 49 ],
+    Uint8Array(10) [
+      116, 101, 115, 116,
+       86,  97, 108, 117,
+      101,  65
+    ]
+  ],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) [],
+  Uint8Array(0) []
+],
+  _value: Uint8Array(0) []
 }
 
 ```
@@ -640,9 +655,9 @@ BranchNode {
 Now let's suppose that I'm provided with various pieces of information, some that I trust, and some that I don't. Here's what I know from a trustworthy source:
 
 - The tree contains key-value pair "testKey": "testValue"
-- There also exists a branch node with hash: `<Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>`.
+- There also exists a branch node with the following hash (the hash of the branch node corresponds to the \_value field of the extension node above [\_value: Uint8Array(32) [ 112, 179, 208, ... ]]. I've converted it to hex here for ease of reading): `0x70b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72`.
 - The path corresponding to this branch node is "testKey000".
-- This branch node contains at least one valid branch. This branch is located at index 4, with value [ `<Buffer 31>`, `<Buffer 74 65 73 74 56 61 6c 75 65 31>` ] (equivalent to key-value pair "testKey0001": "testValue1")
+- This branch node contains at least one valid branch. This branch is located at index 4, with value [ `path: 0x31 | value: 0x7465737456616c756541` ] (equivalent to key-value pair "testKey0001": "testValue1")
 
 Now, I'm getting conflicting information from two other shady sources:
 
@@ -652,26 +667,26 @@ Now, I'm getting conflicting information from two other shady sources:
 How can I determine who's telling the truth? Simple: by computing the branch node hash for each possibility, and comparing them with our trusted branch node hash!
 
 ```jsx
-await trie1.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie1.put(Buffer.from('testKey0001'), Buffer.from('testValue1'))
-await trie1.put(Buffer.from('testKey000A'), Buffer.from('testValueA')) // What Marie claims
+  await trie1.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+  await trie1.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue1'))
+  await trie1.put(utf8ToBytes('testKey000A'), utf8ToBytes('testValueA'))
 
-await trie2.put(Buffer.from('testKey'), Buffer.from('testValue'))
-await trie2.put(Buffer.from('testKey0001'), Buffer.from('testValue1'))
-await trie2.put(Buffer.from('testKey000z'), Buffer.from('testValuez')) // What John claims
+  await trie2.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+  await trie2.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue1'))
+  await trie2.put(utf8ToBytes('testKey000z'), utf8ToBytes('testValuez'))
 
-const temp1 = await trie1.findPath(Buffer.from('testKey'))
-const temp2 = await trie2.findPath(Buffer.from('testKey'))
+  const temp1 = await trie1.findPath(utf8ToBytes('testKey'))
+  const temp2 = await trie2.findPath(utf8ToBytes('testKey'))
 
-const node1 = await trie1.lookupNode(Buffer.from(temp1.node._branches[3]))
-const node2 = await trie2.lookupNode(Buffer.from(temp2.node._branches[3]))
+  const node1 = await trie1.lookupNode(temp1.node._branches[3])
+  const node2 = await trie2.lookupNode(temp2.node._branches[3])
 
-console.log('Branch node 1 hash: ', node1._value)
-console.log('Branch node 2 hash: ', node2._value)
+  console.log('Branch node 1 hash: ', bytesToHex(node1._value))
+  console.log('Branch node 2 hash: ', bytesToHex(node2._value))
 
 // Result
-Branch node 1 hash:  <Buffer 70 b3 d0 20 ad 85 8f d6 00 28 a4 23 e9 8f 1d 99 c5 37 cd b9 1f 27 49 16 40 06 6f ea c7 9c 2f 72>
-Branch node 2 hash:  <Buffer 72 2a cc 1b 73 61 09 1c 9a 5e 33 15 4b e4 ac 9e d8 a8 b9 33 72 06 9b 09 53 da 40 9d a1 5a 20 c9>
+Branch node 1 hash: 0x70b3d020ad858fd60028a423e98f1d99c537cdb91f27491640066feac79c2f72
+Branch node 2 hash: 0x722acc1b7361091c9a5e33154be4ac9ed8a8b93372069b0953da409da15a20c9
 ```
 
 Using our already trusted information, we can be confident that Marie (node 1) is telling the truth, since the hash computed from her information is valid.
@@ -682,8 +697,8 @@ Note that we also could have compared the root hashes of the trees and compared 
 console.log(trie1.root())
 console.log(trie2.root())
 
-<Buffer 46 7a 64 dd e5 de 0a 37 0a 35 75 03 42 a5 2d 80 1f 0b 9b 22 59 03 10 b4 1d 0b ab 7d 3d e0 a3 5e>
-<Buffer 38 b0 a5 74 1a f3 61 14 1e 7a 29 b6 f2 9d ab 22 75 7b 7d 64 73 90 f6 e3 55 e5 2e 2b ea c1 e3 04>
+Root of trie 1:  0x467a64dde5de0a370a35750342a52d801f0b9b22590310b41d0bab7d3de0a35e
+Root of trie 2:  0x38b0a5741af361141e7a29b6f29dab22757b7d647390f6e355e52e2beac1e304
 ```
 
 Ethereum takes advantage of the uniqueness of each hash to efficiently secure the network. Without Merkle Trees, each Ethereum client would need to store the full history of the blockchain to verify any piece of information, and doing so would be extremely inefficient. With Merkle Trees, clients can verify that a transaction is valid given that they're provided with the minimal information required to re-compute the trusted root hash.
@@ -711,10 +726,10 @@ The purpose of the transactions tree is to record transaction requests. It can a
 
 ```jsx
 const rlp = require('@ethereumjs/rlp')
-console.log('RLP encoding of 127: ', rlp.encode('127'))
+console.log('RLP encoding of 127: ', bytesToHex(rlp.encode('127')))
 
 // RESULT
-RLP encoding of 127:  <Buffer 83 31 32 37>
+RLP encoding of '127':  0x83313237
 ```
 
 We would, therefore, follow the path `8 → 3 → 3 → 1 → 3 → 2 → 3 → 7` and reach our destination.
@@ -731,30 +746,54 @@ A lot of confusion can arise from the fact that various distinct things are labe
 Let's look at an individual transaction on the Ethereum blockchain. I've chosen a recent transaction from Vitalik that you can look up here: [https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074](https://etherscan.io/tx/0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074). We can retrieve the transaction information with a eth_getTransactionByHash JSON-RPC API call. The [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) is a standardized way of interacting with an Ethereum node:
 
 ```jsx
+// Example 4a - Retrieving a Transaction from the Ethereum Blockchain
+
 const INFURA_ENDPOINT = require('./infura_endpoint')
-const request = require('request')
+const https = require('https')
 
 // Looking up an individual transaction
 function lookupTransaction(transactionHash) {
-  request(
-    INFURA_ENDPOINT,
-    {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: `{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params": ["${transactionHash}"],"id":1}`,
+  const data = JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'eth_getTransactionByHash',
+    params: [transactionHash],
+    id: 1,
+  })
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length,
     },
-    (error, response) => console.log('Transaction: ', JSON.parse(response.body))
-  )
+  }
+
+  const req = https.request(INFURA_ENDPOINT, options, (res) => {
+    let responseData = ''
+
+    res.on('data', (chunk) => {
+      responseData += chunk
+    })
+
+    res.on('end', () => {
+      console.log('Transaction:', JSON.parse(responseData))
+    })
+  })
+
+  req.write(data)
+  req.end()
 }
+
 lookupTransaction('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
 
 // RESULT
-Transaction:  {
+Transaction: {
   jsonrpc: '2.0',
   id: 1,
   result: {
     blockHash: '0x5ed2752bb54dc705a8b71f49566ccc4d5aaee1224a83c7938d9545db98dd0beb',
     blockNumber: '0x939ec7',
+    chainId: '0x1',
     from: '0xf8db1ee1be12b28aa12477fc66b296dccfa66609',
     gas: '0x5208',
     gasPrice: '0x1dcd65000',
@@ -778,15 +817,30 @@ The previous transaction output contains all the information from the transactio
 
 ```jsx
 function recomputeTransactionHash(transactionHash) {
-  request(
-    INFURA_ENDPOINT,
-    {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: `{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params": ["${transactionHash}"],"id":1}`,
+  const data = JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'eth_getTransactionByHash',
+    params: [transactionHash],
+    id: 1,
+  })
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length,
     },
-    (_, response) => {
-      const transaction = JSON.parse(response.body).result
+  }
+
+  const req = https.request(INFURA_ENDPOINT, options, (res) => {
+    let responseData = ''
+
+    res.on('data', (chunk) => {
+      responseData += chunk
+    })
+
+    res.on('end', () => {
+      const transaction = JSON.parse(responseData).result
       const transactionData = [
         transaction.nonce,
         transaction.gasPrice,
@@ -799,9 +853,12 @@ function recomputeTransactionHash(transactionHash) {
         transaction.s,
       ]
       console.log('Transaction data: ', transactionData)
-      console.log('Transaction hash: ', Buffer.from(keccak256(rlp.encode(transactionData))))
-    }
-  )
+      console.log('Transaction hash: ', bytesToHex(keccak256(rlp.encode(transactionData))))
+    })
+  })
+
+  req.write(data)
+  req.end()
 }
 
 recomputeTransactionHash('0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074')
@@ -819,15 +876,16 @@ Transaction data:  [
   '0xe15616dfdf4a2af23f84322387f374db8c3c28656860e28ef66fea8a16980167',
   '0x75efdb2c06664e7a28c49e14ef0797ea964eac07c3e0f72e03e955068a93e79d'
 ]
+Transaction hash:  0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074
 ```
 
 We're only one step away from generating the hash:
 
 ```jsx
-console.log('Transaction hash: ', Buffer.from(keccak256(rlp.encode(transactionNode))))
+console.log('Transaction hash: ', bytesToHex(keccak256(rlp.encode(transactionData))))
 
 // RESULT
-Transaction hash:  <Buffer 2f 81 c5 9f b4 f0 c3 14 64 83 e7 2c 13 15 83 3a f7 9b 6e a9 32 3b 64 71 01 64 5d c7 eb e0 40 74>
+Transaction hash: 0x2f81c59fb4f0c3146483e72c1315833af79b6ea9323b647101645dc7ebe04074
 ```
 
 Awesome! This is the transaction hash we started with!

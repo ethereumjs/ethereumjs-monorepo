@@ -1,3 +1,5 @@
+import { BIGINT_0, BIGINT_1 } from '@ethereumjs/util'
+
 import { Fetcher } from './fetcher'
 
 import type { Chain } from '../../blockchain'
@@ -66,7 +68,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     const max = this.config.maxPerRequest
     const tasks: JobTask[] = []
     let debugStr = `first=${first}`
-    let pushedCount = BigInt(0)
+    let pushedCount = BIGINT_0
     const startedWith = first
 
     while (count >= BigInt(max) && tasks.length < maxTasks) {
@@ -75,11 +77,11 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       count -= BigInt(max)
       pushedCount += BigInt(max)
     }
-    if (count > BigInt(0) && tasks.length < maxTasks) {
+    if (count > BIGINT_0 && tasks.length < maxTasks) {
       tasks.push({ first, count: Number(count) })
       !this.reverse ? (first += BigInt(count)) : (first -= BigInt(count))
       pushedCount += count
-      count = BigInt(0)
+      count = BIGINT_0
     }
 
     // If we started with where this.first was, i.e. there are no gaps and hence
@@ -99,7 +101,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     // Do not generate any new tasks unless maxFetcherRequests are resolved
     if (
       this.in.length === 0 &&
-      this.count > BigInt(0) &&
+      this.count > BIGINT_0 &&
       this.processed - this.finished < this.config.maxFetcherRequests
     ) {
       this.debug(
@@ -122,7 +124,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    */
   clear() {
     let first = this.first
-    let last = this.first + this.count - BigInt(1)
+    let last = this.first + this.count - BIGINT_1
 
     // We have to loop because the jobs won't always be in increasing order.
     // Some jobs could have refetch tasks enqueued, so it is better to find
@@ -133,13 +135,13 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
       if (job.task.first < first) {
         first = job.task.first
       }
-      const jobLast = job.task.first + BigInt(job.task.count) - BigInt(1)
+      const jobLast = job.task.first + BigInt(job.task.count) - BIGINT_1
       if (jobLast > last) {
         last = jobLast
       }
     }
     this.first = first
-    this.count = last - this.first + BigInt(1)
+    this.count = last - this.first + BIGINT_1
     // Already removed jobs from the `in` heap, just pass to super for further cleanup
     super.clear()
   }
@@ -157,7 +159,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
    */
   enqueueByNumberList(numberList: bigint[], min: bigint, max: bigint) {
     // Check and update the height
-    const last = this.first + this.count - BigInt(1)
+    const last = this.first + this.count - BIGINT_1
     let updateHeightStr = ''
     if (max > last) {
       this.count += max - last
@@ -208,13 +210,13 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     error: Error,
     task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    let stepBack = BigInt(0)
+    let stepBack = BIGINT_0
     const destroyFetcher = !(error.message as string).includes('could not find parent header')
     const banPeer = true
 
     // we can step back here for blockfetcher
     if (!destroyFetcher && this.reverse === false) {
-      stepBack = task.first - BigInt(1)
+      stepBack = task.first - BIGINT_1
       if (stepBack > BigInt(this.config.safeReorgDistance)) {
         stepBack = BigInt(this.config.safeReorgDistance)
       }

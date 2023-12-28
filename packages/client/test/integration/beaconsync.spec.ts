@@ -1,22 +1,23 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Event } from '../../src/types'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
 import { destroy, setup, wait } from './util'
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-
 describe('[Integration:BeaconSync]', () => {
   const common = Common.fromGethGenesis(genesisJSON, { chain: 'post-merge' })
   common.setHardforkBy({ blockNumber: BigInt(0), td: BigInt(0) })
 
   it('should sync blocks', async () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = td.func<any>()
-    td.replace<any>('@ethereumjs/block', { BlockHeader })
+    BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
+    vi.doMock('@ethereumjs/block', () => {
+      {
+        BlockHeader
+      }
+    })
 
     const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
     const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
@@ -91,8 +92,3 @@ describe('[Integration:BeaconSync]', () => {
     await localService.synchronizer!.start()
   })
 }, 60000)
-
-it('reset TD', () => {
-  BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-  td.reset()
-})

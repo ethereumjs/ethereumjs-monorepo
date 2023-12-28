@@ -89,6 +89,8 @@ export class Peer {
   protected _pingTimeout: number
   private _logger: Debugger
 
+  private DEBUG: boolean
+
   /**
    * Subprotocols (e.g. `ETH`) derived from the exchange on
    * capabilities
@@ -141,6 +143,8 @@ export class Peer {
     if (this._remoteId !== null) {
       this._sendAuth()
     }
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   /**
@@ -215,17 +219,19 @@ export class Peer {
    * Send HELLO message
    */
   _sendHello() {
-    this.debug(
-      'HELLO',
-      `Send HELLO to ${this._socket.remoteAddress}:${
-        this._socket.remotePort
-      }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
-        // Filter out snap because we can't yet provide snap endpoints to the peers
-        // TODO: Remove when we can also serve snap requests from other peers
-        .filter((c) => c.name !== 'snap')
-        .map((c) => `${c.name}${c.version}`)
-        .join(',')} clientId=${bytesToUtf8(this.clientId)}`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        'HELLO',
+        `Send HELLO to ${this._socket.remoteAddress}:${
+          this._socket.remotePort
+        }  protocolVersion=${BASE_PROTOCOL_VERSION} capabilities=${(this._capabilities ?? [])
+          // Filter out snap because we can't yet provide snap endpoints to the peers
+          // TODO: Remove when we can also serve snap requests from other peers
+          .filter((c) => c.name !== 'snap')
+          .map((c) => `${c.name}${c.version}`)
+          .join(',')} clientId=${bytesToUtf8(this.clientId)}`
+      )
+    }
     const payload: HelloMsg = [
       intToBytes(BASE_PROTOCOL_VERSION),
       this.clientId,
@@ -252,11 +258,13 @@ export class Peer {
    */
   _sendDisconnect(reason: DISCONNECT_REASON) {
     const reasonName = this.getDisconnectPrefix(reason)
-    this.debug(
-      'DISCONNECT',
-      `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`,
-      reasonName
-    )
+    if (this.DEBUG) {
+      this.debug(
+        'DISCONNECT',
+        `Send DISCONNECT to ${this._socket.remoteAddress}:${this._socket.remotePort} (reason: ${reasonName})`,
+        reasonName
+      )
+    }
     const data = RLP.encode(reason)
     if (this._sendMessage(PREFIXES.DISCONNECT, data) !== true) return
 
@@ -270,7 +278,9 @@ export class Peer {
    * Send PING message
    */
   _sendPing() {
-    this.debug('PING', `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    if (this.DEBUG) {
+      this.debug('PING', `Send PING to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    }
     let data = RLP.encode([])
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
       data = snappy.compress(data)
@@ -288,7 +298,9 @@ export class Peer {
    * Send PONG message
    */
   _sendPong() {
-    this.debug('PONG', `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    if (this.DEBUG) {
+      this.debug('PONG', `Send PONG to ${this._socket.remoteAddress}:${this._socket.remotePort}`)
+    }
     let data = RLP.encode([])
 
     if (this._hello !== null && this._hello.protocolVersion >= 5) {
@@ -367,14 +379,16 @@ export class Peer {
       id: payload[4],
     }
 
-    this.debug(
-      'HELLO',
-      `Received HELLO ${this._socket.remoteAddress}:${this._socket.remotePort} protocolVersion=${
-        this._hello.protocolVersion
-      } capabilities=${(this._hello.capabilities ?? [])
-        .map((c) => `${c.name}${c.version}`)
-        .join(',')} clientId=${this._hello.clientId}`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        'HELLO',
+        `Received HELLO ${this._socket.remoteAddress}:${this._socket.remotePort} protocolVersion=${
+          this._hello.protocolVersion
+        } capabilities=${(this._hello.capabilities ?? [])
+          .map((c) => `${c.name}${c.version}`)
+          .join(',')} clientId=${this._hello.clientId}`
+      )
+    }
 
     if (this._remoteId === null) {
       this._remoteId = this._hello.id
@@ -444,13 +458,15 @@ export class Peer {
       payload instanceof Uint8Array
         ? bytesToInt(payload)
         : bytesToInt(payload[0] ?? Uint8Array.from([0]))
-    this.debug(
-      'DISCONNECT',
-      `DISCONNECT reason: ${DISCONNECT_REASON[this._disconnectReason as number]} ${
-        this._socket.remoteAddress
-      }:${this._socket.remotePort}`,
-      DISCONNECT_REASON[this._disconnectReason as number]
-    )
+    if (this.DEBUG) {
+      this.debug(
+        'DISCONNECT',
+        `DISCONNECT reason: ${DISCONNECT_REASON[this._disconnectReason as number]} ${
+          this._socket.remoteAddress
+        }:${this._socket.remotePort}`,
+        DISCONNECT_REASON[this._disconnectReason as number]
+      )
+    }
     this._disconnectWe = false
     this._socket.end()
   }
@@ -548,7 +564,9 @@ export class Peer {
     const postAdd = `(code: ${code} - ${protocolObj.offset} = ${msgCode}) ${this._socket.remoteAddress}:${this._socket.remotePort}`
     if (protocolName === 'Peer') {
       const messageName = this.getMsgPrefix(msgCode)
-      this.debug(messageName, `Received ${messageName} message ${postAdd}`)
+      if (this.DEBUG) {
+        this.debug(messageName, `Received ${messageName} message ${postAdd}`)
+      }
     } else {
       this._logger(`Received ${protocolName} subprotocol message ${postAdd}`)
     }

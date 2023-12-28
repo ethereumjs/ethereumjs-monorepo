@@ -1,7 +1,7 @@
 import { multiaddr } from 'multiaddr'
 import { assert, describe, it } from 'vitest'
 
-import { parseMultiaddrs, parseTransports } from '../../src/util'
+import { parseMultiaddrs } from '../../src/util/parse.js'
 
 describe('[Util/Parse]', () => {
   it('should parse multiaddrs', () => {
@@ -40,31 +40,6 @@ describe('[Util/Parse]', () => {
       parseMultiaddrs('[2607:f8b0:4003:c00::6a]:5678'),
       [multiaddr('/ip6/2607:f8b0:4003:c00::6a/tcp/5678')],
       'parse ipv6 multiaddr'
-    )
-  })
-
-  it('should parse transports', () => {
-    assert.deepEqual(
-      parseTransports(['t1']),
-      [{ name: 't1', options: {} }],
-      'parsed transport without options'
-    )
-    assert.deepEqual<
-      {
-        name: string
-        options: {
-          [key: string]: string | undefined
-        }
-      }[]
-    >(
-      parseTransports(['t2:k1=v1,k:k=v2,k3="v3",k4,k5=']),
-      [
-        {
-          name: 't2',
-          options: { k1: 'v1', 'k:k': 'v2', k3: '"v3"', k4: undefined, k5: '' },
-        },
-      ],
-      'parsed transport with options'
     )
   })
 })

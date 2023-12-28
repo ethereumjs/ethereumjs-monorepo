@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory, TransactionType } from '@ethereumjs/tx'
-import { bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain'
@@ -10,7 +10,7 @@ import { EthProtocol } from '../../../src/net/protocol'
 
 describe('[EthProtocol]', () => {
   it('should get properties', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     assert.ok(typeof p.name === 'string', 'get name')
@@ -19,7 +19,7 @@ describe('[EthProtocol]', () => {
   })
 
   it('should open correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
@@ -28,7 +28,7 @@ describe('[EthProtocol]', () => {
   })
 
   it('should encode/decode status', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     Object.defineProperty(chain, 'networkId', {
@@ -76,7 +76,7 @@ describe('[EthProtocol]', () => {
   })
 
   it('verify that NewBlock handler encodes/decodes correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const td = BigInt(100)
@@ -94,7 +94,7 @@ describe('[EthProtocol]', () => {
   })
 
   it('verify that GetReceipts handler encodes/decodes correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     const block = Block.fromBlockData({})
@@ -114,7 +114,6 @@ describe('[EthProtocol]', () => {
 
   it('verify that PooledTransactions handler encodes correctly', async () => {
     const config = new Config({
-      transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
       accountCache: 10000,
       storageCache: 1000,
@@ -140,7 +139,6 @@ describe('[EthProtocol]', () => {
 
   it('verify that Receipts encode/decode correctly', async () => {
     const config = new Config({
-      transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
       accountCache: 10000,
       storageCache: 1000,
@@ -204,7 +202,6 @@ describe('[EthProtocol]', () => {
 
   it('verify that Transactions handler encodes/decodes correctly', async () => {
     const config = new Config({
-      transports: [],
       common: new Common({
         chain: Config.CHAIN_DEFAULT,
         hardfork: Hardfork.Paris,
@@ -220,7 +217,10 @@ describe('[EthProtocol]', () => {
     const legacyTx = TransactionFactory.fromTxData({ type: 0 })
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
-    const blobTx = TransactionFactory.fromTxData({ type: 3 }, { common: config.chainCommon })
+    const blobTx = TransactionFactory.fromTxData(
+      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes('0x01' + '00'.repeat(31))] },
+      { common: config.chainCommon }
+    )
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [
       legacyTx,
       eip2929Tx,
@@ -243,7 +243,6 @@ describe('[EthProtocol]', () => {
 
   it('verify that NewPooledTransactionHashes encodes/decodes correctly', async () => {
     const config = new Config({
-      transports: [],
       common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
       accountCache: 10000,
       storageCache: 1000,

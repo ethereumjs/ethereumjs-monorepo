@@ -133,7 +133,7 @@ type ParamDict = {
   d: string
 }
 
-type EIPOrHFConfig = {
+export type EIPOrHFConfig = {
   comment: string
   url: string
   status: string

@@ -4,6 +4,7 @@ import type { SyncMode } from '.'
 import type { Peer } from './net/peer'
 import type { Server } from './net/server'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { DefaultStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 import type { Multiaddr } from 'multiaddr'
 
@@ -39,7 +40,7 @@ export interface EventParams {
   [Event.SYNC_FETCHED_BLOCKS]: [blocks: Block[]]
   [Event.SYNC_FETCHED_HEADERS]: [headers: BlockHeader[]]
   [Event.SYNC_SYNCHRONIZED]: [chainHeight: bigint]
-  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array]
+  [Event.SYNC_SNAPSYNC_COMPLETE]: [stateRoot: Uint8Array, stateManager: DefaultStateManager]
   [Event.SYNC_ERROR]: [syncError: Error]
   [Event.SYNC_FETCHER_ERROR]: [fetchError: Error, task: any, peer: Peer | null | undefined]
   [Event.PEER_CONNECTED]: [connectedPeer: Peer]
@@ -105,7 +106,6 @@ export interface ClientOpts {
   gethGenesis?: string
   trustedSetup?: string
   mergeForkIdPostMerge?: boolean
-  transports?: string[]
   bootnodes?: string | string[]
   port?: number
   extIP?: string
@@ -129,7 +129,8 @@ export interface ClientOpts {
   logLevelFile?: string
   logRotate?: boolean
   logMaxFiles?: number
-  rpcDebug?: boolean
+  rpcDebug?: string
+  rpcDebugVerbose?: string
   rpcCors?: string
   maxPerRequest?: number
   maxFetcherJobs?: number
@@ -140,6 +141,7 @@ export interface ClientOpts {
   numBlocksPerIteration?: number
   accountCache?: number
   storageCache?: number
+  codeCache?: number
   trieCache?: number
   dnsNetworks?: string[]
   executeBlocks?: string
@@ -151,10 +153,18 @@ export interface ClientOpts {
   dev?: boolean | string
   minerCoinbase?: Address
   saveReceipts?: boolean
-  disableBeaconSync?: boolean
-  forceSnapSync?: boolean
+  prefixStorageTrieKeys?: boolean
+  snap?: boolean
+  useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
   isSingleNode?: boolean
+  vmProfileBlocks?: boolean
+  vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
+  pruneEngineCache?: boolean
+  verkleGenesisStateRoot?: Uint8Array
+  statelessVerkle?: boolean
+  engineNewpayloadMaxExecute?: number
+  skipEngineExec?: boolean
 }

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/devp2p",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "A JavaScript implementation of ÐΞVp2p",
   "keywords": [
     "ethereum",
@@ -56,21 +56,21 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.0.0",
-    "@ethereumjs/rlp": "^5.0.0",
-    "@ethereumjs/util": "^9.0.0",
+    "@ethereumjs/common": "^4.1.0",
+    "@ethereumjs/rlp": "^5.0.1",
+    "@ethereumjs/util": "^9.0.1",
     "@scure/base": "1.1.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
     "lru-cache": "^7.18.3",
     "multiaddr": "^10.0.1",
-    "scanf": "^1.1.2",
+    "scanf": "1.1.2",
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^5.0.0",
-    "@ethereumjs/tx": "^5.0.0",
-    "@types/debug": "^4.1.4",
+    "@ethereumjs/block": "^5.0.1",
+    "@ethereumjs/tx": "^5.1.0",
+    "@types/debug": "^4.1.9",
     "@types/k-bucket": "^5.0.0",
     "chalk": "^2.4.2",
     "testdouble": "^3.8.2"

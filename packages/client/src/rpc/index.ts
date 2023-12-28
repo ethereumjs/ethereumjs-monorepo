@@ -27,14 +27,13 @@ export class RPCManager {
    * Returns bound methods for modules concat with underscore `_`
    * @param engine Pass true to return only `engine_` API endpoints (default: false)
    */
-  getMethods(engine = false) {
+  getMethods(engine = false, rpcDebug = false) {
     const methods: { [key: string]: Function } = {}
     const mods = modules.list.filter((name: string) =>
       engine ? name === 'Engine' : name !== 'Engine'
     )
-
     for (const modName of mods) {
-      const mod = new (modules as any)[modName](this._client)
+      const mod = new (modules as any)[modName](this._client, rpcDebug)
       const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
       for (const methodName of rpcMethods) {
         if (!this._config.saveReceipts && saveReceiptsMethods.includes(methodName)) {

@@ -1,8 +1,9 @@
+import { Block } from '@ethereumjs/block'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src'
-import { CLConnectionManager } from '../../../src/rpc/util/CLConnectionManager'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/util/CLConnectionManager'
 import { Event } from '../../../src/types'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
@@ -88,5 +89,67 @@ describe('[CLConnectionManager]', () => {
     })
     manager.lastForkchoiceUpdate(update)
     manager.lastNewPayload(payload)
+  })
+  it('updates stats when a new block is processed', async () => {
+    const config = new Config()
+    const manager = new CLConnectionManager({ config })
+    manager.lastForkchoiceUpdate(update)
+    manager.lastNewPayload(payload)
+    const block = Block.fromBlockData({
+      header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
+    })
+
+    await new Promise((resolve) => {
+      config.logger.on('data', (chunk) => {
+        if ((chunk.message as string).includes('Payload stats blocks count=1')) {
+          assert.ok(true, 'received last payload stats message')
+          manager.stop()
+          config.logger.removeAllListeners()
+          resolve(undefined)
+        }
+      })
+      manager.updatePayloadStats(block)
+      manager['lastPayloadLog']()
+    })
+  })
+  it('updates status correctly', async () => {
+    const config = new Config()
+    const manager = new CLConnectionManager({ config })
+    manager['updateStatus']()
+    assert.ok(manager.running, 'connection manager started when updateStatus called')
+    assert.equal(
+      manager['connectionStatus'],
+      ConnectionStatus.Connected,
+      'connection status updated correctly'
+    )
+  })
+  it('updates connection status correctly', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(1696528979492)
+    const config = new Config()
+    const manager = new CLConnectionManager({ config })
+    manager['connectionStatus'] = ConnectionStatus.Connected
+    manager['lastRequestTimestamp'] = Date.now() - manager['DISCONNECTED_THRESHOLD'] - 1
+    manager['connectionCheck']()
+    assert.equal(
+      manager['connectionStatus'],
+      ConnectionStatus.Disconnected,
+      'should disconnect from CL'
+    )
+    manager['connectionStatus'] = ConnectionStatus.Connected
+    manager['lastRequestTimestamp'] = Date.now() - manager['UNCERTAIN_THRESHOLD'] - 1
+    manager['connectionCheck']()
+    assert.equal(
+      manager['connectionStatus'],
+      ConnectionStatus.Uncertain,
+      'should update status to uncertain'
+    )
+
+    manager['config'].chainCommon.setHardfork('paris')
+    ;(manager as any)._inActivityCb = () => vi.fn()
+    const callbackSpy = vi.spyOn(manager as any, '_inActivityCb')
+    manager['connectionCheck']()
+    expect(callbackSpy).toHaveBeenCalledTimes(1)
+    assert.equal(manager['disconnectedCheckIndex'], 1, 'disconnection check incremented correctly')
   })
 })

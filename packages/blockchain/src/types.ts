@@ -1,9 +1,13 @@
 import type { Blockchain } from '.'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import type { DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type { AsyncEventEmitter, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
+
+export type BlockchainEvents = {
+  deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
+}
 
 export interface BlockchainInterface {
   consensus: Consensus
@@ -79,6 +83,11 @@ export interface BlockchainInterface {
    * Returns the latest full block in the canonical chain.
    */
   getCanonicalHeadBlock(): Promise<Block>
+
+  /**
+   * Optional events emitter
+   */
+  events?: AsyncEventEmitter<BlockchainEvents>
 }
 
 export interface GenesisOptions {

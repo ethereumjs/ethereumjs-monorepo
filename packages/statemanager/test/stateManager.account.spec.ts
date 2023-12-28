@@ -6,7 +6,11 @@ import { DefaultStateManager } from '../src/index.js'
 import { createAccount } from './util.js'
 
 describe('StateManager -> General/Account', () => {
-  for (const accountCacheOpts of [{ deactivate: false }, { deactivate: true }]) {
+  for (const accountCacheOpts of [
+    { deactivate: false },
+    { deactivate: true },
+    { deactivate: false, size: 0 },
+  ]) {
     it(`should set the state root to empty`, async () => {
       const stateManager = new DefaultStateManager({ accountCacheOpts })
       assert.ok(equalsBytes(stateManager['_trie'].root(), KECCAK256_RLP), 'it has default root')

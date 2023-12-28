@@ -84,7 +84,17 @@ function beaconrootBlock(
  * Then it returns the data the precompile returns
  */
 
-const CODE = '0x365F5F375F5F365F5F600B5AF15F553D5F5F3E3D5FF3'
+const BROOT_AddressString = '000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
+const CODE =
+  '0x365F5F375F5F365F5F' +
+  // push broot contract address on stack
+  '73' +
+  BROOT_AddressString +
+  // remaining contract
+  '5AF15F553D5F5F3E3D5FF3'
+const BROOT_CODE =
+  '0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500'
+const BROOT_Address = Address.fromString(`0x${BROOT_AddressString}`)
 
 /**
  * Run a block inside a 4788 VM
@@ -97,6 +107,7 @@ async function runBlock(block: Block) {
   })
 
   await vm.stateManager.putContractCode(contractAddress, hexToBytes(CODE))
+  await vm.stateManager.putContractCode(BROOT_Address, hexToBytes(BROOT_CODE))
   return {
     vmResult: await vm.runBlock({
       block,
@@ -163,7 +174,7 @@ describe('should run beaconroot precompile correctly', async () => {
       timestampBlock: BigInt(11),
       blockRoot: BigInt(1),
       expRet: BigInt(0),
-      expCallStatus: BigInt(1),
+      expCallStatus: BigInt(0),
     })
   })
   it('should run precompile with known timestamp, input length > 32 bytes', async () => {
@@ -173,8 +184,8 @@ describe('should run beaconroot precompile correctly', async () => {
       blockRoot: BigInt(1),
       extLeft: 32,
       extRight: 320,
-      expRet: BigInt(1),
-      expCallStatus: BigInt(1),
+      expRet: BigInt(0),
+      expCallStatus: BigInt(0),
     })
   })
   it('should run precompile with known timestamp, input length < 32 bytes', async () => {

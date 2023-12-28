@@ -50,7 +50,7 @@ describe('[Integration:Miner]', async () => {
   ]
   async function minerSetup(): Promise<[MockServer, FullEthereumService]> {
     const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
-    const server = new MockServer({ config })
+    const server = new MockServer({ config }) as any
 
     const blockchain = await Blockchain.create({
       common,
@@ -61,7 +61,7 @@ describe('[Integration:Miner]', async () => {
     const chain = await Chain.create({ config, blockchain })
     const serviceConfig = new Config({
       common,
-      servers: [server as any],
+      server,
       mine: true,
       accounts,
     })

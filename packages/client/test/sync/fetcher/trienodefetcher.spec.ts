@@ -2,8 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { decodeNode } from '@ethereumjs/trie'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from 'js-sdsl'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -26,13 +25,13 @@ describe('[TrieNodeFetcher]', async () => {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
+  PeerPool.prototype.idle = vi.fn()
+  PeerPool.prototype.ban = vi.fn()
 
   const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -58,7 +57,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should process', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -84,7 +83,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -98,23 +97,25 @@ describe('[TrieNodeFetcher]', async () => {
       paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
     }
     const peer = {
-      snap: { getTrieNodes: td.func<any>() },
+      snap: {
+        getTrieNodes: vi.fn((input) => {
+          const expected = {
+            root: new Uint8Array(0),
+            paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
+            bytes: BigInt(50000),
+          }
+          assert.deepEqual(input, expected)
+        }),
+      },
       id: 'random',
       address: 'random',
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getTrieNodes({
-        root: new Uint8Array(0),
-        paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
-        bytes: BigInt(50000),
-      })
-    )
   })
 
   it('should generate child paths for node correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
     const p = new SnapProtocol({ config, chain })
@@ -139,11 +140,10 @@ describe('[TrieNodeFetcher]', async () => {
     const resData = RLP.decode(hexToBytes(_trieNodesRLP)) as unknown
     const res = p.decode(p.messages.filter((message) => message.name === 'TrieNodes')[0], resData)
     const { reqId, nodes } = res
-    const mockedGetTrieNodes = td.func<any>()
-    td.when(mockedGetTrieNodes(td.matchers.anything())).thenReturn({
-      reqId,
-      nodes,
+    const mockedGetTrieNodes = vi.fn(() => {
+      return { reqId, nodes }
     })
+
     const peer = {
       snap: { getTrieNodes: mockedGetTrieNodes },
       id: 'random',
@@ -173,23 +173,21 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
+    pool.idle = vi.fn(() => {
+      return 'peer0'
+    })
     const fetcher = new TrieNodeFetcher({
       config,
       pool,
       root: new Uint8Array(0),
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
-  it('should reset td', async () => {
-    td.reset()
-  })
-
   it('should return an array of tasks with pathStrings and paths', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,
@@ -212,7 +210,7 @@ describe('[TrieNodeFetcher]', async () => {
   })
 
   it('should return an object with pathStrings', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new TrieNodeFetcher({
       config,

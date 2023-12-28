@@ -216,6 +216,7 @@ export class RlpxServer extends Server {
           udpPort: null,
           tcpPort: null,
         },
+        onlyConfirmed: this.config.chainCommon.chainName() === 'mainnet' ? false : true,
         shouldFindNeighbours: this.config.discV4,
         shouldGetDnsPeers: this.config.discDns,
         dnsRefreshQuantity: this.config.maxPeers,
@@ -223,15 +224,26 @@ export class RlpxServer extends Server {
         dnsAddr: this.config.dnsAddr,
       })
 
-      this.dpt.events.on('error', (e: Error) => this.error(e))
+      this.dpt.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
       this.dpt.events.on('listening', () => {
         resolve()
       })
 
+      this.config.events.on(Event.PEER_CONNECTED, (peer) => {
+        this.dpt?.confirmPeer(peer.id)
+      })
+
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
+      this.config.logger.info(
+        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`
+      )
     })
   }
 
@@ -292,7 +304,11 @@ export class RlpxServer extends Server {
         this.error(error)
       )
 
-      this.rlpx.events.on('error', (e: Error) => this.error(e))
+      this.rlpx.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
       this.rlpx.events.on('listening', () => {
         this.config.events.emit(Event.SERVER_LISTENING, {

@@ -35,7 +35,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
-import type { Contact, KBucketOptions, PeerInfo } from '../types'
+import type { Contact, KBucketOptions, PeerInfo } from '../types.js'
 
 function createNode() {
   return { contacts: [], dontSplit: false, left: null, right: null }
@@ -149,7 +149,7 @@ export class KBucket {
     }
 
     // the bucket is full
-    if (node.dontSplit !== undefined) {
+    if (node.dontSplit) {
       // we are not allowed to split the bucket
       // we need to ping the first this._numberOfNodesToPing
       // in order to determine if they are alive

@@ -1,21 +1,35 @@
 // Example 3a - Generating a hash
 
-const { Trie } = require('../../dist') // We import the library required to create a basic Merkle Patricia Tree
+const { Trie } = require('../../dist/cjs')
 const rlp = require('@ethereumjs/rlp')
+const { bytesToHex, utf8ToBytes } = require('@ethereumjs/util')
 const { keccak256 } = require('ethereum-cryptography/keccak')
-const trie = new Trie() // We create an empty Merkle Patricia Tree
+const trie = new Trie()
 
 async function test() {
   // We populate the tree to create an extension node.
-  await trie.put(Buffer.from('testKey'), Buffer.from('testValue'))
-  await trie.put(Buffer.from('testKey0001'), Buffer.from('testValue1'))
-  await trie.put(Buffer.from('testKey000A'), Buffer.from('testValueA'))
+  await trie.put(utf8ToBytes('testKey'), utf8ToBytes('testValue'))
+  await trie.put(utf8ToBytes('testKey0001'), utf8ToBytes('testValue1'))
+  await trie.put(utf8ToBytes('testKey000A'), utf8ToBytes('testValueA'))
 
-  const node1 = await trie.findPath(Buffer.from('testKey'))
-  const node2 = await trie.lookupNode(Buffer.from(node1.node._branches[3]))
+  const node1 = await trie.findPath(utf8ToBytes('testKey'))
+  const node2 = await trie.lookupNode(node1.node._branches[3])
+  const node3 = await trie.lookupNode(node2._value)
 
-  console.log('Our computed hash:       ', Buffer.from(keccak256(rlp.encode(node2.raw()))))
-  console.log('The extension node hash: ', node1.node._branches[3])
+  console.log('Extension node:', node2)
+  console.log('Branch node:', node3._branches)
+  console.log('Branch node hash:', bytesToHex(node2._value))
+  console.log(
+    'Branch node branch 4:',
+    'path: ',
+    bytesToHex(node3._branches[4][0]),
+    ' | value: ',
+    bytesToHex(node3._branches[4][1])
+  )
+
+  console.log('Raw node:', bytesToHex(rlp.encode(node2.raw())))
+  console.log('Our computed hash:       ', bytesToHex(keccak256(rlp.encode(node2.raw()))))
+  console.log('The extension node hash: ', bytesToHex(node1.node._branches[3]))
 }
 
 test()
