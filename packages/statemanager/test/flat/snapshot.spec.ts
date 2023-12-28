@@ -112,7 +112,7 @@ describe('snapshot merkleize', () => {
   it('should merkleize empty snapshot', async () => {
     const snapshot = new Snapshot()
     const root = await snapshot.merkleize()
-    assert.equal(JSON.stringify(root), JSON.stringify(KECCAK256_RLP))
+    assert.deepEqual(root, KECCAK256_RLP)
   })
 
   it('should merkleize multiple eoa accounts', async () => {
@@ -131,9 +131,9 @@ describe('snapshot merkleize', () => {
 
     const expectedRoot = await merkleizeViaTrie(addrs.map((v) => [v, acc.serialize()]))
     const root = await snapshot.merkleize()
-    assert.equal(
-      JSON.stringify(root),
-      JSON.stringify(expectedRoot),
+    assert.deepEqual(
+      root,
+      expectedRoot,
       `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
     )
   })
@@ -195,7 +195,7 @@ describe('snapshot checkpointing', () => {
     snapshot.checkpoint()
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(JSON.stringify(res), JSON.stringify(val.serialize()))
+    assert.deepEqual(res, val.serialize())
   })
 
   it('should get recent version after checkpoint update', async () => {
@@ -211,7 +211,7 @@ describe('snapshot checkpointing', () => {
     await snapshot.putAccount(addr, acc)
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(JSON.stringify(res), JSON.stringify(acc.serialize()))
+    assert.deepEqual(res, acc.serialize())
   })
 
   it('should revert change after checkpoint', async () => {
@@ -229,7 +229,7 @@ describe('snapshot checkpointing', () => {
     await snapshot.revert()
 
     const res = await snapshot.getAccount(addr)
-    assert.equal(JSON.stringify(res), JSON.stringify(new Account().serialize()))
+    assert.deepEqual(res, new Account().serialize())
   })
 
   it('should commit change after checkpoint', async () => {
