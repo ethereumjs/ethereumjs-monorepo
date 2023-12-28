@@ -18,6 +18,7 @@ export function clientRunHelper(
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
       const message: string = data.toString()
+      console.log(message)
       if (!shouldError) onData(message, child, resolve)
       if (message.toLowerCase().includes('error')) {
         child.kill(9)
