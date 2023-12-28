@@ -110,6 +110,7 @@ export class Snapshot {
 
     const account = Account.fromRlpSerializedAccount(rawAccount)
     if (!equalsBytes(account.codeHash, KECCAK256_NULL)) {
+      // TODO figure out if it's necessary/proper to delete the code by codeHash
       // await this.delCode(account.codeHash)
     }
 
