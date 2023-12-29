@@ -6,7 +6,7 @@ import { txTypeBytes } from '../util.js'
 
 import { errorMsg } from './legacy.js'
 
-import type { EIP2718CompatibleTx } from '../types'
+import type { EIP2718CompatibleTx } from '../types.js'
 import type { Input } from '@ethereumjs/rlp'
 
 export function getHashedMessageToSign(tx: EIP2718CompatibleTx): Uint8Array {

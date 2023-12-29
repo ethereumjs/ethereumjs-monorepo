@@ -33,7 +33,7 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
+    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
     "lint": "../../config/cli/lint.sh",

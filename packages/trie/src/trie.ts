@@ -107,7 +107,8 @@ export class Trie {
       valueEncoding = ValueEncoding.Bytes
     }
 
-    this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
