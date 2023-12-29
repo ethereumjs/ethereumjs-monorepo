@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1703081579353,
+  "lastUpdate": 1703847189446,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3b257e9ad7b35ed729dbb07dff0c5ab3a90125c5",
-          "message": "Return if txHashes is undefined (#3156)",
-          "timestamp": "2023-11-13T04:44:55-07:00",
-          "tree_id": "a5e151435102d45f7fb69e0e2255dc721ec78a7f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3b257e9ad7b35ed729dbb07dff0c5ab3a90125c5"
-        },
-        "date": 1699876121246,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 28583,
-            "range": "±5.23%",
-            "unit": "ops/sec",
-            "extra": "76 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 28373,
-            "range": "±3.01%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 28215,
-            "range": "±3.10%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 27727,
-            "range": "±3.22%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 22680,
-            "range": "±10.78%",
-            "unit": "ops/sec",
-            "extra": "71 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.44%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3bd15736d1b470da687cedf78d2de8cccddecf0c",
+          "message": "common: schedule cancun for testnets (#3211)",
+          "timestamp": "2023-12-29T11:48:10+01:00",
+          "tree_id": "0c31c891ba7da24ee233599489e7c06082d3dbf9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3bd15736d1b470da687cedf78d2de8cccddecf0c"
+        },
+        "date": 1703847188852,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39570,
+            "range": "±2.37%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37748,
+            "range": "±3.54%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 37745,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37646,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36061,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
