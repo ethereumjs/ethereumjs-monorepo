@@ -50,7 +50,7 @@ describe('[RlpxServer]', async () => {
   const { RlpxServer } = await import('../../../src/net/server/rlpxserver')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,enode://abcd@10.0.0.2:1234',
@@ -66,11 +66,11 @@ describe('[RlpxServer]', async () => {
   })
 
   it('should start/stop server', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
-    })
+    }) as any
     ;(server as any).initDpt = vi.fn()
     ;(server as any).initRlpx = vi.fn()
     server.dpt = {
@@ -89,7 +89,7 @@ describe('[RlpxServer]', async () => {
       }),
     }
     server.rlpx = { destroy: vi.fn() }
-    server.config.events.on(Event.PEER_ERROR, (err) =>
+    server.config.events.on(Event.PEER_ERROR, (err: any) =>
       assert.equal(err.message, 'err0', 'got error')
     )
     await server.start()
@@ -107,7 +107,6 @@ describe('[RlpxServer]', async () => {
   it('should bootstrap with dns acquired peers', async () => {
     const dnsPeerInfo = { address: '10.0.0.5', udpPort: 1234, tcpPort: 1234 }
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       discDns: true,
@@ -115,7 +114,7 @@ describe('[RlpxServer]', async () => {
     const server = new RlpxServer({
       config,
       dnsNetworks: ['enrtree:A'],
-    })
+    }) as any
     ;(server as any).initDpt = vi.fn()
     ;(server as any).initRlpx = vi.fn()
     server.rlpx = { destroy: vi.fn() }
@@ -133,12 +132,12 @@ describe('[RlpxServer]', async () => {
   })
 
   it('should return rlpx server info with ip4 as default', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const mockId = '0123'
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
-    })
+    }) as any
     ;(server as any).initDpt = vi.fn()
     ;(server as any).initRlpx = vi.fn()
     server.dpt = {
@@ -181,7 +180,6 @@ describe('[RlpxServer]', async () => {
 
   it('should return rlpx server info with ip6', async () => {
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       extIP: '::',
@@ -190,7 +188,7 @@ describe('[RlpxServer]', async () => {
     const server = new RlpxServer({
       config,
       bootnodes: '10.0.0.1:1234,10.0.0.2:1234',
-    })
+    }) as any
     ;(server as any).initDpt = vi.fn()
     ;(server as any).initRlpx = vi.fn()
     server.dpt = {
@@ -233,7 +231,7 @@ describe('[RlpxServer]', async () => {
 
   it('should handle errors', () => {
     let count = 0
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     server.config.events.on(Event.SERVER_ERROR, (err) => {
       count = count + 1
@@ -249,7 +247,7 @@ describe('[RlpxServer]', async () => {
   })
 
   it('should ban peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     assert.notOk(server.ban('123'), 'not started')
     server.started = true
@@ -267,7 +265,7 @@ describe('[RlpxServer]', async () => {
   })
 
   it('should init dpt', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     ;(server as any).initDpt().catch((error: Error) => {
       throw error
@@ -281,7 +279,7 @@ describe('[RlpxServer]', async () => {
   })
 
   it('should init rlpx', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
 
@@ -327,7 +325,7 @@ describe('[RlpxServer]', async () => {
   })
 
   it('should handles errors from id-less peers', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
     const rlpxPeer = new RlpxPeer()
     ;(rlpxPeer as any).getId = vi.fn().mockReturnValue(utf8ToBytes('test'))

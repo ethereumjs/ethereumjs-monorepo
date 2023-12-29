@@ -34,6 +34,6 @@ export function precompile02(opts: PrecompileInput): ExecResult {
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: sha256(data),
+    returnValue: hash,
   }
 }

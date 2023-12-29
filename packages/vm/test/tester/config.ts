@@ -378,7 +378,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
     BerlinToLondonAt5: 24,
-    Cancun: 0,
+    Cancun: 61633,
   },
   GeneralStateTests: {
     Chainstart: 1045,
@@ -401,7 +401,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 0,
     HomesteadToEIP150At5: 0,
     BerlinToLondonAt5: 0,
-    Cancun: 1,
+    Cancun: 19048,
   },
 }
 

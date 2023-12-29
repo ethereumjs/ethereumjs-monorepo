@@ -1,16 +1,16 @@
-import { Address } from '@ethereumjs/util'
+import { Address, BIGINT_0 } from '@ethereumjs/util'
 
 import type { PrecompileFunc } from './precompiles/index.js'
 
 const defaults = {
-  value: BigInt(0),
+  value: BIGINT_0,
   caller: Address.zero(),
   data: new Uint8Array(0),
   depth: 0,
   isStatic: false,
   isCompiled: false,
   delegatecall: false,
-  gasRefund: BigInt(0),
+  gasRefund: BIGINT_0,
 }
 
 interface MessageOpts {
@@ -36,7 +36,7 @@ interface MessageOpts {
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
-  versionedHashes?: Uint8Array[]
+  blobVersionedHashes?: Uint8Array[]
 }
 
 export class Message {
@@ -70,7 +70,7 @@ export class Message {
   /**
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
-  versionedHashes?: Uint8Array[]
+  blobVersionedHashes?: Uint8Array[]
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -89,7 +89,7 @@ export class Message {
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
-    this.versionedHashes = opts.versionedHashes
+    this.blobVersionedHashes = opts.blobVersionedHashes
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }

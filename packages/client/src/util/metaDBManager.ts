@@ -19,6 +19,7 @@ export enum DBKey {
   SkeletonBlock,
   SkeletonBlockHashToNumber,
   SkeletonStatus,
+  SkeletonUnfinalizedBlockByHash,
 }
 
 export interface MetaDBManagerOptions {

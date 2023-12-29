@@ -24,7 +24,7 @@ describe('[LightSynchronizer]', async () => {
   const { LightSynchronizer } = await import('../../src/sync/lightsync')
 
   it('should initialize correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({ config, pool, chain })
@@ -32,7 +32,7 @@ describe('[LightSynchronizer]', async () => {
   })
 
   it('should find best', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({
@@ -60,7 +60,6 @@ describe('[LightSynchronizer]', async () => {
 
   it('should sync', async () => {
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       safeReorgDistance: 0,
@@ -107,7 +106,6 @@ describe('[LightSynchronizer]', async () => {
     vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
     const { LightSynchronizer } = await import('../../src/sync/lightsync')
     const config = new Config({
-      transports: [],
       accountCache: 10000,
       storageCache: 1000,
       safeReorgDistance: 0,
@@ -145,7 +143,7 @@ describe('[LightSynchronizer]', async () => {
 
   it('sync errors', async () => {
     td.reset()
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const sync = new LightSynchronizer({

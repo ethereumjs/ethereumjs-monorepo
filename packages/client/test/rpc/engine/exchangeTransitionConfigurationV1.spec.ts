@@ -1,9 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
-import { baseRequest, params, setupChain } from '../helpers'
-import { checkError } from '../util'
+import { getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'engine_exchangeTransitionConfigurationV1'
 
@@ -22,19 +21,16 @@ const invalidConfig = {
 describe(method, () => {
   it('call with valid config', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-
-    const req = params(method, [validConfig])
-    const expectRes = (res: any) => {
-      assert.deepEqual(res.body.result, validConfig)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, [validConfig])
+    assert.deepEqual(res.result, validConfig)
   })
 
   it('call with invalid config', async () => {
     const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
-
-    const req = params(method, [invalidConfig])
-    const expectRes = checkError(INVALID_PARAMS, 'terminalTotalDifficulty set to 0, received 256')
-    await baseRequest(server, req, 200, expectRes)
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, [invalidConfig])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('terminalTotalDifficulty set to 0, received 256'))
   })
 })

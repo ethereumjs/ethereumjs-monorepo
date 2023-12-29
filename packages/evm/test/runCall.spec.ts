@@ -2,7 +2,9 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
+  BIGINT_100,
   MAX_UINT64,
+  bytesToBigInt,
   bytesToHex,
   concatBytes,
   hexToBytes,
@@ -13,6 +15,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
+import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
 import { EVM } from '../src/index.js'
 
@@ -578,7 +581,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes('0x60004960005260206000F3'),
-      versionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: [hexToBytes('0xab')],
     }
     const res = await evm.runCall(runCallArgs)
     assert.equal(
@@ -592,7 +595,7 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
       data: hexToBytes('0x60014960005260206000F3'),
-      versionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: [hexToBytes('0xab')],
     }
     const res2 = await evm.runCall(runCall2Args)
     assert.equal(
@@ -600,6 +603,42 @@ describe('RunCall tests', () => {
       '0x',
       'retrieved no versionedHash when specified versionedHash does not exist in runState'
     )
+  })
+
+  it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
+    // setup the evm
+    const common = Common.fromGethGenesis(genesisJSON, {
+      chain: 'custom',
+      hardfork: Hardfork.Cancun,
+    })
+    const evm = new EVM({
+      common,
+    })
+
+    const BLOBBASEFEE_OPCODE = 0x4a
+    assert.equal(
+      evm.getActiveOpcodes().get(BLOBBASEFEE_OPCODE)!.name,
+      'BLOBBASEFEE',
+      'Opcode 0x4a named BLOBBASEFEE'
+    )
+
+    const block = defaultBlock()
+    block.header.getBlobGasPrice = () => BigInt(119)
+
+    // setup the call arguments
+    const runCallArgs: EVMRunCallOpts = {
+      gasLimit: BigInt(0xffffffffff),
+      // calldata -- retrieves the blobgas and returns it from memory
+      data: hexToBytes('0x4a60005260206000F3'),
+      block,
+    }
+    const res = await evm.runCall(runCallArgs)
+    assert.equal(
+      bytesToBigInt(unpadBytes(res.execResult.returnValue)),
+      BigInt(119),
+      'retrieved correct gas fee'
+    )
+    assert.equal(res.execResult.executionGasUsed, BigInt(6417), 'correct blob gas fee (2) charged')
   })
 
   it('step event: ensure EVM memory and not internal memory gets reported', async () => {
@@ -677,5 +716,46 @@ describe('RunCall tests', () => {
 
     const res2 = await evm.runCall(runCallArgs2)
     assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+  })
+
+  it('ensure call and callcode handle gas stipend correctly', async () => {
+    // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3194
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+    const evm = new EVM({
+      common,
+    })
+    for (const opcode of ['f1', 'f2']) {
+      // Code to either CALL or CALLCODE into the own address, with value 1
+      // JUMPDEST added at the start to track how much CALL(CODE)s are made
+      const contractCode = hexToBytes(`0x5B6000808080600130611a90${opcode}`)
+      const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
+      await evm.stateManager.putContractCode(contractAddress, contractCode)
+
+      const account = await evm.stateManager.getAccount(contractAddress)
+      account!.balance = BIGINT_100
+
+      await evm.stateManager.putAccount(contractAddress, account)
+
+      const runCallArgs = {
+        gasLimit: BigInt(50000 - 21000),
+        to: contractAddress,
+      }
+
+      let jumpdestCalls = 0
+
+      evm.events.on('step', (e) => {
+        if (e.opcode.name === 'JUMPDEST') {
+          jumpdestCalls++
+        }
+      })
+
+      await evm.runCall(runCallArgs)
+      // JUMPDEST should be called twice:
+      // 1: call into the contract (externally, via tx)
+      // 2: call(code) into the contract (internally)
+      // If jumpdest would run >=3 times, it means the (2) has enough gas to pay for CALL(CODE)
+      // This is not correct
+      assert.ok(jumpdestCalls === 2, 'called JUMPDEST twice')
+    }
   })
 })

@@ -69,20 +69,6 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
   }
 }
 
-export function parseTransports(transports: string[]) {
-  return transports.map((t) => {
-    const options: { [key: string]: string } = {}
-    const [name, ...pairs] = t.split(':')
-    if (pairs.length) {
-      for (const p of pairs.join(':').split(',')) {
-        const [key, value] = p.split('=')
-        options[key] = value
-      }
-    }
-    return { name, options }
-  })
-}
-
 /**
  * Returns Uint8Array from input hexadecimal string or Uint8Array
  * @param input hexadecimal string or Uint8Array

@@ -121,10 +121,13 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return correct next HF (mainnet: byzantium -> constantinople)'
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Byzantium)!, BigInt(7280000), msg)
 
+    msg = 'should return null if next HF is not available (mainnet: shanghai -> cancun)'
+    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
+
     const c2 = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
-    msg = 'should return null if next HF is not available (mainnet: shanghai -> cancun)'
-    assert.equal(c2.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
+    msg = 'should return null if next HF is not available (goerli: cancun -> prague)'
+    assert.equal(c2.nextHardforkBlockOrTimestamp(Hardfork.Cancun), null, msg)
 
     msg =
       'should correctly skip a HF where block is set to null (goerli: homestead -> (dao) -> tangerineWhistle)'
@@ -215,7 +218,7 @@ describe('[Common]: Hardfork logic', () => {
       ],
       [
         Chain.Holesky,
-        hexToBytes('0xff9006519a8ce843ac9c28549d24211420b546e12ce2d170c77a8cca7964f23d'),
+        hexToBytes('0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4'),
       ],
     ]
 

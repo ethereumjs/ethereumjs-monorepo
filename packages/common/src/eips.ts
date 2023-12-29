@@ -373,7 +373,7 @@ export const EIPs: EIPsDict = {
     gasPrices: {},
     vm: {
       historicalRootsLength: {
-        v: 98304,
+        v: 8191,
         d: 'The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile',
       },
     },
@@ -470,5 +470,34 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
+  },
+  6800: {
+    comment: 'Ethereum state using a unified verkle tree (experimental)',
+    url: 'https://github.com/ethereum/EIPs/pull/6800',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.London,
+    requiredEIPs: [],
+    gasConfig: {},
+    gasPrices: {
+      tx: {
+        v: 34300,
+        d: 'Per transaction. NOTE: Not payable on data of calls between transactions',
+      },
+    },
+    vm: {},
+    pow: {},
+  },
+  7516: {
+    comment: 'BLOBBASEFEE opcode',
+    url: 'https://eips.ethereum.org/EIPS/eip-7516',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+    gasPrices: {
+      blobbasefee: {
+        v: 2,
+        d: 'Gas cost of the BLOBBASEFEE opcode',
+      },
+    },
   },
 }

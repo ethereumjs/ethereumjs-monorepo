@@ -32,6 +32,8 @@ export class Server {
   protected _socket: DgramSocket | null
   private _debug: Debugger
 
+  private DEBUG: boolean
+
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
     this.events = new EventEmitter()
     this._dpt = dpt
@@ -57,18 +59,25 @@ export class Server {
         }
       })
     }
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   bind(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .bind')
+    if (this.DEBUG) {
+      this._debug('call .bind')
+    }
 
     if (this._socket) this._socket.bind(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .destroy')
+    if (this.DEBUG) {
+      this._debug('call .destroy')
+    }
 
     if (this._socket) {
       this._socket.close(...args)
@@ -96,11 +105,13 @@ export class Server {
       deferred,
       timeoutId: setTimeout(() => {
         if (this._requests.get(rkey) !== undefined) {
-          this._debug(
-            `ping timeout: ${peer.address}:${peer.udpPort} ${
-              peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-            }`
-          )
+          if (this.DEBUG) {
+            this._debug(
+              `ping timeout: ${peer.address}:${peer.udpPort} ${
+                peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+              }`
+            )
+          }
           this._requests.delete(rkey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
@@ -122,12 +133,14 @@ export class Server {
   }
 
   _send(peer: PeerInfo, typename: string, data: any) {
-    this.debug(
-      typename,
-      `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-        peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-      })`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        typename,
+        `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
+          peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+        })`
+      )
+    }
 
     const msg = encode(typename, data, this._privateKey)
 
@@ -139,13 +152,15 @@ export class Server {
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
     const info = decode(msg) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
-    this.debug(
-      info.typename.toString(),
-      `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
-        bytesToHex(peerId),
-        verbose
-      )})`
-    )
+    if (this.DEBUG) {
+      this.debug(
+        info.typename.toString(),
+        `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
+          bytesToHex(peerId),
+          verbose
+        )})`
+      )
+    }
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)

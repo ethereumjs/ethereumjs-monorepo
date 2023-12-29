@@ -11,6 +11,7 @@
 ### Classes
 
 - [AccountCache](classes/AccountCache.md)
+- [CodeCache](classes/CodeCache.md)
 - [DefaultStateManager](classes/DefaultStateManager.md)
 - [EthersStateManager](classes/EthersStateManager.md)
 - [StorageCache](classes/StorageCache.md)
@@ -50,7 +51,7 @@
 
 #### Defined in
 
-[stateManager.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L41)
+[stateManager.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L43)
 
 ___
 
@@ -68,7 +69,7 @@ ___
 
 #### Defined in
 
-[stateManager.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L35)
+[stateManager.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L37)
 
 ## Variables
 
@@ -85,4 +86,4 @@ misbehaviour in the underlying trie library.
 
 #### Defined in
 
-[stateManager.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L102)
+[stateManager.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L104)

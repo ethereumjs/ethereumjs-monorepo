@@ -77,6 +77,18 @@ export interface DPTOptions {
   shouldFindNeighbours?: boolean
 
   /**
+   * Send findNeighbour requests to and only answer with respective peers
+   * being confirmed by calling the `confirmPeer()` method
+   *
+   * (allows for a more selective and noise reduced discovery)
+   *
+   * Note: Bootstrap nodes are confirmed by default.
+   *
+   * Default: false
+   */
+  onlyConfirmed?: boolean
+
+  /**
    * Toggles whether or not peers should be discovered by querying EIP-1459 DNS lists
    *
    * Default: false

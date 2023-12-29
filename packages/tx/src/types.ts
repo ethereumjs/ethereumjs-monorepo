@@ -195,7 +195,7 @@ export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTx<T> {
   readonly maxFeePerBlobGas: bigint
-  versionedHashes: Uint8Array[]
+  blobVersionedHashes: Uint8Array[]
   blobs?: Uint8Array[]
   kzgCommitments?: Uint8Array[]
   kzgProofs?: Uint8Array[]
@@ -329,7 +329,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
-  versionedHashes?: BytesLike[]
+  blobVersionedHashes?: BytesLike[]
   /**
    * The maximum fee per blob gas paid for the transaction
    */
@@ -452,7 +452,7 @@ export interface JsonTx {
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
   maxFeePerBlobGas?: string
-  versionedHashes?: string[]
+  blobVersionedHashes?: string[]
 }
 
 /*
@@ -479,5 +479,5 @@ export interface JsonRpcTx {
   r: string // DATA, 32 Bytes - ECDSA signature r
   s: string // DATA, 32 Bytes - ECDSA signature s
   maxFeePerBlobGas?: string // QUANTITY - max data fee for blob transactions
-  versionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
+  blobVersionedHashes?: string[] // DATA - array of 32 byte versioned hashes for blob transactions
 }

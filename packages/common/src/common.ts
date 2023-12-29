@@ -1,4 +1,5 @@
 import {
+  BIGINT_0,
   TypeOutput,
   bytesToHex,
   concatBytes,
@@ -383,7 +384,7 @@ export class Common {
       if (mergeIndex >= 0 && td !== undefined && td !== null) {
         if (hfIndex >= mergeIndex && BigInt(hfs[mergeIndex].ttd!) > td) {
           throw Error('Maximum HF determined by total difficulty is lower than the block number HF')
-        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) <= td) {
+        } else if (hfIndex < mergeIndex && BigInt(hfs[mergeIndex].ttd!) < td) {
           throw Error('HF determined by block number is lower than the minimum total difficulty HF')
         }
       }
@@ -685,7 +686,7 @@ export class Common {
     blockNumber = toType(blockNumber, TypeOutput.BigInt)
     hardfork = hardfork ?? this._hardfork
     const hfBlock = this.hardforkBlock(hardfork)
-    if (typeof hfBlock === 'bigint' && hfBlock !== BigInt(0) && blockNumber >= hfBlock) {
+    if (typeof hfBlock === 'bigint' && hfBlock !== BIGINT_0 && blockNumber >= hfBlock) {
       return true
     }
     return false

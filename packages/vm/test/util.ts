@@ -3,6 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
@@ -110,14 +111,20 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
+ * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(
   txData: any,
   opts?: TxOptions
-): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction {
+):
+  | BlobEIP4844Transaction
+  | FeeMarketEIP1559Transaction
+  | AccessListEIP2930Transaction
+  | LegacyTransaction {
   let tx
-  if (txData.maxFeePerGas !== undefined) {
+  if (txData.blobVersionedHashes !== undefined) {
+    tx = BlobEIP4844Transaction.fromTxData(txData, opts)
+  } else if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
   } else if (txData.accessLists !== undefined) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)

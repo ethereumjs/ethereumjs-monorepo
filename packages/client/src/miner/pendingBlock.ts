@@ -1,5 +1,9 @@
+import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
+  Address,
+  BIGINT_1,
+  BIGINT_2,
   TypeOutput,
   bigIntToUnpaddedBytes,
   bytesToHex,
@@ -96,9 +100,27 @@ export class PendingBlock {
     headerData: Partial<HeaderData> = {},
     withdrawals?: WithdrawalData[]
   ) {
-    const number = parentBlock.header.number + BigInt(1)
-    const { timestamp, mixHash, parentBeaconBlockRoot } = headerData
-    const { gasLimit } = parentBlock.header
+    const number = parentBlock.header.number + BIGINT_1
+    const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
+    let { gasLimit } = parentBlock.header
+
+    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
+      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+    }
+    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
+    vm.common.setHardforkBy({
+      blockNumber: number,
+      td,
+      timestamp,
+    })
+
+    const baseFeePerGas = parentBlock.header.common.isActivatedEIP(1559)
+      ? parentBlock.header.calcNextBaseFee()
+      : undefined
+
+    if (number === vm.common.hardforkBlock(Hardfork.London)) {
+      gasLimit = gasLimit * BIGINT_2
+    }
 
     // payload is uniquely defined by timestamp, parent and mixHash, gasLimit can also be
     // potentially included in the fcU in future and can be safely added in uniqueness calc
@@ -107,6 +129,23 @@ export class PendingBlock {
     const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
     const parentBeaconBlockRootBuf =
       toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+    const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
+
+    let withdrawalsBuf = zeros(0)
+
+    if (withdrawals !== undefined && withdrawals !== null) {
+      const withdrawalsBufTemp: Uint8Array[] = []
+      for (const withdrawal of withdrawals) {
+        const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
+        const validatorIndex = bigIntToUnpaddedBytes(
+          toType(withdrawal.validatorIndex ?? 0, TypeOutput.BigInt)
+        )
+        const address = toType(withdrawal.address ?? Address.zero(), TypeOutput.Uint8Array)
+        const amount = bigIntToUnpaddedBytes(toType(withdrawal.amount ?? 0, TypeOutput.BigInt))
+        withdrawalsBufTemp.push(concatBytes(indexBuf, validatorIndex, address, amount))
+      }
+      withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
+    }
 
     const payloadIdBytes = toBytes(
       keccak256(
@@ -115,7 +154,9 @@ export class PendingBlock {
           mixHashBuf,
           timestampBuf,
           gasLimitBuf,
-          parentBeaconBlockRootBuf
+          parentBeaconBlockRootBuf,
+          coinbaseBuf,
+          withdrawalsBuf
         )
       ).subarray(0, 8)
     )
@@ -128,20 +169,6 @@ export class PendingBlock {
 
     // Prune the builders and blobsbundles
     this.pruneSetToMax(MAX_PAYLOAD_CACHE)
-
-    if (typeof vm.blockchain.getTotalDifficulty !== 'function') {
-      throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-    }
-    const td = await vm.blockchain.getTotalDifficulty(parentBlock.hash())
-    vm.common.setHardforkBy({
-      blockNumber: number,
-      td,
-      timestamp,
-    })
-
-    const baseFeePerGas = vm.common.isActivatedEIP(1559)
-      ? parentBlock.header.calcNextBaseFee()
-      : undefined
 
     // Set the state root to ensure the resulting state
     // is based on the parent block's state

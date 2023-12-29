@@ -12,6 +12,7 @@ export type EVMPerformanceLogOutput = {
   avgTimePerCall: number // Avg time per call of this opcode/precompile (rounded to 3 digits)
   gasUsed: number // Total amount of gas used by this opcode/precompile
   millionGasPerSecond: number // How much million gas is executed per second (rounded to 3 digits)
+  blocksPerSlot: number // How many blocks is executed per beacon chain slot (rounded to 3 digits)
   tag: string // opcode/precompile tag
   staticGasUsed?: number // total static gas units spent
   dynamicGasUsed?: number // total dynamic gas units spent
@@ -21,6 +22,12 @@ export type EVMPerformanceLogOutput = {
 type EVMPerformanceLogs = {
   [tag: string]: EVMPerformanceLogEntry
 }
+
+const blockGasLimit = 30_000_000 // Block gas limit
+const slotTime = 12 // Time in seconds per slot
+
+// Normalize constant to check if execution time is above one block per slot (>=1) or not (<1)
+const bpsNormalizer = blockGasLimit / slotTime
 
 export class Timer {
   private startTime: number
@@ -66,12 +73,14 @@ export class EVMPerformanceLogger {
       const output: EVMPerformanceLogOutput[] = []
       for (const key in obj) {
         const field = obj[key]
+        const gasPerSecond = field.gasUsed / field.time
         const entry: EVMPerformanceLogOutput = {
           calls: field.calls,
           totalTime: Math.round(field.time * 1e6) / 1e3,
           avgTimePerCall: Math.round((field.time / field.calls) * 1e6) / 1e3,
           gasUsed: field.gasUsed,
-          millionGasPerSecond: Math.round(field.gasUsed / field.time / 1e3) / 1e3,
+          millionGasPerSecond: Math.round(gasPerSecond / 1e3) / 1e3,
+          blocksPerSlot: Math.round((gasPerSecond / bpsNormalizer) * 1e3) / 1e3,
           tag: key,
         }
         if (field.dynamicGasUsed !== undefined) {

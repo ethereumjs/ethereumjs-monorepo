@@ -25,11 +25,13 @@ Note: this library was part of the [@ethereumjs/vm](../vm/) package up till VM `
 
 The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
 
-The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM) as well as a concrete Trie-based implementation `DefaultStateManager` as well as an `EthersStateManager` implementation that sources state and history data from an external `ethers` provider.
+The library includes a TypeScript interface `StateManager` to ensure a unified interface (e.g. when passed to the VM), a concrete Trie-based `DefaultStateManager` implementation, as well as an `RPCStateManager` implementation that sources state and history data from an external JSON-RPC provider.
 
 It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need for direct state accesses.
 
-### `DefaultStateManager` Example
+### `DefaultStateManager`
+
+#### Usage example
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
@@ -45,9 +47,9 @@ await stateManager.commit()
 await stateManager.flush()
 ```
 
-### Account and Storage Caches
+#### Account, Storage and Code Caches
 
-Starting with the v2 release the StateManager comes with a significantly more elaborate caching mechanism for account and storage caches.
+Starting with the v2 release and complemented by the v2.1 release the StateManager comes with a significantly more elaborate caching mechanism for account, storage and code caches.
 
 There are now two cache options available: an unbounded cache (`CacheType.ORDERED_MAP`) for short-lived usage scenarios (this one is the default cache) and a fixed-size cache (`CacheType.LRU`) for a long-lived large cache scenario.
 
@@ -55,49 +57,82 @@ Caches now "survive" a flush operation and especially long-lived usage scenarios
 
 Have a loot at the extended `CacheOptions` on how to use and leverage the new cache system.
 
-### `EthersStateManager`
+#### Instantiating from a proof
+
+The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
+
+```typescript
+// setup `stateManager` with some existing address
+const proof = await stateManager.getProof(address)
+const proofWithStorage = await stateManger.getProof(contractAddress, [storageKey1, storageKey2])
+
+const partialStateManager = await DefaultStateManager.fromProof(proof)
+// To add more proof data, use `addProofData`
+await partialStateManager.addProofData(proofWithStorage)
+const accountFromNewSM = await partialStateManager.getAccount(address)
+const accountFromOldSM = await stateManager.getAccount(address)
+console.log(accountFromNewSM, accountFromOldSM) // should match
+const slot1FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
+const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1) // should also match
+```
+
+### `RPCStateManager`
 
 First, a simple example of usage:
 
 ```typescript
 import { Account, Address } from '@ethereumjs/util'
-import { EthersStateManager } from '@ethereumjs/statemanager'
-import { ethers } from 'ethers'
+import { RPCStateManager } from '@ethereumjs/statemanager'
 
-const provider = new ethers.providers.JsonRpcProvider('https://path.to.my.provider.com')
-const stateManager = new EthersStateManager({ provider, blockTag: 500000n })
+const provider = 'https://path.to.my.provider.com'
+const stateManager = new RPCStateManager({ provider, blockTag: 500000n })
 const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
 const account = await stateManager.getAccount(vitalikDotEth)
 console.log('Vitalik has a current ETH balance of ', account.balance)
 ```
 
-The `EthersStateManager` can be be used with an `ethers` `JsonRpcProvider` or one of its subclasses. Instantiate the `VM` and pass in an `EthersStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
+The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
-**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with an Ethers provider connecting to a third-party API service like Infura!
+**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with a JSON-RPC provider connecting to a third-party API service like Infura!
 
-### Points on usage:
+#### Points on `RPCStateManager` usage
 
-#### Provider selection
+##### Instantiating the EVM
 
-- If you don't have access to a provider, you can use the `CloudFlareProvider` from the `@ethersproject/providers` module to get a quickstart.
+In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
+
+```js
+import { RPCStateManager, RPCBlockChain } from '../src/rpcStateManager.js'
+import { EVM } from '@ethereumjs/evm'
+
+const blockchain = new RPCBlockChain({}, provider)
+const blockTag = 1n
+const state = new RPCStateManager({ provider, blockTag })
+const evm = new EVM({ blockchain, stateManager: state })
+```
+
+Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM means that the `BLOCKHASH` opcode will fail to work correctly during EVM execution.
+
+##### Provider selection
+
 - The provider you select must support the `eth_getProof`, `eth_getCode`, and `eth_getStorageAt` RPC methods.
 - Not all providers support retrieving state from all block heights so refer to your provider's documentation. Trying to use a block height not supported by your provider (e.g. any block older than the last 256 for CloudFlare) will result in RPC errors when using the state manager.
 
-#### Block Tag selection
+##### Block Tag selection
 
 - You have to pass a block number or `earliest` in the constructor that specifies the block height you want to pull state from.
 - The `latest`/`pending` values supported by the Ethereum JSON-RPC are not supported as longer running scripts run the risk of state values changing as blocks are mined while your script is running.
 - If using a very recent block as your block tag, be aware that reorgs could occur and potentially alter the state you are interacting with.
 - If you want to rerun transactions from block X or run block X, you need to specify the block tag as X-1 in the state manager constructor to ensure you are pulling the state values at the point in time the transactions or block was run.
 
-#### Potential gotchas
+##### Potential gotchas
 
-- The Ethers State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
+- The RPC State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
 - If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
 
-#### Further reference
+##### Further reference
 
-Refer to [this test script](./test/ethersStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
 ## Browser
 

@@ -73,7 +73,7 @@ describe('[Integration:Merge]', async () => {
   ]
   async function minerSetup(common: Common): Promise<[MockServer, FullEthereumService]> {
     const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
-    const server = new MockServer({ config })
+    const server = new MockServer({ config }) as any
     const blockchain = await Blockchain.create({
       common,
       validateBlocks: false,
@@ -82,7 +82,7 @@ describe('[Integration:Merge]', async () => {
     ;(blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [accounts[0][0]] // stub
     const serviceConfig = new Config({
       common,
-      servers: [server as any],
+      server,
       mine: true,
       accounts,
     })

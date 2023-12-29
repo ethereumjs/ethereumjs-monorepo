@@ -21,7 +21,7 @@ Encompassing type for all transaction types.
 
 #### Defined in
 
-[tx/src/types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L101)
+[tx/src/types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L110)
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L103)
+[tx/src/types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L112)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L102)
+[tx/src/types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L111)
 
 ___
 
@@ -51,4 +51,4 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L100)
+[tx/src/types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L109)

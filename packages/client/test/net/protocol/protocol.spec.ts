@@ -1,8 +1,9 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../../src/config'
-import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol'
+import { Config } from '../../../src/config.js'
+import { RlpxPeer } from '../../../src/net/peer/rlpxpeer.js'
+import { BoundProtocol, Protocol, Sender } from '../../../src/net/protocol/index.js'
 
 describe('[Protocol]', () => {
   const testMessage = {
@@ -13,7 +14,7 @@ describe('[Protocol]', () => {
   }
   class TestProtocol extends Protocol {
     constructor() {
-      const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+      const config = new Config({ accountCache: 10000, storageCache: 1000 })
       super({ config })
     }
 
@@ -35,7 +36,7 @@ describe('[Protocol]', () => {
   }
 
   it('should throw if missing abstract methods', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     assert.throws(() => p.versions, /Unimplemented/)
     assert.throws(() => p.messages, /Unimplemented/)
@@ -44,7 +45,7 @@ describe('[Protocol]', () => {
   })
 
   it('should handle open', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const p = new Protocol({ config })
     await p.open()
     assert.ok(p.opened, 'is open')
@@ -99,13 +100,14 @@ describe('[Protocol]', () => {
 
   it('should bind to peer', async () => {
     const p = new TestProtocol()
-    const peer = td.object('Peer') as any
+
+    const peer = new RlpxPeer({ host: '127.0.0.1', port: 30303, config: p.config })
+
     const sender = new Sender()
-    BoundProtocol.prototype.handshake = td.func<BoundProtocol['handshake']>()
-    td.when(BoundProtocol.prototype.handshake(td.matchers.isA(Sender))).thenResolve()
-    const bound = await p.bind(peer, sender)
+
+    const bound = new BoundProtocol({ peer, sender, protocol: p, config: p.config })
+
     assert.ok(bound instanceof BoundProtocol, 'correct bound protocol')
-    assert.equal(peer.test, bound, 'bound to peer')
   })
 
   td.reset()

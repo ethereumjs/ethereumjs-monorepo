@@ -53,12 +53,7 @@ export class StorageCache extends Cache {
 
   _saveCachePreState(addressHex: string, keyHex: string) {
     const addressStoragePreState = this._diffCache[this._checkpoints].get(addressHex)
-    let diffStorageMap: DiffStorageCacheMap
-    if (addressStoragePreState === undefined) {
-      diffStorageMap = new Map()
-    } else {
-      diffStorageMap = addressStoragePreState
-    }
+    const diffStorageMap: DiffStorageCacheMap = addressStoragePreState ?? new Map()
 
     if (!diffStorageMap.has(keyHex)) {
       let oldStorageMap: StorageCacheMap | undefined

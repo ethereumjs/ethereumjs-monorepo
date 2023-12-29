@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   bigIntToBytes,
   bytesToBigInt,
   bytesToInt,
@@ -104,6 +105,11 @@ export class ReceiptsManager extends MetaDBManager {
     const encoded = this.rlp(RlpConvert.Encode, RlpType.Receipts, receipts)
     await this.put(DBKey.Receipts, block.hash(), encoded)
     void this.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
+  }
+
+  async deleteReceipts(block: Block) {
+    await this.delete(DBKey.Receipts, block.hash())
+    void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
   }
 
   /**
@@ -259,7 +265,7 @@ export class ReceiptsManager extends MetaDBManager {
           if (this.config.txLookupLimit > 0) {
             // Remove tx hashes for one block past txLookupLimit
             const limit = this.chain.headers.height - BigInt(this.config.txLookupLimit)
-            if (limit < BigInt(0)) return
+            if (limit < BIGINT_0) return
             const blockDelIndexes = await this.chain.getBlock(limit)
             void this.updateIndex(IndexOperation.Delete, IndexType.TxHash, blockDelIndexes)
           }

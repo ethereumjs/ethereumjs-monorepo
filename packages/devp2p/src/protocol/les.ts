@@ -24,12 +24,17 @@ export class LES extends Protocol {
   protected _status: LES.Status | null = null
   protected _peerStatus: LES.Status | null = null
 
+  private DEBUG: boolean
+
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.LES, version, LES.MESSAGE_CODES)
 
     this._statusTimeoutId = setTimeout(() => {
       this._peer.disconnect(DISCONNECT_REASON.TIMEOUT)
     }, 5000) // 5 sec * 1000
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   static les2 = { name: 'les', version: 2, length: 21, constructor: LES }
@@ -40,14 +45,17 @@ export class LES extends Protocol {
     const payload = RLP.decode(data)
     if (code !== LES.MESSAGE_CODES.STATUS) {
       const logData = formatLogData(bytesToHex(data as Uint8Array), this._verbose)
-      this.debug(
-        this.getMsgPrefix(code),
-        // @ts-ignore
-        `${`Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-          // @ts-ignore
-          this._peer._socket.remotePort
-        }`}: ${logData}`
-      )
+      if (this.DEBUG) {
+        this.debug(
+          this.getMsgPrefix(code),
+          `${`Received ${this.getMsgPrefix(code)} message from ${
+            (<any>this._peer)._socket.remoteAddress
+          }:${
+            // @ts-ignore
+            this._peer._socket.remotePort
+          }`}: ${logData}`
+        )
+      }
     }
     switch (code) {
       case LES.MESSAGE_CODES.STATUS: {
@@ -63,14 +71,16 @@ export class LES extends Protocol {
           status[bytesToUtf8(value[0] as Uint8Array)] = value[1]
         }
         this._peerStatus = status
-        this.debug(
-          this.getMsgPrefix(code),
-          `${`Received ${this.getMsgPrefix(code)} message from ${
-            // @ts-ignore
-            this._peer._socket.remoteAddress
-            // @ts-ignore
-          }:${this._peer._socket.remotePort}`}: ${this._getStatusString(this._peerStatus)}`
-        )
+        if (this.DEBUG) {
+          this.debug(
+            this.getMsgPrefix(code),
+            `${`Received ${this.getMsgPrefix(code)} message from ${
+              // @ts-ignore
+              this._peer._socket.remoteAddress
+              // @ts-ignore
+            }:${this._peer._socket.remotePort}`}: ${this._getStatusString(this._peerStatus)}`
+          )
+        }
         this._handleStatus()
         break
       }
@@ -188,14 +198,16 @@ export class LES extends Protocol {
       statusList.push([utf8ToBytes(key), status[key]])
     }
 
-    this.debug(
-      'STATUS',
-      // @ts-ignore
-      `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+    if (this.DEBUG) {
+      this.debug(
+        'STATUS',
         // @ts-ignore
-        this._peer._socket.remotePort
-      } (les${this._version}): ${this._getStatusString(this._status)}`
-    )
+        `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
+          this._peer._socket.remotePort
+        } (les${this._version}): ${this._getStatusString(this._status)}`
+      )
+    }
 
     let payload = RLP.encode(statusList)
 
@@ -215,14 +227,16 @@ export class LES extends Protocol {
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
   sendMessage(code: LES.MESSAGE_CODES, payload: Input) {
-    this.debug(
-      this.getMsgPrefix(code),
-      // @ts-ignore
-      `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+    if (this.DEBUG) {
+      this.debug(
+        this.getMsgPrefix(code),
         // @ts-ignore
-        this._peer._socket.remotePort
-      }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`
-    )
+        `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
+          this._peer._socket.remotePort
+        }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`
+      )
+    }
 
     switch (code) {
       case LES.MESSAGE_CODES.STATUS:

@@ -52,6 +52,8 @@ export class RLPx {
   protected _refillIntervalId: NodeJS.Timeout
   protected _refillIntervalSelectionCounter: number = 0
 
+  private DEBUG: boolean
+
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
     this.events = new EventEmitter()
     this._privateKey = privateKey
@@ -113,18 +115,25 @@ export class RLPx {
     const REFILL_INTERVALL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   listen(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .listen')
+    if (this.DEBUG) {
+      this._debug('call .listen')
+    }
 
     if (this._server) this._server.listen(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .destroy')
+    if (this.DEBUG) {
+      this._debug('call .destroy')
+    }
 
     clearInterval(this._refillIntervalId)
 
@@ -144,7 +153,11 @@ export class RLPx {
     if (this._peers.has(peerKey)) throw new Error('Already connected')
     if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
 
-    this._debug(`connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`)
+    if (this.DEBUG) {
+      this._debug(
+        `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`
+      )
+    }
     const deferred = createDeferred()
 
     const socket = new net.Socket()
@@ -199,7 +212,9 @@ export class RLPx {
   }
 
   _onConnect(socket: net.Socket, peerId: Uint8Array | null) {
-    this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
+    if (this.DEBUG) {
+      this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
+    }
 
     const peer: Peer = new Peer({
       socket,
@@ -225,16 +240,16 @@ export class RLPx {
     peer.events.once('connect', () => {
       let msg = `handshake with ${socket.remoteAddress}:${socket.remotePort} was successful`
 
-      // @ts-ignore
-      if (peer._eciesSession._gotEIP8Auth === true) {
+      if (peer['_eciesSession']['_gotEIP8Auth'] === true) {
         msg += ` (peer eip8 auth)`
       }
 
-      // @ts-ignore
-      if (peer._eciesSession._gotEIP8Ack === true) {
+      if (peer['_eciesSession']['_gotEIP8Ack'] === true) {
         msg += ` (peer eip8 ack)`
       }
-      this._debug(msg)
+      if (this.DEBUG) {
+        this._debug(msg)
+      }
       const id = peer.getId()
       if (id && equalsBytes(id, this.id)) {
         return peer.disconnect(DISCONNECT_REASON.SAME_IDENTITY)
@@ -252,10 +267,12 @@ export class RLPx {
 
     peer.events.once('close', (reason, disconnectWe) => {
       if (disconnectWe === true) {
-        this._debug(
-          `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
-          `disconnect`
-        )
+        if (this.DEBUG) {
+          this._debug(
+            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
+            `disconnect`
+          )
+        }
       }
 
       if (disconnectWe !== true && reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
@@ -286,13 +303,15 @@ export class RLPx {
   _refillConnections() {
     if (!this._isAlive()) return
     if (this._refillIntervalSelectionCounter === 0) {
-      this._debug(
-        `Restart connection refill .. with selector ${
-          this._refillIntervalSelectionCounter
-        } peers: ${this._peers.size}, queue size: ${
-          this._peersQueue.length
-        }, open slots: ${this._getOpenSlots()}`
-      )
+      if (this.DEBUG) {
+        this._debug(
+          `Restart connection refill .. with selector ${
+            this._refillIntervalSelectionCounter
+          } peers: ${this._peers.size}, queue size: ${
+            this._peersQueue.length
+          }, open slots: ${this._getOpenSlots()}`
+        )
+      }
     }
     // Rotating selection counter going in loop from 0..9
     this._refillIntervalSelectionCounter = (this._refillIntervalSelectionCounter + 1) % 10

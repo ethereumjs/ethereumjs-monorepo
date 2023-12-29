@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
@@ -26,9 +27,9 @@ export class ETH extends Protocol {
 
   // Eth64
   protected _hardfork: string = 'chainstart'
-  protected _latestBlock = BigInt(0)
+  protected _latestBlock = BIGINT_0
   protected _forkHash: string = ''
-  protected _nextForkBlock = BigInt(0)
+  protected _nextForkBlock = BIGINT_0
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)
@@ -39,10 +40,10 @@ export class ETH extends Protocol {
       this._hardfork = c.hardfork() ?? this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
-      this._latestBlock = c.hardforkBlock(this._hardfork) ?? BigInt(0)
+      this._latestBlock = c.hardforkBlock(this._hardfork) ?? BIGINT_0
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      this._nextForkBlock = c.nextHardforkBlockOrTimestamp(this._hardfork) ?? BigInt(0)
+      this._nextForkBlock = c.nextHardforkBlockOrTimestamp(this._hardfork) ?? BIGINT_0
     }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
@@ -145,7 +146,7 @@ export class ETH extends Protocol {
 
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
-      if (peerNextFork > BigInt(0)) {
+      if (peerNextFork > BIGINT_0) {
         if (this._latestBlock >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           if (this.DEBUG) {
@@ -292,7 +293,7 @@ export class ETH extends Protocol {
       const forkHashB = hexToBytes(this._forkHash)
 
       const nextForkB =
-        this._nextForkBlock === BigInt(0) ? new Uint8Array() : bigIntToBytes(this._nextForkBlock)
+        this._nextForkBlock === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this._nextForkBlock)
 
       this._status.push([forkHashB, nextForkB])
     }

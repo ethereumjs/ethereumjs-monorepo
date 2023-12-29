@@ -1,0 +1,284 @@
+import { Trie } from '@ethereumjs/trie'
+import {
+  Account,
+  Address,
+  KECCAK256_RLP,
+  bigIntToBytes,
+  equalsBytes,
+  setLengthLeft,
+  utf8ToBytes,
+} from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
+
+import { CacheType, DefaultStateManager } from '../src/index.js'
+
+function verifyAccount(
+  account: Account,
+  state: {
+    balance: BigInt
+    codeHash: Uint8Array
+    nonce: BigInt
+    storageRoot: Uint8Array
+  }
+) {
+  assert.equal(account.balance, state.balance)
+  assert.equal(account.nonce, state.nonce)
+  assert.ok(equalsBytes(account.codeHash, state.codeHash))
+  assert.ok(equalsBytes(account.storageRoot, state.storageRoot))
+}
+
+describe('StateManager -> General', () => {
+  it(`should instantiate`, async () => {
+    const sm = new DefaultStateManager()
+
+    assert.deepEqual(sm['_trie'].root(), KECCAK256_RLP, 'it has default root')
+    const res = await sm.getStateRoot()
+    assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
+  })
+
+  it(`should clear contract storage`, async () => {
+    const sm = new DefaultStateManager()
+
+    const contractAddress = Address.fromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
+    const contractCode = Uint8Array.from([0, 1, 2, 3])
+    const storageKey = setLengthLeft(bigIntToBytes(2n), 32)
+    const storedData = utf8ToBytes('abcd')
+
+    await sm.putContractCode(contractAddress, contractCode)
+    await sm.putContractStorage(contractAddress, storageKey, storedData)
+
+    let storage = await sm.getContractStorage(contractAddress, storageKey)
+    assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
+
+    await sm.clearContractStorage(contractAddress)
+    storage = await sm.getContractStorage(contractAddress, storageKey)
+    assert.equal(
+      JSON.stringify(storage),
+      JSON.stringify(new Uint8Array()),
+      'clears contract storage'
+    )
+  })
+
+  it(`copy()`, async () => {
+    const trie = new Trie({ cacheSize: 1000 })
+    let sm = new DefaultStateManager({
+      trie,
+      prefixCodeHashes: false,
+    })
+
+    let smCopy = sm.shallowCopy()
+    assert.equal(
+      smCopy['_prefixCodeHashes'],
+      sm['_prefixCodeHashes'],
+      'should retain non-default values'
+    )
+
+    sm = new DefaultStateManager({
+      trie,
+      accountCacheOpts: {
+        type: CacheType.LRU,
+      },
+      storageCacheOpts: {
+        type: CacheType.LRU,
+      },
+    })
+
+    smCopy = sm.shallowCopy()
+    assert.equal(
+      smCopy['_accountCacheSettings'].type,
+      CacheType.ORDERED_MAP,
+      'should switch to ORDERED_MAP account cache on copy()'
+    )
+    assert.equal(
+      smCopy['_storageCacheSettings'].type,
+      CacheType.ORDERED_MAP,
+      'should switch to ORDERED_MAP storage cache on copy()'
+    )
+    assert.equal(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
+
+    smCopy = sm.shallowCopy(false)
+    assert.equal(
+      smCopy['_accountCacheSettings'].type,
+      CacheType.LRU,
+      'should retain account cache type when deactivate cache downleveling'
+    )
+    assert.equal(
+      smCopy['_storageCacheSettings'].type,
+      CacheType.LRU,
+      'should retain storage cache type when deactivate cache downleveling'
+    )
+    assert.equal(
+      smCopy['_trie']['_opts'].cacheSize,
+      1000,
+      'should retain trie cache size when deactivate cache downleveling'
+    )
+  })
+
+  it(`should import proofs from getProof`, async () => {
+    interface StateEntry {
+      keys: Uint8Array[]
+      values: Uint8Array[]
+      code: Uint8Array
+      balance: bigint
+      nonce: bigint
+      codeHash?: Uint8Array
+      storageRoot?: Uint8Array
+    }
+
+    const stateSetup: {
+      [address: string]: StateEntry
+    } = {}
+
+    type MakeNonOptional<T> = {
+      [K in keyof T]-?: T[K]
+    }
+
+    const address1Str = '0x1'.padEnd(42, '0')
+    const address2Str = '0x2'.padEnd(42, '0')
+    const address3Str = '0x3'.padEnd(42, '0')
+
+    const address1 = Address.fromString(address1Str)
+    const address2 = Address.fromString(address2Str)
+    const address3 = Address.fromString(address3Str)
+
+    const key1 = setLengthLeft(new Uint8Array([1]), 32)
+    const key2 = setLengthLeft(new Uint8Array([2]), 32)
+    const key3 = setLengthLeft(new Uint8Array([3]), 32)
+
+    const value1 = new Uint8Array([10])
+    const value2 = new Uint8Array([20])
+    const value3 = new Uint8Array([30])
+
+    stateSetup[address1Str] = {
+      keys: [key1, key2, key3],
+      values: [value1, value2, value3],
+      code: new Uint8Array([1, 2, 3]),
+      balance: BigInt(1),
+      nonce: BigInt(1),
+    }
+
+    stateSetup[address2Str] = {
+      keys: [key1, key2, key3],
+      values: [value2, value3, value1], // Note: value order changed so different state root
+      code: new Uint8Array([4]),
+      balance: BigInt(2),
+      nonce: BigInt(2),
+    }
+
+    stateSetup[address3Str] = {
+      keys: [key1, key2, key3],
+      values: [value3, value1, value2], // Note: value order changed so different state root
+      code: new Uint8Array([5, 6]),
+      balance: BigInt(3),
+      nonce: BigInt(3),
+    }
+
+    const state1 = stateSetup[address1Str] as MakeNonOptional<StateEntry>
+    const state2 = stateSetup[address2Str] as MakeNonOptional<StateEntry>
+
+    const stateManager = new DefaultStateManager()
+
+    for (const [addressStr, entry] of Object.entries(stateSetup)) {
+      const address = Address.fromString(addressStr)
+      const account = new Account(entry.nonce, entry.balance)
+      await stateManager.putAccount(address, account)
+      await stateManager.putContractCode(address, entry.code)
+      for (let i = 0; i < entry.keys.length; i++) {
+        const key = entry.keys[i]
+        const value = entry.values[i]
+        await stateManager.putContractStorage(address, key, value)
+      }
+      await stateManager.flush()
+      stateSetup[addressStr].codeHash = (await stateManager.getAccount(address)!)?.codeHash
+      stateSetup[addressStr].storageRoot = (await stateManager.getAccount(address)!)?.storageRoot
+    }
+
+    const proof1 = await stateManager.getProof(address1)
+
+    const partialStateManager = await DefaultStateManager.fromProof(proof1)
+    let account1 = await partialStateManager.getAccount(address1)!
+
+    verifyAccount(account1!, state1)
+
+    const proof2 = await stateManager.getProof(address2)
+    await partialStateManager.addProofData(proof2)
+
+    let account2 = await partialStateManager.getAccount(address2)
+    verifyAccount(account2!, state2)
+
+    let account3 = await partialStateManager.getAccount(address3)
+    assert.ok(account3 === undefined)
+
+    // Input proofs
+    const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
+    await partialStateManager.addProofData(stProof)
+
+    let stSlot1_0 = await partialStateManager.getContractStorage(address1, state1.keys[0])
+    assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
+
+    let stSlot1_1 = await partialStateManager.getContractStorage(address1, state1.keys[1])
+    assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
+
+    let stSlot1_2 = await partialStateManager.getContractStorage(address1, state1.keys[2])
+    assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
+
+    // Check Array support as input
+    const newPartialStateManager = await DefaultStateManager.fromProof([proof2, stProof])
+
+    async function postVerify(sm: DefaultStateManager) {
+      account1 = await sm.getAccount(address1)
+      verifyAccount(account1!, state1)
+
+      account2 = await sm.getAccount(address2)
+      verifyAccount(account2!, state2)
+
+      account3 = await sm.getAccount(address3)
+      assert.ok(account3 === undefined)
+
+      stSlot1_0 = await sm.getContractStorage(address1, state1.keys[0])
+      assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
+
+      stSlot1_1 = await sm.getContractStorage(address1, state1.keys[1])
+      assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
+
+      stSlot1_2 = await sm.getContractStorage(address1, state1.keys[2])
+      assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
+    }
+
+    await postVerify(newPartialStateManager)
+
+    // Check: empty proof input
+    const newPartialStateManager2 = await DefaultStateManager.fromProof([])
+
+    try {
+      await newPartialStateManager2.addProofData([proof2, stProof], true)
+      assert.fail('cannot reach this')
+    } catch (e: any) {
+      assert.ok(e.message.includes('proof does not have the expected trie root'))
+    }
+
+    await newPartialStateManager2.addProofData([proof2, stProof])
+    await newPartialStateManager2.setStateRoot(await partialStateManager.getStateRoot())
+    await postVerify(newPartialStateManager2)
+
+    const zeroAddressNonce = BigInt(100)
+    await stateManager.putAccount(Address.zero(), new Account(zeroAddressNonce))
+    const zeroAddressProof = await stateManager.getProof(Address.zero())
+
+    try {
+      await DefaultStateManager.fromProof([proof1, zeroAddressProof], true)
+      assert.fail('cannot reach this')
+    } catch (e: any) {
+      assert.ok(e.message.includes('proof does not have the expected trie root'))
+    }
+
+    await newPartialStateManager2.addProofData(zeroAddressProof)
+
+    let zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+    assert.ok(zeroAccount === undefined)
+
+    await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
+    zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
+    assert.ok(zeroAccount!.nonce === zeroAddressNonce)
+  })
+})

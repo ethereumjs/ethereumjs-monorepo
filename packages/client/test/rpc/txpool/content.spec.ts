@@ -6,9 +6,9 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import { randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'txpool_content'
 
@@ -21,9 +21,9 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
@@ -73,15 +73,11 @@ describe(method, () => {
     ;(service.txPool as any).validate = () => {}
     await service.txPool.add(TransactionFactory.fromTxData({ type: 2 }, {}).sign(randomBytes(32)))
 
-    const req = params(method, [])
-    const expectedRes = (res: any) => {
-      assert.equal(
-        Object.keys(res.body.result.pending).length,
-        1,
-        'received one pending transaction back from response'
-      )
-    }
-
-    await baseRequest(server, req, 200, expectedRes)
+    const res = await rpc.request(method, [])
+    assert.equal(
+      Object.keys(res.result.pending).length,
+      1,
+      'received one pending transaction back from response'
+    )
   })
 })

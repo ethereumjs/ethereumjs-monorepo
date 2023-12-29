@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "An Ethereum VM implementation",
   "keywords": [
     "ethereum",
@@ -62,15 +62,15 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^5.0.0",
-    "@ethereumjs/blockchain": "^7.0.0",
-    "@ethereumjs/common": "^4.0.0",
-    "@ethereumjs/evm": "^2.0.0",
-    "@ethereumjs/rlp": "^5.0.0",
-    "@ethereumjs/statemanager": "^2.0.0",
-    "@ethereumjs/trie": "^6.0.0",
-    "@ethereumjs/tx": "^5.0.0",
-    "@ethereumjs/util": "^9.0.0",
+    "@ethereumjs/block": "^5.0.1",
+    "@ethereumjs/blockchain": "^7.0.1",
+    "@ethereumjs/common": "^4.1.0",
+    "@ethereumjs/evm": "^2.1.0",
+    "@ethereumjs/rlp": "^5.0.1",
+    "@ethereumjs/statemanager": "^2.1.0",
+    "@ethereumjs/trie": "^6.0.1",
+    "@ethereumjs/tx": "^5.1.0",
+    "@ethereumjs/util": "^9.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2"
   },
@@ -81,7 +81,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "c-kzg": "^2.1.0",
+    "c-kzg": "^2.1.2",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "nyc": "^15.1.0",

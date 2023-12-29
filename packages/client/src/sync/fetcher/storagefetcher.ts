@@ -1,10 +1,14 @@
+import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  BIGINT_256,
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
-  bytesToUnprefixedHex,
   compareBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -13,15 +17,16 @@ import debugDefault from 'debug'
 import { short } from '../../util'
 
 import { Fetcher } from './fetcher'
+import { getInitFecherDoneFlags } from './types'
 
 import type { Peer } from '../../net/peer'
 import type { StorageData } from '../../net/protocol/snapprotocol'
 import type { FetcherOptions } from './fetcher'
-import type { Job } from './types'
+import type { Job, SnapFetcherDoneFlags } from './types'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-const TOTAL_RANGE_END = BigInt(2) ** BigInt(256) - BigInt(1)
+const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 
 type StorageDataResponse = StorageData[][] & { completed?: boolean }
 
@@ -52,7 +57,9 @@ export interface StorageFetcherOptions extends FetcherOptions {
   /** Destroy fetcher once all tasks are done */
   destroyWhenDone?: boolean
 
-  accountToStorageTrie?: Map<String, Trie>
+  stateManager: DefaultStateManager
+
+  fetcherDoneFlags: SnapFetcherDoneFlags
 }
 
 export type JobTask = {
@@ -61,22 +68,17 @@ export type JobTask = {
 
 export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageData[]> {
   protected debug: Debugger
+  root: Uint8Array
+  stateManager: DefaultStateManager
+  fetcherDoneFlags: SnapFetcherDoneFlags
 
   private _proofTrie: Trie
-
-  /**
-   * The stateRoot for the fetcher which sorts of pin it to a snapshot.
-   * This might eventually be removed as the snapshots are moving and not static
-   */
-  root: Uint8Array
 
   /** The accounts to fetch storage data for */
   storageRequests: StorageRequest[]
 
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[]
-
-  accountToStorageTrie: Map<String, Trie>
 
   accountToHighestKnownHash: Map<String, Uint8Array>
 
@@ -87,9 +89,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     super(options)
     this._proofTrie = new Trie()
     this.fragmentedRequests = []
+
     this.root = options.root
+    this.stateManager = options.stateManager ?? new DefaultStateManager()
+    this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.storageRequests = options.storageRequests ?? []
-    this.accountToStorageTrie = options.accountToStorageTrie ?? new Map()
+    this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
+
     this.accountToHighestKnownHash = new Map<String, Uint8Array>()
     this.debug = createDebugLogger('client:StorageFetcher')
     if (this.storageRequests.length > 0) {
@@ -144,18 +150,18 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   private getOrigin(job: Job<JobTask, StorageData[][], StorageData[]>): Uint8Array {
     const { task, partialResult } = job
-    if (task.storageRequests.length > 1 || task.storageRequests[0].first === BigInt(0)) {
+    if (task.storageRequests.length > 1 || task.storageRequests[0].first === BIGINT_0) {
       // peer does not respect origin or limit for multi-account storage fetch
-      return setLengthLeft(bigIntToBytes(BigInt(0)), 32)
+      return setLengthLeft(bigIntToBytes(BIGINT_0), 32)
     }
     const { first } = task.storageRequests[0]!
     let origin = undefined
     if (partialResult) {
       const lastSlotArray = partialResult[partialResult.length - 1]
       const lastSlot = lastSlotArray[lastSlotArray.length - 1]
-      origin = bigIntToBytes(bytesToBigInt(lastSlot.hash) + BigInt(1))
+      origin = bigIntToBytes(bytesToBigInt(lastSlot.hash) + BIGINT_1)
     } else {
-      origin = bigIntToBytes(first + BigInt(1))
+      origin = bigIntToBytes(first + BIGINT_1)
     }
     return setLengthLeft(origin, 32)
   }
@@ -184,6 +190,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     } else {
       return true
     }
+  }
+
+  setDestroyWhenDone() {
+    this.destroyWhenDone = true
   }
 
   /**
@@ -304,7 +314,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
 
           // single account requests should check if task range is satisfied since origin and limit
           // are being respected
-          if (task.storageRequests.length === 1 && !(task.storageRequests[0].first === BigInt(0))) {
+          if (task.storageRequests.length === 1 && !(task.storageRequests[0].first === BIGINT_0)) {
             if (!hasRightElement) {
               // all data has been fetched for account storage trie
               completed = true
@@ -367,7 +377,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     const highestReceivedhash = accountSlots[accountSlots.length - 1].hash
     let updateHighestReceivedHash = false
     const request = job.task.storageRequests[0]
-    if (request.first > BigInt(0)) {
+    if (request.first > BIGINT_0) {
       updateHighestReceivedHash = true
     }
 
@@ -409,27 +419,27 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         this.debug(
           'Empty result detected - Associated range requested was empty with no elements remaining to the right'
         )
-        this.destroyWhenDone = true
         return
       }
       let slotCount = 0
       const storagePromises: Promise<unknown>[] = []
       result[0].map((slotArray, i) => {
         const accountHash = result.requests[i].accountHash
-        const storageTrie =
-          this.accountToStorageTrie.get(bytesToUnprefixedHex(accountHash)) ??
-          new Trie({ useKeyHashing: true })
+        const storageTrie = this.stateManager['_getStorageTrie'](accountHash)
         for (const slot of slotArray as any) {
           slotCount++
           // what we have is hashed account and not its pre-image, so we skipKeyTransform
           storagePromises.push(storageTrie.put(slot.hash, slot.body, true))
         }
-        this.accountToStorageTrie.set(bytesToUnprefixedHex(accountHash), storageTrie)
       })
       await Promise.all(storagePromises)
+      this.fetcherDoneFlags.storageFetcher.first += BigInt(result[0].length)
+      this.fetcherDoneFlags.storageFetcher.count =
+        this.fetcherDoneFlags.storageFetcher.first + BigInt(this.storageRequests.length)
       this.debug(`Stored ${slotCount} slot(s)`)
     } catch (err) {
       this.debug(err)
+      throw err
     }
   }
 
@@ -446,6 +456,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   enqueueByStorageRequestList(storageRequestList: StorageRequest[]) {
     this.storageRequests.push(...storageRequestList)
+    this.fetcherDoneFlags.storageFetcher.count =
+      this.fetcherDoneFlags.storageFetcher.first + BigInt(this.storageRequests.length)
     this.debug(
       `Number of storage fetch requests added to fetcher queue: ${storageRequestList.length}`
     )
@@ -460,7 +472,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    * and turns each range into a task for the fetcher
    */
   tasks(
-    first = BigInt(0),
+    first = BIGINT_0,
     count = TOTAL_RANGE_END,
     maxTasks = this.config.maxFetcherJobs
   ): JobTask[] {
@@ -491,7 +503,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // single account fetch with moving origin and limit
     const max = this.config.maxStorageRange
     let debugStr = `origin=${short(setLengthLeft(bigIntToBytes(myFirst), 32))}`
-    let pushedCount = BigInt(0)
+    let pushedCount = BIGINT_0
     while (myCount >= BigInt(max) && tasks.length < maxTasks) {
       const task = {
         storageRequests: [
@@ -510,7 +522,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       myCount -= BigInt(max)
       pushedCount += BigInt(max)
     }
-    if (myCount > BigInt(0) && tasks.length < maxTasks) {
+    if (myCount > BIGINT_0 && tasks.length < maxTasks) {
       const task = {
         storageRequests: [
           {
@@ -526,12 +538,12 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       tasks.push(task)
       myFirst += BigInt(myCount)
       pushedCount += myCount
-      myCount = BigInt(0)
+      myCount = BIGINT_0
     }
 
     // If we started with where this.first was, i.e. there are no gaps and hence
     // we can move this.first to where its now, and reduce count by pushedCount
-    if (myCount !== BigInt(0) && startedWith === whereFirstwas) {
+    if (myCount !== BIGINT_0 && startedWith === whereFirstwas) {
       // create new fragmented request to keep track of where to start building the next set of tasks for fetching the same account
       this.fragmentedRequests.unshift({
         accountHash: storageRequest!.accountHash,
@@ -610,7 +622,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
-    const stepBack = BigInt(0)
+    const stepBack = BIGINT_0
     const destroyFetcher =
       !error.message.includes(`InvalidRangeProof`) && !error.message.includes(`InvalidStorageRange`)
     const banPeer = true

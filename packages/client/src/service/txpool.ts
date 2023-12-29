@@ -9,6 +9,8 @@ import {
 import {
   Account,
   Address,
+  BIGINT_0,
+  BIGINT_2,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -84,7 +86,6 @@ type GasPrice = {
 export class TxPool {
   private config: Config
   private service: FullEthereumService
-  private vm: VM
 
   private opened: boolean
 
@@ -168,7 +169,6 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
     this.service = options.service
-    this.vm = this.service.execution.vm
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.txsInPool = 0
@@ -209,7 +209,7 @@ export class TxPool {
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
     }
     this.running = true
-    this.config.logger.info('TxPool started.')
+    this.config.superMsg('TxPool started.')
     return true
   }
 
@@ -223,7 +223,7 @@ export class TxPool {
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
-      (this.config.syncTargetHeight ?? BigInt(0)) -
+      (this.config.syncTargetHeight ?? BIGINT_0) -
       BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
     if (this.service.chain.headers.height >= target) {
       this.start()
@@ -300,8 +300,8 @@ export class TxPool {
       }
     }
     const block = await this.service.chain.getCanonicalHeadHeader()
-    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BigInt(0)) {
-      if (currentGasPrice.maxFee < block.baseFeePerGas / BigInt(2) && !isLocalTransaction) {
+    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
+      if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
         throw new Error(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
         )
@@ -314,7 +314,7 @@ export class TxPool {
     }
 
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
-    const vmCopy = await this.vm.shallowCopy()
+    const vmCopy = await this.service.execution.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     let account = await vmCopy.stateManager.getAccount(senderAddress)
@@ -569,7 +569,7 @@ export class TxPool {
    * @param peerPool Reference to the peer pool
    */
   async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
-    if (!this.running || txHashes.length === 0) return
+    if (!this.running || txHashes === undefined || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
 
     const reqHashes = []
@@ -672,7 +672,7 @@ export class TxPool {
    */
   private normalizedGasPrice(tx: TypedTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
-    if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
+    if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
@@ -756,7 +756,7 @@ export class TxPool {
         skippedStats.byNonce += txsSortedByNonce.length
         continue
       }
-      if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
+      if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
         // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)
@@ -770,7 +770,7 @@ export class TxPool {
     // Initialize a price based heap with the head transactions
     const byPrice = new Heap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
+        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BIGINT_0,
     }) as QHeap<TypedTransaction>
     for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])

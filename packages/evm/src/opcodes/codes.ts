@@ -313,6 +313,12 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0x5e: { name: 'MCOPY', isAsync: false, dynamicGas: true },
     },
   },
+  {
+    eip: 7516,
+    opcodes: {
+      0x4a: { name: 'BLOBBASEFEE', isAsync: false, dynamicGas: false },
+    },
+  },
 ]
 
 /**

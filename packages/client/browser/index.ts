@@ -57,7 +57,6 @@ export async function createClient(args: any) {
   const config = new Config({
     common,
     key,
-    transports: ['rlpx'],
     syncmode: SyncMode.None,
     bootnodes,
     multiaddrs: [],

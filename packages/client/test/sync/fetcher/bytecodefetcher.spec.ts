@@ -2,8 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -21,13 +20,13 @@ describe('[ByteCodeFetcher]', async () => {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
+  PeerPool.prototype.idle = vi.fn()
+  PeerPool.prototype.ban = vi.fn()
 
   const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher')
 
   it('should start/stop', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,
@@ -56,7 +55,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should process', () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,
@@ -84,7 +83,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should adopt correctly', () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const pool = new PeerPool() as any
     const fetcher = new ByteCodeFetcher({
       config,
@@ -111,7 +110,7 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const chain = await Chain.create({ config })
     const pool = new PeerPool() as any
     const p = new SnapProtocol({ config, chain })
@@ -134,10 +133,14 @@ describe('[ByteCodeFetcher]', async () => {
     const resData = RLP.decode(hexToBytes(_byteCodesRLP)) as unknown
     const res = p.decode(p.messages.filter((message) => message.name === 'ByteCodes')[0], resData)
     const { reqId, codes } = res
-    const mockedGetByteCodes = td.func<any>()
-    td.when(mockedGetByteCodes(td.matchers.anything())).thenReturn({
-      reqId,
-      codes,
+    const mockedGetByteCodes = vi.fn((input) => {
+      const expected = {
+        hashes: task.hashes,
+        bytes: BigInt(50000),
+      }
+      assert.deepEqual(input, expected)
+
+      return { reqId, codes }
     })
     const peer = {
       snap: { getByteCodes: mockedGetByteCodes },
@@ -146,12 +149,6 @@ describe('[ByteCodeFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getByteCodes({
-        hashes: task.hashes,
-        bytes: BigInt(50000),
-      })
-    )
     assert.ok(results?.completed === true, 'response processed and matched properly')
     assert.equal((results![0] as any).size, 5, 'matched code in the response')
 
@@ -164,19 +161,17 @@ describe('[ByteCodeFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [] })
+    const config = new Config({})
     const pool = new PeerPool() as any
+    pool.idle = vi.fn(() => {
+      return 'peer0'
+    })
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
       trie: new Trie({ useKeyHashing }),
       hashes: [utf8ToBytes('')],
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

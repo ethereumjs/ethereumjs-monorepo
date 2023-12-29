@@ -18,7 +18,7 @@ describe('[HeaderFetcher]', async () => {
   const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
 
   it('should process', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const flow = { handleReply: vi.fn() }
     const fetcher = new HeaderFetcher({ config, pool, flow })
@@ -38,7 +38,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('should adopt correctly', () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = { handleReply: vi.fn() }
     const fetcher = new HeaderFetcher({
@@ -63,7 +63,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('should find a fetchable peer', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
     const fetcher = new HeaderFetcher({ config, pool })
     ;(fetcher as any).pool.idle.mockReturnValueOnce('peer0')
@@ -71,7 +71,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('should request correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const flow = { handleReply: vi.fn(), maxRequestCount: vi.fn() }
     const fetcher = new HeaderFetcher({
@@ -96,7 +96,7 @@ describe('[HeaderFetcher]', async () => {
   })
 
   it('store()', async () => {
-    const config = new Config({ maxPerRequest: 5, transports: [] })
+    const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const fetcher = new HeaderFetcher({

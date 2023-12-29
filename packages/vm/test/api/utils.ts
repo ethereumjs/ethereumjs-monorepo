@@ -103,7 +103,7 @@ export function getTransaction(
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
       kzg.computeBlobKzgProof(blob, txParams['kzgCommitments'][ctx] as Uint8Array)
     )
-    txParams['versionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
+    txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
       computeVersionedHash(commitment, 0x1)
     )
   }
