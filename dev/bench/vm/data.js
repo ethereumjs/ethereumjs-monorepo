@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1703847189446,
+  "lastUpdate": 1703929149683,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3fdd95e7a27d8b10331bc8e039c18a6acc94c071",
-          "message": "Client/Blockchain: receipt reorg logic (#3146)",
-          "timestamp": "2023-11-13T10:24:11-05:00",
-          "tree_id": "18c37ab049a79a8f3d7464370a9f3467fdfccec4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3fdd95e7a27d8b10331bc8e039c18a6acc94c071"
-        },
-        "date": 1699889227882,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40177,
-            "range": "±2.05%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 37988,
-            "range": "±3.37%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38404,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37781,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36883,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.36%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b5390216d9bc2cea1910db36eee125d509a4aa27",
+          "message": "Client: Fetcher Small Bugfixes and Log Improvements (#3024)\n\n* Client -> Execution: less frequent cache stats\r\n\r\n* Client -> Fetcher: log improvements\r\n\r\n* Client -> Fetcher: fix unwanted job execution on skip case, added some no-result guards\r\n\r\n* Client -> Fetcher: more explicit push to Readable stream\r\n\r\n* Client -> Fetcher: add initialization debug msg\r\n\r\n* Client -> Fetcher: tie job skipping to finished jobs instead of processed to avoid to large bulk import chunks\r\n\r\n* Client: a bit less frequent memory stats\r\n\r\n* Client -> Fetcher: fix occasional re-enqueue bug when length of an object is not defined, minor log improvements\r\n\r\n* Lighsync hot fix for fetcher reenqueue logic switches\r\n\r\n* add explicit boolean checks\r\n\r\n---------\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2023-12-30T10:36:25+01:00",
+          "tree_id": "92e622ffb32bfdd45f18c899b9937effd3ef99e7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b5390216d9bc2cea1910db36eee125d509a4aa27"
+        },
+        "date": 1703929148854,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41753,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39405,
+            "range": "±2.75%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39767,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38826,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34928,
+            "range": "±6.36%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
