@@ -37,7 +37,7 @@ type AccessEventFlags = {
   chunkFill: boolean
 }
 
-// Since stem is predersen hashed, it is useful to maintain the reverse relationship
+// Since stem is pedersen hashed, it is useful to maintain the reverse relationship
 type StemMeta = { address: Address; treeIndex: number }
 type RawAccessedState = {
   address: Address
@@ -67,7 +67,6 @@ export type AccessedStateWithAddress = AccessedState & {
 
 export class AccessWitness {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
-
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
 
   constructor(

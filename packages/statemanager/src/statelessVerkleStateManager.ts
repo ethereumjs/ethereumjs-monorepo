@@ -365,8 +365,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     if (this.DEBUG) {
       debug(`putContractCode address=${address.toString()} value=${short(value)}`)
     }
-    this._codeCache?.put(address, value)
 
+    this._codeCache?.put(address, value)
     const codeHash = keccak256(value)
     if (KECCAK256_NULL === codeHash) {
       // If the code hash is the null hash, no code has to be stored
@@ -631,8 +631,70 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString {
-    // dummy hack, ignore chunkKey and fetch actual value based on accessedState.type
-    return this._postState[accessedState.chunkKey]
+    const { address, type } = accessedState
+    switch (type) {
+      case AccessedStateType.Version: {
+        // Version is always 0
+        // TODO: Update this when versioning is added to accounts
+        return '0x0000000000000000000000000000000000000000000000000000000000000000'
+      }
+      case AccessedStateType.Balance: {
+        const encodedAccount = this._accountCache?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          throw Error(`Account not found for address=${address.toString()}`)
+        }
+        const balanceBigint = Account.fromRlpSerializedAccount(encodedAccount).balance
+        return bytesToHex(setLengthRight(bigIntToBytes(balanceBigint, true), 32))
+      }
+
+      case AccessedStateType.Nonce: {
+        const encodedAccount = this._accountCache?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          throw Error(`Account not found for address=${address.toString()}`)
+        }
+        const nonceBigint = Account.fromRlpSerializedAccount(encodedAccount).nonce
+        return bytesToHex(setLengthRight(bigIntToBytes(nonceBigint, true), 32))
+      }
+
+      case AccessedStateType.CodeHash: {
+        const encodedAccount = this._accountCache?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          throw Error(`Account not found for address=${address.toString()}`)
+        }
+        return bytesToHex(Account.fromRlpSerializedAccount(encodedAccount).codeHash)
+      }
+
+      case AccessedStateType.CodeSize: {
+        const codeSize = this._codeCache?.get(address)?.code?.length
+        if (codeSize === undefined) {
+          throw Error(`Code cache not found for address=${address.toString()}`)
+        }
+
+        return bytesToHex(setLengthRight(bigIntToBytes(BigInt(codeSize), true), 32))
+      }
+
+      case AccessedStateType.Code: {
+        const { codeOffset } = accessedState
+        const code = this._codeCache?.get(address)?.code
+        if (code === undefined) {
+          throw Error(`Code cache not found for address=${address.toString()}`)
+        }
+
+        const chunkSize = 32
+        const codeChunkStart = codeOffset * chunkSize
+
+        return bytesToHex(code.slice(codeChunkStart, codeChunkStart + chunkSize))
+      }
+
+      case AccessedStateType.Storage: {
+        const { slot } = accessedState
+        const storage = this._storageCache?.get(address, bigIntToBytes(slot))
+        if (storage === undefined) {
+          throw Error(`Code cache not found for address=${address.toString()}`)
+        }
+        return bytesToHex(storage)
+      }
+    }
   }
 
   /**
