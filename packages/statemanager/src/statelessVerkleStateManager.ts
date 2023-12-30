@@ -19,6 +19,7 @@ import { concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
 
 import {
   AccessWitness,
+  AccessedStateType,
   BALANCE_LEAF_KEY,
   CODE_KECCAK_LEAF_KEY,
   CODE_SIZE_LEAF_KEY,
@@ -539,6 +540,17 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   // Verifies that the witness post-state matches the computed post-state
   verifyPostState(): boolean {
+    for (const accessedState of this.accessWitness!.accesses()) {
+      const { address, type } = accessedState
+      let extraMeta = ''
+      if (accessedState.type === AccessedStateType.Code) {
+        extraMeta = `codeOffset=${accessedState.codeOffset}`
+      } else if (accessedState.type === AccessedStateType.Storage) {
+        extraMeta = `slot=${accessedState.slot}`
+      }
+      debug(`block accesses: address=${address} type=${type} ${extraMeta}`)
+    }
+
     for (const [key, canonicalValue] of Object.entries(this._postState)) {
       const computedValue = this._state[key]
       if (canonicalValue !== computedValue) {
