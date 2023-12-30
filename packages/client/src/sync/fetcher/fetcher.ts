@@ -272,7 +272,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       job.peer!.idle = true
       job.result = this.process(job, result)
       jobStr = this.jobStr(job, true)
-      if (job.result) {
+      if (job.result !== undefined) {
         this.debug(`Successful job completion job ${jobStr}, writing to out and dequeue`)
         this.out.insert(job)
         this.dequeue()
@@ -337,7 +337,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   next() {
     this.nextTasks()
     const job = this.in.peek()
-    if (!job) {
+    if (job === undefined) {
       if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
