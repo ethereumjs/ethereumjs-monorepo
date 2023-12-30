@@ -1,5 +1,7 @@
+import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
+  KECCAK256_NULL,
   KECCAK256_NULL_S,
   bigIntToBytes,
   bytesToBigInt,
@@ -27,7 +29,7 @@ import {
   getTreeIndexesForStorageSlot,
   getTreeIndicesForCodeChunk,
 } from './accessWitness.js'
-import { AccountCache, CacheType, StorageCache } from './cache/index.js'
+import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
 import type { DefaultStateManager } from './stateManager.js'
@@ -101,12 +103,13 @@ type CacheSettings = {
  * Options dictionary.
  */
 export interface StatelessVerkleStateManagerOpts {
-  accountCacheOpts?: CacheOptions
   /**
    * The common to use
    */
   common?: Common
+  accountCacheOpts?: CacheOptions
   storageCacheOpts?: CacheOptions
+  codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
 }
 
@@ -130,12 +133,13 @@ const PUSH32 = PUSH_OFFSET + 32
 export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   _accountCache?: AccountCache
   _storageCache?: StorageCache
-  _codeCache: { [key: string]: Uint8Array }
+  _codeCache?: CodeCache
 
   originalStorageCache: OriginalStorageCache
 
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
+  protected readonly _codeCacheSettings: CacheSettings
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -166,6 +170,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * Instantiate the StateManager interface.
    */
   constructor(opts: StatelessVerkleStateManagerOpts = {}) {
+    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+
     this._accountCacheSettings = {
       deactivate: opts.accountCacheOpts?.deactivate ?? false,
       type: opts.accountCacheOpts?.type ?? CacheType.ORDERED_MAP,
@@ -192,9 +198,19 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       })
     }
 
-    this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this._codeCacheSettings = {
+      deactivate:
+        (opts.codeCacheOpts?.deactivate === true || opts.codeCacheOpts?.size === 0) ?? false,
+      type: opts.codeCacheOpts?.type ?? CacheType.ORDERED_MAP,
+      size: opts.codeCacheOpts?.size ?? 20000,
+    }
 
-    this._codeCache = {}
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache = new CodeCache({
+        size: this._codeCacheSettings.size,
+        type: this._codeCacheSettings.type,
+      })
+    }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -344,24 +360,21 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param value - The value of the `code`
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
-    const stem = getStem(address, 0)
-    const codeHashKey = this.getTreeKeyForCodeHash(stem)
-
-    const codeHash = bytesToHex(keccak256(value))
-
-    this._state[bytesToHex(codeHashKey)] = codeHash
-
     if (this.DEBUG) {
       debug(`putContractCode address=${address.toString()} value=${short(value)}`)
     }
+    this._codeCache?.put(address, value)
 
-    if (KECCAK256_NULL_S === codeHash) {
+    const codeHash = keccak256(value)
+    if (KECCAK256_NULL === codeHash) {
       // If the code hash is the null hash, no code has to be stored
       return
     }
 
-    // TODO: Slice the code into chunks and add them to the state
-    throw new Error('Not implemented')
+    if ((await this.getAccount(address)) === undefined) {
+      await this.putAccount(address, new Account())
+    }
+    await this.modifyAccountFields(address, { codeHash })
   }
 
   /**
@@ -374,9 +387,24 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     if (this.DEBUG) {
       debug(`getContractCode address=${address.toString()}`)
     }
+
+    if (!this._codeCacheSettings.deactivate) {
+      const elem = this._codeCache?.get(address)
+      if (elem !== undefined) {
+        return elem.code ?? new Uint8Array(0)
+      }
+    }
+
+    const account = await this.getAccount(address)
+    if (!account) {
+      return new Uint8Array(0)
+    }
+    if (!account.isContract()) {
+      return new Uint8Array(0)
+    }
+
     // Get the contract code size
     const codeSizeKey = this.getTreeKeyForCodeSize(getStem(address, 0))
-
     const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
 
     // Calculate number of chunks
@@ -406,10 +434,21 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * If this does not exist an empty `Uint8Array` is returned.
    */
   async getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    const storage = toBytes(this._state[bytesToHex(storageKey)])
+    if (!this._storageCacheSettings.deactivate) {
+      const value = this._storageCache!.get(address, key)
+      if (value !== undefined) {
+        return value
+      }
+    }
 
-    return storage
+    const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
+    const storageValue = toBytes(this._state[bytesToHex(storageKey)])
+
+    if (!this._storageCacheSettings.deactivate) {
+      this._storageCache?.put(address, key, storageValue ?? hexToBytes('0x80'))
+    }
+
+    return storageValue
   }
 
   /**
@@ -420,8 +459,14 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param value - Value to set at `key` for account corresponding to `address`. Cannot be more than 32 bytes. Leading zeros are stripped. If it is a empty or filled with zeros, deletes the value.
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
-    const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
-    this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
+    if (!this._storageCacheSettings.deactivate) {
+      const encodedValue = RLP.encode(value)
+      this._storageCache!.put(address, key, encodedValue)
+    } else {
+      // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
+      const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
+      this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
+    }
   }
 
   /**
@@ -431,13 +476,23 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async clearContractStorage(address: Address): Promise<void> {
     const stem = getStem(address, 0)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
+    this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
     this._state[bytesToHex(codeHashKey)] = KECCAK256_NULL_S
 
     // TODO: Clear all storage slots (how?)
   }
 
-  async getAccount(address: Address): Promise<Account> {
+  async getAccount(address: Address): Promise<Account | undefined> {
+    if (!this._accountCacheSettings.deactivate) {
+      const elem = this._accountCache!.get(address)
+      if (elem !== undefined) {
+        return elem.accountRLP !== undefined
+          ? Account.fromRlpSerializedAccount(elem.accountRLP)
+          : undefined
+      }
+    }
+
     const stem = getStem(address, 0)
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
@@ -462,30 +517,41 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         )}`
       )
     }
+
+    if (!this._accountCacheSettings.deactivate) {
+      this._accountCache?.put(address, account)
+    }
+
     return account
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
-    const stem = getStem(address, 0)
-    const balanceKey = this.getTreeKeyForBalance(stem)
-    const nonceKey = this.getTreeKeyForNonce(stem)
-    const codeHashKey = this.getTreeKeyForCodeHash(stem)
-
-    const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
-    const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
-
-    this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
-    this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
-    this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
-
     if (this.DEBUG) {
       debug(
-        `putAccount address=${address.toString()} stem=${short(stem)} balance=${
-          account.balance
-        } nonce=${account.nonce} codeHash=${short(account.codeHash)} storageHash=${short(
-          account.storageRoot
-        )}`
+        `putAccount address=${address.toString()} balance=${account.balance} nonce=${
+          account.nonce
+        } codeHash=${short(account.codeHash)} storageHash=${short(account.storageRoot)}`
       )
+    }
+
+    if (this._accountCacheSettings.deactivate) {
+      const stem = getStem(address, 0)
+      const balanceKey = this.getTreeKeyForBalance(stem)
+      const nonceKey = this.getTreeKeyForNonce(stem)
+      const codeHashKey = this.getTreeKeyForCodeHash(stem)
+
+      const balanceBuf = setLengthRight(bigIntToBytes(account.balance, true), 32)
+      const nonceBuf = setLengthRight(bigIntToBytes(account.nonce, true), 32)
+
+      this._state[bytesToHex(balanceKey)] = bytesToHex(balanceBuf)
+      this._state[bytesToHex(nonceKey)] = bytesToHex(nonceBuf)
+      this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
+    } else {
+      if (account !== undefined) {
+        this._accountCache!.put(address, account)
+      } else {
+        this._accountCache!.del(address)
+      }
     }
   }
 
@@ -502,7 +568,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
-    const account = await this.getAccount(address)
+    let account = await this.getAccount(address)
+    if (!account) {
+      account = new Account()
+    }
 
     account.nonce = accountFields.nonce ?? account.nonce
     account.balance = accountFields.balance ?? account.balance
@@ -584,7 +653,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // setup trie checkpointing
     this._accountCache?.revert()
     this._storageCache?.revert()
-    this._codeCache = {}
+    this._codeCache?.revert()
   }
 
   /**
@@ -629,6 +698,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   clearCaches() {
     this._accountCache?.clear()
+    this._codeCache?.clear()
     this._storageCache?.clear()
   }
 
