@@ -39,12 +39,28 @@ type AccessEventFlags = {
 
 // Since stem is predersen hashed, it is useful to maintain the reverse relationship
 type StemMeta = { address: Address; treeIndex: number }
-type AccessedState = {
+type RawAccessedState = {
   address: Address
   treeIndex: number
   chunkIndex: number
   chunkKey: PrefixedHexString
 }
+
+export enum AccessedStateType {
+  Version = 'version',
+  Balance = 'balance',
+  Nonce = 'nonce',
+  CodeHash = 'codeHash',
+  CodeSize = 'codeSize',
+  Code = 'code',
+  Storage = 'storage',
+}
+
+type AccessedState =
+  | { type: Exclude<AccessedStateType, AccessedStateType.Code | AccessedStateType.Storage> }
+  | { type: AccessedStateType.Code; codeOffset: number }
+  | { type: AccessedStateType.Storage; slot: bigint }
+type AccessedStateWithAddress = AccessedState & { address: Address }
 
 export class AccessWitness {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
@@ -288,7 +304,7 @@ export class AccessWitness {
     }
   }
 
-  *accesses(): Generator<AccessedState> {
+  *rawAccesses(): Generator<RawAccessedState> {
     for (const chunkKey of this.chunks.keys()) {
       // drop the last byte
       const stemKey = chunkKey.slice(0, chunkKey.length - 2)
@@ -300,6 +316,14 @@ export class AccessWitness {
       const chunkIndex = Number(`0x${chunkKey.slice(chunkKey.length - 2)}`)
       const accessedState = { address, treeIndex, chunkIndex, chunkKey }
       yield accessedState
+    }
+  }
+
+  *accesses(): Generator<AccessedStateWithAddress> {
+    for (const rawAccess of this.rawAccesses()) {
+      const { address, treeIndex, chunkIndex } = rawAccess
+      const accessedState = decodeAccessedState(treeIndex, chunkIndex)
+      yield { ...accessedState, address }
     }
   }
 }
@@ -325,4 +349,39 @@ export function getTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((CODE_OFFSET + chunkId) / VERKLE_NODE_WIDTH)
   const subIndex = (CODE_OFFSET + chunkId) % VERKLE_NODE_WIDTH
   return { treeIndex, subIndex }
+}
+
+export function decodeAccessedState(treeIndex: number, chunkIndex: number): AccessedState {
+  const position = treeIndex * VERKLE_NODE_WIDTH + chunkIndex
+  switch (position) {
+    case 0:
+      return { type: AccessedStateType.Version }
+    case 1:
+      return { type: AccessedStateType.Balance }
+    case 2:
+      return { type: AccessedStateType.Nonce }
+    case 3:
+      return { type: AccessedStateType.CodeHash }
+    case 4:
+      return { type: AccessedStateType.CodeSize }
+    default:
+      if (position < HEADER_STORAGE_OFFSET) {
+        throw Error(`No attribute yet stored >=5 and <${HEADER_STORAGE_OFFSET}`)
+      }
+
+      if (position >= HEADER_STORAGE_OFFSET && position < CODE_OFFSET) {
+        const slot = BigInt(position - HEADER_STORAGE_OFFSET)
+        return { type: AccessedStateType.Storage, slot }
+      } else if (position >= CODE_OFFSET && position < MAIN_STORAGE_OFFSET) {
+        const codeChunkIdx = position - CODE_OFFSET
+        return { type: AccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
+      } else if (position >= MAIN_STORAGE_OFFSET) {
+        const slot = BigInt(position - MAIN_STORAGE_OFFSET)
+        return { type: AccessedStateType.Storage, slot }
+      } else {
+        throw Error(
+          `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`
+        )
+      }
+  }
 }

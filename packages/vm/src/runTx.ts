@@ -595,6 +595,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
+    if (this.common.isActivatedEIP(6800)) {
+      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+    }
     minerAccount = new Account()
   }
   // add the amount spent on gas to the miner's account
@@ -603,6 +606,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       ? results.totalGasSpent * inclusionFeePerGas!
       : results.amountSpent
   minerAccount.balance += results.minerValue
+
+  if (this.common.isActivatedEIP(6800)) {
+    // use this utility to build access but the computed gas is not charged and hence free
+    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(miner, {
+      sendsValue: true,
+    })
+  }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
