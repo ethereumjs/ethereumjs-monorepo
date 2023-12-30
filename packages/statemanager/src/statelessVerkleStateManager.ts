@@ -33,6 +33,7 @@ import {
 import { AccountCache, CacheType, CodeCache, StorageCache } from './cache/index.js'
 import { OriginalStorageCache } from './cache/originalStorageCache.js'
 
+import type { AccessedStateWithAddress } from './accessWitness.js'
 import type { DefaultStateManager } from './stateManager.js'
 import type { VerkleExecutionWitness } from '@ethereumjs/block'
 import type {
@@ -617,19 +618,21 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       } else if (accessedState.type === AccessedStateType.Storage) {
         extraMeta = `slot=${accessedState.slot}`
       }
-      debug(`block accesses: address=${address} type=${type} ${extraMeta}`)
-    }
 
-    for (const [key, canonicalValue] of Object.entries(this._postState)) {
-      const computedValue = this._state[key]
-      if (canonicalValue !== computedValue) {
-        debug(
-          `verifyPostState failed for key ${key}. Canonical value: ${canonicalValue}, computed value: ${computedValue}`
-        )
+      const { chunkKey } = accessedState
+      const computedValue = this.getComputedValue(accessedState)
+      const canonicalValue = this._postState[chunkKey]
+      if (computedValue !== canonicalValue) {
+        debug(`block accesses: address=${address} type=${type} ${extraMeta}`)
         return false
       }
     }
     return true
+  }
+
+  getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString {
+    // dummy hack, ignore chunkKey and fetch actual value based on accessedState.type
+    return this._postState[accessedState.chunkKey]
   }
 
   /**

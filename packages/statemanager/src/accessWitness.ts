@@ -60,7 +60,10 @@ type AccessedState =
   | { type: Exclude<AccessedStateType, AccessedStateType.Code | AccessedStateType.Storage> }
   | { type: AccessedStateType.Code; codeOffset: number }
   | { type: AccessedStateType.Storage; slot: bigint }
-type AccessedStateWithAddress = AccessedState & { address: Address }
+export type AccessedStateWithAddress = AccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
 
 export class AccessWitness {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
@@ -321,9 +324,9 @@ export class AccessWitness {
 
   *accesses(): Generator<AccessedStateWithAddress> {
     for (const rawAccess of this.rawAccesses()) {
-      const { address, treeIndex, chunkIndex } = rawAccess
+      const { address, treeIndex, chunkIndex, chunkKey } = rawAccess
       const accessedState = decodeAccessedState(treeIndex, chunkIndex)
-      yield { ...accessedState, address }
+      yield { ...accessedState, address, chunkKey }
     }
   }
 }
