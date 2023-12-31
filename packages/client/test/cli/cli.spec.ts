@@ -25,11 +25,6 @@ export function clientRunHelper(
       if (shouldError) onData(message, child, resolve)
       else assert.fail(`stderr: ${message}`)
     })
-    // child.on('close', (code) => {
-    //   if (typeof code === 'number' && code > 0) {
-    //     assert.fail(`child process exited with code ${code}`)
-    //   }
-    // })
   })
 }
 
@@ -43,7 +38,7 @@ describe('[CLI]', () => {
           message.includes('network=sepolia chainId=11155111'),
           'client is using custom inputs for network and network ID'
         )
-        child.kill(15)
+        child.kill(9)
         resolve(undefined)
       }
     }
