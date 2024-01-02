@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
+  BIGINT_0,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   bigIntToBytes,
@@ -667,7 +668,18 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       case AccessedStateType.CodeSize: {
         const codeSize = this._codeCache?.get(address)?.code?.length
         if (codeSize === undefined) {
-          throw Error(`Code cache not found for address=${address.toString()}`)
+          // it could be an EOA lets check for that
+          const encodedAccount = this._accountCache?.get(address)?.accountRLP
+          if (encodedAccount === undefined) {
+            throw Error(`Account not found for address=${address.toString()}`)
+          }
+
+          const account = Account.fromRlpSerializedAccount(encodedAccount)
+          if (account.isContract()) {
+            throw Error(`Code cache not found for address=${address.toString()}`)
+          } else {
+            return bytesToHex(setLengthRight(bigIntToBytes(BIGINT_0, true), 32))
+          }
         }
 
         return bytesToHex(setLengthRight(bigIntToBytes(BigInt(codeSize), true), 32))
@@ -681,9 +693,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         }
 
         const chunkSize = 32
-        const codeChunkStart = codeOffset * chunkSize
-
-        return bytesToHex(code.slice(codeChunkStart, codeChunkStart + chunkSize))
+        return bytesToHex(code.slice(codeOffset, codeOffset + chunkSize))
       }
 
       case AccessedStateType.Storage: {
