@@ -57,7 +57,7 @@ export class Service {
    *
    * (for info there will be somewhat reduced output)
    */
-  private STATS_INTERVAL = 1000 * 20 // 20 seconds
+  private STATS_INTERVAL = 1000 * 30 // 30 seconds
 
   /**
    * Shutdown the client when memory threshold is reached (in percent)
