@@ -9,8 +9,6 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-// import { ethers } from 'ethers'
-// import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { AccountCache, CacheType, OriginalStorageCache, StorageCache } from './cache/index.js'
 
