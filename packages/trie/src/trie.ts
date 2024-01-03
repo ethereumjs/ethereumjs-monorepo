@@ -172,6 +172,11 @@ export class Trie {
     return new Trie(opts)
   }
 
+  /**
+   * Static version of fromProof function with the same behavior.
+   * @param proof
+   * @deprecated Use `updateTrieFromProof`
+   */
   static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
     const trie = await Trie.create(opts)
     if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
@@ -191,7 +196,7 @@ export class Trie {
   }
 
   /**
-   * Verifies a proof.
+   * Static version of verifyProof function with the same behavior.
    * @param rootHash
    * @param key
    * @param proof
@@ -925,7 +930,7 @@ export class Trie {
   }
 
   /**
-   * Saves the nodes from a proof into the trie.
+   * Saves the nodes from a proof into the trie. A static version of this function exists with the same name.
    * @param proof
    * @deprecated Use `updateTrieFromProof`
    */
@@ -997,7 +1002,7 @@ export class Trie {
   }
 
   /**
-   * Verifies a proof.
+   * Verifies a proof. A static version of this function exists with the same name.
    * @param rootHash
    * @param key
    * @param proof
