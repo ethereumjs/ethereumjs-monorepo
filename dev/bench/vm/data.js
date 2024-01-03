@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1703929149683,
+  "lastUpdate": 1704300482719,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "c446d93cc54644ed7a6acca5b5b412fa5ab40429",
-          "message": "verke: update verkle crypto helpers (#3155)",
-          "timestamp": "2023-11-14T15:25:33+03:00",
-          "tree_id": "6220651f8abe8c48c5890d6526df25f2bbca00f5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c446d93cc54644ed7a6acca5b5b412fa5ab40429"
-        },
-        "date": 1699964907971,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40413,
-            "range": "±3.07%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39629,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39560,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35902,
-            "range": "±4.22%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37261,
-            "range": "±2.04%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.36%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "willcory10@gmail.com",
+            "name": "Will Cory",
+            "username": "roninjin10"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fbe755c816baf1108f72fbec521a100e54444ddd",
+          "message": "fix: Fix fetchJsonRpc example (#3213)\n\nExample was previously passing in the full verbose json-rpc request which wasn't necessary",
+          "timestamp": "2024-01-03T11:45:13-05:00",
+          "tree_id": "e171715b82fa7f28bd9d883298685c94eaf93429",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fbe755c816baf1108f72fbec521a100e54444ddd"
+        },
+        "date": 1704300481826,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41396,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38441,
+            "range": "±3.99%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39375,
+            "range": "±1.98%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38550,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37274,
+            "range": "±2.35%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
