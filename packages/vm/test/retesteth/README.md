@@ -10,7 +10,7 @@ Note: All paths are relative paths to the `VM` package root.
 
 1. If you change the port number in `transition-cluster.ts` to anything other than 3000 (or run `transition-cluster` on a separate machine or different IP address from retesteth), update `test/vm/retesteth/clients/ethereumjs/start.sh` to reflect the right IP and port.
 
-2. From VM package root directory, run `tsx test/retesteth/transition-cluster.cts`
+2. From VM package root directory, run `tsx test/retesteth/transition-cluster.cts`. (Note: if not ran from root, spawning child processes will error out!)
 
 Configure and run `retesteth`:
 
