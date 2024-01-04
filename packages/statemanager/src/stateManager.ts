@@ -176,6 +176,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _proofTrie: Trie
 
+  private keccakFunction: Function
+
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -197,14 +199,16 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this._proofTrie = new Trie({ useKeyHashing: true })
-
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+
+    this._proofTrie = new Trie({ useKeyHashing: true, common: this.common })
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
+
+    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
@@ -355,7 +359,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     this._codeCache?.put(address, value)
-    const codeHash = keccak256(value)
+    const codeHash = this.keccakFunction(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
     }
@@ -410,15 +414,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _getStorageTrie(addressOrHash: Address | Uint8Array, account?: Account): Trie {
     // use hashed key for lookup from storage cache
     const addressHex = bytesToUnprefixedHex(
-      addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash
+      addressOrHash instanceof Address ? this.keccakFunction(addressOrHash.bytes) : addressOrHash
     )
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
       const keyPrefix = this._prefixStorageTrieKeys
-        ? (addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash).slice(
-            0,
-            7
-          )
+        ? (addressOrHash instanceof Address
+            ? this.keccakFunction(addressOrHash.bytes)
+            : addressOrHash
+          ).slice(0, 7)
         : undefined
       storageTrie = this._trie.shallowCopy(false, { keyPrefix })
       if (account !== undefined) {
@@ -656,7 +660,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         }
 
         // update code in database
-        const codeHash = keccak256(code)
+        const codeHash = this.keccakFunction(code)
         const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
         await this._getCodeDB().put(key, code)
 
@@ -841,7 +845,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(hexToBytes(proof.accountProof[0]))
+    const rootHash = this.keccakFunction(hexToBytes(proof.accountProof[0]))
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       hexToBytes(rlpString)
