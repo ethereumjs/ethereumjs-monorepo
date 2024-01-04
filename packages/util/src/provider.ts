@@ -17,8 +17,6 @@ type rpcParams = {
  * const params = {
  *   method: 'eth_getBlockByNumber',
  *   params: ['latest', false],
- *   id: 1,
- *   jsonrpc: '2.0'
  * }
  *  const block = await fetchFromProvider(provider, params)
  */
@@ -53,6 +51,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     )
   }
   const json = await res.json()
+  // TODO we should check json.error here
   return json.result
 }
 
