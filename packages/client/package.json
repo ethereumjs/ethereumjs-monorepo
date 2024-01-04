@@ -78,7 +78,7 @@
     "cors": "^2.8.5",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.2",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.2.0",
     "it-pipe": "^1.1.0",
     "jayson": "^4.0.0",
     "js-sdsl": "^4.4.0",
@@ -94,7 +94,7 @@
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/connect": "^3.4.35",
-    "@types/fs-extra": "^9.0.13",
+    "@types/fs-extra": "^11.0.4",
     "@types/jwt-simple": "^0.5.33",
     "@types/ws": "^8.5.10",
     "@types/yargs": "^17.0.24",
