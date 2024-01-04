@@ -1,4 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   BIGINT_0,
@@ -236,10 +237,30 @@ export class Interpreter {
     let doJumpAnalysis = true
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
+      const programCounter = this._runState.programCounter
       let opCode: number
       let opCodeObj: OpcodeMapEntry
       if (doJumpAnalysis) {
-        opCode = this._runState.code[this._runState.programCounter]
+        opCode = this._runState.code[programCounter]
+
+        // if its an invalid opcode with verkle activated, then check if its because of a missing code
+        // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+        if (
+          opCode === 0xfe &&
+          this.common.isActivatedEIP(6800) &&
+          this._runState.stateManager instanceof StatelessVerkleStateManager
+        ) {
+          const contract = this._runState.interpreter.getAddress()
+          if (
+            !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
+              contract,
+              programCounter
+            )
+          ) {
+            throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
+          }
+        }
+
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
           const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
@@ -250,7 +271,7 @@ export class Interpreter {
           doJumpAnalysis = false
         }
       } else {
-        opCodeObj = cachedOpcodes![this._runState.programCounter]
+        opCodeObj = cachedOpcodes![programCounter]
         opCode = opCodeObj.opcodeInfo.code
       }
       this._runState.opCode = opCode!

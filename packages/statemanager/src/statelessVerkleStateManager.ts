@@ -18,7 +18,7 @@ import {
 import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { concatBytes, equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from 'ethereum-cryptography/utils'
 
 import {
   AccessWitness,
@@ -345,6 +345,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     return getKey(getStem(address, treeIndex), toBytes(subIndex))
   }
 
+  checkChunkWitnessPresent(address: Address, codeOffset: number) {
+    const chunkId = codeOffset / 31
+    const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
+    return this._state[chunkKey] !== undefined
+  }
+
   /**
    * Copies the current instance of the `StateManager`
    * at the last fully committed point, i.e. as if all current
@@ -409,22 +415,30 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // Get the contract code size
     const codeSizeKey = this.getTreeKeyForCodeSize(getStem(address, 0))
     const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
+    const codeSize = bytesToInt32(codeSizeLE, true)
+    // allocate the code and copy onto it from the available witness chunks
+    const accessedCode = new Uint8Array(codeSize)
 
-    // Calculate number of chunks
-    const chunks = Math.ceil(bytesToInt32(codeSizeLE, true) / 32)
+    const chunks = Math.floor(bytesToInt32(codeSizeLE, true) / 31)
+    for (let chunkId = 0; chunkId <= chunks; chunkId++) {
+      const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
+      const codeChunk = this._state[chunkKey]
+      const codeOffset = chunkId * 31
 
-    const retrievedChunks: Uint8Array[] = []
-
-    // Retrieve all code chunks
-    for (let chunkId = 0; chunkId < chunks; chunkId++) {
-      retrievedChunks.push(this.getTreeKeyForCodeChunk(address, chunkId))
+      // if code chunk was accessed as per the provided witnesses copy it over
+      if (codeChunk !== undefined) {
+        // actual code starts from index 1 in chunk, 0th index is if there are any push data bytes
+        const actualChunk = hexToBytes(codeChunk).slice(1)
+        accessedCode.set(actualChunk, codeOffset)
+      } else {
+        // else fill this unaccessed segment with invalid opcode since the evm execution shouldn't
+        // end up here
+        accessedCode.fill(0xfe, codeOffset, 31)
+      }
     }
 
-    // Aggregate code chunks
-    const code = concatBytes(...retrievedChunks)
-
-    // Return code chunks
-    return code
+    // Return accessedCode where only accessed code has been copied
+    return accessedCode
   }
 
   /**
