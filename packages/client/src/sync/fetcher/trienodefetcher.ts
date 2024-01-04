@@ -340,7 +340,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
             // add storage data for account if it has fetched nodes
             // TODO figure out what the key should be for mapping accounts to storage tries
-            const storageTrie = new Trie({ useKeyHashing: true })
+            const storageTrie = new Trie({ useKeyHashing: true, common: this.config.chainCommon })
             const storageTrieOps: BatchDBOp[] = []
             if (pathToStorageNode !== undefined && pathToStorageNode.size > 0) {
               for (const [path, data] of pathToStorageNode) {
