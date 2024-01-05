@@ -13,16 +13,26 @@ import { assert } from 'vitest'
 import { EVM } from '../../src/index.js'
 import { eipOpcodes, hardforkOpcodes, opcodes } from '../../src/opcodes/codes.js'
 
+import type { EVMRunCodeOpts } from '../../src/index.js'
+
 const allHardforks = Object.keys(Hardfork)
 
-export type Expected = string | 'fails' | number | bigint
+export type Expected = string | 'fails' | number | bigint | Uint8Array
 export type InputStackItems = (number | bigint | Uint8Array)[]
+// The Initial Memory items are a list of arrays which will then will all be left-padded until 32 zeros
+export type InitialMemoryItems = InputStackItems
 export type TestReturnType = 'topStack' | 'memory' | 'none'
+
+export type PreState = {}
+
 export type OpcodeTests = {
   [opcodeName: string]: {
-    stack: InputStackItems
+    stack?: InputStackItems
     expected: Expected
     name?: string
+    initMem?: InitialMemoryItems
+    evmOpts?: EVMRunCodeOpts
+    preState?: PreState
   }[]
 }
 
@@ -32,13 +42,18 @@ type OpcodeTestOpts = {
   opcodeName: string
   expected: Expected
   expectedReturnType: TestReturnType
-  input: InputStackItems
+  input?: InputStackItems
   gasLimit?: bigint
+  initMem?: InitialMemoryItems
+  evmOpts?: EVMRunCodeOpts
+  preState?: PreState
 }
 
-const defaultOpcodeTestOpts = {
+const defaultOpcodeTestOpts: Partial<OpcodeTestOpts> = {
   hardforks: [Hardfork.Shanghai],
   gasLimit: BigInt(30_000_000),
+  initMem: [],
+  input: [],
 }
 
 type TestOpts = {
@@ -90,6 +105,39 @@ export function getOpcodeByte(name: string) {
   throw new Error(`Opcode ${name} not found`)
 }
 
+function getPush(toPush: number | bigint | Uint8Array) {
+  if (typeof toPush === 'number') {
+    toPush = BigInt(toPush)
+  }
+  if (toPush === BIGINT_0) {
+    return '6000'
+  } else {
+    const bytes = toBytes(toPush)
+    if (bytes.length === 0) {
+      return '6000'
+    } else {
+      if (bytes.length > 32) {
+        throw new Error(
+          `Cannot push item, bytes length of ${bytes.length} larger than max of 32 bytes`
+        )
+      }
+      return (0x60 + bytes.length - 1).toString(16) + bytesToUnprefixedHex(bytes)
+    }
+  }
+}
+
+export function getInitMemoryOpcodes(initMem: (number | bigint | Uint8Array)[]) {
+  let i = BigInt(0)
+  let output = ''
+  for (const item of initMem) {
+    output += getPush(item)
+    output += getPush(i)
+    output += '52' // MSTORE opcode
+    i += BigInt(32)
+  }
+  return output
+}
+
 /**
  * Setups stack items in the EVM
  * @param stack Stack items to push. The first item of the stack is the topmost item of the resulting stack
@@ -105,22 +153,7 @@ export function initStack(stack: (number | bigint | Uint8Array)[]) {
   })
   let output = ''
   for (const entry of stack.reverse()) {
-    if (entry === BIGINT_0) {
-      output += '6000'
-    } else {
-      const bytes = toBytes(entry)
-      if (bytes.length === 0) {
-        output += '6000'
-      } else {
-        if (bytes.length > 32) {
-          throw new Error(
-            `Cannot push item, bytes length of ${bytes.length} larger than max of 32 bytes`
-          )
-        }
-        output += (0x60 + bytes.length - 1).toString(16)
-        output += bytesToUnprefixedHex(bytes)
-      }
-    }
+    output += getPush(entry)
   }
   return output
 }
@@ -145,10 +178,12 @@ export function createBytecode(input: string[]) {
 export function createOpcodeTest(
   input: InputStackItems,
   opcodeName: string,
-  returnType: TestReturnType = 'topStack'
+  returnType: TestReturnType = 'topStack',
+  initialMemory: InitialMemoryItems = []
 ) {
   const opcode = getOpcodeByte(opcodeName)
   const inputStack = initStack(<(bigint | Uint8Array)[]>input)
+  const initMem = getInitMemoryOpcodes(initialMemory)
   let returnCode = ''
   switch (returnType) {
     case 'topStack':
@@ -158,7 +193,7 @@ export function createOpcodeTest(
       returnCode = returnMemory
       break
   }
-  return createBytecode([inputStack, opcode, returnCode])
+  return createBytecode([initMem, inputStack, opcode, returnCode])
 }
 
 export async function runTest(opts: TestOpts) {
@@ -194,10 +229,9 @@ export async function runOpcodeTest(opts: OpcodeTestOpts) {
     ...defaultOpcodeTestOpts,
     ...opts,
   }
-  const { hardforks, gasLimit, expected, input, expectedReturnType, opcodeName } = <
-    Required<OpcodeTestOpts>
-  >opts
-  const code = createOpcodeTest(input, opcodeName, expectedReturnType)
+  const { hardforks, gasLimit, expected, input, expectedReturnType, opcodeName, initMem, evmOpts } =
+    <Required<OpcodeTestOpts>>opts
+  const code = createOpcodeTest(input, opcodeName, expectedReturnType, initMem)
   for (const hf of hardforks) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: hf })
     const evm = new EVM({
@@ -206,6 +240,7 @@ export async function runOpcodeTest(opts: OpcodeTestOpts) {
     const result = await evm.runCode({
       code: hexToBytes(code),
       gasLimit,
+      ...evmOpts,
     })
     if (expected === 'fails') {
       if (result.exceptionError !== undefined) {

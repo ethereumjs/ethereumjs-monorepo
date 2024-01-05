@@ -53,9 +53,9 @@ async function profile() {
     for (const opcodeName in testCases) {
       const tests = testCases[opcodeName]
       for (const test of tests) {
-        const testName = getOpcodeTestName(opcodeName, test.stack, test.name)
+        const testName = getOpcodeTestName(opcodeName, test.stack ?? [], test.name)
         const code = makeLoopCode(
-          createBytecode([createOpcodeTest(test.stack, opcodeName, 'none'), POP])
+          createBytecode([createOpcodeTest(test.stack ?? [], opcodeName, 'none'), POP])
         )
         common.events.removeAllListeners()
         const evm = new EVM({ common, profiler: { enabled: true } })

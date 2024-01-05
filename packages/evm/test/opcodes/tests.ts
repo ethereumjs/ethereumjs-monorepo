@@ -1,4 +1,5 @@
 import {
+  Address,
   BIGINT_1,
   BIGINT_160,
   BIGINT_2,
@@ -7,7 +8,9 @@ import {
   BIGINT_2EXP224,
   BIGINT_2EXP96,
   BIGINT_96,
+  setLengthLeft,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { toTwos } from '../../src/opcodes/util.js'
 
@@ -15,6 +18,12 @@ import type { OpcodeTests } from './utils.js'
 
 const BIGINT_2EXP256 = BigInt(2) ** BigInt(256)
 const STACK_MAX_NUMBER = BIGINT_2EXP256 - BigInt(1)
+
+const ADDR_ARRAY: { address: Address; bigInt: bigint }[] = [
+  { address: Address.fromString('0x' + '00'.repeat(17) + '111111'), bigInt: BigInt(0x111111) },
+  { address: Address.fromString('0x' + '00'.repeat(17) + '222222'), bigInt: BigInt(0x222222) },
+  { address: Address.fromString('0x' + '00'.repeat(17) + '333333'), bigInt: BigInt(0x333333) },
+]
 
 function pow2(pow: number) {
   return BigInt(2) ** BigInt(pow)
@@ -35,6 +44,7 @@ const SIGNED_HIGH = sign(-SIGNED_LOW - BigInt(1))
 export const opcodeTests: {
   [testSetName: string]: OpcodeTests
 } = {
+  /* 0x01-0x0B */
   arithmetic: {
     ADD: [
       { stack: [0, 0], expected: 0 },
@@ -154,6 +164,7 @@ export const opcodeTests: {
       { stack: [32, 1], expected: 1 },
     ],
   },
+  /* 0x10-0x1D */
   byteOperations: {
     LT: [
       { stack: [0, 0], expected: 0 },
@@ -282,6 +293,25 @@ export const opcodeTests: {
       { stack: [STACK_MAX_NUMBER, sign(-12345)], expected: sign(-1) },
       { stack: [STACK_MAX_NUMBER, SIGNED_LOW], expected: sign(-1) },
       { stack: [STACK_MAX_NUMBER, SIGNED_HIGH], expected: 0 },
+    ],
+  },
+  /* 0x20 */
+  crypto: {
+    KECCAK256: [
+      { stack: [0, 0], expected: keccak256(new Uint8Array()) },
+      { initMem: [1], stack: [0, 32], expected: keccak256(setLengthLeft(new Uint8Array([1]), 32)) },
+    ],
+  },
+  /* 0x30 - 0x48 */
+  environment: {
+    ADDRESS: [
+      { expected: 0 },
+      { expected: ADDR_ARRAY[0].bigInt, evmOpts: { to: ADDR_ARRAY[0].address } },
+    ],
+    BALANCE: [{ stack: [0], expected: 0 }],
+    ORIGIN: [
+      { expected: 0 },
+      { expected: ADDR_ARRAY[0].bigInt, evmOpts: { origin: ADDR_ARRAY[0].address } },
     ],
   },
 }
