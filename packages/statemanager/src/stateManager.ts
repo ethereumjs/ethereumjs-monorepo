@@ -208,7 +208,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
 
-    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
