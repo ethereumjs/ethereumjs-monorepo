@@ -54,7 +54,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
     return tx.cache.hash
   }
 
-  return keccackFunction(tx.serialize())
+  return keccakFunction(tx.serialize())
 }
 
 /**
