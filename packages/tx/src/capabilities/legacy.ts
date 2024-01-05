@@ -45,7 +45,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
     throw new Error(msg)
   }
 
-  const keccackFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
 
   if (Object.isFrozen(tx)) {
     if (!tx.cache.hash) {
