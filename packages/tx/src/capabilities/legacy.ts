@@ -85,7 +85,8 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
 
   try {
     const erecoverFunction = tx.common.customCrypto.ecrecover ?? ecrecover
-    const sender = erecoverFunction(
+    const ecrecoverFunction = tx.common.customCrypto.ecrecover ?? ecrecover
+    const sender = ecrecoverFunction(
       msgHash,
       v!,
       bigIntToUnpaddedBytes(r!),
