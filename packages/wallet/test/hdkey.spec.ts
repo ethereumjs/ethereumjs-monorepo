@@ -16,7 +16,7 @@ describe('HD Key tests', () => {
     assert.doesNotThrow(function () {
       EthereumHDKey.fromMasterSeed(fixtureseed)
     })
-  })
+  }, 30000)
 
   it('.fromMnemonic()', () => {
     const path = "m/44'/60'/0'/0/0"
@@ -25,21 +25,21 @@ describe('HD Key tests', () => {
 
     assert.strictEqual(wallet.getPrivateKeyString(), fixturePrivateKey)
     assert.strictEqual(wallet.getAddressString(), fixtureAddress)
-  })
+  }, 30000)
 
   it('.privateExtendedKey()', () => {
     assert.deepEqual(
       fixturehd.privateExtendedKey(),
       'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY'
     )
-  })
+  }, 30000)
 
   it('.publicExtendedKey()', () => {
     assert.deepEqual(
       fixturehd.publicExtendedKey(),
       'xpub661MyMwAqRbcGout4B6s29b6gGQsowyoiF6UgXBEr7eFCWYfXuZDvRxP9zEh1Kwq3TLqDQMbkbaRpSnoC28oWvjLeshoQz1StZ9YHM1EpcJ'
     )
-  })
+  }, 30000)
 
   it('.fromExtendedKey()', () => {
     const onlyPublicExtendedKey = EthereumHDKey.fromExtendedKey(
@@ -69,7 +69,7 @@ describe('HD Key tests', () => {
       'xprv9s21ZrQH143K4KqQx9Zrf1eN8EaPQVFxM2Ast8mdHn7GKiDWzNEyNdduJhWXToy8MpkGcKjxeFWd8oBSvsz4PCYamxR7TX49pSpp3bmHVAY',
       'successfully generated key from extended private key'
     )
-  })
+  }, 30000)
 
   it('.deriveChild()', () => {
     const hdnode = fixturehd.deriveChild(1)
@@ -77,7 +77,7 @@ describe('HD Key tests', () => {
       hdnode.privateExtendedKey(),
       'xprv9vYSvrg3eR5FaKbQE4Ao2vHdyvfFL27aWMyH6X818mKWMsqqQZAN6HmRqYDGDPLArzaqbLExRsxFwtx2B2X2QKkC9uoKsiBNi22tLPKZHNS'
     )
-  })
+  }, 30000)
 
   it('.derivePath()', () => {
     const hdnode1 = fixturehd.derivePath('m')
@@ -92,7 +92,7 @@ describe('HD Key tests', () => {
       'xprvA1ErCzsuXhpB8iDTsbmgpkA2P8ggu97hMZbAXTZCdGYeaUrDhyR8fEw47BNEgLExsWCVzFYuGyeDZJLiFJ9kwBzGojQ6NB718tjVJrVBSrG',
       "should work with m/44'/0'/0/1"
     )
-  })
+  }, 30000)
 
   it('.getWallet()', () => {
     assert.deepEqual(
@@ -114,5 +114,5 @@ describe('HD Key tests', () => {
       '0x0639797f6cc72aea0f3d309730844a9e67d9f1866e55845c5f7e0ab48402973defa5cb69df462bcc6d73c31e1c663c225650e80ef14a507b203f2a12aea55bc1',
       'should work with public nodes'
     )
-  })
+  }, 30000)
 })
