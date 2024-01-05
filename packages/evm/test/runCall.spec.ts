@@ -10,6 +10,7 @@ import {
   hexToBytes,
   padToEven,
   unpadBytes,
+  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
@@ -725,37 +726,67 @@ describe('RunCall tests', () => {
       common,
     })
     for (const opcode of ['f1', 'f2']) {
-      // Code to either CALL or CALLCODE into the own address, with value 1
-      // JUMPDEST added at the start to track how much CALL(CODE)s are made
-      const contractCode = hexToBytes(`0x5B6000808080600130611a90${opcode}`)
-      const contractAddress = Address.fromString('0x000000000000000000000000636F6E7472616374')
-      await evm.stateManager.putContractCode(contractAddress, contractCode)
+      // Code to either CALL or CALLCODE into AACC empty contract, with value 1
 
-      const account = await evm.stateManager.getAccount(contractAddress)
-      account!.balance = BIGINT_100
+      const callCodeAddress = Address.fromString('0x000000000000000000000000000000000000aaaa')
+      const callCode = hexToBytes(`0x6000600060006000600161AACC611a90${opcode}`)
 
-      await evm.stateManager.putAccount(contractAddress, account)
+      const gas = (11600).toString(16).padStart(4, '0') // Enough gas so less than required for CALL/CALLCODE before adding call stipend
+
+      const callerAddress = Address.fromString('0x000000000000000000000000000000000000aaab')
+      const callerCode = hexToBytes(`0x60008080808061AAAA61${gas}f1600055`)
+
+      await evm.stateManager.putAccount(callCodeAddress, new Account())
+      await evm.stateManager.putContractCode(callCodeAddress, callCode)
+
+      await evm.stateManager.putAccount(callerAddress, new Account(undefined, BigInt(1)))
+      await evm.stateManager.putContractCode(callerAddress, callerCode)
 
       const runCallArgs = {
-        gasLimit: BigInt(50000 - 21000),
-        to: contractAddress,
+        to: callerAddress,
+        gasLimit: 0xfffffffn,
       }
-
-      let jumpdestCalls = 0
-
-      evm.events.on('step', (e) => {
-        if (e.opcode.name === 'JUMPDEST') {
-          jumpdestCalls++
-        }
-      })
-
       await evm.runCall(runCallArgs)
-      // JUMPDEST should be called twice:
-      // 1: call into the contract (externally, via tx)
-      // 2: call(code) into the contract (internally)
-      // If jumpdest would run >=3 times, it means the (2) has enough gas to pay for CALL(CODE)
-      // This is not correct
-      assert.ok(jumpdestCalls === 2, 'called JUMPDEST twice')
+
+      const callResult = bytesToHex(
+        await evm.stateManager.getContractStorage(callerAddress, zeros(32))
+      )
+      // Expect slot to have value of 0 since CALLCODE and CODE should both go OOG
+      assert.equal(callResult, '0x', 'should have result 0 because CALL/CALLCODE should go OOG')
+    }
+
+    for (const opcode of ['f1', 'f2']) {
+      // Code to either CALL or CALLCODE into AACC empty contract, with value 1
+
+      const callCodeAddress = Address.fromString('0x000000000000000000000000000000000000aaaa')
+      const callCode = hexToBytes(`0x6000600060006000600161AACC611a90${opcode}`)
+
+      const gas = (51600).toString(16).padStart(4, '0') // Enough gas to execute CALL/CALLCODE before adding call stipend
+
+      const callerAddress = Address.fromString('0x000000000000000000000000000000000000aaab')
+      const callerCode = hexToBytes(`0x60008080808061AAAA61${gas}f1600055`)
+
+      await evm.stateManager.putAccount(callCodeAddress, new Account())
+      await evm.stateManager.putContractCode(callCodeAddress, callCode)
+
+      await evm.stateManager.putAccount(callerAddress, new Account(undefined, BigInt(1)))
+      await evm.stateManager.putContractCode(callerAddress, callerCode)
+
+      const runCallArgs = {
+        to: callerAddress,
+        gasLimit: 0xfffffffn,
+      }
+      await evm.runCall(runCallArgs)
+
+      const callResult = bytesToHex(
+        await evm.stateManager.getContractStorage(callerAddress, zeros(32))
+      )
+      // Expect slot to have value of 1 since CALLCODE and CODE had enough gas to execute
+      assert.equal(
+        callResult,
+        '0x01',
+        'should have result 1 because CALL/CALLCODE should run successfully'
+      )
     }
   })
 })
