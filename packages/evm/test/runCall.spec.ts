@@ -725,12 +725,16 @@ describe('RunCall tests', () => {
       common,
     })
 
-    // Callcode
-    for (const [opcode, gas] of [
-      ['f1', 36600], // 36600 is CALL fee
-      ['f2', 11600], // 11600 is CALLCODE fee
+    for (const [opcode, gas, expectedOutput] of [
+      ['f1', 36600, '0x'], // 36600 is CALL fee
+      ['f2', 11600, '0x'], // 11600 is CALLCODE fee
+      ['f1', 36600 + 7 * 3, '0x01'], // 36600 is CALL fee + 7 * 3 gas for 7 PUSH opcodes
+      ['f2', 11600 + 7 * 3, '0x01'], // 11600 is CALLCODE fee + 7 * 3 gas for 7 PUSH opcodes
     ]) {
       // Code to either CALL or CALLCODE into AACC empty contract, with value 1
+      // If enough gas is provided, then since nonzero value is sent, the gas limit
+      // in the call(coded) contract will get the "bonus gas" stipend of 2300
+      // Previously, we added this gas stipend to the current gas available (which is wrong)
 
       /***
        * Bytecode for AAAA contract (used to check CALL/CALLCODE execution when gas is less than required)
@@ -740,7 +744,7 @@ describe('RunCall tests', () => {
        * PUSH1 0x00
        * PUSH1 0x01
        * PUSH2 0xAACC
-       * PUSH2 0x1a90
+       * PUSH2 0x1a90 // Note: this is the gas available in the new call(code) frame, this value does not matter
        * CALLCODE/CALL
        */
       const callCodeAddress = Address.fromString('0x000000000000000000000000000000000000aaaa')
@@ -756,7 +760,7 @@ describe('RunCall tests', () => {
        * DUP1
        * DUP1
        * PUSH2 0xAAAA
-       * PUSH2 0x1358  <- This is the gas limit set for the CALL/CODE execution
+       * PUSH2 0x{gas}  <- This is the gas limit set for the CALL/CODE execution
        * CALL
        * PUSH1 0x00
        * SSTORE
@@ -779,41 +783,9 @@ describe('RunCall tests', () => {
       const callResult = bytesToHex(
         await evm.stateManager.getContractStorage(callerAddress, zeros(32))
       )
-      // Expect slot to have value of 0 since CALLCODE and CODE did not have enough gas to execute
-      assert.equal(callResult, '0x', `should have result 0x`)
-    }
-
-    for (const [opcode, gas] of [
-      ['f1', 50600], // providing plenty of gas to ensure proper execution
-      ['f2', 50600],
-    ]) {
-      // Code to either CALL or CALLCODE into AACC empty contract, with value 1
-
-      const callCodeAddress = Address.fromString('0x000000000000000000000000000000000000aaaa')
-      const callCode = hexToBytes(`0x6000600060006000600161AACC611a90${opcode}`)
-
-      const gasLimit = gas.toString(16).padStart(4, '0')
-
-      const callerAddress = Address.fromString('0x000000000000000000000000000000000000aaab')
-      const callerCode = hexToBytes(`0x60008080808061AAAA61${gasLimit}f1600055`)
-
-      await evm.stateManager.putAccount(callCodeAddress, new Account())
-      await evm.stateManager.putContractCode(callCodeAddress, callCode)
-
-      await evm.stateManager.putAccount(callerAddress, new Account(undefined, BigInt(1)))
-      await evm.stateManager.putContractCode(callerAddress, callerCode)
-
-      const runCallArgs = {
-        to: callerAddress,
-        gasLimit: 0xfffffffn,
-      }
-      await evm.runCall(runCallArgs)
-
-      const callResult = bytesToHex(
-        await evm.stateManager.getContractStorage(callerAddress, zeros(32))
-      )
-      // Expect slot to have value of 1 since CALLCODE and CODE had enough gas to execute
-      assert.equal(callResult, '0x01', `should have result 0x01`)
+      // Expect slot to have value of either: 0 since CALLCODE and CODE did not have enough gas to execute
+      // Or 1, if CALL(CODE) has enough gas to enter the new call frame
+      assert.equal(callResult, expectedOutput, `should have result ${expectedOutput}`)
     }
   })
 })
