@@ -984,6 +984,7 @@ export class Trie {
     const proofTrie = new Trie({
       root: rootHash,
       useKeyHashingFunction: this._opts.useKeyHashingFunction,
+      common: this._opts.common,
     })
     try {
       await proofTrie.fromProof(proof)
