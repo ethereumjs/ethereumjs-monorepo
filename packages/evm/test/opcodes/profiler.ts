@@ -57,6 +57,7 @@ async function profile() {
         const code = makeLoopCode(
           createBytecode([createOpcodeTest(test.stack, opcodeName, 'none'), POP])
         )
+        common.events.removeAllListeners()
         const evm = new EVM({ common, profiler: { enabled: true } })
         await evm.runCode({
           code: hexToBytes(code),
