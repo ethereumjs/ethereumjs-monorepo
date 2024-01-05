@@ -577,6 +577,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address - Address of the account which should be deleted
    */
   async deleteAccount(address: Address) {
+    if (this.DEBUG) {
+      debug(`Delete account ${address}`)
+    }
+
+    this._codeCache?.del(address)
     this._accountCache!.del(address)
 
     if (!this._storageCacheSettings.deactivate) {
@@ -739,6 +744,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async commit(): Promise<void> {
     this._checkpoints.pop()
     this._accountCache!.commit()
+    this._storageCache?.commit()
+    this._codeCache?.commit()
   }
 
   // TODO
@@ -752,6 +759,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async revert(): Promise<void> {
     // setup trie checkpointing
+    this._checkpoints.pop()
     this._accountCache?.revert()
     this._storageCache?.revert()
     this._codeCache?.revert()
