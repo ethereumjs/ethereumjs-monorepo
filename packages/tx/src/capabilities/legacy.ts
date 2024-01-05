@@ -49,7 +49,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
 
   if (Object.isFrozen(tx)) {
     if (!tx.cache.hash) {
-      tx.cache.hash = keccackFunction(tx.serialize())
+      tx.cache.hash = keccakFunction(tx.serialize())
     }
     return tx.cache.hash
   }
