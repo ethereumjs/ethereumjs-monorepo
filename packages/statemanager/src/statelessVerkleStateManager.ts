@@ -735,6 +735,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this._checkpoints.push(this._state)
     this._accountCache?.checkpoint()
     this._storageCache?.checkpoint()
+    this._codeCache?.checkpoint()
   }
 
   /**
