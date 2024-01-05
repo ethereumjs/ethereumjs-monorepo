@@ -274,4 +274,27 @@ describe('keyHashingFunction', async () => {
     )
     assert.equal(bytesToHex(trieWithCommon.root()), '0x80', 'used hash function from common')
   })
+
+  it('shallow copy uses correct hash function', async () => {
+    const keyHashingFunction = (msg: Uint8Array) => {
+      return concatBytes(msg, Uint8Array.from([1]))
+    }
+    const c = {
+      customCrypto: {
+        keccak256: (msg: Uint8Array) => msg,
+      },
+    }
+
+    const trieWithHashFunction = await Trie.create({ useKeyHashingFunction: keyHashingFunction })
+    const trieWithHashFunctionCopy = trieWithHashFunction.shallowCopy()
+    const trieWithCommon = await Trie.create({ common: c })
+    const trieWithCommonCopy = trieWithCommon.shallowCopy()
+
+    assert.equal(
+      bytesToHex(trieWithHashFunctionCopy.root()),
+      '0x8001',
+      'used hash function from customKeyHashingFunction'
+    )
+    assert.equal(bytesToHex(trieWithCommonCopy.root()), '0x80', 'used hash function from common')
+  })
 })
