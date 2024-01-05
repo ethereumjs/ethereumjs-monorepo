@@ -2,7 +2,6 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
   Account,
   Address,
-  BIGINT_100,
   MAX_UINT64,
   bytesToBigInt,
   bytesToHex,
