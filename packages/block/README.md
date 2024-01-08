@@ -27,11 +27,27 @@ npm install @ethereumjs/block
 
 The current version of this library supports Node `18` and `20` (recommended). Node.js is the main supported platform which is also used internally for development and testing.
 
+TypeScript examples in the [examples](./examples/) folder can be run using [tsx](https://github.com/privatenumber/tsx) like the following:
+
+```shell
+tsx examples/simple.ts
+```
+
+### Bun
+
+This library has been tested to run with [Bun](https://bun.sh/) [v1.0](https://bun.sh/blog/bun-v1.0) or higher. Note that Bun is still in very active development and a production usage is not recommended (by the Bun team itself) in many cases.
+
+Example run using Bun:
+
+```shell
+bun run examples/simple.ts
+```
+
 ### Browser
 
 This library targets to run in modern browsers which support the JavaScript [ES2020](https://www.w3schools.com/js/js_2020.asp) feature set. There is a dedicated ESM build provided and imports can be done using the normal ES6 [module import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) syntax.
 
-See the dedicated [browser example](./examples/browser.html) for an entrypoint to browser usage. If you stumble upon browser-related issues please open an issue on GitHub.
+For browser usage see the dedicated [example](./examples/browser.html) (with usage instructions).
 
 ## Usage
 
