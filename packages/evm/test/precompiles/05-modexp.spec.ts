@@ -16,9 +16,7 @@ describe('Precompiles: MODEXP', () => {
   const MODEXP = getActivePrecompiles(common).get(addressStr)!
 
   it('should run testdata', async () => {
-    let n = 0
     for (const [input, expect] of fuzzerTests) {
-      n++
       const result = await MODEXP({
         data: hexToBytes(input),
         gasLimit: BigInt(0xffff),
