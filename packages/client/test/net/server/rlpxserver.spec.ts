@@ -270,11 +270,7 @@ describe('[RlpxServer]', async () => {
     ;(server as any).initDpt().catch((error: Error) => {
       throw error
     })
-    config.events.on(Event.SERVER_ERROR, (err) =>
-      it('should throw', async () => {
-        assert.equal(err.message, 'err0', 'got error')
-      })
-    )
+    config.events.on(Event.SERVER_ERROR, (err) => assert.equal(err.message, 'err0', 'got error'))
     server['dpt']?.events.emit('error', new Error('err0'))
   })
 

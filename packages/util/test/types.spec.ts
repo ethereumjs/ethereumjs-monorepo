@@ -107,7 +107,7 @@ describe('from PrefixedHexString', () => {
     const result = toType(num, TypeOutput.Uint8Array)
     assert.deepEqual(result, toBytes(num))
   })
-  it.only('should throw an error if is not 0x-prefixed', () => {
+  it('should throw an error if is not 0x-prefixed', () => {
     assert.throws(() => {
       toType('1', TypeOutput.Number)
     }, 'A string must be provided with a 0x-prefix, given: 1')

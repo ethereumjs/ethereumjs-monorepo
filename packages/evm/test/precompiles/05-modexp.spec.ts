@@ -19,16 +19,14 @@ describe('Precompiles: MODEXP', () => {
     let n = 0
     for (const [input, expect] of fuzzerTests) {
       n++
-      it(`MODEXP edge cases (issue 3168) - case ${n}`, async () => {
-        const result = await MODEXP({
-          data: hexToBytes(input),
-          gasLimit: BigInt(0xffff),
-          common,
-          _EVM: evm,
-        })
-        const oput = bytesToHex(result.returnValue)
-        assert.equal(oput, expect)
+      const result = await MODEXP({
+        data: hexToBytes(input),
+        gasLimit: BigInt(0xffff),
+        common,
+        _EVM: evm,
       })
+      const oput = bytesToHex(result.returnValue)
+      assert.equal(oput, expect)
     }
   })
 
