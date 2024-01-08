@@ -91,7 +91,7 @@ You should see something like below Prysm reaches the 4844 epoch.
 [2023-01-11 16:00:57]  INFO state: Upgraded to EIP4844 hard fork!
 ```
 
-1. Run `npx ts-node ./tools/txGenerator.ts 8545 'hello' [path/to/genesis.json] [private key of tx sender as unprefixed hex string]` to submit a blob transaction.
+1. Run `npx tsx ./tools/txGenerator.ts 8545 'hello' [path/to/genesis.json] [private key of tx sender as unprefixed hex string]` to submit a blob transaction.
 2. Monitor the EthJS logs to see when the transaction is included in a block via an RPC call to `engine_newPayloadV3` and note the block hash.
 3. Monitor the Prysm Beacon Node logs and note when the EL block payload is included in a beacon block. You should see logs like below indicating a block with one blob in it. The first few characters of the `blockhash` field in the logs should match the blockhash reported by EthJS
 

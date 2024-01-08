@@ -11,8 +11,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-import { LRUCache } from 'lru-cache'
 
+import { LRUCache } from 'lru-cache'
 import ms from 'ms'
 
 import * as devp2p from '../dist/cjs/index.js'
@@ -374,7 +374,7 @@ setInterval(() => {
 
   // @ts-ignore
   const queueLength = rlpx._peersQueue.length
-  
+
   // @ts-ignore
   const queueLength2 = rlpx._peersQueue.filter((o) => o.ts <= Date.now()).length
 

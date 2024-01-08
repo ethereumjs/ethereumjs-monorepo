@@ -2,6 +2,7 @@ import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'
 import { EventEmitter } from 'events'
+import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
@@ -11,10 +12,7 @@ import type { DPTServerOptions, PeerInfo } from '../types.js'
 import type { DPT } from './dpt.js'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
-import type LRUCache from 'lru-cache'
 const { debug: createDebugLogger } = debugDefault
-
-const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
@@ -42,7 +40,7 @@ export class Server {
     this._timeout = options.timeout ?? 4000 // 4 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
+    this._requestsCache = new LRUCache({ max: 1000, ttl: 1000 }) // 1 sec * 1000
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()

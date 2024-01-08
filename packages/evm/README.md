@@ -311,31 +311,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=ethjs,evm ts-node test.ts
+DEBUG=ethjs,evm tsx test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=ethjs,evm:*,evm:*:* ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:* tsx test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=ethjs,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm:*:gas tsx test.ts
 ```
 
 Excluding the ops logger:
 
 ```shell
-DEBUG=ethjs,evm:*,evm:*:*,-evm:ops ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:*,-evm:ops tsx test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
 ```
 
 ### Internal Structure
