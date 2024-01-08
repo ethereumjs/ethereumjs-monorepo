@@ -308,6 +308,7 @@ describe('[RlpxServer]', async () => {
     // @ts-ignore
     server.rlpx!.id = hexToBytes('0xff')
     server.rlpx!.events.emit('listening')
+    await server.stop()
   })
 
   it('should handles errors from id-less peers', async () => {

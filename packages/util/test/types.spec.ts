@@ -46,7 +46,7 @@ describe('from Number', () => {
     assert.throws(() => {
       const num = Number.MAX_SAFE_INTEGER + 1
       toType(num, TypeOutput.BigInt)
-    }, /^Error: The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative input type\)$/)
+    }, 'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type')
   })
 })
 describe('from BigInt', () => {
@@ -71,7 +71,7 @@ describe('from BigInt', () => {
     const num = BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)
     assert.throws(() => {
       toType(num, TypeOutput.Number)
-    }, /^Error: The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative output type\)$/)
+    }, 'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type')
   })
 })
 describe('from Uint8Array', () => {
