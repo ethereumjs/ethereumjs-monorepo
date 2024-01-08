@@ -47,7 +47,8 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-const args: ClientOpts = yargs(hideBin(process.argv))
+const args: ClientOpts = yargs
+  .default(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
   })
