@@ -8,7 +8,9 @@ import {
   BIGINT_2EXP224,
   BIGINT_2EXP96,
   BIGINT_96,
+  bigIntToBytes,
   setLengthLeft,
+  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
@@ -313,5 +315,15 @@ export const opcodeTests: {
       { expected: 0 },
       { expected: ADDR_ARRAY[0].bigInt, evmOpts: { origin: ADDR_ARRAY[0].address } },
     ],
+    CALLER: [
+      { expected: 0 },
+      { expected: ADDR_ARRAY[0].bigInt, evmOpts: { caller: ADDR_ARRAY[0].address } },
+    ],
+    CALLVALUE: [{ expected: 0 }],
+    CALLDATALOAD: [
+      { expected: 0, stack: [0] },
+      { expected: 1, stack: [0], evmOpts: { data: setLengthLeft(bigIntToBytes(BigInt(1)), 32) } },
+    ],
+    CALLDATASIZE: [{ expected: 0 }, { expected: 32, evmOpts: { data: zeros(32) } }],
   },
 }
