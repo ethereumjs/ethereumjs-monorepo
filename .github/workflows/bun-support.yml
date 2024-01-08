@@ -1,7 +1,15 @@
 name: Bun Support
+#on:
+#  schedule:
+#    - cron: 0 0 * * *
+#  workflow_dispatch:
+
 on:
-  schedule:
-    - cron: 0 0 * * *
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
