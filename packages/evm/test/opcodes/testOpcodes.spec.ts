@@ -14,7 +14,7 @@ for (const testSet in opcodeTests) {
             testName: testData.name,
             opcodeName,
             expected: testData.expected,
-            expectedReturnType: 'topStack',
+            expectedReturnType: testData.expectedReturnType ?? 'topStack',
             input: testData.stack ?? [], // TODO figure out why we have to init this to [], should be overriden by defaults
             initMem: testData.initMem,
             evmOpts: testData.evmOpts,

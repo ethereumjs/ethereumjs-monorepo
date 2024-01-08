@@ -1,6 +1,9 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import {
+  Account,
+  Address,
   BIGINT_0,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -23,12 +26,22 @@ export type InputStackItems = (number | bigint | Uint8Array)[]
 export type InitialMemoryItems = InputStackItems
 export type TestReturnType = 'topStack' | 'memory' | 'none'
 
-export type PreState = {}
+export type PreState = {
+  [address: string]: {
+    code?: string
+    nonce?: string
+    storage?: {
+      [key: string]: string
+    }
+    balance?: string
+  }
+}
 
 export type OpcodeTests = {
   [opcodeName: string]: {
     stack?: InputStackItems
     expected: Expected
+    expectedReturnType?: TestReturnType
     name?: string
     initMem?: InitialMemoryItems
     evmOpts?: EVMRunCodeOpts
@@ -77,6 +90,33 @@ function removeHexPrefix(input: string) {
     input = input.slice(2)
   }
   return input
+}
+
+async function setupPreState(evm: EVM, preState: PreState) {
+  for (const addressString in preState) {
+    const address = Address.fromString(addressString)
+    const fields = preState[addressString]
+    const account = (await evm.stateManager.getAccount(address)) ?? new Account()
+    if (fields.balance !== undefined) {
+      account.balance = bytesToBigInt(hexToBytes(fields.balance))
+    }
+    if (fields.nonce !== undefined) {
+      account.nonce = bytesToBigInt(hexToBytes(fields.nonce))
+    }
+    await evm.stateManager.putAccount(address, account)
+    if (fields.code !== undefined) {
+      await evm.stateManager.putContractCode(address, hexToBytes(fields.code))
+    }
+    if (fields.storage !== undefined) {
+      for (const keyString in fields.storage) {
+        await evm.stateManager.putContractStorage(
+          address,
+          setLengthLeft(hexToBytes(keyString), 32),
+          setLengthLeft(hexToBytes(fields.storage[keyString]), 32)
+        )
+      }
+    }
+  }
 }
 
 export function getOpcodeByte(name: string) {
@@ -229,14 +269,26 @@ export async function runOpcodeTest(opts: OpcodeTestOpts) {
     ...defaultOpcodeTestOpts,
     ...opts,
   }
-  const { hardforks, gasLimit, expected, input, expectedReturnType, opcodeName, initMem, evmOpts } =
-    <Required<OpcodeTestOpts>>opts
+  const {
+    hardforks,
+    gasLimit,
+    expected,
+    input,
+    expectedReturnType,
+    opcodeName,
+    initMem,
+    evmOpts,
+    preState,
+  } = <Required<OpcodeTestOpts>>opts
   const code = createOpcodeTest(input, opcodeName, expectedReturnType, initMem)
   for (const hf of hardforks) {
     const common = new Common({ chain: Chain.Mainnet, hardfork: hf })
     const evm = new EVM({
       common,
     })
+    if (preState !== undefined) {
+      await setupPreState(evm, preState)
+    }
     const result = await evm.runCode({
       code: hexToBytes(code),
       gasLimit,

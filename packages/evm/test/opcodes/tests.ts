@@ -1,3 +1,4 @@
+import { Block } from '@ethereumjs/block'
 import {
   Address,
   BIGINT_1,
@@ -9,6 +10,7 @@ import {
   BIGINT_2EXP96,
   BIGINT_96,
   bigIntToBytes,
+  hexToBytes,
   setLengthLeft,
   zeros,
 } from '@ethereumjs/util'
@@ -319,11 +321,147 @@ export const opcodeTests: {
       { expected: 0 },
       { expected: ADDR_ARRAY[0].bigInt, evmOpts: { caller: ADDR_ARRAY[0].address } },
     ],
-    CALLVALUE: [{ expected: 0 }],
+    CALLVALUE: [{ expected: 0 }, { expected: 1, evmOpts: { value: BigInt(1) } }],
     CALLDATALOAD: [
       { expected: 0, stack: [0] },
       { expected: 1, stack: [0], evmOpts: { data: setLengthLeft(bigIntToBytes(BigInt(1)), 32) } },
     ],
     CALLDATASIZE: [{ expected: 0 }, { expected: 32, evmOpts: { data: zeros(32) } }],
+    CALLDATACOPY: [
+      { expectedReturnType: 'memory', expected: zeros(0), stack: [0, 0, 0] },
+      {
+        expectedReturnType: 'memory',
+        expected: hexToBytes('0x01' + '00'.repeat(31)),
+        stack: [0, 0, 1],
+        evmOpts: { data: hexToBytes('0x01') },
+      },
+    ],
+    // TODO codecopy / codesize,
+    GASPRICE: [{ expected: 0 }, { expected: 1, evmOpts: { gasPrice: BigInt(1) } }],
+    EXTCODESIZE: [
+      { expected: 0, stack: [12345678] },
+      {
+        expected: 1,
+        stack: [ADDR_ARRAY[0].address.bytes],
+        preState: {
+          [ADDR_ARRAY[0].address.toString()]: {
+            code: '0xFF',
+          },
+        },
+      },
+    ],
+    EXTCODECOPY: [
+      { expected: '0x', stack: [12345678, 0, 0, 0] },
+      {
+        expected: '0x' + 'FF'.repeat(32),
+        stack: [ADDR_ARRAY[0].address.bytes, 0, 0, 32],
+        preState: {
+          [ADDR_ARRAY[0].address.toString()]: {
+            code: '0x' + 'FF'.repeat(32),
+          },
+        },
+        expectedReturnType: 'memory',
+      },
+    ],
+    // TODO RETURNDATASIZE/RETURNDATACOPY/EXTCODEHASH/BLOCKHASH
+    COINBASE: [
+      { expected: zeros(32) },
+      {
+        expected: ADDR_ARRAY[0].address.bytes,
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              coinbase: ADDR_ARRAY[0].address,
+            },
+          }),
+        },
+      },
+    ],
+    TIMESTAMP: [
+      { expected: BigInt(0) },
+      {
+        expected: BigInt(1),
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              timestamp: BigInt(1),
+            },
+          }),
+        },
+      },
+    ],
+    NUMBER: [
+      { expected: BigInt(0) },
+      {
+        expected: BigInt(1),
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              number: BigInt(1),
+            },
+          }),
+        },
+      },
+    ],
+    PREVRANDAO: [
+      { expected: BigInt(0) },
+      {
+        expected: BigInt(1),
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              mixHash: setLengthLeft(bigIntToBytes(BigInt(1)), 32), // TODO This field should be renamed
+            },
+          }),
+        },
+      },
+    ],
+    GASLIMIT: [
+      { expected: BigInt(0) },
+      {
+        expected: BigInt(1),
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              gasLimit: BigInt(1),
+            },
+          }),
+        },
+      },
+    ],
+    CHAINID: [{ expected: BigInt(1) }],
+    SELFBALANCE: [
+      { expected: BigInt(0) },
+      {
+        expected: BigInt(1),
+        preState: {
+          [Address.zero().toString()]: {
+            balance: '0x01',
+          },
+        },
+      },
+    ],
+    BASEFEE: [
+      {
+        expected: BigInt(0),
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              baseFeePerGas: BigInt(0),
+            },
+          }),
+        },
+      },
+      {
+        expected: BigInt(1),
+        evmOpts: {
+          block: Block.fromBlockData({
+            header: {
+              baseFeePerGas: BigInt(1),
+            },
+          }),
+        },
+      },
+    ],
   },
 }
