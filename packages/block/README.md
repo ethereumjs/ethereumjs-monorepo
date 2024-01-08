@@ -21,6 +21,18 @@ npm install @ethereumjs/block
 
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
 
+## Runtime Support
+
+### Node.js
+
+The current version of this library supports Node `18` and `20` (recommended). Node.js is the main supported platform which is also used internally for development and testing.
+
+### Browser
+
+This library targets to run in modern browsers which support the JavaScript [ES2020](https://www.w3schools.com/js/js_2020.asp) feature set. There is a dedicated ESM build provided and imports can be done using the normal ES6 [module import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) syntax.
+
+See the dedicated [browser example](./examples/browser.html) for an entrypoint to browser usage. If you stumble upon browser-related issues please open an issue on GitHub.
+
 ## Usage
 
 ### Introduction
@@ -230,12 +242,6 @@ const block = Block.fromBlockData(
   { common }
 )
 ```
-
-## Browser
-
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
-
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
