@@ -33,18 +33,18 @@ jobs:
         run: bunx vitest run test
         working-directory: packages/blockchain
 
-      # Switch client to unit tests only due to `async_hooks` dependency build error in browser tests: 2022-06-15
-      - name: Test Client
-        run: bunx vitest run test
-        working-directory: packages/client
-
-      - name: Test Devp2p
-        run: bunx vitest run test
-        working-directory: packages/devp2p
+      # Client not working yet in Bun (expected), 2024-01-08
+      # - name: Test Client
+      #   run: bunx vitest run test
+      #   working-directory: packages/client
 
       - name: Test Common
         run: bunx vitest run test
         working-directory: packages/common
+
+      - name: Test Devp2p
+        run: bunx vitest run test
+        working-directory: packages/devp2p
 
       - name: Test Ethash
         run: bunx vitest run test
@@ -54,6 +54,14 @@ jobs:
         run: bunx vitest run test
         working-directory: packages/evm
 
+      - name: Test RLP
+        run: bunx vitest run test
+        working-directory: packages/rlp
+
+      - name: Test StateManager
+        run: bunx vitest run test
+        working-directory: packages/statemanager
+      
       - name: Test Trie
         run: bunx vitest run test
         working-directory: packages/trie
@@ -61,22 +69,14 @@ jobs:
       - name: Test Tx
         run: bunx vitest run test
         working-directory: packages/tx
-
+      
       - name: Test Util
         run: bunx vitest run test
         working-directory: packages/util
 
-      - name: Test StateManager
-        run: bunx vitest run test
-        working-directory: packages/statemanager
-
       - name: Test VM
         run: bunx vitest run test
         working-directory: packages/vm
-
-      - name: Test RLP
-        run: bunx vitest run test
-        working-directory: packages/rlp
 
       - name: Test Wallet
         run: bunx vitest run test
