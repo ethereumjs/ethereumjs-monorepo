@@ -36,21 +36,36 @@ The library also supports reorg scenarios e.g. by allowing to add a new block wi
 The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
 ```ts
+// ./examples/simple.ts
+
+import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
-// Use the safe static constructor which awaits the init method
-const blockchain = Blockchain.create({ common, db })
+const main = async () => {
+  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.London })
+  // Use the safe static constructor which awaits the init method
+  const blockchain = await Blockchain.create({ validateBlocks: false, validateConsensus: false })
 
-// See @ethereumjs/block on how to create a block
-await blockchain.putBlock(block1)
-await blockchain.putBlock(block2)
-
-blockchain.iterator('i', (block) => {
-  const blockNumber = block.header.number.toString()
-  const blockHash = bytesToHex(block.hash())
-  console.log(`Block ${blockNumber}: ${blockHash}`)
-})
+  const block = Block.fromBlockData(
+    { header: { number: 1n, parentHash: blockchain.genesisBlock.hash() } },
+    { common }
+  )
+  const block2 = Block.fromBlockData(
+    { header: { number: 2n, parentHash: block.header.hash() } },
+    { common }
+  )
+  // See @ethereumjs/block on how to create a block
+  await blockchain.putBlock(block)
+  await blockchain.putBlock(block2)
+  await blockchain.iterator('i', (block) => {
+    const blockNumber = block.header.number.toString()
+    const blockHash = bytesToHex(block.hash())
+    console.log(`Block ${blockNumber}: ${blockHash}`)
+  })
+}
+main()
 ```
 
 ### Database Abstraction / Removed LevelDB Dependency
