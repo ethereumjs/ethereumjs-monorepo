@@ -3,6 +3,7 @@ import { genesisStateRoot } from '@ethereumjs/trie'
 import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import genesisJson from '../../common/examples/genesisData/post-merge.json'
 import { Blockchain } from '../src/blockchain.js'
 
 // kiln genesis with deposit contract storage set
@@ -38,5 +39,9 @@ describe('[Utils/Parse]', () => {
       '0x51c7fe41be669f69c45c33a56982cbde405313342d9e2b00d7c91a7b284dd4f8',
       'kiln genesis hash matches'
     )
+  })
+  it.only('should get hash', async () => {
+    const blockchain = await getBlockchain(genesisJson)
+    console.log(bytesToHex(blockchain.genesisBlock.hash()))
   })
 })
