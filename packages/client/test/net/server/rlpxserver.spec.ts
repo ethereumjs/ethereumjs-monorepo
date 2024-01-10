@@ -47,7 +47,7 @@ describe('[RlpxServer]', async () => {
     }
   })
 
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver')
+  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -233,7 +233,7 @@ describe('[RlpxServer]', async () => {
     let count = 0
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
-    server.config.events.on(Event.SERVER_ERROR, (err) => {
+    server.config.events.on(Event.SERVER_ERROR, (err: any) => {
       count = count + 1
       if (err.message === 'err0') assert.ok(true, 'got server error - err0')
       if (err.message === 'err1') assert.ok(true, 'got peer error - err1')

@@ -6,11 +6,17 @@ import { Event } from '../../src/types'
 import { MockPeer } from '../integration/mocks/mockpeer'
 
 describe('[PeerPool]', async () => {
-  const Peer = function (this: any, id: string) {
-    this.id = id // eslint-disable-line no-invalid-this
+  class Peer {
+    id: string
+    idle: boolean
+
+    constructor(id: string) {
+      this.id = id
+      this.idle = false
+    }
   }
   vi.doMock('../../src/net/peer/peer', () => Peer)
-  const { PeerPool } = await import('../../src/net/peerpool')
+  const { PeerPool } = await import('../../src/net/peerpool.js')
 
   it('should initialize', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -65,7 +71,7 @@ describe('[PeerPool]', async () => {
   })
 
   it('should check contains', () => {
-    const peer = new Peer('abc')
+    const peer: any = new Peer('abc')
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     pool.add(peer)
@@ -73,16 +79,16 @@ describe('[PeerPool]', async () => {
   })
 
   it('should get idle peers', () => {
-    const peers = [new Peer(1), new Peer(2), new Peer(3)]
+    const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     peers[1].idle = true
     for (const p of peers) {
-      pool.add(p)
+      pool.add(p as any)
     }
     assert.equal(pool.idle(), peers[1], 'correct idle peer')
     assert.equal(
-      pool.idle((p: any) => p.id > 1),
+      pool.idle((p: any) => p.id > '1'),
       peers[1],
       'correct idle peer with filter'
     )

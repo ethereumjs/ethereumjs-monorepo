@@ -214,9 +214,9 @@ describe('Wallet tests', () => {
     const permus = []
     const keys = Array.from(
       objs.reduce((acc: any, curr: object) => {
-        Object.keys(curr).forEach((key) => {
+        for (const key of Object.keys(curr)) {
           acc.add(key)
-        })
+        }
         return acc
       }, new Set())
     )
@@ -229,11 +229,11 @@ describe('Wallet tests', () => {
         .split('')
         .map((v) => parseInt(v, 10))
       const obj: any = {}
-      ;(zip(selectors, keys) as [number, string][]).forEach(([sel, k]: [number, string]) => {
-        if ((objs as any)[sel].hasOwnProperty(k) === true) {
-          obj[k] = (objs as any)[sel][k]
+      for (const [sel, k] of zip(selectors, keys) as [number, string][]) {
+        if (objs[sel as keyof typeof objs]?.[k as keyof typeof objs[0]]) {
+          obj[k] = objs[sel as keyof typeof objs][k as keyof typeof objs[0]]
         }
-      })
+      }
       permus.push(obj)
     }
     return permus
@@ -241,9 +241,9 @@ describe('Wallet tests', () => {
 
   const makeEthersOptions = (opts: object) => {
     const obj: any = {}
-    Object.entries(opts).forEach(([key, val]: [string, string | Uint8Array]) => {
+    for (const [key, val] of Object.entries(opts)) {
       obj[key] = typeof val === 'string' ? '0x' + val : val
-    })
+    }
     return obj
   }
 
@@ -273,60 +273,55 @@ describe('Wallet tests', () => {
     }
   }, 40000)
 
-  it(
-    '.toV3(): should work with Scrypt',
-    async () => {
-      const wStaticJSON =
-        '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
-      const wStatic = JSON.parse(wStaticJSON)
-      const wRandom = Wallet.generate()
-      const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
-      for (const perm of permutations) {
-        const { salt, iv, uuid } = perm
-        const ethersOpts = makeEthersOptions({ salt, iv, uuid })
+  it('.toV3(): should work with Scrypt', async () => {
+    const wStaticJSON =
+      '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
+    const wStatic = JSON.parse(wStaticJSON)
+    const wRandom = Wallet.generate()
+    const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
+    for (const perm of permutations) {
+      const { salt, iv, uuid } = perm
+      const ethersOpts = makeEthersOptions({ salt, iv, uuid })
 
-        const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-          kdf: 'scrypt',
-          uuid,
-          salt,
-          iv,
-          n,
-          r,
-          p,
-        })
+      const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+        kdf: 'scrypt',
+        uuid,
+        salt,
+        iv,
+        n,
+        r,
+        p,
+      })
 
-        const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
-          scrypt: { N: n, r, p },
-          salt: ethersOpts.salt,
-          iv: ethersOpts.iv,
-          uuid: ethersOpts.uuid,
-        }).toLowerCase()
+      const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
+        scrypt: { N: n, r, p },
+        salt: ethersOpts.salt,
+        iv: ethersOpts.iv,
+        uuid: ethersOpts.uuid,
+      }).toLowerCase()
 
-        const encRandomWallet = await wRandom.toV3String(pw, {
-          kdf: 'scrypt',
-          uuid,
-          salt,
-          iv,
-          n,
-          r,
-          p,
-        })
+      const encRandomWallet = await wRandom.toV3String(pw, {
+        kdf: 'scrypt',
+        uuid,
+        salt,
+        iv,
+        n,
+        r,
+        p,
+      })
 
-        const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
-          scrypt: { N: n, r, p },
-          salt: ethersOpts.salt,
-          iv: ethersOpts.iv,
-          uuid: ethersOpts.uuid,
-        }).toLowerCase()
+      const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
+        scrypt: { N: n, r, p },
+        salt: ethersOpts.salt,
+        iv: ethersOpts.iv,
+        uuid: ethersOpts.uuid,
+      }).toLowerCase()
 
-        assert.deepEqual(wStatic, JSON.parse(encFixtureWallet))
-        assert.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
-        assert.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
-      }
-    },
-    30000,
-    50000
-  )
+      assert.deepEqual(wStatic, JSON.parse(encFixtureWallet))
+      assert.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
+      assert.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
+    }
+  }, 50000)
 
   it('.toV3(): without providing options', async () => {
     const wallet = await fixtureWallet.toV3('testtest')
