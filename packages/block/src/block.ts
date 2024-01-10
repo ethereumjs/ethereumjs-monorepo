@@ -248,7 +248,7 @@ export class Block {
    *
    * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
    * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
-   * @param options - An object describing the blockchain
+   * @param opts - An object describing the blockchain
    */
   public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
     this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
@@ -327,10 +327,9 @@ export class Block {
    */
   public static async fromExecutionPayload(
     payload: ExecutionPayload,
-    options?: BlockOptions
+    opts?: BlockOptions
   ): Promise<Block> {
-    this.keccakFunction =
-      this.keccakFunction ?? options?.common?.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
 
     const {
       blockNumber: number,
@@ -346,7 +345,7 @@ export class Block {
     for (const [index, serializedTx] of transactions.entries()) {
       try {
         const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
-          common: options?.common,
+          common: opts?.common,
         })
         txs.push(tx)
       } catch (error) {
@@ -373,7 +372,7 @@ export class Block {
     // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData(
       { header, transactions: txs, withdrawals, executionWitness },
-      options
+      opts
     )
     if (
       block.common.isActivatedEIP(6800) &&
@@ -400,13 +399,12 @@ export class Block {
    */
   public static async fromBeaconPayloadJson(
     payload: BeaconPayloadJson,
-    options?: BlockOptions
+    opts?: BlockOptions
   ): Promise<Block> {
-    this.keccakFunction =
-      this.keccakFunction ?? options?.common?.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
 
     const executionPayload = executionPayloadFromBeaconPayload(payload)
-    return Block.fromExecutionPayload(executionPayload, options)
+    return Block.fromExecutionPayload(executionPayload, opts)
   }
 
   /**
