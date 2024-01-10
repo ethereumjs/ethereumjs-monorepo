@@ -23,7 +23,7 @@ npm install @ethereumjs/ethash
 
 ### PoW Validation
 
-```typescript
+```ts
 import { Ethash } from '@ethereumjs/ethash'
 import { Block } from '@ethereumjs/block'
 import { hexToBytes, MapDB } from '@ethereumjs/util'
@@ -46,7 +46,7 @@ There is a simple CPU miner included within `Ethash` package which can be used f
 
 See the following example on how to use the new `Miner` class:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import { Ethash } from '@ethereumjs/ethash'
 import { Common } from '@ethereumjs/common'
@@ -78,13 +78,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

@@ -29,7 +29,7 @@ It is best to select the variant that is most appropriate for your unique use ca
 
 ### Initialization and Basic Usage
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
 
@@ -48,7 +48,7 @@ test()
 
 #### `.create()`
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
@@ -67,7 +67,7 @@ When the static `Trie.create` constructor is used without any options, the `trie
 
 #### `.createTrieFromProof()`
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 
 async function test() {
@@ -94,7 +94,7 @@ Starting with the v6 release there is a new API for walking and iterating a trie
 
 The new walk functionality can be used like the following:
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 
 const trie = await Trie.create()
@@ -119,7 +119,7 @@ If you want to use an alternative database, you can integrate your own by writin
 
 As an example, to leverage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -136,7 +136,7 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 
 const trie = await Trie.create({
@@ -154,7 +154,7 @@ The `createProof` and `verifyProof` functions allow you to verify that a certain
 
 The following code demonstrates how to construct and subsequently verify a proof that confirms the existence of the key `test` (which corresponds with the value `one`) within the given trie. This is also known as inclusion, hence the name 'Proof-of-Inclusion.'
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
@@ -174,7 +174,7 @@ test()
 
 The following code demonstrates how to construct and subsequently verify a proof that confirms that the key `test3` does not exist within the given trie. This is also known as exclusion, hence the name 'Proof-of-Exclusion.'
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
@@ -195,7 +195,7 @@ test()
 
 If `verifyProof` detects an invalid proof, it will throw an error. While contrived, the below example illustrates the resulting error condition in the event a prover tampers with the data in a merkle proof.
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
@@ -243,13 +243,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

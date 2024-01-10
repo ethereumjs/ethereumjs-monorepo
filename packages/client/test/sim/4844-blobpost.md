@@ -14,7 +14,7 @@ Note: All commands should be run from the `client` package directory root (so so
 1. Clone the repo set to branch `develop-v7` and run `npm i` with nodejs `18` installed and latest npm version
 2. Run the blob gen utility (replace PRIVATE_KEY with a funded account private key and RPC_URL with an authenticated rpc url):
 
-```typescript
+```ts
   cd packages/client
   PRIVATE_KEY=ae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e RPC_URL=https://rpc.lodestar-ethereumjs-1.srv.4844-devnet-5.ethpandaops.io npm run tape -- test/sim/4844devnet5.spec.ts
 ```

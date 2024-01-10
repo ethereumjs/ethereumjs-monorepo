@@ -12,7 +12,7 @@ type rpcParams = {
  * https://ethereum.org/en/developers/docs/apis/json-rpc/ for details on RPC methods
  * @returns the `result` field from the JSON-RPC response
  * @example
- * ```typescript
+ * ```ts
  * const provider = 'https://mainnet.infura.io/v3/...'
  * const params = {
  *   method: 'eth_getBlockByNumber',

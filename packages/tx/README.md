@@ -38,7 +38,7 @@ The following two manual installation steps for a KZG library and the trusted se
 
 Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
 
-```typescript
+```ts
 import { initKZG } from '@ethereumjs/util'
 
 // Make the kzg library available globally
@@ -105,7 +105,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { initKZG } from '@ethereumjs/util'
@@ -152,7 +152,7 @@ See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage i
 
 This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
@@ -185,7 +185,7 @@ const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
 
 This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
@@ -229,7 +229,7 @@ on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementatio
 Legacy transaction are still valid transaction within Ethereum `mainnet` but will likely be deprecated at some point.
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 
@@ -259,7 +259,7 @@ const serializedTx = signedTx.serialize()
 
 If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
 
@@ -288,7 +288,7 @@ The correct tx type class for instantiation will then be chosen on runtime based
 
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
-```typescript
+```ts
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
@@ -328,7 +328,7 @@ The London hardfork is targeted to implement on Optimism in Q1.22.
 
 For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
 
-```typescript
+```ts
 const common = Common.custom({ chainId: 1234 })
 ```
 
@@ -348,7 +348,7 @@ A legacy transaction will return a Buffer list of the values, and a Typed Transa
 
 Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
@@ -393,7 +393,7 @@ run()
 
 Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md) like so:
 
-```typescript
+```ts
 import { Address } from '@ethereumjs/util'
 import { Transaction } from '@ethereumjs/tx'
 
@@ -423,13 +423,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

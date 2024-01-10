@@ -7,10 +7,10 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { crc32 as crc } from 'crc'
 import { EventEmitter } from 'events'
 
 import { chains as CHAIN_SPECS } from './chains.js'
+import { crc32 } from './crc.js'
 import { EIPs } from './eips.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
 import { hardforks as HARDFORK_SPECS } from './hardforks.js'
@@ -877,7 +877,7 @@ export class Common {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
+    const forkhash = bytesToHex(intToBytes(crc32(inputBytes) >>> 0))
     return forkhash
   }
 

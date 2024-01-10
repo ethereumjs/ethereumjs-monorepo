@@ -54,14 +54,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -80,7 +80,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 Ethash.mkcache(cacheSize: number, seed: Uint8Array)
 Ethash.calcDatasetItem(i: number): Uint8Array
 Ethash.run(val: Uint8Array, nonce: Uint8Array, fullSize?: number)
@@ -178,7 +178,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -186,7 +186,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -196,13 +196,13 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 The main `Ethash` class import has been updated, so import changes from:
 
-```typescript
+```ts
 import Ethash from '@ethereumjs/ethash'
 ```
 
 to:
 
-```typescript
+```ts
 import { Ethash } from '@ethereumjs/ethash'
 ```
 
@@ -254,7 +254,7 @@ There is now a new simple CPU miner added to the `Ethash` package which can be u
 
 See the following example on how to use the new `Miner` class:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import Ethash from '@ethereumjs/ethash'
 import Common from '@ethereumjs/common'
@@ -298,7 +298,7 @@ The `Ethash` library has been promisified and callbacks have been removed along 
 
 Old API:
 
-```typescript
+```ts
 ethash.verifyPOW(validblock, (result) => {
   console.log(result)
 })
@@ -306,7 +306,7 @@ ethash.verifyPOW(validblock, (result) => {
 
 New API:
 
-```typescript
+```ts
 const result = await ethash.verifyPOW(validBlock)
 console.log(result) // => true
 ```
@@ -355,7 +355,7 @@ PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preced
 
 Old API:
 
-```typescript
+```ts
 ethash.verifyPOW(validblock, (result) => {
   console.log(result)
 })
@@ -363,7 +363,7 @@ ethash.verifyPOW(validblock, (result) => {
 
 New API:
 
-```typescript
+```ts
 const result = await ethash.verifyPOW(validBlock)
 console.log(result) // => true
 ```

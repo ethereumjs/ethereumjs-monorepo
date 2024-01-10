@@ -44,7 +44,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "typedoc --options typedoc.cjs",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- common",
+    "examples": "tsx ../../scripts/examples-runner.ts -- common",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -55,7 +55,6 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.0.1",
-    "crc": "^4.3.2"
+    "@ethereumjs/util": "^9.0.1"
   }
 }

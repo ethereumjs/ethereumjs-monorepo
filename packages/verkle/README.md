@@ -25,7 +25,7 @@ npm install @ethereumjs/verkle
 
 ### Initialization and Basic Usage
 
-```typescript
+```ts
 import { VerkleTree } from '@ethereumjs/verkle'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
@@ -68,13 +68,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code, files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js-specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
