@@ -80,6 +80,7 @@
     "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- util",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",

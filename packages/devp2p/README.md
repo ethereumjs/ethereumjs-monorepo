@@ -22,7 +22,7 @@ and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
 
-```typescript
+```ts
 dpt.events.on('peer:added', (peer) => {
   // Do something...
 })
@@ -60,7 +60,7 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 
 Create your peer table:
 
-```typescript
+```ts
 import { DPT } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 
@@ -75,7 +75,7 @@ const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
 
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 
-```typescript
+```ts
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ```
 
@@ -146,13 +146,13 @@ Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common)
 instance with the network you want to connect to:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 Create your `RLPx` object, e.g.:
 
-```typescript
+```ts
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt,
   maxPeers: 25,
@@ -216,7 +216,7 @@ Upper layer protocol for exchanging Ethereum network data like block headers or 
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```typescript
+```ts
 eth.events.once('status', () => {
   // Send an initial message
   eth.sendMessage()
@@ -225,7 +225,7 @@ eth.events.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```typescript
+```ts
 eth.events.on('message', async (code, payload) => {
   if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
     // Do something with your new block hashes :-)
@@ -285,7 +285,7 @@ Upper layer protocol used by light clients, see [./src/protocol/les/](./src/prot
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```typescript
+```ts
 les.events.once('status', () => {
   // Send an initial message
   les.sendMessage()
@@ -294,7 +294,7 @@ les.events.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```typescript
+```ts
 les.events.on('message', async (code, payload) => {
   if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
     // Do something with your new block headers :-)
@@ -339,13 +339,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
