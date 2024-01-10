@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1704904567074,
+  "lastUpdate": 1704911234860,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0170906f2880e01951bc56cc2c86fc263da21cc3",
-          "message": "Mitigate boundprotocol insanities (#3164)\n\n* client/peer: remove bound property\r\n\r\n* client: better typesafety for peers\r\n\r\n* client: add TODO\r\n\r\n* client: move boundprotocol interface\r\n\r\n* client: remove addMethods boundProtocol\r\n\r\n* client: fix net tests\r\n\r\n* Update typing\r\n\r\n* Fix many tests\r\n\r\n* Revert typing changes\r\n\r\n* client: fix more integration tests\r\n\r\n* Remove unused params\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-11-23T22:46:47-05:00",
-          "tree_id": "467813d4d35e1cfd2f5f8d77f9e3ecfe544749cc",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0170906f2880e01951bc56cc2c86fc263da21cc3"
-        },
-        "date": 1700797786618,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39879,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38817,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38496,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36288,
-            "range": "±4.68%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37074,
-            "range": "±2.22%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.04%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7bcb197f2a4388b7c48ab6776b31733308ac0933",
+          "message": "Internalize `crc` (#3224)\n\n* Internalize crc\r\n\r\n* Add tests\r\n\r\n* Add attribution link",
+          "timestamp": "2024-01-10T11:24:29-07:00",
+          "tree_id": "ec1b435a9cdb7eb8ddf61ed72826d593aa368e06",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7bcb197f2a4388b7c48ab6776b31733308ac0933"
+        },
+        "date": 1704911233553,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40527,
+            "range": "±2.91%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38944,
+            "range": "±2.56%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39449,
+            "range": "±2.03%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38323,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34425,
+            "range": "±6.55%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
