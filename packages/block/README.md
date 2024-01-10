@@ -67,7 +67,9 @@ try {
 
 This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
 
-```typescript
+```ts
+// ./examples/1559block.ts
+
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -85,7 +87,7 @@ const block = Block.fromBlockData(
 
 // Base fee will increase for next block since the
 // gas used is greater than half the gas limit
-block.header.calcNextBaseFee().toNumber() // 11
+console.log(Number(block.header.calcNextBaseFee())) // 11
 
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
@@ -93,13 +95,15 @@ block.header.calcNextBaseFee().toNumber() // 11
 const blockWithMatchingBaseFee = Block.fromBlockData(
   {
     header: {
-      baseFeePerGas: parentHeader.calcNextBaseFee(),
+      baseFeePerGas: block.header.calcNextBaseFee(),
       gasLimit: BigInt(100),
       gasUsed: BigInt(60),
     },
   },
   { common }
 )
+
+console.log(Number(blockWithMatchingBaseFee.header.baseFeePerGas)) // 11
 ```
 
 EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and can encompass `FeeMarketEIP1559Transaction` txs (type `2`) (supported by `@ethereumjs/tx` `v3.2.0` or higher) as well as `LegacyTransaction` legacy txs (internal type `0`) and `AccessListEIP2930Transaction` txs (type `1`).
