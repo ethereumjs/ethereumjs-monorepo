@@ -19,7 +19,6 @@ console.log(Number(block.header.calcNextBaseFee())) // 11
 
 // So for creating a block with a matching base fee in a certain
 // chain context you can do:
-
 const blockWithMatchingBaseFee = Block.fromBlockData(
   {
     header: {
