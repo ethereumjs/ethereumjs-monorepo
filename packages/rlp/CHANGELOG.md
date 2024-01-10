@@ -28,14 +28,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -110,13 +110,13 @@ Now every import is a named import and we think the long term benefits will very
 
 The main `RLP` class import has been updated, so import changes from:
 
-```typescript
+```ts
 import RLP from '@ethereumjs/rlp'
 ```
 
 to:
 
-```typescript
+```ts
 import { RLP } from '@ethereumjs/rlp'
 ```
 
@@ -189,7 +189,7 @@ When upgrading from rlp v2 to v3, you must convert your Buffers to Uint8Arrays b
 
 Example:
 
-```typescript
+```ts
 // Old, rlp v2
 import * as rlp from '@ethereumjs/rlp'
 const bufArr = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]

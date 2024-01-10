@@ -32,7 +32,7 @@ npm install @ethereumjs/vm
 
 ### Running a Transaction
 
-```typescript
+```ts
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
@@ -61,7 +61,7 @@ The VM package can also be used to construct a new valid block by executing and 
 
 The following non-complete example gives some illustration on how to use the Block Builder API:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
@@ -110,13 +110,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -142,7 +142,7 @@ Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previo
 
 It is still possible to access all `EVM` functionality through the `evm` property of the initialized `vm` object, e.g.:
 
-```typescript
+```ts
 vm.evm.runCode() // or
 vm.evm.events.on('step', function (data) {
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
@@ -171,7 +171,7 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 
 The following is a simple example for a block run on `Goerli`:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
@@ -190,7 +190,7 @@ For hardfork support see the [Hardfork Support](../evm#hardfork-support) section
 
 An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
@@ -208,7 +208,7 @@ Starting with the v7 release genesis state has been removed from `blockchain` an
 
 For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
 
-```typescript
+```ts
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
@@ -233,7 +233,7 @@ A genesis state can be set along `Blockchain` creation by passing in a custom `g
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
 with the respective EIPs, e.g.:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
@@ -251,7 +251,7 @@ This library supports an experimental version of the blob transaction type intro
 
 To run VM/EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })

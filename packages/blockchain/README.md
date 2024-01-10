@@ -35,7 +35,7 @@ The library also supports reorg scenarios e.g. by allowing to add a new block wi
 
 The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
-```typescript
+```ts
 import { Blockchain } from '@ethereumjs/blockchain'
 import { bytesToHex } from '@ethereumjs/util'
 
@@ -101,7 +101,7 @@ A genesis state can be set along `Blockchain` creation by passing in a custom `g
 
 For many custom chains we might come across a genesis configuration, which can be used to build both chain config as well the genesis state (and hence the genesis block as well to start off with)
 
-```typescript
+```ts
 import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
 
@@ -150,13 +150,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

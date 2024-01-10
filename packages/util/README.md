@@ -19,12 +19,157 @@ npm install @ethereumjs/util
 
 ## Usage
 
-```js
+This package contains the following modules providing respective helper methods, classes and commonly re-used constants.
+
+All helpers are re-exported from the root level and deep imports are not necessary. So an import can be done like this:
+
+```ts
 import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
+```
 
-isValidChecksumAddress('0x2F015C60E0be116B1f0CD534704Db9c92118FB6A') // true
+### Module: [account](src/account.ts)
 
-hexToBytes('0x342770c0')
+Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion).
+
+```ts
+// ./examples/account.ts
+
+import { Account } from '@ethereumjs/util'
+
+const account = Account.fromAccountData({
+  nonce: '0x02',
+  balance: '0x0384',
+  storageRoot: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+  codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+})
+console.log(`Account with nonce=${account.nonce} and balance=${account.balance} created`)
+```
+
+### Module: [address](src/address.ts)
+
+Class representing an Ethereum `Address` with instantiation helpers and validation methods.
+
+```ts
+// ./examples/address.ts
+
+import { Address } from '@ethereumjs/util'
+
+const address = Address.fromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
+console.log(`Ethereum address ${address.toString()} created`)
+```
+
+### Module: [blobs](src/blobs.ts)
+
+Module providing helpers for 4844 blobs and versioned hashes.
+
+```ts
+// ./examples/blobs.ts
+
+import { bytesToHex, computeVersionedHash, getBlobs } from '@ethereumjs/util'
+
+const blobs = getBlobs('test input')
+
+console.log('Created the following blobs:')
+console.log(blobs)
+
+const commitment = new Uint8Array([1, 2, 3])
+const blobCommitmentVersion = 0x01
+const versionedHash = computeVersionedHash(commitment, blobCommitmentVersion)
+
+console.log(`Versioned hash ${bytesToHex(versionedHash)} computed`)
+```
+
+### Module: [bytes](src/bytes.ts)
+
+Byte-related helper and conversion functions.
+
+```ts
+// ./examples/bytes.ts
+
+import { bytesToBigInt } from '@ethereumjs/util'
+
+const bytesValue = new Uint8Array([97])
+const bigIntValue = bytesToBigInt(bytesValue)
+
+console.log(`Converted value: ${bigIntValue}`)
+```
+
+### Module: [constants](src/constants.ts)
+
+Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
+
+```ts
+// ./examples/constants.ts
+
+import { BIGINT_2EXP96, KECCAK256_NULL_S } from '@ethereumjs/util'
+
+console.log(`The keccak-256 hash of null: ${KECCAK256_NULL_S}`)
+console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96}`)
+```
+
+### Module: [db](src/db.ts)
+
+DB interface for database abstraction (Blockchain, Trie), see e.g. [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts)) for usage.
+
+### Module: [genesis](src/genesis.ts)
+
+Genesis related interfaces and helpers.
+
+### Module: [internal](src/internal.ts)
+
+Internalized simple helper methods like `isHexPrefixed`. Note that methods from this module might get deprectared in the future.
+
+### Module: [kzg](src/kzg.ts)
+
+KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) README for main usage instructions.
+
+### Module: [mapDB](src/mapDB.ts)
+
+Simple map DB implementation using the `DB` interface (see above).
+
+### Module: [signature](src/signature.ts)
+
+Functionality for signing, signature validation, conversion, recovery.
+
+```ts
+// ./examples/signature.ts
+
+import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
+
+const chainId = BigInt(3) // Ropsten
+
+const echash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
+const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+const v = BigInt(41)
+
+const pubkey = ecrecover(echash, v, r, s, chainId)
+
+console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
+```
+
+### Module: [types](src/types.ts)
+
+Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
+
+### Module: [withdrawal](src/withdrawal.ts)
+
+Class representing an `EIP-4895` `Withdrawal` with different constructors as well as conversion and output helpers.
+
+```ts
+// ./examples/withdrawal.ts
+
+import { Withdrawal } from '@ethereumjs/util'
+
+const withdrawal = Withdrawal.fromWithdrawalData({
+  index: 0n,
+  validatorIndex: 65535n,
+  address: '0x0000000000000000000000000000000000000000',
+  amount: 0n,
+})
+
+console.log('Withdrawal object created:')
+console.log(withdrawal.toJSON())
 ```
 
 ## Browser
@@ -39,43 +184,13 @@ It is now easily possible to run a browser build of one of the EthereumJS librar
 
 Read the [API docs](docs/).
 
-### Modules
-
-- [account](src/account.ts)
-  - Account class
-  - Private/public key and address-related functionality (creation, validation, conversion)
-- [address](src/address.ts)
-  - Address class and type
-- [blobs](src/blobs.ts)
-  - Helpers for 4844 blobs and versioned hashes
-- [bytes](src/bytes.ts)
-  - Byte-related helper and conversion functions
-- [constants](src/constants.ts)
-  - Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
-- [db](src/db.ts)
-  - DB interface for database abstraction (Blockchain, Trie)
-- [genesis](src/genesis.ts)
-  - Genesis related interfaces and helpers
-- [internal](src/internal.ts)
-  - Internalized helper methods
-- [kzg](src/kzg.ts)
-  - KZG interface (used for 4844 blob txs)
-- [mapDB](src/mapDB.ts)
-  - Simple map DB implementation using the `DB` interface
-- [signature](src/signature.ts)
-  - Signing, signature validation, conversion, recovery
-- [types](src/types.ts)
-  - Helpful TypeScript types
-- [withdrawal](src/withdrawal.ts)
-  - Withdrawal class (EIP-4895)
-
 ### Upgrade Helpers in bytes-Module
 
 Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
 
 We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
 
-```typescript
+```ts
 Buffer.alloc(97) // Allocate a Buffer with length 97
 new Uint8Array(97) // Allocate a Uint8Array with length 97
 
@@ -101,7 +216,7 @@ toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8
 
 Helper methods can be imported like this:
 
-```typescript
+```ts
 import { hexToBytes } from '@ethereumjs/util'
 ```
 
@@ -111,13 +226,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -153,7 +268,7 @@ The following methods are available by an internalized version of the [ethjs-uti
 
 They can be imported by name:
 
-```typescript
+```ts
 import { stripHexPrefix } from '@ethereumjs/util'
 ```
 

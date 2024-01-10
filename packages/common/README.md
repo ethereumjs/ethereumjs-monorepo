@@ -25,13 +25,13 @@ npm install @ethereumjs/common
 
 import (ESM, TypeScript):
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 ```
 
 require (CommonJS, Node.js):
 
-```typescript
+```ts
 const { Common, Chain, Hardfork } = require('@ethereumjs/common')
 ```
 
@@ -39,7 +39,7 @@ const { Common, Chain, Hardfork } = require('@ethereumjs/common')
 
 All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Chain.Mainnet') or the `chain` together with a specific `hardfork` provided:
 
-```typescript
+```ts
 // With enums:
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
@@ -53,7 +53,7 @@ Current `DEFAULT_HARDFORK`: `Hardfork.Shanghai`
 
 Here are some simple usage examples:
 
-```typescript
+```ts
 // Instantiate with the chain (and the default hardfork)
 let c = new Common({ chain: Chain.Mainnet })
 c.param('gasPrices', 'ecAddGas') // 500
@@ -92,13 +92,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -130,7 +130,7 @@ The `Common` class has a public property `events` which contains an `EventEmitte
 
 The `chain` can be set in the constructor like this:
 
-```typescript
+```ts
 const c = new Common({ chain: Chain.Mainnet })
 ```
 
@@ -166,13 +166,13 @@ There are two distinct APIs available for setting up custom(ized) chains.
 
 There is a dedicated `Common.custom()` static constructor which allows for an easy instantiation of a Common instance with somewhat adopted chain parameters, with the main use case to adopt on instantiating with a deviating chain ID (you can use this to adopt other chain parameters as well though). Instantiating a custom common instance with its own chain ID and inheriting all other parameters from `mainnet` can now be as easily done as:
 
-```typescript
+```ts
 const common = Common.custom({ chainId: 1234 })
 ```
 
 The `custom()` method also takes a string as a first input (instead of a dictionary). This can be used in combination with the `CustomChain` enum dict which allows for the selection of predefined supported custom chains for an easier `Common` setup of these supported chains:
 
-```typescript
+```ts
 const common = Common.custom(CustomChain.ArbitrumRinkebyTestnet)
 ```
 
@@ -193,7 +193,7 @@ If you want to initialize a `Common` instance with a single custom chain which i
 you can pass a dictionary - conforming to the parameter format described above - with your custom chain
 values to the constructor using the `chain` parameter or the `setChain()` method, here is some example:
 
-```typescript
+```ts
 import myCustomChain from './[PATH]/myCustomChain.js'
 const common = new Common({ chain: myCustomChain })
 ```
@@ -207,7 +207,7 @@ initialization, so you can add your chains by adding to the `customChains` array
 use the `chain` option to activate one of the custom chains passed or activate a build in chain
 (e.g. `mainnet`) and switch to other chains - including the custom ones - by using `Common.setChain()`.
 
-```typescript
+```ts
 import myCustomChain1 from './[PATH]/myCustomChain1.js'
 import myCustomChain2 from './[PATH]/myCustomChain2.js'
 // Add two custom chains, initial mainnet activation
@@ -229,7 +229,7 @@ For lots of custom chains (for e.g. devnets and testnets), you might come across
 has both config specification for the chain as well as the genesis state specification. You can derive the
 common from such configuration in the following manner:
 
-```typescript
+```ts
 import { Common } from '@ethereumjs/common'
 
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
@@ -243,7 +243,7 @@ common.setForkHashes(genesisHash)
 
 The `hardfork` can be set in constructor like this:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
 const c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium })
@@ -297,7 +297,7 @@ shouldn't be accessed directly until you have a specific reason for it.
 Starting with the `v2.0.0` release of the library, EIPs are now native citizens within the library
 and can be activated like this:
 
-```typescript
+```ts
 const c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 ```
 
