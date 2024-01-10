@@ -24,7 +24,7 @@ npm i @ethereumjs/genesis
 
 ## Usage
 
-```typescript
+```ts
 import { getGenesis } from '@ethereumjs/genesis'
 import { Chain } from '@ethereumjs/common' // or directly use chain ID
 

@@ -37,7 +37,7 @@ For `BlockHeader` instantiation analog factory methods exists, see API docs link
 
 Instantiation Example:
 
-```typescript
+```ts
 import { BlockHeader } from '@ethereumjs/block'
 
 const headerData = {
@@ -54,7 +54,7 @@ Properties of a `Block` or `BlockHeader` object are frozen with `Object.freeze()
 
 API Usage Example:
 
-```typescript
+```ts
 try {
   await block.validateData()
   // Block data validation has passed
@@ -112,7 +112,7 @@ EIP-1559 blocks have an extra `baseFeePerGas` field (default: `BigInt(7)`) and c
 
 Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals. Withdrawals support can be activated by initializing a `Common` object with a hardfork set to `shanghai` (default) or higher and then use the `withdrawals` data option to pass in system-level withdrawal operations together with a matching `withdrawalsRoot` (mandatory when `EIP-4895` is activated) along Block creation, see the following example:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import { Common, Chain } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
@@ -154,7 +154,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -174,7 +174,7 @@ Note: Starting with `v4` consensus validation itself (e.g. Ethash verification) 
 
 An Ethash/PoW block can be instantiated as follows:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
@@ -189,7 +189,7 @@ To calculate the difficulty when creating the block pass in the block option `ca
 
 A clique block can be instantiated as follows:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Goerli })
@@ -200,7 +200,7 @@ const block = Block.fromBlockData({}, { common })
 
 For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
 
-```typescript
+```ts
 const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
 const block = Block.fromHeaderData(headerData, { cliqueSigner })
 ```
@@ -223,7 +223,7 @@ Merge-friendly Casper/PoS blocks have been introduced along with the `v3.5.0` re
 
 You can instantiate a Merge/PoS block like this:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
@@ -253,13 +253,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

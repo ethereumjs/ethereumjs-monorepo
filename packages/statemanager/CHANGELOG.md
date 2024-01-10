@@ -74,14 +74,14 @@ The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefor
 
 Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
 And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
@@ -112,7 +112,7 @@ Also along PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/263
 
 API Change Summary:
 
-```typescript
+```ts
 getAccount(address: Address): Promise<Account> // old
 getAccount(address: Address): Promise<Account | undefined> // new
 
@@ -129,7 +129,7 @@ clearCaches(): void // new
 
 The `StateManagerInterface` has now been moved to the `@ethereum/common` package for more universal access and should be loaded from there with:
 
-```typescript
+```ts
 import type { StateManagerInterface } from '@ethereumjs/common'
 ```
 
@@ -143,14 +143,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -169,7 +169,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // statemanager / StateManagerInterface (in @ethereumjs/common)
 StateManager.putContractCode(address: Address, value: Uint8Array): Promise<void>
 StateManager.getContractCode(address: Address): Promise<Uint8Array>
@@ -222,7 +222,7 @@ Added `EthersStateManager` to direct exports (if you use please fix our deep imp
 
 Import is now simplified to:
 
-```typescript
+```ts
 import { EthersStateManager } from '@ethereumjs/statemanager'
 ```
 
@@ -301,7 +301,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -309,7 +309,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -319,13 +319,13 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 The main `DefaultStateManager` class import has been updated, so import changes from:
 
-```typescript
+```ts
 import DefaultStateManager from '@ethereumjs/statemanager'
 ```
 
 to:
 
-```typescript
+```ts
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 ```
 

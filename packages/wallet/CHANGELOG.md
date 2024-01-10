@@ -38,7 +38,7 @@ All default exports for the libraries have been removed since these cause reoccu
 
 So imports needs to be updated as follows:
 
-```typescript
+```ts
 import Wallet from 'ethereumjs-wallet'
 import { Wallet } from '@ethereumjs/wallet'
 
@@ -59,14 +59,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -85,7 +85,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // wallet
 Wallet.fromPrivateKey()
 Wallet.getPublicKey()
@@ -170,7 +170,7 @@ Wallet.fromPublicKey = function (pub, nonStrict) {
 
 and here the new `TypeScript` code:
 
-```typescript
+```ts
 public static fromPublicKey(publicKey: Buffer, nonStrict: boolean = false): Wallet {
   if (nonStrict) {
     publicKey = importPublic(publicKey)

@@ -75,7 +75,7 @@ Depending on the extend of `Buffer` usage within your own libraries and other pl
 
 We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
 
-```typescript
+```ts
 Buffer.alloc(97) // Allocate a Buffer with length 97
 new Uint8Array(97) // Allocate a Uint8Array with length 97
 
@@ -101,7 +101,7 @@ toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8
 
 Helper methods can be imported like this:
 
-```typescript
+```ts
 import { hexToBytes } from '@ethereumjs/util'
 ```
 
@@ -111,13 +111,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -153,7 +153,7 @@ The following methods are available by an internalized version of the [ethjs-uti
 
 They can be imported by name:
 
-```typescript
+```ts
 import { stripHexPrefix } from '@ethereumjs/util'
 ```
 
