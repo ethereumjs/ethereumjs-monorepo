@@ -679,7 +679,7 @@ export class BlockHeader {
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = this.keccakFunction!(RLP.encode(this.raw()))
+        this.cache.hash = this.keccakFunction!(RLP.encode(this.raw())) as Uint8Array
       }
       return this.cache.hash
     }
