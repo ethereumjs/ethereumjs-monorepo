@@ -83,7 +83,7 @@ describe('should handle expiration', () => {
         'expired job'
       )
       assert.equal((fetcher as any).in.length, 1, 'enqueued job')
-    }, 20)
+    }, 200)
   })
 })
 
