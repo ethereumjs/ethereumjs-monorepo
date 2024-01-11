@@ -185,76 +185,76 @@ describe('Wallet tests', () => {
       'UTC--2016-03-14T01-05-09.265Z--b14ab53e38da1c172f877dbc6d65e4a1b0474c3c'
     )
   }, 30000)
+})
+const pw = 'testtest'
+const salt = 'dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
+const iv = 'cecacd85e9cb89788b5aab2f93361233'
+const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
 
-  const pw = 'testtest'
-  const salt = 'dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
-  const iv = 'cecacd85e9cb89788b5aab2f93361233'
-  const uuid = '7e59dc028d42d09db29aa8a0f862cc81'
+const strKdfOptions = { iv, salt, uuid }
+const bytesKdfOptions = {
+  salt: unprefixedHexToBytes(salt),
+  iv: unprefixedHexToBytes(iv),
+  uuid: unprefixedHexToBytes(uuid),
+}
 
-  const strKdfOptions = { iv, salt, uuid }
-  const bytesKdfOptions = {
-    salt: unprefixedHexToBytes(salt),
-    iv: unprefixedHexToBytes(iv),
-    uuid: unprefixedHexToBytes(uuid),
-  }
-
-  // generate all possible combinations of salt, iv, uuid properties, e.g.
-  // {salt: [string], iv: [Uint8Array], uuid: [string]}
-  // the number of objects is naturally a radix for selecting one of the
-  // input values for a given property; example, three objects and two keys:
-  // [{a: 0, b: 0},
-  //  {a: 1, b: 1},
-  //  {a: 2, b: 2}]
-  type Perm = Array<{
-    salt: string | Uint8Array
-    iv: string | Uint8Array
-    uuid: string | Uint8Array
-  }>
-  const makePermutations = (...objs: Array<object>): Perm => {
-    const permus = []
-    const keys = Array.from(
-      objs.reduce((acc: any, curr: object) => {
-        for (const key of Object.keys(curr)) {
-          acc.add(key)
-        }
-        return acc
-      }, new Set())
-    )
-    const radix = objs.length
-    const numPermus = radix ** keys.length
-    for (let permuIdx = 0; permuIdx < numPermus; permuIdx++) {
-      const selectors = permuIdx
-        .toString(radix)
-        .padStart(keys.length, '0')
-        .split('')
-        .map((v) => parseInt(v, 10))
-      const obj: any = {}
-      for (const [sel, k] of zip(selectors, keys) as [number, string][]) {
-        if (objs[sel as keyof typeof objs]?.[k as keyof typeof objs[0]]) {
-          obj[k] = objs[sel as keyof typeof objs][k as keyof typeof objs[0]]
-        }
+// generate all possible combinations of salt, iv, uuid properties, e.g.
+// {salt: [string], iv: [Uint8Array], uuid: [string]}
+// the number of objects is naturally a radix for selecting one of the
+// input values for a given property; example, three objects and two keys:
+// [{a: 0, b: 0},
+//  {a: 1, b: 1},
+//  {a: 2, b: 2}]
+type Perm = Array<{
+  salt: string | Uint8Array
+  iv: string | Uint8Array
+  uuid: string | Uint8Array
+}>
+const makePermutations = (...objs: Array<object>): Perm => {
+  const permus = []
+  const keys = Array.from(
+    objs.reduce((acc: any, curr: object) => {
+      for (const key of Object.keys(curr)) {
+        acc.add(key)
       }
-      permus.push(obj)
-    }
-    return permus
-  }
-
-  const makeEthersOptions = (opts: object) => {
+      return acc
+    }, new Set())
+  )
+  const radix = objs.length
+  const numPermus = radix ** keys.length
+  for (let permuIdx = 0; permuIdx < numPermus; permuIdx++) {
+    const selectors = permuIdx
+      .toString(radix)
+      .padStart(keys.length, '0')
+      .split('')
+      .map((v) => parseInt(v, 10))
     const obj: any = {}
-    for (const [key, val] of Object.entries(opts)) {
-      obj[key] = typeof val === 'string' ? '0x' + val : val
+    for (const [sel, k] of zip(selectors, keys) as [number, string][]) {
+      if (objs[sel as keyof typeof objs]?.[k as keyof typeof objs[0]]) {
+        obj[k] = objs[sel as keyof typeof objs][k as keyof typeof objs[0]]
+      }
     }
-    return obj
+    permus.push(obj)
   }
+  return permus
+}
 
-  let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
-
-  if (isBrowser() === true) {
-    // These tests take a long time in the browser due to
-    // the amount of permutations so we will shorten them.
-    permutations = permutations.slice(1)
+const makeEthersOptions = (opts: object) => {
+  const obj: any = {}
+  for (const [key, val] of Object.entries(opts)) {
+    obj[key] = typeof val === 'string' ? '0x' + val : val
   }
+  return obj
+}
 
+let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
+
+if (isBrowser() === true) {
+  // These tests take a long time in the browser due to
+  // the amount of permutations so we will shorten them.
+  permutations = permutations.slice(1)
+}
+describe('should work with...', async () => {
   it('.toV3(): should work with PBKDF2', async () => {
     const w =
       '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
