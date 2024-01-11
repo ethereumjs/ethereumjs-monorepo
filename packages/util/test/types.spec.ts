@@ -23,7 +23,7 @@ describe('toType', () => {
     assert.equal(toType(undefined, TypeOutput.PrefixedHexString), undefined)
   })
 })
-describe.only('from Number', () => {
+describe('toType from Number', () => {
   const num = 1000
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -48,7 +48,7 @@ describe.only('from Number', () => {
     }, /^The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative input type\)$/)
   })
 })
-it('from BigInt', () => {
+describe('toType from BigInt', () => {
   const num = BigInt(1000)
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -70,10 +70,10 @@ it('from BigInt', () => {
     const num = BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)
     assert.throws(() => {
       toType(num, TypeOutput.Number)
-    }, /^Error: The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative output type\)$/)
+    }, /^The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative output type\)$/)
   })
 })
-it('from Uint8Array', () => {
+describe('toType from Uint8Array', () => {
   const num = intToBytes(1000)
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -92,7 +92,7 @@ it('from Uint8Array', () => {
     assert.strictEqual(result, bytesToHex(num))
   })
 })
-it('from PrefixedHexString', () => {
+describe('toType from PrefixedHexString', () => {
   const num = intToHex(1000)
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -109,6 +109,6 @@ it('from PrefixedHexString', () => {
   it('should throw an error if is not 0x-prefixed', () => {
     assert.throws(() => {
       toType('1', TypeOutput.Number)
-    }, /^Error: A string must be provided with a 0x-prefix, given: 1$/)
+    }, /^A string must be provided with a 0x-prefix, given: 1$/)
   })
 })
