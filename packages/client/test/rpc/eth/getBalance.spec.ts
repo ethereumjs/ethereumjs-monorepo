@@ -13,99 +13,100 @@ import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getBalance'
 
-describe(
-  method,
-  () => {
-    it('ensure balance deducts after a tx', async () => {
-      const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-      const blockchain = await Blockchain.create({ common })
+describe(method, async () => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+  const blockchain = await Blockchain.create({ common })
 
-      const client = await createClient({ blockchain, commonChain: common, includeVM: true })
-      const manager = createManager(client)
+  const client = await createClient({ blockchain, commonChain: common, includeVM: true })
+  const manager = createManager(client)
 
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
+  const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-      const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
-      assert.notEqual(execution, undefined, 'should have valid execution')
-      const { vm } = execution
+  const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+  assert.notEqual(execution, undefined, 'should have valid execution')
+  const { vm } = execution
 
-      // since synchronizer.run() is not executed in the mock setup,
-      // manually run stateManager.generateCanonicalGenesis()
-      await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
+  // since synchronizer.run() is not executed in the mock setup,
+  // manually run stateManager.generateCanonicalGenesis()
+  await vm.stateManager.generateCanonicalGenesis(getGenesis(1))
 
-      // genesis address with balance
-      const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
+  // genesis address with balance
+  const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
-      // verify balance is genesis amount
-      const genesisBalance = BigInt(0x15ac56edc4d12c0000)
-      let res = await rpc.request(method, [address.toString(), 'latest'])
+  // verify balance is genesis amount
+  const genesisBalance = BigInt(0x15ac56edc4d12c0000)
+  it('verifies balance is genesis amaount', async () => {
+    const res = await rpc.request(method, [address.toString(), 'latest'])
 
-      assert.equal(
-        res.result,
-        bigIntToHex(genesisBalance),
-        'should return the correct genesis balance'
-      )
+    assert.equal(
+      res.result,
+      bigIntToHex(genesisBalance),
+      'should return the correct genesis balance'
+    )
+  })
+  // construct block with tx
+  const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
+  tx.getSenderAddress = () => {
+    return address
+  }
+  const block = Block.fromBlockData({}, { common })
+  block.transactions[0] = tx
 
-      // construct block with tx
-      const tx = LegacyTransaction.fromTxData({ gasLimit: 53000 }, { common, freeze: false })
-      tx.getSenderAddress = () => {
-        return address
-      }
-      const block = Block.fromBlockData({}, { common })
-      block.transactions[0] = tx
+  const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
+  const { amountSpent } = result.results[0]
 
-      const result = await vm.runBlock({ block, generate: true, skipBlockValidation: true })
-      const { amountSpent } = result.results[0]
+  // verify balance is genesis amount minus amountSpent
+  const expectedNewBalance = genesisBalance - amountSpent
+  it('should return the correct balance after a tx', async () => {
+    const res = await rpc.request(method, [address.toString(), 'latest'])
+    assert.equal(
+      res.result,
+      bigIntToHex(expectedNewBalance),
+      'should return the correct balance after a tx'
+    )
+  })
+  it('can query with "earliest"', async () => {
+    // verify we can query with "earliest"
+    const res = await rpc.request(method, [address.toString(), 'earliest'])
+    assert.equal(
+      res.result,
+      bigIntToHex(genesisBalance),
+      "should return the correct balance with 'earliest'"
+    )
+  })
+  it('should return the correct balance with a past block number', async () => {
+    // verify we can query with a past block number
+    const res = await rpc.request(method, [address.toString(), '0x0'])
+    assert.equal(
+      res.result,
+      bigIntToHex(genesisBalance),
+      'should return the correct balance with a past block number'
+    )
+  })
+  it('ensure balance deducts after a tx', async () => {
+    // call with height that exceeds chain height
+    const res = await rpc.request(method, [address.toString(), '0x1'])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('specified block greater than current height'))
+  })
 
-      // verify balance is genesis amount minus amountSpent
-      const expectedNewBalance = genesisBalance - amountSpent
-      res = await rpc.request(method, [address.toString(), 'latest'])
-      assert.equal(
-        res.result,
-        bigIntToHex(expectedNewBalance),
-        'should return the correct balance after a tx'
-      )
+  it('ensure balance deducts after a tx', async () => {
+    // call with nonexistent account
+    const res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
+    assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
+  })
+})
 
-      // verify we can query with "earliest"
-      res = await rpc.request(method, [address.toString(), 'earliest'])
-      assert.equal(
-        res.result,
-        bigIntToHex(genesisBalance),
-        "should return the correct balance with 'earliest'"
-      )
+describe(method + ': call with unsupported block argument', async () => {
+  const blockchain = await Blockchain.create()
 
-      // verify we can query with a past block number
-      res = await rpc.request(method, [address.toString(), '0x0'])
-      assert.equal(
-        res.result,
-        bigIntToHex(genesisBalance),
-        'should return the correct balance with a past block number'
-      )
+  const client = await createClient({ blockchain, includeVM: true })
+  const manager = createManager(client)
+  const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-      // call with height that exceeds chain height
-      res = await rpc.request(method, [address.toString(), '0x1'])
-      assert.equal(res.error.code, INVALID_PARAMS)
-      assert.ok(res.error.message.includes('specified block greater than current height'))
-
-      // call with nonexistent account
-      res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
-      assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-    })
-
-    it('call with unsupported block argument', async () => {
-      const blockchain = await Blockchain.create()
-
-      const client = await createClient({ blockchain, includeVM: true })
-      const manager = createManager(client)
-      const rpc = getRpcClient(startRPC(manager.getMethods()))
-
-      const res = await rpc.request(method, [
-        '0xccfd725760a68823ff1e062f4cc97e1360e8d997',
-        'pending',
-      ])
-      assert.equal(res.error.code, INVALID_PARAMS)
-      assert.ok(res.error.message.includes('"pending" is not yet supported'))
-    })
-  },
-  30000
-)
+  const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
+  it('should throw invalid params error', () => {
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+  })
+})
