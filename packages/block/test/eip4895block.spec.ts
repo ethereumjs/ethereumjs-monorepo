@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
 import { Address, KECCAK256_RLP, Withdrawal, hexToBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -38,7 +39,7 @@ describe('EIP4895 tests', () => {
     assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
     const gethWitdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     assert.deepEqual(
-      await Block.genWithdrawalsTrieRoot(withdrawals),
+      await Block.genWithdrawalsTrieRoot(withdrawals, new Trie()),
       gethWitdrawalsRoot,
       'withdrawalsRoot should be valid'
     )

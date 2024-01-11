@@ -70,8 +70,8 @@ export class Block {
    * @param wts array of Withdrawal to compute the root of
    * @param optional emptyTrie to use to generate the root
    */
-  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
-    const trie = emptyTrie ?? new Trie()
+  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie: Trie) {
+    const trie = emptyTrie
     for (const [i, wt] of wts.entries()) {
       await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
     }
@@ -83,8 +83,8 @@ export class Block {
    * @param txs array of TypedTransaction to compute the root of
    * @param optional emptyTrie to use to generate the root
    */
-  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
-    const trie = emptyTrie ?? new Trie()
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie: Trie) {
+    const trie = emptyTrie
     for (const [i, tx] of txs.entries()) {
       await trie.put(RLP.encode(i), tx.serialize())
     }
@@ -354,10 +354,13 @@ export class Block {
       }
     }
 
-    const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
+    const transactionsTrie = await Block.genTransactionsTrieRoot(
+      txs,
+      new Trie({ common: opts?.common })
+    )
     const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
     const withdrawalsRoot = withdrawals
-      ? await Block.genWithdrawalsTrieRoot(withdrawals)
+      ? await Block.genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
       : undefined
     const header: HeaderData = {
       ...payload,
@@ -528,7 +531,7 @@ export class Block {
    * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<Uint8Array> {
-    return Block.genTransactionsTrieRoot(this.transactions, new Trie())
+    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
   }
 
   /**
@@ -725,7 +728,10 @@ export class Block {
     if (!this.common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(
+      this.withdrawals!,
+      new Trie({ common: this.common })
+    )
     return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
   }
 
