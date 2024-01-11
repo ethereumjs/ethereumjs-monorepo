@@ -65,10 +65,9 @@ export class BlockHeader {
 
   public readonly common: Common
 
-  private keccakFunction?: Function
-  private static keccakFunction: ((msg: Uint8Array) => Uint8Array) | undefined
+  protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
-  private cache: HeaderCache = {
+  protected cache: HeaderCache = {
     hash: undefined,
   }
 
@@ -92,7 +91,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {}) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
     return new BlockHeader(headerData, opts)
   }
 
@@ -103,7 +101,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromRLPSerializedHeader(serializedHeaderData: Uint8Array, opts: BlockOptions = {}) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
     const values = RLP.decode(serializedHeaderData)
     if (!Array.isArray(values)) {
       throw new Error('Invalid serialized header input. Must be array')
@@ -118,7 +115,6 @@ export class BlockHeader {
    * @param opts
    */
   public static fromValuesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
     const headerData = valuesArrayToHeaderData(values)
     const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot } = headerData
     const header = BlockHeader.fromHeaderData(headerData, opts)
@@ -158,7 +154,7 @@ export class BlockHeader {
         chain: Chain.Mainnet, // default
       })
     }
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
 
@@ -679,11 +675,11 @@ export class BlockHeader {
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
       if (!this.cache.hash) {
-        this.cache.hash = this.keccakFunction!(RLP.encode(this.raw())) as Uint8Array
+        this.cache.hash = this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
       }
       return this.cache.hash
     }
-    return this.keccakFunction!(RLP.encode(this.raw()))
+    return this.keccakFunction(RLP.encode(this.raw()))
   }
 
   /**
@@ -782,7 +778,7 @@ export class BlockHeader {
     this._requireClique('cliqueSigHash')
     const raw = this.raw()
     raw[12] = this.extraData.subarray(0, this.extraData.length - CLIQUE_EXTRA_SEAL)
-    return this.keccakFunction!(RLP.encode(raw))
+    return this.keccakFunction(RLP.encode(raw))
   }
 
   /**

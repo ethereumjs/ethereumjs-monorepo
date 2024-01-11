@@ -51,7 +51,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly common: Common
-  private keccakFunction?: Function
+  protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
@@ -60,18 +60,17 @@ export class Block {
    */
   public readonly executionWitness?: VerkleExecutionWitness | null
 
-  private cache: {
+  protected cache: {
     txTrieRoot?: Uint8Array
   } = {}
-  private static keccakFunction: ((msg: Uint8Array) => Uint8Array) | undefined
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
    * @param wts array of Withdrawal to compute the root of
    * @param optional emptyTrie to use to generate the root
    */
-  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie: Trie) {
-    const trie = emptyTrie
+  public static async genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
     for (const [i, wt] of wts.entries()) {
       await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
     }
@@ -83,8 +82,8 @@ export class Block {
    * @param txs array of TypedTransaction to compute the root of
    * @param optional emptyTrie to use to generate the root
    */
-  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie: Trie) {
-    const trie = emptyTrie
+  public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
     for (const [i, tx] of txs.entries()) {
       await trie.put(RLP.encode(i), tx.serialize())
     }
@@ -105,7 +104,6 @@ export class Block {
       withdrawals: withdrawalsData,
       executionWitness: executionWitnessData,
     } = blockData
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
@@ -153,8 +151,6 @@ export class Block {
    * @param opts
    */
   public static fromRLPSerializedBlock(serialized: Uint8Array, opts?: BlockOptions) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
     if (!Array.isArray(values)) {
@@ -171,8 +167,6 @@ export class Block {
    * @param opts
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     if (values.length > 5) {
       throw new Error(`invalid block. More values=${values.length} than expected were received`)
     }
@@ -251,8 +245,6 @@ export class Block {
    * @param opts - An object describing the blockchain
    */
   public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     return blockFromRpc(blockData, uncles, opts)
   }
 
@@ -268,8 +260,6 @@ export class Block {
     blockTag: string | bigint,
     opts: BlockOptions
   ) => {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     let blockData
     const providerUrl = getProvider(provider)
 
@@ -329,8 +319,6 @@ export class Block {
     payload: ExecutionPayload,
     opts?: BlockOptions
   ): Promise<Block> {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     const {
       blockNumber: number,
       receiptsRoot: receiptTrie,
@@ -404,8 +392,6 @@ export class Block {
     payload: BeaconPayloadJson,
     opts?: BlockOptions
   ): Promise<Block> {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     const executionPayload = executionPayloadFromBeaconPayload(payload)
     return Block.fromExecutionPayload(executionPayload, opts)
   }
@@ -422,10 +408,9 @@ export class Block {
     opts: BlockOptions = {},
     executionWitness?: VerkleExecutionWitness | null
   ) {
-    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
-
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
@@ -717,7 +702,7 @@ export class Block {
   uncleHashIsValid(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
-    return equalsBytes(this.keccakFunction!(raw), this.header.uncleHash)
+    return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
   }
 
   /**
