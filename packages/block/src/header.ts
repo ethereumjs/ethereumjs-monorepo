@@ -150,18 +150,17 @@ export class BlockHeader {
    * varying data types. For a default empty header, use {@link BlockHeader.fromHeaderData}.
    *
    */
-  constructor(headerData: HeaderData, options: BlockOptions = {}) {
-    if (options.common) {
-      this.common = options.common.copy()
+  constructor(headerData: HeaderData, opts: BlockOptions = {}) {
+    if (opts.common) {
+      this.common = opts.common.copy()
     } else {
       this.common = new Common({
         chain: Chain.Mainnet, // default
       })
     }
-    this.keccakFunction =
-      this.keccakFunction ?? options?.common?.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.keccakFunction ?? opts?.common?.customCrypto.keccak256 ?? keccak256
 
-    const skipValidateConsensusFormat = options.skipConsensusFormatValidation ?? false
+    const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
 
     const defaults = {
       parentHash: zeros(32),
@@ -201,7 +200,7 @@ export class BlockHeader {
     const mixHash = toType(headerData.mixHash, TypeOutput.Uint8Array) ?? defaults.mixHash
     const nonce = toType(headerData.nonce, TypeOutput.Uint8Array) ?? defaults.nonce
 
-    const setHardfork = options.setHardfork ?? false
+    const setHardfork = opts.setHardfork ?? false
     if (setHardfork === true) {
       this.common.setHardforkBy({
         blockNumber: number,
@@ -293,14 +292,14 @@ export class BlockHeader {
     // `difficulty` value (defaults to 0). If we have a `calcDifficultyFromHeader`
     // block option parameter, we instead set difficulty to this value.
     if (
-      options.calcDifficultyFromHeader &&
+      opts.calcDifficultyFromHeader &&
       this.common.consensusAlgorithm() === ConsensusAlgorithm.Ethash
     ) {
-      this.difficulty = this.ethashCanonicalDifficulty(options.calcDifficultyFromHeader)
+      this.difficulty = this.ethashCanonicalDifficulty(opts.calcDifficultyFromHeader)
     }
 
     // If cliqueSigner is provided, seal block with provided privateKey.
-    if (options.cliqueSigner) {
+    if (opts.cliqueSigner) {
       // Ensure extraData is at least length CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       const minExtraDataLength = CLIQUE_EXTRA_VANITY + CLIQUE_EXTRA_SEAL
       if (this.extraData.length < minExtraDataLength) {
@@ -308,13 +307,13 @@ export class BlockHeader {
         this.extraData = concatBytes(this.extraData, new Uint8Array(remainingLength))
       }
 
-      this.extraData = this.cliqueSealBlock(options.cliqueSigner)
+      this.extraData = this.cliqueSealBlock(opts.cliqueSigner)
     }
 
     // Validate consensus format after block is sealed (if applicable) so extraData checks will pass
     if (skipValidateConsensusFormat === false) this._consensusFormatValidation()
 
-    const freeze = options?.freeze ?? true
+    const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
     }
