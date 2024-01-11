@@ -427,7 +427,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
 
   let receiptTrie: Trie | undefined = undefined
   if (block.transactions.length !== 0) {
-    receiptTrie = new Trie()
+    receiptTrie = new Trie({ common: this.common })
   }
 
   const receipts = []
@@ -632,7 +632,7 @@ async function _genTxTrie(block: Block) {
   if (block.transactions.length === 0) {
     return KECCAK256_RLP
   }
-  const trie = new Trie()
+  const trie = new Trie({ common: block.common })
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())
   }
