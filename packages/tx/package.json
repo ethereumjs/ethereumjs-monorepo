@@ -70,8 +70,6 @@
     }
   },
   "devDependencies": {
-    "@polkadot/util": "^12.6.2",
-    "@polkadot/wasm-crypto": "^7.3.2",
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
     "minimist": "^1.2.0",
