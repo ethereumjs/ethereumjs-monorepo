@@ -171,7 +171,7 @@ describe('EIP4895 tests', () => {
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals),
+          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals, new Trie()),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
