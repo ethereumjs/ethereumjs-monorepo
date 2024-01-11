@@ -1129,11 +1129,14 @@ export const handlers: Map<number, OpHandler> = new Map([
       const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
       const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
-      const msgHash = keccak256(message)
+
+      const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
+      const msgHash = keccakFunction(message)
 
       let recover
+      const ecrecoverFunction = runState.interpreter._evm.common.customCrypto.ecrecover ?? ecrecover
       try {
-        recover = ecrecover(msgHash, yParity + BIGINT_27, r, s)
+        recover = ecrecoverFunction(msgHash, yParity + BIGINT_27, r, s)
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BIGINT_0)
