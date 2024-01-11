@@ -2,7 +2,6 @@ import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { decode } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 import {
   Account,
@@ -149,7 +148,7 @@ describe('EIP4895 tests', () => {
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals.slice(0, 1), new Trie()),
+          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals.slice(0, 1)),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
@@ -171,7 +170,7 @@ describe('EIP4895 tests', () => {
       {
         header: {
           baseFeePerGas: BigInt(7),
-          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals, new Trie()),
+          withdrawalsRoot: await Block.genWithdrawalsTrieRoot(withdrawals),
           transactionsTrie: KECCAK256_RLP,
         },
         transactions: [],
