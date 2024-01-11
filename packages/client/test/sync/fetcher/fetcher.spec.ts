@@ -24,7 +24,7 @@ class FetcherTest extends Fetcher<any, any, any> {
   }
 }
 
-describe('[Fetcher]', () => {
+describe('should handle bad result', () => {
   it('should handle bad result', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object() })
@@ -37,7 +37,9 @@ describe('[Fetcher]', () => {
     assert.equal((fetcher as any).in.length, 1, 'enqueued job')
     setTimeout(() => assert.ok(job.peer.idle, 'peer idled'), 10)
   })
+})
 
+describe('should handle failure', () => {
   it('should handle failure', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object() })
@@ -50,7 +52,9 @@ describe('[Fetcher]', () => {
     ;(fetcher as any).failure(job as Job<any, any, any>, new Error('err0'))
     assert.equal((fetcher as any).in.length, 1, 'enqueued job')
   })
+})
 
+describe('should handle expiration', () => {
   it('should handle expiration', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
@@ -81,7 +85,9 @@ describe('[Fetcher]', () => {
       assert.equal((fetcher as any).in.length, 1, 'enqueued job')
     }, 20)
   })
+})
 
+describe('should handle queue management', () => {
   it('should handle queue management', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
@@ -108,7 +114,9 @@ describe('[Fetcher]', () => {
 
     assert.ok(fetcher.next() === false, 'next() fails when heap length exceeds maxQueue')
   })
+})
 
+describe('should re-enqueue on a non-fatal error', () => {
   it('should re-enqueue on a non-fatal error', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
@@ -135,11 +143,9 @@ describe('[Fetcher]', () => {
       )
     }, 20)
   })
+})
 
-  it('should reset td', () => {
-    td.reset()
-  })
-
+describe('should handle fatal errors correctly', () => {
   it('should handle fatal errors correctly', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
