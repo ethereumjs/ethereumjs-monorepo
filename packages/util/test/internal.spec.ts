@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
+import { bytesToUtf8, utf8ToBytes } from '../src/bytes.js'
 import {
   arrayContainsArray,
-  bytesToUtf8,
   fromAscii,
   fromUtf8,
   getBinarySize,
@@ -12,8 +12,7 @@ import {
   padToEven,
   stripHexPrefix,
   toAscii,
-  utf8ToBytes,
-} from '../src/index.js'
+} from '../src/internal.js'
 
 const buf = utf8ToBytes('hello')
 

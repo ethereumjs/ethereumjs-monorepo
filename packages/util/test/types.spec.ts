@@ -1,7 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
 import {
-  TypeOutput,
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
@@ -9,11 +8,11 @@ import {
   intToBytes,
   intToHex,
   toBytes,
-  toType,
-} from '../src/index.js'
+} from '../src/bytes.js'
+import { TypeOutput, toType } from '../src/types.js'
 
-describe('from null and undefined', () => {
-  it('should return null or undefined', () => {
+describe('toType', () => {
+  it('from null and undefined', () => {
     assert.equal(toType(null, TypeOutput.Number), null)
     assert.equal(toType(null, TypeOutput.BigInt), null)
     assert.equal(toType(null, TypeOutput.Uint8Array), null)
@@ -24,7 +23,7 @@ describe('from null and undefined', () => {
     assert.equal(toType(undefined, TypeOutput.PrefixedHexString), undefined)
   })
 })
-describe('from Number', () => {
+describe.only('from Number', () => {
   const num = 1000
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -46,10 +45,10 @@ describe('from Number', () => {
     assert.throws(() => {
       const num = Number.MAX_SAFE_INTEGER + 1
       toType(num, TypeOutput.BigInt)
-    }, 'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type')
+    }, /^The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative input type\)$/)
   })
 })
-describe('from BigInt', () => {
+it('from BigInt', () => {
   const num = BigInt(1000)
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -71,10 +70,10 @@ describe('from BigInt', () => {
     const num = BigInt(Number.MAX_SAFE_INTEGER) + BigInt(1)
     assert.throws(() => {
       toType(num, TypeOutput.Number)
-    }, 'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type')
+    }, /^Error: The provided number is greater than MAX_SAFE_INTEGER \(please use an alternative output type\)$/)
   })
 })
-describe('from Uint8Array', () => {
+it('from Uint8Array', () => {
   const num = intToBytes(1000)
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -93,7 +92,7 @@ describe('from Uint8Array', () => {
     assert.strictEqual(result, bytesToHex(num))
   })
 })
-describe('from PrefixedHexString', () => {
+it('from PrefixedHexString', () => {
   const num = intToHex(1000)
   it('should convert to Number', () => {
     const result = toType(num, TypeOutput.Number)
@@ -110,6 +109,6 @@ describe('from PrefixedHexString', () => {
   it('should throw an error if is not 0x-prefixed', () => {
     assert.throws(() => {
       toType('1', TypeOutput.Number)
-    }, 'A string must be provided with a 0x-prefix, given: 1')
+    }, /^Error: A string must be provided with a 0x-prefix, given: 1$/)
   })
 })

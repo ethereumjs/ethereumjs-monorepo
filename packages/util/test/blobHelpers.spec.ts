@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { commitmentsToVersionedHashes, computeVersionedHash, getBlobs } from '../src/index.js'
+import { commitmentsToVersionedHashes, computeVersionedHash, getBlobs } from '../src/blobs.js'
 
 describe('blob helper tests', () => {
   it('getBlobs should return an array of Uint8Array blobs', () => {

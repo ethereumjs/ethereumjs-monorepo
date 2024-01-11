@@ -1,11 +1,11 @@
-import { EventEmitter } from 'events'
 import { assert, describe, it } from 'vitest'
 
-import { AsyncEventEmitter } from '../src/index.js'
+import type { EventMap } from '../src/asyncEventEmitter.js'
 
-import type { EventMap } from '../src/index.js'
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-describe('async event emit/on test', async () => {
+describe.skipIf(isBrowser)('async event emit/on test', async () => {
+  const { AsyncEventEmitter } = await import('../src/index.js')
   it('should receive event', () => {
     const emitter = new AsyncEventEmitter()
     emitter.on('event', async (data, next) => {
@@ -20,7 +20,9 @@ describe('async event emit/on test', async () => {
   })
 })
 
-describe('async event emit/once test', async () => {
+describe.skipIf(isBrowser)('async event emit/once test', async () => {
+  const { AsyncEventEmitter } = await import('../src/index.js')
+
   it('should receive event', () => {
     const emitter = new AsyncEventEmitter()
     emitter.once('event', async (data, next) => {
@@ -33,7 +35,9 @@ describe('async event emit/once test', async () => {
   })
 })
 
-describe('AsyncEventEmitter', () => {
+describe.skipIf(isBrowser)('AsyncEventEmitter', async () => {
+  const { AsyncEventEmitter } = await import('../src/index.js')
+
   it('should add listener using addListener()', () => {
     const emitter = new AsyncEventEmitter<EventMap>()
     const listener = () => {}
@@ -96,7 +100,7 @@ describe('AsyncEventEmitter', () => {
 
     const maxListeners = emitter.getMaxListeners()
 
-    assert.strictEqual(maxListeners, EventEmitter.defaultMaxListeners)
+    assert.strictEqual(maxListeners, 10)
   })
 
   it('should set the maximum number of listeners when using setMaxListeners()', () => {

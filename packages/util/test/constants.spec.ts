@@ -1,5 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
+import { bytesToHex } from '../src/bytes.js'
 import {
   KECCAK256_NULL,
   KECCAK256_NULL_S,
@@ -9,8 +10,7 @@ import {
   KECCAK256_RLP_S,
   MAX_INTEGER,
   TWO_POW256,
-  bytesToHex,
-} from '../src/index.js'
+} from '../src/constants.js'
 
 describe('constants', () => {
   it('should match constants', () => {
