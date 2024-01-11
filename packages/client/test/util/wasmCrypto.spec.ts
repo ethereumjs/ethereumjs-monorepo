@@ -1,7 +1,6 @@
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { calculateSigRecovery, concatBytes, randomBytes, setLengthLeft } from '@ethereumjs/util'
-import { u8aToHex as _u8aToHex } from '@polkadot/util'
 import { keccak256, secp256k1Expand, secp256k1Recover, waitReady } from '@polkadot/wasm-crypto'
 import { assert, describe, it } from 'vitest'
 describe('WASM crypto tests', () => {
