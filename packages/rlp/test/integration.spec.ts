@@ -1,7 +1,4 @@
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import { assert, describe, it } from 'vitest'
-import * as vm from 'vm'
 
 import { RLP } from '../src/index.js'
 
@@ -18,12 +15,13 @@ describe('Distribution', () => {
   })
 })
 
-const execAsync = promisify(exec)
-
-describe.skipIf(isBrowser)('CLI command', () => {
+describe.skipIf(isBrowser)('CLI command', async () => {
+  // const { promisify } = await import('util')
+  const { exec } = await import('child_process')
+  // const execAsync = promisify(exec)
   it('should be able to run CLI command', async () => {
-    const result = await execAsync('./bin/rlp encode "[ 5 ]"')
-    const resultFormatted = result.stdout.trim()
+    const result = exec('./bin/rlp encode "[ 5 ]"')
+    const resultFormatted = result.stdout!.read().trim()
     assert.deepEqual(resultFormatted, '0xc105')
   })
 
@@ -39,17 +37,15 @@ describe.skipIf(isBrowser)('CLI command', () => {
         }
 
         const json = JSON.stringify(incoming)
-        const encodeResult = await execAsync(`./bin/rlp encode '${json}'`)
-        const encodeResultTrimmed = encodeResult.stdout.trim()
+        const encodeResult = exec(`./bin/rlp encode '${json}'`)
+        const encodeResultTrimmed = encodeResult.stdout?.read().trim()
         assert.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
       }
     },
     { timeout: 10000 }
   )
-})
-
-describe('Cross-frame', () => {
-  it('should be able to encode Arrays across stack frames', () => {
+  it('should be able to encode Arrays across stack frames', async () => {
+    const vm = await import('vm')
     assert.deepEqual(
       vm.runInNewContext(
         "Array.from(RLP.encode(['dog', 'god', 'cat'])).map(n => n.toString(16).padStart(2, '0')).join('')",
