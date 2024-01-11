@@ -139,18 +139,29 @@ A genesis state can be set along `Blockchain` creation by passing in a custom `g
 For many custom chains we might come across a genesis configuration, which can be used to build both chain config as well the genesis state (and hence the genesis block as well to start off with)
 
 ```ts
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
-import { Common, parseGethGenesis } from '@ethereumjs/common'
+// ./examples/gethGenesis.ts
 
-// Load geth genesis json file into lets say `gethGenesisJson`
-const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
-const genesisState = parseGethGenesisState(gethGenesisJson)
-const blockchain = await Blockchain.create({
-  genesisState,
-  common,
-})
-const genesisBlockHash = blockchain.genesisBlock.hash()
-common.setForkHashes(genesisBlockHash)
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
+import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
+import gethGenesisJson from './genesisData/post-merge.json'
+
+const main = async () => {
+  // Load geth genesis json file into lets say `gethGenesisJson`
+  const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
+  const genesisState = parseGethGenesisState(gethGenesisJson)
+  const blockchain = await Blockchain.create({
+    genesisState,
+    common,
+  })
+  const genesisBlockHash = blockchain.genesisBlock.hash()
+  common.setForkHashes(genesisBlockHash)
+  console.log(
+    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`
+  )
+}
+
+main()
 ```
 
 The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
