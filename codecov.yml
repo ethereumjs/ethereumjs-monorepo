@@ -13,3 +13,5 @@ comment:
 flags:
   rlp:
     carryforward: true
+ignore:
+  - "**/*.config.ts"
