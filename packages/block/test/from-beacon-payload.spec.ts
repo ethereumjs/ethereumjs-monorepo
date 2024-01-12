@@ -1,13 +1,13 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
+import shardingJson from '../../client/test/sim/configs/4844-devnet.json'
 import { Block, BlockHeader } from '../src/index.js'
 
-import * as payloadKaustinen from './testdata/payload-kaustinen.json'
-import * as payload87335 from './testdata/payload-slot-87335.json'
-import * as payload87475 from './testdata/payload-slot-87475.json'
-import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
+import payloadKaustinen from './testdata/payload-kaustinen.json'
+import payload87335 from './testdata/payload-slot-87335.json'
+import payload87475 from './testdata/payload-slot-87475.json'
+import testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
@@ -78,12 +78,12 @@ describe('[fromExecutionPayloadJson]: kaustinen', () => {
   })
   it('reconstruct kaustinen block', async () => {
     assert.ok(common.isActivatedEIP(6800), 'verkle eip should be activated')
-    const block = await Block.fromBeaconPayloadJson(payloadKaustinen, { common })
+    const block = await Block.fromBeaconPayloadJson(payloadKaustinen as any, { common })
     // the witness object in payload has camel casing for now
     // the current block hash doesn't include witness data so deep match is required
     assert.deepEqual(
       block.executionWitness,
-      payloadKaustinen.execution_witness,
+      payloadKaustinen.execution_witness as any,
       'execution witness should match'
     )
   })

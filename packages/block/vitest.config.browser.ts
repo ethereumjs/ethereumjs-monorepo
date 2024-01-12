@@ -1,16 +1,20 @@
-import { configDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../config/vitest.config.browser'
 
-export default defineConfig({
-  test: {
-    exclude: [
-      ...configDefaults.exclude,
-      // c-kzg dependency
-      'test/eip4844block.spec.ts',
-      // Cannot access uninitialized variable.
-      // (likely local fix possible)
-      'test/mergeBlock.spec.ts',
-      'test/eip4895block.spec.ts',
-      'test/eip1559block.spec.ts',
-    ],
-  },
-})
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    test: {
+      exclude: [
+        ...configDefaults.exclude,
+        // c-kzg dependency
+        'test/eip4844block.spec.ts',
+        // Cannot access uninitialized variable.
+        // (likely local fix possible)
+        'test/mergeBlock.spec.ts',
+        'test/eip4895block.spec.ts',
+        'test/eip1559block.spec.ts',
+      ],
+    },
+  })
+)

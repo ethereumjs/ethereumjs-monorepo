@@ -16,9 +16,9 @@ import { assert, describe, it } from 'vitest'
 import { BlockHeader } from '../src/header.js'
 import { Block } from '../src/index.js'
 
-import * as testData from './testdata/bcBlockGasLimitTest.json'
-import * as blocksGoerli from './testdata/blocks_goerli.json'
-import * as blocksMainnet from './testdata/blocks_mainnet.json'
+import testData from './testdata/bcBlockGasLimitTest.json'
+import blocksGoerli from './testdata/blocks_goerli.json'
+import blocksMainnet from './testdata/blocks_mainnet.json'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 
@@ -479,7 +479,7 @@ describe('[Block]: Header functions', () => {
 
   it('should test hash() function', () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    let header = BlockHeader.fromHeaderData((blocksMainnet as any).default[0]['header'], { common })
+    let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6',
@@ -487,7 +487,7 @@ describe('[Block]: Header functions', () => {
     )
 
     common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
-    header = BlockHeader.fromHeaderData((blocksGoerli as any).default[0]['header'], { common })
+    header = BlockHeader.fromHeaderData(blocksGoerli[0]['header'], { common })
     assert.equal(
       bytesToHex(header.hash()),
       '0x8f5bab218b6bb34476f51ca588e9f4553a3a7ce5e13a66c660a5283e97e9a85a',
