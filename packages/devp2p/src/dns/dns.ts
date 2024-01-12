@@ -1,9 +1,9 @@
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { ENR } from './enr.js'
 
 import type { DNSOptions, PeerInfo } from '../types.js'
+import type { Common } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
 
 let dns: any
@@ -25,7 +25,7 @@ export class DNS {
   protected _DNSTreeCache: { [key: string]: string }
   protected readonly _errorTolerance: number = 10
 
-  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected _common?: Common
 
   private DEBUG: boolean
 
@@ -36,7 +36,7 @@ export class DNS {
       dns.setServers([options.dnsServerAddress])
     }
 
-    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
+    this._common = options.common
 
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
@@ -98,14 +98,14 @@ export class DNS {
     try {
       switch (this._getEntryType(entry)) {
         case ENR.ROOT_PREFIX:
-          next = ENR.parseAndVerifyRoot(entry, context.publicKey)
+          next = ENR.parseAndVerifyRoot(entry, context.publicKey, this._common)
           return await this._search(next, context)
         case ENR.BRANCH_PREFIX:
           branches = ENR.parseBranch(entry)
           next = this._selectRandomPath(branches, context)
           return await this._search(next, context)
         case ENR.RECORD_PREFIX:
-          return ENR.parseAndVerifyRecord(entry)
+          return ENR.parseAndVerifyRecord(entry, this._common)
         default:
           return null
       }
