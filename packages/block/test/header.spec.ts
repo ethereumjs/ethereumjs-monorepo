@@ -13,8 +13,8 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { Block } from '../src/block.js'
 import { BlockHeader } from '../src/header.js'
-import { Block } from '../src/index.js'
 
 import testData from './testdata/bcBlockGasLimitTest.json'
 import blocksGoerli from './testdata/blocks_goerli.json'
