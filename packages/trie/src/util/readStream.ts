@@ -1,3 +1,4 @@
+// eslint-disable-next-line implicit-dependencies/no-implicit
 import { ReadableStream } from 'node:stream/web'
 import { Readable } from 'readable-stream'
 
