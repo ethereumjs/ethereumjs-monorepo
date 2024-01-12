@@ -37,6 +37,11 @@ export type DNSOptions = {
    * @type {string}
    */
   dnsServerAddress?: string
+
+  /**
+   * Common instance to allow for crypto primitive (e.g. keccak) replacement
+   */
+  common?: Common
 }
 
 export interface DPTOptions {
@@ -114,6 +119,11 @@ export interface DPTOptions {
    * DNS server to query DNS TXT records from for peer discovery
    */
   dnsAddr?: string
+
+  /**
+   * Common instance to allow for crypto primitive (e.g. keccak) replacement
+   */
+  common?: Common
 }
 
 export interface DPTServerOptions {

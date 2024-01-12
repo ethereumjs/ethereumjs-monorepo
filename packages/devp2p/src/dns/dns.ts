@@ -1,4 +1,5 @@
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { ENR } from './enr.js'
 
@@ -24,6 +25,8 @@ export class DNS {
   protected _DNSTreeCache: { [key: string]: string }
   protected readonly _errorTolerance: number = 10
 
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+
   private DEBUG: boolean
 
   constructor(options: DNSOptions = {}) {
@@ -32,6 +35,8 @@ export class DNS {
     if (typeof options.dnsServerAddress === 'string') {
       dns.setServers([options.dnsServerAddress])
     }
+
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
