@@ -54,10 +54,8 @@
   "dependencies": {
     "@ethereumjs/rlp": "^5.0.1",
     "@ethereumjs/util": "^9.0.1",
-    "@types/readable-stream": "^2.3.13",
-    "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.1.2",
-    "readable-stream": "^3.6.0"
+    "lru-cache": "^10.0.0"
   },
   "devDependencies": {
     "@ethereumjs/genesis": "^0.2.0",
