@@ -1,11 +1,4 @@
-import { configDefaults, defineConfig } from 'vitest/config'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../config/vitest.config.browser'
 
-export default defineConfig({
-  test: {
-    exclude: [
-      ...configDefaults.exclude,
-      // 1 failing test
-      'test/index.spec.ts',
-    ],
-  },
-})
+export default mergeConfig(baseConfig, defineConfig({}))
