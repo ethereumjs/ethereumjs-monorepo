@@ -1,3 +1,4 @@
+import { ReadableStream } from 'node:stream/web'
 import { Readable } from 'readable-stream'
 
 import { BranchNode, LeafNode } from '../node/index.js'
@@ -14,6 +15,8 @@ export class TrieReadStream extends Readable {
   constructor(trie: Trie) {
     super({ objectMode: true })
 
+    const s = new ReadableStream()
+    void s.cancel()
     this.trie = trie
     this._started = false
   }
