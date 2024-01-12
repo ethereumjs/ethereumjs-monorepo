@@ -43,6 +43,8 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { ReadableStream } from 'node:stream/web'
 
 interface Path {
   node: TrieNode | null
@@ -1080,8 +1082,8 @@ export class Trie {
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
-  createReadStream(): ReadStream {
-    return new ReadStream(this)
+  createReadStream(): ReadableStream {
+    return ReadStream(this)
   }
 
   /**
