@@ -18,6 +18,8 @@ import {
 } from '../util.js'
 
 import { MAC } from './mac.js'
+
+import type { Common } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
 type Decipher = crypto.Decipher
 
@@ -77,7 +79,9 @@ export class ECIES {
   protected _ephemeralSharedSecret: Uint8Array | null = null
   protected _bodySize: number | null = null
 
-  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array) {
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array, common?: Common) {
     this._privateKey = privateKey
     this._publicKey = id2pk(id)
     this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
@@ -85,6 +89,8 @@ export class ECIES {
     this._nonce = getRandomBytesSync(32)
     this._ephemeralPrivateKey = genPrivateKey()
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
+
+    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
   }
 
   _encryptMessage(
@@ -156,7 +162,7 @@ export class ECIES {
     const nonceMaterial = incoming
       ? concatBytes(this._nonce, this._remoteNonce)
       : concatBytes(this._remoteNonce, this._nonce)
-    const hNonce = keccak256(nonceMaterial)
+    const hNonce = this._keccakFunction(nonceMaterial)
 
     if (!this._ephemeralSharedSecret) return
     const IV = new Uint8Array(16).fill(0x00)
