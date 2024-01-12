@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-export default defineConfig({
+const config = defineConfig({
   test: {
     browser: {
       enabled: true,
@@ -9,5 +9,16 @@ export default defineConfig({
       headless: true,
     },
   },
-  plugins: [nodePolyfills()],
+  resolve: {
+    alias: {
+      events: 'eventemitter3',
+    },
+  },
+  plugins: [
+    nodePolyfills({
+      include: ['util', 'fs'],
+    }),
+  ],
 })
+
+export default config

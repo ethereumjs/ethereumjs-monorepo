@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain, Common, Hardfork } from '../src/index.js'
 
-import * as timestampJson from './data/shanghai-time.json'
+import timestampJson from './data/shanghai-time.json'
 
 describe('[Common]: Timestamp Hardfork logic', () => {
   it('shanghai-time', () => {

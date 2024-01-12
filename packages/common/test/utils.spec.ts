@@ -5,13 +5,13 @@ import { Common } from '../src/common.js'
 import { Hardfork } from '../src/enums.js'
 import { parseGethGenesis } from '../src/utils.js'
 
-import * as gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
-import * as invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'
-import * as noExtraDataJSON from './data/geth-genesis/no-extra-data.json'
-import * as poaJSON from './data/geth-genesis/poa.json'
-import * as postMergeJSON from './data/geth-genesis/post-merge.json'
-import * as testnetJSON from './data/geth-genesis/testnet.json'
-import * as postMergeHardforkJSON from './data/post-merge-hardfork.json'
+import gethGenesisKilnJSON from './data/geth-genesis/geth-genesis-kiln.json'
+import invalidSpuriousDragonJSON from './data/geth-genesis/invalid-spurious-dragon.json'
+import noExtraDataJSON from './data/geth-genesis/no-extra-data.json'
+import poaJSON from './data/geth-genesis/poa.json'
+import postMergeJSON from './data/geth-genesis/post-merge.json'
+import testnetJSON from './data/geth-genesis/testnet.json'
+import postMergeHardforkJSON from './data/post-merge-hardfork.json'
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {

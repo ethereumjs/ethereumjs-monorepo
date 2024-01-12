@@ -2,9 +2,9 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain, Common, Hardfork } from '../src/index.js'
 
-import * as postMergeJSON from './data/geth-genesis/post-merge.json'
-import * as testnetMerge from './data/merge/testnetMerge.json'
-import * as testnetPOS from './data/merge/testnetPOS.json'
+import postMergeJSON from './data/geth-genesis/post-merge.json'
+import testnetMerge from './data/merge/testnetMerge.json'
+import testnetPOS from './data/merge/testnetPOS.json'
 
 describe('[Common]: Merge/POS specific logic', () => {
   it('hardforkTTD()', () => {
