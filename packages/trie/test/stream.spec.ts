@@ -105,18 +105,17 @@ describe('kv stream test', () => {
     await trie.batch(ops)
   })
 
-  it('should fetch all of the nodes', () => {
+  it('should fetch all of the nodes', async () => {
     const stream = trie.createReadStream()
-    stream.on('data', (d: any) => {
-      const key = d.key.toString()
-      const value = d.value.toString()
+    for await (const chunk of stream) {
+      const key = chunk.key.toString()
+      const value = chunk.value.toString()
       assert.equal(valObj[key], value)
       delete valObj[key]
-    })
-    stream.on('end', () => {
-      const keys = Object.keys(valObj)
-      assert.equal(keys.length, 0)
-    })
+    }
+
+    const keys = Object.keys(valObj)
+    assert.equal(keys.length, 0)
   })
 })
 
