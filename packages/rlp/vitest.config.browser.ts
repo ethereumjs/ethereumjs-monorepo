@@ -1,3 +1,4 @@
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -6,4 +7,5 @@ export default defineConfig({
     exclude: ['test/cli.spec.ts'],
     testTimeout: 180000,
   },
+  plugins: [nodePolyfills()],
 })
