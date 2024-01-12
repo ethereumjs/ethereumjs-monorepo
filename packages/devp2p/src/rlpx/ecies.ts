@@ -2,22 +2,16 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
-import {
-  assertEq,
-  genPrivateKey,
-  id2pk,
-  keccak256,
-  pk2id,
-  unstrictDecode,
-  xor,
-  zfill,
-} from '../util.js'
+import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.js'
 
 import { MAC } from './mac.js'
+
+import type { Common } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
 type Decipher = crypto.Decipher
 
@@ -77,7 +71,9 @@ export class ECIES {
   protected _ephemeralSharedSecret: Uint8Array | null = null
   protected _bodySize: number | null = null
 
-  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array) {
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array, common?: Common) {
     this._privateKey = privateKey
     this._publicKey = id2pk(id)
     this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
@@ -85,6 +81,8 @@ export class ECIES {
     this._nonce = getRandomBytesSync(32)
     this._ephemeralPrivateKey = genPrivateKey()
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
+
+    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
   }
 
   _encryptMessage(
@@ -156,17 +154,17 @@ export class ECIES {
     const nonceMaterial = incoming
       ? concatBytes(this._nonce, this._remoteNonce)
       : concatBytes(this._remoteNonce, this._nonce)
-    const hNonce = keccak256(nonceMaterial)
+    const hNonce = this._keccakFunction(nonceMaterial)
 
     if (!this._ephemeralSharedSecret) return
     const IV = new Uint8Array(16).fill(0x00)
-    const sharedSecret = keccak256(this._ephemeralSharedSecret, hNonce)
+    const sharedSecret = this._keccakFunction(concatBytes(this._ephemeralSharedSecret, hNonce))
 
-    const aesSecret = keccak256(this._ephemeralSharedSecret, sharedSecret)
+    const aesSecret = this._keccakFunction(concatBytes(this._ephemeralSharedSecret, sharedSecret))
     this._ingressAes = crypto.createDecipheriv('aes-256-ctr', aesSecret, IV)
     this._egressAes = crypto.createDecipheriv('aes-256-ctr', aesSecret, IV)
 
-    const macSecret = keccak256(this._ephemeralSharedSecret, aesSecret)
+    const macSecret = this._keccakFunction(concatBytes(this._ephemeralSharedSecret, aesSecret))
     this._ingressMac = new MAC(macSecret)
     this._ingressMac.update(concatBytes(xor(macSecret, this._nonce), remoteData))
     this._egressMac = new MAC(macSecret)
@@ -181,7 +179,7 @@ export class ECIES {
     const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
       concatBytes(sig.signature, Uint8Array.from([sig.recid])),
-      // keccak256(pk2id(this._ephemeralPublicKey)),
+      // this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
       Uint8Array.from([0x04]),
@@ -205,7 +203,7 @@ export class ECIES {
     const data = concatBytes(
       sig.signature,
       Uint8Array.from([sig.recid]),
-      keccak256(pk2id(this._ephemeralPublicKey)),
+      this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
       Uint8Array.from([0x00])
@@ -267,7 +265,7 @@ export class ECIES {
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
     if (heid !== null && this._remoteEphemeralPublicKey !== null) {
       assertEq(
-        keccak256(pk2id(this._remoteEphemeralPublicKey)),
+        this._keccakFunction(pk2id(this._remoteEphemeralPublicKey)),
         heid,
         'the hash of the ephemeral key should match',
         debug
