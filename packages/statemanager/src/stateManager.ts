@@ -966,7 +966,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const stream = trie.createReadStream()
 
     for await (const chunk of stream) {
-      if (chunk !== null) storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
+      storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
     }
 
     return storage
@@ -999,25 +999,27 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const storageMap: StorageRange['storage'] = {}
     const stream = trie.createReadStream()
     for await (const chunk of stream) {
-      if (chunk !== null) {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(chunk.key) >= startKey) {
-            inRange = true
-          } else {
-            continue
-          }
-        }
-        if (i < limit) {
-          storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
-          i++
-        } else if (i === limit) {
-          return {
-            storage: storageMap,
-            nextKey: bytesToHex(chunk.key),
-          }
+      if (!inRange) {
+        // Check if the key is already in the correct range.
+        if (bytesToBigInt(chunk.key) >= startKey) {
+          inRange = true
+        } else {
+          continue
         }
       }
+      if (i < limit) {
+        storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
+        i++
+      } else if (i === limit) {
+        return {
+          storage: storageMap,
+          nextKey: bytesToHex(chunk.key),
+        }
+      }
+    }
+    return {
+      storage: storageMap,
+      nextKey: null,
     }
   }
 
