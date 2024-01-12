@@ -147,6 +147,11 @@ export interface DPTServerOptions {
    * Default: dgram-created socket
    */
   createSocket?: Function
+
+  /**
+   * Common instance to allow for crypto primitive (e.g. keccak) replacement
+   */
+  common?: Common
 }
 
 export enum ProtocolType {
