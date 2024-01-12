@@ -120,6 +120,7 @@ describe('Wallet tests', () => {
   it('.toV3() should fail', async () => {
     try {
       await Wallet.fromPublicKey(pubKey).toV3('')
+      assert.fail('expected toV3 to throw for pub key wallet')
     } catch (err: any) {
       assert.ok(
         err.message.includes('This is a public key only wallet'),
@@ -359,6 +360,7 @@ describe('.toV3(): should fail for bad salt', async () => {
   it("should fail for 'salt: ff'", async () => {
     try {
       await fixtureWallet.toV3(pw, { salt: 'fff' })
+      assert.fail('Expected salt length fail')
     } catch (err: any) {
       assert.ok(err.message.includes(errStr))
     }
@@ -367,6 +369,7 @@ describe('.toV3(): should fail for bad salt', async () => {
   it("should fail for 'salt: xff'", async () => {
     try {
       await fixtureWallet.toV3(pw, { salt: 'xfff' })
+      assert.fail('Expected bad salt to fail')
     } catch (err: any) {
       assert.ok(err.message.includes(errStr))
     }
@@ -375,6 +378,7 @@ describe('.toV3(): should fail for bad salt', async () => {
   it("should fail for 'salt: fffx'", async () => {
     try {
       await fixtureWallet.toV3(pw, { salt: 'fffx' })
+      assert.fail('Expected bad salt to fail')
     } catch (err: any) {
       assert.ok(err.message.includes(errStr))
     }
@@ -383,6 +387,7 @@ describe('.toV3(): should fail for bad salt', async () => {
   it("should fail for 'salt: fffxff'", async () => {
     try {
       await fixtureWallet.toV3(pw, { salt: 'fffxff' })
+      assert.fail('Expected bad salt to fail')
     } catch (err: any) {
       assert.ok(err.message.includes(errStr))
     }
@@ -391,6 +396,7 @@ describe('.toV3(): should fail for bad salt', async () => {
   it('should fail for invalid salt type', async () => {
     try {
       await fixtureWallet.toV3(pw, { salt: {} as never as undefined })
+      assert.fail('Expected invalid salt to throw')
     } catch (err: any) {
       assert.ok(
         err.message.includes(
@@ -642,6 +648,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for empty string uuid', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: '' })
+      assert.fail('Expected to fail for empty uuid string')
     } catch (err: any) {
       assert.ok(err.message.includes(errStrLength))
     }
@@ -650,14 +657,16 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for short string uuid', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: 'ff' })
+      assert.fail('Expected to fail for too short uuid')
     } catch (err: any) {
       assert.ok(err.message.includes(errStrLength))
     }
   })
 
-  it('should fail for long string uuid', async () => {
+  it('should fail for bad uuid', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: 'ffffffffffffffffffffffffffffffffff' })
+      assert.fail('Expected to fail for bad uuid')
     } catch (err: any) {
       assert.ok(err.message.includes(errStrLength))
     }
@@ -666,6 +675,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for string uuid with invalid characters', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: 'xfffffffffffffffffffffffffffffff' })
+      assert.fail(' Expected to fail for invalid characters')
     } catch (err: any) {
       assert.ok(err.message.includes(errStrLength))
     }
@@ -674,6 +684,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for string uuid with invalid characters at the end', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffffffffffffffffffx' })
+      assert.fail('Expected to fail for invalid characters at the end')
     } catch (err: any) {
       assert.ok(err.message.includes(errStrLength))
     }
@@ -682,6 +693,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for string uuid with invalid characters in the middle', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: 'fffffffffffffffxffffffffffffffff' })
+      assert.fail('Expected to fail for invalid characters')
     } catch (err: any) {
       assert.ok(err.message.includes(errStrLength))
     }
@@ -690,6 +702,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for empty Uint8Array uuid', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: unprefixedHexToBytes('') })
+      assert.fail('Expected to fail for empty uint8array uuid')
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
@@ -698,6 +711,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for short Uint8Array uuid', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: unprefixedHexToBytes('ff') })
+      assert.fail('Expected to fail for too short uuid')
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
@@ -708,6 +722,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
       await fixtureWallet.toV3(pw, {
         uuid: unprefixedHexToBytes('ffffffffffffffffffffffffffffffffff'),
       })
+      assert.fail('Expected to fail for bad uuid')
     } catch (err: any) {
       assert.ok(err.message.includes(errBuffLength))
     }
@@ -716,6 +731,7 @@ describe('.toV3(): should fail for bad uuid', async () => {
   it('should fail for invalid type of uuid', async () => {
     try {
       await fixtureWallet.toV3(pw, { uuid: {} as never as any })
+      assert.fail('Expected to fail for invalid type of UUID')
     } catch (err: any) {
       assert.ok(
         err.message.includes(
@@ -856,6 +872,7 @@ describe('.fromV3()', () => {
       '{"crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"6087dab2f9fdbbfaddc31a909735c1e6"},"ciphertext":"5318b4d5bcd28de64ee5559e671353e16f075ecae9f99c7a79a38af5f869aa46","kdf":"pbkdf2","kdfparams":{"c":262144,"dklen":32,"prf":"hmac-sha256","salt":"ae3cd4e7013836a3df6bd7241b12db061dbe2c6785853cce422d148a624ce0bd"},"mac":"517ead924a9d0dc3124507e3393d175ce3ff7c1e96529c6c555ce9e51205e9b2"},"id":"3198bc9c-6672-5ab3-d995-4942343ae5b6","version":3}'
     try {
       await Wallet.fromV3(w, 'wrongtestpassword')
+      assert.fail('decryption should have failed')
     } catch (err: any) {
       assert.ok(err.message.includes('Key derivation failed - possibly wrong passphrase'))
     }
@@ -873,6 +890,7 @@ describe('.fromV3()', () => {
 
     try {
       await Wallet.fromV3(w, 'testpassword')
+      assert.fail('decryption should have failed')
     } catch (err: any) {
       // TODO: Determine if specific error message should be checked (different between NodeJS and browser)
       assert.ok(err !== undefined, 'threw error for broken input in strict mode')
@@ -882,6 +900,7 @@ describe('.fromV3()', () => {
     const w = '{"version":2}'
     try {
       await Wallet.fromV3(w, 'testpassword')
+      assert.fail('deserialization should have failed')
     } catch (err: any) {
       assert.ok(err.message.includes('Not a V3 wallet'))
     }
@@ -890,6 +909,7 @@ describe('.fromV3()', () => {
     const w = '{"crypto":{"kdf":"superkey"},"version":3}'
     try {
       await Wallet.fromV3(w, 'testpassword')
+      assert.fail('deserialization should have failed')
     } catch (err: any) {
       assert.ok(err.message.includes('Unsupported key derivation scheme'))
     }
@@ -898,6 +918,7 @@ describe('.fromV3()', () => {
     const w = '{"crypto":{"kdf":"pbkdf2","kdfparams":{"prf":"invalid"}},"version":3}'
     try {
       await Wallet.fromV3(w, 'testpassword')
+      assert.fail('deserialization should have failed')
     } catch (err: any) {
       assert.ok(err.message.includes('Unsupported parameters to PBKDF2'))
     }
