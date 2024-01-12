@@ -2,8 +2,13 @@ import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { calculateSigRecovery, concatBytes, randomBytes, setLengthLeft } from '@ethereumjs/util'
 import { keccak256, secp256k1Expand, secp256k1Recover, waitReady } from '@polkadot/wasm-crypto'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 describe('WASM crypto tests', () => {
+  vi.mock('@polkadot/util', () => {
+    return {
+      detectPackage: vi.fn(),
+    }
+  })
   it('should compute public key and hash correctly using common.customCrypto functions', async () => {
     const wasmecrecover = (
       msgHash: Uint8Array,
