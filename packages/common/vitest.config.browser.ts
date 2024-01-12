@@ -1,24 +1,6 @@
-import { defineConfig } from 'vitest/config'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../config/vitest.config.browser'
 
-const config = defineConfig({
-  test: {
-    browser: {
-      enabled: true,
-      name: 'chrome',
-      headless: true,
-    },
-  },
-  resolve: {
-    alias: {
-      events: 'eventemitter3',
-    },
-  },
-  plugins: [
-    nodePolyfills({
-      include: ['util', 'fs'],
-    }),
-  ],
-})
+const config = mergeConfig(baseConfig, defineConfig({}))
 
 export default config
