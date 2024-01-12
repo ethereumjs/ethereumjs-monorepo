@@ -261,19 +261,19 @@ describe('.toV3(): should work with PBKDF2', async () => {
     '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
 
   for (const perm of permutations) {
-    it('should equal expected wallet results', async () => {
-      const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-        kdf: 'pbkdf2',
-        c: n,
-        uuid: perm.uuid,
-        salt: perm.salt,
-        iv: perm.iv,
-      })
+    const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+      kdf: 'pbkdf2',
+      c: n,
+      uuid: perm.uuid,
+      salt: perm.salt,
+      iv: perm.iv,
+    })
+    it('should equal expected wallet results', () => {
       assert.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
       // ethers doesn't support encrypting with PBKDF2
-    })
+    }, 10000)
   }
-}, 40000)
+})
 
 describe('.toV3(): should work with Scrypt', async () => {
   const wStaticJSON =
@@ -284,50 +284,48 @@ describe('.toV3(): should work with Scrypt', async () => {
   for (const perm of permutations) {
     const { salt, iv, uuid } = perm
     const ethersOpts = makeEthersOptions({ salt, iv, uuid })
+    const encFixtureWallet = await fixtureWallet.toV3String(pw, {
+      kdf: 'scrypt',
+      uuid,
+      salt,
+      iv,
+      n,
+      r,
+      p,
+    })
+    const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
+      scrypt: { N: n, r, p },
+      salt: ethersOpts.salt,
+      iv: ethersOpts.iv,
+      uuid: ethersOpts.uuid,
+    }).toLowerCase()
+    const encRandomWallet = await wRandom.toV3String(pw, {
+      kdf: 'scrypt',
+      uuid,
+      salt,
+      iv,
+      n,
+      r,
+      p,
+    })
+    const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
+      scrypt: { N: n, r, p },
+      salt: ethersOpts.salt,
+      iv: ethersOpts.iv,
+      uuid: ethersOpts.uuid,
+    }).toLowerCase()
 
     it('encFixtureWallet should work', async () => {
-      const encFixtureWallet = await fixtureWallet.toV3String(pw, {
-        kdf: 'scrypt',
-        uuid,
-        salt,
-        iv,
-        n,
-        r,
-        p,
-      })
       assert.deepEqual(wStatic, JSON.parse(encFixtureWallet))
-    })
+    }, 30000)
 
     it('encFixtureEthersWallet should work', async () => {
-      const encFixtureEthersWallet = encryptKeystoreJsonSync(fixtureEthersWallet, pw, {
-        scrypt: { N: n, r, p },
-        salt: ethersOpts.salt,
-        iv: ethersOpts.iv,
-        uuid: ethersOpts.uuid,
-      }).toLowerCase()
-
       assert.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
-    })
+    }, 30000)
 
     it('encEthersWallet should work', async () => {
-      const encRandomWallet = await wRandom.toV3String(pw, {
-        kdf: 'scrypt',
-        uuid,
-        salt,
-        iv,
-        n,
-        r,
-        p,
-      })
-      const encEthersWallet = encryptKeystoreJsonSync(wEthers, pw, {
-        scrypt: { N: n, r, p },
-        salt: ethersOpts.salt,
-        iv: ethersOpts.iv,
-        uuid: ethersOpts.uuid,
-      }).toLowerCase()
-
       assert.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
-    })
+    }, 30000)
   }
 })
 
@@ -767,16 +765,8 @@ describe('should strip leading "0x" from salt, iv, uuid', async () => {
   })
 
   it('should get privatekeystring', async () => {
-    assert.equal(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
-  })
-  it('should get privatekeystring', async () => {
-    assert.equal(
-      fixtureWallet.getPrivateKeyString(),
-      (await Wallet.fromV3(w, pw)).getPrivateKeyString()
-    )
+    const wallet = await Wallet.fromV3(w, pw)
+    assert.equal(fixtureWallet.getPrivateKeyString(), wallet.getPrivateKeyString())
   })
 
   w = await fixtureWallet.toV3(pw, {
@@ -985,4 +975,3 @@ it('raw new Wallet() init', () => {
     'should fail when both priv and pub key provided'
   )
 }, 30000)
-// })
