@@ -14,10 +14,9 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import * as genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
-import { defaultBlock } from '../src/evm.js'
+import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
+import { EVM, defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
-import { EVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 
@@ -662,10 +661,10 @@ describe('RunCall tests', () => {
       assert.ok(e.memory.length <= 96)
       if (e.memory.length > 0) {
         verifyMemoryExpanded = true
+        assert.ok(verifyMemoryExpanded, 'memory did expand')
       }
     })
     await evm.runCall(runCallArgs)
-    assert.ok(verifyMemoryExpanded, 'memory did expand')
   })
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {

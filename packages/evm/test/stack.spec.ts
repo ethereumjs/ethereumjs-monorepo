@@ -1,7 +1,7 @@
 import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { EVM } from '../src/evm.js'
 import { Stack } from '../src/stack.js'
 
 import { createAccount } from './utils.js'

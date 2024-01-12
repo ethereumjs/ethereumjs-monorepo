@@ -1,7 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { EVM } from '../src/evm.js'
 
 describe('EVM -> getActiveOpcodes()', () => {
   const DIFFICULTY_PREVRANDAO = 0x44

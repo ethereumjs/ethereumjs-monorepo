@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/index.js'
+import { EVM } from '../../src/evm.js'
 
 type Situation = {
   pre: string
@@ -56,7 +56,7 @@ const MSTORE8 = '53'
 const MCOPY = '5E'
 const STOP = '00'
 
-describe('should test mcopy', () => {
+describe('should test mcopy', async () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
@@ -92,6 +92,7 @@ describe('should test mcopy', () => {
       evm.events.on('step', (e) => {
         if (e.opcode.name === 'STOP') {
           currentMem = bytesToHex(e.memory)
+          assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
         }
       })
 
@@ -99,8 +100,6 @@ describe('should test mcopy', () => {
         data: hexToBytes(bytecode),
         gasLimit: BigInt(0xffffff),
       })
-
-      assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
     })
   }
 })

@@ -3,7 +3,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, concatBytes, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/index.js'
+import { EVM } from '../../src/evm.js'
 
 const pkey = hexToBytes('0x' + '20'.repeat(32))
 const sender = new Address(privateToAddress(pkey))

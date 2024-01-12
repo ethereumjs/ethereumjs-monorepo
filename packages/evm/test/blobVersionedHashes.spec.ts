@@ -2,7 +2,7 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/index.js'
+import { EVM } from '../src/evm.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 
