@@ -1,7 +1,11 @@
 import { BIGINT_0, bytesToHex, toBytes } from '@ethereumjs/util'
 import { getKey, getStem } from '@ethereumjs/verkle'
+import debugDefault from 'debug'
 
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+
+const { debug: createDebugLogger } = debugDefault
+const debug = createDebugLogger('statemanager:aw')
 
 /**
  * Tree key constants.
@@ -223,6 +227,10 @@ export class AccessWitness {
     if (chunkFill) {
       gas += WitnessChunkFillCost
     }
+
+    debug(
+      `touchAddressAndChargeGas address=${address} treeIndex=${treeIndex} subIndex=${subIndex} isWrite=${isWrite} charges gas=${gas} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`
+    )
 
     return gas
   }

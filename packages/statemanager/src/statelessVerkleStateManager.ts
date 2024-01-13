@@ -1,7 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
-  BIGINT_0,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   bigIntToBytes,
@@ -13,7 +12,6 @@ import {
   setLengthRight,
   short,
   toBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
@@ -52,7 +50,7 @@ const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('statemanager:verkle')
 
 export interface VerkleState {
-  [key: PrefixedHexString]: PrefixedHexString
+  [key: PrefixedHexString]: PrefixedHexString | null
 }
 
 export interface EncodedVerkleProof {
@@ -121,6 +119,8 @@ const PUSH_OFFSET = 95
 const PUSH1 = PUSH_OFFSET + 1
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PUSH32 = PUSH_OFFSET + 32
+
+const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 /**
  * Stateless Verkle StateManager implementation for the VM.
@@ -255,17 +255,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ currentValue, suffix }) => {
         const key = `${stem}${padToEven(suffix.toString(16))}`
-
-        // TODO: Evaluate if we should store and handle null in a special way
-        // Currently we are replacing `null` with 0x00..00 (32 bytes) [expect for codeHash, suffix 3, where we use the empty codeHash] for simplifying handling and comparisons
-        // Also, test data has been inconsistent in this regard, so this simplifies things while things get more standardized
-
-        if (Number(suffix) === 3) {
-          return { [key]: currentValue ?? KECCAK256_NULL_S }
-        }
-
         return {
-          [key]: currentValue ?? bytesToHex(zeros(32)),
+          [key]: currentValue,
         }
       })
 
@@ -423,8 +414,14 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     for (let chunkId = 0; chunkId <= chunks; chunkId++) {
       const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
       const codeChunk = this._state[chunkKey]
-      const codeOffset = chunkId * 31
+      if (codeChunk === undefined) {
+        throw Error(`Invalid access to a missing code chunk with chunkKey=${chunkKey}`)
+      }
+      if (codeChunk === null) {
+        throw Error(`Invalid access to a non existent code chunk with chunkKey=${chunkKey}`)
+      }
 
+      const codeOffset = chunkId * 31
       // if code chunk was accessed as per the provided witnesses copy it over
       if (codeChunk !== undefined) {
         // actual code starts from index 1 in chunk, 0th index is if there are any push data bytes
@@ -511,13 +508,24 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     const stem = getStem(address, 0)
+    const versionKey = this.getTreeKeyForVersion(stem)
+    const versionChunk = this._state[bytesToHex(versionKey)]
+    if (versionChunk === undefined) {
+      throw Error(`Missing execution withness for address=${address} versionKey=${versionKey}`)
+    }
+
+    // if the versionChunk is null it means the account doesn't exist in pre state
+    if (versionChunk === null) {
+      return undefined
+    }
+
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
     const balanceRaw = this._state[bytesToHex(balanceKey)]
     const nonceRaw = this._state[bytesToHex(nonceKey)]
-    const codeHash = this._state[bytesToHex(codeHashKey)]
+    const codeHash = this._state[bytesToHex(codeHashKey)] ?? KECCAK256_NULL_S
 
     const account = Account.fromAccountData({
       balance:
@@ -641,35 +649,43 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       const { chunkKey } = accessedState
       let computedValue = this.getComputedValue(accessedState)
-      let canonicalValue = this._postState[chunkKey]
+      let canonicalValue: string | null = this._postState[chunkKey] ?? null
       // if the access type is code, then we can't match the first byte because since the computed value
       // doesn't has the first byte for push data since previous chunk code itself might not be available
       if (accessedState.type === AccessedStateType.Code) {
-        computedValue = `0x${computedValue.slice(4)}`
-        canonicalValue = `0x${canonicalValue.slice(4)}`
+        computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
+        canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
       }
 
       if (computedValue !== canonicalValue) {
-        debug(`block accesses: address=${address} type=${type} ${extraMeta}`)
+        debug(
+          `Block accesses mismatch: expected=${canonicalValue} computed=${computedValue} address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+        )
+        debug(`verifyPostState=false`)
         return false
       }
     }
     return true
   }
 
-  getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString {
+  getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
     const { address, type } = accessedState
     switch (type) {
       case AccessedStateType.Version: {
+        const encodedAccount = this._accountCache?.get(address)?.accountRLP
+        if (encodedAccount === undefined) {
+          return null
+        }
         // Version is always 0
         // TODO: Update this when versioning is added to accounts
-        return '0x0000000000000000000000000000000000000000000000000000000000000000'
+        return ZEROVALUE
       }
       case AccessedStateType.Balance: {
         const encodedAccount = this._accountCache?.get(address)?.accountRLP
         if (encodedAccount === undefined) {
-          throw Error(`Account not found for address=${address.toString()}`)
+          return null
         }
+
         const balanceBigint = Account.fromRlpSerializedAccount(encodedAccount).balance
         return bytesToHex(setLengthRight(bigIntToBytes(balanceBigint, true), 32))
       }
@@ -677,7 +693,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       case AccessedStateType.Nonce: {
         const encodedAccount = this._accountCache?.get(address)?.accountRLP
         if (encodedAccount === undefined) {
-          throw Error(`Account not found for address=${address.toString()}`)
+          return null
         }
         const nonceBigint = Account.fromRlpSerializedAccount(encodedAccount).nonce
         return bytesToHex(setLengthRight(bigIntToBytes(nonceBigint, true), 32))
@@ -686,7 +702,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       case AccessedStateType.CodeHash: {
         const encodedAccount = this._accountCache?.get(address)?.accountRLP
         if (encodedAccount === undefined) {
-          throw Error(`Account not found for address=${address.toString()}`)
+          return null
         }
         return bytesToHex(Account.fromRlpSerializedAccount(encodedAccount).codeHash)
       }
@@ -697,14 +713,14 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
           // it could be an EOA lets check for that
           const encodedAccount = this._accountCache?.get(address)?.accountRLP
           if (encodedAccount === undefined) {
-            throw Error(`Account not found for address=${address.toString()}`)
+            return null
           }
 
           const account = Account.fromRlpSerializedAccount(encodedAccount)
           if (account.isContract()) {
             throw Error(`Code cache not found for address=${address.toString()}`)
           } else {
-            return bytesToHex(setLengthRight(bigIntToBytes(BIGINT_0, true), 32))
+            return null
           }
         }
 
@@ -715,7 +731,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         const { codeOffset } = accessedState
         const code = this._codeCache?.get(address)?.code
         if (code === undefined) {
-          throw Error(`Code cache not found for address=${address.toString()}`)
+          return null
         }
 
         // we can only compare the actual code because to compare the first byte would
@@ -729,7 +745,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         const { slot } = accessedState
         const storage = this._storageCache?.get(address, bigIntToBytes(slot))
         if (storage === undefined) {
-          throw Error(`Code cache not found for address=${address.toString()}`)
+          return null
         }
         return bytesToHex(storage)
       }
