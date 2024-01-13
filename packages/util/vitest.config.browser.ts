@@ -1,9 +1,12 @@
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import { configDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../config/vitest.config.browser'
 
-export default defineConfig({
-  test: {
-    exclude: [...configDefaults.exclude, 'test/provider.spec.ts', 'test/asyncEventEmitter.spec.ts'],
-  },
-  plugins: [nodePolyfills()],
-})
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    test: {
+      exclude: [...configDefaults.exclude, 'test/provider.spec.ts'],
+    },
+  })
+)
