@@ -640,8 +640,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
 
       const { chunkKey } = accessedState
-      const computedValue = this.getComputedValue(accessedState)
-      const canonicalValue = this._postState[chunkKey]
+      let computedValue = this.getComputedValue(accessedState)
+      let canonicalValue = this._postState[chunkKey]
+      // if the access type is code, then we can't match the first byte because since the computed value
+      // doesn't has the first byte for push data since previous chunk code itself might not be available
+      if (accessedState.type === AccessedStateType.Code) {
+        computedValue = `0x${computedValue.slice(4)}`
+        canonicalValue = `0x${canonicalValue.slice(4)}`
+      }
+
       if (computedValue !== canonicalValue) {
         debug(`block accesses: address=${address} type=${type} ${extraMeta}`)
         return false
@@ -711,7 +718,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
           throw Error(`Code cache not found for address=${address.toString()}`)
         }
 
-        const chunkSize = 32
+        // we can only compare the actual code because to compare the first byte would
+        // be very tricky and impossible in certain scenarios like when the previous code chunk
+        // was not accessed and hence not even provided in the witness
+        const chunkSize = 31
         return bytesToHex(code.slice(codeOffset, codeOffset + chunkSize))
       }
 
