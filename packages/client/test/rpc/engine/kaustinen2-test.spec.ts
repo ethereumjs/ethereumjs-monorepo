@@ -4,8 +4,8 @@ import { bytesToHex } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import blocks from '../../testdata/blocks/kaustinen2.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
+import blocks from '../../testdata/blocks/kaustinen2-test.json'
+import genesisJSON from '../../testdata/geth-genesis/kaustinen2-test.json'
 import { baseRequest, params, setupChain } from '../helpers'
 
 import type { HttpServer } from 'jayson'
