@@ -31,12 +31,13 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci
-      - run: npm run install-browser-deps
+      - run: npm ci --include=peer
+      # - run: npm run install-browser-deps
 
       #     Install playwright dependencies
-      - run: npx playwright install-deps
+      # - run: npx playwright install-deps
 
+      - run: npm run test:browser -w=@ethereumjs/block
       - run: npm run test:browser -w=@ethereumjs/rlp
       - run: npm run test:browser -w=@ethereumjs/util
       - run: npm run test:browser -w=@ethereumjs/common
@@ -48,7 +49,6 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/wallet
       - run: npm run test:browser -w=@ethereumjs/statemanager
       - run: npm run test:browser -w=@ethereumjs/evm
-      - run: npm run test:browser -w=@ethereumjs/block
 #     VM: several tests not passing yet
 #     - run: npm run test:browser -w=@ethereumjs/vm
 
