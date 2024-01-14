@@ -276,6 +276,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const modules = manager['_modules']
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
@@ -289,7 +290,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   await skeleton?.open()
   await execution?.open()
   await chain.update()
-  return { chain, common, execution: execution!, server, service, blockchain }
+  return { chain, common, execution: execution!, server, service, blockchain, modules }
 }
 
 /**
