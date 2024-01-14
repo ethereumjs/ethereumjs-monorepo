@@ -21,27 +21,26 @@ import blocksGoerli from './testdata/blocks_goerli.json'
 import blocksMainnet from './testdata/blocks_mainnet.json'
 
 import type { CliqueConfig } from '@ethereumjs/common'
+function compareDefaultHeader(header: BlockHeader) {
+  assert.ok(equalsBytes(header.parentHash, zeros(32)))
+  assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
+  assert.ok(header.coinbase.equals(Address.zero()))
+  assert.ok(equalsBytes(header.stateRoot, zeros(32)))
+  assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
+  assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
+  assert.ok(equalsBytes(header.logsBloom, zeros(256)))
+  assert.equal(header.difficulty, BigInt(0))
+  assert.equal(header.number, BigInt(0))
+  assert.equal(header.gasLimit, BigInt('0xffffffffffffff'))
+  assert.equal(header.gasUsed, BigInt(0))
+  assert.equal(header.timestamp, BigInt(0))
+  assert.ok(equalsBytes(header.extraData, new Uint8Array(0)))
+  assert.ok(equalsBytes(header.mixHash, zeros(32)))
+  assert.ok(equalsBytes(header.nonce, zeros(8)))
+}
 
 describe('[Block]: Header functions', () => {
   it('should create with default constructor', () => {
-    function compareDefaultHeader(header: BlockHeader) {
-      assert.ok(equalsBytes(header.parentHash, zeros(32)))
-      assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
-      assert.ok(header.coinbase.equals(Address.zero()))
-      assert.ok(equalsBytes(header.stateRoot, zeros(32)))
-      assert.ok(equalsBytes(header.transactionsTrie, KECCAK256_RLP))
-      assert.ok(equalsBytes(header.receiptTrie, KECCAK256_RLP))
-      assert.ok(equalsBytes(header.logsBloom, zeros(256)))
-      assert.equal(header.difficulty, BigInt(0))
-      assert.equal(header.number, BigInt(0))
-      assert.equal(header.gasLimit, BigInt('0xffffffffffffff'))
-      assert.equal(header.gasUsed, BigInt(0))
-      assert.equal(header.timestamp, BigInt(0))
-      assert.ok(equalsBytes(header.extraData, new Uint8Array(0)))
-      assert.ok(equalsBytes(header.mixHash, zeros(32)))
-      assert.ok(equalsBytes(header.nonce, zeros(8)))
-    }
-
     const header = BlockHeader.fromHeaderData()
     compareDefaultHeader(header)
 
