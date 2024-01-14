@@ -26,6 +26,7 @@ import {
   CODE_SIZE_LEAF_KEY,
   NONCE_LEAF_KEY,
   VERSION_LEAF_KEY,
+  decodeValue,
   getTreeIndexesForStorageSlot,
   getTreeIndicesForCodeChunk,
 } from './accessWitness.js'
@@ -658,9 +659,23 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
 
       if (computedValue !== canonicalValue) {
+        const decodedComputedValue = decodeValue(accessedState.type, computedValue)
+        const decodedCanonicalValue = decodeValue(accessedState.type, canonicalValue)
+
+        const displayComputedValue =
+          computedValue === decodedComputedValue
+            ? computedValue
+            : `${computedValue} (${decodedComputedValue})`
+        const displayCanonicalValue =
+          canonicalValue === decodedCanonicalValue
+            ? canonicalValue
+            : `${canonicalValue} (${decodedCanonicalValue})`
+
         debug(
-          `Block accesses mismatch: expected=${canonicalValue} computed=${computedValue} address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+          `Block accesses mismatch address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
         )
+        debug(`expected=${displayCanonicalValue}`)
+        debug(`computed=${displayComputedValue}`)
         debug(`verifyPostState=false`)
         return false
       }

@@ -1,4 +1,4 @@
-import { BIGINT_0, bytesToHex, toBytes } from '@ethereumjs/util'
+import { BIGINT_0, bytesToBigInt, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { getKey, getStem } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
@@ -393,5 +393,27 @@ export function decodeAccessedState(treeIndex: number, chunkIndex: number): Acce
           `Invalid treeIndex=${treeIndex} chunkIndex=${chunkIndex} for verkle tree access`
         )
       }
+  }
+}
+
+export function decodeValue(type: AccessedStateType, value: string | null): string {
+  if (value === null) {
+    return ''
+  }
+
+  switch (type) {
+    case AccessedStateType.Version:
+    case AccessedStateType.Balance:
+    case AccessedStateType.Nonce:
+    case AccessedStateType.CodeSize: {
+      const decodedValue = bytesToBigInt(hexToBytes(value), true)
+      return `${decodedValue}`
+    }
+
+    case AccessedStateType.CodeHash:
+    case AccessedStateType.Code:
+    case AccessedStateType.Storage: {
+      return value
+    }
   }
 }
