@@ -4,8 +4,9 @@ import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
-import { Config } from '../../src/config'
+import { Config, SyncMode } from '../../src/config'
 import { RlpxServer } from '../../src/net/server'
+import { FullEthereumService } from '../../src/service/fullethereumservice'
 import { Event } from '../../src/types'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
 
@@ -61,7 +62,6 @@ describe('[FullEthereumService]', async () => {
   vi.mock('@ethereumjs/block')
   vi.mock('../../src/net/server')
   vi.mock('../../src/execution')
-  const { FullEthereumService } = await import('../../src/service/fullethereumservice')
 
   it('should initialize correctly', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -127,7 +127,6 @@ describe('[FullEthereumService]', async () => {
   it('should correctly handle GetBlockHeaders', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     vi.unmock('../../src/blockchain')
-    await import('../../src/blockchain')
     const chain = await Chain.create({ config })
     chain.getHeaders = () => [{ number: 1n }] as any
     const service = new FullEthereumService({ config, chain })
@@ -370,7 +369,7 @@ describe('[FullEthereumService]', async () => {
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
     assert.ok(service.beaconSync, 'beacon sync should be available')
-    const configDisableBeaconSync = new Config({ common, syncmode: 'none' })
+    const configDisableBeaconSync = new Config({ common, syncmode: SyncMode.None })
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
     assert.notOk(service.beaconSync, 'beacon sync should not be available')
   })
