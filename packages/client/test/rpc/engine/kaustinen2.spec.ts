@@ -1,10 +1,7 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { Hardfork } from '@ethereumjs/common'
-import { bytesToHex } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Engine } from '../../../src/rpc/modules'
 import blocks from '../../testdata/blocks/kaustinen2.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
 import { baseRequest, params, setupChain } from '../helpers'
@@ -31,7 +28,6 @@ async function runBlock(
   const executePayload = executionPayloadFromBeaconPayload(execute as any)
   const req = params('engine_newPayloadV2', [executePayload])
   const expectRes = (res: any) => {
-    console.log(res.body)
     assert.equal(res.body.result.status, 'VALID')
   }
 
@@ -54,11 +50,15 @@ describe(`valid verkle network setup`, async () => {
     await baseRequest(server, req, 200, expectRes, false, false)
   })
 
-  it('run block 13', async () => {
-    await runBlock({ common, chain, server }, blocks['block13'])
-  })
+  const testCases = ['block13', 'block16']
+  for (const testCase of testCases) {
+    it(`run ${testCase}`, async () => {
+      await runBlock({ common, chain, server }, blocks[testCase])
+    })
+  }
 
   it(`reset TD`, () => {
+    server.close()
     BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
   })
