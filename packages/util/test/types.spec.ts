@@ -1,6 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import {
+  TypeOutput,
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
@@ -8,8 +9,8 @@ import {
   intToBytes,
   intToHex,
   toBytes,
-} from '../src/bytes.js'
-import { TypeOutput, toType } from '../src/types.js'
+  toType,
+} from '../src/index.js'
 
 describe('toType', () => {
   it('from null and undefined', () => {

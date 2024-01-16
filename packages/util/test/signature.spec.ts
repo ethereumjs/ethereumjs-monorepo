@@ -1,16 +1,19 @@
 import { assert, describe, it } from 'vitest'
 
-import { privateToPublic } from '../src/account.js'
-import { bigIntToBytes, bytesToBigInt, hexToBytes, utf8ToBytes } from '../src/bytes.js'
 import {
+  bigIntToBytes,
+  bytesToBigInt,
   ecrecover,
   ecsign,
   fromRpcSig,
   hashPersonalMessage,
+  hexToBytes,
   isValidSignature,
+  privateToPublic,
   toCompactSig,
   toRpcSig,
-} from '../src/signature.js'
+  utf8ToBytes,
+} from '../src/index.js'
 
 const echash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const ecprivkey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')

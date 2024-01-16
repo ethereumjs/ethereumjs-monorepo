@@ -1,7 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Address } from '../src/address.js'
-import { equalsBytes, hexToBytes, toBytes } from '../src/bytes.js'
+import { Address, equalsBytes, hexToBytes, toBytes } from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 

@@ -42,7 +42,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "vitest run --config=./vitest.config.browser.ts",
-    "test:node": "vitest run --config=vitest.config.ts",
+    "test:node": "vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

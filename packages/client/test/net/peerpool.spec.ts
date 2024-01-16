@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config'
+import { PeerPool } from '../../src/net/peerpool.js'
 import { Event } from '../../src/types'
 import { MockPeer } from '../integration/mocks/mockpeer'
 
@@ -16,7 +17,6 @@ describe('[PeerPool]', async () => {
     }
   }
   vi.doMock('../../src/net/peer/peer', () => Peer)
-  const { PeerPool } = await import('../../src/net/peerpool.js')
 
   it('should initialize', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

@@ -4,6 +4,7 @@ import { multiaddr } from 'multiaddr'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config'
+import { RlpxServer } from '../../../src/net/server/rlpxserver.js'
 import { Event } from '../../../src/types'
 
 class RlpxPeer extends EventEmitter {
@@ -47,7 +48,6 @@ vi.doMock('@ethereumjs/devp2p', () => {
 })
 
 describe('should initialize correctly', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({
     config,
@@ -70,8 +70,6 @@ describe('should initialize correctly', async () => {
 })
 
 describe('should start/stop server', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   it('should start/stop server', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({
@@ -113,8 +111,6 @@ describe('should start/stop server', async () => {
 })
 
 describe('should bootstrap with dns acquired peers', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   it('should bootstrap with dns acquired peers', async () => {
     const dnsPeerInfo = { address: '10.0.0.5', udpPort: 1234, tcpPort: 1234 }
     const config = new Config({
@@ -144,8 +140,6 @@ describe('should bootstrap with dns acquired peers', async () => {
 })
 
 describe('should return rlpx server info with ip4 as default', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   it('should return rlpx server info with ip4 as default', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const mockId = '0123'
@@ -195,8 +189,6 @@ describe('should return rlpx server info with ip4 as default', async () => {
 })
 
 describe('should return rlpx server info with ip6', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   it('should return rlpx server info with ip6', async () => {
     const config = new Config({
       accountCache: 10000,
@@ -250,8 +242,6 @@ describe('should return rlpx server info with ip6', async () => {
 })
 
 describe('should handle errors', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   it('should handle errors', () => {
     let count = 0
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -271,8 +261,6 @@ describe('should handle errors', async () => {
 })
 
 describe('should ban peer', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   it('shouldnt ban if no peer', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const server = new RlpxServer({ config })
@@ -293,8 +281,6 @@ describe('should ban peer', async () => {
 })
 
 describe('should init dpt', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
   ;(server as any).initDpt().catch((error: Error) => {
@@ -309,8 +295,6 @@ describe('should init dpt', async () => {
 })
 
 describe('should init rlpx', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
   const rlpxPeer = new RlpxPeer()
@@ -357,8 +341,6 @@ describe('should init rlpx', async () => {
 })
 
 describe('should handles errors from id-less peers', async () => {
-  const { RlpxServer } = await import('../../../src/net/server/rlpxserver.js')
-
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const server = new RlpxServer({ config })
   const rlpxPeer = new RlpxPeer()

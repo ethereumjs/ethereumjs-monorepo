@@ -1,8 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
-import { AsyncEventEmitter } from '../src/asyncEventEmitter.js'
+import { AsyncEventEmitter } from '../src/index.js'
 
-import type { EventMap } from '../src/asyncEventEmitter.js'
+import type { EventMap } from '../src/index.js'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 

@@ -1,10 +1,9 @@
 import { decode, encode } from '@ethereumjs/rlp'
 import { assert, describe, it } from 'vitest'
 
-import { bigIntToHex, bytesToHex, hexToBytes, intToHex } from '../src/bytes.js'
-import { Withdrawal } from '../src/withdrawal.js'
+import { Withdrawal, bigIntToHex, bytesToHex, hexToBytes, intToHex } from '../src/index.js'
 
-import type { WithdrawalBytes } from '../src/withdrawal.js'
+import type { WithdrawalBytes } from '../src/index.js'
 
 const withdrawalsVector = [
   {

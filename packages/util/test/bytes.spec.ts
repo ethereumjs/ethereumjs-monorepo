@@ -1,8 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { isZeroAddress, zeroAddress } from '../src/account.js'
-import { Address } from '../src/address.js'
 import {
+  Address,
   addHexPrefix,
   bigIntToBytes,
   bigIntToHex,
@@ -16,6 +15,7 @@ import {
   intToBytes,
   intToHex,
   intToUnpaddedBytes,
+  isZeroAddress,
   setLengthLeft,
   setLengthRight,
   short,
@@ -26,8 +26,9 @@ import {
   unpadHex,
   unprefixedHexToBytes,
   validateNoLeadingZeroes,
+  zeroAddress,
   zeros,
-} from '../src/bytes.js'
+} from '../src/index.js'
 
 describe('zeros function', () => {
   it('should produce lots of 0s', () => {

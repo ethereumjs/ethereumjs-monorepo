@@ -3,37 +3,36 @@ import { assert, describe, it } from 'vitest'
 
 import {
   Account,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
   accountBodyFromSlim,
   accountBodyToRLP,
   accountBodyToSlim,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
   generateAddress,
   generateAddress2,
+  hexToBytes,
   importPublic,
+  intToBytes,
+  intToHex,
   isValidAddress,
   isValidChecksumAddress,
   isValidPrivate,
   isValidPublic,
+  padToEven,
   privateToAddress,
   privateToPublic,
   publicToAddress,
-  toChecksumAddress,
-} from '../src/account.js'
-import {
-  bytesToBigInt,
-  bytesToHex,
-  equalsBytes,
-  hexToBytes,
-  intToBytes,
-  intToHex,
   toBytes,
+  toChecksumAddress,
   utf8ToBytes,
-} from '../src/bytes.js'
-import { KECCAK256_NULL, KECCAK256_RLP } from '../src/constants.js'
-import { padToEven } from '../src/internal.js'
+} from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 
-import type { AccountBodyBytes } from '../src/account.js'
+import type { AccountBodyBytes } from '../src/index.js'
 
 const _0n = BigInt(0)
 

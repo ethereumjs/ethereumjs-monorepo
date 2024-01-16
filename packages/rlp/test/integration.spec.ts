@@ -16,9 +16,7 @@ describe('Distribution', () => {
 })
 
 describe.skipIf(isBrowser)('CLI command', async () => {
-  // const { promisify } = await import('util')
   const { exec } = await import('child_process')
-  // const execAsync = promisify(exec)
   it('should be able to run CLI command', async () => {
     const result = exec('./bin/rlp encode "[ 5 ]"')
     const resultFormatted = result.stdout!.read().trim()
