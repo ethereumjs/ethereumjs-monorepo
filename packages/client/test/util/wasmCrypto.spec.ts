@@ -1,14 +1,22 @@
 import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { calculateSigRecovery, concatBytes, randomBytes, setLengthLeft } from '@ethereumjs/util'
-import { keccak256, secp256k1Expand, secp256k1Recover, waitReady } from '@polkadot/wasm-crypto'
-import { assert, describe, it, vi } from 'vitest'
+import {
+  calculateSigRecovery,
+  concatBytes,
+  randomBytes,
+  setLengthLeft,
+  utf8ToBytes,
+} from '@ethereumjs/util'
+import {
+  keccak256,
+  secp256k1Expand,
+  secp256k1Recover,
+  waitReady,
+  sha256 as wasmSha256,
+} from '@polkadot/wasm-crypto'
+import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'
+import { assert, describe, it } from 'vitest'
 describe('WASM crypto tests', () => {
-  vi.mock('@polkadot/util', () => {
-    return {
-      detectPackage: vi.fn(),
-    }
-  })
   it('should compute public key and hash correctly using common.customCrypto functions', async () => {
     const wasmecrecover = (
       msgHash: Uint8Array,
@@ -41,5 +49,12 @@ describe('WASM crypto tests', () => {
 
     assert.deepEqual(tx.getSenderPublicKey(), tx2.getSenderPublicKey())
     assert.deepEqual(tx.hash(), tx2.hash())
+  })
+  it('should compute same SHA256 hash whether js or WASM crypto used', async () => {
+    await waitReady()
+    const msg = utf8ToBytes('hello world')
+    const jsHash = jsSha256(msg)
+    const wasmHash = wasmSha256(msg)
+    assert.deepEqual(jsHash, wasmHash)
   })
 })

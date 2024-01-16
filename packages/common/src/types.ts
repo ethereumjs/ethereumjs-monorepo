@@ -79,6 +79,7 @@ export interface CustomCrypto {
     s: Uint8Array,
     chainId?: bigint
   ) => Uint8Array
+  sha256?: (msg: Uint8Array) => Uint8Array
 }
 
 interface BaseOpts {

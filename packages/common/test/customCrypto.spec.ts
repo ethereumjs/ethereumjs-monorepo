@@ -17,6 +17,11 @@ describe('[Common]: Custom Crypto', () => {
     return concatBytes(msgHash, Uint8Array.from([Number(v)]), r, s)
   }
 
+  const customSha256 = (msg: Uint8Array) => {
+    msg[0] = 0xff
+    return msg
+  }
+
   it('keccak256', () => {
     const customCrypto = {
       keccak256: customKeccak256,
@@ -50,5 +55,14 @@ describe('[Common]: Custom Crypto', () => {
         Uint8Array.from([4])
       )
     )
+  })
+
+  it('sha256', () => {
+    const customCrypto = {
+      sha256: customSha256,
+    }
+    const msg = Uint8Array.from([0, 1, 2, 3])
+    const c = new Common({ chain: Chain.Mainnet, customCrypto })
+    assert.equal(c.customCrypto.sha256!(msg)[0], 0xff, 'used custom sha256 function')
   })
 })

@@ -23,9 +23,11 @@ import {
   secp256k1Expand,
   secp256k1Recover,
   waitReady,
+  sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import * as kzg from 'c-kzg'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import { Level } from 'level'
@@ -818,9 +820,11 @@ async function run() {
           Number(calculateSigRecovery(v, chainID))
         )
       ).slice(1)
+    cryptoFunctions.sha256 = wasmSha256
   } else {
     cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
+    cryptoFunctions.sha256 = sha256
   }
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
