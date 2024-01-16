@@ -27,7 +27,10 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
-import { TrieReadStream as ReadStream } from './util/readStream.js'
+import {
+  TrieReadStream as ReadStream,
+  asyncTrieReadStream as asyncReadStream,
+} from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
@@ -1080,10 +1083,19 @@ export class Trie {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
+   * @deprecated Use `createAsyncReadStream`
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
-  createReadStream(): ReadableStream {
-    return ReadStream(this)
+  createReadStream(): ReadStream {
+    return new ReadStream(this)
+  }
+
+  /**
+   * Use asynchronous iteration over the chunks in a web stream using the for await...of syntax.
+   * @return Returns a [web stream](https://nodejs.org/api/webstreams.html#example-readablestream) of the contents of the `trie`
+   */
+  createAsyncReadStream(): ReadableStream {
+    return asyncReadStream(this)
   }
 
   /**
