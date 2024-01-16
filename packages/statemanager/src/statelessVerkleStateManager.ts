@@ -255,7 +255,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // Populate the pre-state and post-state from the executionWitness
     const preStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ currentValue, suffix }) => {
-        const key = `${stem}${padToEven(suffix.toString(16))}`
+        const key = `${stem}${padToEven(Number(suffix).toString(16))}`
         return {
           [key]: currentValue,
         }
@@ -273,7 +273,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
-        const key = `${stem}${padToEven(suffix.toString(16))}`
+        const key = `${stem}${padToEven(Number(suffix).toString(16))}`
         // A postState value of null means there was no change from the preState.
         // In this implementation, we therefore replace null with the preState.
         const value = newValue ?? this._state[key]
@@ -639,6 +639,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   // Verifies that the witness post-state matches the computed post-state
   verifyPostState(): boolean {
+    // track what all chunks were accessed so as to compare in the end if any chunks were missed
+    // in access while comparising against the provided poststate in the execution witness
+    const accessedChunks = new Map<string, boolean>()
+
     for (const accessedState of this.accessWitness!.accesses()) {
       const { address, type } = accessedState
       let extraMeta = ''
@@ -649,6 +653,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
 
       const { chunkKey } = accessedState
+      accessedChunks.set(chunkKey, true)
       let computedValue = this.getComputedValue(accessedState)
       let canonicalValue: string | null = this._postState[chunkKey] ?? null
       // if the access type is code, then we can't match the first byte because since the computed value
@@ -680,6 +685,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         return false
       }
     }
+
+    for (const canChunkKey of Object.keys(this._postState)) {
+      if (accessedChunks.get(canChunkKey) === undefined) {
+        debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
+        debug(`verifyPostState=false`)
+        return false
+      }
+    }
+    debug(`verifyPostState=true`)
     return true
   }
 

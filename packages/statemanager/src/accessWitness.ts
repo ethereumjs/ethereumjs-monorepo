@@ -5,7 +5,7 @@ import debugDefault from 'debug'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
-const debug = createDebugLogger('statemanager:aw')
+const debug = createDebugLogger('statemanager:verkle:aw')
 
 /**
  * Tree key constants.
@@ -229,7 +229,7 @@ export class AccessWitness {
     }
 
     debug(
-      `touchAddressAndChargeGas address=${address} treeIndex=${treeIndex} subIndex=${subIndex} isWrite=${isWrite} charges gas=${gas} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`
+      `touchAddressAndChargeGas=${gas} address=${address} treeIndex=${treeIndex} subIndex=${subIndex}`
     )
 
     return gas
@@ -281,6 +281,9 @@ export class AccessWitness {
       }
     }
 
+    debug(
+      `${accessedChunkKeyHex}: isWrite=${isWrite} for steamRead=${stemRead} stemWrite=${stemWrite} chunkRead=${chunkRead} chunkWrite=${chunkWrite} chunkFill=${chunkFill}`
+    )
     return { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill }
   }
 
