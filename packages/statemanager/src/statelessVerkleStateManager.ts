@@ -642,6 +642,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // track what all chunks were accessed so as to compare in the end if any chunks were missed
     // in access while comparising against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
+    // switch to false if postVerify fails
+    let postVerified = true
 
     for (const accessedState of this.accessWitness!.accesses()) {
       const { address, type } = accessedState
@@ -655,7 +657,16 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
       let computedValue = this.getComputedValue(accessedState)
-      let canonicalValue: string | null = this._postState[chunkKey] ?? null
+      let canonicalValue: string | null | undefined = this._postState[chunkKey]
+
+      if (canonicalValue === undefined) {
+        debug(
+          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+        )
+        postVerified = false
+        continue
+      }
+
       // if the access type is code, then we can't match the first byte because since the computed value
       // doesn't has the first byte for push data since previous chunk code itself might not be available
       if (accessedState.type === AccessedStateType.Code) {
@@ -681,19 +692,18 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         )
         debug(`expected=${displayCanonicalValue}`)
         debug(`computed=${displayComputedValue}`)
-        debug(`verifyPostState=false`)
-        return false
+        postVerified = false
       }
     }
 
     for (const canChunkKey of Object.keys(this._postState)) {
       if (accessedChunks.get(canChunkKey) === undefined) {
         debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
-        debug(`verifyPostState=false`)
-        return false
+        postVerified = false
       }
     }
-    debug(`verifyPostState=true`)
+
+    debug(`verifyPostState=${postVerified}`)
     return true
   }
 
