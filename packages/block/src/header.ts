@@ -819,7 +819,8 @@ export class BlockHeader {
   private cliqueSealBlock(privateKey: Uint8Array) {
     this._requireClique('cliqueSealBlock')
 
-    const signature = ecsign(this.cliqueSigHash(), privateKey)
+    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
+    const signature = ecSignFunction(this.cliqueSigHash(), privateKey)
     const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
 
     const extraDataWithoutSeal = this.extraData.subarray(

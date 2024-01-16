@@ -1,5 +1,5 @@
 import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, ECDSASignature } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -69,7 +69,7 @@ export interface BootstrapNodeConfig {
 
 export interface CustomCrypto {
   /**
-   * Test
+   * Interface for providing custom cryptographic primitives in place of `ethereum-cryptography` variants
    */
   keccak256?: (msg: Uint8Array) => Uint8Array
   ecrecover?: (
@@ -80,6 +80,7 @@ export interface CustomCrypto {
     chainId?: bigint
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
+  ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
 }
 
 interface BaseOpts {

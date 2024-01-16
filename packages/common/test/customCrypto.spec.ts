@@ -1,7 +1,10 @@
 import { concatBytes } from '@ethereumjs/util'
+import { randomBytes } from 'crypto'
 import { assert, describe, it } from 'vitest'
 
 import { Chain, Common } from '../src/index.js'
+
+import type { ECDSASignature } from '@ethereumjs/util'
 
 describe('[Common]: Custom Crypto', () => {
   const customKeccak256 = (msg: Uint8Array) => {
@@ -20,6 +23,10 @@ describe('[Common]: Custom Crypto', () => {
   const customSha256 = (msg: Uint8Array) => {
     msg[0] = 0xff
     return msg
+  }
+
+  const customEcSign = (_msg: Uint8Array, _pk: Uint8Array, chainId?: bigint): ECDSASignature => {
+    return { v: chainId ?? 27n, r: Uint8Array.from([0, 1, 2, 3]), s: Uint8Array.from([0, 1, 2, 3]) }
   }
 
   it('keccak256', () => {
@@ -64,5 +71,14 @@ describe('[Common]: Custom Crypto', () => {
     const msg = Uint8Array.from([0, 1, 2, 3])
     const c = new Common({ chain: Chain.Mainnet, customCrypto })
     assert.equal(c.customCrypto.sha256!(msg)[0], 0xff, 'used custom sha256 function')
+  })
+
+  it('ecsign', () => {
+    const customCrypto = {
+      ecsign: customEcSign,
+    }
+    const c = new Common({ chain: Chain.Mainnet, customCrypto })
+    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32), 0n).v, 0n)
+    assert.equal(c.customCrypto.ecsign!(randomBytes(32), randomBytes(32)).v, 27n)
   })
 })

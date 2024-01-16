@@ -6,10 +6,12 @@ import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_2,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
   ecrecover,
+  ecsign,
   hexToBytes,
   initKZG,
   parseGethGenesisState,
@@ -22,6 +24,7 @@ import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
   secp256k1Recover,
+  secp256k1Sign,
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
@@ -821,10 +824,26 @@ async function run() {
         )
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
+    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
+      if (msg.length < 32) {
+        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
+        throw new Error('message length must be 32 bytes or greater')
+      }
+      const buf = secp256k1Sign(msg, pk)
+      const r = buf.slice(0, 32)
+      const s = buf.slice(32, 64)
+      const v =
+        chainId === undefined
+          ? BigInt(buf[64] + 27)
+          : BigInt(buf[64] + 35) + BigInt(chainId) * BIGINT_2
+
+      return { r, s, v }
+    }
   } else {
     cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
+    cryptoFunctions.ecsign = ecsign
   }
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
