@@ -16,7 +16,7 @@
     "prepare": "git config --local core.hooksPath .githooks",
     "prettier": "prettier --write \"./**/*.{js,json,md,ts,yml}\"",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "install-browser-deps": "npm install webdriverio playwright @vitest/browser vite-plugin-node-polyfills eventemitter3"
+    "install-browser-deps": "npm install webdriverio @vitest/browser@0.32.2"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
@@ -55,7 +55,6 @@
   "peerDependencies": {
     "@vitest/browser": "1.2.0",
     "eventemitter3": "5.0.1",
-    "playwright": "1.40.1",
     "vite-plugin-node-polyfills": "0.19.0",
     "webdriverio": "8.27.2"
   },

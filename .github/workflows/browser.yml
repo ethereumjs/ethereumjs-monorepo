@@ -32,17 +32,13 @@ jobs:
           cache: 'npm'
 
       - run: npm ci --include=peer
-      # - run: npm run install-browser-deps
 
-      #     Install playwright dependencies
-      # - run: npx playwright install-deps
-
-      - run: npm run test:browser -w=@ethereumjs/block
       - run: npm run test:browser -w=@ethereumjs/rlp
       - run: npm run test:browser -w=@ethereumjs/util
       - run: npm run test:browser -w=@ethereumjs/common
       - run: npm run test:browser -w=@ethereumjs/trie
       - run: npm run test:browser -w=@ethereumjs/tx
+      - run: npm run test:browser -w=@ethereumjs/block
       #     No browser tests for devp2p
       - run: npm run test:browser -w=@ethereumjs/blockchain
       #     No browser tests for ethash
