@@ -704,7 +704,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     debug(`verifyPostState=${postVerified}`)
-    return true
+    return postVerified
   }
 
   getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
