@@ -423,25 +423,6 @@ export class EVM implements EVMInterface {
     }
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
-      if (this.common.isActivatedEIP(6800)) {
-        const absenceProofAccessGas = message.accessWitness!.touchAndChargeProofOfAbsence(
-          message.to
-        )
-        gasLimit -= absenceProofAccessGas
-        if (gasLimit < BIGINT_0) {
-          if (this.DEBUG) {
-            debugGas(
-              `Proof of absense access charged(${absenceProofAccessGas}) caused OOG (-> ${gasLimit})`
-            )
-          }
-          return { execResult: OOGResult(message.gasLimit) }
-        } else {
-          if (this.DEBUG) {
-            debugGas(`Proof of absense access used (${absenceProofAccessGas} gas (-> ${gasLimit}))`)
-          }
-        }
-      }
-
       toAccount = new Account()
     }
 
