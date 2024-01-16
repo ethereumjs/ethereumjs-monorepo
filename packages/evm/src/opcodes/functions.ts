@@ -913,8 +913,8 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (common.isActivatedEIP(6800)) {
         const contract = runState.interpreter.getAddress()
-        const startOffset = Math.min(runState.code.length, runState.programCounter - numToPush + 1)
-        const endOffset = Math.min(runState.code.length, startOffset + numToPush)
+        const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
+        const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)
         const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
           contract,
           startOffset,
