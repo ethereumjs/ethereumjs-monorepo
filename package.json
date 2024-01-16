@@ -53,11 +53,11 @@
     "vitest": "^1.2.0"
   },
   "peerDependencies": {
-    "@vitest/browser": "^1.2.0",
-    "eventemitter3": "^5.0.1",
-    "playwright": "^1.40.1",
-    "vite-plugin-node-polyfills": "^0.19.0",
-    "webdriverio": "^8.27.2"
+    "@vitest/browser": "1.2.0",
+    "eventemitter3": "5.0.1",
+    "playwright": "1.40.1",
+    "vite-plugin-node-polyfills": "0.19.0",
+    "webdriverio": "8.27.2"
   },
   "peerDependenciesMeta": {
     "playwright": {
