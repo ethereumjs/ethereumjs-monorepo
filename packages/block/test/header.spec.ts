@@ -16,7 +16,7 @@ import { assert, describe, it } from 'vitest'
 import { Block } from '../src/block.js'
 import { BlockHeader } from '../src/header.js'
 
-import * as testData from './testdata/bcBlockGasLimitTest.json'
+import testData from './testdata/bcBlockGasLimitTest.json'
 import blocksGoerli from './testdata/blocks_goerli.json'
 import blocksMainnet from './testdata/blocks_mainnet.json'
 
