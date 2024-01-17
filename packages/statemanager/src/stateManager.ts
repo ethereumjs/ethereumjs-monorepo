@@ -966,21 +966,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
+    const storage: StorageDump = {}
+    const stream = trie.createAsyncReadStream()
 
-    return new Promise((resolve, reject) => {
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
+    for await (const chunk of stream) {
+      storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
+    }
 
-      stream.on('data', (val: any) => {
-        storage[bytesToHex(val.key)] = bytesToHex(val.value)
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
-      stream.on('error', (e) => {
-        reject(e)
-      })
-    })
+    return storage
   }
 
   /**
@@ -1003,44 +996,35 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`Account does not exist.`)
     }
     const trie = this._getStorageTrie(address, account)
+    let inRange = false
+    let i = 0
 
-    return new Promise((resolve, reject) => {
-      let inRange = false
-      let i = 0
-
-      /** Object conforming to {@link StorageRange.storage}. */
-      const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(val.key) >= startKey) {
-            inRange = true
-          } else {
-            return
-          }
+    /** Object conforming to {@link StorageRange.storage}. */
+    const storageMap: StorageRange['storage'] = {}
+    const stream = trie.createAsyncReadStream()
+    for await (const chunk of stream) {
+      if (!inRange) {
+        // Check if the key is already in the correct range.
+        if (bytesToBigInt(chunk.key) >= startKey) {
+          inRange = true
+        } else {
+          continue
         }
-
-        if (i < limit) {
-          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-          i++
-        } else if (i === limit) {
-          resolve({
-            storage: storageMap,
-            nextKey: bytesToHex(val.key),
-          })
-        }
-      })
-
-      stream.on('end', () => {
-        resolve({
+      }
+      if (i < limit) {
+        storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
+        i++
+      } else if (i === limit) {
+        return {
           storage: storageMap,
-          nextKey: null,
-        })
-      })
-      stream.on('error', (e) => reject(e))
-    })
+          nextKey: bytesToHex(chunk.key),
+        }
+      }
+    }
+    return {
+      storage: storageMap,
+      nextKey: null,
+    }
   }
 
   /**
