@@ -453,7 +453,7 @@ describe('[Block]: Header functions', () => {
 */
   it('should test validateGasLimit()', () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
-    const bcBlockGasLimitTestData = testData.tests.BlockGasLimit2p63m1
+    const bcBlockGasLimitTestData = (testData as any).tests.BlockGasLimit2p63m1
 
     for (const key of Object.keys(bcBlockGasLimitTestData)) {
       const genesisRlp = toBytes(
