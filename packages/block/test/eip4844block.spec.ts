@@ -7,7 +7,6 @@ import {
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
@@ -20,92 +19,91 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-if (isBrowser() === false) {
-  try {
-    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
-}
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
 })
 const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
 
-describe('EIP4844 header tests', () => {
+console.log({
+  isBrowser: isBrowser(),
+})
+
+if (isBrowser() !== true) {
+  const kzg = await import('c-kzg')
+  try {
+    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    // eslint-disable-next-line
+  } catch {}
+}
+describe.skipIf(isBrowser())('EIP4844 header tests', () => {
   it('should work', () => {
-    if (isBrowser() === false) {
-      const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const earlyCommon = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
 
-      assert.throws(
-        () => {
-          BlockHeader.fromHeaderData(
-            {
-              excessBlobGas: 1n,
-            },
-            {
-              common: earlyCommon,
-            }
-          )
-        },
-        'excess blob gas can only be provided with EIP4844 activated',
-        undefined,
-        'should throw when setting excessBlobGas with EIP4844 not being activated'
-      )
-
-      assert.throws(
-        () => {
-          BlockHeader.fromHeaderData(
-            {
-              blobGasUsed: 1n,
-            },
-            {
-              common: earlyCommon,
-            }
-          )
-        },
-        'blob gas used can only be provided with EIP4844 activated',
-        undefined,
-        'should throw when setting blobGasUsed with EIP4844 not being activated'
-      )
-
-      const excessBlobGas = BlockHeader.fromHeaderData(
-        {},
-        { common, skipConsensusFormatValidation: true }
-      ).excessBlobGas
-      assert.equal(
-        excessBlobGas,
-        0n,
-        'instantiates block with reasonable default excess blob gas value when not provided'
-      )
-      assert.doesNotThrow(() => {
+    assert.throws(
+      () => {
         BlockHeader.fromHeaderData(
           {
-            excessBlobGas: 0n,
+            excessBlobGas: 1n,
           },
           {
-            common,
-            skipConsensusFormatValidation: true,
+            common: earlyCommon,
           }
         )
-      }, 'correctly instantiates an EIP4844 block header')
+      },
+      'excess blob gas can only be provided with EIP4844 activated',
+      undefined,
+      'should throw when setting excessBlobGas with EIP4844 not being activated'
+    )
 
-      const block = Block.fromBlockData(
+    assert.throws(
+      () => {
+        BlockHeader.fromHeaderData(
+          {
+            blobGasUsed: 1n,
+          },
+          {
+            common: earlyCommon,
+          }
+        )
+      },
+      'blob gas used can only be provided with EIP4844 activated',
+      undefined,
+      'should throw when setting blobGasUsed with EIP4844 not being activated'
+    )
+
+    const excessBlobGas = BlockHeader.fromHeaderData(
+      {},
+      { common, skipConsensusFormatValidation: true }
+    ).excessBlobGas
+    assert.equal(
+      excessBlobGas,
+      0n,
+      'instantiates block with reasonable default excess blob gas value when not provided'
+    )
+    assert.doesNotThrow(() => {
+      BlockHeader.fromHeaderData(
         {
-          header: BlockHeader.fromHeaderData({}, { common, skipConsensusFormatValidation: true }),
+          excessBlobGas: 0n,
         },
-        { common, skipConsensusFormatValidation: true }
+        {
+          common,
+          skipConsensusFormatValidation: true,
+        }
       )
-      assert.equal(
-        block.toJSON().header?.excessBlobGas,
-        '0x0',
-        'JSON output includes excessBlobGas'
-      )
-    }
+    }, 'correctly instantiates an EIP4844 block header')
+
+    const block = Block.fromBlockData(
+      {
+        header: BlockHeader.fromHeaderData({}, { common, skipConsensusFormatValidation: true }),
+      },
+      { common, skipConsensusFormatValidation: true }
+    )
+    assert.equal(block.toJSON().header?.excessBlobGas, '0x0', 'JSON output includes excessBlobGas')
   })
 })
 
-describe('blob gas tests', () => {
+describe.skipIf(isBrowser())('blob gas tests', () => {
   it('should work', () => {
     if (isBrowser() === false) {
       const preShardingHeader = BlockHeader.fromHeaderData({})
@@ -153,7 +151,7 @@ describe('blob gas tests', () => {
   })
 })
 
-describe('transaction validation tests', () => {
+describe.skipIf(isBrowser())('transaction validation tests', () => {
   it('should work', () => {
     if (isBrowser() === false) {
       const blobs = getBlobs('hello world')
@@ -260,30 +258,30 @@ describe('transaction validation tests', () => {
 })
 
 describe('fake exponential', () => {
-  it('should work', () => {
-    // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
-    const testInputs = [
-      [1, 0, 1, 1],
-      [38493, 0, 1000, 38493],
-      [0, 1234, 2345, 0],
-      [1, 2, 1, 6],
-      [1, 4, 2, 6],
-      [1, 3, 1, 16],
-      [1, 6, 2, 18],
-      [1, 4, 1, 49],
-      [1, 8, 2, 50],
-      [10, 8, 2, 542],
-      [11, 8, 2, 596],
-      [1, 5, 1, 136],
-      [1, 5, 2, 11],
-      [2, 5, 2, 23],
-    ]
-    for (const input of testInputs) {
+  // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
+  const testInputs = [
+    [1, 0, 1, 1],
+    [38493, 0, 1000, 38493],
+    [0, 1234, 2345, 0],
+    [1, 2, 1, 6],
+    [1, 4, 2, 6],
+    [1, 3, 1, 16],
+    [1, 6, 2, 18],
+    [1, 4, 1, 49],
+    [1, 8, 2, 50],
+    [10, 8, 2, 542],
+    [11, 8, 2, 596],
+    [1, 5, 1, 136],
+    [1, 5, 2, 11],
+    [2, 5, 2, 23],
+  ]
+  for (const input of testInputs) {
+    it('should work', () => {
       assert.equal(
         fakeExponential(BigInt(input[0]), BigInt(input[1]), BigInt(input[2])),
         BigInt(input[3]),
         'fake exponential produced expected output'
       )
-    }
-  })
+    })
+  }
 })
