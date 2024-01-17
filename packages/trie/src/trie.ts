@@ -46,6 +46,10 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+// Since ReadableStream is from a Web API, the following type import
+// is not needed in and should be ignored by the browser, so an exeption
+// is made here to deviate from our policy to not add Node.js specific
+// package imports. -- 16/01/24
 // eslint-disable-next-line implicit-dependencies/no-implicit
 import type { ReadableStream } from 'node:stream/web'
 
