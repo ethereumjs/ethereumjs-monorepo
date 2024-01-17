@@ -963,7 +963,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     }
     const trie = this._getStorageTrie(address, account)
     const storage: StorageDump = {}
-    const stream = trie.createReadStream()
+    const stream = trie.createAsyncReadStream()
 
     for await (const chunk of stream) {
       storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
@@ -997,7 +997,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     /** Object conforming to {@link StorageRange.storage}. */
     const storageMap: StorageRange['storage'] = {}
-    const stream = trie.createReadStream()
+    const stream = trie.createAsyncReadStream()
     for await (const chunk of stream) {
       if (!inRange) {
         // Check if the key is already in the correct range.
