@@ -139,7 +139,7 @@ export class BlockBuilder {
    * Calculates and returns the logs bloom for the block.
    */
   public logsBloom() {
-    const bloom = new Bloom()
+    const bloom = new Bloom(undefined, this.vm.common)
     for (const txResult of this.transactionResults) {
       // Combine blooms via bitwise OR
       bloom.or(txResult.bloom)

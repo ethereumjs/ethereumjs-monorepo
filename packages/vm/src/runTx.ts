@@ -493,7 +493,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Parse results
    */
   // Generate the bloom for the tx
-  results.bloom = txLogsBloom(results.execResult.logs)
+  results.bloom = txLogsBloom(results.execResult.logs, this.common)
   if (this.DEBUG) {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
@@ -657,8 +657,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
  * @method txLogsBloom
  * @private
  */
-function txLogsBloom(logs?: any[]): Bloom {
-  const bloom = new Bloom()
+function txLogsBloom(logs?: any[], common?: Common): Bloom {
+  const bloom = new Bloom(undefined, common)
   if (logs) {
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]

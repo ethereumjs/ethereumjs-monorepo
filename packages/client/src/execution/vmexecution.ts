@@ -152,6 +152,7 @@ export class VMExecution extends Execution {
         type: CacheType.LRU,
         size: this.config.codeCache,
       },
+      common: this.config.chainCommon,
     })
     this.merkleVM = await VM.create({
       common: this.config.execCommon,

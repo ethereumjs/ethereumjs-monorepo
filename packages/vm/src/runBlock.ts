@@ -421,7 +421,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     console.time(processTxsLabel)
   }
 
-  const bloom = new Bloom()
+  const bloom = new Bloom(undefined, this.common)
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 

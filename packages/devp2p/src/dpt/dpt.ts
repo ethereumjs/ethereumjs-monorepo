@@ -68,6 +68,7 @@ export class DPT {
       timeout: options.timeout,
       endpoint: options.endpoint,
       createSocket: options.createSocket,
+      common: options.common,
     })
     this._server.events.once('listening', () => this.events.emit('listening'))
     this._server.events.once('close', () => this.events.emit('close'))
