@@ -27,7 +27,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { AccessList, AccessListItem } from '@ethereumjs/common'
+import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
