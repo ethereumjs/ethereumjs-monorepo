@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705347301903,
+  "lastUpdate": 1705494325203,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "019084dda72a729258f1e4b6e005dd05aa0430ab",
-          "message": "Update `EthersStateManager` to be RpcStateManager under the hood (#3167)\n\n* Add ESMBlockchain\n\n* Add comment on test\n\n* Fix bytecode\n\n* Make RpcBlockChain class much better\n\n* Remove ethers from ESM\n\n* Fix mock provider and tests\n\n* update readme\n\n* stateManager: make rpcblockchain only have one param in constructor\n\n* Address feedback\n\n* stateManager: rename ethers -> rpc\n\n* Add test plugins for wasm\n\n* Cleanup rpcStateManager test and skip in browser\n\n* Remove obsolete function\n\n* Address feedback\n\n* address feedback\n\n* statemanager: update readme\n\n---------\n\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-11-30T14:14:30-05:00",
-          "tree_id": "409ddb4863afd8f26b3404b29341e0bd687cb629",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/019084dda72a729258f1e4b6e005dd05aa0430ab"
-        },
-        "date": 1701371976390,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40124,
-            "range": "±3.05%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38964,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38824,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36080,
-            "range": "±5.27%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37197,
-            "range": "±2.14%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.33%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a8f326aa6023afa9eb968959c8007e5caf10406e",
+          "message": "Readable stream analysis refactor (#3231)\n\n* Experiment with importing webstreams\r\n\r\n* Suppress implicit-import eslint error\r\n\r\n* Replace readable-stream with web stream api\r\n\r\n* Remove unnecessary null check\r\n\r\n* Update package-lock and dependencies\r\n\r\n* Fix test\r\n\r\n* Make nonbreaking\r\n\r\n* Use async stream in statemanager\r\n\r\n* Update package-lock file and dependencies\r\n\r\n* Include comment to detail deviation from import policy\r\n\r\n* Revert \"Update package-lock file and dependencies\"\r\n\r\nThis reverts commit baf67f4ada44f7bfd23d1896d7cbb88d033ad657.\r\n\r\n* Revert \"Update package-lock and dependencies\"\r\n\r\nThis reverts commit 02b8845a0e35b8a97efa7b69a6fc26f03e210c38.\r\n\r\n* Update package-lock",
+          "timestamp": "2024-01-17T13:22:37+01:00",
+          "tree_id": "234296a83446816eee46dd81a936a973be43eac2",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a8f326aa6023afa9eb968959c8007e5caf10406e"
+        },
+        "date": 1705494323877,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41073,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38809,
+            "range": "±3.08%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39502,
+            "range": "±2.02%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38577,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37496,
+            "range": "±2.45%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
