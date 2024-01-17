@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { Blockchain } from '../src/index.js'
 
 import blocksData from './testdata/blocks_mainnet.json'
-import * as testDataPreLondon from './testdata/testdata_pre-london.json'
+import testDataPreLondon from './testdata/testdata_pre-london.json'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
 import type { BlockOptions } from '@ethereumjs/block'
