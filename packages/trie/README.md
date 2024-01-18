@@ -52,9 +52,8 @@ test()
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 
-const trie = await Trie.create()
-
 async function test() {
+  const trie = await Trie.create()
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
   const value = await trie.get(utf8ToBytes('test'))
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
@@ -69,21 +68,31 @@ When the static `Trie.create` constructor is used without any options, the `trie
 
 ```ts
 import { Trie } from '@ethereumjs/trie'
+import { bytesToUtf8 } from '@ethereumjs/util'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 
-async function test() {
-  // someOtherTrie is another trie used as an example here for generating merkle proofs necessary for the
-  const proof = await someOtherTrie.createProof(someKey)
+async function main() {
+  const k1 = utf8ToBytes('keyOne')
+  const k2 = utf8ToBytes('keyTwo')
+
+  const someOtherTrie = new Trie({ useKeyHashing: true })
+  await someOtherTrie.put(k1, utf8ToBytes('valueOne'))
+  await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
+
+  const proof = await someOtherTrie.createProof(k1)
   const trie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
-  const otherProof = await someOtherTrie.createProof(someOtherKey)
+  const otherProof = await someOtherTrie.createProof(k2)
+
   // To add more proofs to the trie, use `updateTrieFromProof`
   await trie.updateTrieFromProof(otherProof)
-  const value = await trie.get(someKey)
-  console.log(value)
-  const otherValue = await trie.get(someOtherKey)
-  console.log(otherValue)
+
+  const value = await trie.get(k1)
+  console.log(bytesToUtf8(value!)) // valueOne
+  const otherValue = await trie.get(k2)
+  console.log(bytesToUtf8(otherValue!)) // valueTwo
 }
 
-test()
+main()
 ```
 
 When the `Trie.createTrieFromProof` constructor is used, it instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
@@ -96,13 +105,19 @@ The new walk functionality can be used like the following:
 
 ```ts
 import { Trie } from '@ethereumjs/trie'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
 
-const trie = await Trie.create()
-const walk = trie.walkTrieIterable(trie.root())
+async function main() {
+  const trie = await Trie.create()
+  await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
+  const walk = trie.walkTrieIterable(trie.root())
 
-for await (const { node, currentKey } of walk) {
-  // ... do something i.e. console.log( { node, currentKey } )
+  for await (const { node, currentKey } of walk) {
+    // ... do something
+    console.log({ node, currentKey })
+  }
 }
+main()
 ```
 
 ### `Trie` Configuration Options
@@ -125,7 +140,10 @@ import { Level } from 'level'
 
 import { LevelDB } from './your-level-implementation'
 
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+async function main() {
+  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+}
+main()
 ```
 
 #### Node Deletion (Pruning)
@@ -138,10 +156,15 @@ You can enable persistence by setting the `useRootPersistence` option to `true` 
 
 ```ts
 import { Trie } from '@ethereumjs/trie'
+import { bytesToHex } from '@ethereumjs/util'
 
-const trie = await Trie.create({
-  useRootPersistence: true,
-})
+async function main() {
+  const trie = await Trie.create({
+    useRootPersistence: true,
+  })
+  console.log(bytesToHex(trie.root())) // 0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+}
+main()
 ```
 
 ## Proofs
