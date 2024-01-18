@@ -25,7 +25,7 @@ import {
   secp256k1Expand,
   secp256k1Recover,
   secp256k1Sign,
-  waitReady,
+  waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
 import * as kzg from 'c-kzg'
@@ -807,7 +807,7 @@ async function run() {
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
   if (args.useJsCrypto === false) {
-    await waitReady()
+    await waitReadyPolkadotSha256()
     cryptoFunctions.keccak256 = keccak256WASM
     cryptoFunctions.ecrecover = (
       msgHash: Uint8Array,

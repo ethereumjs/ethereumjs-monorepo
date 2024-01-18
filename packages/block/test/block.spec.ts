@@ -223,6 +223,14 @@ describe('[Block]: block functions', () => {
     assert.equal(genesisBlock.isGenesis(), true)
   })
 
+  it('should test genesis hashes (mainnet default)', () => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const rlp = hexToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
+    const hash = hexToBytes('0x' + testDataGenesis.test.genesis_hash)
+    const block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+  })
+
   it('should test hash() method (mainnet default)', () => {
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     const rlp = hexToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
