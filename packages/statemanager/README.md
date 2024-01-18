@@ -13,7 +13,7 @@
 
 To obtain the latest version, simply require the project using `npm`:
 
-```shell
+```bash
 npm install @ethereumjs/statemanager
 ```
 
@@ -38,13 +38,16 @@ import { Account, Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from '@ethereumjs/util'
 
-const stateManager = new DefaultStateManager()
-const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
-const account = new Account(BigInt(0), BigInt(1000))
-await stateManager.checkpoint()
-await stateManager.putAccount(address, account)
-await stateManager.commit()
-await stateManager.flush()
+const main = async () => {
+  const stateManager = new DefaultStateManager()
+  const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+  const account = new Account(BigInt(0), BigInt(1000))
+  await stateManager.checkpoint()
+  await stateManager.putAccount(address, account)
+  await stateManager.commit()
+  await stateManager.flush()
+}
+main()
 ```
 
 #### Account, Storage and Code Caches
@@ -62,18 +65,41 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
 
 ```ts
-// setup `stateManager` with some existing address
-const proof = await stateManager.getProof(address)
-const proofWithStorage = await stateManger.getProof(contractAddress, [storageKey1, storageKey2])
+import { Account, Address, bytesToHex } from '@ethereumjs/util'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { hexToBytes } from '@ethereumjs/util'
 
-const partialStateManager = await DefaultStateManager.fromProof(proof)
-// To add more proof data, use `addProofData`
-await partialStateManager.addProofData(proofWithStorage)
-const accountFromNewSM = await partialStateManager.getAccount(address)
-const accountFromOldSM = await stateManager.getAccount(address)
-console.log(accountFromNewSM, accountFromOldSM) // should match
-const slot1FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
-const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1) // should also match
+const main = async () => {
+  // setup `stateManager` with some existing address
+  const stateManager = new DefaultStateManager()
+  const contractAddress = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+  const byteCode = hexToBytes('0x67ffffffffffffffff600160006000fb')
+  const storageKey1 = hexToBytes(
+    '0x0000000000000000000000000000000000000000000000000000000000000001'
+  )
+  const storageKey2 = hexToBytes(
+    '0x0000000000000000000000000000000000000000000000000000000000000002'
+  )
+
+  await stateManager.putContractCode(contractAddress, byteCode)
+  await stateManager.putContractStorage(contractAddress, storageKey1, hexToBytes('0x01'))
+  await stateManager.putContractStorage(contractAddress, storageKey2, hexToBytes('0x02'))
+
+  const proof = await stateManager.getProof(contractAddress)
+  const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])
+
+  const partialStateManager = await DefaultStateManager.fromProof(proof)
+  // To add more proof data, use `addProofData`
+  await partialStateManager.addProofData(proofWithStorage)
+  const accountFromNewSM = await partialStateManager.getAccount(contractAddress)
+  const accountFromOldSM = await stateManager.getAccount(contractAddress)
+  console.log(accountFromNewSM, accountFromOldSM) // should match
+
+  const slot1FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
+  const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
+  console.log(slot1FromNewSM, slot2FromNewSM) // should also match
+}
+main()
 ```
 
 ### `RPCStateManager`
@@ -81,14 +107,17 @@ const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, st
 First, a simple example of usage:
 
 ```ts
-import { Account, Address } from '@ethereumjs/util'
+import { Address } from '@ethereumjs/util'
 import { RPCStateManager } from '@ethereumjs/statemanager'
 
-const provider = 'https://path.to.my.provider.com'
-const stateManager = new RPCStateManager({ provider, blockTag: 500000n })
-const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-const account = await stateManager.getAccount(vitalikDotEth)
-console.log('Vitalik has a current ETH balance of ', account.balance)
+const main = async () => {
+  const provider = 'https://path.to.my.provider.com'
+  const stateManager = new RPCStateManager({ provider, blockTag: 500000n })
+  const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+  const account = await stateManager.getAccount(vitalikDotEth)
+  console.log('Vitalik has a current ETH balance of ', account?.balance)
+}
+main()
 ```
 
 The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
@@ -102,13 +131,17 @@ The `RPCStateManager` can be be used with any JSON-RPC provider that supports th
 In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
 
 ```js
-import { RPCStateManager, RPCBlockChain } from '../src/rpcStateManager.js'
+import { RPCStateManager, RPCBlockChain } from '@ethereumjs/statemanager'
 import { EVM } from '@ethereumjs/evm'
 
-const blockchain = new RPCBlockChain({}, provider)
-const blockTag = 1n
-const state = new RPCStateManager({ provider, blockTag })
-const evm = new EVM({ blockchain, stateManager: state })
+const main = async () => {
+  const provider = 'https://path.to.my.provider.com'
+  const blockchain = new RPCBlockChain(provider)
+  const blockTag = 1n
+  const state = new RPCStateManager({ provider, blockTag })
+  const evm = new EVM({ blockchain, stateManager: state })
+}
+main()
 ```
 
 Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM means that the `BLOCKHASH` opcode will fail to work correctly during EVM execution.
