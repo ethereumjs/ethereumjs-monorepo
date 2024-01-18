@@ -1087,6 +1087,29 @@ export class Trie {
     )
   }
 
+  /**
+   * Static version of {@link verifyRangeProof} function with the same behavior
+   */
+  static verifyRangeProof(
+    rootHash: Uint8Array,
+    firstKey: Uint8Array | null,
+    lastKey: Uint8Array | null,
+    keys: Uint8Array[],
+    values: Uint8Array[],
+    proof: Uint8Array[] | null,
+    opts?: TrieOpts
+  ): Promise<boolean> {
+    return verifyRangeProof(
+      rootHash,
+      firstKey && bytesToNibbles((firstKey)),
+      lastKey && bytesToNibbles((lastKey)),
+      keys.map((k) => (k)).map(bytesToNibbles),
+      values,
+      proof,
+      opts?.useKeyHashingFunction ?? ((msg) => {return msg})
+    )
+  }
+
   // This method verifies if all keys in the trie (except the root) are reachable
   // If one of the key is not reachable, then that key could be deleted from the DB
   // (i.e. the Trie is not correctly pruned)
