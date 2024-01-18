@@ -111,7 +111,7 @@ export class Peer {
     // ECIES session
     this._remoteId = options.remoteId
     this._EIP8 = options.EIP8 ?? true
-    this._eciesSession = new ECIES(options.privateKey, this.id, this._remoteId)
+    this._eciesSession = new ECIES(options.privateKey, this.id, this._remoteId, this.common)
 
     // Auth, Ack, Header, Body
     this._state = 'Auth'

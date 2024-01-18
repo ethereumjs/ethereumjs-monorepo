@@ -318,7 +318,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie()
+    const trie = new Trie({ common: this.config.chainCommon })
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values

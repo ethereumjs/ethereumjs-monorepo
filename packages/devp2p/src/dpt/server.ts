@@ -10,6 +10,7 @@ import { decode, encode } from './message.js'
 
 import type { DPTServerOptions, PeerInfo } from '../types.js'
 import type { DPT } from './dpt.js'
+import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
 const { debug: createDebugLogger } = debugDefault
@@ -29,6 +30,8 @@ export class Server {
   protected _requestsCache: LRUCache<string, Promise<any>>
   protected _socket: DgramSocket | null
   private _debug: Debugger
+
+  protected _common?: Common
 
   private DEBUG: boolean
 
@@ -57,6 +60,8 @@ export class Server {
         }
       })
     }
+
+    this._common = options.common
 
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
@@ -140,7 +145,7 @@ export class Server {
       )
     }
 
-    const msg = encode(typename, data, this._privateKey)
+    const msg = encode(typename, data, this._privateKey, this._common)
 
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
@@ -148,7 +153,7 @@ export class Server {
   }
 
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
-    const info = decode(msg) // Dgram serializes everything to `Uint8Array`
+    const info = decode(msg, this._common) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
     if (this.DEBUG) {
       this.debug(

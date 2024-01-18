@@ -253,6 +253,26 @@ describe('[Block]: block functions', () => {
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
 
+  it('should test hash() method (mainnet default)', () => {
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const rlp = hexToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
+    const hash = hexToBytes('0x' + testDataGenesis.test.genesis_hash)
+    let block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+
+    common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Chainstart,
+      customCrypto: {
+        keccak256: () => {
+          return new Uint8Array([1])
+        },
+      },
+    })
+    block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.deepEqual(block.hash(), new Uint8Array([1]), 'custom crypto applied on hash() method')
+  })
+
   it('should error on invalid params', () => {
     assert.throws(
       () => {
