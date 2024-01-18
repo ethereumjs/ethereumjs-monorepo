@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705494325203,
+  "lastUpdate": 1705547661768,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f9525af55b4c2068a003e8035184913c0adcd980",
-          "message": "chore: Improve error handling of fetchFromProvider (#3171)\n\n* chore: Improve error handling of fetchFromProvider\r\n\r\n* test: Update mocks\r\n\r\n* fix: linter\r\n\r\n* test: Add test for fetchFromProvider\r\n\r\n* fix bug with not awaiting res.text()\r\n\r\n* test: Add a hapy path test\r\n\r\n---------\r\n\r\nCo-authored-by: Will Cory <willcory@Wills-MacBook-Pro.local>",
-          "timestamp": "2023-12-02T20:48:28-05:00",
-          "tree_id": "4bb203f94438a67b1538412199205284d6e76aff",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f9525af55b4c2068a003e8035184913c0adcd980"
-        },
-        "date": 1701568425690,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39356,
-            "range": "±3.38%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38730,
-            "range": "±1.76%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38540,
-            "range": "±2.01%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36037,
-            "range": "±5.10%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36932,
-            "range": "±2.27%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.45%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "54446b1baa71f1fba57b69d421daefebb096c6ce",
+          "message": "Client/Monorepo: Use WASM Crypto (keccak256) for Hashing / Consistent Hash Function Overwrite (#3192)\n\n* Add @polkadot/wasm crypto dependency\r\n\r\n* Use @polkadot/wasm keccak256 for trie key hashing in execution state manager for VM\r\n\r\n* Tighten calling for useKeyHashingFunction\r\n\r\n* Add customCrypto options dict to Common, first keccak256 usage and test\r\n\r\n* Add custom keccak256 usage to EVM keccak256 opcode\r\n\r\n* Add wasm based ecrecover option\r\n\r\n* export calcSigRecovery\r\n\r\n* use customcrypto if available\r\n\r\n* add test for custom ecrecover\r\n\r\n* Add optional common to trie interface\r\n\r\n* Add cli option\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Add @polkadot/util as a dev dependency to the tx package for testing\r\n\r\n* Rebuild package-lock.json\r\n\r\n* Pass common into trie instantiations in snap sync fetchers\r\n\r\n* Use wasm keccak function if available in bytecodeFetcher\r\n\r\n* Use wasm keccak function if available in trienodeFetcher\r\n\r\n* Refactor default statemanager trie and keccak256 usage to allow option of WASM version\r\n\r\n* Refactor rpc statemanager trie and keccak256 usage to allow option of WASM version\r\n\r\n* Refactor verkle statemanager trie and keccak256 usage to allow option of WASM version\r\n\r\n* Fix reference to statemanager opts\r\n\r\n* Pass common to verifyProof trie instantiation\r\n\r\n* Test if trie shallowCopy is using the correct hashing function\r\n\r\n* Update packages/tx/src/capabilities/legacy.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* Update packages/tx/src/capabilities/legacy.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* Update packages/tx/src/capabilities/legacy.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* Update packages/tx/src/capabilities/legacy.ts\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* tx: fix double declaration\r\n\r\n* Use wasm keccak function if available in block\r\n\r\n* Use consistent naming for opts parameter\r\n\r\n* Update package-lock\r\n\r\n* Use wasm keccak function if available in header\r\n\r\n* Use consistent naming for opts parameter\r\n\r\n* Explicitly declare return type\r\n\r\n* Pass common to tries instantiated in genTrieRoot functions\r\n\r\n* Fix tests\r\n\r\n* Fix test\r\n\r\n* Block: add suggestions from code review\r\n\r\n* Add test for Block hash() method with custom crypto\r\n\r\n* Some clean-up\r\n\r\n* Pass common in vm and testrunner tries\r\n\r\n* Update evm usage for customCrypto\r\n\r\n* Move wasm crypto tests to client\r\n\r\n* add optional wasm keccak in misc uses\r\n\r\n* Add polkadot/util\r\n\r\n* import util directly\r\n\r\n* resolve polkadot/util to fake dep\r\n\r\n* Devp2p: Use WASM Crypto\r\n\r\n* Devp2p: add keccak function and Common passing structure to RLPx, DPT, DNS\r\n\r\n* Client: pass in common along devp2p DPT instantiation\r\n\r\n* Devp2p: expand to ECIES, first replacement test\r\n\r\n* Devp2p: First full-round replacement (including concatBytes occurrences) for ECIES\r\n\r\n* Devp2p: integrate into DPT server and message\r\n\r\n* Devp2p: Add to DNS ENR\r\n\r\n* Devp2p: remove util keccak256 helper function\r\n\r\n* Mock polkadot util module\r\n\r\n* try installing peers\r\n\r\n* Add custom sha256 support and tests\r\n\r\n* Add wasm ecSign\r\n\r\n* Passing common in various places\r\n\r\n* Fix import\r\n\r\n* block/client: minor changes\r\n\r\n* Add ecrecover function\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-01-18T04:08:59+01:00",
+          "tree_id": "c400f2632457e98c32f689a663a053fda9896742",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/54446b1baa71f1fba57b69d421daefebb096c6ce"
+        },
+        "date": 1705547660482,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40670,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38385,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38785,
+            "range": "±2.14%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37944,
+            "range": "±2.11%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34099,
+            "range": "±6.67%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
