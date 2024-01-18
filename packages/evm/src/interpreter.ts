@@ -70,6 +70,7 @@ export interface Env {
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: AccessWitness
+  chargeCodeAccesses?: boolean
 }
 
 export interface RunState {
@@ -319,7 +320,7 @@ export class Interpreter {
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
         gas = await opEntry.gasHandler(this._runState, gas, this.common)
       }
-      if (this.common.isActivatedEIP(6800)) {
+      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
         const contract = this._runState.interpreter.getAddress()
         const statelessGas =
           this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(

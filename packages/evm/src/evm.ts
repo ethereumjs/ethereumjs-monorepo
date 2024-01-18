@@ -648,6 +648,30 @@ export class EVM implements EVMInterface {
       result.returnValue !== undefined &&
       result.returnValue.length !== 0
     ) {
+      // Add access charges for writing this code to the state
+      if (this.common.isActivatedEIP(6800)) {
+        const byteCodeWriteAccessfee =
+          message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
+            message.to,
+            0,
+            message.code!.length - 1
+          )
+        gasLimit -= byteCodeWriteAccessfee
+        if (gasLimit < BIGINT_0) {
+          if (this.DEBUG) {
+            debug(
+              `byteCodeWrite access gas (${byteCodeWriteAccessfee}) caused OOG (-> ${gasLimit})`
+            )
+          }
+          result = { ...result, ...OOGResult(message.gasLimit) }
+        } else {
+          debug(
+            `ContractCreateComplete access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`
+          )
+          result.executionGasUsed += byteCodeWriteAccessfee
+        }
+      }
+
       await this.stateManager.putContractCode(message.to, result.returnValue)
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
@@ -697,6 +721,7 @@ export class EVM implements EVMInterface {
       codeAddress: message.codeAddress,
       gasRefund: message.gasRefund,
       containerCode: message.containerCode,
+      chargeCodeAccesses: message.chargeCodeAccesses,
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
       createdAddresses: message.createdAddresses,
@@ -961,6 +986,7 @@ export class EVM implements EVMInterface {
       } else {
         message.containerCode = await this.stateManager.getContractCode(message.codeAddress)
         message.isCompiled = false
+        message.chargeCodeAccesses = true
         if (this.common.isActivatedEIP(3540)) {
           message.code = getEOFCode(message.containerCode)
         } else {
