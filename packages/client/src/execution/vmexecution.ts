@@ -123,6 +123,7 @@ export class VMExecution extends Execution {
     const trie = await Trie.create({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
+      common: this.config.chainCommon,
       cacheSize: this.config.trieCache,
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
@@ -151,6 +152,7 @@ export class VMExecution extends Execution {
         type: CacheType.LRU,
         size: this.config.codeCache,
       },
+      common: this.config.chainCommon,
     })
     this.merkleVM = await VM.create({
       common: this.config.execCommon,
