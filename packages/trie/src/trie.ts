@@ -155,7 +155,6 @@ export class Trie {
     return trie
   }
 
-
   /**
    * Static version of {@link verifyRangeProof} function with the same behavior
    */
@@ -170,15 +169,18 @@ export class Trie {
   ): Promise<boolean> {
     return verifyRangeProof(
       rootHash,
-      firstKey && bytesToNibbles((firstKey)),
-      lastKey && bytesToNibbles((lastKey)),
-      keys.map((k) => (k)).map(bytesToNibbles),
+      firstKey && bytesToNibbles(firstKey),
+      lastKey && bytesToNibbles(lastKey),
+      keys.map((k) => k).map(bytesToNibbles),
       values,
       proof,
-      opts?.useKeyHashingFunction ?? ((msg) => {return msg})
+      opts?.useKeyHashingFunction ??
+        ((msg) => {
+          return msg
+        })
     )
   }
-  
+
   static async create(opts?: TrieOpts) {
     const keccakFunction =
       opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
