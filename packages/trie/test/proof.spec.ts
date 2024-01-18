@@ -161,14 +161,14 @@ describe('simple merkle proofs generation and verification', () => {
     await trie.put(key3, encodedValue3)
     const proof = await trie.createProof(key)
 
-    const newTrie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
+    const newTrie = await Trie.createFromProof(proof, { useKeyHashing: true })
     const trieValue = await newTrie.get(key)
 
     assert.ok(equalsBytes(trieValue!, encodedValue), 'trie value sucessfully copied')
     assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const proof2 = await trie.createProof(key2)
-    await newTrie.updateTrieFromProof(proof2)
+    await newTrie.updateFromProof(proof2)
     const trieValue2 = await newTrie.get(key2)
 
     assert.ok(equalsBytes(trieValue2!, encodedValue2), 'trie value succesfully updated')
@@ -185,13 +185,13 @@ describe('simple merkle proofs generation and verification', () => {
     const safeProof = await safeTrie.createProof(safeKey)
 
     try {
-      await newTrie.updateTrieFromProof(safeProof, true)
+      await newTrie.updateFromProof(safeProof, true)
       assert.fail('cannot reach this')
     } catch (e) {
       assert.ok(true, 'throws on unmatching proof')
     }
 
-    await newTrie.updateTrieFromProof(safeProof)
+    await newTrie.updateFromProof(safeProof)
     assert.ok(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const newSafeValue = await newTrie.get(safeKey)

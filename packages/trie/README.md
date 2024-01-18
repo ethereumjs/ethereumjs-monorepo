@@ -65,7 +65,7 @@ test()
 
 When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
-#### `.createTrieFromProof()`
+#### `.createFromProof()`
 
 ```ts
 import { Trie } from '@ethereumjs/trie'
@@ -73,10 +73,10 @@ import { Trie } from '@ethereumjs/trie'
 async function test() {
   // someOtherTrie is another trie used as an example here for generating merkle proofs necessary for the
   const proof = await someOtherTrie.createProof(someKey)
-  const trie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
+  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
   const otherProof = await someOtherTrie.createProof(someOtherKey)
-  // To add more proofs to the trie, use `updateTrieFromProof`
-  await trie.updateTrieFromProof(otherProof)
+  // To add more proofs to the trie, use `updateFromProof`
+  await trie.updateFromProof(otherProof)
   const value = await trie.get(someKey)
   console.log(value)
   const otherValue = await trie.get(someOtherKey)
@@ -86,7 +86,7 @@ async function test() {
 test()
 ```
 
-When the `Trie.createTrieFromProof` constructor is used, it instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+When the `Trie.createFromProof` constructor is used, it instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ### Walking a Trie
 

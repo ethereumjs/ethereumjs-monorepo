@@ -773,7 +773,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       } else {
         const trie =
           opts.trie ??
-          (await Trie.createTrieFromProof(
+          (await Trie.createFromProof(
             proof[0].accountProof.map((e) => hexToBytes(e)),
             { useKeyHashing: true }
           ))
@@ -808,7 +808,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = this._getStorageTrie(address)
     trie.root(hexToBytes(storageHash))
     for (let i = 0; i < storageProof.length; i++) {
-      await trie.updateTrieFromProof(
+      await trie.updateFromProof(
         storageProof[i].proof.map((e) => hexToBytes(e)),
         safe
       )
@@ -824,7 +824,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async addProofData(proof: Proof | Proof[], safe: boolean = false) {
     if (Array.isArray(proof)) {
       for (let i = 0; i < proof.length; i++) {
-        await this._trie.updateTrieFromProof(
+        await this._trie.updateFromProof(
           proof[i].accountProof.map((e) => hexToBytes(e)),
           safe
         )
