@@ -10,7 +10,6 @@ import type { EVMRunCallOpts } from '../src/types.js'
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
     // setup the evm
-    // const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,

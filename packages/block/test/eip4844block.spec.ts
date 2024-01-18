@@ -25,10 +25,6 @@ const common = Common.fromGethGenesis(gethGenesis, {
 })
 const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
 
-console.log({
-  isBrowser: isBrowser(),
-})
-
 if (isBrowser() !== true) {
   const kzg = await import('c-kzg')
   try {
