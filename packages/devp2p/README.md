@@ -22,7 +22,7 @@ and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
 
-```typescript
+```ts
 dpt.events.on('peer:added', (peer) => {
   // Do something...
 })
@@ -41,7 +41,7 @@ Communicate with peers to read new transaction and block information:
 Run an example with:
 
 ```
-DEBUG=ethjs,devp2p:* node -r ts-node/register ./examples/peer-communication.cts
+DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peer-communication.cts
 ```
 
 ## Docs
@@ -60,7 +60,7 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 
 Create your peer table:
 
-```typescript
+```ts
 import { DPT } from '@ethereumjs/devp2p'
 import { hexToBytes } from '@ethereumjs/util'
 
@@ -75,7 +75,7 @@ const dpt = new DPT(hexToBytes(PRIVATE_KEY), {
 
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 
-```typescript
+```ts
 dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
 ```
 
@@ -146,13 +146,13 @@ Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common)
 instance with the network you want to connect to:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 Create your `RLPx` object, e.g.:
 
-```typescript
+```ts
 const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   dpt,
   maxPeers: 25,
@@ -216,7 +216,7 @@ Upper layer protocol for exchanging Ethereum network data like block headers or 
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```typescript
+```ts
 eth.events.once('status', () => {
   // Send an initial message
   eth.sendMessage()
@@ -225,7 +225,7 @@ eth.events.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```typescript
+```ts
 eth.events.on('message', async (code, payload) => {
   if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
     // Do something with your new block hashes :-)
@@ -285,7 +285,7 @@ Upper layer protocol used by light clients, see [./src/protocol/les/](./src/prot
 Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
 to arrive to start the communication.
 
-```typescript
+```ts
 les.events.once('status', () => {
   // Send an initial message
   les.sendMessage()
@@ -294,7 +294,7 @@ les.events.once('status', () => {
 
 Wait for follow-up messages to arrive, send your responses.
 
-```typescript
+```ts
 les.events.on('message', async (code, payload) => {
   if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
     // Do something with your new block headers :-)
@@ -339,13 +339,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -396,7 +396,7 @@ For the debugging output to show up, set the `DEBUG` environment variable (e.g. 
 Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
 
 ```shell
-DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth node -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 The following loggers are available:
@@ -417,7 +417,7 @@ The following loggers are available:
 For more verbose output on logging (e.g. to output the entire msg payload) use the `verbose` logger
 in addition:
 
-DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth,verbose node -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth,verbose node -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 
 Exemplary logging output:
 
@@ -446,7 +446,7 @@ Available messages can be added to the logger base name to filter on a per messa
 on two message names along `ETH` protocol debugging:
 
 ```shell
-DEBUG=ethjs,devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 Exemplary logging output:
@@ -468,7 +468,7 @@ There are the following ways to limit debug output to a certain peer:
 Log output can be limited to one or several certain IPs. This can be useful to follow on the message exchange with a certain remote peer (e.g. a bootstrap peer):
 
 ```shell
-DEBUG=ethjs,devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:3.209.45.79 -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 #### First Connected
@@ -476,7 +476,7 @@ DEBUG=ethjs,devp2p:3.209.45.79 -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
 Logging can be limited to the peer the first successful subprotocol (e.g. `ETH`) connection could be established:
 
 ```shell
-DEBUG=ethjs,devp2p:FIRST_PEER -r ts-node/register [YOUR_SCRIPT_TO_RUN.ts]
+DEBUG=ethjs,devp2p:FIRST_PEER -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
 This logger can be used in various practical scenarios if you want to concentrate on the message exchange with just one peer.

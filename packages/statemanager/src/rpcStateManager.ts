@@ -1,3 +1,4 @@
+import { Chain, Common } from '@ethereumjs/common'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -26,6 +27,11 @@ const { debug: createDebugLogger } = debugDefault
 export interface RPCStateManagerOpts {
   provider: string
   blockTag: bigint | 'earliest'
+
+  /**
+   * The common to use
+   */
+  common?: Common
 }
 
 export class RPCStateManager implements EVMStateManagerInterface {
@@ -37,6 +43,9 @@ export class RPCStateManager implements EVMStateManagerInterface {
   originalStorageCache: OriginalStorageCache
   protected _debug: Debugger
   protected DEBUG: boolean
+  private keccakFunction: Function
+  public readonly common: Common
+
   constructor(opts: RPCStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -57,6 +66,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
 
   /**

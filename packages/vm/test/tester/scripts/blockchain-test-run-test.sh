@@ -6,6 +6,6 @@
 # ./test/tester/scripts/blockchain-test-run-test.sh
 ##################################################################
 
-ts-node ./test/tester --blockchain --file='randomStatetest303'
+tsx ./test/tester --blockchain --file='randomStatetest303'
 # Test that uses the expectException properties in BlockchainTests test files
-ts-node ./test/tester --blockchain --file='GasUsedHigherThanBlockGasLimitButNotWithRefundsSuicideLast'
+tsx ./test/tester --blockchain --file='GasUsedHigherThanBlockGasLimitButNotWithRefundsSuicideLast'

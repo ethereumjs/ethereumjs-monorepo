@@ -6,8 +6,10 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
+import { LRUCache } from 'lru-cache'
 import * as net from 'net'
 import * as os from 'os'
 
@@ -20,12 +22,9 @@ import type { DPT } from '../dpt/index.js'
 import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
-import type LRUCache from 'lru-cache'
 const { debug: createDebugLogger } = debugDefault
 
 // note: relative path only valid in .js file in dist
-
-const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = createDebugLogger('verbose').enabled
@@ -51,6 +50,8 @@ export class RLPx {
 
   protected _refillIntervalId: NodeJS.Timeout
   protected _refillIntervalSelectionCounter: number = 0
+
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
 
   private DEBUG: boolean
 
@@ -111,10 +112,12 @@ export class RLPx {
         : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
-    this._peersLRU = new LRU({ max: 25000 })
+    this._peersLRU = new LRUCache({ max: 25000 })
     const REFILL_INTERVALL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVALL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
+
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false

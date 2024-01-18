@@ -164,6 +164,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   // Checkpointing
   private _checkpoints: VerkleState[] = []
 
+  private keccakFunction: Function
+
   /**
    * Instantiate the StateManager interface.
    */
@@ -197,6 +199,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
     this._codeCache = {}
+
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -354,7 +358,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const stem = getStem(address, 0)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
 
-    const codeHash = bytesToHex(keccak256(value))
+    const codeHash = bytesToHex(this.keccakFunction(value))
 
     this._state[bytesToHex(codeHashKey)] = codeHash
 

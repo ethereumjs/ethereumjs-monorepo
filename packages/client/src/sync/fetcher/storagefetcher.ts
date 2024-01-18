@@ -87,7 +87,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   constructor(options: StorageFetcherOptions) {
     super(options)
-    this._proofTrie = new Trie()
+    this._proofTrie = new Trie({ common: this.config.chainCommon })
     this.fragmentedRequests = []
 
     this.root = options.root

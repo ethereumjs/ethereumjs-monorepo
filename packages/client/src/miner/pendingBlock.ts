@@ -147,8 +147,10 @@ export class PendingBlock {
       withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
     }
 
+    const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+
     const payloadIdBytes = toBytes(
-      keccak256(
+      keccakFunction(
         concatBytes(
           parentBlock.hash(),
           mixHashBuf,

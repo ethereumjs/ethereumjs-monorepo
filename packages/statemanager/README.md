@@ -33,7 +33,7 @@ It also includes a checkpoint/revert/commit mechanism to either persist or rever
 
 #### Usage example
 
-```typescript
+```ts
 import { Account, Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from '@ethereumjs/util'
@@ -61,7 +61,7 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 
 The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
 
-```typescript
+```ts
 // setup `stateManager` with some existing address
 const proof = await stateManager.getProof(address)
 const proofWithStorage = await stateManger.getProof(contractAddress, [storageKey1, storageKey2])
@@ -80,7 +80,7 @@ const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, st
 
 First, a simple example of usage:
 
-```typescript
+```ts
 import { Account, Address } from '@ethereumjs/util'
 import { RPCStateManager } from '@ethereumjs/statemanager'
 
@@ -152,13 +152,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 

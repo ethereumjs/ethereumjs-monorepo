@@ -48,7 +48,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true })
+  let state = new Trie({ useKeyHashing: true, common })
   let stateManager = new DefaultStateManager({
     trie: state,
     common,

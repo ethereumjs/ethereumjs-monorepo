@@ -12,13 +12,11 @@ type rpcParams = {
  * https://ethereum.org/en/developers/docs/apis/json-rpc/ for details on RPC methods
  * @returns the `result` field from the JSON-RPC response
  * @example
- * ```typescript
+ * ```ts
  * const provider = 'https://mainnet.infura.io/v3/...'
  * const params = {
  *   method: 'eth_getBlockByNumber',
  *   params: ['latest', false],
- *   id: 1,
- *   jsonrpc: '2.0'
  * }
  *  const block = await fetchFromProvider(provider, params)
  */
@@ -53,6 +51,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     )
   }
   const json = await res.json()
+  // TODO we should check json.error here
   return json.result
 }
 
