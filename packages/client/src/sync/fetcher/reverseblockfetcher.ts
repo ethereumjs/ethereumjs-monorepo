@@ -35,6 +35,9 @@ export class ReverseBlockFetcher extends BlockFetcher {
    */
   async store(blocks: Block[]) {
     try {
+      for (const block of blocks) {
+        await block.validateData()
+      }
       const num = await this.skeleton.putBlocks(blocks)
       this.debug(
         `Fetcher results stored in skeleton chain (blocks num=${blocks.length} first=${
@@ -61,13 +64,11 @@ export class ReverseBlockFetcher extends BlockFetcher {
   }
 
   processStoreError(
-    error: Error,
+    _error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
-    const destroyFetcher = !(error.message as string).includes(
-      `Blocks don't extend canonical subchain`
-    )
+    const destroyFetcher = false
     const banPeer = true
     return { destroyFetcher, banPeer, stepBack }
   }

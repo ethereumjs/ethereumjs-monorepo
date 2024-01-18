@@ -86,7 +86,6 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       }
       // Supply the common from the corresponding block header already set on correct fork
       const block = Block.fromValuesArray(values, { common: headers[i].common })
-      await block.validateData()
       blocks.push(block)
     }
     this.debug(
