@@ -176,6 +176,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _proofTrie: Trie
 
+  private keccakFunction: Function
+
   /**
    * StateManager is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
@@ -197,14 +199,16 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this._proofTrie = new Trie({ useKeyHashing: true })
-
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+
+    this._proofTrie = new Trie({ useKeyHashing: true, common: this.common })
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
+
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
@@ -355,7 +359,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     this._codeCache?.put(address, value)
-    const codeHash = keccak256(value)
+    const codeHash = this.keccakFunction(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
     }
@@ -410,15 +414,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _getStorageTrie(addressOrHash: Address | Uint8Array, account?: Account): Trie {
     // use hashed key for lookup from storage cache
     const addressHex = bytesToUnprefixedHex(
-      addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash
+      addressOrHash instanceof Address ? this.keccakFunction(addressOrHash.bytes) : addressOrHash
     )
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
       const keyPrefix = this._prefixStorageTrieKeys
-        ? (addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash).slice(
-            0,
-            7
-          )
+        ? (addressOrHash instanceof Address
+            ? this.keccakFunction(addressOrHash.bytes)
+            : addressOrHash
+          ).slice(0, 7)
         : undefined
       storageTrie = this._trie.shallowCopy(false, { keyPrefix })
       if (account !== undefined) {
@@ -656,7 +660,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         }
 
         // update code in database
-        const codeHash = keccak256(code)
+        const codeHash = this.keccakFunction(code)
         const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
         await this._getCodeDB().put(key, code)
 
@@ -841,7 +845,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(hexToBytes(proof.accountProof[0]))
+    const rootHash = this.keccakFunction(hexToBytes(proof.accountProof[0]))
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       hexToBytes(rlpString)
@@ -962,21 +966,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
+    const storage: StorageDump = {}
+    const stream = trie.createAsyncReadStream()
 
-    return new Promise((resolve, reject) => {
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
+    for await (const chunk of stream) {
+      storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
+    }
 
-      stream.on('data', (val: any) => {
-        storage[bytesToHex(val.key)] = bytesToHex(val.value)
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
-      stream.on('error', (e) => {
-        reject(e)
-      })
-    })
+    return storage
   }
 
   /**
@@ -999,44 +996,35 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`Account does not exist.`)
     }
     const trie = this._getStorageTrie(address, account)
+    let inRange = false
+    let i = 0
 
-    return new Promise((resolve, reject) => {
-      let inRange = false
-      let i = 0
-
-      /** Object conforming to {@link StorageRange.storage}. */
-      const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(val.key) >= startKey) {
-            inRange = true
-          } else {
-            return
-          }
+    /** Object conforming to {@link StorageRange.storage}. */
+    const storageMap: StorageRange['storage'] = {}
+    const stream = trie.createAsyncReadStream()
+    for await (const chunk of stream) {
+      if (!inRange) {
+        // Check if the key is already in the correct range.
+        if (bytesToBigInt(chunk.key) >= startKey) {
+          inRange = true
+        } else {
+          continue
         }
-
-        if (i < limit) {
-          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-          i++
-        } else if (i === limit) {
-          resolve({
-            storage: storageMap,
-            nextKey: bytesToHex(val.key),
-          })
-        }
-      })
-
-      stream.on('end', () => {
-        resolve({
+      }
+      if (i < limit) {
+        storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
+        i++
+      } else if (i === limit) {
+        return {
           storage: storageMap,
-          nextKey: null,
-        })
-      })
-      stream.on('error', (e) => reject(e))
-    })
+          nextKey: bytesToHex(chunk.key),
+        }
+      }
+    }
+    return {
+      storage: storageMap,
+      nextKey: null,
+    }
   }
 
   /**

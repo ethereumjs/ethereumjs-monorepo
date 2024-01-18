@@ -57,7 +57,8 @@ export function addresstoBytes(address: bigint | Uint8Array) {
  * Error message helper - generates location string
  */
 export function describeLocation(runState: RunState): string {
-  const hash = bytesToHex(keccak256(runState.interpreter.getCode()))
+  const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
+  const hash = bytesToHex(keccakFunction(runState.interpreter.getCode()))
   const address = runState.interpreter.getAddress().toString()
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`

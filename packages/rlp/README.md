@@ -21,7 +21,7 @@ Install with `-g` if you want to use the CLI.
 
 ## Usage
 
-```typescript
+```ts
 import assert from 'assert'
 import { RLP } from '@ethereumjs/rlp'
 
@@ -47,7 +47,7 @@ It is now easily possible to run a browser build of one of the EthereumJS librar
 
 If you would like to continue using Buffers like in rlp v2, you can use:
 
-```typescript
+```ts
 import assert from 'assert'
 import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'

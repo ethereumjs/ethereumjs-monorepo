@@ -29,7 +29,7 @@ With the v2 release (Summer 2023) the EVM/VM packages have been further decouple
 
 The following is the simplest example for an EVM instantiation:
 
-```typescript
+```ts
 import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
@@ -41,7 +41,7 @@ evm.runCode({ code: hexToBytes('0x01') })
 
 If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
 
-```typescript
+```ts
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
@@ -113,13 +113,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -189,7 +189,7 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the
 outer VM with the respective EIPs, e.g.:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
@@ -239,7 +239,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -311,31 +311,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=ethjs,evm ts-node test.ts
+DEBUG=ethjs,evm tsx test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=ethjs,evm:*,evm:*:* ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:* tsx test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=ethjs,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm:*:gas tsx test.ts
 ```
 
 Excluding the ops logger:
 
 ```shell
-DEBUG=ethjs,evm:*,evm:*:*,-evm:ops ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:*,-evm:ops tsx test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
 ```
 
 ### Internal Structure
