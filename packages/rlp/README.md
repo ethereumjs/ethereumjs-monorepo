@@ -22,13 +22,16 @@ Install with `-g` if you want to use the CLI.
 ## Usage
 
 ```ts
+// ./examples/simple.ts
+
 import assert from 'assert'
 import { RLP } from '@ethereumjs/rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)
 const decoded = RLP.decode(encoded)
-assert.deepEqual(nestedList, decoded)
+assert.deepStrictEqual(decoded, nestedList, 'decoded output does not match original')
+console.log('assert.deepStrictEqual would have thrown if the decoded output did not match')
 ```
 
 ## Browser
@@ -42,23 +45,6 @@ It is now easily possible to run a browser build of one of the EthereumJS librar
 `RLP.encode(plain)` - RLP encodes an `Array`, `Uint8Array` or `String` and returns a `Uint8Array`.
 
 `RLP.decode(encoded, [stream=false])` - Decodes an RLP encoded `Uint8Array`, `Array` or `String` and returns a `Uint8Array` or `NestedUint8Array`. If `stream` is enabled, it will just decode the first rlp sequence in the Uint8Array. By default, it would throw an error if there are more bytes in Uint8Array than used by the rlp sequence.
-
-### Buffer compatibility
-
-If you would like to continue using Buffers like in rlp v2, you can use:
-
-```ts
-import assert from 'assert'
-import { arrToBufArr, bufArrToArr } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
-
-const bufferList = [Buffer.from('123', 'hex'), Buffer.from('456', 'hex')]
-const encoded = RLP.encode(bufArrToArr(bufferList))
-const encodedAsBuffer = Buffer.from(encoded)
-const decoded = RLP.decode(Uint8Array.from(encodedAsBuffer)) // or RLP.decode(encoded)
-const decodedAsBuffers = arrToBufArr(decoded)
-assert.deepEqual(bufferList, decodedAsBuffers)
-```
 
 ### Buffer -> Uint8Array
 

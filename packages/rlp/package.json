@@ -46,6 +46,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
     "examples": "tsx ../../scripts/examples-runner.ts -- rlp",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
