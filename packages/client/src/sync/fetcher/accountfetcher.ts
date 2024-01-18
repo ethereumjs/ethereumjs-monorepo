@@ -331,7 +331,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       <any>proof,
       {
         common: this.config.chainCommon,
-        useKeyHashingFunction: this.config.chainCommon.keccakFunction ?? keccak256,
+        useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
       }
     )
   }

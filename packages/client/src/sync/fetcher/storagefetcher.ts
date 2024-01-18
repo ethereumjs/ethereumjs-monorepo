@@ -136,7 +136,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         <any>proof,
         {
           common: this.config.chainCommon,
-          useKeyHashingFunction: this.config.chainCommon.keccakFunction ?? keccak256,
+          useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
         }
       )
     } catch (err) {
@@ -304,7 +304,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             null,
             {
               common: this.config.chainCommon,
-              useKeyHashingFunction: this.config.chainCommon.keccakFunction ?? keccak256,
+              useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
             }
           )
 
