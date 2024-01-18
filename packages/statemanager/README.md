@@ -13,7 +13,7 @@
 
 To obtain the latest version, simply require the project using `npm`:
 
-```bash
+```shell
 npm install @ethereumjs/statemanager
 ```
 
