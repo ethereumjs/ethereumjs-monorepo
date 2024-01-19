@@ -606,12 +606,15 @@ export class Block {
    * - The transactions trie is valid
    * - The uncle hash is valid
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
+   * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
    */
-  async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.getTransactionsValidationErrors()
-    if (txErrors.length > 0) {
-      const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
-      throw new Error(msg)
+  async validateData(onlyHeader: boolean = false, verifyTxs: boolean = true): Promise<void> {
+    if (verifyTxs) {
+      const txErrors = this.getTransactionsValidationErrors()
+      if (txErrors.length > 0) {
+        const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+        throw new Error(msg)
+      }
     }
 
     if (onlyHeader) {
@@ -643,6 +646,14 @@ export class Block {
         throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
       }
     }
+  }
+
+  /**
+   * This method checks if the provided tx trie / uncle hash trie / withdrawals trie has the expected
+   * trie roots and also verifies (for Verkle) if the `executionWitness` exists
+   */
+  async validateDataIntegrity(): Promise<void> {
+    await this.validateData(false, false)
   }
 
   /**
