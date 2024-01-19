@@ -166,7 +166,7 @@ cleanup() {
   echo "cleaning up"
   if [ -n "$ejsPid" ] 
   then
-    ejsPidBySearch=$(ps x | grep "ts-node bin/cli.ts --dataDir $DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
+    ejsPidBySearch=$(ps x | grep "tsx bin/cli.ts --dataDir $DATADIR/ethereumjs" | grep -v grep | awk '{print $1}')
     echo "cleaning ethereumjs pid:${ejsPid} ejsPidBySearch:${ejsPidBySearch}..."
     if [ -n "$ELCLIENT_IMAGE" ]
     then

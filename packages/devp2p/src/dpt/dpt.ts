@@ -1,4 +1,5 @@
 import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 
@@ -35,6 +36,8 @@ export class DPT {
   protected _onlyConfirmed: boolean
   protected _confirmedPeers: Set<string>
 
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
@@ -48,11 +51,13 @@ export class DPT {
     this._dnsNetworks = options.dnsNetworks ?? []
     this._dnsAddr = options.dnsAddr ?? '8.8.8.8'
 
-    this._dns = new DNS({ dnsServerAddress: this._dnsAddr })
+    this._dns = new DNS({ dnsServerAddress: this._dnsAddr, common: options.common })
     this._banlist = new BanList()
 
     this._onlyConfirmed = options.onlyConfirmed ?? false
     this._confirmedPeers = new Set()
+
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
@@ -63,6 +68,7 @@ export class DPT {
       timeout: options.timeout,
       endpoint: options.endpoint,
       createSocket: options.createSocket,
+      common: options.common,
     })
     this._server.events.once('listening', () => this.events.emit('listening'))
     this._server.events.once('close', () => this.events.emit('close'))

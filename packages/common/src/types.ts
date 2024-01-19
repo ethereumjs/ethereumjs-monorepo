@@ -1,5 +1,5 @@
 import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike } from '@ethereumjs/util'
+import type { BigIntLike, ECDSASignature } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -67,6 +67,22 @@ export interface BootstrapNodeConfig {
   comment: string
 }
 
+export interface CustomCrypto {
+  /**
+   * Interface for providing custom cryptographic primitives in place of `ethereum-cryptography` variants
+   */
+  keccak256?: (msg: Uint8Array) => Uint8Array
+  ecrecover?: (
+    msgHash: Uint8Array,
+    v: bigint,
+    r: Uint8Array,
+    s: Uint8Array,
+    chainId?: bigint
+  ) => Uint8Array
+  sha256?: (msg: Uint8Array) => Uint8Array
+  ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
+}
+
 interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
@@ -79,6 +95,17 @@ interface BaseOpts {
    * (e.g. `eips: [ 1559, 3860 ]`)
    */
   eips?: number[]
+  /**
+   * This option can be used to replace the most common crypto primitives
+   * (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
+   * with alternative implementations (e.g. more performant WASM libraries).
+   *
+   * Note: please be aware that this is adding new dependencies for your
+   * system setup to be used for sensitive/core parts of the functionality
+   * and a choice on the libraries to add should be handled with care
+   * and be made with eventual security implications considered.
+   */
+  customCrypto?: CustomCrypto
 }
 
 /**

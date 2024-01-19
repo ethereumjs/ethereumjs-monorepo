@@ -32,6 +32,7 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+      - run: npm run install-browser-deps
 
       #     Install playwright dependencies
       - run: npx playwright install-deps

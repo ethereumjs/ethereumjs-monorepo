@@ -4,8 +4,8 @@ import { equalsBytes, toHex } from 'ethereum-cryptography/utils'
 import { BranchNode } from '../node/branch.js'
 import { ExtensionNode } from '../node/extension.js'
 
-import type { Trie } from '../trie'
-import type { TrieNode } from '../types'
+import type { Trie } from '../trie.js'
+import type { TrieNode } from '../types.js'
 
 export type NodeFilter = (node: TrieNode, key: number[]) => Promise<boolean>
 export type OnFound = (node: TrieNode, key: number[]) => Promise<any>

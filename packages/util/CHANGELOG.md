@@ -64,14 +64,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -90,7 +90,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // account
 new Account()
 Account.fromAccountData(accountData: AccountData) // AccountData interface values
@@ -454,7 +454,7 @@ The static factory methods assist in creating an `Account` object from varying d
 
 Example usage:
 
-```typescript
+```ts
 import { Account, BN } from 'ethereumjs-util'
 
 const account = new Account(
@@ -494,7 +494,7 @@ with a new `Address` class and type which can be used for creating and represent
 
 Example usage:
 
-```typescript
+```ts
 import { Address } from 'ethereumjs-util'
 
 const pubKey = Buffer.from(

@@ -308,7 +308,8 @@ export abstract class BaseTransaction<T extends TransactionType>
     }
 
     const msgHash = this.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privateKey)
+    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
+    const { v, r, s } = ecSignFunction(msgHash, privateKey)
     const tx = this._processSignature(v, r, s)
 
     // Hack part 2
