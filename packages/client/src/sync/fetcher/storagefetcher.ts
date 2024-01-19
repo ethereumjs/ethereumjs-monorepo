@@ -138,7 +138,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
           common: this.config.chainCommon,
           useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
         }
-      )
+      ) as any
     } catch (err) {
       this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
       throw Error((err as Error).message)
