@@ -1,3 +1,6 @@
+// Some more secure presets when using e.g. JS `call`
+'use strict'
+
 import {
   KeyEncoding,
   Lock,
@@ -102,6 +105,8 @@ export class Trie {
         throw new Error('`valueEncoding` can only be set if a `db` is provided')
       }
       this._opts = { ...this._opts, ...opts }
+      this._opts.useKeyHashingFunction =
+        opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak256
 
       valueEncoding =
         opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
@@ -143,13 +148,15 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
+    const keccakFunction =
+      opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
     let key = ROOT_DB_KEY
 
     const encoding =
       opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
 
     if (opts?.useKeyHashing === true) {
-      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
+      key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
     }
     if (opts?.keyPrefix !== undefined) {
       key = concatBytes(opts.keyPrefix, key)
@@ -986,6 +993,7 @@ export class Trie {
     const proofTrie = new Trie({
       root: rootHash,
       useKeyHashingFunction: this._opts.useKeyHashingFunction,
+      common: this._opts.common,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -1179,7 +1187,7 @@ export class Trie {
   }
 
   protected hash(msg: Uint8Array): Uint8Array {
-    return Uint8Array.from(this._opts.useKeyHashingFunction(msg))
+    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, msg))
   }
 
   /**

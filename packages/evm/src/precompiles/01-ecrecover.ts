@@ -16,6 +16,7 @@ import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export function precompile01(opts: PrecompileInput): ExecResult {
+  const ecrecoverFunction = opts.common.customCrypto.ecrecover ?? ecrecover
   const gasUsed = opts.common.param('gasPrices', 'ecRecover')
   if (opts._debug !== undefined) {
     opts._debug(
@@ -63,7 +64,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
         )} r=${bytesToHex(r)}s=${bytesToHex(s)}}`
       )
     }
-    publicKey = ecrecover(msgHash, bytesToBigInt(v), r, s)
+    publicKey = ecrecoverFunction(msgHash, bytesToBigInt(v), r, s)
   } catch (e: any) {
     if (opts._debug !== undefined) {
       opts._debug(`ECRECOVER (0x01) failed: PK recovery failed`)
