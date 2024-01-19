@@ -35,9 +35,6 @@ export class ReverseBlockFetcher extends BlockFetcher {
    */
   async store(blocks: Block[]) {
     try {
-      for (const block of blocks) {
-        await block.validateData()
-      }
       const num = await this.skeleton.putBlocks(blocks)
       this.debug(
         `Fetcher results stored in skeleton chain (blocks num=${blocks.length} first=${
