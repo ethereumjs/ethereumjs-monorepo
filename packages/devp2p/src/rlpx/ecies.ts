@@ -72,6 +72,19 @@ export class ECIES {
   protected _bodySize: number | null = null
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected _ecdsaSign: (
+    msg: Uint8Array,
+    pk: Uint8Array
+  ) => {
+    signature: Uint8Array
+    recid: number
+  }
+  protected _ecdsaRecover: (
+    sig: Uint8Array,
+    recId: number,
+    hash: Uint8Array,
+    compressed?: boolean
+  ) => Uint8Array
 
   constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array, common?: Common) {
     this._privateKey = privateKey
@@ -83,6 +96,8 @@ export class ECIES {
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
     this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
+    this._ecdsaSign = common?.customCrypto.ecdsaSign ?? ecdsaSign
+    this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
   }
 
   _encryptMessage(
@@ -176,7 +191,7 @@ export class ECIES {
   createAuthEIP8() {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
-    const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
+    const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
       concatBytes(sig.signature, Uint8Array.from([sig.recid])),
       // this._keccakFunction(pk2id(this._ephemeralPublicKey)),
@@ -199,7 +214,7 @@ export class ECIES {
   createAuthNonEIP8(): Uint8Array | undefined {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
-    const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
+    const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = concatBytes(
       sig.signature,
       Uint8Array.from([sig.recid]),
@@ -254,7 +269,7 @@ export class ECIES {
     if (this._remoteNonce === null) {
       return
     }
-    this._remoteEphemeralPublicKey = ecdsaRecover(
+    this._remoteEphemeralPublicKey = this._ecdsaRecover(
       signature,
       recoveryId,
       xor(x, this._remoteNonce),

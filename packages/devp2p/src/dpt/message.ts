@@ -175,7 +175,7 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
-  const sig = ecdsaSign(sighash, privateKey)
+  const sig = (common?.customCrypto.ecdsaSign ?? ecdsaSign)(sighash, privateKey)
   const hashdata = concatBytes(sig.signature, Uint8Array.from([sig.recid]), typedata)
   const hash = (common?.customCrypto.keccak256 ?? keccak256)(hashdata)
   return concatBytes(hash, hashdata)
@@ -194,6 +194,11 @@ export function decode(bytes: Uint8Array, common?: Common) {
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
   const signature = bytes.subarray(32, 96)
   const recoverId = bytes[96]
-  const publicKey = ecdsaRecover(signature, recoverId, sighash, false)
+  const publicKey = (common?.customCrypto.ecdsaRecover ?? ecdsaRecover)(
+    signature,
+    recoverId,
+    sighash,
+    false
+  )
   return { typename, data, publicKey }
 }
