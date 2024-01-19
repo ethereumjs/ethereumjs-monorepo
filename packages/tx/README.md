@@ -47,7 +47,11 @@ import { initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
 // Initialize the trusted setup
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+} catch {
+  // No-op if KZG is already loaded
+}
 
 console.log(kzg) // should output the KZG API as an object
 ```
@@ -117,7 +121,12 @@ import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { bytesToHex, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+} catch {
+  // No-op if KZG is already loaded
+}
+
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 
 const txData = {
