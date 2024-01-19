@@ -253,7 +253,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(6800) === true) {
           const address = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(Number(key))
+          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
           gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
@@ -317,7 +317,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(6800) === true) {
           const contract = runState.interpreter.getAddress()
-          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(Number(key))
+          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
           gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,

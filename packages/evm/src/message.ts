@@ -54,6 +54,7 @@ export class Message {
   isCompiled: boolean
   salt?: Uint8Array
   containerCode?: Uint8Array /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
+  chargeCodeAccesses?: boolean
   /**
    * Set of addresses to selfdestruct. Key is the unprefixed address.
    */

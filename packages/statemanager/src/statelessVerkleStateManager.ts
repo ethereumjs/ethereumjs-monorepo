@@ -331,7 +331,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw new Error('Not implemented')
   }
 
-  getTreeKeyForStorageSlot(address: Address, storageKey: number) {
+  getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
     const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
     return getKey(getStem(address, treeIndex), toBytes(subIndex))
@@ -456,7 +456,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
+    const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
     const storageValue = toBytes(this._state[bytesToHex(storageKey)])
 
     if (!this._storageCacheSettings.deactivate) {
@@ -479,7 +479,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       this._storageCache!.put(address, key, encodedValue)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
-      const storageKey = this.getTreeKeyForStorageSlot(address, Number(bytesToHex(key)))
+      const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
       this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
     }
   }

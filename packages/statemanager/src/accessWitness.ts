@@ -19,7 +19,9 @@ export const CODE_SIZE_LEAF_KEY = toBytes(4)
 export const HEADER_STORAGE_OFFSET = 64
 export const CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
-export const MAIN_STORAGE_OFFSET = 256 ** 31
+// export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
+// incorrect value to match with kaustinen2 offset
+export const MAIN_STORAGE_OFFSET = BigInt(256) * BigInt(2) ** BigInt(31)
 
 const WitnessBranchReadCost = BigInt(1900)
 const WitnessChunkReadCost = BigInt(200)
@@ -42,10 +44,10 @@ type AccessEventFlags = {
 }
 
 // Since stem is pedersen hashed, it is useful to maintain the reverse relationship
-type StemMeta = { address: Address; treeIndex: number }
+type StemMeta = { address: Address; treeIndex: number | bigint }
 type RawAccessedState = {
   address: Address
-  treeIndex: number
+  treeIndex: number | bigint
   chunkIndex: number
   chunkKey: PrefixedHexString
 }
@@ -191,7 +193,7 @@ export class AccessWitness {
 
   touchAddressOnWriteAndComputeGas(
     address: Address,
-    treeIndex: number,
+    treeIndex: number | bigint,
     subIndex: number | Uint8Array
   ): bigint {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: true })
@@ -199,7 +201,7 @@ export class AccessWitness {
 
   touchAddressOnReadAndComputeGas(
     address: Address,
-    treeIndex: number,
+    treeIndex: number | bigint,
     subIndex: number | Uint8Array
   ): bigint {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: false })
@@ -207,7 +209,7 @@ export class AccessWitness {
 
   touchAddressAndChargeGas(
     address: Address,
-    treeIndex: number,
+    treeIndex: number | bigint,
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean }
   ): bigint {
@@ -246,7 +248,7 @@ export class AccessWitness {
 
   touchAddress(
     address: Address,
-    treeIndex: number,
+    treeIndex: number | bigint,
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean } = {}
   ): AccessEventFlags {
@@ -350,19 +352,19 @@ export class AccessWitness {
   }
 }
 
-export function getTreeIndexesForStorageSlot(storageKey: number): {
-  treeIndex: number
+export function getTreeIndexesForStorageSlot(storageKey: bigint): {
+  treeIndex: bigint
   subIndex: number
 } {
-  let position: number
+  let position: bigint
   if (storageKey < CODE_OFFSET - HEADER_STORAGE_OFFSET) {
-    position = HEADER_STORAGE_OFFSET + storageKey
+    position = BigInt(HEADER_STORAGE_OFFSET) + storageKey
   } else {
     position = MAIN_STORAGE_OFFSET + storageKey
   }
 
-  const treeIndex = Math.floor(position / VERKLE_NODE_WIDTH)
-  const subIndex = position % VERKLE_NODE_WIDTH
+  const treeIndex = position / BigInt(VERKLE_NODE_WIDTH)
+  const subIndex = Number(position % BigInt(VERKLE_NODE_WIDTH))
 
   return { treeIndex, subIndex }
 }
@@ -373,18 +375,18 @@ export function getTreeIndicesForCodeChunk(chunkId: number) {
   return { treeIndex, subIndex }
 }
 
-export function decodeAccessedState(treeIndex: number, chunkIndex: number): AccessedState {
-  const position = treeIndex * VERKLE_NODE_WIDTH + chunkIndex
+export function decodeAccessedState(treeIndex: number | bigint, chunkIndex: number): AccessedState {
+  const position = BigInt(treeIndex) * BigInt(VERKLE_NODE_WIDTH) + BigInt(chunkIndex)
   switch (position) {
-    case 0:
+    case BigInt(0):
       return { type: AccessedStateType.Version }
-    case 1:
+    case BigInt(1):
       return { type: AccessedStateType.Balance }
-    case 2:
+    case BigInt(2):
       return { type: AccessedStateType.Nonce }
-    case 3:
+    case BigInt(3):
       return { type: AccessedStateType.CodeHash }
-    case 4:
+    case BigInt(4):
       return { type: AccessedStateType.CodeSize }
     default:
       if (position < HEADER_STORAGE_OFFSET) {
@@ -392,10 +394,10 @@ export function decodeAccessedState(treeIndex: number, chunkIndex: number): Acce
       }
 
       if (position >= HEADER_STORAGE_OFFSET && position < CODE_OFFSET) {
-        const slot = BigInt(position - HEADER_STORAGE_OFFSET)
+        const slot = position - BigInt(HEADER_STORAGE_OFFSET)
         return { type: AccessedStateType.Storage, slot }
       } else if (position >= CODE_OFFSET && position < MAIN_STORAGE_OFFSET) {
-        const codeChunkIdx = position - CODE_OFFSET
+        const codeChunkIdx = Number(position) - CODE_OFFSET
         return { type: AccessedStateType.Code, codeOffset: codeChunkIdx * 31 }
       } else if (position >= MAIN_STORAGE_OFFSET) {
         const slot = BigInt(position - MAIN_STORAGE_OFFSET)
