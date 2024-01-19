@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705661623031,
+  "lastUpdate": 1705706303050,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4e356e6b284430a192321199814ccec640b3dfb2",
-          "message": "Replace `superagent` with direct RPC calls in RPC tests (#3173)\n\n* Add jayson rpc client to baseSetup function\r\n\r\n* Update sha3 test\r\n\r\n* more changes\r\n\r\n* migrate rpc and validation spec tests\r\n\r\n* Have update websocket tests\r\n\r\n* Update txpool and net tests\r\n\r\n* More fixes\r\n\r\n* More eth test migrations\r\n\r\n* rest of eth tests\r\n\r\n* partial engine test fixes\r\n\r\n* Fix all the tests\r\n\r\n* more test fixes\r\n\r\n* More fixes\r\n\r\n* Lint\r\n\r\n* Fix ws tests\r\n\r\n* fix kaustinen tests\r\n\r\n* fix kaustinen tests\r\n\r\n* Update packages/client/test/rpc/debug/traceTransaction.spec.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/test/rpc/engine/getPayloadBodiesByRangeV1.spec.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/test/rpc/eth/chainId.spec.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/test/rpc/eth/chainId.spec.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Update packages/client/test/rpc/validation.spec.ts\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* Remove duplicate msg assignment\r\n\r\n* Update packages/client/test/rpc/eth/estimateGas.spec.ts\r\n\r\n* Update packages/client/test/rpc/engine/getPayloadBodiesByRangeV1.spec.ts\r\n\r\n* Update packages/client/test/rpc/eth/estimateGas.spec.ts\r\n\r\n* Update packages/client/test/rpc/eth/estimateGas.spec.ts\r\n\r\n* client: fix tests\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-12-08T14:01:06+01:00",
-          "tree_id": "6730edb8cd61583e06ba0bcb1905bff2e3d04d99",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4e356e6b284430a192321199814ccec640b3dfb2"
-        },
-        "date": 1702040638523,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41232,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39044,
-            "range": "±4.23%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39628,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39223,
-            "range": "±2.24%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38084,
-            "range": "±2.21%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.45%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "caymannava@gmail.com",
+            "name": "Cayman",
+            "username": "wemeetagain"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8525e2821bb32359e7dcf7cb9708ce1b319639f6",
+          "message": "perf: improve rlp.decode (#3243)\n\n* chore: add rlp benchmarks\r\n\r\n* perf: improve rlp.decode",
+          "timestamp": "2024-01-20T00:10:25+01:00",
+          "tree_id": "64c5ad443bf86d4b98bdb77f899ac738623fcd53",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/8525e2821bb32359e7dcf7cb9708ce1b319639f6"
+        },
+        "date": 1705706301813,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40309,
+            "range": "±2.67%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38775,
+            "range": "±2.81%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39471,
+            "range": "±2.02%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36022,
+            "range": "±5.38%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36924,
+            "range": "±2.42%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
