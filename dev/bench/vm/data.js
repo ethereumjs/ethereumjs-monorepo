@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705660024654,
+  "lastUpdate": 1705661623031,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "aac2bef7c6a9300bbfa4264b0cfdfd9603847a11",
-          "message": "StateManager: stateless verkle state manager (#3139)\n\nCo-authored-by: harkamal <gajinder@g11.in>",
-          "timestamp": "2023-12-06T11:37:44-05:00",
-          "tree_id": "133bad45e81442316ee1eb8c4eea59e31af55e5c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/aac2bef7c6a9300bbfa4264b0cfdfd9603847a11"
-        },
-        "date": 1701880842015,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40301,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38298,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39163,
-            "range": "±1.91%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38090,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37028,
-            "range": "±2.43%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.23%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "20b1437160fe199d2716aaeb102ac75fe6f68a49",
+          "message": "VM: some more detailed profiler output for VM clean-up steps, explicit execution output to easier grasp EVM profiler vs total run diff (#3241)",
+          "timestamp": "2024-01-19T11:48:36+01:00",
+          "tree_id": "22668c679341b1653d212dbf7e97ea82fbe30c70",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/20b1437160fe199d2716aaeb102ac75fe6f68a49"
+        },
+        "date": 1705661622409,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41388,
+            "range": "±2.16%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38462,
+            "range": "±4.34%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39499,
+            "range": "±2.05%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38766,
+            "range": "±2.17%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37312,
+            "range": "±2.45%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
           }
         ]
       }
