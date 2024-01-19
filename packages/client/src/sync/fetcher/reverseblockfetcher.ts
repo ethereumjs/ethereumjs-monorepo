@@ -64,11 +64,13 @@ export class ReverseBlockFetcher extends BlockFetcher {
   }
 
   processStoreError(
-    _error: Error,
+    error: Error,
     _task: JobTask
   ): { destroyFetcher: boolean; banPeer: boolean; stepBack: bigint } {
     const stepBack = BIGINT_0
-    const destroyFetcher = false
+    const destroyFetcher = !(error.message as string).includes(
+      `Blocks don't extend canonical subchain`
+    )
     const banPeer = true
     return { destroyFetcher, banPeer, stepBack }
   }
