@@ -56,7 +56,7 @@ const MSTORE8 = '53'
 const MCOPY = '5E'
 const STOP = '00'
 
-describe('should test mcopy', async () => {
+describe('should test mcopy', () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
