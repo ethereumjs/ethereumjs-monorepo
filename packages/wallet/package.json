@@ -41,7 +41,7 @@
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "vitest run --config=./vitest.config.browser.ts",
+    "test:browser": "vitest run --config=./vitest.config.browser.mts",
     "test:node": "vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
