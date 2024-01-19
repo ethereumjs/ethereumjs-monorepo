@@ -30,6 +30,7 @@ import {
 } from '@polkadot/wasm-crypto'
 import * as kzg from 'c-kzg'
 import { keccak256 } from 'ethereum-cryptography/keccak'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
@@ -839,11 +840,23 @@ async function run() {
 
       return { r, s, v }
     }
+    cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
+      const sig = secp256k1Sign(hash, pk)
+      return {
+        signature: sig.slice(0, 64),
+        recid: sig[64],
+      }
+    }
+    cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
+      return secp256k1Recover(hash, sig, recId)
+    }
   } else {
     cryptoFunctions.keccak256 = keccak256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = ecsign
+    cryptoFunctions.ecdsaSign = ecdsaSign
+    cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
