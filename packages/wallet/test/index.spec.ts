@@ -187,6 +187,7 @@ describe('Wallet tests', () => {
     )
   }, 30000)
 })
+
 const pw = 'testtest'
 const salt = 'dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6'
 const iv = 'cecacd85e9cb89788b5aab2f93361233'
@@ -255,7 +256,6 @@ if (isBrowser() === true) {
   // the amount of permutations so we will shorten them.
   permutations = permutations.slice(1)
 }
-// describe('should work with...', async () => {
 describe('.toV3(): should work with PBKDF2', async () => {
   const w =
     '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
