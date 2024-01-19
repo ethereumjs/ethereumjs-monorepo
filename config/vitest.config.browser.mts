@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import topLevelAwait from 'vite-plugin-top-level-await'
+import dynamicImport from 'vite-plugin-dynamic-import'
 
 const config = defineConfig({
   test: {
@@ -19,6 +21,8 @@ const config = defineConfig({
     nodePolyfills({
       include: ['util', 'fs', 'buffer'],
     }),
+    topLevelAwait(),
+    dynamicImport()
   ],
 })
 
