@@ -111,6 +111,36 @@ See the following code snipped for an example on how to instantiate (using the `
 
 ```ts
 // ./examples/blobTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { bytesToHex, initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
+
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  maxFeePerDataGas: '0xfff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x05',
+  blobsData: ['abcd'],
+}
+
+const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+
+console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 ```
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
@@ -129,6 +159,31 @@ This is the recommended tx type starting with the activation of the `london` HF,
 
 ```ts
 // ./examples/londonTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [],
+  type: '0x02',
+}
+
+const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
 ```
 
 #### Access List Transactions (EIP-2930)
@@ -141,6 +196,38 @@ This transaction type has been introduced along the `berlin` HF. See the followi
 
 ```ts
 // ./examples/accessListTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+
+const txData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  gasPrice: '0x01',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  v: '0x01',
+  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+  chainId: '0x01',
+  accessList: [
+    {
+      address: '0x0000000000000000000000000000000000000101',
+      storageKeys: [
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x00000000000000000000000000000000000000000000000000000000000060a7',
+      ],
+    },
+  ],
+  type: '0x01',
+}
+
+const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
 ```
 
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
@@ -157,6 +244,32 @@ See this [example script](./examples/transactions.ts) or the following code exam
 
 ```ts
 // ./examples/legacyTx.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+
+const txParams = {
+  nonce: '0x00',
+  gasPrice: '0x09184e72a000',
+  gasLimit: '0x2710',
+  to: '0x0000000000000000000000000000000000000000',
+  value: '0x00',
+  data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+}
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const tx = LegacyTransaction.fromTxData(txParams, { common })
+
+const privateKey = Buffer.from(
+  'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
+  'hex'
+)
+
+const signedTx = tx.sign(privateKey)
+
+const serializedTx = signedTx.serialize()
+console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
 ```
 
 ### Transaction Factory
@@ -165,6 +278,20 @@ If you only know on runtime which tx type will be used within your code or if yo
 
 ```ts
 // ./examples/txFactory.ts
+
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs/tx'
+
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
+const tx = TransactionFactory.fromTxData(txData, { common })
+
+if (tx.supports(Capability.EIP1559FeeMarket)) {
+  console.log(
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+  )
+}
 ```
 
 The correct tx type class for instantiation will then be chosen on runtime based on the data provided as an input.
@@ -184,6 +311,26 @@ This library has been tested to work with various L2 networks (`v3.3.0`+). All p
 
 ```ts
 // ./examples/l2tx.ts
+
+import { Common, CustomChain } from '@ethereumjs/common'
+import { LegacyTransaction } from '@ethereumjs/tx'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+
+const pk = hexToBytes('0x076247989df60a82f6e86e58104368676096f84e60972282ee00d4673a2bc9b9')
+const to = Address.fromString('0x256e8f0ba532ad83a0debde7501669511a41a1f3')
+const common = Common.custom(CustomChain.xDaiChain)
+
+const txData = {
+  nonce: 0,
+  gasPrice: 1000000000,
+  gasLimit: 21000,
+  to,
+  value: 1,
+}
+
+const tx = LegacyTransaction.fromTxData(txData, { common })
+const signedTx = tx.sign(pk)
+console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```
 
 The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
