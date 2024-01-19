@@ -10,10 +10,9 @@ import {
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/evm.js'
-import { getActivePrecompiles } from '../../src/precompiles/index.js'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
 
-import type { PrecompileInput } from '../../src/precompiles/index.js'
+import type { PrecompileInput } from '../../src/index.js'
 
 const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513'

@@ -33,7 +33,6 @@ describe('VM: custom opcodes', () => {
     evm.events.on('step', (e: InterpreterStep) => {
       if (e.pc === 0) {
         correctOpcodeName = e.opcode.name === testOpcode.opcodeName
-        assert.ok(correctOpcodeName, 'successfully set opcode name')
       }
     })
     const res = await evm.runCode({
@@ -42,6 +41,8 @@ describe('VM: custom opcodes', () => {
     })
     assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
     assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
+    correctOpcodeName = res.runState?.opCode === testOpcode.opcode
+    assert.ok(correctOpcodeName, 'successfully set opcode name')
   })
 
   it('should delete opcodes from the EVM', async () => {

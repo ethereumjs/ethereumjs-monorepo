@@ -2,8 +2,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../../src/evm.js'
-import { getActivePrecompiles } from '../../src/precompiles/index.js'
+import { EVM, getActivePrecompiles } from '../../src/index.js'
+
 describe('Precompiles: hardfork availability', () => {
   it('Test ECPAIRING availability', async () => {
     const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'

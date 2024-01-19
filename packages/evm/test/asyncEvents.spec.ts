@@ -2,7 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm.js'
+import { EVM } from '../src/index.js'
 describe('async events', () => {
   it('should work', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))

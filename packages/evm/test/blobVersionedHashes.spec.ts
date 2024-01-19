@@ -3,7 +3,7 @@ import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumj
 import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
-import { EVM } from '../src/evm.js'
+import { EVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 

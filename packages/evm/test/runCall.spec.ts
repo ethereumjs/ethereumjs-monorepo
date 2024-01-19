@@ -15,8 +15,9 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
-import { EVM, defaultBlock } from '../src/evm.js'
+import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
+import { EVM } from '../src/index.js'
 
 import type { EVMRunCallOpts } from '../src/types.js'
 
