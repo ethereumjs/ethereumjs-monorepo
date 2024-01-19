@@ -1,21 +1,18 @@
-import topLevelAwait from 'vite-plugin-top-level-await'
 import wasm from 'vite-plugin-wasm'
 import { configDefaults, defineConfig, mergeConfig } from 'vitest/config'
-import baseConfig from '../../config/vitest.config.browser'
+import baseConfig from '../../config/vitest.config.browser.mts'
 
 export default mergeConfig(
   baseConfig,
   defineConfig({
-    plugins: [wasm(), topLevelAwait()],
+    plugins: [wasm()],
     test: {
       exclude: [
         ...configDefaults.exclude,
         // Importing pedersenHash through wasm failed.
         'test/statelessVerkleStateManager.spec.ts',
-        // Importing a module script failed.
+        // [vitest] queueMock is not implemented in browser environment yet.
         'test/rpcStateManager.spec.ts',
-        // undefined is not an object (evaluating 'state.reading')
-        'test/stateManager.storage.spec.ts',
       ],
     },
   })
