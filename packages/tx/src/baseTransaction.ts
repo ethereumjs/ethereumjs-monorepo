@@ -346,10 +346,10 @@ export abstract class BaseTransaction<T extends TransactionType>
    * @param r The `r` value of the signature
    * @param s The `s` value of the signature
    * @param convertV Set this to `true` if the raw output of `ecsign` is used. If this is `false` (default)
-   *                 then theraw value passed of `v` will be used for the signature. For legacy transactions,
+   *                 then the raw value passed for `v` will be used for the signature. For legacy transactions,
    *                 if this is set to `true`, it will also set the right `v` value for the chain id.
    */
-  protected abstract addSignature(
+  abstract addSignature(
     v: bigint,
     r: Uint8Array | bigint,
     s: Uint8Array | bigint,
