@@ -195,8 +195,7 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ### EIP Support
 
-It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the
-outer VM with the respective EIPs, e.g.:
+If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
 
 ```ts
 // ./examples/eips.ts
