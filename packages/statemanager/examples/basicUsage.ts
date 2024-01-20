@@ -1,0 +1,14 @@
+import { Account, Address } from '@ethereumjs/util'
+import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const stateManager = new DefaultStateManager()
+  const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+  const account = new Account(BigInt(0), BigInt(1000))
+  await stateManager.checkpoint()
+  await stateManager.putAccount(address, account)
+  await stateManager.commit()
+  await stateManager.flush()
+}
+main()
