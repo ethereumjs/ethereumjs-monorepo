@@ -232,16 +232,8 @@ export class Trie {
     if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
       throw new Error('Invalid proof provided')
     }
-    const opStack = proof.map((nodeValue) => {
-      return {
-        type: 'put',
-        key: Uint8Array.from(trie.hash(nodeValue)),
-        value: nodeValue,
-      } as PutBatch
-    })
-    await trie._db.batch(opStack)
-    trie.root(trie.hash(proof[0]))
-    await trie.persistRoot()
+    const root = await trie.updateFromProof(proof)
+    trie.root(root)
     return trie
   }
 
