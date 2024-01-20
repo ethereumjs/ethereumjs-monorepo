@@ -105,6 +105,10 @@ export class EVMPerformanceLogger {
     }
   }
 
+  hasTimer() {
+    return this.currentTimer !== undefined
+  }
+
   // Start a new timer
   // Only one timer can be timing at the same time
   startTimer(tag: string) {
