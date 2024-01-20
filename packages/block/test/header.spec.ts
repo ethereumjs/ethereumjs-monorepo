@@ -11,6 +11,7 @@ import {
   toBytes,
   zeros,
 } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
 import { BlockHeader } from '../src/header.js'
@@ -20,7 +21,6 @@ import blocksGoerli from './testdata/blocks_goerli.json'
 import blocksMainnet from './testdata/blocks_mainnet.json'
 
 import type { CliqueConfig } from '@ethereumjs/common'
-const { assert, describe, it } = await import('vitest')
 function compareDefaultHeader(header: BlockHeader) {
   assert.ok(equalsBytes(header.parentHash, zeros(32)))
   assert.ok(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
