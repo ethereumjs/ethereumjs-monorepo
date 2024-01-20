@@ -1,14 +1,13 @@
-import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
+import { Block, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
-import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen2-test.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen2-test.json'
-import { baseRequest, params, setupChain } from '../helpers'
+import { getRpcClient, setupChain } from '../helpers'
 
-import type { HttpServer } from 'jayson'
+import type { HttpClient } from 'jayson/promise'
 
 // this verkle genesis stateroot and blockhash of the local generated kaustinen2 network
 const genesisVerkleStateRoot = '0x30d24fe15e1281600a15328add431b906597d83cf33d23050627c51936bb0d1a'
@@ -40,16 +39,12 @@ const merkleGenesisJsonBlock = {
   withdrawals: [],
 }
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
-
-export const batchBlocks = async (server: HttpServer) => {
+export const batchBlocks = async (rpc: HttpClient) => {
   for (let i = 0; i < blocks.length; i++) {
     const executionPayload = executionPayloadFromBeaconPayload(blocks[i] as any)
-    const req = params('engine_newPayloadV2', [executionPayload])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+
+    const res = await rpc.request('engine_newPayloadV2', [executionPayload])
+    assert.equal(res.result.status, 'VALID', 'valid status should be received')
   }
 }
 
@@ -94,22 +89,15 @@ describe(`valid verkle network setup`, async () => {
     genesisStateRoot: genesisVerkleStateRoot,
   })
 
+  const rpc = getRpcClient(server)
   it('genesis should be correctly setup', async () => {
-    const req = params('eth_getBlockByNumber', ['0x0', false])
-    const expectRes = (res: any) => {
-      const block0 = res.body.result
-      assert.equal(block0.hash, genesisVerkleBlockHash)
-      assert.equal(block0.stateRoot, genesisVerkleStateRoot)
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
+    const block0 = res.result
+    assert.equal(block0.hash, genesisVerkleBlockHash)
+    assert.equal(block0.stateRoot, genesisVerkleStateRoot)
   })
 
   it('should be able to apply new verkle payloads', async () => {
-    await batchBlocks(server)
-  })
-
-  it(`reset TD`, () => {
-    BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
-    td.reset()
+    await batchBlocks(rpc)
   })
 })
