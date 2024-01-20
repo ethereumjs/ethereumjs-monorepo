@@ -2,7 +2,6 @@ import { EventEmitter } from 'events'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config'
-import { PeerPool } from '../../src/net/peerpool.js'
 import { Event } from '../../src/types'
 import { MockPeer } from '../integration/mocks/mockpeer'
 
@@ -11,12 +10,13 @@ describe('[PeerPool]', async () => {
     id: string
     idle: boolean
 
-    constructor(id: string) {
-      this.id = id
+    constructor(id: string | number) {
+      this.id = id.toString()
       this.idle = false
     }
   }
   vi.doMock('../../src/net/peer/peer', () => Peer)
+  const { PeerPool } = await import('../../src/net/peerpool')
 
   it('should initialize', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -71,24 +71,26 @@ describe('[PeerPool]', async () => {
   })
 
   it('should check contains', () => {
-    const peer: any = new Peer('abc')
+    const peer = new Peer('abc')
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
+    // @ts-ignore
     pool.add(peer)
     assert.ok(pool.contains(peer.id), 'found peer')
   })
 
   it('should get idle peers', () => {
-    const peers = [new Peer('1'), new Peer('2'), new Peer('3')]
+    const peers = [new Peer(1), new Peer(2), new Peer(3)]
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool({ config })
     peers[1].idle = true
     for (const p of peers) {
-      pool.add(p as any)
+      // @ts-ignore
+      pool.add(p)
     }
     assert.equal(pool.idle(), peers[1], 'correct idle peer')
     assert.equal(
-      pool.idle((p: any) => p.id > '1'),
+      pool.idle((p: any) => p.id > 1),
       peers[1],
       'correct idle peer with filter'
     )
