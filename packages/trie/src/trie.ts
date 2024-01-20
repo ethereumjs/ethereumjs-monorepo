@@ -147,6 +147,12 @@ export class Trie {
     || ----------------`)
   }
 
+  /**
+   * Create a trie from a given proof
+   * @param proof proof to create trie from
+   * @param trieOpts trie opts to be applied to returned trie
+   * @returns new trie created from given proof
+   */
   static async createFromProof(proof: Proof, trieOpts?: TrieOpts) {
     const trie = new Trie(trieOpts)
     const root = await trie.updateFromProof(proof, false)
