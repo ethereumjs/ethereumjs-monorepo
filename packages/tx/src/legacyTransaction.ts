@@ -270,11 +270,15 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     return Legacy.getSenderPublicKey(this)
   }
 
-  /**
-   * Process the v, r, s values from the `sign` method of the base transaction.
-   */
-  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
-    if (this.supports(Capability.EIP155ReplayProtection)) {
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV: boolean = false
+  ): LegacyTransaction {
+    r = toBytes(r)
+    s = toBytes(s)
+    if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
       v += this.common.chainId() * BIGINT_2 + BIGINT_8
     }
 
