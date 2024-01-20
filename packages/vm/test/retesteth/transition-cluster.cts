@@ -6,7 +6,7 @@ const program = resolve('test/retesteth/transition-child.cts')
 const parameters: any = []
 const options = {
   //stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-  execArgv: ['-r', 'ts-node/register'],
+  execArgv: ['--loader', 'tsx'],
 }
 
 const children: any = []

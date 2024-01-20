@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen2.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
-import { baseRequest, params, setupChain } from '../helpers'
+import { getRpcClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain'
 import type { Common } from '@ethereumjs/common'
@@ -39,15 +39,13 @@ describe(`valid verkle network setup`, async () => {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,
   })
-
+  const rpc = getRpcClient(server)
   it('genesis should be correctly setup', async () => {
-    const req = params('eth_getBlockByNumber', ['0x0', false])
-    const expectRes = (res: any) => {
-      const block0 = res.body.result
-      assert.equal(block0.hash, genesisVerkleBlockHash)
-      assert.equal(block0.stateRoot, genesisVerkleStateRoot)
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
+
+    const block0 = res.result
+    assert.equal(block0.hash, genesisVerkleBlockHash)
+    assert.equal(block0.stateRoot, genesisVerkleStateRoot)
   })
 
   // currently it seems the the blocks can't be played one after another as it seems

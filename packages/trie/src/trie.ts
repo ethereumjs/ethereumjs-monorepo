@@ -1,3 +1,6 @@
+// Some more secure presets when using e.g. JS `call`
+'use strict'
+
 import {
   KeyEncoding,
   Lock,
@@ -27,7 +30,10 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
-import { TrieReadStream as ReadStream } from './util/readStream.js'
+import {
+  TrieReadStream as ReadStream,
+  asyncTrieReadStream as asyncReadStream,
+} from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
@@ -43,6 +49,12 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+// Since ReadableStream is from a Web API, the following type import
+// is not needed in and should be ignored by the browser, so an exeption
+// is made here to deviate from our policy to not add Node.js specific
+// package imports. -- 16/01/24
+// eslint-disable-next-line implicit-dependencies/no-implicit
+import type { ReadableStream } from 'node:stream/web'
 
 interface Path {
   node: TrieNode | null
@@ -93,6 +105,8 @@ export class Trie {
         throw new Error('`valueEncoding` can only be set if a `db` is provided')
       }
       this._opts = { ...this._opts, ...opts }
+      this._opts.useKeyHashingFunction =
+        opts.common?.customCrypto.keccak256 ?? opts.useKeyHashingFunction ?? keccak256
 
       valueEncoding =
         opts.db !== undefined ? opts.valueEncoding ?? ValueEncoding.String : ValueEncoding.Bytes
@@ -102,7 +116,8 @@ export class Trie {
       valueEncoding = ValueEncoding.Bytes
     }
 
-    this.DEBUG = process.env.DEBUG?.includes('ethjs') === true
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
@@ -133,13 +148,15 @@ export class Trie {
   }
 
   static async create(opts?: TrieOpts) {
+    const keccakFunction =
+      opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
     let key = ROOT_DB_KEY
 
     const encoding =
       opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
 
     if (opts?.useKeyHashing === true) {
-      key = (opts?.useKeyHashingFunction ?? keccak256)(ROOT_DB_KEY) as Uint8Array
+      key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
     }
     if (opts?.keyPrefix !== undefined) {
       key = concatBytes(opts.keyPrefix, key)
@@ -883,8 +900,28 @@ export class Trie {
   /**
    * Saves the nodes from a proof into the trie.
    * @param proof
+   * @deprecated Use `updateTrieFromProof`
    */
   async fromProof(proof: Proof): Promise<void> {
+    await this.updateTrieFromProof(proof, false)
+
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
+      let rootKey = Uint8Array.from(this.hash(proof[0]))
+      // TODO: what if we have keyPrefix and we set root? This should not work, right? (all trie nodes are non-reachable)
+      rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
+      this.root(rootKey)
+      await this.persistRoot()
+    }
+    return
+  }
+
+  /**
+   * Updates a trie from a proof
+   * @param proof The proof
+   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
+   * @returns The root of the proof
+   */
+  async updateTrieFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
     this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       let key = Uint8Array.from(this.hash(nodeValue))
@@ -896,18 +933,26 @@ export class Trie {
       } as PutBatch
     })
 
-    if (
-      equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) &&
-      opStack[0] !== undefined &&
-      opStack[0] !== null
-    ) {
-      this.DEBUG && this.debug(`Setting Trie root from Proof Node 0`, ['FROM_PROOF'])
-      this.root(opStack[0].key)
+    if (shouldVerifyRoot) {
+      if (opStack[0] !== undefined && opStack[0] !== null) {
+        if (!equalsBytes(this.root(), opStack[0].key)) {
+          throw new Error('The provided proof does not have the expected trie root')
+        }
+      }
     }
 
     await this._db.batch(opStack)
-    await this.persistRoot()
-    return
+    if (opStack[0] !== undefined) {
+      return opStack[0].key
+    }
+  }
+
+  static async createTrieFromProof(proof: Proof, trieOpts?: TrieOpts) {
+    const trie = new Trie(trieOpts)
+    const root = await trie.updateTrieFromProof(proof, false)
+    trie.root(root)
+    await trie.persistRoot()
+    return trie
   }
 
   /**
@@ -948,6 +993,7 @@ export class Trie {
     const proofTrie = new Trie({
       root: rootHash,
       useKeyHashingFunction: this._opts.useKeyHashingFunction,
+      common: this._opts.common,
     })
     try {
       await proofTrie.fromProof(proof)
@@ -1049,10 +1095,19 @@ export class Trie {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
+   * @deprecated Use `createAsyncReadStream`
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
     return new ReadStream(this)
+  }
+
+  /**
+   * Use asynchronous iteration over the chunks in a web stream using the for await...of syntax.
+   * @return Returns a [web stream](https://nodejs.org/api/webstreams.html#example-readablestream) of the contents of the `trie`
+   */
+  createAsyncReadStream(): ReadableStream {
+    return asyncReadStream(this)
   }
 
   /**
@@ -1132,7 +1187,7 @@ export class Trie {
   }
 
   protected hash(msg: Uint8Array): Uint8Array {
-    return Uint8Array.from(this._opts.useKeyHashingFunction(msg))
+    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, msg))
   }
 
   /**

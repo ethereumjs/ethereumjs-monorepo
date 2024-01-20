@@ -399,13 +399,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x20: KECCAK256
   [
     0x20,
-    function (runState) {
+    function (runState, common) {
       const [offset, length] = runState.stack.popN(2)
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt(bytesToHex(keccak256(data)))
+      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak256)(data)))
       runState.stack.push(r)
     },
   ],
@@ -1037,7 +1037,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf1: CALL
   [
     0xf1,
-    async function (runState: RunState) {
+    async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
       const toAddress = new Address(addresstoBytes(toAddr))
@@ -1047,7 +1047,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         data = runState.memory.read(Number(inOffset), Number(inLength), true)
       }
 
-      const gasLimit = runState.messageGasLimit!
+      let gasLimit = runState.messageGasLimit!
+      if (value !== BIGINT_0) {
+        const callStipend = common.param('gasPrices', 'callStipend')
+        runState.interpreter.addStipend(callStipend)
+        gasLimit += callStipend
+      }
+
       runState.messageGasLimit = undefined
 
       const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
@@ -1059,12 +1065,18 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf2: CALLCODE
   [
     0xf2,
-    async function (runState: RunState) {
+    async function (runState: RunState, common: Common) {
       const [_currentGasLimit, toAddr, value, inOffset, inLength, outOffset, outLength] =
         runState.stack.popN(7)
       const toAddress = new Address(addresstoBytes(toAddr))
 
-      const gasLimit = runState.messageGasLimit!
+      let gasLimit = runState.messageGasLimit!
+      if (value !== BIGINT_0) {
+        const callStipend = common.param('gasPrices', 'callStipend')
+        runState.interpreter.addStipend(callStipend)
+        gasLimit += callStipend
+      }
+
       runState.messageGasLimit = undefined
 
       let data = new Uint8Array(0)
@@ -1129,11 +1141,14 @@ export const handlers: Map<number, OpHandler> = new Map([
       const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
       const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
-      const msgHash = keccak256(message)
+
+      const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
+      const msgHash = keccakFunction(message)
 
       let recover
+      const ecrecoverFunction = runState.interpreter._evm.common.customCrypto.ecrecover ?? ecrecover
       try {
-        recover = ecrecover(msgHash, yParity + BIGINT_27, r, s)
+        recover = ecrecoverFunction(msgHash, yParity + BIGINT_27, r, s)
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BIGINT_0)

@@ -529,7 +529,14 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     }
   }
 
-  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): BlobEIP4844Transaction {
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV: boolean = false
+  ): BlobEIP4844Transaction {
+    r = toBytes(r)
+    s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
     return BlobEIP4844Transaction.fromTxData(
@@ -543,7 +550,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: v - BIGINT_27, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
         maxFeePerBlobGas: this.maxFeePerBlobGas,

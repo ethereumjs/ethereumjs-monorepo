@@ -40,7 +40,7 @@
     "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "coverage:test": "npm run test:API",
     "docs:build": "typedoc --options typedoc.cjs",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- vm",
+    "examples": "tsx ../../scripts/examples-runner.ts -- vm",
     "formatTest": "node ./scripts/formatTest",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
@@ -58,7 +58,7 @@
     "test:state:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5 Cancun' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
     "test:state:selectedForks": "echo 'Homestead TangerineWhistle SpuriousDragon Petersburg Berlin London Cancun' | xargs -n1 | xargs -I v1 npm run test:state -- --fork=v1 --verify-test-amount-alltests",
     "test:state:slow": "npm run test:state -- --runSkipped=slow",
-    "tester": "ts-node ./test/tester --stack-size=1500",
+    "tester": "tsx ./test/tester --stack-size=1500",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

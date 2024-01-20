@@ -30,7 +30,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
-import type { AccessList, AccessListItem } from '@ethereumjs/common'
+import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
 import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
@@ -46,8 +46,12 @@ const debugGas = createDebugLogger('vm:tx:gas')
 let enableProfiler = false
 const initLabel = 'EVM journal init, address/slot warming, fee validation'
 const balanceNonceLabel = 'Balance/Nonce checks and update'
+const executionLabel = 'Execution'
 const logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
-const cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+const accountsCleanUpLabel = 'Accounts clean up'
+const accessListLabel = 'Access list label'
+const journalCacheCleanUpLabel = 'Journal/cache cleanup'
+const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
 
 /**
@@ -479,7 +483,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // eslint-disable-next-line no-console
     console.timeEnd(balanceNonceLabel)
     // eslint-disable-next-line no-console
-    console.log('[ For execution see detailed table output ]')
+    console.time(executionLabel)
   }
 
   /*
@@ -515,6 +519,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
+    console.timeEnd(executionLabel)
+    // eslint-disable-next-line no-console
+    console.log('[ For execution details see table output ]')
+    // eslint-disable-next-line no-console
     console.time(logsGasBalanceLabel)
   }
 
@@ -536,7 +544,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Parse results
    */
   // Generate the bloom for the tx
-  results.bloom = txLogsBloom(results.execResult.logs)
+  results.bloom = txLogsBloom(results.execResult.logs, this.common)
   if (this.DEBUG) {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
@@ -626,7 +634,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // eslint-disable-next-line no-console
     console.timeEnd(logsGasBalanceLabel)
     // eslint-disable-next-line no-console
-    console.time(cleanupAndReceiptsLabel)
+    console.time(accountsCleanUpLabel)
   }
 
   /*
@@ -648,6 +656,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accountsCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(accessListLabel)
+  }
+
   if (opts.reportAccessList === true && this.common.isActivatedEIP(2930)) {
     // Convert the Map to the desired type
     const accessList: AccessList = []
@@ -667,8 +682,22 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     results.accessList = accessList
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accessListLabel)
+    // eslint-disable-next-line no-console
+    console.time(journalCacheCleanUpLabel)
+  }
+
   await this.evm.journal.cleanup()
   state.originalStorageCache.clear()
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(journalCacheCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(receiptsLabel)
+  }
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
@@ -683,7 +712,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
-    console.timeEnd(cleanupAndReceiptsLabel)
+    console.timeEnd(receiptsLabel)
   }
 
   /**
@@ -710,8 +739,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
  * @method txLogsBloom
  * @private
  */
-function txLogsBloom(logs?: any[]): Bloom {
-  const bloom = new Bloom()
+function txLogsBloom(logs?: any[], common?: Common): Bloom {
+  const bloom = new Bloom(undefined, common)
   if (logs) {
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]

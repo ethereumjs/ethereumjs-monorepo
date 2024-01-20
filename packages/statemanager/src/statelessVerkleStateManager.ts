@@ -170,6 +170,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   private _checkpoints: VerkleState[] = []
   accessWitness?: AccessWitness
 
+  private keccakFunction: Function
+
   /**
    * Instantiate the StateManager interface.
    */
@@ -215,6 +217,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         type: this._codeCacheSettings.type,
       })
     }
+
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break

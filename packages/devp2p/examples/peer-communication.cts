@@ -11,9 +11,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-import type LRUCache from 'lru-cache'
+import { LRUCache } from 'lru-cache'
 
-const LRU = require('lru-cache')
 import ms from 'ms'
 
 import * as devp2p from '../dist/cjs/index.js'
@@ -339,7 +338,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
   .catch((err) => console.log(`error on connection to local node: ${err.stack ?? err}`))
 */
 
-const txCache: LRUCache<string, boolean> = new LRU({ max: 1000 })
+const txCache: LRUCache<string, boolean> = new LRUCache({ max: 1000 })
 function onNewTx(tx: TypedTransaction, peer: Peer) {
   const txHashHex = bytesToUnprefixedHex(tx.hash())
   if (txCache.has(txHashHex)) return
@@ -348,7 +347,7 @@ function onNewTx(tx: TypedTransaction, peer: Peer) {
   console.log(`New tx: ${txHashHex} (from ${getPeerAddr(peer)})`)
 }
 
-const blocksCache: LRUCache<string, boolean> = new LRU({ max: 100 })
+const blocksCache: LRUCache<string, boolean> = new LRUCache({ max: 100 })
 function onNewBlock(block: Block, peer: Peer) {
   const blockHashHex = bytesToUnprefixedHex(block.hash())
   const blockNumber = block.header.number

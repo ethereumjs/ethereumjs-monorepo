@@ -308,8 +308,9 @@ export abstract class BaseTransaction<T extends TransactionType>
     }
 
     const msgHash = this.getHashedMessageToSign()
-    const { v, r, s } = ecsign(msgHash, privateKey)
-    const tx = this._processSignature(v, r, s)
+    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
+    const { v, r, s } = ecSignFunction(msgHash, privateKey)
+    const tx = this.addSignature(v, r, s, true)
 
     // Hack part 2
     if (hackApplied) {
@@ -339,8 +340,21 @@ export abstract class BaseTransaction<T extends TransactionType>
     }
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a T
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): Transaction[T]
+  /**
+   * Returns a new transaction with the same data fields as the current, but now signed
+   * @param v The `v` value of the signature
+   * @param r The `r` value of the signature
+   * @param s The `s` value of the signature
+   * @param convertV Set this to `true` if the raw output of `ecsign` is used. If this is `false` (default)
+   *                 then the raw value passed for `v` will be used for the signature. For legacy transactions,
+   *                 if this is set to `true`, it will also set the right `v` value for the chain id.
+   */
+  abstract addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV?: boolean
+  ): Transaction[T]
 
   /**
    * Does chain ID checks on common and returns a common

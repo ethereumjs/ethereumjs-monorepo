@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -170,7 +171,7 @@ describe('[Block]: block functions', () => {
     assert.ok(block.getTransactionsValidationErrors().length === 0)
   }
 
-  it('should test transaction validation', async () => {
+  it('should test transaction validation - invalid tx trie', async () => {
     const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
@@ -181,6 +182,27 @@ describe('[Block]: block functions', () => {
       assert.fail('should throw')
     } catch (error: any) {
       assert.ok((error.message as string).includes('invalid transaction trie'))
+    }
+  })
+
+  it('should test transaction validation - transaction not signed', async () => {
+    const tx = LegacyTransaction.fromTxData({
+      gasLimit: 53000,
+      gasPrice: 7,
+    })
+    const blockTest = Block.fromBlockData({ transactions: [tx] })
+    const txTrie = await blockTest.genTxTrie()
+    const block = Block.fromBlockData({
+      header: {
+        transactionsTrie: txTrie,
+      },
+      transactions: [tx],
+    })
+    try {
+      await block.validateData()
+      assert.fail('should throw')
+    } catch (error: any) {
+      assert.ok((error.message as string).includes('unsigned'))
     }
   })
 
@@ -229,6 +251,26 @@ describe('[Block]: block functions', () => {
     const hash = hexToBytes('0x' + testDataGenesis.test.genesis_hash)
     const block = Block.fromRLPSerializedBlock(rlp, { common })
     assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+  })
+
+  it('should test hash() method (mainnet default)', () => {
+    let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const rlp = hexToBytes('0x' + testDataGenesis.test.genesis_rlp_hex)
+    const hash = hexToBytes('0x' + testDataGenesis.test.genesis_hash)
+    let block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.ok(equalsBytes(block.hash(), hash), 'genesis hash match')
+
+    common = new Common({
+      chain: Chain.Mainnet,
+      hardfork: Hardfork.Chainstart,
+      customCrypto: {
+        keccak256: () => {
+          return new Uint8Array([1])
+        },
+      },
+    })
+    block = Block.fromRLPSerializedBlock(rlp, { common })
+    assert.deepEqual(block.hash(), new Uint8Array([1]), 'custom crypto applied on hash() method')
   })
 
   it('should error on invalid params', () => {

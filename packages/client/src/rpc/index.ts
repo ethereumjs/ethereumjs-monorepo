@@ -27,6 +27,7 @@ export class RPCManager {
   /**
    * Returns bound methods for modules concat with underscore `_`
    * @param engine Pass true to return only `engine_` API endpoints (default: false)
+   * @param rpcDebug Pass true to include stack traces on errors (default: false)
    */
   getMethods(engine = false, rpcDebug = false) {
     const methods: { [key: string]: Function } = {}

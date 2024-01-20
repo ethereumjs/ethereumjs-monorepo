@@ -445,7 +445,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           }
         }
 
-        let gasLimit = maxCallGas(
+        const gasLimit = maxCallGas(
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
@@ -459,12 +459,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (gas > runState.interpreter.getGasLeft()) {
           trap(ERROR.OUT_OF_GAS)
-        }
-
-        if (value !== BIGINT_0) {
-          const callStipend = common.param('gasPrices', 'callStipend')
-          runState.interpreter.addStipend(callStipend)
-          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
@@ -495,7 +489,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
-        let gasLimit = maxCallGas(
+        const gasLimit = maxCallGas(
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
@@ -505,11 +499,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(ERROR.OUT_OF_GAS)
-        }
-        if (value !== BIGINT_0) {
-          const callStipend = common.param('gasPrices', 'callStipend')
-          runState.interpreter.addStipend(callStipend)
-          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit

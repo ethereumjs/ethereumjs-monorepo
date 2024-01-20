@@ -37,7 +37,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * Devp2p/RLPx peer
  * @memberof module:net/peer
  * @example
- * ```typescript
+ * ```ts
  * import { RlpxPeer } from './src/net/peer'
  * import { Chain } from './src/blockchain'
  * import { EthProtocol } from './src/net/protocol'

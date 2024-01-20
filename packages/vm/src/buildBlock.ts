@@ -132,14 +132,14 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return Block.genTransactionsTrieRoot(this.transactions)
+    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
   }
 
   /**
    * Calculates and returns the logs bloom for the block.
    */
   public logsBloom() {
-    const bloom = new Bloom()
+    const bloom = new Bloom(undefined, this.vm.common)
     for (const txResult of this.transactionResults) {
       // Combine blooms via bitwise OR
       bloom.or(txResult.bloom)
@@ -154,7 +154,7 @@ export class BlockBuilder {
     if (this.transactionResults.length === 0) {
       return KECCAK256_RLP
     }
-    const receiptTrie = new Trie()
+    const receiptTrie = new Trie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -302,7 +302,7 @@ export class BlockBuilder {
     const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await Block.genWithdrawalsTrieRoot(this.withdrawals)
+      ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()

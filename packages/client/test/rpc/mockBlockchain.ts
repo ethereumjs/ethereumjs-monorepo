@@ -15,6 +15,7 @@ export function mockBlockchain(options: any = {}) {
     hash: () => toBytes(blockHash),
     header: {
       number: BigInt(number),
+      hash: () => toBytes(blockHash),
     },
     toJSON: () => ({
       ...Block.fromBlockData({ header: { number } }).toJSON(),
@@ -34,6 +35,12 @@ export function mockBlockchain(options: any = {}) {
     },
     getCanonicalHeadHeader: () => {
       return Block.fromBlockData().header
+    },
+    getIteratorHead: () => {
+      return block
+    },
+    getTotalDifficulty: () => {
+      return number
     },
     genesisBlock: block,
     shallowCopy() {

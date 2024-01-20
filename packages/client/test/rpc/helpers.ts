@@ -9,7 +9,7 @@ import {
   hexToBytes,
   parseGethGenesisState,
 } from '@ethereumjs/util'
-import { Server as RPCServer } from 'jayson/promise'
+import { Client, Server as RPCServer } from 'jayson/promise'
 import { MemoryLevel } from 'memory-level'
 import { assert } from 'vitest'
 
@@ -31,9 +31,8 @@ import type { FullEthereumService } from '../../src/service'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { GenesisState } from '@ethereumjs/util'
 import type { IncomingMessage } from 'connect'
-import type { HttpServer } from 'jayson/promise'
-
-const request = require('supertest')
+import type { HttpClient, HttpServer } from 'jayson/promise'
+import type { AddressInfo } from 'node:net'
 
 const config: any = {}
 config.logger = getLogger(config)
@@ -71,6 +70,12 @@ export function startRPC(
   return httpServer
 }
 
+/** Returns a basic RPC client with no authentication */
+
+export function getRpcClient(server: HttpServer) {
+  const rpc = Client.http({ port: (server.address()! as AddressInfo).port })
+  return rpc
+}
 export function closeRPC(server: HttpServer) {
   server.close()
 }
@@ -79,7 +84,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: Partial<createClientArgs> = {}) {
+export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
@@ -140,6 +145,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
+    await execution.open()
   }
 
   let peers = [1, 2, 3]
@@ -187,52 +193,17 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   return client as EthereumClient
 }
 
-export function baseSetup(clientOpts: any = {}) {
-  const client = createClient(clientOpts)
+export async function baseSetup(clientOpts: any = {}) {
+  const client = await createClient(clientOpts)
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
+  const host = server.address() as AddressInfo
+  const rpc = Client.http({ port: host.port })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
   })
-  return { server, manager, client }
-}
-
-export function params(method: string, params: Array<any> = []) {
-  const req = {
-    jsonrpc: '2.0',
-    method,
-    params,
-    id: 1,
-  }
-  return req
-}
-
-export async function baseRequest(
-  server: HttpServer,
-  req: Object,
-  expect: number,
-  expectRes: Function,
-  endOnFinish = true,
-  doCloseRPCOnSuccess = true
-) {
-  try {
-    await request(server)
-      .post('/')
-      .set('Content-Type', 'application/json')
-      .send(req)
-      .expect(expect)
-      .expect(expectRes)
-    if (doCloseRPCOnSuccess) {
-      closeRPC(server)
-    }
-    if (endOnFinish) {
-      assert.ok(true)
-    }
-  } catch (err) {
-    closeRPC(server)
-    assert.notOk(err)
-  }
+  return { server, manager, client, rpc }
 }
 
 /**
@@ -265,7 +236,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
 
   // for the client we can pass both genesisState and genesisStateRoot and let it s
-  const client = createClient({
+  const client = await createClient({
     ...clientOpts,
     commonChain: common,
     blockchain,
@@ -354,12 +325,9 @@ export const dummy = {
  * @param server HttpServer
  * @param inputBlocks Array of valid ExecutionPayloadV1 data
  */
-export const batchBlocks = async (server: HttpServer, inputBlocks: any[]) => {
+export const batchBlocks = async (rpc: HttpClient, inputBlocks: any[]) => {
   for (let i = 0; i < inputBlocks.length; i++) {
-    const req = params('engine_newPayloadV1', [inputBlocks[i]])
-    const expectRes = (res: any) => {
-      assert.equal(res.body.result.status, 'VALID')
-    }
-    await baseRequest(server, req, 200, expectRes, false, false)
+    const res = await rpc.request('engine_newPayloadV1', [inputBlocks[i]])
+    assert.equal(res.result.status, 'VALID')
   }
 }
