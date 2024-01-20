@@ -2,6 +2,7 @@ import { Common } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import {
   BIGINT_2,
+  bytesToHex,
   calculateSigRecovery,
   concatBytes,
   ecsign,
@@ -18,6 +19,7 @@ import {
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 describe('WASM crypto tests', () => {
@@ -90,5 +92,16 @@ describe('WASM crypto tests', () => {
       () => wasmSign(randomBytes(31), randomBytes(32)),
       'message length must be 32 bytes or greater'
     )
+  })
+  it('should have the same signature and verification', async () => {
+    await waitReady()
+    const pk = hexToBytes('0xbd3713a6da2c3624fa10bad8a52848b4291e3c9689ab50e0d2761e014d6e4cd7')
+    const hash = hexToBytes('0x8c6d72155f746a9424b0621d82c5f5d3f6cc82e497b15df1b2ae601c8c14f75c')
+    const jsSig = ecdsaSign(hash, pk)
+    const wasmSig = secp256k1Sign(hash, pk)
+    assert.equal(bytesToHex(wasmSig.slice(0, 64)), bytesToHex(jsSig.signature))
+    const wasmRec = secp256k1Recover(hash, wasmSig.slice(0, 64), wasmSig[64])
+    const jsRec = ecdsaRecover(jsSig.signature, jsSig.recid, hash)
+    assert.equal(bytesToHex(wasmRec), bytesToHex(jsRec))
   })
 })

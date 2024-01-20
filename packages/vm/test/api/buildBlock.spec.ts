@@ -9,6 +9,9 @@ import { VM } from '../../src/vm'
 
 import { setBalance } from './utils'
 
+const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+const pKeyAddress = Address.fromPrivateKey(privateKey)
+
 describe('BlockBuilder', () => {
   it('should build a valid block', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
@@ -16,8 +19,7 @@ describe('BlockBuilder', () => {
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await setBalance(vm, address)
+    await setBalance(vm, pKeyAddress)
 
     const vmCopy = await vm.shallowCopy()
 
@@ -31,10 +33,7 @@ describe('BlockBuilder', () => {
     const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
-    )
-    tx.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
     const block = await blockBuilder.build()
@@ -43,11 +42,6 @@ describe('BlockBuilder', () => {
       1,
       'should have the correct number of tx receipts'
     )
-
-    // block should successfully execute with VM.runBlock and have same outputs
-    block.transactions[0].getSenderAddress = () => {
-      return address
-    }
     const result = await vmCopy.runBlock({ block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
@@ -90,8 +84,7 @@ describe('BlockBuilder', () => {
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await setBalance(vm, address)
+    await setBalance(vm, pKeyAddress)
 
     const blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -102,10 +95,7 @@ describe('BlockBuilder', () => {
     const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
-    )
-    tx.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
 
@@ -224,8 +214,7 @@ describe('BlockBuilder', () => {
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await setBalance(vm, address)
+    await setBalance(vm, pKeyAddress)
 
     let blockBuilder = await vm.buildBlock({
       parentBlock: genesisBlock,
@@ -235,10 +224,7 @@ describe('BlockBuilder', () => {
     const tx = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
-    )
-    tx.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx)
     await blockBuilder.build()
@@ -259,10 +245,7 @@ describe('BlockBuilder', () => {
     const tx2 = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1, nonce: 1 },
       { common, freeze: false }
-    )
-    tx2.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
 
     await blockBuilder.addTransaction(tx2)
     await blockBuilder.revert()
@@ -310,8 +293,7 @@ describe('BlockBuilder', () => {
     const blockchain = await Blockchain.create({ genesisBlock, common, validateConsensus: false })
     const vm = await VM.create({ common, blockchain })
 
-    const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
-    await setBalance(vm, address)
+    await setBalance(vm, pKeyAddress)
 
     const vmCopy = await vm.shallowCopy()
 
@@ -325,17 +307,12 @@ describe('BlockBuilder', () => {
     const tx1 = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false }
-    )
-    tx1.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
+
     const tx2 = FeeMarketEIP1559Transaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 10 },
       { common, freeze: false }
-    )
-    tx2.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
 
     for (const tx of [tx1, tx2]) {
       try {
@@ -353,17 +330,12 @@ describe('BlockBuilder', () => {
     const tx3 = LegacyTransaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, gasPrice: 101 },
       { common, freeze: false }
-    )
-    tx3.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
+
     const tx4 = FeeMarketEIP1559Transaction.fromTxData(
       { to: Address.zero(), value: 1000, gasLimit: 21000, maxFeePerGas: 101, nonce: 1 },
       { common, freeze: false }
-    )
-    tx4.getSenderAddress = () => {
-      return address
-    }
+    ).sign(privateKey)
 
     for (const tx of [tx3, tx4]) {
       await blockBuilder.addTransaction(tx)
@@ -382,13 +354,6 @@ describe('BlockBuilder', () => {
       "baseFeePerGas should equal parentHeader's calcNextBaseFee"
     )
 
-    // block should successfully execute with VM.runBlock and have same outputs
-    block.transactions[0].getSenderAddress = () => {
-      return address
-    }
-    block.transactions[1].getSenderAddress = () => {
-      return address
-    }
     const result = await vmCopy.runBlock({ block })
     assert.equal(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
