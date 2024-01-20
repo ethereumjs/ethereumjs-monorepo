@@ -15,6 +15,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
+import { LevelDB } from '../../../src/execution/level'
 import { SnapProtocol } from '../../../src/net/protocol'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
