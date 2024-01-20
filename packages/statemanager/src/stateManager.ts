@@ -174,6 +174,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _checkpointCount: number
 
+  protected _proofTrie: Trie
+
   private keccakFunction: Function
 
   /**
@@ -198,6 +200,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._debug = createDebugLogger('statemanager:statemanager')
 
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+
+    this._proofTrie = new Trie({ useKeyHashing: true, common: this.common })
 
     this._checkpointCount = 0
 

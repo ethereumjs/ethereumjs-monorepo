@@ -13,7 +13,6 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { short } from '../../util'
 
@@ -73,6 +72,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   stateManager: DefaultStateManager
   fetcherDoneFlags: SnapFetcherDoneFlags
 
+  private _proofTrie: Trie
+
   /** The accounts to fetch storage data for */
   storageRequests: StorageRequest[]
 
@@ -86,6 +87,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
    */
   constructor(options: StorageFetcherOptions) {
     super(options)
+    this._proofTrie = new Trie({ common: this.config.chainCommon })
     this.fragmentedRequests = []
 
     this.root = options.root
@@ -127,18 +129,14 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       )
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return Trie.verifyRangeProof(
+      return await this._proofTrie.verifyRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof,
-        {
-          common: this.config.chainCommon,
-          useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-        }
-      ) as any
+        <any>proof
+      )
     } catch (err) {
       this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
       throw Error((err as Error).message)
@@ -295,17 +293,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
           // all-elements proof verification
-          await Trie.verifyRangeProof(
+          await this._proofTrie.verifyRangeProof(
             root,
             null,
             null,
             accountSlots.map((s) => s.hash),
             accountSlots.map((s) => s.body),
-            null,
-            {
-              common: this.config.chainCommon,
-              useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-            }
+            null
           )
 
           if (proof?.length === 0)
