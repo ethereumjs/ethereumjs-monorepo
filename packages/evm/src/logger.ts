@@ -149,7 +149,7 @@ export class EVMPerformanceLogger {
     dynamicGas?: number
   ) {
     if (this.currentTimer === undefined || this.currentTimer !== timer) {
-      throw new Error('Cannot unpause timer: another timer is already running')
+      throw new Error('Cannot stop timer: another timer is already running')
     }
     const time = timer.time()
     const tag = timer.tag
