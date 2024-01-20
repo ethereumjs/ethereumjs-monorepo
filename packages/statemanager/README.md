@@ -34,6 +34,8 @@ It also includes a checkpoint/revert/commit mechanism to either persist or rever
 #### Usage example
 
 ```ts
+// ./examples/basicUsage.ts
+
 import { Account, Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from '@ethereumjs/util'
@@ -65,6 +67,8 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
 
 ```ts
+// ./examples/fromProofInstantiation.ts
+
 import { Account, Address, bytesToHex } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from '@ethereumjs/util'
@@ -107,6 +111,8 @@ main()
 First, a simple example of usage:
 
 ```ts
+// ./examples/rpcStateManager.ts
+
 import { Address } from '@ethereumjs/util'
 import { RPCStateManager } from '@ethereumjs/statemanager'
 
@@ -131,6 +137,8 @@ The `RPCStateManager` can be be used with any JSON-RPC provider that supports th
 In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initalizing your EVM instance as below:
 
 ```js
+// ./examples/evm.ts
+
 import { RPCStateManager, RPCBlockChain } from '@ethereumjs/statemanager'
 import { EVM } from '@ethereumjs/evm'
 
