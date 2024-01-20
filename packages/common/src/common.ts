@@ -26,6 +26,7 @@ import type {
   CliqueConfig,
   CommonOpts,
   CustomCommonOpts,
+  CustomCrypto,
   EIPConfig,
   EIPOrHFConfig,
   EthashConfig,
@@ -57,6 +58,8 @@ export class Common {
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
   protected _customChains: ChainConfig[]
+
+  public readonly customCrypto: CustomCrypto
 
   protected _paramsCache: ParamsCacheConfig = {}
   protected _activatedEIPsCache: number[] = []
@@ -248,6 +251,8 @@ export class Common {
     if (opts.eips) {
       this.setEIPs(opts.eips)
     }
+    this.customCrypto = opts.customCrypto ?? {}
+
     if (Object.keys(this._paramsCache).length === 0) {
       this._buildParamsCache()
       this._buildActivatedEIPsCache()
