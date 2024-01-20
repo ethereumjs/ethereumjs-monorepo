@@ -41,7 +41,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm ci --include=peer
+      - run: npm ci --include=peer --strict-peer-deps
 
       - run: npm run test:browser -w=@ethereumjs/rlp
       - run: npm run test:browser -w=@ethereumjs/util
