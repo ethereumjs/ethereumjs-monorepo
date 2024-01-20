@@ -234,6 +234,7 @@ export class Trie {
     }
     const root = await trie.updateFromProof(proof)
     trie.root(root)
+    await trie.persistRoot()
     return trie
   }
 
