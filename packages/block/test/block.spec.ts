@@ -178,7 +178,7 @@ describe('[Block]: block functions', () => {
     assert.ok(block.getTransactionsValidationErrors().length === 0)
   }
 
-  it('should test transaction validation', async () => {
+  it('should test transaction validation - invalid tx trie', async () => {
     const blockRlp = toBytes(testDataPreLondon.blocks[0].rlp)
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const block = Block.fromRLPSerializedBlock(blockRlp, { common, freeze: false })
@@ -189,6 +189,27 @@ describe('[Block]: block functions', () => {
       assert.fail('should throw')
     } catch (error: any) {
       assert.ok((error.message as string).includes('invalid transaction trie'))
+    }
+  })
+
+  it('should test transaction validation - transaction not signed', async () => {
+    const tx = LegacyTransaction.fromTxData({
+      gasLimit: 53000,
+      gasPrice: 7,
+    })
+    const blockTest = Block.fromBlockData({ transactions: [tx] })
+    const txTrie = await blockTest.genTxTrie()
+    const block = Block.fromBlockData({
+      header: {
+        transactionsTrie: txTrie,
+      },
+      transactions: [tx],
+    })
+    try {
+      await block.validateData()
+      assert.fail('should throw')
+    } catch (error: any) {
+      assert.ok((error.message as string).includes('unsigned'))
     }
   })
 

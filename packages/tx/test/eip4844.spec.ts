@@ -6,6 +6,7 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   concatBytes,
+  ecsign,
   equalsBytes,
   getBlobs,
   hexToBytes,
@@ -31,6 +32,61 @@ if (isBrowser() === false) {
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
+})
+
+describe('EIP4844 addSignature tests', () => {
+  it('addSignature() -> correctly adds correct signature values', () => {
+    const privateKey = pk
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        to: Address.zero(),
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+      },
+      { common }
+    )
+    const signedTx = tx.sign(privateKey)
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> correctly converts raw ecrecover values', () => {
+    const privKey = pk
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        to: Address.zero(),
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+      },
+      { common }
+    )
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(v, r, s, true)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> throws when adding the wrong v value', () => {
+    const privKey = pk
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        to: Address.zero(),
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+      },
+      { common }
+    )
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    assert.throws(() => {
+      // This will throw, since we now try to set either v=27 or v=28
+      tx.addSignature(v, r, s, false)
+    })
+  })
 })
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
