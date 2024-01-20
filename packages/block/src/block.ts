@@ -621,12 +621,14 @@ export class Block {
       return
     }
 
-    for (const [index, tx] of this.transactions.entries()) {
-      if (!tx.isSigned()) {
-        const msg = this._errorMsg(
-          `invalid transactions: transaction at index ${index} is unsigned`
-        )
-        throw new Error(msg)
+    if (verifyTxs) {
+      for (const [index, tx] of this.transactions.entries()) {
+        if (!tx.isSigned()) {
+          const msg = this._errorMsg(
+            `invalid transactions: transaction at index ${index} is unsigned`
+          )
+          throw new Error(msg)
+        }
       }
     }
 
