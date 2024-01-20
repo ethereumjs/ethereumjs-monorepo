@@ -33,24 +33,7 @@ npm install @ethereumjs/vm
 ### Running a Transaction
 
 ```ts
-import { Address } from '@ethereumjs/util'
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { VM } from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
-const vm = await VM.create({ common })
-
-const tx = LegacyTransaction.fromTxData({
-  gasLimit: BigInt(21000),
-  gasPrice: BigInt(1000000000),
-  value: BigInt(1),
-  to: Address.zero(),
-  v: BigInt(37),
-  r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
-  s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
-})
-await vm.runTx({ tx, skipBalance: true })
+// ./examples/runTx.ts
 ```
 
 Note that there is an additional API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
@@ -62,25 +45,7 @@ The VM package can also be used to construct a new valid block by executing and 
 The following non-complete example gives some illustration on how to use the Block Builder API:
 
 ```ts
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { LegacyTransaction } from '@ethereumjs/tx'
-import { VM } from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Mainnet })
-const vm = await VM.create({ common })
-
-const blockBuilder = await vm.buildBlock({
-  parentBlock, // the parent @ethereumjs/block Block
-  headerData, // header values for the new block
-  blockOpts: { calcDifficultyFromHeader: parentBlock.header, freeze: false },
-})
-
-const tx = LegacyTransaction.fromTxData()
-await blockBuilder.addTransaction(tx)
-
-// Add more transactions
-
-const block = await blockBuilder.build()
+// ./examples/buildBlock.ts
 ```
 
 ## Example
@@ -172,16 +137,7 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 The following is a simple example for a block run on `Goerli`:
 
 ```ts
-import { Chain, Common } from '@ethereumjs/common'
-import { hexToBytes } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Goerli })
-const vm = await VM.create({ common, setHardfork: true })
-
-const serialized = hexToBytes('0xf901f7a06bfee7294bf4457...')
-const block = Block.fromRLPSerializedBlock(serialized, { setHardfork: true })
-const result = await vm.runBlock(block)
+// ./examples/runGoerliBlock.ts
 ```
 
 ### Hardfork Support
