@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705712938655,
+  "lastUpdate": 1705716356313,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "de706125473e2188de382d95861fa1daac67713d",
-          "message": "Add test for ecrecover precompile (#3184)\n\n* Add test for ecrecover precompile\r\n\r\n* Update test messages\r\n\r\n* evm: fix ecrecover test\r\n\r\n* evm: add test comment ecrecover test\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-12-09T10:06:06-07:00",
-          "tree_id": "5daaaaae1c0707a135102e76a1539a1c8a8efed3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/de706125473e2188de382d95861fa1daac67713d"
-        },
-        "date": 1702141736874,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41061,
-            "range": "±2.10%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38798,
-            "range": "±2.74%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39038,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38448,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34673,
-            "range": "±5.71%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±7.16%",
             "unit": "ops/sec",
             "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4b358b431f0fea0721bb18bd37155d86c53011d4",
+          "message": "tx: add `addSignature` method (#3238)\n\n* tx: add `addSignature` method\r\n\r\n* Fix typos and remove protected\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-01-20T02:54:33+01:00",
+          "tree_id": "ceefc948264661515621b0f141934a4faad104c1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4b358b431f0fea0721bb18bd37155d86c53011d4"
+        },
+        "date": 1705716354935,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41677,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39020,
+            "range": "±2.91%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39583,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37821,
+            "range": "±3.99%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35454,
+            "range": "±5.49%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
