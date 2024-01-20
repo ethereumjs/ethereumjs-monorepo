@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705716356313,
+  "lastUpdate": 1705778764945,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "contact@rockwaterweb.com",
-            "name": "Gabriel Rocheleau",
-            "username": "gabrocheleau"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "96985844ed30859667afc76f37ba1c2c658b1529",
-          "message": "util: check that hex to byte conversion is valid in hexToBytes (#3185)\n\n* util: check that hex to byte conversion is valid in hexToBytes\r\n\r\n* util: add test case for invalid hex\r\n\r\n* util: add test case for invalid bytes (fails)\r\n\r\n* util: add regex\r\n\r\n* util: clarify error\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-12-12T10:37:38-05:00",
-          "tree_id": "2d91d622cc545121932b0fa1823da941a0e126ee",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/96985844ed30859667afc76f37ba1c2c658b1529"
-        },
-        "date": 1702395709630,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41077,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38678,
-            "range": "±2.81%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39292,
-            "range": "±2.10%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38912,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34994,
-            "range": "±5.17%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.49%",
             "unit": "ops/sec",
             "extra": "81 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1605cf63a1dd6793d8081196ca43ccfd1f24c22",
+          "message": "Update more examples (#3242)\n\n* Update tx examples\n\n* Add rlp examples\n\n* Build tx README examples\n\n* Wrap initKzg in try/catch\n\n* update readme\n\n* Update evm examples\n\n* Update genesis examples\n\n* Update examples file extensions\n\n* address feedback\n\n---------\n\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-01-20T14:23:16-05:00",
+          "tree_id": "e22c15bd1299a76c424a227706deb04320960795",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e1605cf63a1dd6793d8081196ca43ccfd1f24c22"
+        },
+        "date": 1705778763691,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40835,
+            "range": "±2.44%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38126,
+            "range": "±3.70%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39406,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38404,
+            "range": "±2.09%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37770,
+            "range": "±2.25%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
