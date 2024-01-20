@@ -637,6 +637,13 @@ export class EVM implements EVMInterface {
    * if an exception happens during the message execution.
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
+    let timer: Timer | undefined
+    if (
+      (opts.depth === 0 || opts.message === undefined) &&
+      this._optsCached.profiler?.enabled === true
+    ) {
+      timer = this.performanceLogger.startTimer('Initialization')
+    }
     let message = opts.message
     let callerAccount
     if (!message) {
@@ -763,6 +770,10 @@ export class EVM implements EVMInterface {
       }
     }
     await this._emit('afterMessage', result)
+
+    if (message.depth === 0 && this._optsCached.profiler?.enabled === true) {
+      this.performanceLogger.stopTimer(timer!, 0)
+    }
 
     return result
   }

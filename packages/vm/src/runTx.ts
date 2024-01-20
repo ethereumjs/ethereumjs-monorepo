@@ -441,11 +441,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
+  let executionTimerPrecise: number
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(balanceNonceLabel)
-    // eslint-disable-next-line no-console
-    console.time(executionLabel)
+    executionTimerPrecise = performance.now()
   }
 
   /*
@@ -476,7 +476,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
-    console.timeEnd(executionLabel)
+    console.log(`${executionLabel}: ${performance.now() - executionTimerPrecise!}ms`)
     // eslint-disable-next-line no-console
     console.log('[ For execution details see table output ]')
     // eslint-disable-next-line no-console

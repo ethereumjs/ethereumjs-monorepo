@@ -234,8 +234,10 @@ export class Interpreter {
     let doJumpAnalysis = true
 
     let timer: Timer | undefined
+    let overheadTimer: Timer | undefined
     if (this.profilerOpts?.enabled === true && this.performanceLogger.hasTimer()) {
       timer = this.performanceLogger.pauseTimer()
+      overheadTimer = this.performanceLogger.startTimer('Overhead')
     }
 
     // Iterate through the given ops until something breaks or we hit STOP
@@ -260,7 +262,13 @@ export class Interpreter {
       this._runState.opCode = opCode!
 
       try {
+        if (overheadTimer !== undefined) {
+          this.performanceLogger.pauseTimer()
+        }
         await this.runStep(opCodeObj!)
+        if (overheadTimer !== undefined) {
+          this.performanceLogger.unpauseTimer(overheadTimer)
+        }
       } catch (e: any) {
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'EvmError')) {
@@ -275,6 +283,7 @@ export class Interpreter {
     }
 
     if (timer !== undefined) {
+      this.performanceLogger.stopTimer(overheadTimer!, 0)
       this.performanceLogger.unpauseTimer(timer)
     }
 
