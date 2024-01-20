@@ -4,7 +4,7 @@ import { equalsBytes, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
-import { Config, SyncMode } from '../../src/config'
+import { Config } from '../../src/config'
 import { RlpxServer } from '../../src/net/server'
 import { Event } from '../../src/types'
 import genesisJSON from '../testdata/geth-genesis/post-merge.json'
@@ -370,7 +370,7 @@ describe('[FullEthereumService]', async () => {
     const chain = await Chain.create({ config })
     let service = new FullEthereumService({ config, chain })
     assert.ok(service.beaconSync, 'beacon sync should be available')
-    const configDisableBeaconSync = new Config({ common, syncmode: SyncMode.None })
+    const configDisableBeaconSync = new Config({ common, syncmode: 'none' })
     service = new FullEthereumService({ config: configDisableBeaconSync, chain })
     assert.notOk(service.beaconSync, 'beacon sync should not be available')
   })
