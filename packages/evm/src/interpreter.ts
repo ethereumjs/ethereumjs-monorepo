@@ -270,6 +270,9 @@ export class Interpreter {
           this.performanceLogger.unpauseTimer(overheadTimer)
         }
       } catch (e: any) {
+        if (overheadTimer !== undefined) {
+          this.performanceLogger.unpauseTimer(overheadTimer)
+        }
         // re-throw on non-VM errors
         if (!('errorType' in e && e.errorType === 'EvmError')) {
           throw e
