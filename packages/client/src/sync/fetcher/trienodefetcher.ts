@@ -92,6 +92,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   nodeCount: number
 
+  keccakFunction: Function
+
   /**
    * Create new trie node fetcher
    */
@@ -109,6 +111,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     this.nodeCount = 0
     this.debug = createDebugLogger('client:TrieNodeFetcher')
+
+    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
@@ -163,7 +167,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       const receivedNodes: Uint8Array[] = []
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
-        const receivedHash = bytesToHex(keccak256(receivedNode) as Uint8Array)
+        const receivedHash = bytesToHex(this.keccakFunction(receivedNode) as Uint8Array)
         if (this.requestedNodeToPath.has(receivedHash)) {
           receivedNodes.push(rangeResult.nodes[i])
         }
@@ -206,7 +210,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       // process received node data and request unknown child nodes
       for (const nodeData of result[0]) {
         const node = decodeNode(nodeData as unknown as Uint8Array)
-        const nodeHash = bytesToHex(keccak256(nodeData as unknown as Uint8Array))
+        const nodeHash = bytesToHex(this.keccakFunction(nodeData as unknown as Uint8Array))
         const pathString = this.requestedNodeToPath.get(nodeHash) as string
         const [accountPath, storagePath] = pathString!.split('/')
         const nodePath = storagePath ?? accountPath
@@ -340,7 +344,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
             // add storage data for account if it has fetched nodes
             // TODO figure out what the key should be for mapping accounts to storage tries
-            const storageTrie = new Trie({ useKeyHashing: true })
+            const storageTrie = new Trie({ useKeyHashing: true, common: this.config.chainCommon })
             const storageTrieOps: BatchDBOp[] = []
             if (pathToStorageNode !== undefined && pathToStorageNode.size > 0) {
               for (const [path, data] of pathToStorageNode) {
