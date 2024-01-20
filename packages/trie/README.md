@@ -68,10 +68,10 @@ test()
 
 When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
-#### `.createFromProof()`
+#### `.createTrieFromProof()`
 
 ```ts
-// ./examples/staticCreateFromProof.ts
+// ./examples/staticCreateTrieFromProof.ts
 
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8 } from '@ethereumjs/util'
@@ -86,11 +86,11 @@ async function main() {
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
   const proof = await someOtherTrie.createProof(k1)
-  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
+  const trie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
   const otherProof = await someOtherTrie.createProof(k2)
 
   // To add more proofs to the trie, use `updateTrieFromProof`
-  await trie.updateFromProof(otherProof)
+  await trie.updateTrieFromProof(otherProof)
 
   const value = await trie.get(k1)
   console.log(bytesToUtf8(value!)) // valueOne
@@ -101,7 +101,7 @@ async function main() {
 main()
 ```
 
-When the `Trie.createFromProof` constructor is used, it instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+When the `Trie.createTrieFromProof` constructor is used, it instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ### Walking a Trie
 
@@ -143,7 +143,7 @@ If you want to use an alternative database, you can integrate your own by writin
 As an example, to leverage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
 ```ts
-// ./examples/customLevelDB.ts#L128-L131
+// ./examples/customLevelDB.ts#L127-L130
 
 async function main() {
   const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
