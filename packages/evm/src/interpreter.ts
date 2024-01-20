@@ -13,6 +13,7 @@ import debugDefault from 'debug'
 
 import { EOF } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
+import { type EVMPerformanceLogger, type Timer } from './logger.js'
 import { Memory } from './memory.js'
 import { Message } from './message.js'
 import { trap } from './opcodes/index.js'
@@ -20,7 +21,6 @@ import { Stack } from './stack.js'
 
 import type { EVM } from './evm.js'
 import type { Journal } from './journal.js'
-import type { EVMPerformanceLogger, Timer } from './logger.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
@@ -232,6 +232,12 @@ export class Interpreter {
     let err
     let cachedOpcodes: OpcodeMapEntry[]
     let doJumpAnalysis = true
+
+    let timer: Timer | undefined
+    if (this.profilerOpts?.enabled === true && this.performanceLogger.hasTimer()) {
+      timer = this.performanceLogger.pauseTimer()
+    }
+
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
       let opCode: number
@@ -266,6 +272,10 @@ export class Interpreter {
         }
         break
       }
+    }
+
+    if (timer !== undefined) {
+      this.performanceLogger.unpauseTimer(timer)
     }
 
     return {
@@ -923,14 +933,7 @@ export class Interpreter {
       return BIGINT_0
     }
 
-    let timer: Timer
-    if (this.profilerOpts?.enabled === true) {
-      timer = this.performanceLogger.pauseTimer()
-    }
     const results = await this._evm.runCall({ message: msg })
-    if (this.profilerOpts?.enabled === true) {
-      this.performanceLogger.unpauseTimer(timer!)
-    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
@@ -1029,14 +1032,7 @@ export class Interpreter {
       message.createdAddresses = createdAddresses
     }
 
-    let timer: Timer
-    if (this.profilerOpts?.enabled === true) {
-      timer = this.performanceLogger.pauseTimer()
-    }
     const results = await this._evm.runCall({ message })
-    if (this.profilerOpts?.enabled === true) {
-      this.performanceLogger.unpauseTimer(timer!)
-    }
 
     if (results.execResult.logs) {
       this._result.logs = this._result.logs.concat(results.execResult.logs)
