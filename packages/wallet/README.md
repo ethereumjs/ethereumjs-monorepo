@@ -63,7 +63,10 @@ Node.js / ES5:
 ```js
 // ./examples/thirdparty.js
 
-const { hdkey } = require('@ethereumjs/wallet')
+const { thirdparty } = require('@ethereumjs/wallet')
+
+const wallet = thirdparty.fromQuorumWallet('mySecretQuorumWalletPassphrase', 'myPublicQuorumUserId')
+console.log(wallet.getAddressString()) // An Ethereum address
 ```
 
 ESM / TypeScript:
@@ -72,6 +75,9 @@ ESM / TypeScript:
 // ./examples/thirdparty.ts
 
 import { thirdparty } from '@ethereumjs/wallet'
+
+const wallet = thirdparty.fromQuorumWallet('mySecretQuorumWalletPassphrase', 'myPublicQuorumUserId')
+console.log(wallet.getAddressString()) // An Ethereum address
 ```
 
 Please go to [./docs/README.md](./docs/README.md) for more info.
@@ -85,7 +91,12 @@ Node.js / ES5:
 ```js
 // ./examples/hdKey.js
 
-const { thirdparty } = require('@ethereumjs/wallet')
+const { hdkey } = require('@ethereumjs/wallet')
+
+const wallet = hdkey.EthereumHDKey.fromMnemonic(
+  'clown galaxy face oxygen birth round modify fame correct stumble kind excess'
+)
+console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum address
 ```
 
 ESM / TypeScript:
@@ -93,12 +104,12 @@ ESM / TypeScript:
 ```ts
 // ./examples/hdKey.ts
 
-import { Wallet } from '@ethereumjs/wallet'
-import { thirdparty } from '@ethereumjs/wallet'
 import { hdkey } from '@ethereumjs/wallet'
 
-const wallet = Wallet.generate()
-console.log(wallet.getAddressString()) // should output an Ethereum address
+const wallet = hdkey.EthereumHDKey.fromMnemonic(
+  'clown galaxy face oxygen birth round modify fame correct stumble kind excess'
+)
+console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum address
 ```
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
