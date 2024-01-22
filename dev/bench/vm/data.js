@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705778764945,
+  "lastUpdate": 1705893272187,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "98fc3abbc87aaa347cf6447716f03966485c12eb",
-          "message": "Client: Async VM Initialization (#3187)\n\n* Avoid VM double initialization, prepare for async setup for VM & friends\r\n\r\n* Move to async VM setup, fix tests\r\n\r\n* Remove unnecessary vm property in tx pool\r\n\r\n* Test fixes\r\n\r\n* Fix getPayloadV3.spec.ts test\r\n\r\n* Fix client.spec.ts test\r\n\r\n* Small miner test optimization\r\n\r\n* Fix RPC net_version test\r\n\r\n* Small lint fix\r\n\r\n* client: fix getProof test\r\n\r\n* client: lint\r\n\r\n* Fix miner test\r\n\r\n* adjust test timeouts\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2023-12-12T20:34:28+01:00",
-          "tree_id": "1afebee4250d85c83f472f8b434d003e4f2724c1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/98fc3abbc87aaa347cf6447716f03966485c12eb"
-        },
-        "date": 1702410444850,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40837,
-            "range": "±3.03%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39670,
-            "range": "±2.00%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39442,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38678,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35260,
-            "range": "±5.21%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.25%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dd1da00e54da3d60c74b6dfb574070197e37330e",
+          "message": "monorepo: update vite to address vuln (#3249)",
+          "timestamp": "2024-01-21T22:09:17-05:00",
+          "tree_id": "450906bdc8953c94711be39dcd7eec699caf59e1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/dd1da00e54da3d60c74b6dfb574070197e37330e"
+        },
+        "date": 1705893270786,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40150,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39253,
+            "range": "±1.83%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38895,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35899,
+            "range": "±4.87%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37092,
+            "range": "±2.23%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
