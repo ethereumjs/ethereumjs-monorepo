@@ -1,1 +1,1 @@
-const { thirdparty } = require('@ethereumjs/wallet')
+const { hdkey } = require('@ethereumjs/wallet')
