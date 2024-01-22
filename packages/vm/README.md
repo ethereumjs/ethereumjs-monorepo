@@ -147,11 +147,7 @@ For hardfork support see the [Hardfork Support](../evm#hardfork-support) section
 An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
 
 ```ts
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-const vm = await VM.create({ common })
+// ./examples/runTx.ts#L1-L8
 ```
 
 ### Custom genesis state support
@@ -165,15 +161,7 @@ Starting with the v7 release genesis state has been removed from `blockchain` an
 For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
 
 ```ts
-import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common } from '@ethereumjs/common'
-import { getGenesis } from '@ethereumjs/genesis'
-import { VM } from '@ethereumjs/vm'
-
-const genesisState = getGenesis(Chain.Mainnet)
-
-const blockchain = await Blockchain.create({ genesisState })
-const vm = await VM.create({ blockchain, genesisState })
+// ./examples/vmWithGenesisState.ts
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -190,11 +178,7 @@ It is possible to individually activate EIP support in the VM by instantiate the
 with the respective EIPs, e.g.:
 
 ```ts
-import { Chain, Common } from '@ethereumjs/common'
-import { VM } from '@ethereumjs/vm'
-
-const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-const vm = await VM.create({ common })
+// ./examples/vmWithEIPs.ts
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
@@ -205,15 +189,13 @@ This library supports an experimental version of the blob transaction type intro
 
 #### Initialization
 
-To run VM/EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the associated `@ethereumjs/common` library:
 
 ```ts
-import { Common, Chain, Hardfork } from '@ethereumjs/common'
-
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+// ./examples/vmWith4844.ts
 ```
 
-EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
+EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
 
 **Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
