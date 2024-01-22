@@ -35,13 +35,23 @@ You can import the `Wallet` class like this
 Node.js / ES6:
 
 ```js
+// ./examples/wallet.js
+
 const { Wallet } = require('@ethereumjs/wallet')
+
+const wallet = Wallet.generate()
+console.log(wallet.getAddressString()) // should output an Ethereum address
 ```
 
 ESM / TypeScript:
 
 ```ts
+// ./examples/wallet.ts
+
 import { Wallet } from '@ethereumjs/wallet'
+
+const wallet = Wallet.generate()
+console.log(wallet.getAddressString()) // should output an Ethereum address
 ```
 
 ## Thirdparty API
@@ -51,12 +61,16 @@ Importing various third party wallets is possible through the `thirdparty` submo
 Node.js / ES5:
 
 ```js
-const { thirdparty } = require('@ethereumjs/wallet')
+// ./examples/thirdparty.js
+
+const { hdkey } = require('@ethereumjs/wallet')
 ```
 
 ESM / TypeScript:
 
 ```ts
+// ./examples/thirdparty.ts
+
 import { thirdparty } from '@ethereumjs/wallet'
 ```
 
@@ -69,13 +83,22 @@ To use BIP32 HD wallets, first include the `hdkey` submodule:
 Node.js / ES5:
 
 ```js
-const { hdkey } = require('@ethereumjs/wallet')
+// ./examples/hdKey.js
+
+const { thirdparty } = require('@ethereumjs/wallet')
 ```
 
 ESM / TypeScript:
 
 ```ts
+// ./examples/hdKey.ts
+
+import { Wallet } from '@ethereumjs/wallet'
+import { thirdparty } from '@ethereumjs/wallet'
 import { hdkey } from '@ethereumjs/wallet'
+
+const wallet = Wallet.generate()
+console.log(wallet.getAddressString()) // should output an Ethereum address
 ```
 
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
