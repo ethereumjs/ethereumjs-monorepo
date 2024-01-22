@@ -40,7 +40,7 @@ const { Wallet } = require('@ethereumjs/wallet')
 
 ESM / TypeScript:
 
-```js
+```ts
 import { Wallet } from '@ethereumjs/wallet'
 ```
 
@@ -56,7 +56,7 @@ const { thirdparty } = require('@ethereumjs/wallet')
 
 ESM / TypeScript:
 
-```js
+```ts
 import { thirdparty } from '@ethereumjs/wallet'
 ```
 
@@ -74,7 +74,7 @@ const { hdkey } = require('@ethereumjs/wallet')
 
 ESM / TypeScript:
 
-```js
+```ts
 import { hdkey } from '@ethereumjs/wallet'
 ```
 
