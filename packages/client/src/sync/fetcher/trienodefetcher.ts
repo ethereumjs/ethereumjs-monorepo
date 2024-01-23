@@ -211,8 +211,8 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       for (const nodeData of result[0]) {
         const node = decodeNode(nodeData as unknown as Uint8Array)
         const nodeHash = bytesToHex(this.keccakFunction(nodeData as unknown as Uint8Array))
-        const pathString = this.requestedNodeToPath.get(nodeHash) as string
-        const [accountPath, storagePath] = pathString!.split('/')
+        const pathString = this.requestedNodeToPath.get(nodeHash) ?? ''
+        const [accountPath, storagePath] = pathString.split('/')
         const nodePath = storagePath ?? accountPath
         const childNodes = []
         let unknownChildNodeCount = 0
