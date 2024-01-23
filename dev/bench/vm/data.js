@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706031275408,
+  "lastUpdate": 1706040539457,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "44e069e41b13eddd8cd09ab62e75f4641eb234d0",
-          "message": "Trie/StateManager: create partial state tries / state managers from proofs (#3186)\n\n* trie: add methods to create and update tries from proofs\r\n\r\n* stateManager: add fromProof support\r\n\r\n* Add readme updates for new fromProof constructors\r\n\r\n* Apply suggested changes\r\n\r\n* Add missing line\r\n\r\n* statemanager/trie: further update readme examples\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-12-14T16:46:52-05:00",
-          "tree_id": "dc2121dec8fcda93f019c44d58b8f52784013a9b",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/44e069e41b13eddd8cd09ab62e75f4641eb234d0"
-        },
-        "date": 1702590584214,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40505,
-            "range": "±3.17%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39832,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39477,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38409,
-            "range": "±2.65%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34265,
-            "range": "±6.83%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 38053,
             "range": "±2.21%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "05d253011b120e4ce395c7249f192faf47b4afdf",
+          "message": "client: Check for undefined pathStrings\n\n* client: check for undefined filterStringCSV\n\n* client:  trieNodeFetcher:  use empty string if pathString undefined\n\n* client: add test case for added line\n\n* client: add test case for added line\n\n* Merge branch 'master' into checkFilter-bug",
+          "timestamp": "2024-01-23T15:06:08-05:00",
+          "tree_id": "c79a07c1ad216f1e234edf3d4323e3ec22bf7400",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/05d253011b120e4ce395c7249f192faf47b4afdf"
+        },
+        "date": 1706040538520,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39884,
+            "range": "±3.47%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38944,
+            "range": "±2.10%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38600,
+            "range": "±1.94%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36221,
+            "range": "±4.33%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37031,
+            "range": "±2.36%",
             "unit": "ops/sec",
             "extra": "86 samples"
           }
