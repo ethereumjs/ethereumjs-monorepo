@@ -171,6 +171,21 @@ describe('[TrieNodeFetcher]', async () => {
       'Should generate requests for all child nodes'
     )
   })
+  it('should not throw if undefined', async () => {
+    const config = new Config()
+    const pool = new PeerPool() as any
+    const fetcher = new TrieNodeFetcher({
+      config,
+      pool,
+      root: new Uint8Array(),
+    })
+    try {
+      await fetcher.store(undefined as any)
+      assert.ok('should run without error')
+    } catch (err: any) {
+      assert.fail(err.message)
+    }
+  })
 
   it('should find a fetchable peer', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
