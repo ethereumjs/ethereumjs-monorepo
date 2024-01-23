@@ -22,7 +22,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci --omit=peer
+      - run: npm ci
 
       - name: Test Block
         run: npm run test:node
