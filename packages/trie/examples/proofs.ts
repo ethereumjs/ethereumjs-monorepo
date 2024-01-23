@@ -22,7 +22,7 @@ async function main() {
   value = await trie.verifyProof(trie.root(), utf8ToBytes('test3'), proof)
   console.log(value ? bytesToUtf8(value) : 'null') // null
 
-  // invalide proof
+  // invalid proof
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
   await trie.put(utf8ToBytes('test2'), utf8ToBytes('two'))
   proof = await trie.createProof(utf8ToBytes('test2'))

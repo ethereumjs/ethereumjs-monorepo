@@ -30,11 +30,18 @@ With the v2 release (Summer 2023) the EVM/VM packages have been further decouple
 The following is the simplest example for an EVM instantiation:
 
 ```ts
+// ./examples/simple.ts
+
 import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
 const evm = new EVM()
-evm.runCode({ code: hexToBytes('0x01') })
+const main = async () => {
+  const res = await evm.runCode({ code: hexToBytes('0x6001') }) // PUSH1 01 -- simple bytecode to push 1 onto the stack
+  console.log(res.executionGasUsed) // 3n
+}
+
+main()
 ```
 
 ### Blockchain, State and Events
@@ -42,6 +49,8 @@ evm.runCode({ code: hexToBytes('0x01') })
 If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
 
 ```ts
+// ./examples/withBlockchain.ts
+
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
@@ -186,15 +195,17 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ### EIP Support
 
-It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the
-outer VM with the respective EIPs, e.g.:
+If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
 
 ```ts
+// ./examples/eips.ts
+
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
+const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
 const evm = new EVM({ common })
+console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
 ```
 
 Currently supported EIPs:
@@ -240,6 +251,8 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
 
 ```ts
+// ./examples/4844.ts
+
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })

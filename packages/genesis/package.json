@@ -45,6 +45,8 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "../../config/cli/coverage.sh",
+    "examples": "tsx ../../scripts/examples-runner.ts -- genesis",
+    "examples:build": "npx embedme README.md",
     "docs:build": "typedoc --options typedoc.cjs",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
