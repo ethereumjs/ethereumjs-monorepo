@@ -50,7 +50,7 @@ const ALLOWED_DRIFT = 60_000
  * @returns
  */
 function checkFilter(method: string, filterStringCSV: string) {
-  if (filterStringCSV === '') {
+  if (!filterStringCSV || filterStringCSV === '') {
     return false
   }
   if (filterStringCSV === 'all') {
