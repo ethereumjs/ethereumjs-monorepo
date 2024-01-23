@@ -9,7 +9,7 @@ const main = async () => {
     const state = new RPCStateManager({ provider, blockTag })
     const evm = new EVM({ blockchain, stateManager: state })
   } catch (e) {
-    console.log(e)
+    console.log(e.message) // fetch would fail because provider url is not real. please replace provider with a valid rpc url string.
   }
 }
 main()

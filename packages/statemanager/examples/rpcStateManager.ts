@@ -9,7 +9,7 @@ const main = async () => {
     const account = await stateManager.getAccount(vitalikDotEth)
     console.log('Vitalik has a current ETH balance of ', account?.balance)
   } catch (e) {
-    console.log(e)
+    console.log(e.message) // fetch fails because provider url is not real. please replace provider with a valid rpc url string.
   }
 }
 main()

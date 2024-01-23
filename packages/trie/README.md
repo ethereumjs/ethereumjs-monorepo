@@ -35,9 +35,8 @@ It is best to select the variant that is most appropriate for your unique use ca
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
 
-const trie = new Trie({ db: new MapDB() })
-
 async function test() {
+  const trie = await Trie.create({ db: new MapDB() })
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
   const value = await trie.get(utf8ToBytes('test'))
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
@@ -51,13 +50,13 @@ test()
 #### `.create()`
 
 ```ts
-// ./examples/staticCreate.ts
+// ./examples/basicUsage.ts
 
 import { Trie } from '@ethereumjs/trie'
-import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
 
 async function test() {
-  const trie = await Trie.create()
+  const trie = await Trie.create({ db: new MapDB() })
   await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
   const value = await trie.get(utf8ToBytes('test'))
   console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
@@ -143,10 +142,11 @@ If you want to use an alternative database, you can integrate your own by writin
 As an example, to leverage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
 ```ts
-// ./examples/customLevelDB.ts#L127-L130
+// ./examples/customLevelDB.ts#L127-L131
 
 async function main() {
   const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
+  console.log(await trie.database().db) // LevelDB { ...
 }
 main()
 ```

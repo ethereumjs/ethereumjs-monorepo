@@ -126,5 +126,6 @@ export class LevelDB<
 
 async function main() {
   const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
+  console.log(await trie.database().db) // LevelDB { ...
 }
 main()
