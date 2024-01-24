@@ -175,7 +175,7 @@ describe(method, () => {
     const res = await rpc.request(method, [blockDataWithValidTransaction])
 
     assert.equal(res.result.status, 'INVALID')
-    assert.isTrue(res.result.validationError.includes('Error verifying block while running:'))
+    assert.isTrue(res.result.validationError.includes('transaction at index 0 is unsigned'))
   })
 
   it('call with valid data & valid transaction', async () => {

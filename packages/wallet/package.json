@@ -33,9 +33,10 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "npm run build && nyc --reporter=lcov npm run test:unit",
+    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
     "docs:build": "npx typedoc --options typedoc.cjs",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
+    "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",

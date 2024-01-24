@@ -2,6 +2,7 @@ import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'
 import { EventEmitter } from 'events'
+import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
@@ -9,12 +10,10 @@ import { decode, encode } from './message.js'
 
 import type { DPTServerOptions, PeerInfo } from '../types.js'
 import type { DPT } from './dpt.js'
+import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
-import type LRUCache from 'lru-cache'
 const { debug: createDebugLogger } = debugDefault
-
-const LRU = require('lru-cache')
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
@@ -32,6 +31,8 @@ export class Server {
   protected _socket: DgramSocket | null
   private _debug: Debugger
 
+  protected _common?: Common
+
   private DEBUG: boolean
 
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
@@ -42,7 +43,7 @@ export class Server {
     this._timeout = options.timeout ?? 4000 // 4 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
+    this._requestsCache = new LRUCache({ max: 1000, ttl: 1000 }) // 1 sec * 1000
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
@@ -59,6 +60,8 @@ export class Server {
         }
       })
     }
+
+    this._common = options.common
 
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
@@ -142,7 +145,7 @@ export class Server {
       )
     }
 
-    const msg = encode(typename, data, this._privateKey)
+    const msg = encode(typename, data, this._privateKey, this._common)
 
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
@@ -150,7 +153,7 @@ export class Server {
   }
 
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
-    const info = decode(msg) // Dgram serializes everything to `Uint8Array`
+    const info = decode(msg, this._common) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
     if (this.DEBUG) {
       this.debug(

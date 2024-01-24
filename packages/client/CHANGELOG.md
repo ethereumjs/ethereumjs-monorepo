@@ -16,7 +16,7 @@ This client release now fully supports running the new [Holesky](https://holesky
 
 The following command starts an EthereumJS client on Holesky:
 
-```typescript
+```ts
 ethereumjs --network=holesky --rpc --rpcEngine
 ```
 

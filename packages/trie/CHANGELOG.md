@@ -50,7 +50,7 @@ Starting with this release there is a new API for walking and iterating a trie b
 
 The new walk functionality can be used like the following:
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 
 const trie = await Trie.create()
@@ -105,14 +105,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -131,7 +131,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 Trie.create() / new Trie() // root constructor option
 Trie.root(value?: Uint8Array | null): Uint8Array
 Trie.checkRoot(root: Uint8Array): Promise<boolean>
@@ -321,7 +321,7 @@ The trie library now comes with a new constructor option `useRootPersistence` (n
 
 To activate root hash persistance you can set the `useRootPersistence` option on instantiation:
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -423,7 +423,7 @@ The base trie implementation (`Trie`) as well as all subclass implementations (`
 
 The new `DB` interface can be used like this for LevelDB:
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -526,7 +526,7 @@ This release introduces a major API upgrade from callbacks to Promises.
 
 Example using async/await syntax:
 
-```typescript
+```ts
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 const trie = new Trie()
 async function test() {

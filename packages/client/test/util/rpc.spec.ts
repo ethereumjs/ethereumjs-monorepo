@@ -59,6 +59,31 @@ describe('[Util/RPC]', () => {
       }
     }
   })
+  it('should not throw if rpcDebugVerbose string is undefined', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
+    const manager = new RPCManager(client, config)
+    const { logger } = config
+    const methodConfig = Object.values(MethodConfig)[0]
+    const { server } = createRPCServer(manager, {
+      methodConfig,
+      rpcDebug: 'eth',
+      logger,
+      rpcDebugVerbose: undefined as any,
+    })
+    const httpServer = createRPCServerListener({
+      server,
+      withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+    })
+    const wsServer = createWsRPCServerListener({
+      server,
+      withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+    })
+    assert.ok(
+      httpServer !== undefined && wsServer !== undefined,
+      'should return http and ws servers'
+    )
+  })
 })
 
 describe('[Util/RPC/Engine eth methods]', async () => {
