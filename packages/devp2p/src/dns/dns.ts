@@ -1,17 +1,11 @@
 import debugDefault from 'debug'
+import dns from 'dns'
 
 import { ENR } from './enr.js'
 
 import type { DNSOptions, PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
-
-let dns: any
-try {
-  dns = require('dns')
-} catch (e: any) {
-  dns = require('../browser/dns.js')
-}
 
 const debug = createDebugLogger('devp2p:dns:dns')
 

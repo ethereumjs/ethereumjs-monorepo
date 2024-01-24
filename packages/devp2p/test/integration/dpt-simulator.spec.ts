@@ -133,17 +133,11 @@ describe('DPT simulator tests', () => {
   it('DPT: simulate acquiring peers via DNS', async () => {
     const dpts = util.getTestDPTsWithDns(1, 18519)
 
-    const mockDns = {
-      resolve: () => {
-        return [[testdata.dns.enr]]
-      },
-    }
     dpts[0]._addPeerBatch = () => {
       dpts[0].destroy()
       assert.ok(true, 'got peer from DNS')
     }
-    // @ts-ignore
-    dpts[0]._dns.__setNativeDNSModuleResolve(mockDns)
+
     await dpts[0].refresh()
   })
 })
