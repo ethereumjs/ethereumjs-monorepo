@@ -36,6 +36,7 @@
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
     "docs:build": "npx typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
