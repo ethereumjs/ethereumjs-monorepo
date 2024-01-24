@@ -23,9 +23,9 @@ and make heavy use of the Node.js network stack.
 You can react on events from the network like this:
 
 ```ts
-dpt.events.on('peer:added', (peer) => {
-  // Do something...
-})
+// ./examples/peer-communication.ts#L65-L65
+
+dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 ```
 
 ## Examples
@@ -86,7 +86,12 @@ main()
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 
 ```ts
-dpt.bootstrap(bootnode).catch((err) => console.error('Something went wrong!'))
+// ./examples/peer-communication.ts#L321-L324
+
+for (const bootnode of BOOTNODES) {
+  dpt.bootstrap(bootnode).catch((err) => {
+    console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack ?? err}`))
+  })
 ```
 
 ### API
@@ -154,21 +159,30 @@ Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 ### Usage
 
 Instantiate an [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common)
-instance with the network you want to connect to:
+instance with the network you want to connect to and then create an `RLPx` object:
 
 ```ts
-const common = new Common({ chain: Chain.Mainnet })
-```
+// ./examples/rlpx.ts
 
-Create your `RLPx` object, e.g.:
+import { Chain, Common } from '@ethereumjs/common'
+import { RLPx, ETH } from '@ethereumjs/devp2p'
+import { hexToBytes } from '@ethereumjs/util'
 
-```ts
-const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
-  dpt,
-  maxPeers: 25,
-  capabilities: [devp2p.ETH.eth65, devp2p.ETH.eth64],
-  common,
-})
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet })
+  const PRIVATE_KEY = hexToBytes(
+    '0xed6df2d4b7e82d105538e4a1279925a16a84e772243e80a561e1b201f2e78220'
+  )
+  const rlpx = new RLPx(PRIVATE_KEY, {
+    maxPeers: 25,
+    capabilities: [ETH.eth65, ETH.eth64],
+    common,
+  })
+  console.log(`RLPx is active - ${rlpx._isAlive()}`)
+  await rlpx.destroy()
+}
+
+main()
 ```
 
 ### API
@@ -227,20 +241,29 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```ts
-eth.events.once('status', () => {
-  // Send an initial message
-  eth.sendMessage()
+// ./examples/peer-communication.ts#L96-L106
+
+eth.sendStatus({
+  td: intToBytes(17179869184), // total difficulty in genesis block
+  bestHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
+  genesisHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
 })
+
+// check CHECK_BLOCK
+let forkDrop: NodeJS.Timeout
+let forkVerified = false
+eth.events.once('status', () => {
+  eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
 ```
 
 Wait for follow-up messages to arrive, send your responses.
 
 ```ts
-eth.events.on('message', async (code, payload) => {
-  if (code === devp2p.ETH.MESSAGE_CODES.NEW_BLOCK_HASHES) {
-    // Do something with your new block hashes :-)
-  }
-})
+// ./examples/peer-communication.ts#L116-L118
+
+eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+  if (code in ETH.MESSAGE_CODES) {
+    requests.msgTypes[code] = code + 1
 ```
 
 See the `peer-communication.ts` example for a more detailed use case.
@@ -296,20 +319,35 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```ts
-les.events.once('status', () => {
-  // Send an initial message
-  les.sendMessage()
+// ./examples/peer-communication-les.ts#L80-L100
+
+les.sendStatus({
+  headTd: intToBytes(GENESIS_TD),
+  headHash: GENESIS_HASH,
+  headNum: Uint8Array.from([]),
+  genesisHash: GENESIS_HASH,
+  announceType: intToBytes(0),
+  recentTxLookup: intToBytes(1),
+  forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
 })
+
+les.events.once('status', (status: LES.Status) => {
+  const msg = [
+    Uint8Array.from([]),
+    [
+      bytesToInt(status['headNum']),
+      Uint8Array.from([1]),
+      Uint8Array.from([]),
+      Uint8Array.from([1]),
+    ],
+  ]
+  les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
 ```
 
 Wait for follow-up messages to arrive, send your responses.
 
 ```ts
-les.events.on('message', async (code, payload) => {
-  if (code === devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS) {
-    // Do something with your new block headers :-)
-  }
-})
+// ./examples/peer-communication-les.ts#L103-105
 ```
 
 See the `peer-communication-les.ts` example for a more detailed use case.
