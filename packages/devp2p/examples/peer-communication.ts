@@ -11,8 +11,8 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-
 import { LRUCache } from 'lru-cache'
+
 import ms from 'ms'
 
 import * as devp2p from '../dist/cjs/index.js'
