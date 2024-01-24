@@ -48,6 +48,13 @@ const main = async () => {
   await stateManager.putAccount(address, account)
   await stateManager.commit()
   await stateManager.flush()
+
+  // Account at address 0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b has balance 1000
+  console.log(
+    `Account at address ${address.toString()} has balance ${
+      (await stateManager.getAccount(address))?.balance
+    }`
+  )
 }
 main()
 ```
@@ -69,7 +76,7 @@ The `DefaultStateManager` has a static constructor `fromProof` that accepts one 
 ```ts
 // ./examples/fromProofInstantiation.ts
 
-import { Account, Address, bytesToHex } from '@ethereumjs/util'
+import { Address } from '@ethereumjs/util'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { hexToBytes } from '@ethereumjs/util'
 
@@ -84,31 +91,46 @@ const main = async () => {
   const storageKey2 = hexToBytes(
     '0x0000000000000000000000000000000000000000000000000000000000000002'
   )
+  const storageValue1 = hexToBytes('0x01')
+  const storageValue2 = hexToBytes('0x02')
 
   await stateManager.putContractCode(contractAddress, byteCode)
-  await stateManager.putContractStorage(contractAddress, storageKey1, hexToBytes('0x01'))
-  await stateManager.putContractStorage(contractAddress, storageKey2, hexToBytes('0x02'))
+  await stateManager.putContractStorage(contractAddress, storageKey1, storageValue1)
+  await stateManager.putContractStorage(contractAddress, storageKey2, storageValue2)
 
   const proof = await stateManager.getProof(contractAddress)
   const proofWithStorage = await stateManager.getProof(contractAddress, [storageKey1, storageKey2])
-
   const partialStateManager = await DefaultStateManager.fromProof(proof)
+
   // To add more proof data, use `addProofData`
   await partialStateManager.addProofData(proofWithStorage)
+  console.log(await partialStateManager.getContractCode(contractAddress)) // contract bytecode is not included in proof
+  console.log(
+    await partialStateManager.getContractStorage(contractAddress, storageKey1),
+    storageValue1
+  ) // should match
+  console.log(
+    await partialStateManager.getContractStorage(contractAddress, storageKey2),
+    storageValue2
+  ) // should match
+
   const accountFromNewSM = await partialStateManager.getAccount(contractAddress)
   const accountFromOldSM = await stateManager.getAccount(contractAddress)
   console.log(accountFromNewSM, accountFromOldSM) // should match
 
   const slot1FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
-  const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey1)
-  console.log(slot1FromNewSM, slot2FromNewSM) // should also match
+  const slot2FromNewSM = await stateManager.getContractStorage(contractAddress, storageKey2)
+  console.log(slot1FromNewSM, storageValue1) // should match
+  console.log(slot2FromNewSM, storageValue2) // should match
 }
 main()
 ```
 
 ### `RPCStateManager`
 
-First, a simple example of usage:
+The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
+
+A simple example of usage:
 
 ```ts
 // ./examples/rpcStateManager.ts
@@ -117,16 +139,18 @@ import { Address } from '@ethereumjs/util'
 import { RPCStateManager } from '@ethereumjs/statemanager'
 
 const main = async () => {
-  const provider = 'https://path.to.my.provider.com'
-  const stateManager = new RPCStateManager({ provider, blockTag: 500000n })
-  const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
-  const account = await stateManager.getAccount(vitalikDotEth)
-  console.log('Vitalik has a current ETH balance of ', account?.balance)
+  try {
+    const provider = 'https://path.to.my.provider.com'
+    const stateManager = new RPCStateManager({ provider, blockTag: 500000n })
+    const vitalikDotEth = Address.fromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
+    const account = await stateManager.getAccount(vitalikDotEth)
+    console.log('Vitalik has a current ETH balance of ', account?.balance)
+  } catch (e) {
+    console.log(e.message) // fetch fails because provider url is not real. please replace provider with a valid rpc url string.
+  }
 }
 main()
 ```
-
-The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
 **Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with a JSON-RPC provider connecting to a third-party API service like Infura!
 
@@ -143,11 +167,15 @@ import { RPCStateManager, RPCBlockChain } from '@ethereumjs/statemanager'
 import { EVM } from '@ethereumjs/evm'
 
 const main = async () => {
-  const provider = 'https://path.to.my.provider.com'
-  const blockchain = new RPCBlockChain(provider)
-  const blockTag = 1n
-  const state = new RPCStateManager({ provider, blockTag })
-  const evm = new EVM({ blockchain, stateManager: state })
+  try {
+    const provider = 'https://path.to.my.provider.com'
+    const blockchain = new RPCBlockChain(provider)
+    const blockTag = 1n
+    const state = new RPCStateManager({ provider, blockTag })
+    const evm = new EVM({ blockchain, stateManager: state }) // note that evm is ready to run BLOCKHASH opcodes (over RPC)
+  } catch (e) {
+    console.log(e.message) // fetch would fail because provider url is not real. please replace provider with a valid rpc url string.
+  }
 }
 main()
 ```

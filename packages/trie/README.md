@@ -169,6 +169,8 @@ async function main() {
   const trie = await Trie.create({
     useRootPersistence: true,
   })
+
+  // this logs the empty root value that has been persisted to the trie db
   console.log(bytesToHex(trie.root())) // 0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
 }
 main()
@@ -188,9 +190,9 @@ The following code demonstrates how to construct and subsequently verify a proof
 // ./examples/proofs.ts#L12-L16
 
 // proof-of-inclusion
-await trie.put(t1, v1)
-let proof = await trie.createProof(t1)
-let value = await trie.verifyProof(trie.root(), t1, proof)
+await trie.put(k1, v1)
+let proof = await trie.createProof(k1)
+let value = await trie.verifyProof(trie.root(), k1, proof)
 console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 ```
 
@@ -202,10 +204,10 @@ The following code demonstrates how to construct and subsequently verify a proof
 // ./examples/proofs.ts#L18-L23
 
 // proof-of-exclusion
-await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
-await trie.put(utf8ToBytes('test2'), utf8ToBytes('two'))
-proof = await trie.createProof(utf8ToBytes('test3'))
-value = await trie.verifyProof(trie.root(), utf8ToBytes('test3'), proof)
+await trie.put(k1, v1)
+await trie.put(k2, v2)
+proof = await trie.createProof(utf8ToBytes('key3'))
+value = await trie.verifyProof(trie.root(), utf8ToBytes('key3'), proof)
 console.log(value ? bytesToUtf8(value) : 'null') // null
 ```
 
@@ -216,13 +218,13 @@ If `verifyProof` detects an invalid proof, it will throw an error. While contriv
 ```ts
 // ./examples/proofs.ts#L25-L34
 
-// invalide proof
-await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
-await trie.put(utf8ToBytes('test2'), utf8ToBytes('two'))
-proof = await trie.createProof(utf8ToBytes('test2'))
-proof[1].reverse()
+// invalid proof
+await trie.put(k1, v1)
+await trie.put(k2, v2)
+proof = await trie.createProof(k2)
+proof[0].reverse()
 try {
-  const value = await trie.verifyProof(trie.root(), utf8ToBytes('test2'), proof) // results in error
+  const value = await trie.verifyProof(trie.root(), k2, proof) // results in error
 } catch (err) {
   console.log(err)
 }
