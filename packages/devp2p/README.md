@@ -347,7 +347,11 @@ les.events.once('status', (status: LES.Status) => {
 Wait for follow-up messages to arrive, send your responses.
 
 ```ts
-// ./examples/peer-communication-les.ts#L103-105
+// ./examples/peer-communication-les.ts#L103-L105
+
+les.events.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
+  switch (code) {
+    case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
 ```
 
 See the `peer-communication-les.ts` example for a more detailed use case.
