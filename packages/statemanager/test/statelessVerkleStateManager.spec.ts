@@ -11,6 +11,7 @@ import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
 import { hexToBytes } from '@ethereumjs/util'
 import { bytesToBigInt } from '@ethereumjs/util'
 import { Account } from '@ethereumjs/util'
+import { randomBytes } from '@ethereumjs/util'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
@@ -46,6 +47,23 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
+  })
+
+  it('putAccount()', async () => {
+    const stateManager = new StatelessVerkleStateManager({ common })
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
+
+    const address = Address.fromString(bytesToHex(randomBytes(20)))
+    const account = new Account()
+    await stateManager.putAccount(address, account)
+
+    let check = await stateManager.getAccount(address)
+    assert.deepEqual(check, account, 'should return correct account')
+
+    await stateManager.deleteAccount(address)
+
+    check = await stateManager.getAccount(address)
+    assert.deepEqual(check, undefined, 'should return undefined for deleted account')
   })
 
   // let key = stateManager.getTreeKeyForVersion(stem)
