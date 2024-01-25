@@ -14,6 +14,7 @@ const main = async () => {
   })
   console.log(`RLPx is active - ${rlpx._isAlive()}`)
   await rlpx.destroy()
+  console.log(dns)
 }
 
 main()

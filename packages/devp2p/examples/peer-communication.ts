@@ -15,8 +15,8 @@ import { LRUCache } from 'lru-cache'
 
 import ms from 'ms'
 
-import * as devp2p from '../dist/cjs/index.js'
-import { ETH, Peer } from '../dist/cjs/index.js'
+import * as devp2p from '@ethereumjs/devp2p'
+import { ETH, Peer } from '@ethereumjs/devp2p'
 
 const PRIVATE_KEY = randomBytes(32)
 
