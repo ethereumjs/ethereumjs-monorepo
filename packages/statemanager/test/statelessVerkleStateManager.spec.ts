@@ -1,18 +1,21 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
-import { Address, bytesToHex } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import {
+  Account,
+  Address,
+  bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { getStem } from '@ethereumjs/verkle'
+import { skip } from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
-import { hexToBytes } from '@ethereumjs/util'
-import { bytesToBigInt } from '@ethereumjs/util'
-import { Account } from '@ethereumjs/util'
-import { randomBytes } from '@ethereumjs/util'
-import { skip } from 'tape'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
@@ -110,7 +113,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it(`copy()`, async () => {
-    let sm = new StatelessVerkleStateManager({
+    const sm = new StatelessVerkleStateManager({
       accountCacheOpts: {
         type: CacheType.ORDERED_MAP,
       },
@@ -121,7 +124,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     })
     sm.initVerkleExecutionWitness(block.executionWitness)
 
-    let smCopy = sm.shallowCopy()
+    const smCopy = sm.shallowCopy()
 
     assert.equal(
       smCopy['_accountCacheSettings'].type,
