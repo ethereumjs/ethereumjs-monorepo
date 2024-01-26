@@ -11,19 +11,26 @@ const config = defineConfig({
       headless: true,
     },
   },
-  resolve: {
-    alias: {
-      events: 'eventemitter3',
-      'node:stream/web': 'web-streams-polyfill/es2018',
+  build: {
+    rollupOptions: {
+      preserveEntrySignatures: 'strict'
     },
+    minify: false
+  
   },
-  plugins: [
-    nodePolyfills({
-      include: ['util', 'fs', 'buffer'],
-    }),
-    topLevelAwait(),
-    dynamicImport()
-  ],
-})
+  resolve: {
+      alias: {
+        events: 'eventemitter3',
+        'node:stream/web': 'web-streams-polyfill/es2018',
+      },
+    },
+    plugins: [
+      nodePolyfills({
+        include: ['util', 'fs', 'buffer'],
+      }),
+      topLevelAwait(),
+      dynamicImport()
+    ],
+  })
 
 export default config
