@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { Blockchain } from '../src/index.js'
 
-import blocksData from './testdata/blocks_mainnet.json'
-import testDataPreLondon from './testdata/testdata_pre-london.json'
+//import blocksData from './testdata/blocks_mainnet.json'
+//import testDataPreLondon from './testdata/testdata_pre-london.json'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
 import type { BlockOptions } from '@ethereumjs/block'
@@ -54,6 +54,7 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with Blockchain.fromBlocksData()', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
+    const blocksData = await import('./testdata/blocks_mainnet.json')
     const blockchain = await Blockchain.fromBlocksData(blocksData, {
       validateBlocks: true,
       validateConsensus: false,
@@ -572,6 +573,7 @@ describe('blockchain test', () => {
   })
 
   it('should add block with body', async () => {
+    const testDataPreLondon = await import('./testdata/testdata_pre-london.json')
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
     const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP)
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })

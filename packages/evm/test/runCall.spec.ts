@@ -14,7 +14,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
+//import genesisJSON from '../../client/test/testdata/geth-genesis/eip4844.json'
 import { defaultBlock } from '../src/evm.js'
 import { ERROR } from '../src/exceptions.js'
 import { EVM } from '../src/index.js'
@@ -567,6 +567,7 @@ describe('RunCall tests', () => {
     )
   })
   it('runCall() => use BLOBHASH opcode from EIP 4844', async () => {
+    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
     // setup the evm
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
@@ -606,6 +607,7 @@ describe('RunCall tests', () => {
   })
 
   it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
+    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
     // setup the evm
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
