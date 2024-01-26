@@ -10,13 +10,11 @@ const config = defineConfig({
       name: 'chrome',
       headless: true,
     },
-  },
-  build: {
-    rollupOptions: {
-      preserveEntrySignatures: 'strict'
-    },
-    minify: false
-  
+    deps: {
+      web: {
+        transformAssets: false
+      }
+    }
   },
   resolve: {
       alias: {
