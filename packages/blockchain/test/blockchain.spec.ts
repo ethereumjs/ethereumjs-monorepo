@@ -54,7 +54,8 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with Blockchain.fromBlocksData()', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.fromBlocksData(blocksData, {
+    //@ts-ignore
+    const blockchain = await Blockchain.fromBlocksData(blocksData.default, {
       validateBlocks: true,
       validateConsensus: false,
       common,
