@@ -4,7 +4,7 @@ import { Address, bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 import { getStem } from '@ethereumjs/verkle'
 
-import { StatelessVerkleStateManager } from '../src/index.js'
+import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
@@ -12,6 +12,7 @@ import { hexToBytes } from '@ethereumjs/util'
 import { bytesToBigInt } from '@ethereumjs/util'
 import { Account } from '@ethereumjs/util'
 import { randomBytes } from '@ethereumjs/util'
+import { skip } from 'tape'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
@@ -49,15 +50,27 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     )
   })
 
-  it('putAccount()', async () => {
+  it('put/delete/modify account', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.executionWitness)
 
     const address = Address.fromString(bytesToHex(randomBytes(20)))
-    const account = new Account()
-    await stateManager.putAccount(address, account)
 
     let check = await stateManager.getAccount(address)
+    assert.deepEqual(check, undefined, 'should return undefined for nonexistent account')
+
+    const account = Account.fromAccountData({
+      nonce: BigInt(2),
+    })
+    await stateManager.putAccount(address, account)
+
+    check = await stateManager.getAccount(address)
+    assert.deepEqual(check, account, 'should return correct account')
+
+    await stateManager.modifyAccountFields(address, {
+      nonce: BigInt(2),
+    })
+    check = await stateManager.getAccount(address)
     assert.deepEqual(check, account, 'should return correct account')
 
     await stateManager.deleteAccount(address)
@@ -65,15 +78,6 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     check = await stateManager.getAccount(address)
     assert.deepEqual(check, undefined, 'should return undefined for deleted account')
   })
-
-  // let key = stateManager.getTreeKeyForVersion(stem)
-  // console.log(key)
-
-  // key = stateManager.getTreeKeyForCodeSize(stem)
-  // console.log(key)
-
-  // key = stateManager.getTreeKeyForCodeChunk(stem, 0)
-  // console.log(key)
 
   it('getTreeKeyFor* functions', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
@@ -105,27 +109,55 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     assert.equal(bytesToHex(account.codeHash), codeHash, 'should have correct codeHash')
   })
 
-  // TODO need to execute block that touches 4242... address to have state available
-  // it('getContractCode()', async () => {
-  //   const stateManager = new StatelessVerkleStateManager({ common })
-  //   stateManager.initVerkleExecutionWitness(block.executionWitness)
+  it(`copy()`, async () => {
+    let sm = new StatelessVerkleStateManager({
+      accountCacheOpts: {
+        type: CacheType.ORDERED_MAP,
+      },
+      storageCacheOpts: {
+        type: CacheType.ORDERED_MAP,
+      },
+      common,
+    })
+    sm.initVerkleExecutionWitness(block.executionWitness)
 
-  //   const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
-  //   const contractCode = await stateManager.getContractCode(contractAddress)
-  //   const expectedCode = testnetVerkleKaustinen.alloc['0x4242424242424242424242424242424242424242'].code
+    let smCopy = sm.shallowCopy()
 
-  //   assert.equal(bytesToHex(contractCode), expectedCode)
-  // })
+    assert.equal(
+      smCopy['_accountCacheSettings'].type,
+      CacheType.ORDERED_MAP,
+      'should switch to ORDERED_MAP account cache on copy()'
+    )
+    assert.equal(
+      smCopy['_storageCacheSettings'].type,
+      CacheType.ORDERED_MAP,
+      'should switch to ORDERED_MAP storage cache on copy()'
+    )
+  })
 
-  // it('getContractStorage()', async () => {
-  //   const stateManager = new StatelessVerkleStateManager({ common })
-  //   stateManager.initVerkleExecutionWitness(block.executionWitness)
+  // TODO contract storage functions not yet completely implemented
+  skip('get/put/clear contract storage', async () => {
+    const stateManager = new StatelessVerkleStateManager({ common })
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
-  //   const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
-  //   const storageKey = "0x0000000000000000000000000000000000000000000000000000000000000022"
-  //   const contractStorage = await stateManager.getContractStorage(contractAddress, hexToBytes(storageKey))
-  //   const expectedStorage = testnetVerkleKaustinen.alloc['0x4242424242424242424242424242424242424242']['storage'][storageKey]
+    const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')
+    const storageKey = '0x0000000000000000000000000000000000000000000000000000000000000022'
+    const storageValue = '0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b'
+    await stateManager.putContractStorage(
+      contractAddress,
+      hexToBytes(storageKey),
+      hexToBytes(storageValue)
+    )
+    let contractStorage = await stateManager.getContractStorage(
+      contractAddress,
+      hexToBytes(storageKey)
+    )
 
-  //   assert.equal(bytesToHex(contractStorage), expectedStorage)
-  // })
+    assert.equal(bytesToHex(contractStorage), storageValue)
+
+    await stateManager.clearContractStorage(contractAddress)
+    contractStorage = await stateManager.getContractStorage(contractAddress, hexToBytes(storageKey))
+
+    assert.equal(bytesToHex(contractStorage), new Uint8Array())
+  })
 })
