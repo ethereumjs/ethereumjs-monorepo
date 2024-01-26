@@ -36,6 +36,7 @@
     "coverage": "../../config/cli/coverage.sh",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- ethash",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
