@@ -88,10 +88,10 @@ Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 ```ts
 // ./examples/peer-communication.ts#L321-L324
 
+
 for (const bootnode of BOOTNODES) {
   dpt.bootstrap(bootnode).catch((err) => {
     console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack ?? err}`))
-  })
 ```
 
 ### API
@@ -262,8 +262,8 @@ Wait for follow-up messages to arrive, send your responses.
 // ./examples/peer-communication.ts#L116-L118
 
 eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+  // We keep track of how many of each message type are received
   if (code in ETH.MESSAGE_CODES) {
-    requests.msgTypes[code] = code + 1
 ```
 
 See the `peer-communication.ts` example for a more detailed use case.

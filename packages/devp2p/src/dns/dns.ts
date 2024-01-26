@@ -1,5 +1,5 @@
 import debugDefault from 'debug'
-import dns from 'dns'
+import * as dns from 'dns'
 
 import { ENR } from './enr.js'
 
@@ -27,7 +27,7 @@ export class DNS {
     this._DNSTreeCache = {}
 
     if (typeof options.dnsServerAddress === 'string') {
-      dns.setServers([options.dnsServerAddress])
+      dns.promises.setServers([options.dnsServerAddress])
     }
 
     this._common = options.common
