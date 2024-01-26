@@ -16,9 +16,9 @@ import { assert, describe, it } from 'vitest'
 import { Block } from '../src/block.js'
 import { BlockHeader } from '../src/header.js'
 
-import testData from './testdata/bcBlockGasLimitTest.json'
-import blocksGoerli from './testdata/blocks_goerli.json'
-import blocksMainnet from './testdata/blocks_mainnet.json'
+//import testData from './testdata/bcBlockGasLimitTest.json'
+//import blocksGoerli from './testdata/blocks_goerli.json'
+//import blocksMainnet from './testdata/blocks_mainnet.json'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 function compareDefaultHeader(header: BlockHeader) {
@@ -451,7 +451,8 @@ describe('[Block]: Header functions', () => {
     }
       })
 */
-  it('should test validateGasLimit()', () => {
+  it('should test validateGasLimit()', async () => {
+    const testData = await import('./testdata/bcBlockGasLimitTest.json')
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const bcBlockGasLimitTestData = (testData as any).tests.BlockGasLimit2p63m1
 
@@ -476,7 +477,9 @@ describe('[Block]: Header functions', () => {
     assert.equal(header2.isGenesis(), true)
   })
 
-  it('should test hash() function', () => {
+  it('should test hash() function', async () => {
+    const blocksGoerli = (await import('./testdata/blocks_goerli.json')).default
+    const blocksMainnet = (await import('./testdata/blocks_mainnet.json')).default
     let common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
     let header = BlockHeader.fromHeaderData(blocksMainnet[0]['header'], { common })
     assert.equal(
