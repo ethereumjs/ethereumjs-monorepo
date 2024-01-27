@@ -1,17 +1,11 @@
 import debugDefault from 'debug'
+import * as dns from 'dns'
 
 import { ENR } from './enr.js'
 
 import type { DNSOptions, PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
-
-let dns: any
-try {
-  dns = require('dns')
-} catch (e: any) {
-  dns = require('../browser/dns.js')
-}
 
 const debug = createDebugLogger('devp2p:dns:dns')
 
@@ -33,7 +27,7 @@ export class DNS {
     this._DNSTreeCache = {}
 
     if (typeof options.dnsServerAddress === 'string') {
-      dns.setServers([options.dnsServerAddress])
+      dns.promises.setServers([options.dnsServerAddress])
     }
 
     this._common = options.common
