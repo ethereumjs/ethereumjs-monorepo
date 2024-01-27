@@ -243,25 +243,6 @@ export class Interpreter {
       let opCodeObj: OpcodeMapEntry
       if (doJumpAnalysis) {
         opCode = this._runState.code[programCounter]
-
-        // if its an invalid opcode with verkle activated, then check if its because of a missing code
-        // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
-        if (
-          opCode === 0xfe &&
-          this.common.isActivatedEIP(6800) &&
-          this._runState.stateManager instanceof StatelessVerkleStateManager
-        ) {
-          const contract = this._runState.interpreter.getAddress()
-          if (
-            !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
-              contract,
-              programCounter
-            )
-          ) {
-            throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
-          }
-        }
-
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
           const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
@@ -275,6 +256,25 @@ export class Interpreter {
         opCodeObj = cachedOpcodes![programCounter]
         opCode = opCodeObj.opcodeInfo.code
       }
+
+      // if its an invalid opcode with verkle activated, then check if its because of a missing code
+      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+      if (
+        opCode === 0xfe &&
+        this.common.isActivatedEIP(6800) &&
+        this._runState.stateManager instanceof StatelessVerkleStateManager
+      ) {
+        const contract = this._runState.interpreter.getAddress()
+        if (
+          !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
+            contract,
+            programCounter
+          )
+        ) {
+          throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
+        }
+      }
+
       this._runState.opCode = opCode!
 
       try {
