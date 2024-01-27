@@ -1,6 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -216,11 +216,6 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
     }
     stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
-  } else {
-    // assign an empty witness to prevent unnecessary code spagetti of null/undefined checks while usage
-    // but its totally possible that merkle can also accumulate witnesses if such feature was to be made
-    // available there
-    stateAccesses = new AccessWitness()
   }
   let txAccesses = stateAccesses?.shallowCopy()
 
