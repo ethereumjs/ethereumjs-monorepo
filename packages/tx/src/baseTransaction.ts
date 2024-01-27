@@ -370,7 +370,9 @@ export abstract class BaseTransaction<T extends TransactionType>
       const chainIdBigInt = bytesToBigInt(toBytes(chainId))
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
-          const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
+          const msg = this._errorMsg(
+            `The chain ID of ${chainIdBigInt} does not match the chain ID of Common (${common.chainId()})`
+          )
           throw new Error(msg)
         }
         // Common provided, chain ID does match
