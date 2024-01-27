@@ -257,7 +257,7 @@ describe('[Block]: block functions', () => {
     })
 
     // Verifies that the "signed tx check" is skipped
-    await block.validateDataIntegrity()
+    await block.validateData(false, false)
 
     async function checkThrowsAsync(fn: Promise<void>, errorMsg: string) {
       try {
@@ -277,7 +277,7 @@ describe('[Block]: block functions', () => {
         transactionsTrie: zeroRoot,
       },
     })
-    await checkThrowsAsync(block.validateDataIntegrity(), 'invalid transaction trie')
+    await checkThrowsAsync(block.validateData(false, false), 'invalid transaction trie')
 
     // Withdrawals root
     block = Block.fromBlockData(
@@ -289,7 +289,7 @@ describe('[Block]: block functions', () => {
       },
       { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai }) }
     )
-    await checkThrowsAsync(block.validateDataIntegrity(), 'invalid withdrawals trie')
+    await checkThrowsAsync(block.validateData(false, false), 'invalid withdrawals trie')
 
     // Uncle root
     block = Block.fromBlockData(
@@ -300,7 +300,7 @@ describe('[Block]: block functions', () => {
       },
       { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart }) }
     )
-    await checkThrowsAsync(block.validateDataIntegrity(), 'invalid uncle hash')
+    await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
 
     // Verkle withness
     const common = new Common({ chain: Chain.Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
@@ -308,7 +308,7 @@ describe('[Block]: block functions', () => {
     // So, only testing for `null` here
     block = Block.fromBlockData({ executionWitness: null }, { common })
     await checkThrowsAsync(
-      block.validateDataIntegrity(),
+      block.validateData(false, false),
       'Invalid block: ethereumjs stateless client needs executionWitness'
     )
   })

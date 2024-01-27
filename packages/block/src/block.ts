@@ -660,14 +660,6 @@ export class Block {
   }
 
   /**
-   * This method checks if the provided tx trie / uncle hash trie / withdrawals trie has the expected
-   * trie roots and also verifies (for Verkle) if the `executionWitness` exists
-   */
-  async validateDataIntegrity(): Promise<void> {
-    await this.validateData(false, false)
-  }
-
-  /**
    * Validates that blob gas fee for each transaction is greater than or equal to the
    * blobGasPrice for the block and that total blob gas in block is less than maximum
    * blob gas per block

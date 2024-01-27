@@ -90,7 +90,7 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
       // In ReverseBlockFetcher we do not need to validate the entire block, since CL
       // expects us to sync with the requested chain tip header
-      await block.validateDataIntegrity()
+      await block.validateData(false, false)
       blocks.push(block)
     }
     this.debug(
