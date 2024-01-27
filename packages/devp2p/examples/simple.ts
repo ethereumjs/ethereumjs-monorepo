@@ -2,7 +2,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import chalk from 'chalk'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-import { DPT } from '../dist/cjs/index.js'
+import { DPT } from '@ethereumjs/devp2p'
 
 const TIMEOUT = 5000 // 5 second timeout
 const PRIVATE_KEY = '0xd772e3d6a001a38064dd23964dd2836239fa0e6cec8b28972a87460a17210fe9'
