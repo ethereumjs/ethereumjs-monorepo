@@ -57,10 +57,10 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.executionWitness)
 
-    const address = Address.fromString(bytesToHex(randomBytes(20)))
+    const address = new Address(randomBytes(20))
 
     let check = await stateManager.getAccount(address)
-    assert.deepEqual(check, undefined, 'should return undefined for nonexistent account')
+    assert.isUndefined(check, 'should return undefined for nonexistent account')
 
     const account = Account.fromAccountData({
       nonce: BigInt(2),
@@ -79,7 +79,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     await stateManager.deleteAccount(address)
 
     check = await stateManager.getAccount(address)
-    assert.deepEqual(check, undefined, 'should return undefined for deleted account')
+    assert.isUndefined(check, 'should return undefined for deleted account')
   })
 
   it('getTreeKeyFor* functions', async () => {
@@ -93,9 +93,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const nonceKey = stateManager.getTreeKeyForNonce(stem)
     const codeHashKey = stateManager.getTreeKeyForCodeHash(stem)
 
-    const balanceRaw = stateManager._state[bytesToHex(balanceKey)]
-    const nonceRaw = stateManager._state[bytesToHex(nonceKey)]
-    const codeHash = stateManager._state[bytesToHex(codeHashKey)]
+    const balanceRaw = stateManager['_state'][bytesToHex(balanceKey)]
+    const nonceRaw = stateManager['_state'][bytesToHex(nonceKey)]
+    const codeHash = stateManager['_state'][bytesToHex(codeHashKey)]
 
     const account = await stateManager.getAccount(address)
 
@@ -161,6 +161,6 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     await stateManager.clearContractStorage(contractAddress)
     contractStorage = await stateManager.getContractStorage(contractAddress, hexToBytes(storageKey))
 
-    assert.equal(bytesToHex(contractStorage), new Uint8Array())
+    assert.equal(bytesToHex(contractStorage), bytesToHex(new Uint8Array()))
   })
 })
