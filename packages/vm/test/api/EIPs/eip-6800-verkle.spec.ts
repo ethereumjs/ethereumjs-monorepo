@@ -12,7 +12,7 @@ const common = Common.custom(customChainParams, { hardfork: Hardfork.Cancun, eip
 const block = Block.fromBlockData(verkleBlockJSON, { common })
 
 describe('EIP 6800 tests', () => {
-  it('successfully run a transaction statelessly using the block witness', async () => {
+  it('successfully run transactions statelessly using the block witness', async () => {
     const verkleStateManager = new StatelessVerkleStateManager({ common })
     const evm = new EVM({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
@@ -22,6 +22,8 @@ describe('EIP 6800 tests', () => {
     })
     verkleStateManager.initVerkleExecutionWitness(block.executionWitness)
 
-    await vm.runTx({ tx: block.transactions[0] })
+    for (let i = 0; i < block.transactions.length; i++) {
+      await vm.runTx({ tx: block.transactions[i] })
+    }
   })
 })
