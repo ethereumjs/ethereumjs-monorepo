@@ -12,7 +12,7 @@ const common = Common.custom(customChainParams, { hardfork: Hardfork.Cancun, eip
 const block = Block.fromBlockData(verkleBlockJSON, { common })
 
 describe('EIP 6800 tests tests', () => {
-  it('succesfully run an EIP 6800 call', async () => {
+  it('successfully run an EIP 6800 call', async () => {
     const verkleStateManager = new StatelessVerkleStateManager({ common })
     const evm = new EVM({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
