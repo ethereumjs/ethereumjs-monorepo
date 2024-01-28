@@ -81,6 +81,8 @@ export interface CustomCrypto {
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
   ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
+  ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
+  ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
 }
 
 interface BaseOpts {

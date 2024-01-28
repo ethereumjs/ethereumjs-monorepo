@@ -39,13 +39,21 @@ The following two manual installation steps for a KZG library and the trusted se
 Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
 
 ```ts
+// ./examples/initKzg.ts
+
 import { initKZG } from '@ethereumjs/util'
 
 // Make the kzg library available globally
 import * as kzg from 'c-kzg'
 
 // Initialize the trusted setup
-initKZG(kzg, 'path/to/my/trusted_setup.txt')
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+} catch {
+  // No-op if KZG is already loaded
+}
+
+console.log(kzg) // should output the KZG API as an object
 ```
 
 ## Usage
@@ -106,12 +114,19 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 See the following code snipped for an example on how to instantiate (using the `c-kzg` module for our KZG dependency).
 
 ```ts
+// ./examples/blobTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { initKZG } from '@ethereumjs/util'
+import { bytesToHex, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
-initKZG(kzg, 'path/to/my/trusted_setup.txt')
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+} catch {
+  // No-op if KZG is already loaded
+}
+
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
 
 const txData = {
@@ -129,13 +144,12 @@ const txData = {
   chainId: '0x01',
   accessList: [],
   type: '0x05',
-  versionedHashes: ['0xabc...'], // Test with empty array on a first run
-  kzgCommitments: ['0xdef...'], // Test with empty array on a first run
-  blobs: ['0xghi...'], // Test with empty array on a first run
-  proofs: ['0xabcd...'], //
+  blobsData: ['abcd'],
 }
 
 const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+
+console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 ```
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
@@ -153,8 +167,11 @@ See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage i
 This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
 
 ```ts
+// ./examples/londonTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
@@ -175,6 +192,7 @@ const txData = {
 }
 
 const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced321887937c95b03779358ec8a
 ```
 
 #### Access List Transactions (EIP-2930)
@@ -186,8 +204,11 @@ const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
 This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
 
 ```ts
+// ./examples/accessListTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 
@@ -215,6 +236,7 @@ const txData = {
 }
 
 const tx = AccessListEIP2930Transaction.fromTxData(txData, { common })
+console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c0883d7f0bbc0f3e072358f5b1d
 ```
 
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
@@ -230,8 +252,11 @@ Legacy transaction are still valid transaction within Ethereum `mainnet` but wil
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```ts
+// ./examples/legacyTx.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 
 const txParams = {
   nonce: '0x00',
@@ -253,6 +278,7 @@ const privateKey = Buffer.from(
 const signedTx = tx.sign(privateKey)
 
 const serializedTx = signedTx.serialize()
+console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
 ```
 
 ### Transaction Factory
@@ -260,16 +286,20 @@ const serializedTx = signedTx.serialize()
 If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
 ```ts
+// ./examples/txFactory.ts
+
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TransactionFactory } from '@ethereumjs/tx'
+import { Capability, EIP1559CompatibleTx, TransactionFactory } from '@ethereumjs/tx'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 
-const txData = {} // Use data from the different tx type examples
+const txData = { type: 2, maxFeePerGas: BigInt(20) } // Creates an EIP-1559 compatible transac
 const tx = TransactionFactory.fromTxData(txData, { common })
 
-if (tx.supports(Capability.EIP2930AccessLists)) {
-  // Do something which only makes sense for txs with support for access lists
+if (tx.supports(Capability.EIP1559FeeMarket)) {
+  console.log(
+    `The max fee per gas for this transaction is ${(tx as EIP1559CompatibleTx).maxFeePerGas}`
+  )
 }
 ```
 
@@ -289,18 +319,17 @@ The correct tx type class for instantiation will then be chosen on runtime based
 This library has been tested to work with various L2 networks (`v3.3.0`+). All predefined supported custom chains introduced with `Common` `v2.4.0` or higher are supported, the following is a simple example to send a tx to the xDai chain:
 
 ```ts
-import { Common } from '@ethereumjs/common'
+// ./examples/l2tx.ts
+
+import { Common, CustomChain } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { hexToBytes } from '@ethereumjs/util'
+import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-const from = 'PUBLIC_KEY'
-const PRIV_KEY = process.argv[2]
-const to = 'DESTINATION_ETHEREUM_ADDRESS'
-
+const pk = hexToBytes('0x076247989df60a82f6e86e58104368676096f84e60972282ee00d4673a2bc9b9')
+const to = Address.fromString('0x256e8f0ba532ad83a0debde7501669511a41a1f3')
 const common = Common.custom(CustomChain.xDaiChain)
 
 const txData = {
-  from,
   nonce: 0,
   gasPrice: 1000000000,
   gasLimit: 21000,
@@ -309,7 +338,8 @@ const txData = {
 }
 
 const tx = LegacyTransaction.fromTxData(txData, { common })
-const signedTx = tx.sign(hexToBytes(PRIV_KEY))
+const signedTx = tx.sign(pk)
+console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```
 
 The following L2 networks have been tested to work with `@ethereumjs/tx`, see usage examples as well as some notes on peculiarities in the issues linked below:
@@ -359,7 +389,7 @@ const eth = new Eth(transport)
 const common = new Common({ chain: Chain.Sepolia })
 
 let txData: any = { value: 1 }
-let tx: Transaction | FeeMarketEIP1559Transaction
+let tx: LegacyTransaction | FeeMarketEIP1559Transaction
 let unsignedTx: Uint8Array[] | Uint8Array
 let signedTx: typeof tx
 const bip32Path = "44'/60'/0'/0/0"
@@ -372,7 +402,7 @@ const run = async () => {
   let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
   txData = { ...txData, v, r, s }
   signedTx = LegacyTransaction.fromTxData(txData, { common })
-  let from = bytesToHex(signedTx.getSenderAddress())
+  let from = signedTx.getSenderAddress().toString()
   console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
 
   // Signing a 1559 tx
@@ -382,33 +412,11 @@ const run = async () => {
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
   txData = { ...txData, v, r, s }
   signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  from = bytesToHex(signedTx.getSenderAddress())
+  from = signedTx.getSenderAddress().toString()
   console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
 }
 
 run()
-```
-
-### Fake Transaction
-
-Creating a fake transaction for use in e.g. `VM.runTx()` is simple, just overwrite `getSenderAddress()` with a custom [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md) like so:
-
-```ts
-import { Address } from '@ethereumjs/util'
-import { Transaction } from '@ethereumjs/tx'
-
-_getFakeTransaction(txParams: TxParams): Transaction {
-  const from = Address.fromString(txParams.from)
-  delete txParams.from
-
-  const opts = { common: this._common, freeze: false }
-  const tx = LegacyTransaction.fromTxData(txParams, opts)
-
-  // override getSenderAddress
-  tx.getSenderAddress = () => { return from }
-
-  return tx
-}
 ```
 
 ## API

@@ -43,8 +43,12 @@ const debugGas = createDebugLogger('vm:tx:gas')
 let enableProfiler = false
 const initLabel = 'EVM journal init, address/slot warming, fee validation'
 const balanceNonceLabel = 'Balance/Nonce checks and update'
+const executionLabel = 'Execution'
 const logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
-const cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+const accountsCleanUpLabel = 'Accounts clean up'
+const accessListLabel = 'Access list label'
+const journalCacheCleanUpLabel = 'Journal/cache cleanup'
+const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
 
 /**
@@ -445,7 +449,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // eslint-disable-next-line no-console
     console.timeEnd(balanceNonceLabel)
     // eslint-disable-next-line no-console
-    console.log('[ For execution see detailed table output ]')
+    console.time(executionLabel)
   }
 
   /*
@@ -475,6 +479,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(executionLabel)
+    // eslint-disable-next-line no-console
+    console.log('[ For execution details see table output ]')
     // eslint-disable-next-line no-console
     console.time(logsGasBalanceLabel)
   }
@@ -577,7 +585,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // eslint-disable-next-line no-console
     console.timeEnd(logsGasBalanceLabel)
     // eslint-disable-next-line no-console
-    console.time(cleanupAndReceiptsLabel)
+    console.time(accountsCleanUpLabel)
   }
 
   /*
@@ -599,6 +607,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accountsCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(accessListLabel)
+  }
+
   if (opts.reportAccessList === true && this.common.isActivatedEIP(2930)) {
     // Convert the Map to the desired type
     const accessList: AccessList = []
@@ -618,12 +633,26 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     results.accessList = accessList
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accessListLabel)
+    // eslint-disable-next-line no-console
+    console.time(journalCacheCleanUpLabel)
+  }
+
   if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
     results.preimages = this.evm.journal.preimages
   }
 
   await this.evm.journal.cleanup()
   state.originalStorageCache.clear()
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(journalCacheCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(receiptsLabel)
+  }
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
@@ -638,7 +667,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
-    console.timeEnd(cleanupAndReceiptsLabel)
+    console.timeEnd(receiptsLabel)
   }
 
   /**
