@@ -11,8 +11,8 @@ const customChainParams = { name: 'custom', chainId: 69420, networkId: 678 }
 const common = Common.custom(customChainParams, { hardfork: Hardfork.Cancun, eips: [6800] })
 const block = Block.fromBlockData(verkleBlockJSON, { common })
 
-describe('EIP 6800 tests tests', () => {
-  it('successfully run an EIP 6800 call', async () => {
+describe('EIP 6800 tests', () => {
+  it('successfully run a transaction statelessly using the block witness', async () => {
     const verkleStateManager = new StatelessVerkleStateManager({ common })
     const evm = new EVM({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
