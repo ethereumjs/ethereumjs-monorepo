@@ -8,6 +8,7 @@ import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { AccessWitness } from '@ethereumjs/statemanager'
 import type { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
@@ -122,6 +123,8 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    * Optionally pass in an already-built message.
    */
   message?: Message
+
+  accessWitness?: AccessWitness
 }
 
 interface NewContractEvent {

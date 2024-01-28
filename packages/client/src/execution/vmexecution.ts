@@ -341,7 +341,7 @@ export class VMExecution extends Execution {
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(
-    opts: RunBlockOpts,
+    opts: RunBlockOpts & { parentBlock?: Block },
     receipts?: TxReceipt[],
     blocking: boolean = false,
     skipBlockchain: boolean = false
@@ -359,14 +359,24 @@ export class VMExecution extends Execution {
         this.running = true
         const { block, root } = opts
 
-        let vm = this.vm
         if (receipts === undefined) {
           // Check if we need to pass flag to clear statemanager cache or not
           const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
           // If root is not provided its mean to be run on the same set state
           const parentState = root ?? prevVMStateRoot
           const clearCache = !equalsBytes(prevVMStateRoot, parentState)
-          const td = await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
+
+          // merge TTD might not give correct td, but its sufficient for purposes of determining HF and allows
+          // stateless execution where blockchain mightnot have all the blocks filling upto the block
+          let td
+          if (block.common.gteHardfork(Hardfork.Paris)) {
+            td = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
+            if (td === null) {
+              throw Error(`Invalid null paris TTD for the chain`)
+            }
+          } else {
+            td = await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
+          }
 
           const hardfork = this.config.execCommon.getHardforkBy({
             blockNumber: block.header.number,
@@ -374,12 +384,14 @@ export class VMExecution extends Execution {
             timestamp: block.header.timestamp,
           })
 
+          let vm = this.vm
           if (
             !this.config.execCommon.gteHardfork(Hardfork.Prague) &&
             this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
           ) {
             // see if this is a transition block
-            const parentBlock = await this.chain.getBlock(block.header.parentHash)
+            const parentBlock =
+              opts?.parentBlock ?? (await this.chain.getBlock(block.header.parentHash))
             const parentTd = td - parentBlock.header.difficulty
             const parentHf = this.config.execCommon.getHardforkBy({
               blockNumber: parentBlock.header.number,
@@ -396,7 +408,26 @@ export class VMExecution extends Execution {
             vm = this.verkleVM
           }
 
-          const result = await vm.runBlock({ clearCache, ...opts })
+          const needsStatelessExecution = vm.stateManager instanceof StatelessVerkleStateManager
+          if (needsStatelessExecution && block.executionWitness === undefined) {
+            throw Error(`Verkle blocks need executionWitness for stateless execution`)
+          } else {
+            const hasParentStateRoot = await vm.stateManager.hasStateRoot(parentState)
+            // we can also return false to say that the block wasn't executed but we should throw
+            // because we shouldn't have entered this function if this block wasn't executable
+            if (!hasParentStateRoot) {
+              throw Error(`Missing parent stateRoot for execution`)
+            }
+          }
+
+          const skipHeaderValidation =
+            needsStatelessExecution && this.chain.headers.height < block.header.number - BIGINT_1
+          // Also skip adding this block into blockchain for now
+          if (skipHeaderValidation) {
+            skipBlockchain = true
+          }
+
+          const result = await vm.runBlock({ clearCache, ...opts, skipHeaderValidation })
           receipts = result.receipts
         }
         if (receipts !== undefined) {
