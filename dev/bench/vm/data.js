@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706241028867,
+  "lastUpdate": 1706528301262,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a0ef459e26f6a843d67bb2142977b67359109839",
-          "message": "evm: ensure modexp right-pads input data\n\n* evm: ensure modexp right-pads input data\n\n* evm: ensure modexp right-pads input data\n\n* evm: fix modexp gas\n\n* Merge branch 'fix-precompiles-inputs' of github.com:ethereumjs/ethereumjs-monorepo into fix-precompiles-inputs\n\n* evm: remove .only test modifier",
-          "timestamp": "2023-12-19T09:47:34-05:00",
-          "tree_id": "f7a81d36cbfbe22d6fd1aa93cbf73fad93b5d2f0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a0ef459e26f6a843d67bb2142977b67359109839"
-        },
-        "date": 1702997423251,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41470,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38782,
-            "range": "±3.84%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39595,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37771,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37478,
-            "range": "±2.40%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 37061,
             "range": "±2.32%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6ca6fd5ef7cff3d5ef9e33397336464fd58577b7",
+          "message": "Client: stabilize block fetcher (#3240)\n\n* client: ensure block validation happens in storing results\r\n\r\n* client: beacon sync: ensure always peer returned\r\n\r\n* client: block fetcher: undo destroyFetcher change\r\n\r\n* block: add validateDataIntegrity\r\n\r\n* client: update block fetchers\r\n\r\n* block: ensure sig txs only checked when verifyTxs=true\r\n\r\n* address review\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-01-29T12:35:24+01:00",
+          "tree_id": "141cdb0c107fa41f13f8174b2daf428d76ac944f",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6ca6fd5ef7cff3d5ef9e33397336464fd58577b7"
+        },
+        "date": 1706528300676,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39829,
+            "range": "±2.94%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38679,
+            "range": "±2.33%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38627,
+            "range": "±2.28%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35593,
+            "range": "±5.50%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36887,
+            "range": "±2.31%",
             "unit": "ops/sec",
             "extra": "85 samples"
           }
