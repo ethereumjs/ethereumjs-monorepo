@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.2 - 2024-02-01
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+
+### Other Changes
+
+- Dependency version updates, PR [#3261](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3261)
+
 ## 2.0.1 - 2023-10-26
 
 - Add `fromMnemonic()` static constructor to BIP32 HD wallet, PR [#192](https://github.com/ethereumjs/ethereumjs-wallet/pull/192)

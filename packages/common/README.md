@@ -77,6 +77,40 @@ c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
 ```
 
+### WASM Crypto Support
+
+Starting with the `v4.2.0` releases there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion.
+
+This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation.
+
+The following is an example using the [@polkadot/wasm-crypto](https://github.com/polkadot-js/wasm/tree/master/packages/wasm-crypto) package:
+
+```ts
+// ./examples/customCrypto.ts
+
+import { keccak256, waitReady } from '@polkadot/wasm-crypto'
+import { Chain, Common } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+
+const main = async () => {
+  // @polkadot/wasm-crypto specific initialization
+  await waitReady()
+
+  const common = new Common({ chain: Chain.Mainnet, customCrypto: { keccak256 } })
+  const block = Block.fromBlockData({}, { common })
+
+  // Method invocations within EthereumJS library instantiations where the common
+  // instance above is passed will now use the custom keccak256 implementation
+  console.log(block.hash())
+}
+
+main()
+```
+
+We internally use this new feature for various crypto overwrites within the client package, see Client [cli.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/bin/cli.ts) implementation for guidance on how to setup with other crypto primitives (e.g. ECDSA signature verification).
+
+Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
+
 ## Browser
 
 With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
@@ -361,7 +395,7 @@ The following EIPs are currently supported:
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
 - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
-- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun) (`experimental`)
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
 - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)

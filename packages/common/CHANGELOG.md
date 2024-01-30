@@ -6,6 +6,68 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 4.2.0 - 2024-02-01
+
+### Dencun Hardfork Support
+
+While all EIPs contained in the upcoming Dencun hardfork run pretty much stable within the EthereumJS libraries for quite some time, this is the first release round which puts all this in the official space and removes "experimental" labelling preparing for an imminent Dencun launch on the last testnets (Holesky) and mainnet activation! 🎉
+
+Dencun hardfork on the execution side is called [Cancun](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md) and can be activated within the EthereumJS libraries (default hardfork still `Shanghai`) with a following `common` instance:
+
+```typescript
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+```
+
+While `EIP-4844` - activating shard blob transactions - is for sure the most prominent EIP from this hardfork, enabling better scaling for the Ethereum ecosystem by providing cheaper block space for L2s, there are in total 6 EIPs contained in the Dencun hardfork. The following is an overview which EthereumJS libraries mainly implement the various EIPs:
+
+- EIP-1153: Transient storage opcodes (`@ethereumjs/evm`)
+- EIP-4788: Beacon block root in the EVM (`@ethereumjs/block`, `@ethereumjs/evm`, `@ethereumjs/vm`)
+- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`)
+- EIP-5656: MCOPY - Memory copying instruction (`@ethereumjs/evm`)
+- EIP-6780: SELFDESTRUCT only in same transaction (`@ethereumjs/vm`)
+- EIP-7516: BLOBBASEFEE opcode (`@ethereumjs/block`, `@ethereumjs/evm`)
+
+### WASM Crypto Support
+
+With this release round there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192).
+
+This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation.
+
+The following is an example using the [@polkadot/wasm-crypto](https://github.com/polkadot-js/wasm/tree/master/packages/wasm-crypto) package:
+
+```ts
+import { keccak256, waitReady } from '@polkadot/wasm-crypto'
+import { Chain, Common } from '@ethereumjs/common'
+import { Block } from '@ethereumjs/block'
+
+const main = async () => {
+  // @polkadot/wasm-crypto specific initialization
+  await waitReady()
+
+  const common = new Common({ chain: Chain.Mainnet, customCrypto: { keccak256 } })
+  const block = Block.fromBlockData({}, { common })
+
+  // Method invocations within EthereumJS library instantiations where the common
+  // instance above is passed will now use the custom keccak256 implementation
+  console.log(block.hash())
+}
+
+main()
+```
+
+We internally use this new feature for various crypto overwrites within the client package, see Client [cli.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/bin/cli.ts) implementation for guidance on how to setup with other crypto primitives (e.g. ECDSA signature verification).
+
+Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+
+### Other Changes
+
+- TODO
+
 ## 4.1.0 - 2023-10-26
 
 ### Holesky Testnet Support
