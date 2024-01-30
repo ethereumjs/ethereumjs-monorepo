@@ -8,6 +8,7 @@
 
 - [Goerli](Chain.md#goerli)
 - [Holesky](Chain.md#holesky)
+- [Kaustinen](Chain.md#kaustinen)
 - [Mainnet](Chain.md#mainnet)
 - [Sepolia](Chain.md#sepolia)
 
@@ -30,6 +31,16 @@ ___
 #### Defined in
 
 [enums.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L7)
+
+___
+
+### Kaustinen
+
+• **Kaustinen** = ``69420``
+
+#### Defined in
+
+[enums.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L8)
 
 ___
 
