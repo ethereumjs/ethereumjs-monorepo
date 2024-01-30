@@ -147,6 +147,46 @@ export class Trie {
     || ----------------`)
   }
 
+  /**
+   * Create a trie from a given proof
+   * @param proof proof to create trie from
+   * @param trieOpts trie opts to be applied to returned trie
+   * @returns new trie created from given proof
+   */
+  static async createFromProof(proof: Proof, trieOpts?: TrieOpts) {
+    const trie = new Trie(trieOpts)
+    const root = await trie.updateFromProof(proof, false)
+    trie.root(root)
+    await trie.persistRoot()
+    return trie
+  }
+
+  /**
+   * Static version of {@link verifyRangeProof} function with the same behavior
+   */
+  static verifyRangeProof(
+    rootHash: Uint8Array,
+    firstKey: Uint8Array | null,
+    lastKey: Uint8Array | null,
+    keys: Uint8Array[],
+    values: Uint8Array[],
+    proof: Uint8Array[] | null,
+    opts?: TrieOpts
+  ): Promise<boolean> {
+    return verifyRangeProof(
+      rootHash,
+      firstKey && bytesToNibbles(firstKey),
+      lastKey && bytesToNibbles(lastKey),
+      keys.map((k) => k).map(bytesToNibbles),
+      values,
+      proof,
+      opts?.useKeyHashingFunction ??
+        ((msg) => {
+          return msg
+        })
+    )
+  }
+
   static async create(opts?: TrieOpts) {
     const keccakFunction =
       opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
@@ -186,6 +226,47 @@ export class Trie {
     }
 
     return new Trie(opts)
+  }
+
+  /**
+   * Static version of fromProof function with the same behavior.
+   * @param proof
+   * @deprecated Use `updateFromProof`
+   */
+  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
+    const trie = await Trie.create(opts)
+    if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
+      throw new Error('Invalid proof provided')
+    }
+    const root = await trie.updateFromProof(proof)
+    trie.root(root)
+    await trie.persistRoot()
+    return trie
+  }
+
+  /**
+   * Static version of verifyProof function with the same behavior.
+   * @param rootHash
+   * @param key
+   * @param proof
+   * @param opts Trie options
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key, or null if valid proof of non-existence.
+   */
+  static async verifyProof(
+    key: Uint8Array,
+    proof: Proof,
+    opts?: TrieOpts
+  ): Promise<Uint8Array | null> {
+    try {
+      const proofTrie = await Trie.fromProof(proof, {
+        ...opts,
+      })
+      const value = await proofTrie.get(key, true)
+      return value
+    } catch (err: any) {
+      throw new Error('Invalid proof provided')
+    }
   }
 
   database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
@@ -898,12 +979,12 @@ export class Trie {
   }
 
   /**
-   * Saves the nodes from a proof into the trie.
+   * Saves the nodes from a proof into the trie. A static version of this function exists with the same name.
    * @param proof
-   * @deprecated Use `updateTrieFromProof`
+   * @deprecated Use `updateFromProof`
    */
   async fromProof(proof: Proof): Promise<void> {
-    await this.updateTrieFromProof(proof, false)
+    await this.updateFromProof(proof, false)
 
     if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
       let rootKey = Uint8Array.from(this.hash(proof[0]))
@@ -921,7 +1002,7 @@ export class Trie {
    * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
    * @returns The root of the proof
    */
-  async updateTrieFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
+  async updateFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
     this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
     const opStack = proof.map((nodeValue) => {
       let key = Uint8Array.from(this.hash(nodeValue))
@@ -947,14 +1028,6 @@ export class Trie {
     }
   }
 
-  static async createTrieFromProof(proof: Proof, trieOpts?: TrieOpts) {
-    const trie = new Trie(trieOpts)
-    const root = await trie.updateTrieFromProof(proof, false)
-    trie.root(root)
-    await trie.persistRoot()
-    return trie
-  }
-
   /**
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
    * @param key
@@ -970,7 +1043,7 @@ export class Trie {
   }
 
   /**
-   * Verifies a proof.
+   * Verifies a proof. A static version of this function exists with the same name.
    * @param rootHash
    * @param key
    * @param proof
