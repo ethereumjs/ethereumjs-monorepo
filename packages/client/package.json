@@ -67,7 +67,7 @@
     "@ethereumjs/statemanager": "2.1.0",
     "@ethereumjs/trie": "6.0.1",
     "@ethereumjs/tx": "5.1.0",
-    "@ethereumjs/util": "9.0.1",
+    "@ethereumjs/util": "9.0.2",
     "@ethereumjs/verkle": "^0.0.1",
     "@ethereumjs/vm": "7.1.0",
     "@polkadot/util": "^12.6.2",
