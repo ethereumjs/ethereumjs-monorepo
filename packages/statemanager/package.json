@@ -54,7 +54,7 @@
     "@ethereumjs/trie": "^6.0.1",
     "@ethereumjs/util": "^9.0.2",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.1.2",
+    "ethereum-cryptography": "^2.1.3",
     "js-sdsl": "^4.1.4",
     "lru-cache": "^10.0.0"
   },
