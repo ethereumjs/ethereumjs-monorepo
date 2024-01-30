@@ -360,6 +360,9 @@ describe('[PendingBlock]', async () => {
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
     const { txPool } = setup()
 

@@ -13,7 +13,6 @@ import {
   computeVersionedHash,
   equalsBytes,
   getBlobs,
-  kzg,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
@@ -37,6 +36,7 @@ import type {
   TxOptions,
 } from './types.js'
 import type { Common } from '@ethereumjs/common'
+import type { Kzg } from '@ethereumjs/util'
 
 type TxData = AllTypesTxData[TransactionType.BlobEIP4844]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.BlobEIP4844]
@@ -46,7 +46,8 @@ const validateBlobTransactionNetworkWrapper = (
   blobs: Uint8Array[],
   commitments: Uint8Array[],
   kzgProofs: Uint8Array[],
-  version: number
+  version: number,
+  kzg: Kzg
 ) => {
   if (!(blobVersionedHashes.length === blobs.length && blobs.length === commitments.length)) {
     throw new Error('Number of blobVersionedHashes, blobs, and commitments not all equal')
@@ -227,6 +228,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     txData: BlobEIP4844Transaction,
     opts?: TxOptions
   ): BlobEIP4844Transaction {
+    if (opts?.common?.customCrypto?.kzg === undefined) {
+      throw new Error('kzg instance required to instantiate blob tx')
+    }
+
     const tx = BlobEIP4844Transaction.fromTxData(
       {
         ...txData,
@@ -244,6 +249,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
+    if (opts.common?.customCrypto?.kzg === undefined) {
+      throw new Error('kzg instance required to instantiate blob tx')
+    }
+
     if (
       equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
     ) {
@@ -270,6 +279,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    * accessList, signatureYParity, signatureR, signatureS]`
    */
   public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
+    if (opts.common?.customCrypto?.kzg === undefined) {
+      throw new Error('kzg instance required to instantiate blob tx')
+    }
+
     if (values.length !== 11 && values.length !== 14) {
       throw new Error(
         'Invalid EIP-4844 transaction. Only expecting 11 values (for unsigned tx) or 14 values (for signed tx).'
@@ -341,6 +354,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     if (!opts || !opts.common) {
       throw new Error('common instance required to validate versioned hashes')
     }
+    console.log(opts)
+    if (opts.common?.customCrypto?.kzg === undefined) {
+      throw new Error('kzg instance required to instantiate blob tx')
+    }
 
     if (
       equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.BlobEIP4844)) === false
@@ -372,7 +389,8 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
       blobs,
       kzgCommitments,
       kzgProofs,
-      version
+      version,
+      opts.common.customCrypto.kzg
     )
 
     // set the network blob data on the tx

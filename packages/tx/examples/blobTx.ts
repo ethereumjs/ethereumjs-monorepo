@@ -9,7 +9,12 @@ try {
   // No-op if KZG is already loaded
 }
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Shanghai,
+  eips: [4844],
+  customCrypto: { kzg },
+})
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',

@@ -6,8 +6,12 @@ import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 
 const main = async () => {
-  await initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+  await initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg: kzg },
+  })
 
   const blobTx = BlobEIP4844Transaction.fromTxData(
     { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },

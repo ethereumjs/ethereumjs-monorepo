@@ -32,6 +32,9 @@ if (isBrowser() === false) {
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
+  customCrypto: {
+    kzg,
+  },
 })
 
 describe('EIP4844 addSignature tests', () => {
@@ -519,6 +522,13 @@ describe('hash() and signature verification', () => {
 
 describe('Network wrapper deserialization test', () => {
   it('should work', async () => {
+    const common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
+    })
     if (isBrowser() === false) {
       const txData = {
         type: '0x3',

@@ -1,4 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
@@ -12,10 +14,17 @@ import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
 
+  // initialize KZG if needed
+
+  try {
+    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    // eslint-disable-next-line
+  } catch {}
+
   // safely change chainId without modifying undelying json
   const commonJson = { ...shardingJson }
   commonJson.config = { ...commonJson.config, chainId: 4844001005 }
-  const common = Common.fromGethGenesis(commonJson, { chain: network })
+  const common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
   common.setHardfork(Hardfork.Cancun)
 
   it('reconstruct cancun block with blob txs', async () => {

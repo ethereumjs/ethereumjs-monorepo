@@ -27,6 +27,9 @@ const sender = Address.fromPrivateKey(pkey)
 const common = Common.fromGethGenesis(genesisJson, {
   chain: genesisJson.ChainName ?? 'devnet',
   hardfork: Hardfork.Cancun,
+  customCrypto: {
+    kzg: kzg,
+  },
 })
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)

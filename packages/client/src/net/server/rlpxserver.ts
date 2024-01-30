@@ -1,5 +1,6 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { Worker, workerData } from 'node:worker_threads'
 
 import { Event } from '../../types'
 import { getClientVersion } from '../../util'

@@ -31,6 +31,9 @@ describe('Precompiles: point evaluation', () => {
       const common = Common.fromGethGenesis(genesisJSON, {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg,
+        },
       })
       const evm = new EVM({
         common,
