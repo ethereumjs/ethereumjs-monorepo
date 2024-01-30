@@ -100,7 +100,9 @@ describe(method, () => {
           kzg,
         },
       })
-      const { chain, execution, server } = await setupChain(gethGenesis, 'customChain')
+      const { chain, execution, server } = await setupChain(gethGenesis, 'customChain', {
+        customCrypto: { kzg },
+      })
       common.setHardfork(Hardfork.Cancun)
       const rpc = getRpcClient(server)
 
