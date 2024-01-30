@@ -401,23 +401,21 @@ const bip32Path = "44'/60'/0'/0/0"
 const run = async () => {
   // Signing a legacy tx
   tx = LegacyTransaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign()
-  unsignedTx = RLP.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
-  let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
-  txData = { ...txData, v, r, s }
-  signedTx = LegacyTransaction.fromTxData(txData, { common })
-  let from = signedTx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
+  tx = tx.getMessageToSign()
+  // ledger signTransaction API expects it to be serialized
+  let { v, r, s } = await eth.signTransaction(bip32Path, RLP.encode(tx))
+  tx.addSignature(v, r, s, true)
+  let from = tx.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
 
   // Signing a 1559 tx
   txData = { value: 1 }
   tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign()
+  tx = tx.getMessageToSign()
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
-  txData = { ...txData, v, r, s }
-  signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  from = signedTx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
+  tx.addSignature(v, r, s)
+  from = tx.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
 }
 
 run()
