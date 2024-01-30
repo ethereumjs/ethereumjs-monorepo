@@ -1,7 +1,14 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { LegacyTransaction } from '@ethereumjs/tx'
-import { bytesToHex, equalsBytes, hexToBytes, toBytes, zeros } from '@ethereumjs/util'
+import {
+  KECCAK256_RLP_ARRAY,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+  toBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { blockFromRpc } from '../src/from-rpc.js'
@@ -236,6 +243,74 @@ describe('[Block]: block functions', () => {
     } catch (error: any) {
       assert.ok((error.message as string).includes('invalid uncle hash'))
     }
+  })
+
+  it('should test data integrity', async () => {
+    const unsignedTx = LegacyTransaction.fromTxData({})
+    const txRoot = await Block.genTransactionsTrieRoot([unsignedTx])
+
+    let block = Block.fromBlockData({
+      transactions: [unsignedTx],
+      header: {
+        transactionsTrie: txRoot,
+      },
+    })
+
+    // Verifies that the "signed tx check" is skipped
+    await block.validateData(false, false)
+
+    async function checkThrowsAsync(fn: Promise<void>, errorMsg: string) {
+      try {
+        await fn
+        assert.fail('should throw')
+      } catch (e: any) {
+        assert.ok((e.message as string).includes(errorMsg))
+      }
+    }
+
+    const zeroRoot = zeros(32)
+
+    // Tx root
+    block = Block.fromBlockData({
+      transactions: [unsignedTx],
+      header: {
+        transactionsTrie: zeroRoot,
+      },
+    })
+    await checkThrowsAsync(block.validateData(false, false), 'invalid transaction trie')
+
+    // Withdrawals root
+    block = Block.fromBlockData(
+      {
+        header: {
+          withdrawalsRoot: zeroRoot,
+          uncleHash: KECCAK256_RLP_ARRAY,
+        },
+      },
+      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai }) }
+    )
+    await checkThrowsAsync(block.validateData(false, false), 'invalid withdrawals trie')
+
+    // Uncle root
+    block = Block.fromBlockData(
+      {
+        header: {
+          uncleHash: zeroRoot,
+        },
+      },
+      { common: new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart }) }
+    )
+    await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
+
+    // Verkle withness
+    const common = new Common({ chain: Chain.Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
+    // Note: `executionWitness: undefined` will still initialize an execution witness in the block
+    // So, only testing for `null` here
+    block = Block.fromBlockData({ executionWitness: null }, { common })
+    await checkThrowsAsync(
+      block.validateData(false, false),
+      'Invalid block: ethereumjs stateless client needs executionWitness'
+    )
   })
 
   it('should test isGenesis (mainnet default)', () => {
