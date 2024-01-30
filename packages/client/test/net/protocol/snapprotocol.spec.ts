@@ -189,17 +189,19 @@ describe('[SnapProtocol]', () => {
       resData
     )
 
-    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await trie.verifyRangeProof(
+      await Trie.verifyRangeProof(
         stateRoot,
         keys[0],
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof
+        <any>proof,
+        {
+          useKeyHashingFunction: keccak256,
+        }
       )
     } catch (e) {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
@@ -328,17 +330,19 @@ describe('[SnapProtocol]', () => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await trie.verifyRangeProof(
+      await Trie.verifyRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof
+        <any>proof,
+        {
+          useKeyHashingFunction: keccak256,
+        }
       )
     } catch (e) {
       assert.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
