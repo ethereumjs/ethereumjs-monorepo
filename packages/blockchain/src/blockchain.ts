@@ -529,7 +529,9 @@ export class Blockchain implements BlockchainInterface {
         let dbOps: DBOp[] = []
 
         if (block.common.chainId() !== this.common.chainId()) {
-          throw new Error('Chain mismatch while trying to put block or header')
+          throw new Error(
+            `Chain mismatch while trying to put block or header. Block chain ID: ${block.common.chainId}, blockchain chain ID: ${this.common.chainId}`
+          )
         }
 
         if (this._validateBlocks && !isGenesis) {

@@ -241,7 +241,9 @@ export class TxPool {
       existingTxGasPrice.maxFee +
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
-      throw new Error('replacement gas too low')
+      throw new Error(
+        `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`
+      )
     }
 
     if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
@@ -249,7 +251,9 @@ export class TxPool {
         existingTx.maxFeePerBlobGas +
         (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
       if (addedTx.maxFeePerBlobGas < minblobGasFee) {
-        throw new Error('replacement blob gas too low')
+        throw new Error(
+          `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`
+        )
       }
     }
   }

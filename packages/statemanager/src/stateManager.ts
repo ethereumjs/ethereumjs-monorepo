@@ -906,7 +906,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         32
       )
       if (!equalsBytes(reportedValue, storageValue)) {
-        throw new Error('Reported trie value does not match storage')
+        throw new Error(`Reported trie value does not match storage, key: ${stProof.key}`)
       }
     }
     return true
