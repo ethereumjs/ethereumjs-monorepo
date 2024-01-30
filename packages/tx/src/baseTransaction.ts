@@ -371,7 +371,7 @@ export abstract class BaseTransaction<T extends TransactionType>
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
           const msg = this._errorMsg(
-            `The chain ID of ${chainIdBigInt} does not match the chain ID of Common (${common.chainId()})`
+            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId}`
           )
           throw new Error(msg)
         }
