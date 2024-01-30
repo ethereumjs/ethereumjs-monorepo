@@ -11,11 +11,11 @@ async function main() {
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
   const proof = await someOtherTrie.createProof(k1)
-  const trie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
+  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
   const otherProof = await someOtherTrie.createProof(k2)
 
-  // To add more proofs to the trie, use `updateTrieFromProof`
-  await trie.updateTrieFromProof(otherProof)
+  // To add more proofs to the trie, use `updateFromProof`
+  await trie.updateFromProof(otherProof)
 
   const value = await trie.get(k1)
   console.log(bytesToUtf8(value!)) // valueOne
