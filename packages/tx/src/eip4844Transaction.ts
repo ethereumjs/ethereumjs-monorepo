@@ -354,7 +354,7 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     if (!opts || !opts.common) {
       throw new Error('common instance required to validate versioned hashes')
     }
-    console.log(opts)
+
     if (opts.common?.customCrypto?.kzg === undefined) {
       throw new Error('kzg instance required to instantiate blob tx')
     }
