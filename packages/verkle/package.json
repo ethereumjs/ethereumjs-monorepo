@@ -51,7 +51,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "5.0.1",
+    "@ethereumjs/rlp": "5.0.2",
     "@ethereumjs/util": "9.0.1",
     "lru-cache": "^10.0.0",
     "rust-verkle-wasm": "^0.0.1"
