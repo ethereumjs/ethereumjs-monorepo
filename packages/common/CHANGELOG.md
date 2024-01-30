@@ -23,7 +23,7 @@ While `EIP-4844` - activating shard blob transactions - is for sure the most pro
 
 - EIP-1153: Transient storage opcodes (`@ethereumjs/evm`)
 - EIP-4788: Beacon block root in the EVM (`@ethereumjs/block`, `@ethereumjs/evm`, `@ethereumjs/vm`)
-- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`)
+- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`, `@ethereumjs/evm`)
 - EIP-5656: MCOPY - Memory copying instruction (`@ethereumjs/evm`)
 - EIP-6780: SELFDESTRUCT only in same transaction (`@ethereumjs/vm`)
 - EIP-7516: BLOBBASEFEE opcode (`@ethereumjs/block`, `@ethereumjs/evm`)
