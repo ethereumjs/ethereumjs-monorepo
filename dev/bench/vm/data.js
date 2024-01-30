@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706528301262,
+  "lastUpdate": 1706601782649,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9a7d6ac4a5e217de892aa4fc2629201148b44b7f",
-          "message": "statemanager: Fix statemanager Browser Example (#3197)\n\n* Use hexToBytes instead of hexStringToBytes\r\n\r\n* Make debug check safe for browsers\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-12-20T10:09:55+01:00",
-          "tree_id": "2f7b5b9b83a48d3cd3d9adc56a46492ba3e959a3",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9a7d6ac4a5e217de892aa4fc2629201148b44b7f"
-        },
-        "date": 1703063567320,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39951,
-            "range": "±2.84%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39399,
-            "range": "±1.95%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39000,
-            "range": "±1.92%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38194,
-            "range": "±2.21%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34702,
-            "range": "±5.92%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.31%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5be55b2857366d7d5ed946023897d499725d3cc1",
+          "message": "Trie proof API refactor (#2949)\n\n* trie: fromProof as static method\r\n\r\n* trie: static verify proof method\r\n\r\n* trie: change old fromProof to 'updateFromProof'\r\n\r\n* update proof use in range.ts\r\n\r\n* update proof api use in statemanager\r\n\r\n* trie: update tests\r\n\r\n* trie: update tests\r\n\r\n* Revert breaking changes\r\n\r\n* change names back\r\n\r\n* Remove commented out imports\r\n\r\n* Remove unnecessary whitespace changes\r\n\r\n* Update function docs to reflect static counterparts\r\n\r\n* Make static version of verifyRangeProof\r\n\r\n* Simplify function names and group static functions\r\n\r\n* Put back necessary import\r\n\r\n* Fix linting issue\r\n\r\n* Remove proofTrie pattern\r\n\r\n* Fix customCrypto accessing error\r\n\r\n* Return proof as any to ignore @typescript-eslint/return-await error\r\n\r\n* Remove unused import\r\n\r\n* Make static fromProof implementation less redundant\r\n\r\n* Persist trie root in static fromProof\r\n\r\n* Add docs for createFromProof\r\n\r\n* Revert \"Remove proofTrie pattern\"\r\n\r\nThis reverts commit 480191201948211f2007a8beed1fd0a191a799c5.\r\n\r\n* Add leveldb import to snapprotocol tests\r\n\r\n* trie: update example\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-01-30T09:00:14+01:00",
+          "tree_id": "90d5b37dad89cc4192507b6458ea65335f475cf4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5be55b2857366d7d5ed946023897d499725d3cc1"
+        },
+        "date": 1706601781238,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42506,
+            "range": "±2.07%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40357,
+            "range": "±3.31%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40425,
+            "range": "±1.87%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39328,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38399,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
