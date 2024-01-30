@@ -87,6 +87,10 @@ Hardforks adding features and/or tx types:
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
 
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
 ### Transaction Types
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
