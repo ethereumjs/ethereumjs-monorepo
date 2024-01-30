@@ -66,7 +66,9 @@ All code examples in `EthereumJS` monorepo library README files are now self-con
 
 ### Other Changes
 
-- TODO
+- Schedule Cancun for testnets, PR [#3211](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3211)
+- Internalize `crc` dependency (security), PR [#3224](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3224)
+- Added `Hardfork.Prague` as a new hardfork (`experimental`), PR [#3139](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3139)
 
 ## 4.1.0 - 2023-10-26
 

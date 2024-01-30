@@ -337,7 +337,7 @@ library supported:
 - `london` (`Hardfork.London`) (since `v2.4.0`)
 - `merge` (`Hardfork.Merge`) (`DEFAULT_HARDFORK`) (since `v2.5.0`)
 - `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
-- `cancun` (`Hardfork.Cancun`) (since `v4.0.0`)
+- `cancun` (`Hardfork.Cancun`) (since `v4.2.0`)
 
 ### Future Hardforks
 
