@@ -873,6 +873,9 @@ describe('EIP 4844 transaction tests', () => {
       const common = Common.fromGethGenesis(genesisJson, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg,
+        },
       })
       common.setHardfork(Hardfork.Cancun)
       const oldGetBlockFunction = Blockchain.prototype.getBlock

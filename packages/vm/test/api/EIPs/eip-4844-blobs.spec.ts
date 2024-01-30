@@ -38,6 +38,9 @@ describe('EIP4844 tests', () => {
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },

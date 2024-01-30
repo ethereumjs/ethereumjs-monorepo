@@ -226,6 +226,9 @@ describe(method, () => {
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
     common.setHardfork(Hardfork.Cancun)
     const { rpc, client } = await baseSetup({

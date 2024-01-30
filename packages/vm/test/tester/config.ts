@@ -1,4 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import * as path from 'path'
 
 /**
@@ -282,6 +284,10 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
  * @returns the Common which should be used
  */
 export function getCommon(network: string): Common {
+  try {
+    initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
+    // eslint-disable-next-line
+  } catch {}
   if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }
@@ -347,6 +353,9 @@ export function getCommon(network: string): Common {
         baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
+        customCrypto: {
+          kzg,
+        },
       }
     )
   }

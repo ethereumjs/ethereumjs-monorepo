@@ -74,6 +74,9 @@ describe(method, () => {
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)

@@ -15,7 +15,6 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
 
   // initialize KZG if needed
-
   try {
     initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
     // eslint-disable-next-line
