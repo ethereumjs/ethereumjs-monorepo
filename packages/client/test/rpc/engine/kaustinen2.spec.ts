@@ -1,4 +1,5 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
+import * as kzg from 'c-kzg'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -18,6 +19,7 @@ async function runBlock(
   { chain, rpc, common }: { chain: Chain; rpc: HttpClient; common: Common },
   { execute, parent }: { execute: any; parent: any }
 ) {
+  common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
   const blockCache = chain.blockCache
 
   const parentPayload = executionPayloadFromBeaconPayload(parent as any)

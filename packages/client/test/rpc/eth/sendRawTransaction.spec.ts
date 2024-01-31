@@ -222,7 +222,7 @@ describe(method, () => {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
     })
-    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
     common.setHardfork(Hardfork.Cancun)
     const { rpc, client } = await baseSetup({
       commonChain: common,

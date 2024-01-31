@@ -9,7 +9,7 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
 const common = Common.custom({ chainId: 1 })
-common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 common.setHardfork('cancun')
 const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
 const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)

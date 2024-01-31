@@ -17,7 +17,7 @@ describe(`${method}: Cancun validations`, () => {
     const { server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
     })
-    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
     const rpc = getRpcClient(server)
     const parentBeaconBlockRoot =

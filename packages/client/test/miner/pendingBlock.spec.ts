@@ -357,7 +357,7 @@ describe('[PendingBlock]', async () => {
       hardfork: Hardfork.Cancun,
     })
 
-    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    common.initializeKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
 
     const { txPool } = setup()
 
@@ -434,7 +434,7 @@ describe('[PendingBlock]', async () => {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
     })
-    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    common.initializeKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
 
     const { txPool } = setup()
 

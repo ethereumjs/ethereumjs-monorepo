@@ -71,7 +71,7 @@ describe(method, () => {
       hardfork: Hardfork.Cancun,
     })
 
-    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+    common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)

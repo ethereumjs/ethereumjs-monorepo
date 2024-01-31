@@ -270,6 +270,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
   if (eips) {
     common.setEIPs(eips.map((e: string) => parseInt(e)))
   }
+  common.initializeKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
   return common
 }
 
@@ -350,7 +351,7 @@ export function getCommon(network: string): Common {
         eips: [3607],
       }
     )
-    common.initializeKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
+    common.initializeKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
     return common
   }
 }
