@@ -127,7 +127,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       )
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return Trie.verifyRangeProof(
+      return await Trie.verifyRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],
