@@ -191,7 +191,7 @@ export class FullEthereumService extends Service {
     // open snapsync instead of execution if instantiated
     // it will open execution when done (or if doesn't need to snap sync)
     if (this.snapsync !== undefined) {
-      // set up execution vm to aviod undefined error in syncWithPeer when vm is being passed to accountfetcher
+      // set up execution vm to avoid undefined error in syncWithPeer when vm is being passed to accountfetcher
       if (this.execution.config.execCommon.gteHardfork(Hardfork.Prague)) {
         if (!this.execution.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
@@ -213,11 +213,6 @@ export class FullEthereumService extends Service {
     } else {
       await this.execution.open()
     }
-
-    // await this.execution.open()
-    // if (this.snapsync !== undefined) {
-    //   await this.snapsync.open()
-    // }
 
     this.txPool.open()
     if (this.config.mine) {
@@ -277,7 +272,6 @@ export class FullEthereumService extends Service {
       }
     } catch (error) {
       this.config.logger.error(`Error building headstate error=${error}`)
-      console.log(error)
     } finally {
       this.building = false
     }

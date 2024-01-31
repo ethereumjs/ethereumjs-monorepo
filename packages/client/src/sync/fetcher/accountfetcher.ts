@@ -374,6 +374,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
+      this.debug(`skipping request with limit lower than highest known hash`)
       return Object.assign([], [{ skipped: true }], { completed: true })
     }
 
