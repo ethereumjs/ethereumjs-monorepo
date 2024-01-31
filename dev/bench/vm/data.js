@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706601782649,
+  "lastUpdate": 1706700349389,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1b035d020733f6fdc8c0bf6204408838386748c8",
-          "message": "Codecov tuning (#3207)\n\n* Add coverage checking and reporting for wallet CI runs\r\n\r\n* Add coverage checking and reporting for genesis CI runs\r\n\r\n* Add coverage run to rlp package workflow\r\n\r\n* Use coverage script for CI coverage report generation\r\n\r\n* Just run node tests for RLP\r\n\r\n* Increase wallet test timeouts\r\n\r\n* Increase wallet test timeout\r\n\r\n* Only run node tests for coverage\r\n\r\n* Comment out tests to see how codecov handles report generation and processing\r\n\r\n* Add arguments for codecov upload action\r\n\r\n* Add arguments for codecov upload action\r\n\r\n* Revert \"Comment out tests to see how codecov handles report generation and processing\"\r\n\r\nThis reverts commit 783dae067e6d6ea43e0295e1dfddd61fb33652a8.\r\n\r\n* Revert \"Add arguments for codecov upload action\"\r\n\r\nThis reverts commit 553bcd5ed89c4c101bc53d4ff0deaa4407f2ae7a.\r\n\r\n* Revert \"Add arguments for codecov upload action\"\r\n\r\nThis reverts commit dff18e5ec968206bf64f5882f1b9be9686da1ea4.\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2023-12-20T11:28:14+01:00",
-          "tree_id": "34c9f04542ff382fae366db3cc24e41de0346627",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/1b035d020733f6fdc8c0bf6204408838386748c8"
-        },
-        "date": 1703068264568,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41397,
-            "range": "±2.32%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38896,
-            "range": "±3.57%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39088,
-            "range": "±2.38%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39055,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37530,
-            "range": "±2.52%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.20%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0ea97e7bf77b6785adaa8a18a7ea2173271125d5",
+          "message": "client: kaustinen syncing (#3179)\n\n* common: add todo to gasPrices from 6800\r\n\r\n* dev accessWitness class on the lines of geth impl\r\n\r\n* integrate accesswitness in evm/vm/runtx flow\r\n\r\n* plugin the gas schedule for tx origin and destination accesses\r\n\r\n* complete, debug and fix the call and create access charges\r\n\r\n* plug the access gas usage on the evm opcode runs\r\n\r\n* debug and fix the code chunk accesses and the poststate setting\r\n\r\n* implement access merging and accessed state tracking and traversing\r\n\r\n* also provide chunkKey for easy reference\r\n\r\n* decode raw accesses to structured ones and debug log them\r\n\r\n* debug and add the missing accesses for coinbase, withdrawals\r\n\r\n* stateManager: implement cache handling in the context of statelessness\r\n\r\n* modify poststate to use accesses from the accesswitness to compare and fix mising chunkKey in returned accesses\r\n\r\n* stateManager: getComputedValue\r\n\r\n* fixes for the getcomputedval fn helper for the code\r\n\r\n* correctly implement the getcontractcode with partial accessed segments available  and corresponding error handling in evm run\r\n\r\n* statemanager: tentative fixes & improvements to code cache handling\r\n\r\n* statemanager: checkpoint code cache\r\n\r\n* fix the code chunk comparision in post state verification\r\n\r\n* rename kaustinen2 local testnet data for\r\n\r\n* fix pre and post state null chunks handling and corresponding get computed fixes\r\n\r\n* setup the client to statelessly execute the verkle blocks randomly from anywhere the chain\r\n\r\n* setup to statelessly run block13 of kaustinen2 in client test spec for easy debugging\r\n\r\n* setup the client kaustinen2 stateless test to test and debug block 16\r\n\r\n* improve the post state witness mismatch logging to be more comprehensible for debugging\r\n\r\n* improve chunk verification tracking logging and fix post/prestate key coding from the witnesses\r\n\r\n* debug and fix code accesses and overhaul/fix accesscharges on create/call\r\n\r\n* add a more complete matching of generated and provided executed witnesses\r\n\r\n* fix return\r\n\r\n* debug, discuss and remove proof of absence charges for contract create for fixing the extra witnesses\r\n\r\n* only charge code accesses if accessed from state and when code is written on contract creation\r\n\r\n* handle bigint treeIndex for the bigint slot and debug/match the predersenhash with kauntinen2 usage\r\n\r\n* client: fix kaustinen tests and migrate to new testing framework\r\n\r\n* shift kaustinen 2 test to block 13\r\n\r\n* client: remove stale kaustinen2 test data\r\n\r\n* vm: adjust rewardAccount new common arg ordering and make it optional\r\n\r\n* add block12 to the spec list\r\n\r\n* move invalid opcode check outside jump analysis\r\n\r\n* small cleanup in runtx\r\n\r\n* Verkle: add VM tests (#3259)\r\n\r\n* vm: add eip6800 tests\r\n\r\n* vm: lint\r\n\r\n* statemanager: statelessVerkleStateManager improve handling for undefined/0x and temporarily not throw for missing version\r\n\r\n* vm: update test description\r\n\r\n* vm: run all 6800 txs\r\n\r\n---------\r\n\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>\r\n\r\n* verkle: throw when account is undefined in state\r\n\r\n* fix the data and type of the expected witness\r\n\r\n---------\r\n\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-01-31T12:20:37+01:00",
+          "tree_id": "c35be261f73eaf4f8eadd9fd4df57e84a0310acb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0ea97e7bf77b6785adaa8a18a7ea2173271125d5"
+        },
+        "date": 1706700347928,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40625,
+            "range": "±2.43%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38517,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39142,
+            "range": "±1.94%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38793,
+            "range": "±2.00%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35021,
+            "range": "±5.21%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
