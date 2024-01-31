@@ -10,7 +10,6 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
@@ -23,19 +22,13 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 const pk = randomBytes(32)
-if (isBrowser() === false) {
-  try {
-    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
-}
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
-  customCrypto: {
-    kzg,
-  },
 })
+if (isBrowser() === false) {
+  common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+}
 
 describe('EIP4844 addSignature tests', () => {
   it('addSignature() -> correctly adds correct signature values', () => {

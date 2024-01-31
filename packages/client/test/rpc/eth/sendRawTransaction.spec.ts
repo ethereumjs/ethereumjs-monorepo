@@ -13,7 +13,6 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -218,18 +217,12 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
     const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
-      customCrypto: {
-        kzg,
-      },
     })
+    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
     common.setHardfork(Hardfork.Cancun)
     const { rpc, client } = await baseSetup({
       commonChain: common,

@@ -10,7 +10,6 @@ import {
   bytesToUtf8,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -48,9 +47,6 @@ export async function getEventSource(): Promise<typeof EventSource> {
 export function stringifyQuery(query: unknown): string {
   return qs.stringify(query, { arrayFormat: 'repeat' })
 }
-
-// Initialize the kzg object with the kzg library
-initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
 
 export async function waitForELOnline(client: Client): Promise<string> {
   for (let i = 0; i < 15; i++) {
@@ -435,6 +431,7 @@ export async function createInlineClient(
   customGenesisState: any,
   datadir: any = Config.DATADIR_DEFAULT
 ) {
+  config.chainCommon.initializeKZG(kzg)
   config.events.setMaxListeners(50)
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`

@@ -8,15 +8,7 @@ import {
   TransactionFactory,
   TransactionType,
 } from '@ethereumjs/tx'
-import {
-  Account,
-  Address,
-  KECCAK256_NULL,
-  MAX_INTEGER,
-  hexToBytes,
-  initKZG,
-  zeros,
-} from '@ethereumjs/util'
+import { Account, Address, KECCAK256_NULL, MAX_INTEGER, hexToBytes, zeros } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -863,60 +855,27 @@ describe('EIP 4844 transaction tests', () => {
     // Hack to detect if running in browser or not
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
+    const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
+    const common = Common.fromGethGenesis(genesisJson, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+    })
     if (isBrowser() === false) {
-      try {
-        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
-        // eslint-disable-next-line
-      } catch {}
+      common.initializeKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+    }
 
-      const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
-      const common = Common.fromGethGenesis(genesisJson, {
-        chain: 'customChain',
-        hardfork: Hardfork.Cancun,
-        customCrypto: {
-          kzg,
-        },
-      })
-      common.setHardfork(Hardfork.Cancun)
-      const oldGetBlockFunction = Blockchain.prototype.getBlock
+    common.setHardfork(Hardfork.Cancun)
+    const oldGetBlockFunction = Blockchain.prototype.getBlock
 
-      // Stub getBlock to produce a valid parent header under EIP 4844
-      Blockchain.prototype.getBlock = async () => {
-        return Block.fromBlockData(
-          {
-            header: BlockHeader.fromHeaderData(
-              {
-                excessBlobGas: 0n,
-                number: 1,
-                parentHash: blockchain.genesisBlock.hash(),
-              },
-              {
-                common,
-                skipConsensusFormatValidation: true,
-              }
-            ),
-          },
-          {
-            common,
-            skipConsensusFormatValidation: true,
-          }
-        )
-      }
-      const blockchain = await Blockchain.create({
-        validateBlocks: false,
-        validateConsensus: false,
-      })
-      const vm = await VM.create({ common, blockchain })
-
-      const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
-
-      const block = Block.fromBlockData(
+    // Stub getBlock to produce a valid parent header under EIP 4844
+    Blockchain.prototype.getBlock = async () => {
+      return Block.fromBlockData(
         {
           header: BlockHeader.fromHeaderData(
             {
-              excessBlobGas: 1n,
-              number: 2,
-              parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
+              excessBlobGas: 0n,
+              number: 1,
+              parentHash: blockchain.genesisBlock.hash(),
             },
             {
               common,
@@ -924,12 +883,39 @@ describe('EIP 4844 transaction tests', () => {
             }
           ),
         },
-        { common, skipConsensusFormatValidation: true }
+        {
+          common,
+          skipConsensusFormatValidation: true,
+        }
       )
-      const res = await vm.runTx({ tx, block, skipBalance: true })
-      assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
-      assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
-      Blockchain.prototype.getBlock = oldGetBlockFunction
     }
+    const blockchain = await Blockchain.create({
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const vm = await VM.create({ common, blockchain })
+
+    const tx = getTransaction(common, 3, true) as BlobEIP4844Transaction
+
+    const block = Block.fromBlockData(
+      {
+        header: BlockHeader.fromHeaderData(
+          {
+            excessBlobGas: 1n,
+            number: 2,
+            parentHash: (await blockchain.getBlock(1n)).hash(), // Faking parent hash with getBlock stub
+          },
+          {
+            common,
+            skipConsensusFormatValidation: true,
+          }
+        ),
+      },
+      { common, skipConsensusFormatValidation: true }
+    )
+    const res = await vm.runTx({ tx, block, skipBalance: true })
+    assert.ok(res.execResult.exceptionError === undefined, 'simple blob tx run succeeds')
+    assert.equal(res.blobGasUsed, 131072n, 'returns correct blob gas used for 1 blob')
+    Blockchain.prototype.getBlock = oldGetBlockFunction
   })
 })

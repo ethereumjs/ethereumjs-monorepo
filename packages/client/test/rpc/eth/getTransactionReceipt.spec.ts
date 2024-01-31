@@ -9,7 +9,6 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -87,19 +86,12 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      try {
-        // Verified KZG is loaded correctly -- NOOP if throws
-        initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-        //eslint-disable-next-line
-      } catch {}
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
       const common = Common.fromGethGenesis(gethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
-        customCrypto: {
-          kzg,
-        },
       })
+      common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
       const { chain, execution, server } = await setupChain(gethGenesis, 'customChain', {
         customCrypto: { kzg },
       })

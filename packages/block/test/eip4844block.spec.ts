@@ -4,7 +4,6 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
@@ -20,16 +19,15 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-if (isBrowser() === false) {
-  try {
-    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
-}
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
 })
+
+if (isBrowser() === false) {
+  common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+}
+
 const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
 
 describe('EIP4844 header tests', () => {

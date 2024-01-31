@@ -4,6 +4,7 @@ import {
   bytesToHex,
   concatBytes,
   hexToBytes,
+  initKZG,
   intToBytes,
   toType,
 } from '@ethereumjs/util'
@@ -36,7 +37,7 @@ import type {
   HardforkConfig,
   HardforkTransitionConfig,
 } from './types.js'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { BigIntLike, Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 type HardforkSpecKeys = string // keyof typeof HARDFORK_SPECS
 type HardforkSpecValues = typeof HARDFORK_SPECS[HardforkSpecKeys]
@@ -1085,6 +1086,20 @@ export class Common {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
     copy.events = new EventEmitter()
     return copy
+  }
+
+  /**
+   * Initialize the KZG library
+   * @param kzg - a KZG implementation that implements the @ethereumjs/util KZG interface
+   * @param pathToTrustedSetup string representing the path to the trusted setup necessary for
+   * instantiating the KZG object - defaults to the official one shipped with EthereumJS
+   */
+  initializeKZG(kzg: Kzg, pathToTrustedSetup?: string) {
+    try {
+      initKZG(kzg, pathToTrustedSetup ?? __dirname + '/../../client/src/trustedSetups/official.txt')
+      this.customCrypto.kzg = kzg
+      //eslint-disable-next-line
+    } catch {} // This is a no-op if KZG is already initialized
   }
 
   static getInitializedChains(customChains?: ChainConfig[]): ChainsConfig {

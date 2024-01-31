@@ -25,7 +25,7 @@ npm install @ethereumjs/tx
 
 This library supports an experimental version of `EIP-4844` blob transactions (see usage instructions below) starting with `v4.1.0`.
 
-For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized once in a global scope. The functionality is then available for all KZG usages throughout different libraries (Transaction, Block, EVM).
+For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
 #### Manual Installation
 
@@ -34,26 +34,24 @@ The following two manual installation steps for a KZG library and the trusted se
 1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
 2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
 
-#### Global Initialization
+#### KZG Initialization
 
-Global initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
+Initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
 
 ```ts
 // ./examples/initKzg.ts
 
-import { initKZG } from '@ethereumjs/util'
-
-// Make the kzg library available globally
 import * as kzg from 'c-kzg'
+import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
-// Initialize the trusted setup
-try {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-} catch {
-  // No-op if KZG is already loaded
-}
+// Instantiate `common`
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+})
+common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
 
-console.log(kzg) // should output the KZG API as an object
+console.log(common.customCrypto.kzg) // should output the KZG API as an object
 ```
 
 ## Usage
@@ -118,16 +116,15 @@ See the following code snipped for an example on how to instantiate (using the `
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bytesToHex, initKZG } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
-try {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-} catch {
-  // No-op if KZG is already loaded
-}
-
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Shanghai,
+  eips: [4844],
+})
+common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',

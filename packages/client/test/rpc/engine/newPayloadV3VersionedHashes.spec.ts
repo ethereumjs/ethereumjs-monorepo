@@ -1,4 +1,3 @@
-import { initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -9,21 +8,17 @@ import { getRpcClient, setupChain } from '../helpers.js'
 
 const method = 'engine_newPayloadV3'
 
-try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
-
 // blocks are missing excessBlobGas and blobGasUsed which will be set to default 0 for 4844 blocks
 // however its not required to set to correct value to test for versioned hashes test cases
 const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', {
+    const { server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
-      customCrypto: { kzg },
     })
+    common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+
     const rpc = getRpcClient(server)
     const parentBeaconBlockRoot =
       '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'

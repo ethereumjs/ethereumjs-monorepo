@@ -10,7 +10,6 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
-  initKZG,
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
@@ -26,22 +25,16 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 const pk = hexToBytes('0x' + '20'.repeat(32))
 const sender = bytesToHex(privateToAddress(pk))
-if (isBrowser() === false) {
-  try {
-    initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
-}
 
 describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
-      customCrypto: {
-        kzg,
-      },
     })
+    if (isBrowser() === false) {
+      common.initializeKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
+    }
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
       { common }
