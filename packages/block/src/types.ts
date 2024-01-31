@@ -88,7 +88,7 @@ export interface VerkleStateDiff {
   suffixDiffs: {
     currentValue: PrefixedHexString | null
     newValue: PrefixedHexString | null
-    suffix: number
+    suffix: number | string
   }[]
 }
 
