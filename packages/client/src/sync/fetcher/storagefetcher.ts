@@ -170,7 +170,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       }
       return setLengthLeft(origin, 32)
     } catch (e: any) {
-      this.error(e.stack)
+      this.debug(e)
     }
     return new Uint8Array(0)
   }
