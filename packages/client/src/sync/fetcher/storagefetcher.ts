@@ -133,7 +133,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof,
+        proof ?? null,
         {
           common: this.config.chainCommon,
           useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
