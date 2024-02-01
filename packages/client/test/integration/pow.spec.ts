@@ -87,9 +87,11 @@ const mineBlockAndstopClient = async (client: EthereumClient) => {
 }
 
 describe('PoW client test', async () => {
+  const client = await setupPowDevnet(minerAddress, true)
   it('starts the client successfully', async () => {
-    const client = await setupPowDevnet(minerAddress, true)
     assert.ok(client.started, 'client started successfully')
+  }, 60000)
+  it('starts the client successfully', async () => {
     await mineBlockAndstopClient(client)
   }, 60000)
 })
