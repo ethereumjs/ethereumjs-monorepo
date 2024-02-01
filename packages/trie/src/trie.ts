@@ -162,6 +162,31 @@ export class Trie {
   }
 
   /**
+   * Static version of verifyProof function with the same behavior.
+   * @param rootHash
+   * @param key
+   * @param proof
+   * @param opts Trie options
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key, or null if valid proof of non-existence.
+   */
+  static async verifyProof(
+    key: Uint8Array,
+    proof: Proof,
+    opts?: TrieOpts
+  ): Promise<Uint8Array | null> {
+    try {
+      const proofTrie = await Trie.fromProof(proof, {
+        ...opts,
+      })
+      const value = await proofTrie.get(key, true)
+      return value
+    } catch (err: any) {
+      throw new Error('Invalid proof provided')
+    }
+  }
+
+  /**
    * Static version of {@link verifyRangeProof} function with the same behavior
    */
   static verifyRangeProof(
@@ -185,6 +210,156 @@ export class Trie {
           return msg
         })
     )
+  }
+
+  /**
+   * Static version of fromProof function with the same behavior.
+   * @param proof
+   * @deprecated Use `updateFromProof`
+   */
+  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
+    const trie = await Trie.create(opts)
+    if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
+      throw new Error('Invalid proof provided')
+    }
+    const root = await trie.updateFromProof(proof)
+    trie.root(root)
+    await trie.persistRoot()
+    return trie
+  }
+
+  /**
+   * {@link verifyRangeProof}
+   */
+  verifyRangeProof(
+    rootHash: Uint8Array,
+    firstKey: Uint8Array | null,
+    lastKey: Uint8Array | null,
+    keys: Uint8Array[],
+    values: Uint8Array[],
+    proof: Uint8Array[] | null
+  ): Promise<boolean> {
+    return verifyRangeProof(
+      rootHash,
+      firstKey && bytesToNibbles(this.appliedKey(firstKey)),
+      lastKey && bytesToNibbles(this.appliedKey(lastKey)),
+      keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
+      values,
+      proof,
+      this._opts.useKeyHashingFunction
+    )
+  }
+
+  /**
+   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
+   * @param key
+   */
+  async createProof(key: Uint8Array): Promise<Proof> {
+    this.DEBUG && this.debug(`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
+    const { stack } = await this.findPath(this.appliedKey(key))
+    const p = stack.map((stackElem) => {
+      return stackElem.serialize()
+    })
+    this.DEBUG && this.debug(`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
+    return p
+  }
+
+  /**
+   * Updates a trie from a proof
+   * @param proof The proof
+   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
+   * @returns The root of the proof
+   */
+  async updateFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
+    this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
+    const opStack = proof.map((nodeValue) => {
+      let key = Uint8Array.from(this.hash(nodeValue))
+      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
+      return {
+        type: 'put',
+        key,
+        value: nodeValue,
+      } as PutBatch
+    })
+
+    if (shouldVerifyRoot) {
+      if (opStack[0] !== undefined && opStack[0] !== null) {
+        if (!equalsBytes(this.root(), opStack[0].key)) {
+          throw new Error('The provided proof does not have the expected trie root')
+        }
+      }
+    }
+
+    await this._db.batch(opStack)
+    if (opStack[0] !== undefined) {
+      return opStack[0].key
+    }
+  }
+
+  /**
+   * Verifies a proof. A static version of this function exists with the same name.
+   * @param rootHash
+   * @param key
+   * @param proof
+   * @throws If proof is found to be invalid.
+   * @returns The value from the key, or null if valid proof of non-existence.
+   */
+  async verifyProof(
+    rootHash: Uint8Array,
+    key: Uint8Array,
+    proof: Proof
+  ): Promise<Uint8Array | null> {
+    this.DEBUG &&
+      this.debug(
+        `Verifying Proof:\n|| Key: ${bytesToHex(key)}\n|| Root: ${bytesToHex(
+          rootHash
+        )}\n|| Proof: (${proof.length}) nodes
+    `,
+        ['VERIFY_PROOF']
+      )
+    const proofTrie = new Trie({
+      root: rootHash,
+      useKeyHashingFunction: this._opts.useKeyHashingFunction,
+      common: this._opts.common,
+    })
+    try {
+      await proofTrie.fromProof(proof)
+    } catch (e: any) {
+      throw new Error('Invalid proof nodes given')
+    }
+    try {
+      this.DEBUG &&
+        this.debug(`Verifying proof by retrieving key: ${bytesToHex(key)} from proof trie`, [
+          'VERIFY_PROOF',
+        ])
+      const value = await proofTrie.get(this.appliedKey(key), true)
+      this.DEBUG && this.debug(`PROOF VERIFIED`, ['VERIFY_PROOF'])
+      return value
+    } catch (err: any) {
+      if (err.message === 'Missing node in DB') {
+        throw new Error('Invalid proof provided')
+      } else {
+        throw err
+      }
+    }
+  }
+
+  /**
+   * Saves the nodes from a proof into the trie. A static version of this function exists with the same name.
+   * @param proof
+   * @deprecated Use `updateFromProof`
+   */
+  async fromProof(proof: Proof): Promise<void> {
+    await this.updateFromProof(proof, false)
+
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
+      let rootKey = Uint8Array.from(this.hash(proof[0]))
+      // TODO: what if we have keyPrefix and we set root? This should not work, right? (all trie nodes are non-reachable)
+      rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
+      this.root(rootKey)
+      await this.persistRoot()
+    }
+    return
   }
 
   static async create(opts?: TrieOpts) {
@@ -226,47 +401,6 @@ export class Trie {
     }
 
     return new Trie(opts)
-  }
-
-  /**
-   * Static version of fromProof function with the same behavior.
-   * @param proof
-   * @deprecated Use `updateFromProof`
-   */
-  static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
-    const trie = await Trie.create(opts)
-    if (opts?.root && !equalsBytes(opts.root, trie.hash(proof[0]))) {
-      throw new Error('Invalid proof provided')
-    }
-    const root = await trie.updateFromProof(proof)
-    trie.root(root)
-    await trie.persistRoot()
-    return trie
-  }
-
-  /**
-   * Static version of verifyProof function with the same behavior.
-   * @param rootHash
-   * @param key
-   * @param proof
-   * @param opts Trie options
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  static async verifyProof(
-    key: Uint8Array,
-    proof: Proof,
-    opts?: TrieOpts
-  ): Promise<Uint8Array | null> {
-    try {
-      const proofTrie = await Trie.fromProof(proof, {
-        ...opts,
-      })
-      const value = await proofTrie.get(key, true)
-      return value
-    } catch (err: any) {
-      throw new Error('Invalid proof provided')
-    }
   }
 
   database(db?: DB<string, string | Uint8Array>, valueEncoding?: ValueEncoding) {
@@ -976,140 +1110,6 @@ export class Trie {
       }
     }
     await this.persistRoot()
-  }
-
-  /**
-   * Saves the nodes from a proof into the trie. A static version of this function exists with the same name.
-   * @param proof
-   * @deprecated Use `updateFromProof`
-   */
-  async fromProof(proof: Proof): Promise<void> {
-    await this.updateFromProof(proof, false)
-
-    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) && proof[0] !== undefined) {
-      let rootKey = Uint8Array.from(this.hash(proof[0]))
-      // TODO: what if we have keyPrefix and we set root? This should not work, right? (all trie nodes are non-reachable)
-      rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
-      this.root(rootKey)
-      await this.persistRoot()
-    }
-    return
-  }
-
-  /**
-   * Updates a trie from a proof
-   * @param proof The proof
-   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
-   * @returns The root of the proof
-   */
-  async updateFromProof(proof: Proof, shouldVerifyRoot: boolean = false) {
-    this.DEBUG && this.debug(`Saving (${proof.length}) proof nodes in DB`, ['FROM_PROOF'])
-    const opStack = proof.map((nodeValue) => {
-      let key = Uint8Array.from(this.hash(nodeValue))
-      key = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, key) : key
-      return {
-        type: 'put',
-        key,
-        value: nodeValue,
-      } as PutBatch
-    })
-
-    if (shouldVerifyRoot) {
-      if (opStack[0] !== undefined && opStack[0] !== null) {
-        if (!equalsBytes(this.root(), opStack[0].key)) {
-          throw new Error('The provided proof does not have the expected trie root')
-        }
-      }
-    }
-
-    await this._db.batch(opStack)
-    if (opStack[0] !== undefined) {
-      return opStack[0].key
-    }
-  }
-
-  /**
-   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
-   * @param key
-   */
-  async createProof(key: Uint8Array): Promise<Proof> {
-    this.DEBUG && this.debug(`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
-    const { stack } = await this.findPath(this.appliedKey(key))
-    const p = stack.map((stackElem) => {
-      return stackElem.serialize()
-    })
-    this.DEBUG && this.debug(`Proof created with (${stack.length}) nodes`, ['CREATE_PROOF'])
-    return p
-  }
-
-  /**
-   * Verifies a proof. A static version of this function exists with the same name.
-   * @param rootHash
-   * @param key
-   * @param proof
-   * @throws If proof is found to be invalid.
-   * @returns The value from the key, or null if valid proof of non-existence.
-   */
-  async verifyProof(
-    rootHash: Uint8Array,
-    key: Uint8Array,
-    proof: Proof
-  ): Promise<Uint8Array | null> {
-    this.DEBUG &&
-      this.debug(
-        `Verifying Proof:\n|| Key: ${bytesToHex(key)}\n|| Root: ${bytesToHex(
-          rootHash
-        )}\n|| Proof: (${proof.length}) nodes
-    `,
-        ['VERIFY_PROOF']
-      )
-    const proofTrie = new Trie({
-      root: rootHash,
-      useKeyHashingFunction: this._opts.useKeyHashingFunction,
-      common: this._opts.common,
-    })
-    try {
-      await proofTrie.fromProof(proof)
-    } catch (e: any) {
-      throw new Error('Invalid proof nodes given')
-    }
-    try {
-      this.DEBUG &&
-        this.debug(`Verifying proof by retrieving key: ${bytesToHex(key)} from proof trie`, [
-          'VERIFY_PROOF',
-        ])
-      const value = await proofTrie.get(this.appliedKey(key), true)
-      this.DEBUG && this.debug(`PROOF VERIFIED`, ['VERIFY_PROOF'])
-      return value
-    } catch (err: any) {
-      if (err.message === 'Missing node in DB') {
-        throw new Error('Invalid proof provided')
-      } else {
-        throw err
-      }
-    }
-  }
-
-  /**
-   * {@link verifyRangeProof}
-   */
-  verifyRangeProof(
-    rootHash: Uint8Array,
-    firstKey: Uint8Array | null,
-    lastKey: Uint8Array | null,
-    keys: Uint8Array[],
-    values: Uint8Array[],
-    proof: Uint8Array[] | null
-  ): Promise<boolean> {
-    return verifyRangeProof(
-      rootHash,
-      firstKey && bytesToNibbles(this.appliedKey(firstKey)),
-      lastKey && bytesToNibbles(this.appliedKey(lastKey)),
-      keys.map((k) => this.appliedKey(k)).map(bytesToNibbles),
-      values,
-      proof,
-      this._opts.useKeyHashingFunction
-    )
   }
 
   // This method verifies if all keys in the trie (except the root) are reachable
