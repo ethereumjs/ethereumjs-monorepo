@@ -184,9 +184,7 @@ export class Trie {
     opts?: TrieOpts
   ): Promise<Uint8Array | null> {
     try {
-      const proofTrie = await Trie.fromProof(proof, {
-        ...opts,
-      })
+      const proofTrie = await Trie.createFromProof(proof, opts)
       const value = await proofTrie.get(key, true)
       return value
     } catch (err: any) {
