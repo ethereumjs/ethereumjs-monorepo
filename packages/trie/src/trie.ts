@@ -358,7 +358,7 @@ export class Trie {
       common: this._opts.common,
     })
     try {
-      await proofTrie.fromProof(proof)
+      await proofTrie.updateFromProof(proof, true)
     } catch (e: any) {
       throw new Error('Invalid proof nodes given')
     }
