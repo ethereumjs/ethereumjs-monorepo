@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.1.0 - 2024-02-01
+
+### WASM Crypto Support
+
+With this release round there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192).
+
+This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation, see `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for some detailed guidance on how to use.
+
+### Other Changes
+
+- More modern async trie iteration with web streams (see new `createAsyncReadStream()` method), PR [#3231](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3231)
+- Dependency Updates, PR [#3212](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3212)
+
 ## 6.0.1 - 2023-10-26
 
 ### Native Support for Uint8Array Values in DBs
