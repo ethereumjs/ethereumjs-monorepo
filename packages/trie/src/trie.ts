@@ -151,7 +151,7 @@ export class Trie {
    * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
    * from the root node to the leaf node storing state data. This function does not check to see if the passed in root matches the
    * root node of the proof.
-   * @param proof proof to create trie from
+   * @param proof an EIP-1186 proof to create trie from
    * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
    * @param trieOpts trie opts to be applied to returned trie
    * @returns new trie created from given proof
@@ -173,7 +173,7 @@ export class Trie {
    * from the root node to the leaf node storing state data.
    * @param rootHash
    * @param key
-   * @param proof
+   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
    * @param opts Trie options
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
@@ -234,8 +234,8 @@ export class Trie {
   /**
    * Static version of fromProof function. If a root is provided in the opts param, the proof will be checked to have the same expected root. An
    * (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param proof
-   * @deprecated Use `updateFromProof`
+   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
+   * @deprecated Use `createFromProof`
    */
   static async fromProof(proof: Proof, opts?: TrieOpts): Promise<Trie> {
     const trie = await Trie.create(opts)
@@ -300,7 +300,7 @@ export class Trie {
    * Updates a trie from a proof by putting all the nodes in the proof into the trie. If a trie is being updated with multiple proofs, {@param shouldVerifyRoot} can
    * be passed as false in order to not immediately throw on an unexpected root, so that root verification can happen after all proofs and their nodes have been added.
    * An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param proof The proof to update the trie from
+   * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof to update the trie from.
    * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
    * @returns The root of the proof
    */
@@ -335,7 +335,7 @@ export class Trie {
    * contains the encoded trie nodes from the root node to the leaf node storing state data. A static version of this function exists with the same name.
    * @param rootHash
    * @param key
-   * @param proof
+   * @param proof an EIP-1186 proof to verify the key against
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
    */
@@ -380,8 +380,10 @@ export class Trie {
   }
 
   /**
-   * Saves the nodes from a proof into the trie. A static version of this function exists with the same name.
-   * @param proof
+   * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. An EIP-1186 proof contains the encoded trie nodes from the root
+   * node to the leaf node storing state data. This function does not check if the proof has the same expected root. A static version of this function exists
+   * with the same name.
+   * @param proof an EIP-1186 proof to update the trie from
    * @deprecated Use `updateFromProof`
    */
   async fromProof(proof: Proof): Promise<void> {
