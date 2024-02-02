@@ -48,7 +48,7 @@
   "dependencies": {
     "@ethereumjs/block": "^5.1.0",
     "@ethereumjs/common": "^4.2.0",
-    "@ethereumjs/ethash": "^3.0.1",
+    "@ethereumjs/ethash": "^3.0.2",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/trie": "^6.1.0",
     "@ethereumjs/tx": "^5.2.0",

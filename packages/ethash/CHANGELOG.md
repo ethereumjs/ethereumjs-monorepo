@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+### 3.0.2 - 2024-02-01
+
+Maintenance release with dependency updates, see PR [#3261](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3261)
+
 ## 3.0.1 - 2023-10-26
 
 - Performance: Cache often used BigInt constants, PR [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
