@@ -171,10 +171,10 @@ export class Trie {
   /**
    * Static version of verifyProof function with the same behavior. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes
    * from the root node to the leaf node storing state data.
-   * @param rootHash
-   * @param key
+   * @param rootHash Root hash of the trie that this proof was created from and is being verified for
+   * @param key Key that is being verified and that the proof is created for
    * @param proof An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
-   * @param opts Trie options
+   * @param opts optional, the opts may include a custom hashing function to use with the trie for proof verification
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
    */
@@ -284,7 +284,7 @@ export class Trie {
    * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
    * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
    * serialized branch, extension, and/or leaf nodes.
-   * @param key
+   * @param key key to create a proof for
    */
   async createProof(key: Uint8Array): Promise<Proof> {
     this.DEBUG && this.debug(`Creating Proof for Key: ${bytesToHex(key)}`, ['CREATE_PROOF'])
@@ -333,8 +333,8 @@ export class Trie {
   /**
    * Verifies a proof by putting all of its nodes into a trie and attempting to get the proven key. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof
    * contains the encoded trie nodes from the root node to the leaf node storing state data. A static version of this function exists with the same name.
-   * @param rootHash
-   * @param key
+   * @param rootHash Root hash of the trie that this proof was created from and is being verified for
+   * @param key Key that is being verified and that the proof is created for
    * @param proof an EIP-1186 proof to verify the key against
    * @throws If proof is found to be invalid.
    * @returns The value from the key, or null if valid proof of non-existence.
