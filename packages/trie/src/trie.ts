@@ -152,12 +152,17 @@ export class Trie {
    * from the root node to the leaf node storing state data. This function does not check to see if the passed in root matches the
    * root node of the proof.
    * @param proof proof to create trie from
+   * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
    * @param trieOpts trie opts to be applied to returned trie
    * @returns new trie created from given proof
    */
-  static async createFromProof(proof: Proof, trieOpts?: TrieOpts) {
+  static async createFromProof(
+    proof: Proof,
+    trieOpts?: TrieOpts,
+    shouldVerifyRoot: boolean = false
+  ) {
     const trie = new Trie(trieOpts)
-    const root = await trie.updateFromProof(proof, false)
+    const root = await trie.updateFromProof(proof, shouldVerifyRoot)
     trie.root(root)
     await trie.persistRoot()
     return trie
