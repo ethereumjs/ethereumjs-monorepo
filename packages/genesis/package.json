@@ -65,6 +65,6 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@ethereumjs/trie": "^6.0.1"
+    "@ethereumjs/trie": "^6.1.0"
   }
 }

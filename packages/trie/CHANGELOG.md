@@ -8,6 +8,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 6.1.0 - 2024-02-01
 
+### Extended EIP-1186 Proof Functionality
+
+This release complements on [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proof functionality, see PR [#2949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2949) and [#3267](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3267/files).
+
+A new static `Trie.createFromProof()` constructor now allows for an easier instantiation of a trie given an EIP-1186 conformant proof, which can be created from an existing trie using the `trie.createProof()` method.
+
+There are also new static methods for the verification of proofs, namely `Trie.verifyProof()` to verify a proof for a single key as well as `Trie.verifyRangeProof()` for a range of keys.
+
+Additionaly all proof related functionality is now better documented and there are README examples allowing for an easier entry to the topic.
+
+Also note that along with this release round there is additional higher level proof functionality available shipped within the `@ethereumjs/statemanager` package.
+
 ### WASM Crypto Support
 
 With this release round there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192).
