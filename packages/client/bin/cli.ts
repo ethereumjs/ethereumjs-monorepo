@@ -13,6 +13,7 @@ import {
   ecrecover,
   ecsign,
   hexToBytes,
+  initKZG,
   parseGethGenesisState,
   randomBytes,
   setLengthLeft,
@@ -806,6 +807,8 @@ async function run() {
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
 
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
+
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
     await waitReadyPolkadotSha256()
@@ -858,6 +861,7 @@ async function run() {
     cryptoFunctions.ecdsaSign = ecdsaSign
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
+  cryptoFunctions.kzg = kzg
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
@@ -952,7 +956,6 @@ async function run() {
     }
   }
 
-  common.initializeKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined

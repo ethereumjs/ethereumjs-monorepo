@@ -10,6 +10,7 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
@@ -66,12 +67,17 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+
+    try {
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+    } catch {
+      //no-op
+    }
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
-
-    common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)

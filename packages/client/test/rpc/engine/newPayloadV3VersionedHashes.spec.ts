@@ -1,3 +1,4 @@
+import { initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -14,10 +15,15 @@ const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const { server, common } = await setupChain(genesisJSON, 'post-merge', {
+    try {
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+    } catch {
+      // no-op
+    }
+    const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
+      customCrypto: { kzg },
     })
-    common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
     const rpc = getRpcClient(server)
     const parentBeaconBlockRoot =

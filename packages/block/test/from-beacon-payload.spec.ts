@@ -1,4 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -10,16 +11,20 @@ import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+} catch {
+  // no-op
+}
+
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
 
   // safely change chainId without modifying undelying json
   const commonJson = { ...shardingJson }
   commonJson.config = { ...commonJson.config, chainId: 4844001005 }
-  const common = Common.fromGethGenesis(commonJson, { chain: network })
+  const common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
   common.setHardfork(Hardfork.Cancun)
-
-  common.initializeKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
 
   it('reconstruct cancun block with blob txs', async () => {
     for (const payload of [payload87335, payload87475]) {

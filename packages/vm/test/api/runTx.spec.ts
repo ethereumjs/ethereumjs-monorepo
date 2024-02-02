@@ -8,7 +8,15 @@ import {
   TransactionFactory,
   TransactionType,
 } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_NULL, MAX_INTEGER, hexToBytes, zeros } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  KECCAK256_NULL,
+  MAX_INTEGER,
+  hexToBytes,
+  initKZG,
+  zeros,
+} from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
@@ -855,14 +863,20 @@ describe('EIP 4844 transaction tests', () => {
     // Hack to detect if running in browser or not
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
+    if (isBrowser() === false) {
+      try {
+        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+      } catch {
+        // no-op
+      }
+    }
+
     const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
-    if (isBrowser() === false) {
-      common.initializeKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
-    }
 
     common.setHardfork(Hardfork.Cancun)
     const oldGetBlockFunction = Blockchain.prototype.getBlock

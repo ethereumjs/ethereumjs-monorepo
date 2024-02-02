@@ -12,7 +12,6 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 import * as fs from 'fs/promises'
 import { Level } from 'level'
 import { execSync, spawn } from 'node:child_process'
@@ -431,7 +430,6 @@ export async function createInlineClient(
   customGenesisState: any,
   datadir: any = Config.DATADIR_DEFAULT
 ) {
-  config.chainCommon.initializeKZG(kzg)
   config.events.setMaxListeners(50)
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
     `${datadir}/${common.chainName()}/chainDB`

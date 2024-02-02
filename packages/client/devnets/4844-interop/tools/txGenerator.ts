@@ -8,11 +8,14 @@ import {
   getBlobs,
   bytesToHex,
   hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 
 import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
+
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
@@ -23,8 +26,8 @@ const sender = Address.fromPrivateKey(pkey)
 const common = Common.fromGethGenesis(genesisJson, {
   chain: genesisJson.ChainName ?? 'devnet',
   hardfork: Hardfork.Cancun,
+  customCrypto: { kzg },
 })
-common.initializeKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
 
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
