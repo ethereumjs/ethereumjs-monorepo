@@ -148,7 +148,9 @@ export class Trie {
   }
 
   /**
-   * Create a trie from a given proof
+   * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
+   * from the root node to the leaf node storing state data. This function does not check to see if the passed in root matches the
+   * root node of the proof.
    * @param proof proof to create trie from
    * @param trieOpts trie opts to be applied to returned trie
    * @returns new trie created from given proof
@@ -162,7 +164,8 @@ export class Trie {
   }
 
   /**
-   * Static version of verifyProof function with the same behavior.
+   * Static version of verifyProof function with the same behavior. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes
+   * from the root node to the leaf node storing state data.
    * @param rootHash
    * @param key
    * @param proof
@@ -187,7 +190,18 @@ export class Trie {
   }
 
   /**
-   * Static version of {@link verifyRangeProof} function with the same behavior
+   * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
+   * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
+   * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
+   * version of this function also exists.
+   * @param rootHash - root hash of state trie this proof is being verified against.
+   * @param firstKey - first key of range being proven.
+   * @param lastKey - last key of range being proven.
+   * @param keys - key list of leaf data being proven.
+   * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
+   * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
+   * @param opts - optional, the opts may include a custom hashing function to use with the trie for proof verification
+   * @returns a flag to indicate whether there exists more trie node in the trie
    */
   static verifyRangeProof(
     rootHash: Uint8Array,
@@ -213,7 +227,8 @@ export class Trie {
   }
 
   /**
-   * Static version of fromProof function with the same behavior.
+   * Static version of fromProof function. If a root is provided in the opts param, the proof will be checked to have the same expected root. An
+   * (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
    * @param proof
    * @deprecated Use `updateFromProof`
    */
@@ -229,7 +244,17 @@ export class Trie {
   }
 
   /**
-   * {@link verifyRangeProof}
+   * A range proof is a proof that includes the encoded trie nodes from the root node to leaf node for one or more branches of a trie,
+   * allowing an entire range of leaf nodes to be validated. This is useful in applications such as snap sync where contiguous ranges
+   * of state trie data is received and validated for constructing world state, locally. Also see {@link verifyRangeProof}. A static
+   * version of this function also exists.
+   * @param rootHash - root hash of state trie this proof is being verified against.
+   * @param firstKey - first key of range being proven.
+   * @param lastKey - last key of range being proven.
+   * @param keys - key list of leaf data being proven.
+   * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
+   * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
+   * @returns a flag to indicate whether there exists more trie node in the trie
    */
   verifyRangeProof(
     rootHash: Uint8Array,
@@ -251,7 +276,9 @@ export class Trie {
   }
 
   /**
-   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}.
+   * Creates a proof from a trie and key that can be verified using {@link Trie.verifyProof}. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains
+   * the encoded trie nodes from the root node to the leaf node storing state data. The returned proof will be in the format of an array that contains Uint8Arrays of
+   * serialized branch, extension, and/or leaf nodes.
    * @param key
    */
   async createProof(key: Uint8Array): Promise<Proof> {
@@ -265,8 +292,10 @@ export class Trie {
   }
 
   /**
-   * Updates a trie from a proof
-   * @param proof The proof
+   * Updates a trie from a proof by putting all the nodes in the proof into the trie. If a trie is being updated with multiple proofs, {@param shouldVerifyRoot} can
+   * be passed as false in order to not immediately throw on an unexpected root, so that root verification can happen after all proofs and their nodes have been added.
+   * An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof contains the encoded trie nodes from the root node to the leaf node storing state data.
+   * @param proof The proof to update the trie from
    * @param shouldVerifyRoot If `true`, verifies that the root key of the proof matches the trie root. Throws if this is not the case.
    * @returns The root of the proof
    */
@@ -297,7 +326,8 @@ export class Trie {
   }
 
   /**
-   * Verifies a proof. A static version of this function exists with the same name.
+   * Verifies a proof by putting all of its nodes into a trie and attempting to get the proven key. An (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof
+   * contains the encoded trie nodes from the root node to the leaf node storing state data. A static version of this function exists with the same name.
    * @param rootHash
    * @param key
    * @param proof
