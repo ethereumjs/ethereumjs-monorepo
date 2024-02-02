@@ -69,7 +69,7 @@ Caches now "survive" a flush operation and especially long-lived usage scenarios
 
 Have a loot at the extended `CacheOptions` on how to use and leverage the new cache system.
 
-#### Instantiating from a proof
+#### Instantiating from a Proof
 
 The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
 
@@ -202,6 +202,10 @@ Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM
 ##### Further reference
 
 Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
+
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for underlying trie keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
 ## Browser
 
