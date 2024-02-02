@@ -70,7 +70,7 @@ When the static `Trie.create` constructor is used without any options, the `trie
 #### `.createFromProof()`
 
 ```ts
-// ./examples/staticCreateTrieFromProof.ts
+// ./examples/createFromProof.ts
 
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8 } from '@ethereumjs/util'
