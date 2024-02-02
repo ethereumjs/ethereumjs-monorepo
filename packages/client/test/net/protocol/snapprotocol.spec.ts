@@ -191,17 +191,9 @@ describe('[SnapProtocol]', () => {
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await Trie.verifyRangeProof(
-        stateRoot,
-        keys[0],
-        keys[keys.length - 1],
-        keys,
-        values,
-        <any>proof,
-        {
-          useKeyHashingFunction: keccak256,
-        }
-      )
+      await Trie.verifyRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+        useKeyHashingFunction: keccak256,
+      })
     } catch (e) {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
@@ -338,7 +330,7 @@ describe('[SnapProtocol]', () => {
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof,
+        proof,
         {
           useKeyHashingFunction: keccak256,
         }
