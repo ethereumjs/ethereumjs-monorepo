@@ -12,6 +12,7 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   bigIntToBytes,
+  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -347,6 +348,13 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       block.header.timestamp
     )
   }
+  if (this.common.isActivatedEIP(2935)) {
+    if (this.DEBUG) {
+      debug(`accumulate parentBlockHash `)
+    }
+
+    await accumateParentBlockhash.bind(this)(block.header.number, block.header.parentHash)
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -374,6 +382,20 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   }
 
   return blockResults
+}
+
+export async function accumateParentBlockhash(this: VM, number: bigint, hash: Uint8Array) {
+  const historyAddress = Address.fromString(
+    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  )
+
+  if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
+    await this.evm.journal.putAccount(historyAddress, new Account())
+  }
+
+  const key = setLengthLeft(bigIntToBytes(number), 32)
+
+  await this.stateManager.putContractStorage(historyAddress, key, hash)
 }
 
 export async function accumulateParentBeaconBlockRoot(

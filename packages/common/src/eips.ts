@@ -7,6 +7,7 @@ type EIPsDict = {
 }
 
 enum Status {
+  Stagnant = 'stagnant',
   Draft = 'draft',
   Review = 'review',
   Final = 'final',
@@ -187,6 +188,19 @@ export const EIPs: EIPsDict = {
       accessListAddressCost: {
         v: 2400,
         d: 'Gas cost per storage key in an Access List transaction',
+      },
+    },
+  },
+  2935: {
+    comment: 'Save historical block hashes in state',
+    url: 'https://eips.ethereum.org/EIPS/eip-2935',
+    status: Status.Stagnant,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+    vm: {
+      historyStorageAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The address where the historical blockhashes are stored',
       },
     },
   },
