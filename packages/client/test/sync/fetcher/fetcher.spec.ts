@@ -65,22 +65,22 @@ describe('should handle expiration', async () => {
   td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
     new Error('err0')
   )
-  td.when((fetcher as any).pool.contains({ idle: false })).thenReturn(true)
-  ;(fetcher as any).in.insert(job)
-  ;(fetcher as any)._readableState = []
-  ;(fetcher as any).running = true
-  ;(fetcher as any).total = 10
+  td.when(fetcher['pool'].contains({ idle: false } as any)).thenReturn(true)
+  fetcher['in'].insert(job as any)
+  fetcher['_readableState'] = []
+  fetcher['running'] = true
+  fetcher['total'] = 10
   fetcher.next()
   await new Promise((resolve) => {
-    setTimeout(resolve, 200)
+    setTimeout(resolve, 10)
   })
   it('should expire', () => {
+    assert.equal((fetcher as any).in.length, 1, 'enqueued job')
     assert.deepEqual(
       job as any,
       { index: 0, peer: { idle: false }, state: 'expired' },
       'expired job'
     )
-    assert.equal((fetcher as any).in.length, 1, 'enqueued job')
   })
 })
 
