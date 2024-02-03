@@ -17,14 +17,14 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it('initPreState()', async () => {
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   it('getAccount()', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
       Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')

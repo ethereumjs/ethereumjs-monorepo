@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
+  Address,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   bigIntToBytes,
@@ -44,7 +45,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -122,6 +123,7 @@ const PUSH1 = PUSH_OFFSET + 1
 const PUSH32 = PUSH_OFFSET + 32
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
+const BLOCKHASH_ADDRESS = Address.fromString('0xfffffffffffffffffffffffffffffffffffffffe')
 
 /**
  * Stateless Verkle StateManager implementation for the VM.
@@ -155,6 +157,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   protected readonly DEBUG: boolean = false
 
+  private _blockNum = BigInt(0)
   private _executionWitness?: VerkleExecutionWitness
 
   private _proof: Uint8Array | undefined
@@ -244,9 +247,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   public initVerkleExecutionWitness(
+    blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
     accessWitness?: AccessWitness
   ) {
+    this._blockNum = blockNum
     if (executionWitness === null || executionWitness === undefined) {
       throw Error(`Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`)
     }
@@ -354,7 +359,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   shallowCopy(): EVMStateManagerInterface {
     const stateManager = new StatelessVerkleStateManager()
-    stateManager.initVerkleExecutionWitness(this._executionWitness!)
+    stateManager.initVerkleExecutionWitness(this._blockNum, this._executionWitness!)
     return stateManager
   }
 
@@ -652,6 +657,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // switch to false if postVerify fails
     let postVerified = true
 
+    // ignore the BLOCKHASH witness as its not implemented right now also there is an issue with it
+    // on k3 network
+    const blockHashChunkKey = bytesToHex(
+      this.getTreeKeyForStorageSlot(BLOCKHASH_ADDRESS, this._blockNum - BigInt(1))
+    )
+
     for (const accessedState of this.accessWitness!.accesses()) {
       const { address, type } = accessedState
       let extraMeta = ''
@@ -705,8 +716,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     for (const canChunkKey of Object.keys(this._postState)) {
       if (accessedChunks.get(canChunkKey) === undefined) {
-        debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
-        postVerified = false
+        // ignore the blockhash chunk ket
+        if (canChunkKey !== blockHashChunkKey) {
+          debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
+          postVerified = false
+        } else {
+          debug(
+            `Ignoring the missing chunk access for BLOCKHASH witness canChunkKey=${canChunkKey}`
+          )
+        }
       }
     }
 
