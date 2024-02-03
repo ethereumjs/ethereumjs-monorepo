@@ -2,15 +2,15 @@ import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereum
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import blocks from '../../testdata/blocks/kaustinen2.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
+import blocks from '../../testdata/blocks/kaustinen3.json'
+import genesisJSON from '../../testdata/geth-genesis/kaustinen3.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'
-const genesisVerkleStateRoot = '0x5e8519756841faf0b2c28951c451b61a4b407b70a5ce5b57992f4bec973173ff'
-const genesisVerkleBlockHash = '0x0884fa3d670543463f7e1d9ea007332e1f8a3564ecf891de95a76e751cde45d7'
+const genesisVerkleStateRoot = '0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'
+const genesisVerkleBlockHash = '0x4a6094d80027992a76401f0f714e88368f05e6975928d5b644f3b8f9f597245c'
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
@@ -48,9 +48,7 @@ describe(`valid verkle network setup`, async () => {
   // to not do clean init of the statemanager. this isn't a problem in sequential
   // execution, but need to be fixed up in the stateless random execution
   const testCases = [
-    // 'block12',
-    'block13',
-    // 'block16',
+    'block15',
   ] as const
 
   for (const testCase of testCases) {
