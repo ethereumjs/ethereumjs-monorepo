@@ -397,12 +397,12 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  *
  * NOTE: Currently only supports verification when the length of firstKey and lastKey are the same.
  *
- * @param rootHash - root hash.
- * @param firstKey - first key.
- * @param lastKey - last key.
- * @param keys - key list.
- * @param values - value list, one-to-one correspondence with keys.
- * @param proof - proof node list, if proof is null, both `firstKey` and `lastKey` must be null
+ * @param rootHash - root hash of state trie this proof is being verified against.
+ * @param firstKey - first key of range being proven.
+ * @param lastKey - last key of range being proven.
+ * @param keys - key list of leaf data being proven.
+ * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
+ * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
 export async function verifyRangeProof(
