@@ -225,21 +225,9 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
 
     if (this.common.isActivatedEIP(6800)) {
+      // transaction to,from fees have been waived off
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
-          message.authcallOrigin ?? message.caller
-        )
-        gasLimit -= originAccessGas
-        if (gasLimit < BIGINT_0) {
-          if (this.DEBUG) {
-            debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
-          }
-          return { execResult: OOGResult(message.gasLimit) }
-        } else {
-          if (this.DEBUG) {
-            debugGas(`Origin access used (${originAccessGas} gas (-> ${gasLimit}))`)
-          }
-        }
+        message.accessWitness!.touchTxOriginAndComputeGas(message.authcallOrigin ?? message.caller)
       }
     }
 
@@ -258,22 +246,12 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
+      // transaction to,from fees have been waived off
       if (message.depth === 0) {
         const sendsValue = message.value !== BIGINT_0
-        const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
+        message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
           sendsValue,
         })
-        gasLimit -= destAccessGas
-        if (gasLimit < BIGINT_0) {
-          if (this.DEBUG) {
-            debugGas(`Destination access charged(${destAccessGas}) caused OOG (-> ${gasLimit})`)
-          }
-          return { execResult: OOGResult(message.gasLimit) }
-        } else {
-          if (this.DEBUG) {
-            debugGas(`Destination access used (${destAccessGas} gas (-> ${gasLimit}))`)
-          }
-        }
       }
     }
 
