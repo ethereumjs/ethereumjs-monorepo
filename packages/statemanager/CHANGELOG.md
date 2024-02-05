@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 Coming with the work from PR [#3186](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3186) it is now possible to instantiate a new state manager from an [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) conformant proof with the new `DefaultStateManager.fromProof()` static constructor.
 
-Together with the existing `createProof()` functionality it is now extremely handy to create proofs on an very high (in the sense of: abstract) API level for account data and storage without having to deal with underlying trie proof functionality.
+Together with the existing `createProof()` functionality it is now extremely handy to create proofs on a very high (in the sense of: abstract) API level for account and storage data without having to deal with the underlying trie proof functionality.
 
 See trie [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#instantiating-from-a-proof) for a comprehensive example on this.
 

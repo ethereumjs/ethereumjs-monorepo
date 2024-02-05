@@ -28,7 +28,7 @@ This can e.g. be used to replace time-consuming primitives like the commonly use
 
 ### Self-Contained (and Working 🙂) README Examples
 
-All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+All code examples in the `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in their respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect, all examples are now run in CI on new PRs and so do not risk getting outdated or broken over time.
 
 ### Other Changes
 
