@@ -220,6 +220,14 @@ Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
+## Events
+
+The `Blockchain` class has a public property `events` which contains an `EventEmitter`. Following events are emitted on which you can react within your code:
+
+| Event                    | Description                                 |
+| ------------------------ | ------------------------------------------- |
+| `deletedCanonicalBlocks` | Emitted when blocks are reorged and deleted |
+
 ## Developer
 
 For debugging blockchain control flows the [debug](https://github.com/visionmedia/debug) library is used and can be activated on the CL with `DEBUG=[Logger Selection] node [Your Script to Run].js`.

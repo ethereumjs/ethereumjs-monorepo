@@ -40,6 +40,7 @@ All code examples in `EthereumJS` monorepo library README files are now self-con
 
 ### Other Changes
 
+- New `deletedCanonicalBlocks` event, PR [#3146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3146)
 - Improved receipt reorg logic, PR [#3146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3146)
 
 ## 7.0.1 - 2023-10-26
