@@ -26,6 +26,18 @@ import type { Hardfork } from '@ethereumjs/common'
 
 const INVALID_PARAMS = -32602
 
+export enum PutStatus {
+  VALID = 'VALID',
+  INVALID = 'INVALID',
+}
+
+type FillStatus = {
+  status: PutStatus
+  height: bigint
+  hash: Uint8Array
+  validationError?: string
+}
+
 type SkeletonStatus = {
   progress: SkeletonProgress
   linked: boolean
@@ -89,6 +101,7 @@ export class Skeleton extends MetaDBManager {
   private _lock = new Lock()
 
   private status: SkeletonStatus
+  fillStatus: FillStatus | null = null
 
   private started: number /** Timestamp when the skeleton syncer was created */
 
@@ -109,8 +122,6 @@ export class Skeleton extends MetaDBManager {
 
   private lastFcuTime = 0
   private lastsyncedAt = 0
-
-  private fillLogIndex = 0
 
   private STATUS_LOG_INTERVAL = 8000 /** How often to log sync status (in ms) */
 
@@ -536,6 +547,12 @@ export class Skeleton extends MetaDBManager {
             }
           }
         }
+
+        // if chain head reset needs to be done i.e. fill not started or chain is not linked because of reorg
+        // fillStatus should be set null
+        if (this.status.canonicalHeadReset || !this.status.linked) {
+          this.fillStatus = null
+        }
       }
 
       // only add to unfinalized cache if this is announcement and before canonical head
@@ -644,7 +661,8 @@ export class Skeleton extends MetaDBManager {
     const prevLinked = this.status.linked
     const reorged = await this.setHead(headBlock, true)
     if (reorged && prevLinked && !this.status.linked) {
-      await this.blockingTailBackfillWithCutoff(this.chain.config.engineNewpayloadMaxExecute).catch(
+      // blocking fill with engineParentLookupMaxDepth as fcU tries to put max engineParentLookupMaxDepth
+      await this.blockingTailBackfillWithCutoff(this.chain.config.engineParentLookupMaxDepth).catch(
         (e) => {
           this.config.logger.debug(`blockingTailBackfillWithCutoff exited with error=${e}`)
         }
@@ -782,7 +800,13 @@ export class Skeleton extends MetaDBManager {
       this.finalizedBlock = finalizedBlock ?? this.finalizedBlock
     })
 
-    await this.blockingFillWithCutoff(this.chain.config.engineNewpayloadMaxExecute)
+    // blocking fill with engineParentLookupMaxDepth as fcU tries to put max engineParentLookupMaxDepth
+    // blocks if there are executed blocks to fill with. This blocking causes it to not interfere
+    // with the setHead mechanism. This is however a hack and a better solution needs to be devised
+    // to handle it blockchain level as because of async nature of new payloads and fcUs and the skeleton
+    // there is always a chance for uncordinated put blocks unless they are all cordinated through skeleton
+    // which might also be a valid
+    await this.blockingFillWithCutoff(this.chain.config.engineParentLookupMaxDepth)
 
     return { reorged, safeBlock: this.safeBlock, finalizedBlock: this.finalizedBlock }
   }
@@ -994,6 +1018,8 @@ export class Skeleton extends MetaDBManager {
         // the tail to modify the canonical
         if (tailUpdated || merged) {
           this.status.canonicalHeadReset = true
+          // since tail has been backfilled, fill status should be null
+          this.fillStatus = null
           if (this.status.progress.subchains[0].tail - BIGINT_1 <= this.chain.blocks.height) {
             this.status.linked = await this.checkLinked()
           }
@@ -1138,10 +1164,8 @@ export class Skeleton extends MetaDBManager {
     this.filling = true
 
     let canonicalHead = this.chain.blocks.height
-    let oldHead = null
     const subchain = this.status.progress.subchains[0]!
     if (this.status.canonicalHeadReset) {
-      oldHead = this.chain.blocks.latest // Grab previous head block in case of resettng canonical head
       if (subchain.tail > canonicalHead + BIGINT_1) {
         throw Error(
           `Canonical head should already be on or ahead subchain tail canonicalHead=${canonicalHead} tail=${subchain.tail}`
@@ -1173,6 +1197,8 @@ export class Skeleton extends MetaDBManager {
 
     // run till it has not been determined that tail reset is required by concurrent setHead calls
     // filling is switched on and off by fillCanonicalChain only so no need to monitor that
+    let fillLogIndex = 0
+    let skippedLogIndex = 0
     while (!this.status.canonicalHeadReset && canonicalHead < subchain.head) {
       // Get next block
       const number = canonicalHead + BIGINT_1
@@ -1201,72 +1227,91 @@ export class Skeleton extends MetaDBManager {
 
       // Insert into chain
       let numBlocksInserted = 0
-      try {
-        numBlocksInserted = await this.chain.putBlocks([block], true)
-      } catch (e) {
-        this.config.logger.error(`fillCanonicalChain putBlock error=${(e as Error).message}`)
-        if (oldHead !== null && oldHead.header.number >= block.header.number) {
-          // Put original canonical head block back if reorg fails
-          // UPDATE
-          // not sure we can put oldHead because the oldHead chain might have been partially overwritten
-          // skipping for now, leaving code here for future cleanup/debugging
-          //
-          // await this.chain.putBlocks([oldHead], true)
-        }
-      }
-
-      // handle insertion failures
-      if (numBlocksInserted !== 1) {
-        this.config.logger.error(
-          `Failed to put block number=${number} fork=${block.common.hardfork()} hash=${short(
-            block.hash()
-          )} parentHash=${short(block.header.parentHash)}from skeleton chain to canonical`
-        )
-        // Lets log some parent by number and parent by hash, that may help to understand whats going on
-        let parent = null
+      let numBlocksSkipped = 0
+      // chain height has to be <= block number as we will skip putting this block as it might currently
+      // cause chain reset. This can happen if any other async process added a batch of blocks like
+      // execution's setHead. If that caused this chain to be not canonical anymore than the next
+      // putblocks should fail causing the fill to exit with skeleton stepback
+      if (this.chain.blocks.height <= block.header.number) {
         try {
-          parent = await this.chain.getBlock(number - BIGINT_1)
-          this.config.logger.info(
-            `ParentByNumber number=${parent?.header.number}, hash=${short(
-              parent?.hash() ?? 'undefined'
-            )} hf=${parent?.common.hardfork()}`
-          )
+          numBlocksInserted = await this.chain.putBlocks([block], true)
+          if (numBlocksInserted > 0) {
+            this.fillStatus = {
+              status: PutStatus.VALID,
+              height: block.header.number,
+              hash: block.hash(),
+            }
+          }
         } catch (e) {
-          this.config.logger.error(`Failed to fetch parent of number=${number}`)
-        }
-
-        let parentWithHash = null
-        try {
-          parentWithHash = await this.chain.getBlock(block.header.parentHash)
-          this.config.logger.info(
-            `parentByHash number=${parentWithHash?.header.number}, hash=${short(
-              parentWithHash?.hash() ?? 'undefined'
-            )} hf=${parentWithHash?.common.hardfork()}  `
-          )
-        } catch (e) {
-          this.config.logger.error(
-            `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`
-          )
-        }
-
-        // see if backstepping is required ot this is just canonicalHeadReset
-        await this.runWithLock<void>(async () => {
-          if (!this.status.canonicalHeadReset) {
-            this.config.logger.debug(
-              `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`
-            )
-            await this.backStep(number)
+          const validationError = `${e}`
+          this.config.logger.error(`fillCanonicalChain putBlock error=${validationError}`)
+          const errorMsg = `${validationError}`.toLowerCase()
+          if (errorMsg.includes('block') && errorMsg.includes('not found')) {
+            // see if backstepping is required ot this is just canonicalHeadReset
+            await this.runWithLock<void>(async () => {
+              if (!this.status.canonicalHeadReset) {
+                this.config.logger.debug(
+                  `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, backStepping...`
+                )
+                await this.backStep(number)
+              } else {
+                this.config.logger.debug(
+                  `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+                )
+              }
+            })
           } else {
-            this.config.logger.debug(
-              `fillCanonicalChain canonicalHeadReset=${this.status.canonicalHeadReset}, breaking out...`
+            this.fillStatus = {
+              status: PutStatus.INVALID,
+              height: block.header.number,
+              hash: block.hash(),
+              validationError,
+            }
+          }
+        }
+
+        // handle insertion failures
+        if (numBlocksInserted !== 1) {
+          this.config.logger.error(
+            `Failed to put block number=${number} fork=${block.common.hardfork()} hash=${short(
+              block.hash()
+            )} parentHash=${short(block.header.parentHash)}from skeleton chain to canonical`
+          )
+          // Lets log some parent by number and parent by hash, that may help to understand whats going on
+          let parent = null
+          try {
+            parent = await this.chain.getBlock(number - BIGINT_1)
+            this.config.logger.info(
+              `ParentByNumber number=${parent?.header.number}, hash=${short(
+                parent?.hash() ?? 'undefined'
+              )} hf=${parent?.common.hardfork()}`
+            )
+          } catch (e) {
+            this.config.logger.error(`Failed to fetch parent of number=${number}`)
+          }
+
+          let parentWithHash = null
+          try {
+            parentWithHash = await this.chain.getBlock(block.header.parentHash)
+            this.config.logger.info(
+              `parentByHash number=${parentWithHash?.header.number}, hash=${short(
+                parentWithHash?.hash() ?? 'undefined'
+              )} hf=${parentWithHash?.common.hardfork()}  `
+            )
+          } catch (e) {
+            this.config.logger.error(
+              `Failed to fetch parent with parentWithHash=${short(block.header.parentHash)}`
             )
           }
-        })
-        break
+          break
+        }
+      } else {
+        numBlocksSkipped = 1
       }
 
-      canonicalHead += BigInt(numBlocksInserted)
-      this.fillLogIndex += numBlocksInserted
+      canonicalHead += BigInt(numBlocksInserted + numBlocksSkipped)
+      fillLogIndex += numBlocksInserted
+      skippedLogIndex += numBlocksSkipped
       // Delete skeleton block to clean up as we go, if block is fetched and chain is linked
       // it will be fetched from the chain without any issues
       //
@@ -1283,16 +1328,16 @@ export class Skeleton extends MetaDBManager {
           await this.deleteBlock(block)
         }
       })
-      if (this.fillLogIndex >= this.config.numBlocksPerIteration) {
+      if (fillLogIndex >= this.config.numBlocksPerIteration) {
         this.config.logger.debug(
           `Skeleton canonical chain fill status: canonicalHead=${canonicalHead} chainHead=${this.chain.blocks.height} subchainHead=${subchain.head}`
         )
-        this.fillLogIndex = 0
+        fillLogIndex = 0
       }
     }
     this.filling = false
     this.config.logger.debug(
-      `Successfully put blocks start=${start} end=${canonicalHead} skeletonHead=${subchain.head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
+      `Successfully put=${fillLogIndex} skipped (because already inserted)=${skippedLogIndex} blocks start=${start} end=${canonicalHead} skeletonHead=${subchain.head} from skeleton chain to canonical syncTargetHeight=${this.config.syncTargetHeight}`
     )
   }
 

@@ -30,6 +30,8 @@ export interface ChainOptions {
   blockchain?: Blockchain
 
   genesisState?: GenesisState
+
+  genesisStateRoot?: Uint8Array
 }
 
 /**
@@ -108,6 +110,12 @@ export interface ChainHeaders {
   height: bigint
 }
 
+type BlockCache = {
+  remoteBlocks: Map<String, Block>
+  executedBlocks: Map<String, Block>
+  invalidBlocks: Map<String, Error>
+}
+
 /**
  * Blockchain
  * @memberof module:blockchain
@@ -116,7 +124,9 @@ export class Chain {
   public config: Config
   public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
+  public blockCache: BlockCache
   public _customGenesisState?: GenesisState
+  public _customGenesisStateRoot?: Uint8Array
 
   public opened: boolean
 
@@ -174,9 +184,15 @@ export class Chain {
   protected constructor(options: ChainOptions) {
     this.config = options.config
     this.blockchain = options.blockchain!
+    this.blockCache = {
+      remoteBlocks: new Map(),
+      executedBlocks: new Map(),
+      invalidBlocks: new Map(),
+    }
 
     this.chainDB = this.blockchain.db
     this._customGenesisState = options.genesisState
+    this._customGenesisStateRoot = options.genesisStateRoot
     this.opened = false
   }
 
@@ -237,7 +253,10 @@ export class Chain {
   async open(): Promise<boolean | void> {
     if (this.opened) return false
     await this.blockchain.db.open()
-    await (this.blockchain as any)._init({ genesisState: this._customGenesisState })
+    await (this.blockchain as any)._init({
+      genesisState: this._customGenesisState,
+      genesisStateRoot: this._customGenesisStateRoot,
+    })
     this.opened = true
     await this.update(false)
 

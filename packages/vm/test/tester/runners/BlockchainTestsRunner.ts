@@ -48,7 +48,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true })
+  let state = new Trie({ useKeyHashing: true, common })
   let stateManager = new DefaultStateManager({
     trie: state,
     common,
@@ -102,7 +102,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   await setupPreConditions(vm.stateManager, testData)
 
   t.deepEquals(
-    (vm.stateManager as any)._trie.root(),
+    await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
     'correct pre stateRoot'
   )
@@ -193,7 +193,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       //
-      //vm.common.genesis().stateRoot = vm.stateManager._trie.root()
+      //vm.common.genesis().stateRoot = await vm.stateManager.getStateRoot()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
@@ -217,7 +217,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
+          await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }

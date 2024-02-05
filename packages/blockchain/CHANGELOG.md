@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 7.0.1 - 2023-10-26
+
+### Dencun devnet-11 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
+### Other Changes
+
+- New `getIteratorHeadSafe()` method which returns `undefined` if the provided head is not found. This differs from `getIteratorHead`, which returns the genesis block in case if the provided head is not found, PR [#3099](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3099)
+
 ## 7.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -50,14 +62,14 @@ The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefor
 
 Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
 And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
@@ -96,14 +108,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -122,7 +134,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // blockchain (BlockchainInterface)
 Blockchain.create(opts: BlockchainOptions = {}) // db
 Blockchain.getBlock(blockId: Uint8Array | number | bigint): Promise<Block>
@@ -177,7 +189,7 @@ This release fully supports all EIPs included in the [Shanghai](https://github.c
 
 You can instantiate a Shanghai-enabled Common instance for your transactions with:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -222,7 +234,7 @@ This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/e
 
 Withdrawals support can be activated by initializing a respective `Common` object, see [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library README for an example how to create an Ethereum Block containing withdrawal operations.
 
-```typescript
+```ts
 import { Common, Chain } from '@ethereumjs/common'
 ```
 
@@ -244,7 +256,7 @@ For lots of custom chains (for e.g. devnets and testnets), you might come across
 
 `Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
 
-```typescript
+```ts
 import { Common } from '@ethereumjs/common'
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
 const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
@@ -325,7 +337,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -333,7 +345,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -343,13 +355,13 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 The main `Blockchain` class import has been updated, so import changes from:
 
-```typescript
+```ts
 import Blockchain from '@ethereumjs/blockchain'
 ```
 
 to:
 
-```typescript
+```ts
 import { Blockchain } from '@ethereumjs/blockchain'
 ```
 
@@ -469,7 +481,7 @@ Please note that for backwards-compatibility reasons the associated Common is st
 
 An ArrowGlacier blockchain object can be instantiated with:
 
-```typescript
+```ts
 import Blockchain from '@ethereumjs/blockchain'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
@@ -524,7 +536,7 @@ This release comes with full functional `london` HF support (all EIPs are finali
 
 Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Blockchain` instance with a `london` HF activated:
 
-```typescript
+```ts
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
@@ -547,7 +559,7 @@ This release comes with full `berlin` HF support by setting the `Block`, `Tx` an
 
 Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Blockchain` instance with a `berlin` HF activated:
 
-```typescript
+```ts
 import Blockchain from '@ethereumjs/blockchain'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
@@ -601,7 +613,7 @@ The `Blockchain` library has been promisified and callbacks have been removed al
 
 Old API example:
 
-```typescript
+```ts
 blockchain.getBlock(blockId, (block) => {
   console.log(block)
 })
@@ -609,7 +621,7 @@ blockchain.getBlock(blockId, (block) => {
 
 New API example:
 
-```typescript
+```ts
 const block = await blockchain.getBlock(blockId)
 console.log(block)
 ```
@@ -620,7 +632,7 @@ See `Blockchain` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree
 
 The library now has an additional safe static constructor `Blockchain.create()` which awaits the init method and throws if the init method throws:
 
-```typescript
+```ts
 import Blockchain from '@ethereumjs/blockchain'
 const common = new Common({ chain: 'ropsten' })
 const blockchain = await Blockchain.create({ common })
@@ -686,7 +698,7 @@ This release introduces **new breaking changes**, so please carefully read the a
 
 The library now has an additional safe static constructor `Blockchain.create()` which awaits the init method and throws if the init method throws:
 
-```typescript
+```ts
 const common = new Common({ chain: 'ropsten' })
 const blockchain = await Blockchain.create({ common })
 ```
@@ -734,7 +746,7 @@ PR [#833](https://github.com/ethereumjs/ethereumjs-monorepo/pull/833) and preced
 
 Old API example:
 
-```typescript
+```ts
 blockchain.getBlock(blockId, (block) => {
   console.log(block)
 })
@@ -742,7 +754,7 @@ blockchain.getBlock(blockId, (block) => {
 
 New API example:
 
-```typescript
+```ts
 const block = await blockchain.getBlock(blockId)
 console.log(block)
 ```
@@ -755,7 +767,7 @@ Constructor options for chain setup on all VM monorepo libraries have been simpl
 
 Example:
 
-```typescript
+```ts
 import Blockchain from '@ethereumjs/blockchain'
 const common = new Common({ chain: 'ropsten', hardfork: 'byzantium' })
 const blockchain = new Blockchain({ common })

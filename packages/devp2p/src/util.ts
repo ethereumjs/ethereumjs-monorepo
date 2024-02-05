@@ -1,7 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 as _keccak256 } from 'ethereum-cryptography/keccak.js'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
@@ -10,11 +9,6 @@ import type { LES } from './protocol/les.js'
 const { debug: createDebugLogger } = debugDefault
 
 export const devp2pDebug = createDebugLogger('devp2p')
-
-export function keccak256(...bytes: Uint8Array[]) {
-  const allBytes = concatBytes(...bytes)
-  return _keccak256(allBytes)
-}
 
 export function genPrivateKey(): Uint8Array {
   const privateKey = secp256k1.utils.randomPrivateKey()

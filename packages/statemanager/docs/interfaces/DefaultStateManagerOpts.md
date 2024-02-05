@@ -9,8 +9,10 @@ Options for constructing a StateManager.
 ### Properties
 
 - [accountCacheOpts](DefaultStateManagerOpts.md#accountcacheopts)
+- [codeCacheOpts](DefaultStateManagerOpts.md#codecacheopts)
 - [common](DefaultStateManagerOpts.md#common)
 - [prefixCodeHashes](DefaultStateManagerOpts.md#prefixcodehashes)
+- [prefixStorageTrieKeys](DefaultStateManagerOpts.md#prefixstoragetriekeys)
 - [storageCacheOpts](DefaultStateManagerOpts.md#storagecacheopts)
 - [trie](DefaultStateManagerOpts.md#trie)
 
@@ -22,7 +24,17 @@ Options for constructing a StateManager.
 
 #### Defined in
 
-[stateManager.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L120)
+[stateManager.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L134)
+
+___
+
+### codeCacheOpts
+
+• `Optional` **codeCacheOpts**: `CacheOptions`
+
+#### Defined in
+
+[stateManager.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L138)
 
 ___
 
@@ -34,7 +46,7 @@ The common to use
 
 #### Defined in
 
-[stateManager.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L127)
+[stateManager.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L143)
 
 ___
 
@@ -49,7 +61,26 @@ E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted tr
 
 #### Defined in
 
-[stateManager.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L118)
+[stateManager.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L120)
+
+___
+
+### prefixStorageTrieKeys
+
+• `Optional` **prefixStorageTrieKeys**: `boolean`
+
+Option to prefix the keys for the storage tries with the first 7 bytes from the
+associated account address. Activating this option gives a noticeable performance
+boost for storage DB reads when operating on larger tries.
+
+Note: Activating/deactivating this option causes continued state reads to be
+incompatible with existing databases.
+
+Default: false (for backwards compatibility reasons)
+
+#### Defined in
+
+[stateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L132)
 
 ___
 
@@ -59,7 +90,7 @@ ___
 
 #### Defined in
 
-[stateManager.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L122)
+[stateManager.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L136)
 
 ___
 
@@ -71,4 +102,4 @@ A Trie instance
 
 #### Defined in
 
-[stateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L111)
+[stateManager.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/stateManager.ts#L113)

@@ -1,6 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -33,6 +34,7 @@ import type {
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
+import type { Common } from '@ethereumjs/common'
 import type { EVM, EVMInterface } from '@ethereumjs/evm'
 
 const { debug: createDebugLogger } = debugDefault
@@ -60,6 +62,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
   }
 
   const state = this.stateManager
+
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
@@ -118,6 +121,22 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     await state.setStateRoot(root, clearCache)
   }
 
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(state instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    if (this.DEBUG) {
+      debug(`Initializing StatelessVerkleStateManager executionWitness`)
+    }
+    ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+      block.executionWitness
+    )
+  } else {
+    if (state instanceof StatelessVerkleStateManager) {
+      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
+    }
+  }
+
   // check for DAO support and if we should apply the DAO fork
   if (
     this.common.hardforkIsActiveOnBlock(Hardfork.Dao, block.header.number) === true &&
@@ -126,6 +145,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Apply DAO hardfork`)
     }
+
     await this.evm.journal.checkpoint()
     await _applyDAOHardfork(this.evm)
     await this.evm.journal.commit()
@@ -137,7 +157,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint`)
   }
 
-  let result
+  let result: Awaited<ReturnType<typeof applyBlock>>
+
   try {
     result = await applyBlock.bind(this)(block, opts)
     if (this.DEBUG) {
@@ -183,7 +204,8 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
       header: { ...block.header, ...generatedFields },
     }
     block = Block.fromBlockData(blockData, { common: this.common })
-  } else {
+  } else if (this.common.isActivatedEIP(6800) === false) {
+    // Only validate the following headers if verkle blocks aren't activated
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (this.DEBUG) {
         debug(
@@ -221,9 +243,21 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
           )}`
         )
       }
-      const msg = _errorMsg('invalid block stateRoot', this, block)
+      const msg = _errorMsg(
+        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+          block.header.stateRoot
+        )}`,
+        this,
+        block
+      )
       throw new Error(msg)
     }
+  } else if (this.common.isActivatedEIP(6800) === true) {
+    // If verkle is activated, only validate the post-state
+    if ((this._opts.stateManager as StatelessVerkleStateManager).verifyPostState() === false) {
+      throw new Error(`Verkle post state verification failed on block ${block.header.number}`)
+    }
+    debug(`Verkle post state verification succeeded`)
   }
 
   if (enableProfiler) {
@@ -360,7 +394,7 @@ export async function accumulateParentBeaconBlockRoot(
    */
 
   if ((await this.stateManager.getAccount(parentBeaconBlockRootAddress)) === undefined) {
-    await this.stateManager.putAccount(parentBeaconBlockRootAddress, new Account())
+    await this.evm.journal.putAccount(parentBeaconBlockRootAddress, new Account())
   }
 
   await this.stateManager.putContractStorage(
@@ -388,13 +422,13 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     console.time(processTxsLabel)
   }
 
-  const bloom = new Bloom()
+  const bloom = new Bloom(undefined, this.common)
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
 
   let receiptTrie: Trie | undefined = undefined
   if (block.transactions.length !== 0) {
-    receiptTrie = new Trie()
+    receiptTrie = new Trie({ common: this.common })
   }
 
   const receipts = []
@@ -452,8 +486,6 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(processTxsLabel)
-    // eslint-disable-next-line no-console
-    console.timeEnd(entireBlockLabel)
   }
 
   const receiptsRoot = receiptTrie !== undefined ? receiptTrie.root() : KECCAK256_RLP
@@ -475,7 +507,7 @@ async function assignWithdrawals(this: VM, block: Block): Promise<void> {
     // converted to wei
     // Note: event if amount is 0, still reward the account
     // such that the account is touched and marked for cleanup if it is empty
-    await rewardAccount(this.evm, address, amount * GWEI_TO_WEI)
+    await rewardAccount(this.evm, address, amount * GWEI_TO_WEI, this.common)
   }
 }
 
@@ -492,14 +524,14 @@ async function assignBlockRewards(this: VM, block: Block): Promise<void> {
   // Reward ommers
   for (const ommer of ommers) {
     const reward = calculateOmmerReward(ommer.number, block.header.number, minerReward)
-    const account = await rewardAccount(this.evm, ommer.coinbase, reward)
+    const account = await rewardAccount(this.evm, ommer.coinbase, reward, this.common)
     if (this.DEBUG) {
       debug(`Add uncle reward ${reward} to account ${ommer.coinbase} (-> ${account.balance})`)
     }
   }
   // Reward miner
   const reward = calculateMinerReward(minerReward, ommers.length)
-  const account = await rewardAccount(this.evm, block.header.coinbase, reward)
+  const account = await rewardAccount(this.evm, block.header.coinbase, reward, this.common)
   if (this.DEBUG) {
     debug(`Add miner reward ${reward} to account ${block.header.coinbase} (-> ${account.balance})`)
   }
@@ -529,14 +561,28 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
 export async function rewardAccount(
   evm: EVMInterface,
   address: Address,
-  reward: bigint
+  reward: bigint,
+  common?: Common
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
+    if (common?.isActivatedEIP(6800) === true) {
+      ;(
+        evm.stateManager as StatelessVerkleStateManager
+      ).accessWitness!.touchAndChargeProofOfAbsence(address)
+    }
     account = new Account()
   }
   account.balance += reward
   await evm.journal.putAccount(address, account)
+
+  if (common?.isActivatedEIP(6800) === true) {
+    // use this utility to build access but the computed gas is not charged and hence free
+    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
+      address,
+      { sendsValue: true }
+    )
+  }
   return account
 }
 
@@ -601,7 +647,7 @@ async function _genTxTrie(block: Block) {
   if (block.transactions.length === 0) {
     return KECCAK256_RLP
   }
-  const trie = new Trie()
+  const trie = new Trie({ common: block.common })
   for (const [i, tx] of block.transactions.entries()) {
     await trie.put(RLP.encode(i), tx.serialize())
   }

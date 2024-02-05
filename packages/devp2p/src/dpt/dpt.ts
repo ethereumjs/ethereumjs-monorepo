@@ -1,4 +1,5 @@
 import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'events'
 
@@ -35,6 +36,10 @@ export class DPT {
   protected _onlyConfirmed: boolean
   protected _confirmedPeers: Set<string>
 
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  private DEBUG: boolean
+
   constructor(privateKey: Uint8Array, options: DPTOptions) {
     this.events = new EventEmitter()
     this._privateKey = privateKey
@@ -46,11 +51,13 @@ export class DPT {
     this._dnsNetworks = options.dnsNetworks ?? []
     this._dnsAddr = options.dnsAddr ?? '8.8.8.8'
 
-    this._dns = new DNS({ dnsServerAddress: this._dnsAddr })
+    this._dns = new DNS({ dnsServerAddress: this._dnsAddr, common: options.common })
     this._banlist = new BanList()
 
     this._onlyConfirmed = options.onlyConfirmed ?? false
     this._confirmedPeers = new Set()
+
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
@@ -61,6 +68,7 @@ export class DPT {
       timeout: options.timeout,
       endpoint: options.endpoint,
       createSocket: options.createSocket,
+      common: options.common,
     })
     this._server.events.once('listening', () => this.events.emit('listening'))
     this._server.events.once('close', () => this.events.emit('close'))
@@ -76,6 +84,9 @@ export class DPT {
     // By default calls refresh every 3s
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? 60000) / 10) // 60 sec * 1000
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   bind(...args: any[]): void {
@@ -139,7 +150,9 @@ export class DPT {
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
     if (this._banlist.has(obj)) throw new Error('Peer is banned')
-    this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
+    if (this.DEBUG) {
+      this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
+    }
 
     // check k-bucket first
     const peer = this._kbucket.get(obj)
@@ -216,9 +229,11 @@ export class DPT {
       this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10
 
       const peers = this.getPeers()
-      this._debug(
-        `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
-      )
+      if (this.DEBUG) {
+        this._debug(
+          `call .refresh() (selector ${this._refreshIntervalSelectionCounter}) (${peers.length} peers in table)`
+        )
+      }
 
       for (const peer of peers) {
         // Randomly distributed selector based on peer ID
@@ -240,11 +255,13 @@ export class DPT {
     if (this._shouldGetDnsPeers) {
       const dnsPeers = await this.getDnsPeers()
 
-      this._debug(
-        `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
-          this.getPeers().length
-        } current peers in table)`
-      )
+      if (this.DEBUG) {
+        this._debug(
+          `.refresh() Adding ${dnsPeers.length} from DNS tree, (${
+            this.getPeers().length
+          } current peers in table)`
+        )
+      }
 
       this._addPeerBatch(dnsPeers)
     }

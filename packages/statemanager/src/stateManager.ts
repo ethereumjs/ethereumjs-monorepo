@@ -174,7 +174,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _checkpointCount: number
 
-  protected _proofTrie: Trie
+  private keccakFunction: Function
 
   /**
    * StateManager is run in DEBUG mode (default: false)
@@ -197,14 +197,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     this._debug = createDebugLogger('statemanager:statemanager')
 
-    this._proofTrie = new Trie({ useKeyHashing: true })
-
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true })
+    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
+
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
 
@@ -355,7 +355,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   async putContractCode(address: Address, value: Uint8Array): Promise<void> {
     this._codeCache?.put(address, value)
-    const codeHash = keccak256(value)
+    const codeHash = this.keccakFunction(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       return
     }
@@ -410,15 +410,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   protected _getStorageTrie(addressOrHash: Address | Uint8Array, account?: Account): Trie {
     // use hashed key for lookup from storage cache
     const addressHex = bytesToUnprefixedHex(
-      addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash
+      addressOrHash instanceof Address ? this.keccakFunction(addressOrHash.bytes) : addressOrHash
     )
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
       const keyPrefix = this._prefixStorageTrieKeys
-        ? (addressOrHash instanceof Address ? keccak256(addressOrHash.bytes) : addressOrHash).slice(
-            0,
-            7
-          )
+        ? (addressOrHash instanceof Address
+            ? this.keccakFunction(addressOrHash.bytes)
+            : addressOrHash
+          ).slice(0, 7)
         : undefined
       storageTrie = this._trie.shallowCopy(false, { keyPrefix })
       if (account !== undefined) {
@@ -656,7 +656,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         }
 
         // update code in database
-        const codeHash = keccak256(code)
+        const codeHash = this.keccakFunction(code)
         const key = this._prefixCodeHashes ? concatBytes(CODEHASH_PREFIX, codeHash) : codeHash
         await this._getCodeDB().put(key, code)
 
@@ -705,6 +705,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param storageSlots storage slots to get proof of
    */
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
+    await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
       // throw new Error(`getProof() can only be called for an existing account`)
@@ -749,11 +750,97 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   }
 
   /**
+   * Create a StateManager and initialize this with proof(s) gotten previously from getProof
+   * This generates a (partial) StateManager where one can retrieve all items from the proof
+   * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
+   * @param safe Wether or not to verify that the roots of the proof items match the reported roots
+   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
+   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+   * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
+   */
+  static async fromProof(
+    proof: Proof | Proof[],
+    safe: boolean = false,
+    opts: DefaultStateManagerOpts = {}
+  ): Promise<DefaultStateManager> {
+    if (Array.isArray(proof)) {
+      if (proof.length === 0) {
+        return new DefaultStateManager(opts)
+      } else {
+        const trie =
+          opts.trie ??
+          (await Trie.createFromProof(
+            proof[0].accountProof.map((e) => hexToBytes(e)),
+            { useKeyHashing: true }
+          ))
+        const sm = new DefaultStateManager({ ...opts, trie })
+        const address = Address.fromString(proof[0].address)
+        await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
+        for (let i = 1; i < proof.length; i++) {
+          const proofItem = proof[i]
+          await sm.addProofData(proofItem, true)
+        }
+        await sm.flush() // TODO verify if this is necessary
+        return sm
+      }
+    } else {
+      return DefaultStateManager.fromProof([proof])
+    }
+  }
+
+  /**
+   * Adds a storage proof to the state manager
+   * @param storageProof The storage proof
+   * @param storageHash The root hash of the storage trie
+   * @param address The address
+   * @param safe Whether or not to verify if the reported roots match the current storage root
+   */
+  private async addStorageProof(
+    storageProof: StorageProof[],
+    storageHash: string,
+    address: Address,
+    safe: boolean = false
+  ) {
+    const trie = this._getStorageTrie(address)
+    trie.root(hexToBytes(storageHash))
+    for (let i = 0; i < storageProof.length; i++) {
+      await trie.updateFromProof(
+        storageProof[i].proof.map((e) => hexToBytes(e)),
+        safe
+      )
+    }
+  }
+
+  /**
+   * Add proof(s) into an already existing trie
+   * @param proof The proof(s) retrieved from `getProof`
+   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
+   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+   */
+  async addProofData(proof: Proof | Proof[], safe: boolean = false) {
+    if (Array.isArray(proof)) {
+      for (let i = 0; i < proof.length; i++) {
+        await this._trie.updateFromProof(
+          proof[i].accountProof.map((e) => hexToBytes(e)),
+          safe
+        )
+        await this.addStorageProof(
+          proof[i].storageProof,
+          proof[i].storageHash,
+          Address.fromString(proof[i].address),
+          safe
+        )
+      }
+    } else {
+      await this.addProofData([proof], safe)
+    }
+  }
+
+  /**
    * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = keccak256(hexToBytes(proof.accountProof[0]))
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       hexToBytes(rlpString)
@@ -761,7 +848,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await this._proofTrie.verifyProof(rootHash, key, accountProof)
+    const value = await Trie.verifyProof(key, accountProof, {
+      useKeyHashing: true,
+    })
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -801,13 +890,13 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageRoot = hexToBytes(proof.storageHash)
-
     for (const stProof of proof.storageProof) {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await this._proofTrie.verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
+        useKeyHashing: true,
+      })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
@@ -874,21 +963,14 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
+    const storage: StorageDump = {}
+    const stream = trie.createAsyncReadStream()
 
-    return new Promise((resolve, reject) => {
-      const storage: StorageDump = {}
-      const stream = trie.createReadStream()
+    for await (const chunk of stream) {
+      storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
+    }
 
-      stream.on('data', (val: any) => {
-        storage[bytesToHex(val.key)] = bytesToHex(val.value)
-      })
-      stream.on('end', () => {
-        resolve(storage)
-      })
-      stream.on('error', (e) => {
-        reject(e)
-      })
-    })
+    return storage
   }
 
   /**
@@ -911,44 +993,35 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`Account does not exist.`)
     }
     const trie = this._getStorageTrie(address, account)
+    let inRange = false
+    let i = 0
 
-    return new Promise((resolve, reject) => {
-      let inRange = false
-      let i = 0
-
-      /** Object conforming to {@link StorageRange.storage}. */
-      const storageMap: StorageRange['storage'] = {}
-      const stream = trie.createReadStream()
-
-      stream.on('data', (val: any) => {
-        if (!inRange) {
-          // Check if the key is already in the correct range.
-          if (bytesToBigInt(val.key) >= startKey) {
-            inRange = true
-          } else {
-            return
-          }
+    /** Object conforming to {@link StorageRange.storage}. */
+    const storageMap: StorageRange['storage'] = {}
+    const stream = trie.createAsyncReadStream()
+    for await (const chunk of stream) {
+      if (!inRange) {
+        // Check if the key is already in the correct range.
+        if (bytesToBigInt(chunk.key) >= startKey) {
+          inRange = true
+        } else {
+          continue
         }
-
-        if (i < limit) {
-          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
-          i++
-        } else if (i === limit) {
-          resolve({
-            storage: storageMap,
-            nextKey: bytesToHex(val.key),
-          })
-        }
-      })
-
-      stream.on('end', () => {
-        resolve({
+      }
+      if (i < limit) {
+        storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
+        i++
+      } else if (i === limit) {
+        return {
           storage: storageMap,
-          nextKey: null,
-        })
-      })
-      stream.on('error', (e) => reject(e))
-    })
+          nextKey: bytesToHex(chunk.key),
+        }
+      }
+    }
+    return {
+      storage: storageMap,
+      nextKey: null,
+    }
   }
 
   /**

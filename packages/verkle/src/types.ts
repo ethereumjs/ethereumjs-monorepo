@@ -1,7 +1,7 @@
 import { utf8ToBytes } from '@ethereumjs/util'
 
-import type { VerkleNode } from './node'
-import type { WalkController } from './util/walkController'
+import type { VerkleNode } from './node/index.js'
+import type { WalkController } from './util/walkController.js'
 import type { DB } from '@ethereumjs/util'
 
 // Field representation of a commitment
@@ -60,14 +60,14 @@ export interface Point {
 
 export type Proof = Uint8Array[]
 
-export interface VerkleTrieOpts {
+export interface VerkleTreeOpts {
   /**
    * A database instance.
    */
   db?: DB<Uint8Array, Uint8Array>
 
   /**
-   * A `Uint8Array` for the root of a previously stored trie
+   * A `Uint8Array` for the root of a previously stored tree
    */
   root?: Uint8Array
 
@@ -77,14 +77,14 @@ export interface VerkleTrieOpts {
   useRootPersistence?: boolean
 
   /**
-   * LRU cache for trie nodes to allow for faster node retrieval.
+   * LRU cache for tree nodes to allow for faster node retrieval.
    *
    * Default: 0 (deactivated)
    */
   cacheSize?: number
 }
 
-export type VerkleTrieOptsWithDefaults = VerkleTrieOpts & {
+export type VerkleTreeOptsWithDefaults = VerkleTreeOpts & {
   useRootPersistence: boolean
   cacheSize: number
 }

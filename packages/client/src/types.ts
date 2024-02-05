@@ -130,6 +130,7 @@ export interface ClientOpts {
   logRotate?: boolean
   logMaxFiles?: number
   rpcDebug?: string
+  rpcDebugVerbose?: string
   rpcCors?: string
   maxPerRequest?: number
   maxFetcherJobs?: number
@@ -162,4 +163,9 @@ export interface ClientOpts {
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
   pruneEngineCache?: boolean
+  verkleGenesisStateRoot?: Uint8Array
+  statelessVerkle?: boolean
+  engineNewpayloadMaxExecute?: number
+  skipEngineExec?: boolean
+  useJsCrypto?: boolean
 }

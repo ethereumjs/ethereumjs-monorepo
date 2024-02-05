@@ -21,6 +21,7 @@
 - [commit](EVMStateManagerInterface.md#commit)
 - [deleteAccount](EVMStateManagerInterface.md#deleteaccount)
 - [dumpStorage](EVMStateManagerInterface.md#dumpstorage)
+- [dumpStorageRange](EVMStateManagerInterface.md#dumpstoragerange)
 - [generateCanonicalGenesis](EVMStateManagerInterface.md#generatecanonicalgenesis)
 - [getAccount](EVMStateManagerInterface.md#getaccount)
 - [getContractCode](EVMStateManagerInterface.md#getcontractcode)
@@ -51,7 +52,7 @@
 
 #### Defined in
 
-[interfaces.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L66)
+[interfaces.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L89)
 
 ## Methods
 
@@ -69,7 +70,7 @@
 
 #### Defined in
 
-[interfaces.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L55)
+[interfaces.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L78)
 
 ___
 
@@ -93,7 +94,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L54)
+[interfaces.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L77)
 
 ___
 
@@ -111,7 +112,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L56)
+[interfaces.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L79)
 
 ___
 
@@ -135,7 +136,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L48)
+[interfaces.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L71)
 
 ___
 
@@ -155,7 +156,29 @@ ___
 
 #### Defined in
 
-[interfaces.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L71)
+[interfaces.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L94)
+
+___
+
+### dumpStorageRange
+
+▸ **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`<[`StorageRange`](StorageRange.md)\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `address` | `Address` |
+| `startKey` | `bigint` |
+| `limit` | `number` |
+
+#### Returns
+
+`Promise`<[`StorageRange`](StorageRange.md)\>
+
+#### Defined in
+
+[interfaces.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L95)
 
 ___
 
@@ -175,7 +198,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L72)
+[interfaces.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L96)
 
 ___
 
@@ -199,7 +222,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L46)
+[interfaces.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L69)
 
 ___
 
@@ -223,7 +246,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L51)
+[interfaces.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L74)
 
 ___
 
@@ -248,7 +271,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L52)
+[interfaces.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L75)
 
 ___
 
@@ -273,7 +296,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L73)
+[interfaces.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L97)
 
 ___
 
@@ -291,7 +314,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L58)
+[interfaces.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L81)
 
 ___
 
@@ -315,7 +338,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L61)
+[interfaces.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L84)
 
 ___
 
@@ -340,7 +363,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L49)
+[interfaces.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L72)
 
 ___
 
@@ -365,7 +388,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L47)
+[interfaces.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L70)
 
 ___
 
@@ -390,7 +413,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L50)
+[interfaces.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L73)
 
 ___
 
@@ -416,7 +439,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L53)
+[interfaces.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L76)
 
 ___
 
@@ -434,7 +457,7 @@ ___
 
 #### Defined in
 
-[interfaces.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L57)
+[interfaces.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L80)
 
 ___
 
@@ -459,13 +482,19 @@ ___
 
 #### Defined in
 
-[interfaces.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L59)
+[interfaces.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L82)
 
 ___
 
 ### shallowCopy
 
-▸ **shallowCopy**(): [`EVMStateManagerInterface`](EVMStateManagerInterface.md)
+▸ **shallowCopy**(`downlevelCaches?`): [`EVMStateManagerInterface`](EVMStateManagerInterface.md)
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `downlevelCaches?` | `boolean` |
 
 #### Returns
 
@@ -477,4 +506,4 @@ ___
 
 #### Defined in
 
-[interfaces.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L75)
+[interfaces.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L99)

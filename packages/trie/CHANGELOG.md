@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.0.1 - 2023-10-26
+
+### Native Support for Uint8Array Values in DBs
+
+The trie library now allows to store values being passed as native `Uint8Array` values instead of strings, see PR [#3067](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3067).
+
+This leads to a significant performance increase when dealing with larger state DBs and it is recommended to activate for new DBs by using the new `valueEncoding` option.
+
+**Attention!**: Switching value encoding by using this new option is not compatible with existing databases.
+
+### Debug Logging
+
+The trie library now allows for using debug logging with the `DEBUG=ethjs,trie:*` flag on the command line as already being implemented in other EthereumJS libraries, see PR [#3019](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3019).
+
+See [Debugging](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie#debugging) README section for usage instructions. This comes in pretty handy if in-depth trie analysis with step-by-step following of path reads is needed.
+
+### Bugfixes
+
+- Fix empty-root check, PR [#3001](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3001)
+
+### Other Changes
+
+- New parameter `skipKeyTransform` (default: `false`) for Trie `put()`, `del()` and `batch()` method to allow to pass in already hashed keys, PR [#2950](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2950)
+- New `keyPrefix` option tries to store node keys with a static prefix (used upstream in the `statemanager` package to speed to storage trie reads), PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023)
+- Peformance: `findPath()` optimizations, PR [#3066](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3066)
+- Make `null` available as type option for `put()` method value, PR [#3020](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3020)
+- Allow partial trie options for `shallowCopy()` (e.g. for a more flexible cache configuration for the trie copy), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
+- Use `lock` class from `@ethereumjs/util`, PR [#3109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3109)
+- Improve util types and handling, PR [#2951](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2951)
+
 ## 6.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -20,7 +50,7 @@ Starting with this release there is a new API for walking and iterating a trie b
 
 The new walk functionality can be used like the following:
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 
 const trie = await Trie.create()
@@ -75,14 +105,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -101,7 +131,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 Trie.create() / new Trie() // root constructor option
 Trie.root(value?: Uint8Array | null): Uint8Array
 Trie.checkRoot(root: Uint8Array): Promise<boolean>
@@ -291,7 +321,7 @@ The trie library now comes with a new constructor option `useRootPersistence` (n
 
 To activate root hash persistance you can set the `useRootPersistence` option on instantiation:
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -393,7 +423,7 @@ The base trie implementation (`Trie`) as well as all subclass implementations (`
 
 The new `DB` interface can be used like this for LevelDB:
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -496,7 +526,7 @@ This release introduces a major API upgrade from callbacks to Promises.
 
 Example using async/await syntax:
 
-```typescript
+```ts
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 const trie = new Trie()
 async function test() {

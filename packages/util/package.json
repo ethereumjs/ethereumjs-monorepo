@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "A collection of utility functions for Ethereum",
   "keywords": [
     "ethereum",
@@ -79,7 +79,8 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
     "docs:build": "npx typedoc --options typedoc.cjs",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- util",
+    "examples": "tsx ../../scripts/examples-runner.ts -- util",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -90,7 +91,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "^5.0.0",
+    "@ethereumjs/rlp": "^5.0.1",
     "ethereum-cryptography": "^2.1.2"
   },
   "devDependencies": {},

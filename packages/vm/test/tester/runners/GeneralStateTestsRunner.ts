@@ -74,7 +74,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   const blockchain = await Blockchain.create({ genesisBlock, common })
-  const state = new Trie({ useKeyHashing: true })
+  const state = new Trie({ useKeyHashing: true, common })
   const stateManager = new DefaultStateManager({
     trie: state,
     common,
@@ -100,8 +100,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   // Even if no txs are ran, coinbase should always be created
   const coinbaseAddress = Address.fromString(testData.env.currentCoinbase)
-  const account = await (<VM>vm).stateManager.getAccount(coinbaseAddress)
-  await (<VM>vm).evm.journal.putAccount(coinbaseAddress, account ?? new Account())
+  const account = await vm.stateManager.getAccount(coinbaseAddress)
+  await vm.evm.journal.putAccount(coinbaseAddress, account ?? new Account())
 
   const stepHandler = (e: InterpreterStep) => {
     let hexStack = []
@@ -124,7 +124,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
 
   const afterTxHandler = async () => {
     const stateRoot = {
-      stateRoot: bytesToHex((vm.stateManager as any)._trie.root),
+      stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
     }
     t.comment(JSON.stringify(stateRoot))
   }
@@ -149,10 +149,9 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   }
 
   // Cleanup touched accounts (this wipes coinbase if it is empty on HFs >= TangerineWhistle)
-  await (<VM>vm).evm.journal.cleanup()
-  await (<VM>vm).stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
+  await vm.evm.journal.cleanup()
 
-  const stateManagerStateRoot = (vm.stateManager as any)._trie.root()
+  const stateManagerStateRoot = await vm.stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
   const testDataPostStateRoot = toBytes(testData.postStateRoot)
   const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 

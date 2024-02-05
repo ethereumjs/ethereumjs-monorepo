@@ -42,7 +42,7 @@ Handling and generating Ethereum addresses
 
 #### Defined in
 
-[packages/util/src/address.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L16)
+[packages/util/src/address.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L17)
 
 ## Properties
 
@@ -52,7 +52,7 @@ Handling and generating Ethereum addresses
 
 #### Defined in
 
-[packages/util/src/address.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L14)
+[packages/util/src/address.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L15)
 
 ## Methods
 
@@ -74,7 +74,7 @@ Is address equal to another.
 
 #### Defined in
 
-[packages/util/src/address.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L96)
+[packages/util/src/address.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L97)
 
 ___
 
@@ -91,7 +91,7 @@ by EIP-1352
 
 #### Defined in
 
-[packages/util/src/address.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L111)
+[packages/util/src/address.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L112)
 
 ___
 
@@ -107,7 +107,7 @@ Is address zero.
 
 #### Defined in
 
-[packages/util/src/address.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L103)
+[packages/util/src/address.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L104)
 
 ___
 
@@ -123,7 +123,7 @@ Returns a new Uint8Array representation of address.
 
 #### Defined in
 
-[packages/util/src/address.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L128)
+[packages/util/src/address.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L129)
 
 ___
 
@@ -139,7 +139,7 @@ Returns hex encoding of address.
 
 #### Defined in
 
-[packages/util/src/address.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L121)
+[packages/util/src/address.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L122)
 
 ___
 
@@ -161,7 +161,7 @@ Returns an address for a given private key.
 
 #### Defined in
 
-[packages/util/src/address.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L57)
+[packages/util/src/address.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L58)
 
 ___
 
@@ -183,7 +183,7 @@ Returns an address for a given public key.
 
 #### Defined in
 
-[packages/util/src/address.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L45)
+[packages/util/src/address.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L46)
 
 ___
 
@@ -205,7 +205,7 @@ Returns an Address object from a hex-encoded string.
 
 #### Defined in
 
-[packages/util/src/address.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L34)
+[packages/util/src/address.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L35)
 
 ___
 
@@ -228,7 +228,7 @@ Generates an address for a newly created contract.
 
 #### Defined in
 
-[packages/util/src/address.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L70)
+[packages/util/src/address.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L71)
 
 ___
 
@@ -252,7 +252,7 @@ Generates an address for a contract created using CREATE2.
 
 #### Defined in
 
-[packages/util/src/address.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L83)
+[packages/util/src/address.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L84)
 
 ___
 
@@ -268,4 +268,4 @@ Returns the zero address.
 
 #### Defined in
 
-[packages/util/src/address.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L26)
+[packages/util/src/address.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/address.ts#L27)

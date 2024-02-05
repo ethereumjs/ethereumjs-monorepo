@@ -72,9 +72,18 @@ describe('[Miner]', async () => {
         validateDifficulty: () => undefined,
       },
       validateHeader: () => {},
+      getIteratorHead: () => {
+        return Block.fromBlockData({ header: { number: 1 } })
+      },
+      getTotalDifficulty: () => {
+        return 1n
+      },
       // eslint-disable-next-line no-invalid-this
       shallowCopy: () => this.blockchain,
       _init: async () => undefined,
+      events: {
+        addListener: () => {},
+      },
     }
   }
 
@@ -222,6 +231,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
 
     txPool.start()
@@ -254,8 +264,8 @@ describe('[Miner]', async () => {
     // no skipHardForkValidation
     const miner = new Miner({ config: goerliConfig, service })
     const { txPool } = service
+    await service.execution.setupMerkleVM()
     const { vm } = service.execution
-
     txPool.start()
     miner.start()
 
@@ -294,6 +304,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
     txPool.start()
     miner.start()
@@ -343,6 +354,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm, receiptsManager } = service.execution
     txPool.start()
     miner.start()
@@ -414,6 +426,7 @@ describe('[Miner]', async () => {
     })
     const miner = new Miner({ config, service, skipHardForkValidation: true })
     const { txPool } = service
+    await service.execution.open()
     const { vm } = service.execution
     txPool.start()
     miner.start()
@@ -445,7 +458,10 @@ describe('[Miner]', async () => {
   it("assembleBlocks() -> should stop assembling a block after it's full", async () => {
     const chain = new FakeChain() as any
     const gasLimit = 100000
-    const block = Block.fromBlockData({ header: { gasLimit } }, { common: customCommon })
+    const block = Block.fromBlockData(
+      { header: { gasLimit } },
+      { common: customCommon, setHardfork: true }
+    )
     Object.defineProperty(chain, 'headers', {
       get() {
         return { latest: block.header, height: BigInt(0) }
@@ -460,6 +476,7 @@ describe('[Miner]', async () => {
       config: customConfig,
       chain,
     })
+    await service.execution.open()
     const miner = new Miner({ config: customConfig, service, skipHardForkValidation: true })
     const { txPool } = service
     const { vm } = service.execution
@@ -489,7 +506,7 @@ describe('[Miner]', async () => {
       miner.stop()
       txPool.stop()
     }
-    await (miner as any).queueNextAssembly(0)
+    await miner['queueNextAssembly'](0)
     await wait(500)
   })
   /*****************************************************************************************

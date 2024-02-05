@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.1.0 - 2023-10-23
+
+### New Diff-Based Code Cache
+
+This release introduces a new code cache implementation, see PR [#3022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3022) and [#3080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3080). The new cache complements the expanded account and storage caches and now also tracks stored/deployed-code-changes along commits and reverts and so only keeps code in the cache which made it to the final state change.
+
+The new cache is substantially more robust towards various type of revert-based attacks and grows a more-used cache over time, since never-applied values are consecutively sorted out.
+
+### Peformance Option to store Storage Keys with Prefix
+
+This release introduces a new option `prefixStorageTrieKeys` which triggers the underlying trie to store storage key values with a prefix based on the account address, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023). This significantly increases performance for consecutive storage accesses for the same account on especially larger tries, since trie node accesses get noticeably faster when performed by the underlying key-value store since values are stored close to each other.
+
+While this option is deactivated by default it is recommended for most use cases for it to be activated. Note that this option is not backwards-compatible with existing databases and therefore can't be used if access to existing DBs needs to be guaranteed.
+
+### Bugfixes
+
+- Fix for `dumpStorage()` for `EthersStateManager`, PR [#3009](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3009)
+
+### Other Changes
+
+- Allow for users to decide if to either downlevel (so: adopt them for a short-lived scenario) caches or not on `shallowCopy()` by adding a new `downlevelCaches` parameter (default: `true`), PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
+- Return zero values for `getProof()` as `0x0`, PR [#3038](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3038)
+- Deactivate storage/account caches for cache size 0, PR [#3012](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3012)
+
 ## 2.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -50,14 +74,14 @@ The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefor
 
 Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
 And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
@@ -88,7 +112,7 @@ Also along PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/263
 
 API Change Summary:
 
-```typescript
+```ts
 getAccount(address: Address): Promise<Account> // old
 getAccount(address: Address): Promise<Account | undefined> // new
 
@@ -105,7 +129,7 @@ clearCaches(): void // new
 
 The `StateManagerInterface` has now been moved to the `@ethereum/common` package for more universal access and should be loaded from there with:
 
-```typescript
+```ts
 import type { StateManagerInterface } from '@ethereumjs/common'
 ```
 
@@ -119,14 +143,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -145,7 +169,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // statemanager / StateManagerInterface (in @ethereumjs/common)
 StateManager.putContractCode(address: Address, value: Uint8Array): Promise<void>
 StateManager.getContractCode(address: Address): Promise<Uint8Array>
@@ -198,7 +222,7 @@ Added `EthersStateManager` to direct exports (if you use please fix our deep imp
 
 Import is now simplified to:
 
-```typescript
+```ts
 import { EthersStateManager } from '@ethereumjs/statemanager'
 ```
 
@@ -277,7 +301,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -285,7 +309,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -295,13 +319,13 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 The main `DefaultStateManager` class import has been updated, so import changes from:
 
-```typescript
+```ts
 import DefaultStateManager from '@ethereumjs/statemanager'
 ```
 
 to:
 
-```typescript
+```ts
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 ```
 

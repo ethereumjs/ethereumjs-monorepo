@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.0.1 - 2023-10-26
+
+### Dencun devnet-11 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
 ## 5.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -50,14 +58,14 @@ The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefor
 
 Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
 And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
@@ -70,7 +78,7 @@ Our APIs to (re-)set a a hardfork within a library had grown old over all change
 
 We therefore removed the outdated `getHardforkByBlockNumber()` and `setHardforkByBlockNumber()` methods in `@ethereumjs/common` (artificially expanded with the option to also pass a `TD` or `timestamp`) with a more adequate `hardforkBy()` method flexibly taking in the adequate value type for a HF change, see PR [#2798](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2798):
 
-```typescript
+```ts
 common.setHardforkBy({ blockNumber: 5000000n }) // Setting a mainnet common to a Block from `Byzantium` (and so: to `Byzantium` HF)
 common.setHardforkBy({ timestamp: 1681340000n }) // Setting a mainnet common to a post-Shanghai timestamp
 common.setHardforkBy({ blockNumber, timestamp }) // Setting a common with to a not pre-known HF using both block number and timestamp
@@ -86,14 +94,14 @@ We have cleaned up and unified the validation methods in the `Block` library, se
 
 The `Block.validateTransactions()` method, previously overloaded with different return types depending on the input, has been split up into:
 
-```typescript
+```ts
 Block.transactionsAreValid(): boolean
 Block.getTransactionsValidationErrors(): string[]
 ```
 
 Other renamings:
 
-```typescript
+```ts
 Block.validateTransactionsTrie(): Promise<boolean> // old
 Block.transactionsTrieIsValid(): Promise<boolean> // new
 
@@ -116,7 +124,7 @@ The global initialization method for the KZG setup has been moved to a dedicated
 
 The `initKZG()` method can be used as follows:
 
-```typescript
+```ts
 // Make the kzg library available globally
 import * as kzg from 'c-kzg'
 import { initKZG } from '@ethereumjs/util'
@@ -133,7 +141,7 @@ For the Block library the most significant change is that there is now a new hea
 
 Additionally there are the following three `dataGasUsed`/`excessDataGas` related new helper methods:
 
-```typescript
+```ts
 BlockHeader.getDataGasPrice(): bigint
 BlockHeader.calcDataFee(numBlobs: number): bigint
 BlockHeader.calcNextExcessDataGas(): bigint
@@ -149,7 +157,7 @@ Two new handy constructors have been added to the `Block` class to bring the con
 
 `Block.fromBeaconPayloadJson()` allows to initialize an Ethereum execution layer (EL) block with a payload received from the beacon chain (consensus layer (CL)) via an RPC call. 🤩 The new constructor can be used as follows:
 
-```typescript
+```ts
 const block = await Block.fromBeaconPayloadJson(payload, { common })
 ```
 
@@ -165,14 +173,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -191,7 +199,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // header
 BlockHeader.fromHeaderData(headerData: HeaderData = {}, opts: BlockOptions = {})
 BlockHeader.fromRLPSerializedHeader(serializedHeaderData: Uint8Array, opts: BlockOptions = {})
@@ -259,7 +267,7 @@ This release fully supports all EIPs included in the [Shanghai](https://github.c
 
 You can instantiate a Shanghai-enabled Common instance for your transactions with:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -273,7 +281,7 @@ This release supports an experimental version of the blob transaction type intro
 
 To create blocks which include blob transactions you have to active EIP-4844 in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -296,7 +304,7 @@ This release comes with experimental [EIP-4895](https://eips.ethereum.org/EIPS/e
 
 Withdrawals support can be activated by initializing a respective `Common` object, here is an example for a `Block` object initialization:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import { Common, Chain } from '@ethereumjs/common'
 import { Address } from '@ethereumjs/util'
@@ -343,7 +351,7 @@ For lots of custom chains (for e.g. devnets and testnets), you might come across
 
 `Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
 
-```typescript
+```ts
 import { Common } from '@ethereumjs/common'
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
 const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
@@ -402,7 +410,7 @@ This means that if this library is instantiated without providing an explicit `C
 
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -437,7 +445,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -445,7 +453,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -481,7 +489,7 @@ This means that a Block object instantiated without providing an explicit `Commo
 
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -610,7 +618,7 @@ Please note that for backwards-compatibility reasons the associated Common is st
 
 An ArrowGlacier block can be instantiated with:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
@@ -666,7 +674,7 @@ Proof-of-Stake compatible execution blocks come with its own set of header field
 
 You can instantiate a Merge/PoS block like this:
 
-```typescript
+```ts
 import { Block } from '@ethereumjs/block'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -711,7 +719,7 @@ Source files from the `src` folder are now included in the distribution build, s
 
 This `Block` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Common` instance with a `london` HF activated:
 
-```typescript
+```ts
 import { BN } from 'ethereumjs-util'
 import { Block } from '@ethereumjs/block'
 import Common from '@ethereumjs/common'
@@ -759,7 +767,7 @@ This release gets the `Block` library ready for the `berlin` HF by adding suppor
 
 Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `Block` instance with a `berlin` HF activated:
 
-```typescript
+```ts
 import { Block } from 'ethereumjs-block'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
@@ -789,7 +797,7 @@ This release introduces Clique/PoA support for the `Block` library, see the main
 
 For sealing a block on instantiation there is a new `cliqueSigner` constructor option:
 
-```typescript
+```ts
 const cliqueSigner = Buffer.from('PRIVATE_KEY_HEX_STRING', 'hex')
 const block = Block.fromHeaderData(headerData, { cliqueSigner })
 ```
@@ -834,7 +842,7 @@ The import structure has slightly changed along:
 
 **TypeScript**
 
-```typescript
+```ts
 import { BlockHeader } from 'ethereumjs-block'
 import { Block } from 'ethereumjs-block'
 ```
@@ -866,7 +874,7 @@ There are three new factory methods to create a new `BlockHeader`:
 
 1. Pass in a Header-attribute named dictionary to `BlockHeader.fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions)`:
 
-```typescript
+```ts
 const headerData = {
   number: 15,
   parentHash: '0x6bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7',
@@ -879,7 +887,7 @@ const header = BlockHeader.fromHeaderData(headerData)
 
 2. Create a `BlockHeader` from an RLP-serialized header `Buffer` with `BlockHeader.fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions)`.
 
-```typescript
+```ts
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
   'hex'
@@ -889,7 +897,7 @@ const header = BlockHeader.fromRLPSerializedHeader(serialized)
 
 3. Create a `BlockHeader` from an array of `Buffer` values, you can do a first short roundtrip test with:
 
-```typescript
+```ts
 const valuesArray = header.raw()
 BlockHeader.fromValuesArray(valuesArray)
 ```
@@ -1034,7 +1042,7 @@ The import structure has slightly changed along:
 
 **TypeScript**
 
-```typescript
+```ts
 import { BlockHeader } from 'ethereumjs-block'
 import { Block } from 'ethereumjs-block'
 ```
@@ -1074,7 +1082,7 @@ There are three new factory methods to create a new `BlockHeader`:
 
 1. Pass in a Header-attribute named dictionary to `BlockHeader.fromHeaderData(headerData: HeaderData = {}, opts?: BlockOptions)`:
 
-```typescript
+```ts
 const headerData = {
   number: 15,
   parentHash: '0x6bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7',
@@ -1087,7 +1095,7 @@ const header = BlockHeader.fromHeaderData(headerData)
 
 2. Create a `BlockHeader` from an RLP-serialized header `Buffer` with `BlockHeader.fromRLPSerializedHeader(serialized: Buffer, opts: BlockOptions)`.
 
-```typescript
+```ts
 const serialized = Buffer.from(
   'f901f7a06bfee7294bf44572b7266358e627f3c35105e1c3851f3de09e6d646f955725a7a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347940000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000830200000f837a120080845d20ab8080a00000000000000000000000000000000000000000000000000000000000000000880000000000000000',
   'hex'
@@ -1097,7 +1105,7 @@ const header = BlockHeader.fromRLPSerializedHeader(serialized)
 
 3. Create a `BlockHeader` from an array of `Buffer` values, you can do a first short roundtrip test with:
 
-```typescript
+```ts
 const valuesArray = header.raw()
 BlockHeader.fromValuesArray(valuesArray)
 ```

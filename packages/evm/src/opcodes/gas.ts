@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import { CODE_SIZE_LEAF_KEY, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
   Address,
   BIGINT_0,
@@ -110,6 +111,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, memOffset, dataLength, common)
         if (dataLength !== BIGINT_0) {
           gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+
+          if (common.isActivatedEIP(6800)) {
+            const contract = runState.interpreter.getAddress()
+            let codeEnd = _codeOffset + dataLength
+            const codeSize = runState.interpreter.getCodeSize()
+            if (codeEnd > codeSize) {
+              codeEnd = codeSize
+            }
+
+            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+              contract,
+              Number(_codeOffset),
+              Number(codeEnd)
+            )
+          }
         }
         return gas
       },
@@ -122,6 +138,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const address = runState.stack.peek()[0]
           gas += accessAddressEIP2929(runState, addresstoBytes(address), common)
         }
+
+        if (common.isActivatedEIP(6800) === true) {
+          const address = new Address(addresstoBytes(runState.stack.peek()[0]))
+          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            address,
+            0,
+            CODE_SIZE_LEAF_KEY
+          )
+        }
+
         return gas
       },
     ],
@@ -139,6 +165,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (dataLength !== BIGINT_0) {
           gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
+
+          if (common.isActivatedEIP(6800)) {
+            const contract = new Address(addresstoBytes(address))
+            let codeEnd = _codeOffset + dataLength
+            const codeSize = BigInt((await runState.stateManager.getContractCode(contract)).length)
+            if (codeEnd > codeSize) {
+              codeEnd = codeSize
+            }
+
+            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+              contract,
+              Number(_codeOffset),
+              Number(codeEnd)
+            )
+          }
         }
         return gas
       },
@@ -209,6 +250,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(2929) === true) {
           gas += accessStorageEIP2929(runState, keyBuf, false, common)
         }
+
+        if (common.isActivatedEIP(6800) === true) {
+          const address = runState.interpreter.getAddress()
+          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
+          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            address,
+            treeIndex,
+            subIndex
+          )
+        }
         return gas
       },
     ],
@@ -262,6 +313,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
           // if we deduct extra gas first.
           gas += accessStorageEIP2929(runState, keyBytes, true, common)
+        }
+
+        if (common.isActivatedEIP(6800) === true) {
+          const contract = runState.interpreter.getAddress()
+          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
+          gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
+            contract,
+            treeIndex,
+            subIndex
+          )
         }
         return gas
       },
@@ -372,7 +433,19 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += common.param('gasPrices', 'callNewAccount')
         }
 
-        let gasLimit = maxCallGas(
+        if (common.isActivatedEIP(6800)) {
+          // TODO: add check if toAddress is not a precompile
+          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          if (value !== BIGINT_0) {
+            const contractAddress = runState.interpreter.getAddress()
+            gas += runState.env.accessWitness!.touchAndChargeValueTransfer(
+              contractAddress,
+              toAddress
+            )
+          }
+        }
+
+        const gasLimit = maxCallGas(
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
@@ -386,12 +459,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (gas > runState.interpreter.getGasLeft()) {
           trap(ERROR.OUT_OF_GAS)
-        }
-
-        if (value !== BIGINT_0) {
-          const callStipend = common.param('gasPrices', 'callStipend')
-          runState.interpreter.addStipend(callStipend)
-          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
@@ -415,7 +482,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (value !== BIGINT_0) {
           gas += common.param('gasPrices', 'callValueTransfer')
         }
-        let gasLimit = maxCallGas(
+
+        if (common.isActivatedEIP(6800)) {
+          const toAddress = new Address(addresstoBytes(toAddr))
+          // TODO: add check if toAddress is not a precompile
+          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+        }
+
+        const gasLimit = maxCallGas(
           currentGasLimit,
           runState.interpreter.getGasLeft() - gas,
           runState,
@@ -425,11 +499,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(ERROR.OUT_OF_GAS)
-        }
-        if (value !== BIGINT_0) {
-          const callStipend = common.param('gasPrices', 'callStipend')
-          runState.interpreter.addStipend(callStipend)
-          gasLimit += callStipend
         }
 
         runState.messageGasLimit = gasLimit
@@ -457,6 +526,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929) === true) {
           gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common)
+        }
+
+        if (common.isActivatedEIP(6800)) {
+          const toAddress = new Address(addresstoBytes(toAddr))
+          // TODO: add check if toAddress is not a precompile
+          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
         const gasLimit = maxCallGas(
@@ -585,6 +660,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929) === true) {
           gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common)
+        }
+
+        if (common.isActivatedEIP(6800)) {
+          const toAddress = new Address(addresstoBytes(toAddr))
+          // TODO: add check if toAddress is not a precompile
+          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
         const gasLimit = maxCallGas(

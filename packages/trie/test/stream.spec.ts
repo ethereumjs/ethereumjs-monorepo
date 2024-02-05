@@ -94,10 +94,12 @@ describe('kv stream test', () => {
     },
   ] as BatchDBOp[]
 
-  const valObj = {} as any
+  const valObj1 = {} as any
+  const valObj2 = {} as any
   for (const op of ops) {
     if (op.type === 'put') {
-      valObj[op.key.toString()] = op.value.toString()
+      valObj1[op.key.toString()] = op.value.toString()
+      valObj2[op.key.toString()] = op.value.toString()
     }
   }
 
@@ -110,13 +112,26 @@ describe('kv stream test', () => {
     stream.on('data', (d: any) => {
       const key = d.key.toString()
       const value = d.value.toString()
-      assert.equal(valObj[key], value)
-      delete valObj[key]
+      assert.equal(valObj1[key], value)
+      delete valObj1[key]
     })
     stream.on('end', () => {
-      const keys = Object.keys(valObj)
+      const keys = Object.keys(valObj1)
       assert.equal(keys.length, 0)
     })
+  })
+
+  it('should fetch all of the nodes from async stream', async () => {
+    const stream = trie.createAsyncReadStream()
+    for await (const chunk of stream) {
+      const key = chunk.key.toString()
+      const value = chunk.value.toString()
+      assert.equal(valObj2[key], value)
+      delete valObj2[key]
+    }
+
+    const keys = Object.keys(valObj2)
+    assert.equal(keys.length, 0)
   })
 })
 
