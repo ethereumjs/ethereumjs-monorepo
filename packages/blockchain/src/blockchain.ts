@@ -62,7 +62,7 @@ async function genGenesisStateRoot(
     timestamp: genCommon.genesis().timestamp,
   })
   if (genCommon.isActivatedEIP(6800)) {
-    throw Error(`Verkle trie state not yet supported`)
+    throw Error(`Verkle tree state not yet supported`)
   } else {
     return genMerkleGenesisStateRoot(genesisState)
   }

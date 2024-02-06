@@ -37,7 +37,7 @@ All code examples in `EthereumJS` monorepo library README files are now self-con
 ### Other Changes
 
 - Export `originalStorageCache` to ease implementation of own state managers, PR [#3161](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3161)
-- This release integrates a new `StatelessVerkleStateManager`. This code is still very experimental and so do not tell anyone 😋, but if you dug so deep and found this note here you are likely eligable for early testing and experimentation, PRs [#3139](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3139) and [#3179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3179)
+- This release integrates a new `StatelessVerkleStateManager`. This code is still very experimental and so do not tell anyone 😋, but if you dug so deep and found this note here you are likely eligible for early testing and experimentation, PRs [#3139](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3139) and [#3179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3179)
 
 ## 2.1.0 - 2023-10-23
 
