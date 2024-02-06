@@ -347,7 +347,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   }
 
   checkChunkWitnessPresent(address: Address, codeOffset: number) {
-    const chunkId = codeOffset / 31
+    const chunkId = Math.floor(codeOffset / 31)
     const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
     return this._state[chunkKey] !== undefined
   }
@@ -420,13 +420,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // allocate the code and copy onto it from the available witness chunks
     const accessedCode = new Uint8Array(codeSize)
 
-    const chunks = Math.floor(bytesToInt32(codeSizeLE, true) / 31)
-    for (let chunkId = 0; chunkId <= chunks; chunkId++) {
+    const chunks = Math.floor(codeSize / 31) + 1
+    for (let chunkId = 0; chunkId < chunks; chunkId++) {
       const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
       const codeChunk = this._state[chunkKey]
-      if (codeChunk === undefined) {
-        throw Error(`Invalid access to a missing code chunk with chunkKey=${chunkKey}`)
-      }
       if (codeChunk === null) {
         throw Error(`Invalid access to a non existent code chunk with chunkKey=${chunkKey}`)
       }
