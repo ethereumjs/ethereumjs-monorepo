@@ -252,7 +252,11 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // Reject the response if the hash sets and slot sets don't match
     if (rangeResult === undefined || task.storageRequests.length < rangeResult.slots.length) {
       this.debug(
-        `Slot set is larger than hash set: slotset ${rangeResult?.slots.length} hashset ${task.storageRequests.length} proofset ${rangeResult.proof} `
+        `Slot set is larger than hash set: slotset ${
+          rangeResult ? rangeResult.slots.length : 0
+        } hashset ${task.storageRequests.length} proofset ${
+          rangeResult ? rangeResult.slots.length : 0
+        } `
       )
       return undefined
     }
