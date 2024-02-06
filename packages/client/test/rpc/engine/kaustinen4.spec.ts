@@ -47,7 +47,10 @@ describe(`valid verkle network setup`, async () => {
   // currently it seems the the blocks can't be played one after another as it seems
   // to not do clean init of the statemanager. this isn't a problem in sequential
   // execution, but need to be fixed up in the stateless random execution
-  const testCases = ["block368"] as const
+  const testCases = [
+    // "block368",
+    'block374',
+  ] as const
 
   for (const testCase of testCases) {
     it(`run ${testCase}`, async () => {
