@@ -2,7 +2,7 @@ import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereum
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import blocks from '../../testdata/blocks/kaustinen3.json'
+import blocks from '../../testdata/blocks/kaustinen4.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen4.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
@@ -47,7 +47,7 @@ describe(`valid verkle network setup`, async () => {
   // currently it seems the the blocks can't be played one after another as it seems
   // to not do clean init of the statemanager. this isn't a problem in sequential
   // execution, but need to be fixed up in the stateless random execution
-  const testCases = [] as const
+  const testCases = ["block368"] as const
 
   for (const testCase of testCases) {
     it(`run ${testCase}`, async () => {
