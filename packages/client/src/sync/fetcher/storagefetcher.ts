@@ -256,7 +256,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       // zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await this._proofTrie.verifyRangeProof(
+          const isMissingRightRange = await Trie.verifyRangeProof(
             task.storageRequests[0].storageRoot,
             origin,
             null,
