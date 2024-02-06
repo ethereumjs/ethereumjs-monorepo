@@ -569,10 +569,10 @@ export const chains: ChainsDict = {
       'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.holesky.ethdisco.net',
     ],
   },
-  kaustinen3: {
-    name: 'kaustinen3',
-    chainId: 69421,
-    networkId: 69421,
+  kaustinen4: {
+    name: 'kaustinen4',
+    chainId: 69420,
+    networkId: 69420,
     defaultHardfork: 'prague',
     consensus: {
       type: 'pos',
@@ -585,7 +585,7 @@ export const chains: ChainsDict = {
       extraData: '0x',
       gasLimit: '0x17D7840',
       nonce: '0x0000000000001234',
-      timestamp: '0x65bcb618',
+      timestamp: '0x65c20a28',
     },
     hardforks: [
       {
@@ -645,7 +645,7 @@ export const chains: ChainsDict = {
       {
         name: 'prague',
         block: null,
-        timestamp: '1706866200',
+        timestamp: '1707215340',
       },
     ],
     bootstrapNodes: [],

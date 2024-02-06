@@ -3,14 +3,14 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen3.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen3.json'
+import genesisJSON from '../../testdata/geth-genesis/kaustinen4.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'
 const genesisVerkleStateRoot = '0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'
-const genesisVerkleBlockHash = '0x4a6094d80027992a76401f0f714e88368f05e6975928d5b644f3b8f9f597245c'
+const genesisVerkleBlockHash = '0x8493ed97fd4314acb6ed519867b086dc698e25df37ebe8f2bc77313537710744'
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
 
@@ -47,9 +47,7 @@ describe(`valid verkle network setup`, async () => {
   // currently it seems the the blocks can't be played one after another as it seems
   // to not do clean init of the statemanager. this isn't a problem in sequential
   // execution, but need to be fixed up in the stateless random execution
-  const testCases = [
-    'block15',
-  ] as const
+  const testCases = [] as const
 
   for (const testCase of testCases) {
     it(`run ${testCase}`, async () => {

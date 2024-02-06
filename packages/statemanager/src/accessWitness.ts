@@ -29,7 +29,7 @@ const WitnessChunkFillCost = BigInt(6200)
 
 // read is a default access event if stem or chunk is present
 type StemAccessEvent = { write?: boolean }
-// chunk fill access event is not being charged right now in kaustinen3 but will be rectified
+// chunk fill access event is not being charged right now in kaustinen but will be rectified
 // in upcoming iterations
 type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
 
