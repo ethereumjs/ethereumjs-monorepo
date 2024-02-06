@@ -40,6 +40,7 @@
     "coverage:test": "npm run test:node && cd ../vm && npm run tester -- --state",
     "docs:build": "typedoc --options typedoc.cjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- evm",
+    "examples:build": "npx embedme README.md",
     "formatTest": "node ./scripts/formatTest",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",

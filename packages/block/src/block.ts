@@ -606,16 +606,30 @@ export class Block {
    * - The transactions trie is valid
    * - The uncle hash is valid
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
+   * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
    */
-  async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.getTransactionsValidationErrors()
-    if (txErrors.length > 0) {
-      const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
-      throw new Error(msg)
+  async validateData(onlyHeader: boolean = false, verifyTxs: boolean = true): Promise<void> {
+    if (verifyTxs) {
+      const txErrors = this.getTransactionsValidationErrors()
+      if (txErrors.length > 0) {
+        const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+        throw new Error(msg)
+      }
     }
 
     if (onlyHeader) {
       return
+    }
+
+    if (verifyTxs) {
+      for (const [index, tx] of this.transactions.entries()) {
+        if (!tx.isSigned()) {
+          const msg = this._errorMsg(
+            `invalid transactions: transaction at index ${index} is unsigned`
+          )
+          throw new Error(msg)
+        }
+      }
     }
 
     if (!(await this.transactionsTrieIsValid())) {

@@ -1,14 +1,17 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BIGINT_0,
   KECCAK256_NULL,
+  bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
+  generateAddress,
   hexToBytes,
   short,
 } from '@ethereumjs/util'
@@ -43,8 +46,12 @@ const debugGas = createDebugLogger('vm:tx:gas')
 let enableProfiler = false
 const initLabel = 'EVM journal init, address/slot warming, fee validation'
 const balanceNonceLabel = 'Balance/Nonce checks and update'
+const executionLabel = 'Execution'
 const logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
-const cleanupAndReceiptsLabel = 'Accounts clean up, access list, journal/cache cleanup, receipts'
+const accountsCleanUpLabel = 'Accounts clean up'
+const accessListLabel = 'Access list label'
+const journalCacheCleanUpLabel = 'Journal/cache cleanup'
+const receiptsLabel = 'Receipts'
 const entireTxLabel = 'Entire tx'
 
 /**
@@ -203,6 +210,15 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = this.stateManager
 
+  let stateAccesses
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(this.stateManager instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
+  }
+  let txAccesses = stateAccesses?.shallowCopy()
+
   const { tx, block } = opts
 
   if (!block) {
@@ -305,8 +321,29 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
+  let upfrontAwGas = BIGINT_0
+  if (this.common.isActivatedEIP(6800)) {
+    upfrontAwGas += txAccesses!.touchTxOriginAndComputeGas(caller)
+    const sendsValue = tx.value !== BIGINT_0
+    if (tx.to !== undefined) {
+      upfrontAwGas += txAccesses!.touchTxExistingAndComputeGas(tx.to, { sendsValue })
+      debug(`Sender upfront awGas requirement for non contract creation tx is ${upfrontAwGas}`)
+    } else {
+      const contractTo = new Address(generateAddress(caller.bytes, bigIntToBytes(nonce)))
+      upfrontAwGas += txAccesses!.touchAndChargeContractCreateInit(contractTo, { sendsValue })
+      debug(
+        `Sender upfront awGas requirement is contract creation at=${short(
+          contractTo.bytes
+        )} is ${upfrontAwGas}`
+      )
+    }
+
+    // reset txAccesses to remove the caches so that access gas can be correctly consumed inside the evm run
+    txAccesses = stateAccesses?.shallowCopy()
+  }
+
   // Check balance against upfront tx cost
-  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas) + upfrontAwGas
   if (balance < upFrontCost) {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
@@ -441,7 +478,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // eslint-disable-next-line no-console
     console.timeEnd(balanceNonceLabel)
     // eslint-disable-next-line no-console
-    console.log('[ For execution see detailed table output ]')
+    console.time(executionLabel)
   }
 
   /*
@@ -468,9 +505,18 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     value,
     data,
     blobVersionedHashes,
+    accessWitness: txAccesses,
   })) as RunTxResult
 
+  if (this.common.isActivatedEIP(6800)) {
+    stateAccesses?.merge(txAccesses!)
+  }
+
   if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(executionLabel)
+    // eslint-disable-next-line no-console
+    console.log('[ For execution details see table output ]')
     // eslint-disable-next-line no-console
     console.time(logsGasBalanceLabel)
   }
@@ -552,6 +598,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
+    if (this.common.isActivatedEIP(6800)) {
+      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+    }
     minerAccount = new Account()
   }
   // add the amount spent on gas to the miner's account
@@ -560,6 +609,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
       ? results.totalGasSpent * inclusionFeePerGas!
       : results.amountSpent
   minerAccount.balance += results.minerValue
+
+  if (this.common.isActivatedEIP(6800)) {
+    // use this utility to build access but the computed gas is not charged and hence free
+    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(miner, {
+      sendsValue: true,
+    })
+  }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
@@ -573,7 +629,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // eslint-disable-next-line no-console
     console.timeEnd(logsGasBalanceLabel)
     // eslint-disable-next-line no-console
-    console.time(cleanupAndReceiptsLabel)
+    console.time(accountsCleanUpLabel)
   }
 
   /*
@@ -595,6 +651,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accountsCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(accessListLabel)
+  }
+
   if (opts.reportAccessList === true && this.common.isActivatedEIP(2930)) {
     // Convert the Map to the desired type
     const accessList: AccessList = []
@@ -614,8 +677,22 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     results.accessList = accessList
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accessListLabel)
+    // eslint-disable-next-line no-console
+    console.time(journalCacheCleanUpLabel)
+  }
+
   await this.evm.journal.cleanup()
   state.originalStorageCache.clear()
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(journalCacheCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(receiptsLabel)
+  }
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
@@ -630,7 +707,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
-    console.timeEnd(cleanupAndReceiptsLabel)
+    console.timeEnd(receiptsLabel)
   }
 
   /**

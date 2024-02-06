@@ -4,7 +4,7 @@ import { base32, base64url } from '@scure/base'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { protocols } from 'multiaddr'
-import { toString } from 'multiaddr/src/convert.js'
+import Convert from 'multiaddr/src/convert.js'
 import { sscanf } from 'scanf'
 
 import { toNewUint8Array } from '../util.js'
@@ -84,9 +84,9 @@ export class ENR {
     const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      address: toString(ipCode, obj.ip) as string,
-      tcpPort: Number(toString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: Number(toString(udpCode, toNewUint8Array(obj.udp))),
+      address: Convert.toString(ipCode, obj.ip) as string,
+      tcpPort: Number(Convert.toString(tcpCode, toNewUint8Array(obj.tcp))),
+      udpPort: Number(Convert.toString(udpCode, toNewUint8Array(obj.udp))),
     }
 
     return peerInfo
