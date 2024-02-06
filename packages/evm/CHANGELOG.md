@@ -42,7 +42,7 @@ All code examples in `EthereumJS` monorepo library README files are now self-con
 
 - Fix `modexp` precompile edge cases (❤️ to @last-las for reporting!), PR [#3169](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3169)
 - Fix bug in custom precompile functionality (❤️ to @roninjin10 for the contribution!), PR [#3158](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3158)
-- Fix Blake2F gas + output calculation on non-zero aligned inputs (❤️ to @kchojn for the contribution!), PR [#3210](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3201)
+- Fix Blake2F gas + output calculation on non-zero aligned inputs (❤️ to @kchojn for the contribution!), PR [#3201](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3201)
 - Ensure `modexp` right-pads input data (❤️ to @last-las for reporting!), PR [#3206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3206)
 - Fix CALL(CODE) gas (❤️ to @last-las for reporting!), PR [#3195](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3195)
 - Add `runCallOpts` and `runCodeOpts` to evm exports, PR [#3172](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3172)
