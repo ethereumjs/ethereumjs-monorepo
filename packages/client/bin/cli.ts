@@ -803,10 +803,13 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
+
+  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
+
+  // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
     await waitReadyPolkadotSha256()
     cryptoFunctions.keccak256 = keccak256WASM
@@ -858,6 +861,7 @@ async function run() {
     cryptoFunctions.ecdsaSign = ecdsaSign
     cryptoFunctions.ecdsaRecover = ecdsaRecover
   }
+  cryptoFunctions.kzg = kzg
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
