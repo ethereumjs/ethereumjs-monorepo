@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707313726740,
+  "lastUpdate": 1707338704033,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9046347fe9a53632e99ab8dddd4e6edb619c70ce",
-          "message": "Dependency Updates (#3212)\n\n* client: Update fs-extra dependencies\r\n\r\n* Remove various obsolete browser devDeps\r\n\r\n* Remove pino\r\n\r\n* Update package-lock again\r\n\r\n* Remove duplicate files\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-01-03T19:47:34-07:00",
-          "tree_id": "843a945c4a14cee1da2579f3df46ca2272eced9f",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9046347fe9a53632e99ab8dddd4e6edb619c70ce"
-        },
-        "date": 1704336622213,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40670,
-            "range": "±2.53%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38854,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39080,
-            "range": "±1.97%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38282,
-            "range": "±2.19%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34681,
-            "range": "±5.56%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.52%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b8e9d140ea21b04e0d5efaa7befd4a6f99ee571a",
+          "message": "Add kzg to `common.customCrypto` (#3262)\n\n* Switch kzg to common custom crypto property\r\n\r\n* various test fixes\r\n\r\n* Remove console log\r\n\r\n* Fix test\r\n\r\n* Add kzg initializer to common\r\n\r\n* Fix tests\r\n\r\n* lint\r\n\r\n* Revert common.initializeKzg\r\n\r\n* Fix example\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-02-07T21:42:20+01:00",
+          "tree_id": "ef1a20a80f00d7273822242cf4cf6fd0bd2f4d07",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b8e9d140ea21b04e0d5efaa7befd4a6f99ee571a"
+        },
+        "date": 1707338703187,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40279,
+            "range": "±2.86%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39189,
+            "range": "±1.72%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39411,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36193,
+            "range": "±5.61%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37092,
+            "range": "±2.21%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
