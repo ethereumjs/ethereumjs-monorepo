@@ -214,11 +214,17 @@ export class Trie {
     proof: Uint8Array[] | null,
     opts?: TrieOpts
   ): Promise<boolean> {
+    function appliedKey(key: Uint8Array) {
+      if (opts?.useKeyHashingFunction) {
+        return Uint8Array.from(opts.useKeyHashingFunction.call(undefined, key))
+      }
+      return key
+    }
     return verifyRangeProof(
       rootHash,
-      firstKey && bytesToNibbles(firstKey),
-      lastKey && bytesToNibbles(lastKey),
-      keys.map((k) => k).map(bytesToNibbles),
+      firstKey && bytesToNibbles(appliedKey(firstKey)),
+      lastKey && bytesToNibbles(appliedKey(lastKey)),
+      keys.map((k) => appliedKey(k)).map(bytesToNibbles),
       values,
       proof,
       opts?.useKeyHashingFunction ??
