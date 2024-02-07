@@ -530,7 +530,7 @@ export class Blockchain implements BlockchainInterface {
 
         if (block.common.chainId() !== this.common.chainId()) {
           throw new Error(
-            `Chain mismatch while trying to put block or header. Block chain ID: ${block.common.chainId}, blockchain chain ID: ${this.common.chainId}`
+            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`
           )
         }
 
