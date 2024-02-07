@@ -262,7 +262,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
             null,
             [],
             [],
-            <any>rangeResult.proof
+            <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 }
           )
 
           // if proof is false, reject corrupt peer

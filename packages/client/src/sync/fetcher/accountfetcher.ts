@@ -396,15 +396,15 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     ) {
       // check zero-element proof
       if (rangeResult.proof.length > 0) {
-        const trie = new Trie()
         try {
-          const isMissingRightRange = await trie.verifyRangeProof(
+          const isMissingRightRange = await Trie.verifyRangeProof(
             this.root,
             origin,
             null,
             [],
             [],
-            <any>rangeResult.proof
+            <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 }
           )
           // if proof is false, reject corrupt peer
           if (isMissingRightRange !== false) return undefined
