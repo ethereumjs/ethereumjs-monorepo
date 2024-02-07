@@ -1,4 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   BIGINT_0,
@@ -24,6 +25,7 @@ import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { AccessWitness } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
@@ -67,6 +69,8 @@ export interface Env {
   containerCode?: Uint8Array /** Full container code for EOF1 contracts */
   blobVersionedHashes: Uint8Array[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
+  accessWitness?: AccessWitness
+  chargeCodeAccesses?: boolean
 }
 
 export interface RunState {
@@ -242,10 +246,11 @@ export class Interpreter {
 
     // Iterate through the given ops until something breaks or we hit STOP
     while (this._runState.programCounter < this._runState.code.length) {
+      const programCounter = this._runState.programCounter
       let opCode: number
       let opCodeObj: OpcodeMapEntry
       if (doJumpAnalysis) {
-        opCode = this._runState.code[this._runState.programCounter]
+        opCode = this._runState.code[programCounter]
         // Only run the jump destination analysis if `code` actually contains a JUMP/JUMPI/JUMPSUB opcode
         if (opCode === 0x56 || opCode === 0x57 || opCode === 0x5e) {
           const { jumps, pushes, opcodesCached } = this._getValidJumpDests(this._runState.code)
@@ -256,9 +261,28 @@ export class Interpreter {
           doJumpAnalysis = false
         }
       } else {
-        opCodeObj = cachedOpcodes![this._runState.programCounter]
+        opCodeObj = cachedOpcodes![programCounter]
         opCode = opCodeObj.opcodeInfo.code
       }
+
+      // if its an invalid opcode with verkle activated, then check if its because of a missing code
+      // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcod
+      if (
+        opCode === 0xfe &&
+        this.common.isActivatedEIP(6800) &&
+        this._runState.stateManager instanceof StatelessVerkleStateManager
+      ) {
+        const contract = this._runState.interpreter.getAddress()
+        if (
+          !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
+            contract,
+            programCounter
+          )
+        ) {
+          throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
+        }
+      }
+
       this._runState.opCode = opCode!
 
       try {
@@ -318,6 +342,17 @@ export class Interpreter {
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
         gas = await opEntry.gasHandler(this._runState, gas, this.common)
       }
+      if (this.common.isActivatedEIP(6800) && this._env.chargeCodeAccesses === true) {
+        const contract = this._runState.interpreter.getAddress()
+        const statelessGas =
+          this._runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            contract,
+            this._runState.programCounter,
+            this._runState.programCounter
+          )
+        gas += statelessGas
+        debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
+      }
 
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
         // Only run this stepHook function if there is an event listener (e.g. test runner)
@@ -332,6 +367,7 @@ export class Interpreter {
 
       // Reduce opcode's base fee
       this.useGas(gas, opInfo)
+
       // Advance program counter
       this._runState.programCounter++
 

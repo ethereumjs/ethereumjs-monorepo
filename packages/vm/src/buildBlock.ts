@@ -173,7 +173,7 @@ export class BlockBuilder {
       this.headerData.coinbase !== undefined
         ? new Address(toBytes(this.headerData.coinbase))
         : Address.zero()
-    await rewardAccount(this.vm.evm, coinbase, reward)
+    await rewardAccount(this.vm.evm, coinbase, reward, this.vm.common)
   }
 
   /**
@@ -189,7 +189,7 @@ export class BlockBuilder {
       if (amount === 0n) continue
       // Withdrawal amount is represented in Gwei so needs to be
       // converted to wei
-      await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI)
+      await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI, this.vm.common)
     }
   }
 
