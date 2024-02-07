@@ -530,7 +530,7 @@ export class BlockHeader {
 
     if (gasLimit <= minGasLimit) {
       const msg = this._errorMsg(
-        `gas limit decreased too much. Gas limit: ${gasLimit}, max gas limit: ${minGasLimit}`
+        `gas limit decreased too much. Gas limit: ${gasLimit}, min gas limit: ${minGasLimit}`
       )
       throw new Error(msg)
     }
