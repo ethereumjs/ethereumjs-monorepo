@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706870534090,
+  "lastUpdate": 1707311496166,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b5390216d9bc2cea1910db36eee125d509a4aa27",
-          "message": "Client: Fetcher Small Bugfixes and Log Improvements (#3024)\n\n* Client -> Execution: less frequent cache stats\r\n\r\n* Client -> Fetcher: log improvements\r\n\r\n* Client -> Fetcher: fix unwanted job execution on skip case, added some no-result guards\r\n\r\n* Client -> Fetcher: more explicit push to Readable stream\r\n\r\n* Client -> Fetcher: add initialization debug msg\r\n\r\n* Client -> Fetcher: tie job skipping to finished jobs instead of processed to avoid to large bulk import chunks\r\n\r\n* Client: a bit less frequent memory stats\r\n\r\n* Client -> Fetcher: fix occasional re-enqueue bug when length of an object is not defined, minor log improvements\r\n\r\n* Lighsync hot fix for fetcher reenqueue logic switches\r\n\r\n* add explicit boolean checks\r\n\r\n---------\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2023-12-30T10:36:25+01:00",
-          "tree_id": "92e622ffb32bfdd45f18c899b9937effd3ef99e7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b5390216d9bc2cea1910db36eee125d509a4aa27"
-        },
-        "date": 1703929148854,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41753,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39405,
-            "range": "±2.75%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39767,
-            "range": "±2.05%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38826,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34928,
-            "range": "±6.36%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.30%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9e5798089cf5d15d991d1e9f44f444cea1c12d27",
+          "message": "Client: fix test nesting and other vitest issues (#3266)\n\n* client: fix rlpxserver.spec.ts nesting\r\n\r\n* client: fix event based test\r\n\r\n* client: fix test nesting / events in rlpxsender.spec.ts\r\n\r\n* client: fix test nesting in CLConnectionManager test\r\n\r\n* client: fix test nesting / event issues in integration/beaconsync.spec.ts\r\n\r\n* client: fix nesting / events issues in client.spec.ts\r\n\r\n* client: fix test nesting / events in fullethereumservice.spec.ts\r\n\r\n* client: fix test nesting / events in fullysync.spec.ts\r\n\r\n* client: fix test nesting / events in lightsync.spec.ts\r\n\r\n* client: fix merge.spec.ts\r\n\r\n* client: fix miner.spec.ts\r\n\r\n* client: fix peerpool.spec.ts\r\n\r\n* client: refactor and fix pow.spec.ts\r\n\r\n* client: fix for miner/miner.spec.ts\r\n\r\n* client: fix for peerpool.spec.ts\r\n\r\n* client: fix nexting in fullethereumservice.spec.ts\r\n\r\n* client: fix for lightethereumservice.spec.ts\r\n\r\n* client: fix for sim/beacsonsync.spec.ts\r\n\r\n* client: apply fixes to blockfetcher.spec.ts\r\n\r\n* client: apply fixes to fetcher.spec.ts\r\n\r\n* client: apply fixes to headerfetcher.spec.ts\r\n\r\n* client: apply fixes to reverseblockfetcher.spec.ts\r\n\r\n* client: apply fixes to lightsync.spec.ts\r\n\r\n* client: apply fixes to sync.spec.ts\r\n\r\n* fetcher.spec: remove as any declarations",
+          "timestamp": "2024-02-07T14:06:29+01:00",
+          "tree_id": "8de2dc57f73103ca44c17a4af0af53bc3f25146a",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9e5798089cf5d15d991d1e9f44f444cea1c12d27"
+        },
+        "date": 1707311494759,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40445,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39269,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39288,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36899,
+            "range": "±4.23%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37511,
+            "range": "±2.26%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
