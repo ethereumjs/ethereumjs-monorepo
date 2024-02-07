@@ -3,8 +3,11 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { initKZG } from '@ethereumjs/util'
 
 // Instantiate KZG
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+} catch {
+  // no-op if already loaded
+}
 // Instantiate `common`
 const common = new Common({
   chain: Chain.Mainnet,
