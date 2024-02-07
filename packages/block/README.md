@@ -164,22 +164,47 @@ To create blocks which include blob transactions you have to active EIP-4844 in 
 // ./examples/4844.ts
 
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Address, initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
+import { randomBytes } from 'crypto'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+const main = async () => {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: {
+      kzg,
+    },
+  })
+  const blobTx = BlobEIP4844Transaction.fromTxData(
+    { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
+    { common }
+  )
 
-// TODO: add a more meaningful example including at least one blob tx
-const header = BlockHeader.fromHeaderData(
-  {
-    excessBlobGas: 0n,
-  },
-  {
-    common,
-    skipConsensusFormatValidation: true,
-  }
-)
+  const block = Block.fromBlockData(
+    {
+      header: {
+        excessBlobGas: 0n,
+      },
+      transactions: [blobTx],
+    },
+    {
+      common,
+      skipConsensusFormatValidation: true,
+    }
+  )
 
-console.log(`4844 block header with excessBlobGas=${header.excessBlobGas} created`)
+  console.log(
+    `4844 block header with excessBlobGas=${block.header.excessBlobGas} created and ${
+      block.transactions.filter((tx) => tx.type === 3).length
+    } blob transactions`
+  )
+}
+
+main()
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
