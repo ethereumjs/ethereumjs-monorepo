@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707383496847,
+  "lastUpdate": 1707405025155,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "3981bcafa5a93720e19768f7cec7791f1c7d201e",
-          "message": "Switch from `ts-node` to `tsx` (#3188)\n\n* Switch all ts-node usage to tsx and associated fixes\r\n\r\n* remove `cts` suffix\r\n\r\n* Fix namespace imports\r\n\r\n* Update devp2p lrucache to v10\r\n\r\n* update some non-tsx files to tsx\r\n\r\n* Remove console log\r\n\r\n* log all messages\r\n\r\n* update cli tests to use tsx\r\n\r\n* Address feedback\r\n\r\n* Stick with cts\r\n\r\n* vm: fix retesteth\r\n\r\n* update package-lock\r\n\r\n* update package lock again\r\n\r\n* Add browser deps install script\r\n\r\n* fix browser script\r\n\r\n* Pin browser testing deps\r\n\r\n* Remove browser deps from package-lock\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2024-01-08T13:23:56-05:00",
-          "tree_id": "65b2081932c589930752330e4fda6602d775ebcb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/3981bcafa5a93720e19768f7cec7791f1c7d201e"
-        },
-        "date": 1704738409876,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41652,
-            "range": "±2.55%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38561,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39346,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38955,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37793,
-            "range": "±2.51%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 35991,
             "range": "±6.07%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "gajinder@g11.in",
+            "name": "g11tech",
+            "username": "g11tech"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "45d03366b29d6e36a16d2fa945f8194a74ba83eb",
+          "message": "common: schedule cancun for mainnet (#3270)",
+          "timestamp": "2024-02-08T16:05:26+01:00",
+          "tree_id": "9b5535b2820576324a27decb926d0c73cac563d0",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/45d03366b29d6e36a16d2fa945f8194a74ba83eb"
+        },
+        "date": 1707405024292,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40838,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38367,
+            "range": "±3.26%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39095,
+            "range": "±1.94%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37578,
+            "range": "±2.34%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36936,
+            "range": "±2.48%",
             "unit": "ops/sec",
             "extra": "85 samples"
           }
