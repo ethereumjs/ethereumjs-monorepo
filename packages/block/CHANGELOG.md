@@ -15,9 +15,20 @@ While all EIPs contained in the upcoming Dencun hardfork run pretty much stable 
 Dencun hardfork on the execution side is called [Cancun](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md) and can be activated within the EthereumJS libraries (default hardfork still `Shanghai`) with a following `common` instance:
 
 ```typescript
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+import * as kzg from 'c-kzg'
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+  customCrypto: { kzg: kzg },
+})
+console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
 ```
+
+Note that the `kzg` initialization slightly changed from previous experimental releases and a custom KZG instance is now passed to `Common` by using the `customCrypto` parameter, see PR [#3262](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3262).
 
 While `EIP-4844` - activating shard blob transactions - is for sure the most prominent EIP from this hardfork, enabling better scaling for the Ethereum ecosystem by providing cheaper block space for L2s, there are in total 6 EIPs contained in the Dencun hardfork. The following is an overview of which EthereumJS libraries mainly implement the various EIPs:
 

@@ -58,6 +58,8 @@ const common = new Common({
 console.log(common.customCrypto.kzg) // should output the KZG API as an object
 ```
 
+At the moment using the Node.js bindings for the `c-kzg` library is the only option to get KZG related functionality to work, note that this solution is not browser compatible. We are currently working on a WASM build of that respective library which can hopefully be released soon [TM].
+
 ## Usage
 
 ### Static Constructor Methods
