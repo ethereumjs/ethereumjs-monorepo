@@ -48,8 +48,9 @@ describe(`valid verkle network setup`, async () => {
   // to not do clean init of the statemanager. this isn't a problem in sequential
   // execution, but need to be fixed up in the stateless random execution
   const testCases = [
+    "block353",
     // "block368",
-    'block374',
+    // 'block374',
   ] as const
 
   for (const testCase of testCases) {
