@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "7.2.0",
+  "version": "7.2.1",
   "description": "An Ethereum VM implementation",
   "keywords": [
     "ethereum",
@@ -66,9 +66,9 @@
     "@ethereumjs/block": "^5.1.1",
     "@ethereumjs/blockchain": "^7.1.0",
     "@ethereumjs/common": "^4.2.0",
-    "@ethereumjs/evm": "^2.2.0",
+    "@ethereumjs/evm": "^2.2.1",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/statemanager": "^2.2.1",
+    "@ethereumjs/statemanager": "^2.2.2",
     "@ethereumjs/trie": "^6.1.1",
     "@ethereumjs/tx": "^5.2.1",
     "@ethereumjs/util": "^9.0.2",
