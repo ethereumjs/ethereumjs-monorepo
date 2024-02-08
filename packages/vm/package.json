@@ -68,7 +68,7 @@
     "@ethereumjs/common": "^4.2.0",
     "@ethereumjs/evm": "^2.2.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/statemanager": "^2.2.1",
+    "@ethereumjs/statemanager": "^2.2.2",
     "@ethereumjs/trie": "^6.1.1",
     "@ethereumjs/tx": "^5.2.1",
     "@ethereumjs/util": "^9.0.2",
