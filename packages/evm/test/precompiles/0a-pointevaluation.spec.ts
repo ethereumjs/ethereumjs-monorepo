@@ -22,16 +22,18 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
     if (isBrowser() === false) {
+      const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
       try {
         initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
-        // eslint-disable-next-line
-      } catch {}
-
-      const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
+      } catch {
+        // no-op
+      }
       const common = Common.fromGethGenesis(genesisJSON, {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
+        customCrypto: { kzg },
       })
+
       const evm = new EVM({
         common,
       })

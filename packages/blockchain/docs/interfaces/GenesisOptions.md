@@ -30,7 +30,7 @@ provided from the `common` will be used.
 
 #### Defined in
 
-[types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L92)
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L101)
 
 ___
 
@@ -63,7 +63,7 @@ A complex genesis state with Contract and EoA states would have the following fo
 
 #### Defined in
 
-[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L118)
+[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L127)
 
 ___
 
@@ -75,4 +75,4 @@ State root of the genesis state
 
 #### Defined in
 
-[types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L123)
+[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L132)

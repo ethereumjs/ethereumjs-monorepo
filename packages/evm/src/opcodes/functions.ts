@@ -399,13 +399,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x20: KECCAK256
   [
     0x20,
-    function (runState) {
+    function (runState, common) {
       const [offset, length] = runState.stack.popN(2)
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt(bytesToHex(keccak256(data)))
+      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak256)(data)))
       runState.stack.push(r)
     },
   ],
@@ -911,6 +911,18 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.OUT_OF_RANGE)
       }
 
+      if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
+        const contract = runState.interpreter.getAddress()
+        const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
+        const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)
+        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+          contract,
+          startOffset,
+          endOffset
+        )
+        runState.interpreter.useGas(statelessGas, `PUSH`)
+      }
+
       if (!runState.shouldDoJumpAnalysis) {
         runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
@@ -1129,11 +1141,14 @@ export const handlers: Map<number, OpHandler> = new Map([
       const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
       const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
-      const msgHash = keccak256(message)
+
+      const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
+      const msgHash = keccakFunction(message)
 
       let recover
+      const ecrecoverFunction = runState.interpreter._evm.common.customCrypto.ecrecover ?? ecrecover
       try {
-        recover = ecrecover(msgHash, yParity + BIGINT_27, r, s)
+        recover = ecrecoverFunction(msgHash, yParity + BIGINT_27, r, s)
       } catch (e) {
         // Malformed signature, push 0 on stack, clear auth variable
         runState.stack.push(BIGINT_0)
