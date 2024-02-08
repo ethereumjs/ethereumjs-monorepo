@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707338704033,
+  "lastUpdate": 1707383496847,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4ec344b78c1f81cc0becbef3d2de287db6d38fcf",
-          "message": "Update callcode test  (#3214)\n\n* Update callcode test with clearer results\r\n\r\n* lint\r\n\r\n* Address feedback\r\n\r\n* evm: squash call(code) test\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2024-01-05T17:31:56-05:00",
-          "tree_id": "b1be38cf06746b16d84edc89a0d596ad8fbce45e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4ec344b78c1f81cc0becbef3d2de287db6d38fcf"
-        },
-        "date": 1704494081959,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40775,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38342,
-            "range": "±3.50%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39330,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39018,
-            "range": "±2.05%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37371,
-            "range": "±2.28%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.21%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a2da337d6801688cf9129057825bb68cf6ee92e1",
+          "message": "Monorepo: Make some errors more detailed (#3260)\n\n* tx: better chain id error\r\n\r\n* tx: error msg with backwards compatibility\r\n\r\n* monorepo: various error messages improvements\r\n\r\n* Update packages/blockchain/src/blockchain.ts\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* Update packages/block/src/header.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* statemanager: extra info on errors\r\n\r\n---------\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-02-08T10:08:47+01:00",
+          "tree_id": "0d31fa10b209f0abf8ef78a5c74c7ec1d0937b89",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a2da337d6801688cf9129057825bb68cf6ee92e1"
+        },
+        "date": 1707383496233,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40773,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38722,
+            "range": "±3.65%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39029,
+            "range": "±2.09%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37060,
+            "range": "±5.47%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35991,
+            "range": "±6.07%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
