@@ -89,6 +89,10 @@ Hardforks adding features and/or tx types:
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
 
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
 ### Transaction Types
 
 This library supports the following transaction types ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)):
@@ -105,9 +109,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - Activation: `cancun`
 - Type: `3`
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) EIP version from July 2023 deployed along [4844-devnet-7](https://github.com/ethpandaops/4844-testnet) (July 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and following.
-
-**Note:** 4844 support is not yet completely stable and there will still be (4844-)breaking changes along all types of library releases.
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
 **Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
@@ -400,23 +402,21 @@ const bip32Path = "44'/60'/0'/0/0"
 const run = async () => {
   // Signing a legacy tx
   tx = LegacyTransaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign()
-  unsignedTx = RLP.encode(unsignedTx) // ledger signTransaction API expects it to be serialized
-  let { v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)
-  txData = { ...txData, v, r, s }
-  signedTx = LegacyTransaction.fromTxData(txData, { common })
-  let from = signedTx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
+  tx = tx.getMessageToSign()
+  // ledger signTransaction API expects it to be serialized
+  let { v, r, s } = await eth.signTransaction(bip32Path, RLP.encode(tx))
+  tx.addSignature(v, r, s, true)
+  let from = tx.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
 
   // Signing a 1559 tx
   txData = { value: 1 }
   tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  unsignedTx = tx.getMessageToSign()
+  tx = tx.getMessageToSign()
   ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
-  txData = { ...txData, v, r, s }
-  signedTx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  from = signedTx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(signedTx.serialize())}\nfrom: ${from}`)
+  tx.addSignature(v, r, s)
+  from = tx.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
 }
 
 run()
