@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/trie",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
   "keywords": [
     "merkle",
@@ -56,6 +56,7 @@
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.0.2",
     "@types/readable-stream": "^2.3.13",
+    "debug": "^4.3.4",
     "lru-cache": "^10.0.0",
     "ethereum-cryptography": "^2.1.3",
     "readable-stream": "^3.6.0"
@@ -64,7 +65,6 @@
     "@ethereumjs/genesis": "^0.2.1",
     "@types/benchmark": "^1.0.33",
     "abstract-level": "^1.0.3",
-    "debug": "^4.3.4",
     "level": "^8.0.0",
     "level-legacy": "npm:level@^7.0.0",
     "level-mem": "^6.0.1",

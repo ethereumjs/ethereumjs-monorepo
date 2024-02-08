@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": [
     "ethereum",
