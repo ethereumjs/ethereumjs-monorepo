@@ -69,7 +69,7 @@
     "@ethereumjs/evm": "^2.2.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/statemanager": "^2.2.0",
-    "@ethereumjs/trie": "^6.1.0",
+    "@ethereumjs/trie": "^6.1.1",
     "@ethereumjs/tx": "^5.2.0",
     "@ethereumjs/util": "^9.0.2",
     "debug": "^4.3.3",
