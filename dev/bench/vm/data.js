@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707405025155,
+  "lastUpdate": 1707407022660,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "60685302d842cd01a07e31c3f1dc21f41045d34d",
-          "message": "Monorepo: Embed Code Examples in README Files\n\n* Add embedme dev dependency to root package.json\n\n* Rebuild package-lock.json\n\n* Add examples:build script to package.json (Block)\n\n* Integrate first exemplary Block example\n\n* Replace typescript marker for markdown code embeds with ts (working alternative + embedme compatible)\n\n* Add missing examples for block\n\n* Add Util package examples, expand README with dedicated module sections and examples\n\n* Flesh out 4844 example",
-          "timestamp": "2024-01-10T11:33:22-05:00",
-          "tree_id": "5a2b5f052183ce24f003c686021ac9b7c964c751",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/60685302d842cd01a07e31c3f1dc21f41045d34d"
-        },
-        "date": 1704904566364,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40921,
-            "range": "±2.26%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38571,
-            "range": "±3.29%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39184,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38298,
-            "range": "±2.15%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34555,
-            "range": "±6.04%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.48%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b258fd9fe5e23bf4d299e632c8d2a33c0ebc7009",
+          "message": "New Releases (Dencun, ESM Refactor, Trie/SM Proof Functionality, WASM Crypto, Other) (#3261)\n\n* New CHANGELOG entry, update package.json version number, updated upstream dependency versions (RLP v5.0.2)\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Util v9.0.2)\r\n\r\n* Some root README mermaid graph dependency additions\r\n\r\n* Update ethereum-cryptography dependencies from v2.1.2 -> v2.1.3 (all libraries)\r\n\r\n* Update @ethereumjs/wallet dependency versions\r\n\r\n* First (partial) package-lock.json rebuild\r\n\r\n* Bump version, added CHANGELOG entry (Wallet v2.0.2)\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions, new custom crypto example (Common v4.2.0)\r\n\r\n* Additional documentation adjustments\r\n\r\n* Rebuild Common and Util docs\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Tx v5.2.0)\r\n\r\n* Update tx hardware wallet signing example\r\n\r\n* Rebuild tx docs\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Block v5.1.0)\r\n\r\n* Review adjustments\r\n\r\n* Partial package-lock.json update\r\n\r\n* Spelling nits\r\n\r\n* Fix md5 import\r\n\r\n* Minor\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Trie v6.1.0)\r\n\r\n* Trie: simpler createFromProof example name\r\n\r\n* Rebuild trie docs\r\n\r\n* Partial package-lock.json rebuild\r\n\r\n* Some trie README updates\r\n\r\n* Some more doc updates\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (StateManager v2.2.0)\r\n\r\n* Fix Verkle tests and rebuild StateManager docs\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Ethash v3.0.2)\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Genesis v0.2.1)\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Devp2p v6.1.0)\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (Blockchain v7.1.0)\r\n\r\n* Partially rebuild package-lock.json\r\n\r\n* Rebuild blockchain docs\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (EVM v2.2.0)\r\n\r\n* Partially rebuild package-lock.json\r\n\r\n* Some EVM test fixes (TypeScript only)\r\n\r\n* Rebuild EVM docs\r\n\r\n* Install peer deps in common\r\n\r\n* Make tx CI happy\r\n\r\n* Fix the correct example\r\n\r\n* Apply suggestions from code review\r\n\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\n\r\n* New CHANGELOG entry, update README, update package.json version, updated upstream dependency versions (VM v7.2.0)\r\n\r\n* Rebuild VM docs\r\n\r\n* Client: bump version to v0.10, add CHANGELOG entry\r\n\r\n* chore: typo\r\n\r\n* chore: typo in eip number\r\n\r\n* chore: rename verkle trie to verkle tree for consistency\r\n\r\n* chore: typos\r\n\r\n* Rebuild package-lock.json\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Gabriel Rocheleau <contact@rockwaterweb.com>",
+          "timestamp": "2024-02-08T16:40:31+01:00",
+          "tree_id": "859b42116d70f849c104b8a5f43cde58ba4ab6dc",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b258fd9fe5e23bf4d299e632c8d2a33c0ebc7009"
+        },
+        "date": 1707407021380,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41218,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38534,
+            "range": "±3.27%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38744,
+            "range": "±2.12%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38820,
+            "range": "±2.26%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37029,
+            "range": "±2.49%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
