@@ -77,11 +77,21 @@ c = new Common({ chain: Chain.Mainnet, eips: [4844] })
 console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
 ```
 
-### WASM Crypto Support
+### Custom Cryptography Primitives (WASM)
 
-Starting with the `v4.2.0` releases there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion.
+All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. 
+These primitves, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native 
+Javascript and therefore have the potential downside of being less performant than alternative cryptography modules 
+written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of 
+the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in 
+place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper 
+methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
+See the implementation of this in the [`@etheruemjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto` 
+for an example of how this is done for each available cryptographic primitive.
 
-This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation.
+Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
+
+### Example 1: keccak256 Hashing
 
 The following is an example using the [@polkadot/wasm-crypto](https://github.com/polkadot-js/wasm/tree/master/packages/wasm-crypto) package:
 
@@ -107,9 +117,27 @@ const main = async () => {
 main()
 ```
 
-We internally use this new feature for various crypto overwrites within the client package, see Client [cli.ts](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/bin/cli.ts) implementation for guidance on how to setup with other crypto primitives (e.g. ECDSA signature verification).
+### Example 2: KZG
 
-Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
+The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property 
+and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how 
+to initalize (assuming you are using the `c-kzg` package as your KZG cryptography library).
+
+```ts
+// ./examples/initKzg.ts
+
+import * as kzg from 'c-kzg'
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+  customCrypto: { kzg: kzg },
+})
+console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+```
 
 ## Browser
 
