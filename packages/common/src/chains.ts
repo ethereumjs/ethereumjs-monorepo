@@ -116,7 +116,8 @@ export const chains: ChainsDict = {
       {
         name: 'cancun',
         block: null,
-        forkHash: null,
+        timestamp: '1710338135',
+        forkHash: '0x9f3d2254',
       },
     ],
     bootstrapNodes: [
