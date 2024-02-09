@@ -50,7 +50,8 @@ describe(`valid verkle network setup`, async () => {
   const testCases = [
     // "block353",
     // "block368",
-    'block374',
+    // 'block374',
+    'block479',
   ] as const
 
   for (const testCase of testCases) {
