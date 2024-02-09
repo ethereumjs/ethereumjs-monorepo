@@ -586,19 +586,20 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       balance: typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : null,
       nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : null,
       codeHash: typeof codeHashRaw === 'string' ? hexToBytes(codeHashRaw) : null,
+      // if codeSizeRaw is null, it means account didnt exist or it was EOA either way codeSize is 0
+      // if codeSizeRaw is undefined, then we pass in null which in our context of partial account means
+      // not specified
       codeSize:
-        typeof codeSizeRaw === 'string' ? bytesToInt32(hexToBytes(codeSizeRaw), true) : null,
+        typeof codeSizeRaw === 'string'
+          ? bytesToInt32(hexToBytes(codeSizeRaw), true)
+          : codeSizeRaw === null
+          ? 0
+          : null,
       storageRoot: null,
     })
 
     if (this.DEBUG) {
-      debug(
-        `getAccount address=${address.toString()} stem=${short(stem)} balance=${
-          account.balance
-        } nonce=${account.nonce} codeHash=${short(account.codeHash)} storageHash=${short(
-          account.storageRoot
-        )}`
-      )
+      debug(`getAccount address=${address.toString()} stem=${short(stem)}`)
     }
 
     if (!this._accountCacheSettings.deactivate) {
@@ -610,11 +611,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   async putAccount(address: Address, account: Account): Promise<void> {
     if (this.DEBUG) {
-      debug(
-        `putAccount address=${address.toString()} balance=${account.balance} nonce=${
-          account.nonce
-        } codeHash=${short(account.codeHash)} storageHash=${short(account.storageRoot)}`
-      )
+      debug(`putAccount address=${address.toString()}`)
     }
 
     if (this._accountCacheSettings.deactivate) {
@@ -707,6 +704,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const blockHashChunkKey = bytesToHex(
       this.getTreeKeyForStorageSlot(BLOCKHASH_ADDRESS, this._blockNum - BigInt(1))
     )
+    const blockHashKnownStems = [
+      '0x97f2911f5efe08b74c28727d004e36d260225e73525fe2a300c8f58c7ffd76',
+      '0x117b67dd491b9e11d9cde84ef3c02f11ddee9e18284969dc7d496d43c300e5',
+    ]
 
     for (const accessedState of this.accessWitness!.accesses()) {
       const { address, type } = accessedState
@@ -762,7 +763,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     for (const canChunkKey of Object.keys(this._postState)) {
       if (accessedChunks.get(canChunkKey) === undefined) {
         // ignore the blockhash chunk ket
-        if (canChunkKey !== blockHashChunkKey) {
+        if (
+          canChunkKey !== blockHashChunkKey &&
+          !blockHashKnownStems.includes(canChunkKey.slice(0, 64))
+        ) {
           debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
           postVerified = false
         } else {

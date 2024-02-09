@@ -518,8 +518,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const size = BigInt(
-        (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
-          .length
+        await runState.stateManager.getContractCodeSize(new Address(addresstoBytes(addressBigInt)))
       )
       runState.stack.push(size)
     },
