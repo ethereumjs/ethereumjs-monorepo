@@ -2,6 +2,7 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
   RIPEMD160_ADDRESS_STRING,
+  bigIntToHex,
   bytesToUnprefixedHex,
   stripHexPrefix,
   toBytes,
@@ -136,15 +137,18 @@ export class Journal {
           }
         }
       }
+      const exemptAddresses = new Set<string>()
+      // If RIPEMD160 is touched, keep it touched.
+      exemptAddresses.add(RIPEMD160_ADDRESS_STRING)
+
+      if (this.common.isActivatedEIP(2935)) {
+        // The history storage address is exempt of state clearing by EIP-158 if the EIP is activated
+        exemptAddresses.add(bigIntToHex(this.common.param('vm', 'historyStorageAddress')).slice(2))
+      }
 
       for (const address of touchedSet) {
-        // Delete the address from the journal
-        // TODO: read blockhash address from common
-        if (
-          address !== RIPEMD160_ADDRESS_STRING &&
-          address !== 'fffffffffffffffffffffffffffffffffffffffe'
-        ) {
-          // If RIPEMD160 is touched, keep it touched.
+        // Delete the address from the journal if it is not in exemptAddresses
+        if (!exemptAddresses.has(address)) {
           // Default behavior for others.
           this.touched.delete(address)
         }
