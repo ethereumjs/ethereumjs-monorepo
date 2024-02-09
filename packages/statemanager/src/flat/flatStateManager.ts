@@ -330,7 +330,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
     //
     // can keep the supported state roots of the last n blocks in a set to check if root is valid and supported
     // then can set a class field
-    throw new Error('Not yet implemented')
+    await this._snapshot.setStateRoot(stateRoot)
   }
 
   /**
