@@ -413,11 +413,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       return new Uint8Array(0)
     }
 
-    // Get the contract code size
-    const codeSizeKey = this.getTreeKeyForCodeSize(getStem(address, 0))
-    const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
-    const codeSize = bytesToInt32(codeSizeLE, true)
     // allocate the code and copy onto it from the available witness chunks
+    const codeSize = account.codeSize
     const accessedCode = new Uint8Array(codeSize)
 
     const chunks = Math.floor(codeSize / 31) + 1
@@ -460,17 +457,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const codeSizeKeyHex = bytesToHex(this.getTreeKeyForCodeSize(getStem(address, 0)))
-    // check if the statemanager already has code loaded or accessed
-    const codeSizeLEHex = this._state[codeSizeKeyHex]
-    if (codeSizeLEHex === undefined) {
-      throw Error(`Missing witness for ${address} code size chunkKey=${codeSizeKeyHex}`)
+    // load the account basic fields and codeSize should be in it
+    const account = await this.getAccount(address)
+    if (account === undefined) {
+      throw Error(`address=${address} doesn't exist in pre-state`)
     }
-    if (codeSizeLEHex === null) {
-      throw Error(`Null witness for ${address} code size chunkKey=${codeSizeKeyHex}`)
-    }
-
-    return bytesToInt32(hexToBytes(codeSizeLEHex), true)
+    return account.codeSize
   }
 
   /**
@@ -544,31 +536,59 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const stem = getStem(address, 0)
     const versionKey = this.getTreeKeyForVersion(stem)
-    const versionChunk = this._state[bytesToHex(versionKey)]
-    if (versionChunk === undefined) {
-      throw Error(
-        `Missing execution witness for address=${address} versionKey=${bytesToHex(versionKey)}`
-      )
-    }
-
-    // if the versionChunk is null it means the account doesn't exist in pre state
-    if (versionChunk === null) {
-      return undefined
-    }
-
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
+    const codeSizeKey = this.getTreeKeyForCodeSize(stem)
 
+    const versionRaw = this._state[bytesToHex(versionKey)]
     const balanceRaw = this._state[bytesToHex(balanceKey)]
     const nonceRaw = this._state[bytesToHex(nonceKey)]
     const codeHashRaw = this._state[bytesToHex(codeHashKey)]
+    const codeSizeRaw = this._state[bytesToHex(codeSizeKey)]
 
-    const account = Account.fromAccountData({
-      balance:
-        typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : undefined,
-      nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : undefined,
-      codeHash: codeHashRaw?.length === 32 ? codeHashRaw : KECCAK256_NULL_S,
+    // check if the account didn't exist if any of the basic keys have null
+    if (versionRaw === null || balanceRaw === null || nonceRaw === null || codeHashRaw === null) {
+      // check any of the other key shouldn't have string input available as this account didn't exist
+      if (
+        typeof versionRaw === `string` ||
+        typeof balanceRaw === 'string' ||
+        typeof nonceRaw === 'string' ||
+        typeof codeHashRaw === 'string'
+      ) {
+        throw Error(
+          `Invalid witness for a non existing address=${address} stem=${bytesToHex(stem)}`
+        )
+      } else {
+        return undefined
+      }
+    }
+
+    // check if codehash is correct 32 bytes prefixed hex string
+    if (codeHashRaw !== undefined && codeHashRaw !== null && codeHashRaw.length !== 66) {
+      throw Error(
+        `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${codeHashKey}`
+      )
+    }
+
+    if (
+      versionRaw === undefined &&
+      balanceRaw === undefined &&
+      nonceRaw === undefined &&
+      codeHashRaw === undefined &&
+      codeSizeRaw === undefined
+    ) {
+      throw Error(`No witness bundled for address=${address} stem=${bytesToHex(stem)}`)
+    }
+
+    const account = Account.fromPartialAccountData({
+      version: typeof versionRaw === 'string' ? bytesToInt32(hexToBytes(versionRaw), true) : null,
+      balance: typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : null,
+      nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : null,
+      codeHash: typeof codeHashRaw === 'string' ? hexToBytes(codeHashRaw) : null,
+      codeSize:
+        typeof codeSizeRaw === 'string' ? bytesToInt32(hexToBytes(codeSizeRaw), true) : null,
+      storageRoot: null,
     })
 
     if (this.DEBUG) {
