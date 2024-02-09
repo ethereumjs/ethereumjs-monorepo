@@ -66,11 +66,20 @@ export class AccountCache extends Cache {
    * @param address - Address of account
    * @param account - Account or undefined if account doesn't exist in the trie
    */
-  put(address: Address, account: Account | undefined): void {
+  put(
+    address: Address,
+    account: Account | undefined,
+    couldBeParitalAccount: boolean = false
+  ): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
-      accountRLP: account !== undefined ? account.serialize() : undefined,
+      accountRLP:
+        account !== undefined
+          ? couldBeParitalAccount
+            ? account.serializeWithPartialInfo()
+            : account.serialize()
+          : undefined,
     }
 
     if (this.DEBUG) {

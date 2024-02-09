@@ -401,6 +401,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     return code
   }
 
+  async getContractCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getContractCode(address)
+    return contractCode.length
+  }
   /**
    * Gets the storage trie for an account from the storage
    * cache or does a lookup.

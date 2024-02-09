@@ -445,6 +445,34 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     return accessedCode
   }
 
+  async getContractCodeSize(address: Address): Promise<number> {
+    if (!this._accountCacheSettings.deactivate) {
+      const elem = this._accountCache!.get(address)
+      if (elem !== undefined) {
+        const account =
+          elem.accountRLP !== undefined
+            ? Account.fromRlpSerializedPartialAccount(elem.accountRLP)
+            : undefined
+        if (account === undefined) {
+          throw Error(`account=${account} in cache`)
+        }
+        return account.codeSize
+      }
+    }
+
+    const codeSizeKeyHex = bytesToHex(this.getTreeKeyForCodeSize(getStem(address, 0)))
+    // check if the statemanager already has code loaded or accessed
+    const codeSizeLEHex = this._state[codeSizeKeyHex]
+    if (codeSizeLEHex === undefined) {
+      throw Error(`Missing witness for ${address} code size chunkKey=${codeSizeKeyHex}`)
+    }
+    if (codeSizeLEHex === null) {
+      throw Error(`Null witness for ${address} code size chunkKey=${codeSizeKeyHex}`)
+    }
+
+    return bytesToInt32(hexToBytes(codeSizeLEHex), true)
+  }
+
   /**
    * Gets the storage value associated with the provided `address` and `key`. This method returns
    * the shortest representation of the stored value.
@@ -509,7 +537,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const elem = this._accountCache!.get(address)
       if (elem !== undefined) {
         return elem.accountRLP !== undefined
-          ? Account.fromRlpSerializedAccount(elem.accountRLP)
+          ? Account.fromRlpSerializedPartialAccount(elem.accountRLP)
           : undefined
       }
     }
@@ -554,7 +582,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     if (!this._accountCacheSettings.deactivate) {
-      this._accountCache?.put(address, account)
+      this._accountCache?.put(address, account, true)
     }
 
     return account
@@ -583,7 +611,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       this._state[bytesToHex(codeHashKey)] = bytesToHex(account.codeHash)
     } else {
       if (account !== undefined) {
-        this._accountCache!.put(address, account)
+        this._accountCache!.put(address, account, true)
       } else {
         this._accountCache!.del(address)
       }
@@ -747,7 +775,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
           return null
         }
 
-        const balanceBigint = Account.fromRlpSerializedAccount(encodedAccount).balance
+        const balanceBigint = Account.fromRlpSerializedPartialAccount(encodedAccount).balance
         return bytesToHex(setLengthRight(bigIntToBytes(balanceBigint, true), 32))
       }
 
@@ -756,7 +784,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         if (encodedAccount === undefined) {
           return null
         }
-        const nonceBigint = Account.fromRlpSerializedAccount(encodedAccount).nonce
+        const nonceBigint = Account.fromRlpSerializedPartialAccount(encodedAccount).nonce
         return bytesToHex(setLengthRight(bigIntToBytes(nonceBigint, true), 32))
       }
 
@@ -765,7 +793,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         if (encodedAccount === undefined) {
           return null
         }
-        return bytesToHex(Account.fromRlpSerializedAccount(encodedAccount).codeHash)
+        return bytesToHex(Account.fromRlpSerializedPartialAccount(encodedAccount).codeHash)
       }
 
       case AccessedStateType.CodeSize: {
@@ -777,7 +805,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
             return null
           }
 
-          const account = Account.fromRlpSerializedAccount(encodedAccount)
+          const account = Account.fromRlpSerializedPartialAccount(encodedAccount)
           if (account.isContract()) {
             throw Error(`Code cache not found for address=${address.toString()}`)
           } else {
