@@ -139,7 +139,11 @@ export class Journal {
 
       for (const address of touchedSet) {
         // Delete the address from the journal
-        if (address !== RIPEMD160_ADDRESS_STRING) {
+        // TODO: read blockhash address from common
+        if (
+          address !== RIPEMD160_ADDRESS_STRING &&
+          address !== 'fffffffffffffffffffffffffffffffffffffffe'
+        ) {
           // If RIPEMD160 is touched, keep it touched.
           // Default behavior for others.
           this.touched.delete(address)
