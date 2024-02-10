@@ -174,8 +174,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _checkpointCount: number
 
-  protected _proofTrie: Trie
-
   private keccakFunction: Function
 
   /**
@@ -200,8 +198,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._debug = createDebugLogger('statemanager:statemanager')
 
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
-
-    this._proofTrie = new Trie({ useKeyHashing: true, common: this.common })
 
     this._checkpointCount = 0
 
@@ -773,7 +769,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       } else {
         const trie =
           opts.trie ??
-          (await Trie.createTrieFromProof(
+          (await Trie.createFromProof(
             proof[0].accountProof.map((e) => hexToBytes(e)),
             { useKeyHashing: true }
           ))
@@ -808,7 +804,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = this._getStorageTrie(address)
     trie.root(hexToBytes(storageHash))
     for (let i = 0; i < storageProof.length; i++) {
-      await trie.updateTrieFromProof(
+      await trie.updateFromProof(
         storageProof[i].proof.map((e) => hexToBytes(e)),
         safe
       )
@@ -824,7 +820,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async addProofData(proof: Proof | Proof[], safe: boolean = false) {
     if (Array.isArray(proof)) {
       for (let i = 0; i < proof.length; i++) {
-        await this._trie.updateTrieFromProof(
+        await this._trie.updateFromProof(
           proof[i].accountProof.map((e) => hexToBytes(e)),
           safe
         )
@@ -845,7 +841,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = this.keccakFunction(hexToBytes(proof.accountProof[0]))
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       hexToBytes(rlpString)
@@ -853,7 +848,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await this._proofTrie.verifyProof(rootHash, key, accountProof)
+    const value = await Trie.verifyProof(key, accountProof, {
+      useKeyHashing: true,
+    })
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -893,19 +890,23 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageRoot = hexToBytes(proof.storageHash)
-
     for (const stProof of proof.storageProof) {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await this._proofTrie.verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
+        useKeyHashing: true,
+      })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
       )
       if (!equalsBytes(reportedValue, storageValue)) {
-        throw new Error('Reported trie value does not match storage')
+        throw new Error(
+          `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
+            reportedValue
+          )}, actual: ${bytesToHex(storageValue)}`
+        )
       }
     }
     return true

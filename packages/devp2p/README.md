@@ -13,7 +13,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH/68)
-- Light Ethereum Subprotocol (LES/4)
+- Light Ethereum Subprotocol (LES/4) (outdated)
 
 ## Usage
 
@@ -311,7 +311,7 @@ Events emitted:
 
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
 
-## Light Ethereum Subprotocol (LES)
+## Light Ethereum Subprotocol (LES) (Outdated)
 
 Upper layer protocol used by light clients, see [./src/protocol/les/](./src/protocol/les/).
 

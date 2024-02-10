@@ -22,16 +22,19 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-const pk = randomBytes(32)
 if (isBrowser() === false) {
   try {
     initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
+  } catch {
+    // no-op
+  }
 }
+
+const pk = randomBytes(32)
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
+  customCrypto: { kzg },
 })
 
 describe('EIP4844 addSignature tests', () => {
@@ -519,6 +522,13 @@ describe('hash() and signature verification', () => {
 
 describe('Network wrapper deserialization test', () => {
   it('should work', async () => {
+    const common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
+    })
     if (isBrowser() === false) {
       const txData = {
         type: '0x3',

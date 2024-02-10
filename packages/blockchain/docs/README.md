@@ -21,9 +21,26 @@
 
 ### Type Aliases
 
+- [BlockchainEvents](README.md#blockchainevents)
 - [OnBlock](README.md#onblock)
 
 ## Type Aliases
+
+### BlockchainEvents
+
+Ƭ **BlockchainEvents**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `deletedCanonicalBlocks` | (`data`: `Block`[], `resolve?`: (`result?`: `any`) => `void`) => `void` |
+
+#### Defined in
+
+[types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L8)
+
+___
 
 ### OnBlock
 

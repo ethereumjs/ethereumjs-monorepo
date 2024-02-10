@@ -516,7 +516,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const versionKey = this.getTreeKeyForVersion(stem)
     const versionChunk = this._state[bytesToHex(versionKey)]
     if (versionChunk === undefined) {
-      throw Error(`Missing execution withness for address=${address} versionKey=${versionKey}`)
+      throw Error(
+        `Missing execution witness for address=${address} versionKey=${bytesToHex(versionKey)}`
+      )
     }
 
     // if the versionChunk is null it means the account doesn't exist in pre state
@@ -530,14 +532,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const balanceRaw = this._state[bytesToHex(balanceKey)]
     const nonceRaw = this._state[bytesToHex(nonceKey)]
-    const codeHash = this._state[bytesToHex(codeHashKey)] ?? KECCAK256_NULL_S
+    const codeHashRaw = this._state[bytesToHex(codeHashKey)]
 
     const account = Account.fromAccountData({
       balance:
         typeof balanceRaw === 'string' ? bytesToBigInt(hexToBytes(balanceRaw), true) : undefined,
       nonce: typeof nonceRaw === 'string' ? bytesToBigInt(hexToBytes(nonceRaw), true) : undefined,
-      codeHash,
+      codeHash: codeHashRaw?.length === 32 ? codeHashRaw : KECCAK256_NULL_S,
     })
+
     if (this.DEBUG) {
       debug(
         `getAccount address=${address.toString()} stem=${short(stem)} balance=${
