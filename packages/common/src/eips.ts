@@ -202,6 +202,10 @@ export const EIPs: EIPsDict = {
         v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
         d: 'The address where the historical blockhashes are stored',
       },
+      minHistoryServeWindow: {
+        v: BigInt(256),
+        d: 'The minimum amount of blocks to be served by the historical blockhash contract',
+      },
     },
   },
   3074: {

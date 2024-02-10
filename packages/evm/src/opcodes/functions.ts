@@ -598,9 +598,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       const number = runState.stack.pop()
 
       if (common.isActivatedEIP(2935)) {
-        // Note, the original check where blockhash behaves the same as previously
-        // (i.e. we are at block <= FORK_BLOCK + 256)
-        // is not included (EIP version: 9e393a79d9937f579acbdcb234a67869259d5a96)
+        if (runState.interpreter.getBlockNumber() >= number) {
+          runState.stack.push(BIGINT_0)
+          return
+        }
+
         const historyAddress = Address.fromString(
           bigIntToHex(common.param('vm', 'historyStorageAddress'))
         )
