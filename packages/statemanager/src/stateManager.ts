@@ -774,17 +774,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
             { useKeyHashing: true }
           ))
         const sm = new DefaultStateManager({ ...opts, trie })
-        const address = Address.fromString(proof[0].address)
-        await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
-        for (let i = 1; i < proof.length; i++) {
-          const proofItem = proof[i]
-          await sm.addProofData(proofItem, true)
-        }
+        await sm.addProofData(proof, safe)
         await sm.flush() // TODO verify if this is necessary
         return sm
       }
     } else {
-      return DefaultStateManager.fromProof([proof])
+      return DefaultStateManager.fromProof([proof], safe, opts)
     }
   }
 
