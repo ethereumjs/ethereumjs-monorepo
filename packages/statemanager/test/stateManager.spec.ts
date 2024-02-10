@@ -5,6 +5,8 @@ import {
   KECCAK256_RLP,
   bigIntToBytes,
   equalsBytes,
+  hexToBytes,
+  intToBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
@@ -280,5 +282,31 @@ describe('StateManager -> General', () => {
     await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
     zeroAccount = await newPartialStateManager2.getAccount(Address.zero())
     assert.ok(zeroAccount!.nonce === zeroAddressNonce)
+  })
+  it('should create a statemanager fromProof with opts preserved', async () => {
+    const trie = await Trie.create({ useKeyHashing: false })
+    const sm = new DefaultStateManager({ trie })
+    const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
+    const address = Address.fromPrivateKey(pk)
+    const account = new Account()
+    await sm.putAccount(address, account)
+    await sm.putContractStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
+    const storage = await sm.dumpStorage(address)
+    const keys = Object.keys(storage)
+    const proof = await sm.getProof(
+      address,
+      keys.map((key) => hexToBytes(key))
+    )
+    const newTrie = await Trie.create({ useKeyHashing: false })
+    const partialSM = await DefaultStateManager.fromProof(proof, false, { trie: newTrie })
+    assert.equal(
+      partialSM['_trie']['_opts'].useKeyHashing,
+      false,
+      'trie opts are preserved in new sm'
+    )
+    assert.deepEqual(
+      intToBytes(32),
+      await partialSM.getContractStorage(address, hexToBytes(keys[0]))
+    )
   })
 })
