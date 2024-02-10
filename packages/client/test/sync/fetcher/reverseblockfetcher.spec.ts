@@ -9,16 +9,15 @@ import { Skeleton } from '../../../src/service/skeleton'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
 
+class PeerPool {
+  idle() {}
+  ban() {}
+}
+PeerPool.prototype.idle = vi.fn()
+PeerPool.prototype.ban = vi.fn()
+
+const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
 describe('[ReverseBlockFetcher]', async () => {
-  class PeerPool {
-    idle() {}
-    ban() {}
-  }
-  PeerPool.prototype.idle = vi.fn()
-  PeerPool.prototype.ban = vi.fn()
-
-  const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher')
-
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
@@ -175,45 +174,6 @@ describe('[ReverseBlockFetcher]', async () => {
     await fetcher.request(job as any)
   })
 
-  it('store()', async () => {
-    const config = new Config({ maxPerRequest: 5 })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton.putBlocks = vi.fn(() => {
-      throw new Error(`Blocks don't extend canonical subchain`)
-    })
-    const fetcher = new ReverseBlockFetcher({
-      config,
-      pool,
-      chain,
-      skeleton,
-      first: BigInt(10),
-      count: BigInt(10),
-      timeout: 5,
-    })
-    try {
-      await fetcher.store([])
-      assert.fail('fetcher store should have errored')
-    } catch (err: any) {
-      assert.ok(
-        err.message === `Blocks don't extend canonical subchain`,
-        'store() threw on invalid block'
-      )
-      const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
-        first: BigInt(10),
-        count: 10,
-      })
-      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
-      assert.equal(banPeer, true, 'peer should be banned on this error')
-    }
-    skeleton.putBlocks = vi.fn().mockResolvedValueOnce(1)
-    config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
-      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
-    )
-    await fetcher.store([])
-  })
-
   it('should restart the fetcher when subchains are merged', async () => {
     const config = new Config({
       accountCache: 10000,
@@ -282,4 +242,47 @@ describe('[ReverseBlockFetcher]', async () => {
     assert.equal((fetcher as any).in.length, 0, 'fetcher in should be cleared')
     assert.equal((fetcher as any).out.length, 0, 'fetcher out should be cleared')
   })
+})
+describe('store()', async () => {
+  const config = new Config({ maxPerRequest: 5 })
+  const pool = new PeerPool() as any
+  const chain = await Chain.create({ config })
+  const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
+  const fetcher = new ReverseBlockFetcher({
+    config,
+    pool,
+    chain,
+    skeleton,
+    first: BigInt(10),
+    count: BigInt(10),
+    timeout: 5,
+  })
+  it('should error', async () => {
+    skeleton.putBlocks = vi.fn(() => {
+      throw new Error(`Blocks don't extend canonical subchain`)
+    })
+    try {
+      await fetcher.store([])
+      assert.fail('fetcher store should have errored')
+    } catch (err: any) {
+      assert.equal(
+        err.message,
+        `Blocks don't extend canonical subchain`,
+        'store() threw on invalid block'
+      )
+      const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
+        first: BigInt(10),
+        count: 10,
+      })
+      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
+      assert.equal(banPeer, true, 'peer should be banned on this error')
+    }
+  })
+  skeleton.putBlocks = vi.fn().mockResolvedValueOnce(1)
+  config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
+    it('should emit event on put blocks', async () => {
+      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
+    })
+  )
+  await fetcher.store([])
 })

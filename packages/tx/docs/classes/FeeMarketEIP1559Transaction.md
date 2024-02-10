@@ -43,6 +43,7 @@ Typed transaction with a new gas fee market mechanism
 
 ### Methods
 
+- [addSignature](FeeMarketEIP1559Transaction.md#addsignature)
 - [errorStr](FeeMarketEIP1559Transaction.md#errorstr)
 - [getBaseFee](FeeMarketEIP1559Transaction.md#getbasefee)
 - [getDataFee](FeeMarketEIP1559Transaction.md#getdatafee)
@@ -308,6 +309,33 @@ BaseTransaction.type
 
 ## Methods
 
+### addSignature
+
+▸ **addSignature**(`v`, `r`, `s`, `convertV?`): [`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md)
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `v` | `bigint` | `undefined` |
+| `r` | `bigint` \| `Uint8Array` | `undefined` |
+| `s` | `bigint` \| `Uint8Array` | `undefined` |
+| `convertV` | `boolean` | `false` |
+
+#### Returns
+
+[`FeeMarketEIP1559Transaction`](FeeMarketEIP1559Transaction.md)
+
+#### Overrides
+
+BaseTransaction.addSignature
+
+#### Defined in
+
+[tx/src/eip1559Transaction.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L311)
+
+___
+
 ### errorStr
 
 ▸ **errorStr**(): `string`
@@ -324,7 +352,7 @@ BaseTransaction.errorStr
 
 #### Defined in
 
-[tx/src/eip1559Transaction.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L352)
+[tx/src/eip1559Transaction.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L359)
 
 ___
 
@@ -755,7 +783,7 @@ BaseTransaction.toJSON
 
 #### Defined in
 
-[tx/src/eip1559Transaction.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L336)
+[tx/src/eip1559Transaction.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip1559Transaction.ts#L343)
 
 ___
 

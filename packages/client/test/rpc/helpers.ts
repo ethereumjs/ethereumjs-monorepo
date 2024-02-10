@@ -217,6 +217,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const common = new Common({
     chain: chainName,
     customChains: [genesisParams],
+    customCrypto: clientOpts.customCrypto,
   })
   common.setHardforkBy({
     blockNumber: 0,

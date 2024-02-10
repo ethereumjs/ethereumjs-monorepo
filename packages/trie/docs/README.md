@@ -18,6 +18,7 @@
 ### Interfaces
 
 - [CheckpointDBOpts](interfaces/CheckpointDBOpts.md)
+- [CommonInterface](interfaces/CommonInterface.md)
 - [TrieOpts](interfaces/TrieOpts.md)
 - [TrieShallowCopyOpts](interfaces/TrieShallowCopyOpts.md)
 
@@ -38,6 +39,7 @@
 
 ### Functions
 
+- [asyncTrieReadStream](README.md#asynctriereadstream)
 - [byteTypeToNibbleType](README.md#bytetypetonibbletype)
 - [bytesToNibbles](README.md#bytestonibbles)
 - [compactBytesToNibbles](README.md#compactbytestonibbles)
@@ -70,7 +72,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L108)
+[packages/trie/src/types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L129)
 
 ___
 
@@ -107,7 +109,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L17)
+[packages/trie/src/types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L23)
 
 ___
 
@@ -131,7 +133,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L24)
+[packages/trie/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L30)
 
 ___
 
@@ -171,7 +173,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L83)
+[packages/trie/src/types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L99)
 
 ## Variables
 
@@ -181,9 +183,29 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L115)
+[packages/trie/src/types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L136)
 
 ## Functions
+
+### asyncTrieReadStream
+
+▸ **asyncTrieReadStream**(`trie`): `ReadableStream`<`any`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `trie` | [`Trie`](classes/Trie.md) |
+
+#### Returns
+
+`ReadableStream`<`any`\>
+
+#### Defined in
+
+[packages/trie/src/util/readStream.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L69)
+
+___
 
 ### byteTypeToNibbleType
 
@@ -552,4 +574,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L413)
+[packages/trie/src/proof/range.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L408)

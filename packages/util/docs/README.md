@@ -55,6 +55,7 @@
 
 - [BIGINT\_0](README.md#bigint_0)
 - [BIGINT\_1](README.md#bigint_1)
+- [BIGINT\_100](README.md#bigint_100)
 - [BIGINT\_128](README.md#bigint_128)
 - [BIGINT\_160](README.md#bigint_160)
 - [BIGINT\_2](README.md#bigint_2)
@@ -65,6 +66,7 @@
 - [BIGINT\_28](README.md#bigint_28)
 - [BIGINT\_2EXP160](README.md#bigint_2exp160)
 - [BIGINT\_2EXP224](README.md#bigint_2exp224)
+- [BIGINT\_2EXP256](README.md#bigint_2exp256)
 - [BIGINT\_2EXP96](README.md#bigint_2exp96)
 - [BIGINT\_3](README.md#bigint_3)
 - [BIGINT\_31](README.md#bigint_31)
@@ -99,16 +101,20 @@
 - [accountBodyToSlim](README.md#accountbodytoslim)
 - [addHexPrefix](README.md#addhexprefix)
 - [arrayContainsArray](README.md#arraycontainsarray)
+- [bigInt64ToBytes](README.md#bigint64tobytes)
 - [bigIntToBytes](README.md#biginttobytes)
 - [bigIntToHex](README.md#biginttohex)
 - [bigIntToUnpaddedBytes](README.md#biginttounpaddedbytes)
 - [blobsToCommitments](README.md#blobstocommitments)
 - [blobsToProofs](README.md#blobstoproofs)
 - [bytesToBigInt](README.md#bytestobigint)
+- [bytesToBigInt64](README.md#bytestobigint64)
 - [bytesToHex](README.md#bytestohex)
 - [bytesToInt](README.md#bytestoint)
+- [bytesToInt32](README.md#bytestoint32)
 - [bytesToUnprefixedHex](README.md#bytestounprefixedhex)
 - [bytesToUtf8](README.md#bytestoutf8)
+- [calculateSigRecovery](README.md#calculatesigrecovery)
 - [commitmentsToVersionedHashes](README.md#commitmentstoversionedhashes)
 - [compareBytes](README.md#comparebytes)
 - [computeVersionedHash](README.md#computeversionedhash)
@@ -117,6 +123,7 @@
 - [ecsign](README.md#ecsign)
 - [equalsBytes](README.md#equalsbytes)
 - [fetchFromProvider](README.md#fetchfromprovider)
+- [formatBigDecimal](README.md#formatbigdecimal)
 - [fromAscii](README.md#fromascii)
 - [fromRpcSig](README.md#fromrpcsig)
 - [fromSigned](README.md#fromsigned)
@@ -131,6 +138,7 @@
 - [hexToBytes](README.md#hextobytes)
 - [importPublic](README.md#importpublic)
 - [initKZG](README.md#initkzg)
+- [int32ToBytes](README.md#int32tobytes)
 - [intToBytes](README.md#inttobytes)
 - [intToHex](README.md#inttohex)
 - [intToUnpaddedBytes](README.md#inttounpaddedbytes)
@@ -307,7 +315,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/bytes.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L244)
+[packages/util/src/bytes.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L267)
 
 ___
 
@@ -382,6 +390,16 @@ ___
 
 ___
 
+### BIGINT\_100
+
+• `Const` **BIGINT\_100**: `bigint`
+
+#### Defined in
+
+[packages/util/src/constants.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L100)
+
+___
+
 ### BIGINT\_128
 
 • `Const` **BIGINT\_128**: `bigint`
@@ -398,7 +416,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L100)
+[packages/util/src/constants.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L101)
 
 ___
 
@@ -418,7 +436,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L101)
+[packages/util/src/constants.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L102)
 
 ___
 
@@ -468,7 +486,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L103)
+[packages/util/src/constants.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L104)
 
 ___
 
@@ -478,7 +496,17 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L104)
+[packages/util/src/constants.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L105)
+
+___
+
+### BIGINT\_2EXP256
+
+• `Const` **BIGINT\_2EXP256**: `bigint`
+
+#### Defined in
+
+[packages/util/src/constants.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L107)
 
 ___
 
@@ -488,7 +516,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/constants.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L102)
+[packages/util/src/constants.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L103)
 
 ___
 
@@ -582,7 +610,7 @@ Easy conversion from Gwei to wei
 
 #### Defined in
 
-[packages/util/src/units.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L2)
+[packages/util/src/units.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L3)
 
 ___
 
@@ -853,7 +881,7 @@ Adds "0x" to a given `string` if it does not already start with "0x".
 
 #### Defined in
 
-[packages/util/src/bytes.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L324)
+[packages/util/src/bytes.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L347)
 
 ___
 
@@ -882,18 +910,46 @@ from the second one. FALSE otherwise.
 
 ___
 
+### bigInt64ToBytes
+
+▸ **bigInt64ToBytes**(`value`, `littleEndian?`): `Uint8Array`
+
+**`Notice`**
+
+Convert a 64-bit bigint to a Uint8Array.
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `value` | `bigint` | `undefined` | The 64-bit bigint to convert. |
+| `littleEndian` | `boolean` | `false` | True for little-endian, undefined or false for big-endian. |
+
+#### Returns
+
+`Uint8Array`
+
+A Uint8Array of length 8 containing the bigint.
+
+#### Defined in
+
+[packages/util/src/bytes.ts:517](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L517)
+
+___
+
 ### bigIntToBytes
 
-▸ **bigIntToBytes**(`num`): `Uint8Array`
+▸ **bigIntToBytes**(`num`, `littleEndian?`): `Uint8Array`
 
 Converts a bigint to a Uint8Array
  *
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `num` | `bigint` | the bigint to convert |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `num` | `bigint` | `undefined` | the bigint to convert |
+| `littleEndian` | `boolean` | `false` | - |
 
 #### Returns
 
@@ -901,7 +957,7 @@ Converts a bigint to a Uint8Array
 
 #### Defined in
 
-[packages/util/src/bytes.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L135)
+[packages/util/src/bytes.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L156)
 
 ___
 
@@ -923,7 +979,7 @@ Converts a bigint to a `0x` prefixed hex string
 
 #### Defined in
 
-[packages/util/src/bytes.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L378)
+[packages/util/src/bytes.ts:401](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L401)
 
 ___
 
@@ -946,7 +1002,7 @@ Convert value from bigint to an unpadded Uint8Array
 
 #### Defined in
 
-[packages/util/src/bytes.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L388)
+[packages/util/src/bytes.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L411)
 
 ___
 
@@ -993,15 +1049,16 @@ ___
 
 ### bytesToBigInt
 
-▸ **bytesToBigInt**(`bytes`): `bigint`
+▸ **bytesToBigInt**(`bytes`, `littleEndian?`): `bigint`
 
 Converts a Uint8Array to a bigint
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `bytes` | `Uint8Array` | the bytes to convert |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `bytes` | `Uint8Array` | `undefined` | the bytes to convert |
+| `littleEndian` | `boolean` | `false` | - |
 
 #### Returns
 
@@ -1009,7 +1066,34 @@ Converts a Uint8Array to a bigint
 
 #### Defined in
 
-[packages/util/src/bytes.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L55)
+[packages/util/src/bytes.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L80)
+
+___
+
+### bytesToBigInt64
+
+▸ **bytesToBigInt64**(`bytes`, `littleEndian?`): `bigint`
+
+**`Notice`**
+
+Convert a Uint8Array to a 64-bit bigint
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `bytes` | `Uint8Array` | `undefined` | The input Uint8Array from which to read the 64-bit bigint. |
+| `littleEndian` | `boolean` | `false` | True for little-endian, undefined or false for big-endian. |
+
+#### Returns
+
+`bigint`
+
+The 64-bit bigint read from the input Uint8Array.
+
+#### Defined in
+
+[packages/util/src/bytes.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L490)
 
 ___
 
@@ -1029,7 +1113,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/bytes.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L35)
+[packages/util/src/bytes.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L60)
 
 ___
 
@@ -1055,7 +1139,34 @@ If the input number exceeds 53 bits.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L76)
+[packages/util/src/bytes.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L104)
+
+___
+
+### bytesToInt32
+
+▸ **bytesToInt32**(`bytes`, `littleEndian?`): `number`
+
+**`Notice`**
+
+Convert a Uint8Array to a 32-bit integer
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `bytes` | `Uint8Array` | `undefined` | The input Uint8Array from which to read the 32-bit integer. |
+| `littleEndian` | `boolean` | `false` | True for little-endian, undefined or false for big-endian. |
+
+#### Returns
+
+`number`
+
+The 32-bit integer read from the input Uint8Array.
+
+#### Defined in
+
+[packages/util/src/bytes.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L476)
 
 ___
 
@@ -1102,6 +1213,27 @@ ___
 #### Defined in
 
 node_modules/ethereum-cryptography/utils.d.ts:5
+
+___
+
+### calculateSigRecovery
+
+▸ **calculateSigRecovery**(`v`, `chainId?`): `bigint`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `v` | `bigint` |
+| `chainId?` | `bigint` |
+
+#### Returns
+
+`bigint`
+
+#### Defined in
+
+[packages/util/src/signature.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L53)
 
 ___
 
@@ -1153,7 +1285,7 @@ A positive number if value1 is larger than value2,
 
 #### Defined in
 
-[packages/util/src/bytes.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L411)
+[packages/util/src/bytes.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L434)
 
 ___
 
@@ -1207,7 +1339,7 @@ works like `Buffer.concat`
 
 #### Defined in
 
-[packages/util/src/bytes.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L435)
+[packages/util/src/bytes.ts:458](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L458)
 
 ___
 
@@ -1295,6 +1427,16 @@ ___
 Makes a simple RPC call to a remote Ethereum JSON-RPC provider and passes through the response.
 No parameter or response validation is done.
 
+**`Example`**
+
+```ts
+const provider = 'https://mainnet.infura.io/v3/...'
+const params = {
+  method: 'eth_getBlockByNumber',
+  params: ['latest', false],
+}
+ const block = await fetchFromProvider(provider, params)
+
 #### Parameters
 
 | Name | Type | Description |
@@ -1310,7 +1452,29 @@ the `result` field from the JSON-RPC response
 
 #### Defined in
 
-[packages/util/src/provider.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L15)
+[packages/util/src/provider.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L23)
+
+___
+
+### formatBigDecimal
+
+▸ **formatBigDecimal**(`numerator`, `denominator`, `maxDecimalFactor`): `string`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `numerator` | `bigint` |
+| `denominator` | `bigint` |
+| `maxDecimalFactor` | `bigint` |
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[packages/util/src/units.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L5)
 
 ___
 
@@ -1334,7 +1498,7 @@ hex representation of input string
 
 #### Defined in
 
-[packages/util/src/internal.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L151)
+[packages/util/src/internal.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L152)
 
 ___
 
@@ -1383,7 +1547,7 @@ Interprets a `Uint8Array` as a signed integer and returns a `BigInt`. Assumes 25
 
 #### Defined in
 
-[packages/util/src/bytes.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L306)
+[packages/util/src/bytes.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L329)
 
 ___
 
@@ -1391,7 +1555,8 @@ ___
 
 ▸ **fromUtf8**(`stringValue`): `string`
 
-Should be called to get hex representation (prefixed by 0x) of utf8 string
+Should be called to get hex representation (prefixed by 0x) of utf8 string.
+Strips leading and trailing 0's.
 
 #### Parameters
 
@@ -1407,7 +1572,7 @@ hex representation of input string
 
 #### Defined in
 
-[packages/util/src/internal.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L138)
+[packages/util/src/internal.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L139)
 
 ___
 
@@ -1532,7 +1697,7 @@ getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
 
 #### Defined in
 
-[packages/util/src/internal.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L173)
+[packages/util/src/internal.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L174)
 
 ___
 
@@ -1554,7 +1719,7 @@ the extracted URL string for the JSON-RPC Provider
 
 #### Defined in
 
-[packages/util/src/provider.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L39)
+[packages/util/src/provider.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L63)
 
 ___
 
@@ -1599,7 +1764,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/bytes.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L82)
+[packages/util/src/bytes.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L110)
 
 ___
 
@@ -1646,6 +1811,33 @@ ___
 
 ___
 
+### int32ToBytes
+
+▸ **int32ToBytes**(`value`, `littleEndian?`): `Uint8Array`
+
+**`Notice`**
+
+Convert a 32-bit integer to a Uint8Array.
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `value` | `number` | `undefined` | The 32-bit integer to convert. |
+| `littleEndian` | `boolean` | `false` | True for little-endian, undefined or false for big-endian. |
+
+#### Returns
+
+`Uint8Array`
+
+A Uint8Array of length 4 containing the integer.
+
+#### Defined in
+
+[packages/util/src/bytes.ts:504](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L504)
+
+___
+
 ### intToBytes
 
 ▸ **intToBytes**(`i`): `Uint8Array`
@@ -1664,7 +1856,7 @@ Converts an number to a Uint8Array
 
 #### Defined in
 
-[packages/util/src/bytes.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L125)
+[packages/util/src/bytes.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L146)
 
 ___
 
@@ -1686,7 +1878,7 @@ Converts a number into a [PrefixedHexString](README.md#prefixedhexstring)
 
 #### Defined in
 
-[packages/util/src/bytes.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L113)
+[packages/util/src/bytes.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L134)
 
 ___
 
@@ -1709,7 +1901,7 @@ Convert value from number to an unpadded Uint8Array
 
 #### Defined in
 
-[packages/util/src/bytes.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L398)
+[packages/util/src/bytes.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L421)
 
 ___
 
@@ -1762,7 +1954,7 @@ output the string is a hex string
 
 #### Defined in
 
-[packages/util/src/internal.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L205)
+[packages/util/src/internal.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L206)
 
 ___
 
@@ -2066,7 +2258,7 @@ A Uint8Array of random bytes of specified length.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:423](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L423)
+[packages/util/src/bytes.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L446)
 
 ___
 
@@ -2090,7 +2282,7 @@ Or it truncates the beginning if it exceeds.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L178)
+[packages/util/src/bytes.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L201)
 
 ___
 
@@ -2114,7 +2306,7 @@ it truncates the end if it exceeds.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L190)
+[packages/util/src/bytes.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L213)
 
 ___
 
@@ -2142,7 +2334,7 @@ Output: '657468657265756d0000000000000000000000000000000000…'
 
 #### Defined in
 
-[packages/util/src/bytes.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L343)
+[packages/util/src/bytes.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L366)
 
 ___
 
@@ -2214,7 +2406,7 @@ with a `toArray()` or `toBytes()` method.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L262)
+[packages/util/src/bytes.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L285)
 
 ___
 
@@ -2400,7 +2592,7 @@ Converts a `BigInt` to an unsigned integer and returns it as a `Uint8Array`. Ass
 
 #### Defined in
 
-[packages/util/src/bytes.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L315)
+[packages/util/src/bytes.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L338)
 
 ___
 
@@ -2422,7 +2614,7 @@ Trims leading zeros from an `Array` (of numbers).
 
 #### Defined in
 
-[packages/util/src/bytes.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L228)
+[packages/util/src/bytes.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L251)
 
 ___
 
@@ -2444,7 +2636,7 @@ Trims leading zeros from a `Uint8Array`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L218)
+[packages/util/src/bytes.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L241)
 
 ___
 
@@ -2466,7 +2658,7 @@ Trims leading zeros from a `PrefixedHexString`.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L238)
+[packages/util/src/bytes.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L261)
 
 ___
 
@@ -2488,7 +2680,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/bytes.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L23)
+[packages/util/src/bytes.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L48)
 
 ___
 
@@ -2548,7 +2740,7 @@ if any provided value is found to have leading zero bytes
 
 #### Defined in
 
-[packages/util/src/bytes.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L365)
+[packages/util/src/bytes.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L388)
 
 ___
 
@@ -2586,4 +2778,4 @@ Returns a Uint8Array filled with 0s.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L145)
+[packages/util/src/bytes.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L168)

@@ -7,7 +7,6 @@ import {
   getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
@@ -94,6 +93,9 @@ export function getTransaction(
     txParams['maxFeePerGas'] = BigInt(100)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
   } else if (txType === TransactionType.BlobEIP4844) {
+    if (common.customCrypto?.kzg === undefined) {
+      throw new Error('kzg instance required to instantiate blobg txs')
+    }
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
@@ -101,7 +103,10 @@ export function getTransaction(
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(txParams['blobs'])
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
-      kzg.computeBlobKzgProof(blob, txParams['kzgCommitments'][ctx] as Uint8Array)
+      common.customCrypto?.kzg?.computeBlobKzgProof(
+        blob,
+        txParams['kzgCommitments'][ctx] as Uint8Array
+      )
     )
     txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
       computeVersionedHash(commitment, 0x1)
