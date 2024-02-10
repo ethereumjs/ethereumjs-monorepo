@@ -353,7 +353,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
       debug(`accumulate parentBlockHash `)
     }
 
-    await accumateParentBlockhash.bind(this)(block.header.number, block.header.parentHash)
+    await accumulateParentBlockHash.bind(this)(block)
   }
 
   if (enableProfiler) {
@@ -384,7 +384,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   return blockResults
 }
 
-export async function accumateParentBlockhash(this: VM, number: bigint, hash: Uint8Array) {
+export async function accumulateParentBlockHash(this: VM, block: Block) {
   const historyAddress = Address.fromString(
     bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
   )
@@ -393,9 +393,33 @@ export async function accumateParentBlockhash(this: VM, number: bigint, hash: Ui
     await this.evm.journal.putAccount(historyAddress, new Account())
   }
 
-  const key = setLengthLeft(bigIntToBytes(number), 32)
+  async function putBlockHash(this: VM, block: Block) {
+    const number = block.header.number
+    const hash = block.header.parentHash
+    const key = setLengthLeft(bigIntToBytes(number), 32)
+    await this.stateManager.putContractStorage(historyAddress, key, hash)
+  }
+  await putBlockHash.bind(this)(block)
 
-  await this.stateManager.putContractStorage(historyAddress, key, hash)
+  // Check if we are on the fork block
+  const forkTime = this.common.eipTimestamp(2935)
+  if (forkTime === null) {
+    throw new Error('EIP 2935 should be activated by timestamp')
+  }
+  const parentBlock = await this.blockchain.getBlock(block.header.parentHash)
+
+  if (parentBlock.header.timestamp < forkTime) {
+    let ancestor = parentBlock
+    const range = this.common.param('vm', 'minHistoryServeWindow')
+    for (let i = 0; i < Number(range); i++) {
+      if (ancestor.header.number === BIGINT_0) {
+        break
+      }
+
+      ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
+      await putBlockHash.bind(this)(ancestor)
+    }
+  }
 }
 
 export async function accumulateParentBeaconBlockRoot(
