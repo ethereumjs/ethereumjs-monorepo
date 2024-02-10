@@ -92,14 +92,15 @@ export class Snapshot {
       diffMap.set(keyHex, oldElem)
     }
 
-    console.log('dbg101')
+    // console.log('dbg101')
     // console.log(stateRootDiffMap)
+    // console.log(!stateRootDiffMap.has(keyHex))
     // console.log(this._stateRootDiffCache)
     if (!stateRootDiffMap.has(keyHex)) {
       const oldElem: SnapshotElement | undefined = {
         data: (await this._db.get(key)) as Uint8Array | undefined,
       }
-      console.log(await this._db.get(key))
+      // console.log(oldElem)
       stateRootDiffMap.set(keyHex, oldElem)
     }
     // console.log(stateRootDiffMap)
@@ -110,6 +111,13 @@ export class Snapshot {
 
   async putAccount(address: Address, account: Account): Promise<void> {
     const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
+    console.log('dbg200')
+    console.log(`key: ${bytesToHex(key)}`)
+    console.log(`nonce: ${account.nonce}`)
+    console.log(`balance: ${account.balance}`)
+    console.log(`storageRoot: ${bytesToHex(account.storageRoot)}`)
+    console.log(`codeHash: ${bytesToHex(account.codeHash)}\n`)
+
     await this._saveCachePreState(key)
 
     const value = account.serialize()
@@ -128,6 +136,8 @@ export class Snapshot {
   }
 
   async delAccount(address: Address): Promise<void> {
+    console.log('dbg201')
+
     const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
 
@@ -139,6 +149,8 @@ export class Snapshot {
    * and any storage items if available.
    */
   async clearAccount(address: Address): Promise<void> {
+    console.log('dbg202')
+
     const rawAccount = await this.getAccount(address)
     if (rawAccount === undefined) return
 
@@ -154,6 +166,7 @@ export class Snapshot {
   }
 
   async putStorageSlot(address: Address, slot: Uint8Array, value: Uint8Array): Promise<void> {
+    console.log('dbg203')
     const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     await this._saveCachePreState(key)
     await this._db.put(key, value)
@@ -171,12 +184,14 @@ export class Snapshot {
   }
 
   async delStorageSlot(address: Address, slot: Uint8Array): Promise<void> {
+    console.log('dbg204')
     const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     await this._saveCachePreState(key)
     await this._db.del(key)
   }
 
   async clearAccountStorage(address: Address): Promise<void> {
+    console.log('dbg205')
     const prefix = concatBytes(STORAGE_PREFIX, keccak256(address.bytes))
     const keys = await this._db.keysByPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
     for (const key of keys) await this._saveCachePreState(key)
@@ -184,6 +199,7 @@ export class Snapshot {
   }
 
   async putCode(address: Address, code: Uint8Array): Promise<void> {
+    console.log('dbg206')
     const key = concatBytes(CODE_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
     const codeHash = keccak256(code)
@@ -213,10 +229,15 @@ export class Snapshot {
     return this._db.get(key)
   }
 
-  async merkleize(): Promise<Uint8Array> {
+  async merkleize(checkpointStateRoot = false): Promise<Uint8Array> {
     // Merkleize all the storage tries in the db
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
     const accounts = await this._getAccounts()
+
+    console.log('dbg210')
+    // console.trace()
+    // console.log(storageRoots)
+    // console.log(accounts)
     const leaves: [Uint8Array, Uint8Array][] = []
     accounts.map(([key, value]) => {
       const accountKey = key.slice(ACCOUNT_PREFIX.length)
@@ -228,6 +249,7 @@ export class Snapshot {
       let v = value
       if (storageRoot !== undefined) {
         const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
+        // console.log(acc)
         acc.storageRoot = storageRoot
         v = acc.serialize()
       }
@@ -235,12 +257,20 @@ export class Snapshot {
     })
 
     const root = merkleizeList(leaves)
-    this._stateRoot = bytesToHex(root)
-    this._knownStateRoots.add(this._stateRoot)
-    this._stateRootDiffCache.push({
-      diff: new Map<string, SnapshotElement | undefined>(),
-      root: this._stateRoot,
-    })
+    if (checkpointStateRoot === true) {
+      this._stateRoot = bytesToHex(root)
+
+      console.log('dbg211')
+      console.log(this._stateRoot)
+
+      this._knownStateRoots.add(this._stateRoot)
+
+      this._stateRootCheckpoints += 1
+      this._stateRootDiffCache.push({
+        diff: new Map<string, SnapshotElement | undefined>(),
+        root: this._stateRoot,
+      })
+    }
 
     return root
   }
@@ -274,16 +304,15 @@ export class Snapshot {
       const rootString = bytesToHex(root)
       console.log('dbg102')
       console.log(rootString)
-      console.log(this._stateRootDiffCache)
+      // console.log(this._stateRootDiffCache)
       if (this._knownStateRoots.has(rootString) !== true) throw new Error('Root does not exist')
-      let flag = false
-      for (let i = 0; i <= this._stateRootDiffCache.length; i++) {
+      while (this._stateRootDiffCache.length > 0) {
         this._stateRootCheckpoints -= 1
         const { diff, root } = this._stateRootDiffCache.pop()!
-        console.log('dbg100')
-        console.log(diff)
-        console.log(root)
-        console.log('dbg107')
+        // console.log('dbg100')
+        // console.log(diff)
+        // console.log(root)
+        // console.log('dbg107')
         for (const entry of diff.entries()) {
           const addressHex = entry[0]
           const elem = entry[1]
@@ -297,21 +326,14 @@ export class Snapshot {
             }
           }
         }
-        console.log('dbg107')
-        console.log(flag)
-        console.log(i)
-        console.log(this._stateRootDiffCache.length)
-        if (flag === true) {
-          const calculatedRood = bytesToHex(await this.merkleize())
+        // console.log('dbg107')
+        if (root === rootString) {
+          const calculatedRoot = bytesToHex(await this.merkleize())
           console.log('dbg105')
-          console.log(calculatedRood)
-          if (calculatedRood !== rootString)
+          console.log(calculatedRoot)
+          if (calculatedRoot !== rootString)
             throw new Error('Rollback failed to produce expected root')
           break
-        }
-        if (root === rootString) {
-          console.log('dbg106')
-          flag = true
         }
       }
     } catch (e) {
