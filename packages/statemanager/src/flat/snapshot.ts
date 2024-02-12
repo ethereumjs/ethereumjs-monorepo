@@ -49,8 +49,6 @@ type rootDiffMap = {
 export class Snapshot {
   _db: LevelDB<Uint8Array, Uint8Array>
   _debug: Debugger
-  _checkpoints = 0
-  _stateRootCheckpoints = 0
 
   /**
    * Diff cache collecting the state of the cache
@@ -58,14 +56,16 @@ export class Snapshot {
    * (respectively: before a first modification)
    *
    * If the whole cache element is undefined (in contrast
-   * to the account), the element didn't exist in the cache
+   * to the data), the element didn't exist in the cache
    * before.
    */
   _diffCache: Map<string, SnapshotElement | undefined>[] = []
+  _checkpoints = 0
 
   _stateRoot: string = KECCAK256_NULL_S
   _stateRootDiffCache: rootDiffMap[] = []
   _knownStateRoots: Set<string> = new Set<string>()
+  _stateRootCheckpoints = 0
 
   constructor(db?: LevelDB<Uint8Array, Uint8Array>) {
     this._db = db ?? new LevelDB<Uint8Array, Uint8Array>()
