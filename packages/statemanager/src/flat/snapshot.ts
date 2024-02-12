@@ -111,12 +111,13 @@ export class Snapshot {
 
   async putAccount(address: Address, account: Account): Promise<void> {
     const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
-    console.log('dbg200')
-    console.log(`key: ${bytesToHex(key)}`)
-    console.log(`nonce: ${account.nonce}`)
-    console.log(`balance: ${account.balance}`)
-    console.log(`storageRoot: ${bytesToHex(account.storageRoot)}`)
-    console.log(`codeHash: ${bytesToHex(account.codeHash)}\n`)
+
+    // console.log('dbg200')
+    // console.log(`key: ${bytesToHex(key)}`)
+    // console.log(`nonce: ${account.nonce}`)
+    // console.log(`balance: ${account.balance}`)
+    // console.log(`storageRoot: ${bytesToHex(account.storageRoot)}`)
+    // console.log(`codeHash: ${bytesToHex(account.codeHash)}\n`)
 
     await this._saveCachePreState(key)
 
@@ -136,8 +137,6 @@ export class Snapshot {
   }
 
   async delAccount(address: Address): Promise<void> {
-    console.log('dbg201')
-
     const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
 
@@ -149,8 +148,6 @@ export class Snapshot {
    * and any storage items if available.
    */
   async clearAccount(address: Address): Promise<void> {
-    console.log('dbg202')
-
     const rawAccount = await this.getAccount(address)
     if (rawAccount === undefined) return
 
@@ -166,7 +163,6 @@ export class Snapshot {
   }
 
   async putStorageSlot(address: Address, slot: Uint8Array, value: Uint8Array): Promise<void> {
-    console.log('dbg203')
     const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     await this._saveCachePreState(key)
     await this._db.put(key, value)
@@ -184,14 +180,12 @@ export class Snapshot {
   }
 
   async delStorageSlot(address: Address, slot: Uint8Array): Promise<void> {
-    console.log('dbg204')
     const key = concatBytes(STORAGE_PREFIX, keccak256(address.bytes), keccak256(slot))
     await this._saveCachePreState(key)
     await this._db.del(key)
   }
 
   async clearAccountStorage(address: Address): Promise<void> {
-    console.log('dbg205')
     const prefix = concatBytes(STORAGE_PREFIX, keccak256(address.bytes))
     const keys = await this._db.keysByPrefix(prefix, { keyEncoding: KeyEncoding.Bytes })
     for (const key of keys) await this._saveCachePreState(key)
@@ -199,7 +193,6 @@ export class Snapshot {
   }
 
   async putCode(address: Address, code: Uint8Array): Promise<void> {
-    console.log('dbg206')
     const key = concatBytes(CODE_PREFIX, keccak256(address.bytes))
     await this._saveCachePreState(key)
     const codeHash = keccak256(code)
@@ -234,7 +227,7 @@ export class Snapshot {
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
     const accounts = await this._getAccounts()
 
-    console.log('dbg210')
+    // console.log('dbg210')
     // console.trace()
     // console.log(storageRoots)
     // console.log(accounts)
@@ -260,8 +253,8 @@ export class Snapshot {
     if (checkpointStateRoot === true) {
       this._stateRoot = bytesToHex(root)
 
-      console.log('dbg211')
-      console.log(this._stateRoot)
+      // console.log('dbg211')
+      // console.log(this._stateRoot)
 
       this._knownStateRoots.add(this._stateRoot)
 
@@ -302,8 +295,8 @@ export class Snapshot {
   async setStateRoot(root: Uint8Array): Promise<void> {
     try {
       const rootString = bytesToHex(root)
-      console.log('dbg102')
-      console.log(rootString)
+      // console.log('dbg102')
+      // console.log(rootString)
       // console.log(this._stateRootDiffCache)
       if (this._knownStateRoots.has(rootString) !== true) throw new Error('Root does not exist')
       while (this._stateRootDiffCache.length > 0) {
@@ -329,8 +322,8 @@ export class Snapshot {
         // console.log('dbg107')
         if (root === rootString) {
           const calculatedRoot = bytesToHex(await this.merkleize())
-          console.log('dbg105')
-          console.log(calculatedRoot)
+          // console.log('dbg105')
+          // console.log(calculatedRoot)
           if (calculatedRoot !== rootString)
             throw new Error('Rollback failed to produce expected root')
           break
