@@ -774,7 +774,12 @@ export class DefaultStateManager implements EVMStateManagerInterface {
             { useKeyHashing: true }
           ))
         const sm = new DefaultStateManager({ ...opts, trie })
-        await sm.addProofData(proof, safe)
+        const address = Address.fromString(proof[0].address)
+        await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
+        for (let i = 1; i < proof.length; i++) {
+          const proofItem = proof[i]
+          await sm.addProofData(proofItem, true)
+        }
         await sm.flush() // TODO verify if this is necessary
         return sm
       }
@@ -964,7 +969,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = this._getStorageTrie(address, account)
     const storage: StorageDump = {}
     const stream = trie.createAsyncReadStream()
-
+    console.trace('hello')
     for await (const chunk of stream) {
       storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
     }
