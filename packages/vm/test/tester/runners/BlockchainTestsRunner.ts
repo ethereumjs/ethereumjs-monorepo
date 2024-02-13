@@ -103,6 +103,10 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
+  const sm = vm.stateManager
+  const root =
+    sm instanceof FlatStateManager ? await sm.getStateRoot(true) : await sm.getStateRoot()
+
   t.deepEquals(
     await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
