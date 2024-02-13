@@ -969,7 +969,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = this._getStorageTrie(address, account)
     const storage: StorageDump = {}
     const stream = trie.createAsyncReadStream()
-    console.trace('hello')
+
     for await (const chunk of stream) {
       storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
     }
