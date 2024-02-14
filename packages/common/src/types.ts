@@ -1,5 +1,5 @@
 import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike, ECDSASignature } from '@ethereumjs/util'
+import type { BigIntLike, ECDSASignature, Kzg } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -83,6 +83,7 @@ export interface CustomCrypto {
   ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
   ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
+  kzg?: Kzg
 }
 
 interface BaseOpts {

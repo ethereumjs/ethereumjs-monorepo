@@ -11,9 +11,11 @@
 ### Properties
 
 - [\_codeAddress](Message.md#_codeaddress)
+- [accessWitness](Message.md#accesswitness)
 - [authcallOrigin](Message.md#authcallorigin)
 - [blobVersionedHashes](Message.md#blobversionedhashes)
 - [caller](Message.md#caller)
+- [chargeCodeAccesses](Message.md#chargecodeaccesses)
 - [code](Message.md#code)
 - [containerCode](Message.md#containercode)
 - [createdAddresses](Message.md#createdaddresses)
@@ -47,7 +49,7 @@
 
 #### Defined in
 
-[message.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L75)
+[message.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L79)
 
 ## Properties
 
@@ -57,7 +59,17 @@
 
 #### Defined in
 
-[message.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L50)
+[message.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L52)
+
+___
+
+### accessWitness
+
+• `Optional` **accessWitness**: `AccessWitness`
+
+#### Defined in
+
+[message.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L77)
 
 ___
 
@@ -70,7 +82,7 @@ the purpose is to figure out where `value` should be taken from (not from `calle
 
 #### Defined in
 
-[message.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L68)
+[message.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L71)
 
 ___
 
@@ -82,7 +94,7 @@ List of versioned hashes if message is a blob transaction in the outer VM
 
 #### Defined in
 
-[message.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L73)
+[message.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L76)
 
 ___
 
@@ -92,7 +104,17 @@ ___
 
 #### Defined in
 
-[message.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L45)
+[message.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L47)
+
+___
+
+### chargeCodeAccesses
+
+• `Optional` **chargeCodeAccesses**: `boolean`
+
+#### Defined in
+
+[message.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L57)
 
 ___
 
@@ -102,7 +124,7 @@ ___
 
 #### Defined in
 
-[message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L49)
+[message.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L51)
 
 ___
 
@@ -112,7 +134,7 @@ ___
 
 #### Defined in
 
-[message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L54)
+[message.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L56)
 
 ___
 
@@ -124,7 +146,7 @@ Map of addresses which were created (used in EIP 6780)
 
 #### Defined in
 
-[message.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L62)
+[message.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L65)
 
 ___
 
@@ -134,7 +156,7 @@ ___
 
 #### Defined in
 
-[message.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L47)
+[message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L49)
 
 ___
 
@@ -144,7 +166,7 @@ ___
 
 #### Defined in
 
-[message.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L63)
+[message.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L66)
 
 ___
 
@@ -154,7 +176,7 @@ ___
 
 #### Defined in
 
-[message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
+[message.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L50)
 
 ___
 
@@ -164,7 +186,7 @@ ___
 
 #### Defined in
 
-[message.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L46)
+[message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
 
 ___
 
@@ -174,7 +196,7 @@ ___
 
 #### Defined in
 
-[message.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L69)
+[message.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L72)
 
 ___
 
@@ -184,7 +206,7 @@ ___
 
 #### Defined in
 
-[message.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L52)
+[message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L54)
 
 ___
 
@@ -194,7 +216,7 @@ ___
 
 #### Defined in
 
-[message.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L51)
+[message.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L53)
 
 ___
 
@@ -204,7 +226,7 @@ ___
 
 #### Defined in
 
-[message.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L53)
+[message.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L55)
 
 ___
 
@@ -216,7 +238,7 @@ Set of addresses to selfdestruct. Key is the unprefixed address.
 
 #### Defined in
 
-[message.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L58)
+[message.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L61)
 
 ___
 
@@ -226,7 +248,7 @@ ___
 
 #### Defined in
 
-[message.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L43)
+[message.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L45)
 
 ___
 
@@ -236,7 +258,7 @@ ___
 
 #### Defined in
 
-[message.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L44)
+[message.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L46)
 
 ## Accessors
 
@@ -252,4 +274,4 @@ Note: should only be called in instances where `_codeAddress` or `to` is defined
 
 #### Defined in
 
-[message.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L101)
+[message.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L106)

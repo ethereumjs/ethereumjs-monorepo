@@ -168,7 +168,9 @@ export class Block {
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
     if (values.length > 5) {
-      throw new Error(`invalid block. More values=${values.length} than expected were received`)
+      throw new Error(
+        `invalid block. More values=${values.length} than expected were received (at most 5)`
+      )
     }
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)

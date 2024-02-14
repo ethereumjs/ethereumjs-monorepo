@@ -111,7 +111,7 @@ describe('Precompiles: BLAKE2F', () => {
         common,
         _EVM: evm,
       })
-      assert.equal(result.exceptionError?.error, t.expectedError, 'should generate expected error')
+      assert.equal(result.exceptionError!.error, t.expectedError, 'should generate expected error')
     })
   }
 

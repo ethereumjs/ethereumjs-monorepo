@@ -45,9 +45,13 @@ async function test() {
 test()
 ```
 
-### Use with static constructors
+### WASM Crypto Support
 
-#### `.create()`
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
+### Use with Static Constructors
+
+#### Create new Trie
 
 ```ts
 // ./examples/basicUsage.ts
@@ -67,10 +71,14 @@ test()
 
 When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
 
-#### `.createFromProof()`
+#### Create from a Proof
+
+The trie library supports basic creation of [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proofs as well as the instantiation of new tries from an existing proof.
+
+The following is an example for using the `Trie.createFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
 
 ```ts
-// ./examples/staticCreateTrieFromProof.ts
+// ./examples/createFromProof.ts
 
 import { Trie } from '@ethereumjs/trie'
 import { bytesToUtf8 } from '@ethereumjs/util'
@@ -85,11 +93,11 @@ async function main() {
   await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
 
   const proof = await someOtherTrie.createProof(k1)
-  const trie = await Trie.createTrieFromProof(proof, { useKeyHashing: true })
+  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
   const otherProof = await someOtherTrie.createProof(k2)
 
-  // To add more proofs to the trie, use `updateTrieFromProof`
-  await trie.updateTrieFromProof(otherProof)
+  // To add more proofs to the trie, use `updateFromProof`
+  await trie.updateFromProof(otherProof)
 
   const value = await trie.get(k1)
   console.log(bytesToUtf8(value!)) // valueOne
@@ -100,7 +108,7 @@ async function main() {
 main()
 ```
 
-When the `Trie.createFromProof` constructor is used, it instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+For further proof usage documentation see additional documentation section below.
 
 ### Walking a Trie
 

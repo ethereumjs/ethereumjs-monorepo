@@ -41,10 +41,6 @@ const validPayload = [
   },
 ]
 
-try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
 const method = 'engine_getPayloadV3'
 
 describe(method, () => {
@@ -71,10 +67,18 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+
+    try {
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+    } catch {
+      //no-op
+    }
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')

@@ -121,8 +121,8 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return correct next HF (mainnet: byzantium -> constantinople)'
     assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Byzantium)!, BigInt(7280000), msg)
 
-    msg = 'should return null if next HF is not available (mainnet: shanghai -> cancun)'
-    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
+    msg = 'should return null if next HF is not available (mainnet: cancun -> prague)'
+    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Cancun), null, msg)
 
     const c2 = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Chainstart })
 
@@ -169,9 +169,9 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return null for unscheduled hardfork'
     // developer note: when Shanghai is set,
     // update this test to next unscheduled hardfork.
-    assert.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
-    assert.equal(c.hardforkBlock(Hardfork.Shanghai), null, msg)
-    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Shanghai), null, msg)
+    assert.equal(c.hardforkBlock(Hardfork.Cancun), null, msg)
+    assert.equal(c.hardforkBlock(Hardfork.Cancun), null, msg)
+    assert.equal(c.nextHardforkBlockOrTimestamp(Hardfork.Cancun), null, msg)
   })
 
   it('hardforkGteHardfork()', () => {
