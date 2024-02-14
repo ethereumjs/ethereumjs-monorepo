@@ -115,8 +115,8 @@ rlpx.events.on('peer:added', (peer) => {
 
   eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
     // We keep track of how many of each message type are received
-    if (code in ETH.MESSAGE_CODES) {
-      requests.msgTypes[code] = code + 1
+    if (code in requests.msgTypes) {
+      requests.msgTypes[code]++
     } else {
       requests.msgTypes[code] = 1
     }
