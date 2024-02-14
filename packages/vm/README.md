@@ -115,6 +115,10 @@ const main = async () => {
 main()
 ```
 
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
 ## Example
 
 This projects contain the following examples:

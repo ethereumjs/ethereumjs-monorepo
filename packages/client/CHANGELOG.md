@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.0 - 2024-02-08
+
+This client release now comes with official Dencun hardfork support 🎉 and by default uses WASM for crypto primitives for faster block execution times.
+
+### Dencun Hardfork Support
+
+This release now officially supports networks running with or switching to the Dencun hardfork ruleset by including the finalized underlying EthereumJS libraries for the various functionality parts (EVM, Block and Tx libraries).
+
+While `EIP-4844` - activating shard blob transactions - is for sure the most prominent EIP from this hardfork, enabling better scaling for the Ethereum ecosystem by providing cheaper block space for L2s, there are in total 6 EIPs contained in the Dencun hardfork. The following is an overview of EIPs now supported along a Dencun switch (called `Cancun` for the execution switch part):
+
+- EIP-1153: Transient storage opcodes (`@ethereumjs/evm`)
+- EIP-4788: Beacon block root in the EVM (`@ethereumjs/block`, `@ethereumjs/evm`, `@ethereumjs/vm`)
+- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`, `@ethereumjs/evm`)
+- EIP-5656: MCOPY - Memory copying instruction (`@ethereumjs/evm`)
+- EIP-6780: SELFDESTRUCT only in same transaction (`@ethereumjs/vm`)
+- EIP-7516: BLOBBASEFEE opcode (`@ethereumjs/block`, `@ethereumjs/evm`)
+
+Note that while HF timestamp switches for all testnets are included, a mainnet HF timestamp has not yet been set in this release.
+
+### WASM Crypto Support
+
+With this release the client uses WASM by default for all crypto related operations like hashing or signature verification, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192). As a WASM crypto library [@polkadot/wasm-crypto](https://github.com/polkadot-js/wasm/tree/master/packages/wasm-crypto) is being used and WASM comes into play in the EVM for hashing opcodes and precompiles, block and tx hashing and ECDSA signature verfication down to trie key hashing and all hashing and signature functionality in the devp2p layer.
+
+This makes up for a significantly lighter and sped-up client experience regarding both block execution and sync times.
+
+Note that this functionality can be disabled by using the `--useJsCrypto` flag.
+
+### Stability Fixes
+
+- Patch fcu skeleton blockfill process to avoid chain reset, PR [#3137](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3137)
+- Fix bug in tx pool during handling `NewPooledTransactionHashes` message, PR [#3156](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3156)
+- Improved receipt reorg logic, PR [#3146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3146)
+- Block fetcher stabilizations, PR [#3240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3240)
+
+### Other Changes
+
+- Fix RPC debug inconsistencies, PR [#3125](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3125)
+- Better typing/refactoring for devp2p ETH method binding, PR [#3164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3164)
+- Replace superagent with direct RPC calls in RPC tests, PR [#3173](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3173)
+- testdouble to vi refactoring, PR [#3182](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3182)
+- Fetcher Small Bugfixes and Log Improvements, PR [#3024](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3024)
+
 ## 0.9.0 - 2023-10-26
 
 This client release now syncs with the new Holesky and Dencun devnet-11 test networks and comes with improved sync performance, a revamped post-Merge client UX experience and various beacon sync related fixes and robustness improvements.

@@ -36,7 +36,7 @@ If not provided this defaults to chain `mainnet` and hardfork `chainstart`
 
 #### Defined in
 
-[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L136)
+[types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L145)
 
 ___
 
@@ -48,7 +48,7 @@ Optional custom consensus that implements the [Consensus](Consensus.md) class
 
 #### Defined in
 
-[types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L177)
+[types.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L186)
 
 ___
 
@@ -61,7 +61,7 @@ Can be any database implementation that adheres to the `DB` interface
 
 #### Defined in
 
-[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L153)
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L162)
 
 ___
 
@@ -81,7 +81,7 @@ provided from the `common` will be used.
 
 #### Defined in
 
-[types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L92)
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L101)
 
 ___
 
@@ -118,7 +118,7 @@ A complex genesis state with Contract and EoA states would have the following fo
 
 #### Defined in
 
-[types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L118)
+[types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L127)
 
 ___
 
@@ -134,7 +134,7 @@ State root of the genesis state
 
 #### Defined in
 
-[types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L123)
+[types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L132)
 
 ___
 
@@ -152,7 +152,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 #### Defined in
 
-[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L147)
+[types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L156)
 
 ___
 
@@ -166,7 +166,7 @@ see Block#validate for details.
 
 #### Defined in
 
-[types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L172)
+[types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L181)
 
 ___
 
@@ -184,4 +184,4 @@ Default: `true`.
 
 #### Defined in
 
-[types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L164)
+[types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L173)

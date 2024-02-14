@@ -7,17 +7,16 @@ import { Chain } from '../../../src/blockchain/chain'
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'
 import { wait } from '../../integration/util'
+class PeerPool {
+  idle() {}
+  ban() {}
+}
+PeerPool.prototype.idle = vi.fn()
+PeerPool.prototype.ban = vi.fn()
+
+const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher')
 
 describe('[BlockFetcher]', async () => {
-  class PeerPool {
-    idle() {}
-    ban() {}
-  }
-  PeerPool.prototype.idle = vi.fn()
-  PeerPool.prototype.ban = vi.fn()
-
-  const { BlockFetcher } = await import('../../../src/sync/fetcher/blockfetcher')
-
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
     const pool = new PeerPool() as any
@@ -199,6 +198,7 @@ describe('[BlockFetcher]', async () => {
 
       if (input['blockNumber'] !== undefined && input['timestamp'] !== undefined)
         return Hardfork.Shanghai
+      throw new Error('unknown hardfork')
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -233,21 +233,21 @@ describe('[BlockFetcher]', async () => {
     assert.equal(resp.length, 1, 'shanghai block should have been returned')
     assert.equal(resp[0].withdrawals?.length, 0, 'should have withdrawals array')
   })
-
-  it('store()', async () => {
-    const config = new Config({ maxPerRequest: 5 })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
+})
+describe('store()', async () => {
+  const config = new Config({ maxPerRequest: 5 })
+  const pool = new PeerPool() as any
+  const chain = await Chain.create({ config })
+  const fetcher = new BlockFetcher({
+    config,
+    pool,
+    chain,
+    first: BigInt(1),
+    count: BigInt(10),
+    timeout: 5,
+  })
+  it('should error', async () => {
     chain.putBlocks = vi.fn().mockRejectedValueOnce(new Error('could not find parent header'))
-    const fetcher = new BlockFetcher({
-      config,
-      pool,
-      chain,
-      first: BigInt(1),
-      count: BigInt(10),
-      timeout: 5,
-    })
-
     try {
       await fetcher.store([])
       assert.fail('fetcher store should have errored')
@@ -260,10 +260,12 @@ describe('[BlockFetcher]', async () => {
       assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
       assert.equal(banPeer, true, 'peer should be banned on this error')
     }
-    chain.putBlocks = vi.fn().mockResolvedValueOnce(1)
-    config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
-      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
-    )
-    await fetcher.store([])
   })
+  chain.putBlocks = vi.fn().mockResolvedValueOnce(1)
+  config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
+    it('should emit fetched blocks event', () => {
+      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
+    })
+  )
+  await fetcher.store([])
 })
