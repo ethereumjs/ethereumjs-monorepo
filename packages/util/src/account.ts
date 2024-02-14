@@ -1,28 +1,23 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import {
-  bytesToHex,
-  concatBytes,
-  equalsBytes,
-  hexToBytes,
-  utf8ToBytes,
-} from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
+  concatBytes,
+  equalsBytes,
+  hexToBytes,
   toBytes,
+  utf8ToBytes,
   zeros,
-} from './bytes'
-import { KECCAK256_NULL, KECCAK256_RLP } from './constants'
-import { assertIsBytes, assertIsHexString, assertIsString } from './helpers'
-import { stripHexPrefix } from './internal'
+} from './bytes.js'
+import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
+import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
+import { stripHexPrefix } from './internal.js'
 
-import type { BigIntLike, BytesLike } from './types'
-
-const _0n = BigInt(0)
+import type { BigIntLike, BytesLike } from './types.js'
 
 export interface AccountData {
   nonce?: BigIntLike
@@ -70,7 +65,12 @@ export class Account {
    * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating an Account from varying data types.
    */
-  constructor(nonce = _0n, balance = _0n, storageRoot = KECCAK256_RLP, codeHash = KECCAK256_NULL) {
+  constructor(
+    nonce = BIGINT_0,
+    balance = BIGINT_0,
+    storageRoot = KECCAK256_RLP,
+    codeHash = KECCAK256_NULL
+  ) {
     this.nonce = nonce
     this.balance = balance
     this.storageRoot = storageRoot
@@ -80,10 +80,10 @@ export class Account {
   }
 
   private _validate() {
-    if (this.nonce < _0n) {
+    if (this.nonce < BIGINT_0) {
       throw new Error('nonce must be greater than zero')
     }
-    if (this.balance < _0n) {
+    if (this.balance < BIGINT_0) {
       throw new Error('balance must be greater than zero')
     }
     if (this.storageRoot.length !== 32) {
@@ -126,7 +126,11 @@ export class Account {
    * "An account is considered empty when it has no code and zero nonce and zero balance."
    */
   isEmpty(): boolean {
-    return this.balance === _0n && this.nonce === _0n && equalsBytes(this.codeHash, KECCAK256_NULL)
+    return (
+      this.balance === BIGINT_0 &&
+      this.nonce === BIGINT_0 &&
+      equalsBytes(this.codeHash, KECCAK256_NULL)
+    )
   }
 }
 
@@ -169,7 +173,7 @@ export const toChecksumAddress = function (
   }
 
   const bytes = utf8ToBytes(prefix + address)
-  const hash = bytesToHex(keccak256(bytes))
+  const hash = bytesToHex(keccak256(bytes)).slice(2)
   let ret = '0x'
 
   for (let i = 0; i < address.length; i++) {
@@ -204,7 +208,7 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
   assertIsBytes(from)
   assertIsBytes(nonce)
 
-  if (bytesToBigInt(nonce) === BigInt(0)) {
+  if (bytesToBigInt(nonce) === BIGINT_0) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
     return keccak256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
@@ -236,7 +240,7 @@ export const generateAddress2 = function (
     throw new Error('Expected salt to be of length 32')
   }
 
-  const address = keccak256(concatBytes(hexToBytes('ff'), from, salt, keccak256(initCode)))
+  const address = keccak256(concatBytes(hexToBytes('0xff'), from, salt, keccak256(initCode)))
 
   return address.subarray(-20)
 }
@@ -333,7 +337,7 @@ export const importPublic = function (publicKey: Uint8Array): Uint8Array {
 export const zeroAddress = function (): string {
   const addressLength = 20
   const addr = zeros(addressLength)
-  return bytesToPrefixedHexString(addr)
+  return bytesToHex(addr)
 }
 
 /**

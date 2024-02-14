@@ -1,81 +1,53 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import { assert, describe, it, vi } from 'vitest'
 
-import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
+import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'net_version'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+function compareResult(result: any, chainId: any) {
+  assert.equal(typeof result, 'string', 'result should be a string')
+  assert.notEqual(result.length, 0, 'result string should not be empty')
 
-function compareResult(t: any, result: any, chainId: any) {
-  let msg = 'result should be a string'
-  t.equal(typeof result, 'string', msg)
-  msg = 'result string should not be empty'
-  t.notEqual(result.length, 0, msg)
-  msg = `should be the correct chain ID (expected: ${chainId}, received: ${result})`
-  t.equal(result, chainId, msg)
+  assert.equal(
+    result,
+    chainId,
+    `should be the correct chain ID (expected: ${chainId}, received: ${result})`
+  )
 }
 
-tape(`${method}: call on ropsten`, async (t) => {
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
-  )
-  const server = startRPC(manager.getMethods())
+describe(method, () => {
+  it('call on mainnet', async () => {
+    const { rpc } = await baseSetup()
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '3')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const res = await rpc.request(method, [])
 
-tape(`${method}: call on mainnet`, async (t) => {
-  const { server } = baseSetup()
+    const { result } = res
+    compareResult(result, '1')
+  })
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '1')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  it('call on holesky', async () => {
+    const manager = createManager(
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Holesky }) })
+    )
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-tape(`${method}: call on rinkeby`, async (t) => {
-  // Stub out block consensusFormatValidation checks
-  BlockHeader.prototype._consensusFormatValidation = td.func<any>()
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Rinkeby }) })
-  )
-  const server = startRPC(manager.getMethods())
+    const res = await rpc.request(method, [])
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '4')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-  td.reset()
-})
+    const { result } = res
+    compareResult(result, '17000')
 
-tape(`${method}: call on goerli`, async (t) => {
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
-  )
-  const server = startRPC(manager.getMethods())
+    vi.resetAllMocks()
+  })
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    compareResult(t, result, '5')
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  it('call on goerli', async () => {
+    const manager = createManager(
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+    )
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-tape('reset TD', (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
-  td.reset()
-  t.end()
+    const res = await rpc.request(method, [])
+    const { result } = res
+    compareResult(result, '5')
+  })
 })

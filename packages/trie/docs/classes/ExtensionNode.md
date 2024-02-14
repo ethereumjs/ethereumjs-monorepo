@@ -42,7 +42,7 @@
 | Name | Type |
 | :------ | :------ |
 | `nibbles` | [`Nibbles`](../README.md#nibbles) |
-| `value` | `Buffer` |
+| `value` | `Uint8Array` |
 
 #### Overrides
 
@@ -50,7 +50,7 @@ Node.constructor
 
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L8)
+[packages/trie/src/node/extension.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/extension.ts#L8)
 
 ## Properties
 
@@ -64,7 +64,7 @@ Node.\_nibbles
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L10)
+[packages/trie/src/node/node.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L9)
 
 ___
 
@@ -78,13 +78,13 @@ Node.\_terminator
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L12)
+[packages/trie/src/node/node.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L11)
 
 ___
 
 ### \_value
 
-• **\_value**: `Buffer`
+• **\_value**: `Uint8Array`
 
 #### Inherited from
 
@@ -92,7 +92,7 @@ Node.\_value
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L11)
+[packages/trie/src/node/node.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L10)
 
 ## Methods
 
@@ -110,7 +110,7 @@ Node.encodedKey
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L44)
+[packages/trie/src/node/node.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L43)
 
 ___
 
@@ -134,7 +134,7 @@ Node.key
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L24)
+[packages/trie/src/node/node.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L23)
 
 ___
 
@@ -152,17 +152,17 @@ Node.keyLength
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L32)
+[packages/trie/src/node/node.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L31)
 
 ___
 
 ### raw
 
-▸ **raw**(): [`Buffer`, `Buffer`]
+▸ **raw**(): [`Uint8Array`, `Uint8Array`]
 
 #### Returns
 
-[`Buffer`, `Buffer`]
+[`Uint8Array`, `Uint8Array`]
 
 #### Inherited from
 
@@ -170,17 +170,17 @@ Node.raw
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L48)
+[packages/trie/src/node/node.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L47)
 
 ___
 
 ### serialize
 
-▸ **serialize**(): `Buffer`
+▸ **serialize**(): `Uint8Array`
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Inherited from
 
@@ -188,23 +188,23 @@ Node.serialize
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L52)
+[packages/trie/src/node/node.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L51)
 
 ___
 
 ### value
 
-▸ **value**(`v?`): `Buffer`
+▸ **value**(`v?`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `v?` | `Buffer` |
+| `v?` | `Uint8Array` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Inherited from
 
@@ -212,7 +212,7 @@ Node.value
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L36)
+[packages/trie/src/node/node.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L35)
 
 ___
 
@@ -236,7 +236,7 @@ Node.decodeKey
 
 #### Defined in
 
-[packages/trie/src/trie/node/node.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/node.ts#L20)
+[packages/trie/src/node/node.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/node.ts#L19)
 
 ___
 
@@ -256,4 +256,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie/node/extension.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie/node/extension.ts#L12)
+[packages/trie/src/node/extension.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/extension.ts#L12)

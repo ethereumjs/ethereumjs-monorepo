@@ -3,25 +3,26 @@ import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
   KECCAK256_RLP,
   Withdrawal,
   bigIntToHex,
   bytesToHex,
-  bytesToPrefixedHexString,
+  bytesToUtf8,
   equalsBytes,
   fetchFromProvider,
   getProvider,
-  hexStringToBytes,
+  hexToBytes,
   intToHex,
   isHexPrefixed,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { executionPayloadFromBeaconPayload } from './from-beacon-payload'
-import { blockFromRpc } from './from-rpc'
-import { BlockHeader } from './header'
+import { executionPayloadFromBeaconPayload } from './from-beacon-payload.js'
+import { blockFromRpc } from './from-rpc.js'
+import { BlockHeader } from './header.js'
 
-import type { BeaconPayloadJson } from './from-beacon-payload'
+import type { BeaconPayloadJson } from './from-beacon-payload.js'
 import type {
   BlockBytes,
   BlockData,
@@ -30,7 +31,8 @@ import type {
   HeaderData,
   JsonBlock,
   JsonRpcBlock,
-} from './types'
+  VerkleExecutionWitness,
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 import type {
   FeeMarketEIP1559Transaction,
@@ -48,8 +50,19 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly txTrie = new Trie()
-  public readonly _common: Common
+  public readonly common: Common
+  protected keccakFunction: (msg: Uint8Array) => Uint8Array
+
+  /**
+   * EIP-6800: Verkle Proof Data (experimental)
+   * null implies that the non default executionWitness might exist but not available
+   * and will not lead to execution of the block via vm with verkle stateless manager
+   */
+  public readonly executionWitness?: VerkleExecutionWitness | null
+
+  protected cache: {
+    txTrieRoot?: Uint8Array
+  } = {}
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
@@ -89,7 +102,9 @@ export class Block {
       transactions: txsData,
       uncleHeaders: uhsData,
       withdrawals: withdrawalsData,
+      executionWitness: executionWitnessData,
     } = blockData
+
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
@@ -97,8 +112,8 @@ export class Block {
     for (const txData of txsData ?? []) {
       const tx = TransactionFactory.fromTxData(txData, {
         ...opts,
-        // Use header common in case of hardforkByBlockNumber being activated
-        common: header._common,
+        // Use header common in case of setHardfork being activated
+        common: header.common,
       } as TxOptions)
       transactions.push(tx)
     }
@@ -106,18 +121,15 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
-      hardforkByBlockNumber: true,
       ...opts,
-      // Use header common in case of hardforkByBlockNumber being activated
-      common: header._common,
+      // Use header common in case of setHardfork being activated
+      common: header.common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByTTD: undefined,
     }
-    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined) {
-      uncleOpts.hardforkByBlockNumber = true
+    // Uncles are obsolete post-merge, any hardfork by option implies setHardfork
+    if (opts?.setHardfork !== undefined) {
+      uncleOpts.setHardfork = true
     }
     for (const uhData of uhsData ?? []) {
       const uh = BlockHeader.fromHeaderData(uhData, uncleOpts)
@@ -125,8 +137,11 @@ export class Block {
     }
 
     const withdrawals = withdrawalsData?.map(Withdrawal.fromWithdrawalData)
+    // The witness data is planned to come in rlp serialized bytes so leave this
+    // stub till that time
+    const executionWitness = executionWitnessData
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
   }
 
   /**
@@ -152,18 +167,20 @@ export class Block {
    * @param opts
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
-    if (values.length > 4) {
-      throw new Error('invalid block. More values than expected were received')
+    if (values.length > 5) {
+      throw new Error(
+        `invalid block. More values=${values.length} than expected were received (at most 5)`
+      )
     }
 
-    // First try to load header so that we can use its common (in case of hardforkByBlockNumber being activated)
+    // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes] = values
+    const [headerData, txsData, uhsData, withdrawalBytes, executionWitnessBytes] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
-      header._common.isActivatedEIP(4895) &&
-      (values[3] === undefined || !Array.isArray(values[3]))
+      header.common.isActivatedEIP(4895) &&
+      (withdrawalBytes === undefined || !Array.isArray(withdrawalBytes))
     ) {
       throw new Error(
         'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
@@ -176,8 +193,8 @@ export class Block {
       transactions.push(
         TransactionFactory.fromBlockBodyData(txData, {
           ...opts,
-          // Use header common in case of hardforkByBlockNumber being activated
-          common: header._common,
+          // Use header common in case of setHardfork being activated
+          common: header.common,
         })
       )
     }
@@ -185,18 +202,15 @@ export class Block {
     // parse uncle headers
     const uncleHeaders = []
     const uncleOpts: BlockOptions = {
-      hardforkByBlockNumber: true,
       ...opts,
-      // Use header common in case of hardforkByBlockNumber being activated
-      common: header._common,
+      // Use header common in case of setHardfork being activated
+      common: header.common,
       // Disable this option here (all other options carried over), since this overwrites the provided Difficulty to an incorrect value
       calcDifficultyFromHeader: undefined,
-      // This potentially overwrites hardforkBy options but we will set them cleanly just below
-      hardforkByTTD: undefined,
     }
-    // Uncles are obsolete post-merge, any hardfork by option implies hardforkByBlockNumber
-    if (opts?.hardforkByTTD !== undefined) {
-      uncleOpts.hardforkByBlockNumber = true
+    // Uncles are obsolete post-merge, any hardfork by option implies setHardfork
+    if (opts?.setHardfork !== undefined) {
+      uncleOpts.setHardfork = true
     }
     for (const uncleHeaderData of uhsData ?? []) {
       uncleHeaders.push(BlockHeader.fromValuesArray(uncleHeaderData, uncleOpts))
@@ -211,7 +225,18 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts)
+    // executionWitness are not part of the EL fetched blocks via eth_ bodies method
+    // they are currently only available via the engine api constructed blocks
+    let executionWitness
+    if (header.common.isActivatedEIP(6800) && executionWitnessBytes !== undefined) {
+      executionWitness = JSON.parse(bytesToUtf8(RLP.decode(executionWitnessBytes) as Uint8Array))
+    } else {
+      // don't assign default witness if eip 6800 is implemented as it leads to incorrect
+      // assumptions while executing the block. if not present in input implies its unavailable
+      executionWitness = null
+    }
+
+    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
   }
 
   /**
@@ -219,7 +244,7 @@ export class Block {
    *
    * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
    * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
-   * @param options - An object describing the blockchain
+   * @param opts - An object describing the blockchain
    */
   public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
     return blockFromRpc(blockData, uncles, opts)
@@ -294,7 +319,7 @@ export class Block {
    */
   public static async fromExecutionPayload(
     payload: ExecutionPayload,
-    options?: BlockOptions
+    opts?: BlockOptions
   ): Promise<Block> {
     const {
       blockNumber: number,
@@ -303,13 +328,14 @@ export class Block {
       feeRecipient: coinbase,
       transactions,
       withdrawals: withdrawalsData,
+      executionWitness,
     } = payload
 
     const txs = []
     for (const [index, serializedTx] of transactions.entries()) {
       try {
-        const tx = TransactionFactory.fromSerializedData(hexStringToBytes(serializedTx), {
-          common: options?.common,
+        const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
+          common: opts?.common,
         })
         txs.push(tx)
       } catch (error) {
@@ -318,10 +344,13 @@ export class Block {
       }
     }
 
-    const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
+    const transactionsTrie = await Block.genTransactionsTrieRoot(
+      txs,
+      new Trie({ common: opts?.common })
+    )
     const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
     const withdrawalsRoot = withdrawals
-      ? await Block.genWithdrawalsTrieRoot(withdrawals)
+      ? await Block.genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
       : undefined
     const header: HeaderData = {
       ...payload,
@@ -333,14 +362,22 @@ export class Block {
       coinbase,
     }
 
-    // we are not setting hardforkByBlockNumber or hardforkByTTD as common is already
-    // correctly set to the correct hf
-    const block = Block.fromBlockData({ header, transactions: txs, withdrawals }, options)
+    // we are not setting setHardfork as common is already set to the correct hf
+    const block = Block.fromBlockData(
+      { header, transactions: txs, withdrawals, executionWitness },
+      opts
+    )
+    if (
+      block.common.isActivatedEIP(6800) &&
+      (executionWitness === undefined || executionWitness === null)
+    ) {
+      throw Error('Missing executionWitness for EIP-6800 activated executionPayload')
+    }
     // Verify blockHash matches payload
-    if (!equalsBytes(block.hash(), hexStringToBytes(payload.blockHash))) {
+    if (!equalsBytes(block.hash(), hexToBytes(payload.blockHash))) {
       const validationError = `Invalid blockHash, expected: ${
         payload.blockHash
-      }, received: ${bytesToPrefixedHexString(block.hash())}`
+      }, received: ${bytesToHex(block.hash())}`
       throw Error(validationError)
     }
 
@@ -355,10 +392,10 @@ export class Block {
    */
   public static async fromBeaconPayloadJson(
     payload: BeaconPayloadJson,
-    options?: BlockOptions
+    opts?: BlockOptions
   ): Promise<Block> {
     const executionPayload = executionPayloadFromBeaconPayload(payload)
-    return Block.fromExecutionPayload(executionPayload, options)
+    return Block.fromExecutionPayload(executionPayload, opts)
   }
 
   /**
@@ -370,23 +407,45 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
-    opts: BlockOptions = {}
+    opts: BlockOptions = {},
+    executionWitness?: VerkleExecutionWitness | null
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
-    this._common = this.header._common
+    this.common = this.header.common
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     this.transactions = transactions
-    this.withdrawals = withdrawals ?? (this._common.isActivatedEIP(4895) ? [] : undefined)
+    this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
+    this.executionWitness = executionWitness
+    // null indicates an intentional absence of value or unavailability
+    // undefined indicates that the executionWitness should be initialized with the default state
+    if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
+      this.executionWitness = {
+        stateDiff: [],
+        verkleProof: {
+          commitmentsByPath: [],
+          d: '0x',
+          depthExtensionPresent: '0x',
+          ipaProof: {
+            cl: [],
+            cr: [],
+            finalEvaluation: '0x',
+          },
+          otherStems: [],
+        },
+      }
+    }
+
     this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
       this.validateUncles()
-      if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
+      if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed'
         )
         throw new Error(msg)
       }
-      if (this._common.consensusType() === ConsensusType.ProofOfStake) {
+      if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoS network is not allowed'
         )
@@ -394,8 +453,16 @@ export class Block {
       }
     }
 
-    if (!this._common.isActivatedEIP(4895) && withdrawals !== undefined) {
+    if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+    }
+
+    if (
+      !this.common.isActivatedEIP(6800) &&
+      executionWitness !== undefined &&
+      executionWitness !== null
+    ) {
+      throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
     const freeze = opts?.freeze ?? true
@@ -405,7 +472,7 @@ export class Block {
   }
 
   /**
-   * Returns a Array of the raw Bytes Arays of this block, in order.
+   * Returns a Array of the raw Bytes Arrays of this block, in order.
    */
   raw(): BlockBytes {
     const bytesArray = <BlockBytes>[
@@ -418,6 +485,10 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
+    }
+    if (this.executionWitness !== undefined && this.executionWitness !== null) {
+      const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
+      bytesArray.push(executionWitnessBytes as any)
     }
     return bytesArray
   }
@@ -446,47 +517,43 @@ export class Block {
   /**
    * Generates transaction trie for validation.
    */
-  async genTxTrie(): Promise<void> {
-    const { transactions, txTrie } = this
-    await Block.genTransactionsTrieRoot(transactions, txTrie)
+  async genTxTrie(): Promise<Uint8Array> {
+    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
   }
 
   /**
    * Validates the transaction trie by generating a trie
    * and do a check on the root hash.
+   * @returns True if the transaction trie is valid, false otherwise
    */
-  async validateTransactionsTrie(): Promise<boolean> {
+  async transactionsTrieIsValid(): Promise<boolean> {
     let result
     if (this.transactions.length === 0) {
       result = equalsBytes(this.header.transactionsTrie, KECCAK256_RLP)
       return result
     }
 
-    if (equalsBytes(this.txTrie.root(), KECCAK256_RLP)) {
-      await this.genTxTrie()
+    if (this.cache.txTrieRoot === undefined) {
+      this.cache.txTrieRoot = await this.genTxTrie()
     }
-    result = equalsBytes(this.txTrie.root(), this.header.transactionsTrie)
+    result = equalsBytes(this.cache.txTrieRoot, this.header.transactionsTrie)
     return result
   }
 
   /**
    * Validates transaction signatures and minimum gas requirements.
-   *
-   * @param stringError - If `true`, a string with the indices of the invalid txs is returned.
+   * @returns {string[]} an array of error strings
    */
-  validateTransactions(): boolean
-  validateTransactions(stringError: false): boolean
-  validateTransactions(stringError: true): string[]
-  validateTransactions(stringError = false) {
+  getTransactionsValidationErrors(): string[] {
     const errors: string[] = []
-    let dataGasUsed = BigInt(0)
-    const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-    const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
+    let blobGasUsed = BIGINT_0
+    const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
+    const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
 
     // eslint-disable-next-line prefer-const
     for (let [i, tx] of this.transactions.entries()) {
-      const errs = <string[]>tx.validate(true)
-      if (this._common.isActivatedEIP(1559) === true) {
+      const errs = tx.getValidationErrors()
+      if (this.common.isActivatedEIP(1559) === true) {
         if (tx.supports(Capability.EIP1559FeeMarket)) {
           tx = tx as FeeMarketEIP1559Transaction
           if (tx.maxFeePerGas < this.header.baseFeePerGas!) {
@@ -499,12 +566,12 @@ export class Block {
           }
         }
       }
-      if (this._common.isActivatedEIP(4844) === true) {
+      if (this.common.isActivatedEIP(4844) === true) {
         if (tx instanceof BlobEIP4844Transaction) {
-          dataGasUsed += BigInt(tx.numBlobs()) * dataGasPerBlob
-          if (dataGasUsed > dataGasLimit) {
+          blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
+          if (blobGasUsed > blobGasLimit) {
             errs.push(
-              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`
             )
           }
         }
@@ -514,13 +581,23 @@ export class Block {
       }
     }
 
-    if (this._common.isActivatedEIP(4844) === true) {
-      if (dataGasUsed !== this.header.dataGasUsed) {
-        errors.push(`invalid dataGasUsed expected=${this.header.dataGasUsed} actual=${dataGasUsed}`)
+    if (this.common.isActivatedEIP(4844) === true) {
+      if (blobGasUsed !== this.header.blobGasUsed) {
+        errors.push(`invalid blobGasUsed expected=${this.header.blobGasUsed} actual=${blobGasUsed}`)
       }
     }
 
-    return stringError ? errors : errors.length === 0
+    return errors
+  }
+
+  /**
+   * Validates transaction signatures and minimum gas requirements.
+   * @returns True if all transactions are valid, false otherwise
+   */
+  transactionsAreValid(): boolean {
+    const errors = this.getTransactionsValidationErrors()
+
+    return errors.length === 0
   }
 
   /**
@@ -531,78 +608,104 @@ export class Block {
    * - The transactions trie is valid
    * - The uncle hash is valid
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
+   * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
    */
-  async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.validateTransactions(true)
-    if (txErrors.length > 0) {
-      const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
-      throw new Error(msg)
+  async validateData(onlyHeader: boolean = false, verifyTxs: boolean = true): Promise<void> {
+    if (verifyTxs) {
+      const txErrors = this.getTransactionsValidationErrors()
+      if (txErrors.length > 0) {
+        const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+        throw new Error(msg)
+      }
     }
 
     if (onlyHeader) {
       return
     }
 
-    const validateTxTrie = await this.validateTransactionsTrie()
-    if (!validateTxTrie) {
+    if (verifyTxs) {
+      for (const [index, tx] of this.transactions.entries()) {
+        if (!tx.isSigned()) {
+          const msg = this._errorMsg(
+            `invalid transactions: transaction at index ${index} is unsigned`
+          )
+          throw new Error(msg)
+        }
+      }
+    }
+
+    if (!(await this.transactionsTrieIsValid())) {
       const msg = this._errorMsg('invalid transaction trie')
       throw new Error(msg)
     }
 
-    if (!this.validateUnclesHash()) {
+    if (!this.uncleHashIsValid()) {
       const msg = this._errorMsg('invalid uncle hash')
       throw new Error(msg)
     }
 
-    if (this._common.isActivatedEIP(4895) && !(await this.validateWithdrawalsTrie())) {
+    if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw new Error(msg)
+    }
+
+    // Validation for Verkle blocks
+    // Unnecessary in this implementation since we're providing defaults if those fields are undefined
+    if (this.common.isActivatedEIP(6800)) {
+      if (this.executionWitness === undefined) {
+        throw new Error(`Invalid block: missing executionWitness`)
+      }
+      if (this.executionWitness === null) {
+        throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
+      }
     }
   }
 
   /**
-   * Validates that data gas fee for each transaction is greater than or equal to the
-   * dataGasPrice for the block and that total data gas in block is less than maximum
-   * data gas per block
+   * Validates that blob gas fee for each transaction is greater than or equal to the
+   * blobGasPrice for the block and that total blob gas in block is less than maximum
+   * blob gas per block
    * @param parentHeader header of parent block
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
-    if (this._common.isActivatedEIP(4844)) {
-      const dataGasLimit = this._common.param('gasConfig', 'maxDataGasPerBlock')
-      const dataGasPerBlob = this._common.param('gasConfig', 'dataGasPerBlob')
-      let dataGasUsed = BigInt(0)
+    if (this.common.isActivatedEIP(4844)) {
+      const blobGasLimit = this.common.param('gasConfig', 'maxblobGasPerBlock')
+      const blobGasPerBlob = this.common.param('gasConfig', 'blobGasPerBlob')
+      let blobGasUsed = BIGINT_0
+
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      if (this.header.excessBlobGas !== expectedExcessBlobGas) {
+        throw new Error(
+          `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`
+        )
+      }
+
+      let blobGasPrice
 
       for (const tx of this.transactions) {
         if (tx instanceof BlobEIP4844Transaction) {
-          const dataGasPrice = this.header.getDataGasPrice()
-          if (tx.maxFeePerDataGas < dataGasPrice) {
+          blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
+          if (tx.maxFeePerBlobGas < blobGasPrice) {
             throw new Error(
-              `blob transaction maxFeePerDataGas ${
-                tx.maxFeePerDataGas
-              } < than block data gas price ${dataGasPrice} - ${this.errorStr()}`
+              `blob transaction maxFeePerBlobGas ${
+                tx.maxFeePerBlobGas
+              } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`
             )
           }
 
-          dataGasUsed += BigInt(tx.versionedHashes.length) * dataGasPerBlob
+          blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
-          if (dataGasUsed > dataGasLimit) {
+          if (blobGasUsed > blobGasLimit) {
             throw new Error(
-              `tx causes total data gas of ${dataGasUsed} to exceed maximum data gas per block of ${dataGasLimit}`
+              `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`
             )
           }
         }
       }
 
-      if (this.header.dataGasUsed !== dataGasUsed) {
+      if (this.header.blobGasUsed !== blobGasUsed) {
         throw new Error(
-          `block dataGasUsed mismatch: have ${this.header.dataGasUsed}, want ${dataGasUsed}`
-        )
-      }
-
-      const expectedExcessDataGas = parentHeader.calcNextExcessDataGas()
-      if (this.header.excessDataGas !== expectedExcessDataGas) {
-        throw new Error(
-          `block excessDataGas mismatch: have ${this.header.excessDataGas}, want ${expectedExcessDataGas}`
+          `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`
         )
       }
     }
@@ -610,21 +713,26 @@ export class Block {
 
   /**
    * Validates the uncle's hash.
+   * @returns true if the uncle's hash is valid, false otherwise.
    */
-  validateUnclesHash(): boolean {
+  uncleHashIsValid(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
-    return equalsBytes(keccak256(raw), this.header.uncleHash)
+    return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
   }
 
   /**
    * Validates the withdrawal root
+   * @returns true if the withdrawals trie root is valid, false otherwise
    */
-  async validateWithdrawalsTrie(): Promise<boolean> {
-    if (!this._common.isActivatedEIP(4895)) {
+  async withdrawalsTrieIsValid(): Promise<boolean> {
+    if (!this.common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(
+      this.withdrawals!,
+      new Trie({ common: this.common })
+    )
     return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
   }
 
@@ -704,7 +812,7 @@ export class Block {
     }
     let hf = ''
     try {
-      hf = this._common.hardfork()
+      hf = this.common.hardfork()
     } catch (e: any) {
       hf = 'error'
     }

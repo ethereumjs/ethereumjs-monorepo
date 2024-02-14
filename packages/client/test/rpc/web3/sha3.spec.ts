@@ -1,60 +1,52 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseSetup } from '../helpers.js'
 
 const method = 'web3_sha3'
 
-function compareErrorCode(t: any, error: any, errorCode: any) {
-  const msg = `should return the correct error code (expected: ${errorCode}, received: ${error.code})`
-  t.equal(error.code, errorCode, msg)
+function compareErrorCode(error: any, errorCode: any) {
+  assert.equal(
+    error.code,
+    errorCode,
+    `should return the correct error code (expected: ${errorCode}, received: ${error.code})`
+  )
 }
 
-function compareErrorMsg(t: any, error: any, errorMsg: any) {
-  const msg = `should return "${errorMsg}" error message`
-  t.equal(error.message, errorMsg, msg)
+function compareErrorMsg(error: any, errorMsg: any) {
+  assert.equal(error.message, errorMsg, `should return "${errorMsg}" error message`)
 }
 
-tape(`${method}: call with one valid parameter`, async (t) => {
-  const { server } = baseSetup()
+describe(method, () => {
+  it('call with one valid parameter', async () => {
+    const { rpc } = await baseSetup()
 
-  const req = params(method, ['0x68656c6c6f20776f726c64'])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    let msg = 'result string should not be empty'
-    t.notEqual(result.length, 0, msg)
+    const res = await rpc.request(method, ['0x68656c6c6f20776f726c64'])
+    const { result } = res
+    assert.notEqual(result.length, 0, 'result string should not be empty')
+    assert.equal(
+      result,
+      '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad',
+      'should return the correct hash value'
+    )
+  })
 
-    msg = 'should return the correct hash value'
-    t.equal(result, '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad', msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  it('call with one non-hex parameter', async () => {
+    const { rpc } = await baseSetup()
 
-tape(`${method}: call with one non-hex parameter`, async (t) => {
-  const { server } = baseSetup()
+    const res = await rpc.request(method, ['hello world'])
+    const { error } = res
 
-  const req = params(method, ['hello world'])
-  const expectRes = (res: any) => {
-    const { error } = res.body
+    compareErrorCode(error, -32602)
+    compareErrorMsg(error, 'invalid argument 0: hex string without 0x prefix')
+  })
 
-    compareErrorCode(t, error, -32602)
+  it('call with no parameters', async () => {
+    const { rpc } = await baseSetup()
 
-    const errorMsg = 'invalid argument 0: hex string without 0x prefix'
-    compareErrorMsg(t, error, errorMsg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const res = await rpc.request(method, [])
+    const { error } = res
 
-tape(`${method}: call with no parameters`, async (t) => {
-  const { server } = baseSetup()
-
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { error } = res.body
-
-    compareErrorCode(t, error, -32602)
-
-    const errorMsg = 'missing value for required argument 0'
-    compareErrorMsg(t, error, errorMsg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
+    compareErrorCode(error, -32602)
+    compareErrorMsg(error, 'missing value for required argument 0')
+  })
 })

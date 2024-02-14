@@ -3,6 +3,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from '@ethereumjs/tx'
@@ -11,14 +12,15 @@ import {
   Address,
   bigIntToBytes,
   bytesToBigInt,
-  bytesToPrefixedHexString,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
   isHexPrefixed,
   setLengthLeft,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
@@ -86,7 +88,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = hexToBytes(a)
+    a = hexToBytes('0x' + a)
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -95,10 +97,10 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = hexToBytes(a)
+    a = hexToBytes('0x' + a)
   }
 
-  if (toZero && bytesToHex(a) === '') {
+  if (toZero && bytesToHex(a) === '0x') {
     a = Uint8Array.from([0])
   }
 
@@ -109,14 +111,20 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
  * Make a tx using JSON from tests repo
  * @param {Object} txData The tx object from tests repo
  * @param {TxOptions} opts Tx opts that can include an @ethereumjs/common object
- * @returns {FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
+ * @returns {BlobEIP4844Transaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction} Transaction to be passed to VM.runTx function
  */
 export function makeTx(
   txData: any,
   opts?: TxOptions
-): FeeMarketEIP1559Transaction | AccessListEIP2930Transaction | LegacyTransaction {
+):
+  | BlobEIP4844Transaction
+  | FeeMarketEIP1559Transaction
+  | AccessListEIP2930Transaction
+  | LegacyTransaction {
   let tx
-  if (txData.maxFeePerGas !== undefined) {
+  if (txData.blobVersionedHashes !== undefined) {
+    tx = BlobEIP4844Transaction.fromTxData(txData, opts)
+  } else if (txData.maxFeePerGas !== undefined) {
     tx = FeeMarketEIP1559Transaction.fromTxData(txData, opts)
   } else if (txData.accessLists !== undefined) {
     tx = AccessListEIP2930Transaction.fromTxData(txData, opts)
@@ -215,7 +223,7 @@ export function verifyAccountPostConditions(
     const rs = state.createReadStream()
     rs.on('data', function (data: any) {
       let key = bytesToHex(data.key)
-      const val = bytesToPrefixedHexString(RLP.decode(data.value) as Uint8Array)
+      const val = bytesToHex(RLP.decode(data.value) as Uint8Array)
 
       if (key === '0x') {
         key = '0x00'
@@ -225,7 +233,7 @@ export function verifyAccountPostConditions(
 
       if (val !== hashedStorage[key]) {
         t.comment(
-          `Expected storage key 0x${bytesToHex(data.key)} at address ${address} to have value ${
+          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`
         )
@@ -343,7 +351,7 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {
       const val = format(storage[storageKey])
-      if (['', '00'].includes(bytesToHex(val))) {
+      if (['0x', '0x00'].includes(bytesToHex(val))) {
         continue
       }
       const key = setLengthLeft(format(storageKey), 32)
@@ -364,15 +372,6 @@ export async function setupPreConditions(state: EVMStateManagerInterface, testDa
     await state.putAccount(address, account)
   }
   await state.commit()
-}
-
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }
 
 /**

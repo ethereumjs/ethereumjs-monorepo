@@ -1,52 +1,34 @@
-import { BlockHeader } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-import * as tape from 'tape'
-import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, createClient, createManager, params, startRPC } from '../helpers'
+import { baseSetup, createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'eth_chainId'
 
-const originalValidate = BlockHeader.prototype._consensusFormatValidation
+describe(method, () => {
+  it('calls', async () => {
+    const { rpc } = await baseSetup()
 
-tape(`${method}: calls`, async (t) => {
-  const { server } = baseSetup()
+    const res = await rpc.request(method, [])
+    assert.equal(typeof res.result, 'string', 'chainId should be a string')
+  })
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const msg = 'chainId should be a string'
-    t.equal(typeof res.body.result, 'string', msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  it('returns 1 for Mainnet', async () => {
+    const { rpc } = await baseSetup()
 
-tape(`${method}: returns 1 for Mainnet`, async (t) => {
-  const { server } = baseSetup()
+    const res = await rpc.request(method, [])
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const msg = 'should return chainId 1'
-    t.equal(res.body.result, '0x1', msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    assert.equal(res.result, '0x1', 'should return chainId 1')
+  })
 
-tape(`${method}: returns 3 for Ropsten`, async (t) => {
-  const manager = createManager(
-    createClient({ opened: true, commonChain: new Common({ chain: Chain.Ropsten }) })
-  )
-  const server = startRPC(manager.getMethods())
+  it('returns 3 for Goerli', async () => {
+    const manager = createManager(
+      await createClient({ opened: true, commonChain: new Common({ chain: Chain.Goerli }) })
+    )
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const msg = 'should return chainId 3'
-    t.equal(res.body.result, '0x3', msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const res = await rpc.request(method, [])
 
-tape(`reset TD`, (t) => {
-  BlockHeader.prototype._consensusFormatValidation = originalValidate
-  td.reset()
-  t.end()
+    assert.equal(res.result, '0x5', 'should return chainId 5')
+  })
 })

@@ -1,20 +1,20 @@
-import { bytesToInt, intToBytes, randomBytes } from '@ethereumjs/util'
+import { bytesToInt, intToBytes, randomBytes, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Block, BlockHeader } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-import ms = require('ms')
+import ms from 'ms'
 
-import * as devp2p from '../src/index'
-import { LES, Peer } from '../src/index'
-import { bytesToHex, hexToBytes } from 'ethereum-cryptography/utils'
+import * as devp2p from '@ethereumjs/devp2p'
+import { ETH, Peer } from '@ethereumjs/devp2p'
 
 const PRIVATE_KEY = randomBytes(32)
 
 const GENESIS_TD = 1
-const GENESIS_HASH = hexToBytes('6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177')
+const GENESIS_HASH = hexToBytes(
+  '0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177'
+)
 
-const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.London })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
 const bootstrapNodes = common.bootstrapNodes()
 const BOOTNODES = bootstrapNodes.map((node: any) => {
   return {
@@ -36,6 +36,7 @@ const REMOTE_CLIENTID_FILTER = [
   'prichain',
 ]
 
+// @ts-ignore
 const getPeerAddr = (peer: Peer) => `${peer._socket.remoteAddress}:${peer._socket.remotePort}`
 
 // DPT
@@ -49,7 +50,7 @@ const dpt = new devp2p.DPT(PRIVATE_KEY, {
 })
 
 /* eslint-disable no-console */
-dpt.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
+dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
@@ -62,9 +63,9 @@ const rlpx = new devp2p.RLPx(PRIVATE_KEY, {
   remoteClientIdFilter: REMOTE_CLIENTID_FILTER,
 })
 
-rlpx.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
+rlpx.events.on('error', (err) => console.error(chalk.red(`RLPx error: ${err.stack ?? err}`)))
 
-rlpx.on('peer:added', (peer) => {
+rlpx.events.on('peer:added', (peer) => {
   const addr = getPeerAddr(peer)
   const les = peer.getProtocols()[0]
   const requests: { headers: BlockHeader[]; bodies: any[] } = { headers: [], bodies: [] }
@@ -83,10 +84,10 @@ rlpx.on('peer:added', (peer) => {
     genesisHash: GENESIS_HASH,
     announceType: intToBytes(0),
     recentTxLookup: intToBytes(1),
-    forkID: [hexToBytes('3b8e0691'), intToBytes(1)],
+    forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
   })
 
-  les.once('status', (status: LES.Status) => {
+  les.events.once('status', (status: LES.Status) => {
     const msg = [
       Uint8Array.from([]),
       [
@@ -99,7 +100,7 @@ rlpx.on('peer:added', (peer) => {
     les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
   })
 
-  les.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
+  les.events.on('message', async (code: LES.MESSAGE_CODES, payload: any) => {
     switch (code) {
       case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
         if (payload[2].length > 1) {
@@ -149,7 +150,7 @@ rlpx.on('peer:added', (peer) => {
   })
 })
 
-rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
+rlpx.events.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   const who = disconnectWe === true ? 'we disconnect' : 'peer disconnect'
   const total = rlpx.getPeers().length
   console.log(
@@ -161,7 +162,7 @@ rlpx.on('peer:removed', (peer, reasonCode, disconnectWe) => {
   )
 })
 
-rlpx.on('peer:error', (peer, err) => {
+rlpx.events.on('peer:error', (peer, err) => {
   if (err.code === 'ECONNRESET') return
 
   if (err instanceof Error) {
@@ -211,22 +212,22 @@ function onNewBlock(block: Block, peer: Peer) {
   )
 }
 
-function isValidTx(tx: TypedTransaction) {
-  return tx.validate()
-}
-
 async function isValidBlock(block: Block) {
   return (
-    block.validateUnclesHash() &&
-    block.transactions.every(isValidTx) &&
-    block.validateTransactionsTrie()
+    block.uncleHashIsValid() &&
+    block.transactions.every(({ isValid }) => isValid()) &&
+    block.transactionsTrieIsValid()
   )
 }
 
 setInterval(() => {
   const peersCount = dpt.getPeers().length
   const openSlots = rlpx._getOpenSlots()
+
+  // @ts-ignore
   const queueLength = rlpx._peersQueue.length
+
+  // @ts-ignore
   const queueLength2 = rlpx._peersQueue.filter((o) => o.ts <= Date.now()).length
 
   console.log(

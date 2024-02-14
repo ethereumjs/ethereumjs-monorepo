@@ -1,22 +1,22 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_27,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
-  concatBytes,
-  ecrecover,
   equalsBytes,
-  hexStringToBytes,
   toBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { BaseTransaction } from './baseTransaction'
-import { TransactionType } from './types'
-import { AccessLists } from './util'
+import { BaseTransaction } from './baseTransaction.js'
+import * as EIP2718 from './capabilities/eip2718.js'
+import * as EIP2930 from './capabilities/eip2930.js'
+import * as Legacy from './capabilities/legacy.js'
+import { TransactionType } from './types.js'
+import { AccessLists, txTypeBytes } from './util.js'
 
 import type {
   AccessList,
@@ -25,15 +25,11 @@ import type {
   TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.AccessListEIP2930]
 type TxValuesArray = AllTypesTxValuesArray[TransactionType.AccessListEIP2930]
-
-const TRANSACTION_TYPE_BYTES = hexStringToBytes(
-  TransactionType.AccessListEIP2930.toString(16).padStart(2, '0')
-)
 
 /**
  * Typed transaction with optional access lists
@@ -70,7 +66,10 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * signatureYParity (v), signatureR (r), signatureS (s)])`
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
-    if (equalsBytes(serialized.subarray(0, 1), TRANSACTION_TYPE_BYTES) === false) {
+    if (
+      equalsBytes(serialized.subarray(0, 1), txTypeBytes(TransactionType.AccessListEIP2930)) ===
+      false
+    ) {
       throw new Error(
         `Invalid serialized tx input: not an EIP-2930 transaction (wrong tx type, expected: ${
           TransactionType.AccessListEIP2930
@@ -165,8 +164,8 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
       throw new Error(msg)
     }
 
-    this._validateYParity()
-    this._validateHighS()
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
 
     const freeze = opts?.freeze ?? true
     if (freeze) {
@@ -178,21 +177,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    let cost = super.getDataFee()
-    cost += BigInt(AccessLists.getDataFeeEIP2930(this.accessList, this.common))
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: cost,
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return cost
+    return EIP2930.getDataFee(this)
   }
 
   /**
@@ -242,27 +227,33 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * the RLP encoding of the values.
    */
   serialize(): Uint8Array {
-    const base = this.raw()
-    return concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
+    return EIP2718.serialize(this)
   }
 
   /**
-   * Returns the serialized unsigned tx (hashed or raw), which can be used
+   * Returns the raw serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
    *
    * ```javascript
-   * const serializedMessage = tx.getMessageToSign(false) // use this for the HW wallet input
+   * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage = true): Uint8Array {
-    const base = this.raw().slice(0, 8)
-    const message = concatBytes(TRANSACTION_TYPE_BYTES, RLP.encode(base))
-    return hashMessage ? keccak256(message) : message
+  getMessageToSign(): Uint8Array {
+    return EIP2718.serialize(this, this.raw().slice(0, 8))
+  }
+
+  /**
+   * Returns the hashed serialized unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: in contrast to the legacy tx the raw message format is already
+   * serialized and doesn't need to be RLP encoded any more.
+   */
+  getHashedMessageToSign(): Uint8Array {
+    return EIP2718.getHashedMessageToSign(this)
   }
 
   /**
@@ -272,56 +263,31 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * Use {@link AccessListEIP2930Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   public hash(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = keccak256(this.serialize())
-      }
-      return this.cache.hash
-    }
-
-    return keccak256(this.serialize())
+    return Legacy.hash(this)
   }
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
    */
   public getMessageToVerifySignature(): Uint8Array {
-    return this.getMessageToSign()
+    return this.getHashedMessageToSign()
   }
 
   /**
    * Returns the public key of the sender
    */
   public getSenderPublicKey(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call this method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    const msgHash = this.getMessageToVerifySignature()
-    const { v, r, s } = this
-
-    this._validateHighS()
-
-    try {
-      return ecrecover(
-        msgHash,
-        v! + BigInt(27), // Recover the 27 which was stripped from ecsign
-        bigIntToUnpaddedBytes(r!),
-        bigIntToUnpaddedBytes(s!)
-      )
-    } catch (e: any) {
-      const msg = this._errorMsg('Invalid Signature')
-      throw new Error(msg)
-    }
+    return Legacy.getSenderPublicKey(this)
   }
 
-  _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV: boolean = false
+  ): AccessListEIP2930Transaction {
+    r = toBytes(r)
+    s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
 
     return AccessListEIP2930Transaction.fromTxData(
@@ -334,7 +300,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: v - BigInt(27), // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
@@ -374,6 +340,6 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`
+    return Legacy.errorMsg(this, msg)
   }
 }

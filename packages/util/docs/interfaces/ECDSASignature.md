@@ -14,21 +14,21 @@
 
 ### r
 
-• **r**: `Buffer`
+• **r**: `Uint8Array`
 
 #### Defined in
 
-[packages/util/src/signature.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L10)
+[packages/util/src/signature.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L25)
 
 ___
 
 ### s
 
-• **s**: `Buffer`
+• **s**: `Uint8Array`
 
 #### Defined in
 
-[packages/util/src/signature.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L11)
+[packages/util/src/signature.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L26)
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 #### Defined in
 
-[packages/util/src/signature.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L9)
+[packages/util/src/signature.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L24)

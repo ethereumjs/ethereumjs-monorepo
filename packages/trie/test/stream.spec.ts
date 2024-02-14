@@ -1,12 +1,11 @@
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { utf8ToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { Trie } from '../src'
+import { Trie } from '../src/index.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
-tape('kv stream test', function (tester) {
-  const it = tester.test
+describe('kv stream test', () => {
   const trie = new Trie()
   const ops = [
     {
@@ -95,36 +94,48 @@ tape('kv stream test', function (tester) {
     },
   ] as BatchDBOp[]
 
-  const valObj = {} as any
+  const valObj1 = {} as any
+  const valObj2 = {} as any
   for (const op of ops) {
     if (op.type === 'put') {
-      valObj[op.key.toString()] = op.value.toString()
+      valObj1[op.key.toString()] = op.value.toString()
+      valObj2[op.key.toString()] = op.value.toString()
     }
   }
 
-  it('should populate trie', async function (t) {
+  it('should populate trie', async () => {
     await trie.batch(ops)
-    t.end()
   })
 
-  it('should fetch all of the nodes', function (t) {
+  it('should fetch all of the nodes', () => {
     const stream = trie.createReadStream()
     stream.on('data', (d: any) => {
       const key = d.key.toString()
       const value = d.value.toString()
-      t.equal(valObj[key], value)
-      delete valObj[key]
+      assert.equal(valObj1[key], value)
+      delete valObj1[key]
     })
     stream.on('end', () => {
-      const keys = Object.keys(valObj)
-      t.equal(keys.length, 0)
-      t.end()
+      const keys = Object.keys(valObj1)
+      assert.equal(keys.length, 0)
     })
+  })
+
+  it('should fetch all of the nodes from async stream', async () => {
+    const stream = trie.createAsyncReadStream()
+    for await (const chunk of stream) {
+      const key = chunk.key.toString()
+      const value = chunk.value.toString()
+      assert.equal(valObj2[key], value)
+      delete valObj2[key]
+    }
+
+    const keys = Object.keys(valObj2)
+    assert.equal(keys.length, 0)
   })
 })
 
-tape('db stream test', function (tester) {
-  const it = tester.test
+describe('db stream test', () => {
   const trie = new Trie()
   const ops = [
     {
@@ -159,9 +170,8 @@ tape('db stream test', function (tester) {
     },
   ] as BatchDBOp[]
 
-  it('should populate trie', async function (t) {
+  it('should populate trie', async () => {
     trie.checkpoint()
     await trie.batch(ops)
-    t.end()
   })
 })

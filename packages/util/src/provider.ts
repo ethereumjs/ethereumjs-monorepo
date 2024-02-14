@@ -1,35 +1,7 @@
-import * as https from 'https'
-
 type rpcParams = {
   method: string
   params: (string | boolean | number)[]
 }
-
-const nodeFetch = async (url: string, data: string) =>
-  new Promise((resolve, reject) => {
-    const options = {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-    }
-
-    const req = https
-      .request(url, options, (resp) => {
-        let data = ''
-        resp.on('data', (chunk) => {
-          data += chunk
-        })
-        resp.on('end', () => {
-          const res = JSON.parse(data)
-          resolve(res)
-        })
-      })
-      .on('error', (err) => {
-        reject(err.message)
-      })
-    req.end(data)
-  })
 
 /**
  * Makes a simple RPC call to a remote Ethereum JSON-RPC provider and passes through the response.
@@ -39,6 +11,14 @@ const nodeFetch = async (url: string, data: string) =>
  * @param params the parameters for the JSON-RPC method - refer to
  * https://ethereum.org/en/developers/docs/apis/json-rpc/ for details on RPC methods
  * @returns the `result` field from the JSON-RPC response
+ * @example
+ * ```ts
+ * const provider = 'https://mainnet.infura.io/v3/...'
+ * const params = {
+ *   method: 'eth_getBlockByNumber',
+ *   params: ['latest', false],
+ * }
+ *  const block = await fetchFromProvider(provider, params)
  */
 export const fetchFromProvider = async (url: string, params: rpcParams) => {
   const data = JSON.stringify({
@@ -48,20 +28,31 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     id: 1,
   })
 
-  if (global.fetch !== undefined) {
-    const res = await fetch(url, {
-      headers: {
-        'content-type': 'application/json',
-      },
-      method: 'POST',
-      body: data,
-    })
-    const json = await res.json()
-    return json.result
-  } else {
-    const res: any = await nodeFetch(url, data)
-    return res.result
+  const res = await fetch(url, {
+    headers: {
+      'content-type': 'application/json',
+    },
+    method: 'POST',
+    body: data,
+  })
+  if (!res.ok) {
+    throw new Error(
+      `JSONRpcError: ${JSON.stringify(
+        {
+          method: params.method,
+          status: res.status,
+          message: await res.text().catch(() => {
+            return 'Could not parse error message likely because of a network error'
+          }),
+        },
+        null,
+        2
+      )}`
+    )
   }
+  const json = await res.json()
+  // TODO we should check json.error here
+  return json.result
 }
 
 /**
@@ -81,7 +72,7 @@ export const getProvider = (provider: string | EthersProvider) => {
 
 /**
  * A partial interface for an `ethers` `JsonRpcProvider`
- * We only use the url string since we do raw `fetch` or `http` calls to
+ * We only use the url string since we do raw `fetch` calls to
  * retrieve the necessary data
  */
 export interface EthersProvider {

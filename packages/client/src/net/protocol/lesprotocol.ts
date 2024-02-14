@@ -1,9 +1,10 @@
 import { BlockHeader } from '@ethereumjs/block'
 import {
+  BIGINT_0,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToInt,
-  hexStringToBytes,
+  hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
 
@@ -52,7 +53,7 @@ export class LesProtocol extends Protocol {
   private chain: Chain
   private flow: FlowControl | undefined
   private isServer: boolean
-  private nextReqId = BigInt(0)
+  private nextReqId = BIGINT_0
 
   /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
@@ -109,7 +110,7 @@ export class LesProtocol extends Protocol {
         bv: bytesToBigInt(bv),
         headers: headers.map((h: BlockHeaderBytes) =>
           BlockHeader.fromValuesArray(h, {
-            hardforkByBlockNumber: true,
+            setHardfork: true,
             common: this.config.chainCommon, // eslint-disable-line no-invalid-this
           })
         ),
@@ -190,7 +191,7 @@ export class LesProtocol extends Protocol {
     const nextFork = this.config.chainCommon.nextHardforkBlockOrTimestamp(
       this.config.chainCommon.hardfork()
     )
-    const forkID = [hexStringToBytes(forkHash.slice(2)), bigIntToUnpaddedBytes(nextFork ?? 0n)]
+    const forkID = [hexToBytes(forkHash), bigIntToUnpaddedBytes(nextFork ?? 0n)]
 
     return {
       networkId: bigIntToUnpaddedBytes(this.chain.networkId),

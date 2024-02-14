@@ -1,16 +1,24 @@
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { concatBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
   bytesToBigInt,
+  bytesToHex,
   bytesToInt,
-  bytesToPrefixedHexString,
+  concatBytes,
   setLengthLeft,
   toBytes,
-} from './bytes'
-import { SECP256K1_ORDER, SECP256K1_ORDER_DIV_2 } from './constants'
-import { assertIsBytes } from './helpers'
+  utf8ToBytes,
+} from './bytes.js'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  BIGINT_27,
+  SECP256K1_ORDER,
+  SECP256K1_ORDER_DIV_2,
+} from './constants.js'
+import { assertIsBytes } from './helpers.js'
 
 export interface ECDSASignature {
   v: bigint
@@ -37,22 +45,22 @@ export function ecsign(
   const v =
     chainId === undefined
       ? BigInt(sig.recovery! + 27)
-      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BigInt(2)
+      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BIGINT_2
 
   return { r, s, v }
 }
 
-function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
-  if (v === BigInt(0) || v === BigInt(1)) return v
+export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+  if (v === BIGINT_0 || v === BIGINT_1) return v
 
   if (chainId === undefined) {
-    return v - BigInt(27)
+    return v - BIGINT_27
   }
-  return v - (chainId * BigInt(2) + BigInt(35))
+  return v - (chainId * BIGINT_2 + BigInt(35))
 }
 
 function isValidSigRecovery(recovery: bigint): boolean {
-  return recovery === BigInt(0) || recovery === BigInt(1)
+  return recovery === BIGINT_0 || recovery === BIGINT_1
 }
 
 /**
@@ -96,9 +104,7 @@ export const toRpcSig = function (
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
 
-  return bytesToPrefixedHexString(
-    concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v))
-  )
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v)))
 }
 
 /**
@@ -118,11 +124,11 @@ export const toCompactSig = function (
   }
 
   const ss = Uint8Array.from([...s])
-  if ((v > BigInt(28) && v % BigInt(2) === BigInt(1)) || v === BigInt(1) || v === BigInt(28)) {
+  if ((v > BigInt(28) && v % BIGINT_2 === BIGINT_1) || v === BIGINT_1 || v === BigInt(28)) {
     ss[0] |= 0x80
   }
 
-  return bytesToPrefixedHexString(concatBytes(setLengthLeft(r, 32), setLengthLeft(ss, 32)))
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(ss, 32)))
 }
 
 /**
@@ -155,7 +161,7 @@ export const fromRpcSig = function (sig: string): ECDSASignature {
 
   // support both versions of `eth_sign` responses
   if (v < 27) {
-    v = v + BigInt(27)
+    v = v + BIGINT_27
   }
 
   return {
@@ -189,9 +195,9 @@ export const isValidSignature = function (
   const sBigInt = bytesToBigInt(s)
 
   if (
-    rBigInt === BigInt(0) ||
+    rBigInt === BIGINT_0 ||
     rBigInt >= SECP256K1_ORDER ||
-    sBigInt === BigInt(0) ||
+    sBigInt === BIGINT_0 ||
     sBigInt >= SECP256K1_ORDER
   ) {
     return false

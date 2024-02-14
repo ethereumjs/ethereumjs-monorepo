@@ -1,25 +1,27 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_2,
+  BIGINT_8,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  ecrecover,
   toBytes,
   unpadBytes,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { BaseTransaction } from './baseTransaction'
-import { Capability, TransactionType } from './types'
+import { BaseTransaction } from './baseTransaction.js'
+import * as Legacy from './capabilities/legacy.js'
+import { Capability, TransactionType } from './types.js'
 
 import type {
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
   JsonTx,
   TxOptions,
-} from './types'
+} from './types.js'
 import type { Common } from '@ethereumjs/common'
 
 type TxData = AllTypesTxData[TransactionType.Legacy]
@@ -38,6 +40,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
+  private keccakFunction: (msg: Uint8Array) => Uint8Array
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -111,13 +114,14 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
-
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
       throw new Error(msg)
     }
+
     this._validateCannotExceedMaxInteger({ gasPrice: this.gasPrice })
     BaseTransaction._validateNotArray(txData)
 
@@ -183,8 +187,21 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     return RLP.encode(this.raw())
   }
 
-  private _getMessageToSign() {
-    const values = [
+  /**
+   * Returns the raw unsigned tx, which can be used
+   * to sign the transaction (e.g. for sending to a hardware wallet).
+   *
+   * Note: the raw message message format for the legacy tx is not RLP encoded
+   * and you might need to do yourself with:
+   *
+   * ```javascript
+   * import { RLP } from '@ethereumjs/rlp'
+   * const message = tx.getMessageToSign()
+   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
+   * ```
+   */
+  getMessageToSign(): Uint8Array[] {
+    const message = [
       bigIntToUnpaddedBytes(this.nonce),
       bigIntToUnpaddedBytes(this.gasPrice),
       bigIntToUnpaddedBytes(this.gasLimit),
@@ -194,56 +211,28 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     ]
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
-      values.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      values.push(unpadBytes(toBytes(0)))
-      values.push(unpadBytes(toBytes(0)))
+      message.push(bigIntToUnpaddedBytes(this.common.chainId()))
+      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(toBytes(0)))
     }
 
-    return values
+    return message
   }
 
   /**
-   * Returns the unsigned tx (hashed or raw), which can be used
+   * Returns the hashed serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
-   *
-   * Note: the raw message message format for the legacy tx is not RLP encoded
-   * and you might need to do yourself with:
-   *
-   * ```javascript
-   * import { RLP } from '@ethereumjs/rlp'
-   * const message = tx.getMessageToSign(false)
-   * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
-   * ```
-   *
-   * @param hashMessage - Return hashed message if set to true (default: true)
    */
-  getMessageToSign(hashMessage: false): Uint8Array[]
-  getMessageToSign(hashMessage?: true): Uint8Array
-  getMessageToSign(hashMessage = true) {
-    const message = this._getMessageToSign()
-    if (hashMessage) {
-      return keccak256(RLP.encode(message))
-    } else {
-      return message
-    }
+  getHashedMessageToSign() {
+    const message = this.getMessageToSign()
+    return this.keccakFunction(RLP.encode(message))
   }
 
   /**
    * The amount of gas paid for the data in this tx
    */
   getDataFee(): bigint {
-    if (this.cache.dataFee && this.cache.dataFee.hardfork === this.common.hardfork()) {
-      return this.cache.dataFee.value
-    }
-
-    if (Object.isFrozen(this)) {
-      this.cache.dataFee = {
-        value: super.getDataFee(),
-        hardfork: this.common.hardfork(),
-      }
-    }
-
-    return super.getDataFee()
+    return Legacy.getDataFee(this)
   }
 
   /**
@@ -260,19 +249,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
    */
   hash(): Uint8Array {
-    if (!this.isSigned()) {
-      const msg = this._errorMsg('Cannot call hash method if transaction is not signed')
-      throw new Error(msg)
-    }
-
-    if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = keccak256(RLP.encode(this.raw()))
-      }
-      return this.cache.hash
-    }
-
-    return keccak256(RLP.encode(this.raw()))
+    return Legacy.hash(this)
   }
 
   /**
@@ -283,40 +260,26 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
       const msg = this._errorMsg('This transaction is not signed')
       throw new Error(msg)
     }
-    const message = this._getMessageToSign()
-    return keccak256(RLP.encode(message))
+    return this.getHashedMessageToSign()
   }
 
   /**
    * Returns the public key of the sender
    */
   getSenderPublicKey(): Uint8Array {
-    const msgHash = this.getMessageToVerifySignature()
-
-    const { v, r, s } = this
-
-    this._validateHighS()
-
-    try {
-      return ecrecover(
-        msgHash,
-        v!,
-        bigIntToUnpaddedBytes(r!),
-        bigIntToUnpaddedBytes(s!),
-        this.supports(Capability.EIP155ReplayProtection) ? this.common.chainId() : undefined
-      )
-    } catch (e: any) {
-      const msg = this._errorMsg('Invalid Signature')
-      throw new Error(msg)
-    }
+    return Legacy.getSenderPublicKey(this)
   }
 
-  /**
-   * Process the v, r, s values from the `sign` method of the base transaction.
-   */
-  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
-    if (this.supports(Capability.EIP155ReplayProtection)) {
-      v += this.common.chainId() * BigInt(2) + BigInt(8)
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV: boolean = false
+  ): LegacyTransaction {
+    r = toBytes(r)
+    s = toBytes(s)
+    if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
+      v += this.common.chainId() * BIGINT_2 + BIGINT_8
     }
 
     const opts = { ...this.txOptions, common: this.common }
@@ -351,7 +314,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   /**
    * Validates tx's `v` value
    */
-  private _validateTxV(_v?: bigint, common?: Common): Common {
+  protected _validateTxV(_v?: bigint, common?: Common): Common {
     let chainIdBigInt
     const v = _v !== undefined ? Number(_v) : undefined
     // Check for valid v values in the scope of a signed legacy tx
@@ -388,7 +351,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
           numSub = 36
         }
         // Use derived chain ID to create a proper Common
-        chainIdBigInt = BigInt(v - numSub) / BigInt(2)
+        chainIdBigInt = BigInt(v - numSub) / BIGINT_2
       }
     }
     return this._getCommon(common, chainIdBigInt)
@@ -410,6 +373,6 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    * @hidden
    */
   protected _errorMsg(msg: string) {
-    return `${msg} (${this.errorStr()})`
+    return Legacy.errorMsg(this, msg)
   }
 }

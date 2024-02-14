@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { BIGINT_0, BIGINT_1, bytesToHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -8,7 +8,7 @@ import { Synchronizer } from './sync'
 
 import type { VMExecution } from '../execution'
 import type { Peer } from '../net/peer/peer'
-import type { Skeleton } from './skeleton'
+import type { Skeleton } from '../service/skeleton'
 import type { SynchronizerOptions } from './sync'
 import type { Block } from '@ethereumjs/block'
 
@@ -77,7 +77,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const hash = this.chain.blocks.latest!.hash()
     this.startingBlock = number
     const timestamp = this.chain.blocks.latest?.header.timestamp
-    this.config.chainCommon.setHardforkByBlockNumber(number, td, timestamp)
+    this.config.chainCommon.setHardforkBy({ blockNumber: number, td, timestamp })
 
     this.config.logger.info(
       `Latest local block number=${Number(number)} td=${td} hash=${bytesToHex(
@@ -88,10 +88,13 @@ export class BeaconSynchronizer extends Synchronizer {
     const subchain = this.skeleton.bounds()
     if (subchain !== undefined) {
       const { head, tail, next } = subchain
-      this.config.logger.info(`Resuming beacon sync head=${head} tail=${tail} next=${short(next)}`)
-      const headBlock = await this.skeleton.getBlock(head)
+      this.config.superMsg(`Resuming beacon sync tail=${tail} head=${head} next=${short(next)}`)
+      const headBlock = await this.skeleton.getBlock(head, true)
       if (headBlock !== undefined) {
         await this.skeleton.initSync(headBlock)
+        void this.start()
+      } else {
+        await this.skeleton.reset()
       }
     }
   }
@@ -108,14 +111,14 @@ export class BeaconSynchronizer extends Synchronizer {
    * blockchain. Returns null if no valid peer is found
    */
   async best(): Promise<Peer | undefined> {
-    let best: [Peer, BigInt] | undefined
+    let best: [Peer, bigint] | undefined
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
+        if (!best || best[1] < number) {
           best = [peer, number]
         }
       }
@@ -167,25 +170,24 @@ export class BeaconSynchronizer extends Synchronizer {
     clearTimeout(timeout)
   }
 
+  async reorged(block: Block): Promise<void> {
+    if (!this.opened) return
+    // Clean the current fetcher, later this.start will start it again
+    await this.stop()
+    this.config.logger.debug(
+      `Beacon sync reorged, new head number=${block.header.number} hash=${short(
+        block.header.hash()
+      )}`
+    )
+    void this.start()
+  }
+
   /**
    * Returns true if the block successfully extends the chain.
    */
   async extendChain(block: Block): Promise<boolean> {
     if (!this.opened) return false
     const reorg = await this.skeleton.setHead(block, false)
-    if (reorg === false) {
-      this.config.logger.debug(
-        `Beacon sync skeleton can be extended number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    } else {
-      this.config.logger.debug(
-        `Block can not extend Beacon sync skeleton number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    }
     return !reorg
   }
 
@@ -199,19 +201,8 @@ export class BeaconSynchronizer extends Synchronizer {
     // from the new head.
     const reorg = await this.skeleton.setHead(block, true, !this.running)
     if (reorg) {
-      // Clean the current fetcher, later this.start will start it again
-      await this.stop()
-      this.config.logger.debug(
-        `Beacon sync reorged, new head number=${block.header.number} hash=${short(
-          block.header.hash()
-        )}`
-      )
-    } else {
-      this.config.logger.debug(
-        `Beacon sync new head number=${block.header.number} hash=${short(block.header.hash())}`
-      )
+      await this.reorged(block)
     }
-    void this.start()
     return true
   }
 
@@ -236,7 +227,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const height = latest.number
     if (
       typeof this.config.syncTargetHeight !== 'bigint' ||
-      this.config.syncTargetHeight === BigInt(0) ||
+      this.config.syncTargetHeight === BIGINT_0 ||
       this.config.syncTargetHeight < latest.number
     ) {
       this.config.syncTargetHeight = height
@@ -244,7 +235,7 @@ export class BeaconSynchronizer extends Synchronizer {
     }
 
     const { tail } = this.skeleton.bounds()
-    const first = tail - BigInt(1)
+    const first = tail - BIGINT_1
 
     let count
     if (first <= this.chain.blocks.height) {
@@ -253,7 +244,7 @@ export class BeaconSynchronizer extends Synchronizer {
       count = BigInt(this.config.skeletonSubchainMergeMinimum)
     } else {
       // We sync one less because tail's next should be pointing to the block in chain
-      count = tail - this.chain.blocks.height - BigInt(1)
+      count = tail - this.chain.blocks.height - BIGINT_1
     }
 
     // Do not try syncing blocks on/pre genesis
@@ -261,7 +252,7 @@ export class BeaconSynchronizer extends Synchronizer {
       count = first
     }
 
-    if (count > BigInt(0) && (this.fetcher === null || this.fetcher.syncErrored !== undefined)) {
+    if (count > BIGINT_0 && (this.fetcher === null || this.fetcher.syncErrored !== undefined)) {
       this.config.logger.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${
           peer?.id
@@ -300,7 +291,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
-    this.config.logger.info(
+    this.config.logger.debug(
       `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`
     )
   }
@@ -315,8 +306,8 @@ export class BeaconSynchronizer extends Synchronizer {
       this.skeleton.bounds() !== undefined &&
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
-    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BigInt(0)) {
-      void this.execution.run(true, shouldRunOnlyBatched)
+    if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BIGINT_0) {
+      await this.execution.run(true, shouldRunOnlyBatched)
     }
   }
 

@@ -6,7 +6,8 @@
 [![Code Coverage][trie-coverage-badge]][trie-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This is an implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf):
+| Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 > The modified Merkle Patricia tree (trie) provides a persistent data structure to map between arbitrary-length binary data (byte arrays). It is defined in terms of a mutable data structure to map between 256-bit binary fragments and arbitrary-length binary data. The core of the trie, and its sole requirement in terms of the protocol specification, is to provide a single 32-byte value that identifies a given set of key-value pairs.
 
@@ -18,15 +19,9 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/trie
 ```
 
-### Upgrading
-
-If you currently use this package in your project and plan to upgrade, please review our [upgrade guide](./UPGRADING.md) first. It will ensure you take all the necessary steps and streamline the upgrade process.
-
 ## Usage
 
 This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
-
-**Note:** Up to v4 of the Trie library the secure trie was implemented as a separate `SecureTrie` class, see the [upgrade guide](./UPGRADING.md) for more infos.
 
 Checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
 
@@ -34,37 +29,111 @@ It is best to select the variant that is most appropriate for your unique use ca
 
 ### Initialization and Basic Usage
 
-```typescript
-import { Trie, MapDB } from '@ethereumjs/trie'
+```ts
+// ./examples/basicUsage.ts
 
-const trie = new Trie({ db: new MapDB() })
+import { Trie } from '@ethereumjs/trie'
+import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
 
 async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  const value = await trie.get(Buffer.from('test'))
-  console.log(value.toString()) // 'one'
+  const trie = await Trie.create({ db: new MapDB() })
+  await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+  const value = await trie.get(utf8ToBytes('test'))
+  console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 }
 
 test()
 ```
 
-### Use with static constructor
+### WASM Crypto Support
 
-```typescript
-import { Trie, MapDB } from '@ethereumjs/trie'
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-const trie = Trie.create()
+### Use with Static Constructors
+
+#### Create new Trie
+
+```ts
+// ./examples/basicUsage.ts
+
+import { Trie } from '@ethereumjs/trie'
+import { bytesToUtf8, MapDB, utf8ToBytes } from '@ethereumjs/util'
 
 async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  const value = await trie.get(Buffer.from('test'))
-  console.log(value.toString()) // 'one'
+  const trie = await Trie.create({ db: new MapDB() })
+  await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
+  const value = await trie.get(utf8ToBytes('test'))
+  console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 }
 
 test()
 ```
 
-When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Etheruem production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+When the static `Trie.create` constructor is used without any options, the `trie` object is instantiated with defaults configured to match the Ethereum production spec (i.e. keys are hashed using SHA256). It also persists the state root of the tree on each write operation, ensuring that your trie remains in the state you left it when you start your application the next time.
+
+#### Create from a Proof
+
+The trie library supports basic creation of [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proofs as well as the instantiation of new tries from an existing proof.
+
+The following is an example for using the `Trie.createFromProof()` static constructor. This instantiates a new partial trie based only on the branch of the trie contained in the provided proof.
+
+```ts
+// ./examples/createFromProof.ts
+
+import { Trie } from '@ethereumjs/trie'
+import { bytesToUtf8 } from '@ethereumjs/util'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
+
+async function main() {
+  const k1 = utf8ToBytes('keyOne')
+  const k2 = utf8ToBytes('keyTwo')
+
+  const someOtherTrie = new Trie({ useKeyHashing: true })
+  await someOtherTrie.put(k1, utf8ToBytes('valueOne'))
+  await someOtherTrie.put(k2, utf8ToBytes('valueTwo'))
+
+  const proof = await someOtherTrie.createProof(k1)
+  const trie = await Trie.createFromProof(proof, { useKeyHashing: true })
+  const otherProof = await someOtherTrie.createProof(k2)
+
+  // To add more proofs to the trie, use `updateFromProof`
+  await trie.updateFromProof(otherProof)
+
+  const value = await trie.get(k1)
+  console.log(bytesToUtf8(value!)) // valueOne
+  const otherValue = await trie.get(k2)
+  console.log(bytesToUtf8(otherValue!)) // valueTwo
+}
+
+main()
+```
+
+For further proof usage documentation see additional documentation section below.
+
+### Walking a Trie
+
+Starting with the v6 release there is a new API for walking and iterating a trie by using an async walk generator, which now enables to walk tries without altering the walk controller and also now enables to walk a sparse (not completely filled) trie.
+
+The new walk functionality can be used like the following:
+
+```ts
+// ./examples/trieWalking.ts
+
+import { Trie } from '@ethereumjs/trie'
+import { utf8ToBytes } from 'ethereum-cryptography/utils'
+
+async function main() {
+  const trie = await Trie.create()
+  await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
+  const walk = trie.walkTrieIterable(trie.root())
+
+  for await (const { node, currentKey } of walk) {
+    // ... do something
+    console.log({ node, currentKey })
+  }
+}
+main()
+```
 
 ### `Trie` Configuration Options
 
@@ -72,21 +141,22 @@ When the static `Trie.create` constructor is used without any options, the `trie
 
 The `DB` opt in the `TrieOpts` allows you to use any database that conforms to the `DB` interface to store the trie data in. We provide several [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is used in the `ethereumjs client` while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
 
-If no `db` option is provided, an in-memory database powered by [a Javascript Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) will fulfill this role.
+If no `db` option is provided, an in-memory database powered by [a Javascript Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) will fulfill this role (imported from `@ethereumjs/util`, see [mapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) module).
 
-If you want to use an alternative database, you can integrate your own by writing a DB wrapper that conforms to the [`DB` interface](./src/types.ts#L85). The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement.
+If you want to use an alternative database, you can integrate your own by writing a DB wrapper that conforms to the [`DB` interface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) (in `@ethereumjs/util`). The `DB` interface defines the methods `get`, `put`, `del`, `batch` and `copy` that a concrete implementation of the `DB` interface will need to implement.
 
 ##### LevelDB
 
-As an example, to leveage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
+As an example, to leverage `LevelDB` for all operations then you should create a file with the [following implementation from our recipes](./recipes//level.ts) in your project. Then instantiate your DB and trie as below:
 
-```typescript
-import { Trie } from '@ethereumjs/trie'
-import { Level } from 'level'
+```ts
+// ./examples/customLevelDB.ts#L127-L131
 
-import { LevelDB } from './your-level-implementation'
-
-const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION')) })
+async function main() {
+  const trie = new Trie({ db: new LevelDB(new Level('MY_TRIE_DB_LOCATION') as any) })
+  console.log(await trie.database().db) // LevelDB { ...
+}
+main()
 ```
 
 #### Node Deletion (Pruning)
@@ -97,13 +167,21 @@ By default, the deletion of trie nodes from the underlying database does not occ
 
 You can enable persistence by setting the `useRootPersistence` option to `true` when constructing a trie through the `Trie.create` function. As such, this value is preserved when creating copies of the trie and is incapable of being modified once a trie is instantiated.
 
-```typescript
-import { Trie, MapDB } from '@ethereumjs/trie'
+```ts
+// ./examples/rootPersistence.ts
 
-const trie = await Trie.create({
-  db: new MapDB(),
-  useRootPersistence: true,
-})
+import { Trie } from '@ethereumjs/trie'
+import { bytesToHex } from '@ethereumjs/util'
+
+async function main() {
+  const trie = await Trie.create({
+    useRootPersistence: true,
+  })
+
+  // this logs the empty root value that has been persisted to the trie db
+  console.log(bytesToHex(trie.root())) // 0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+}
+main()
 ```
 
 ## Proofs
@@ -116,136 +194,63 @@ The `createProof` and `verifyProof` functions allow you to verify that a certain
 
 The following code demonstrates how to construct and subsequently verify a proof that confirms the existence of the key `test` (which corresponds with the value `one`) within the given trie. This is also known as inclusion, hence the name 'Proof-of-Inclusion.'
 
-```typescript
-const trie = new Trie()
+```ts
+// ./examples/proofs.ts#L12-L16
 
-async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  const proof = await trie.createProof(Buffer.from('test'))
-  const value = await trie.verifyProof(trie.root(), Buffer.from('test'), proof)
-  console.log(value.toString()) // 'one'
-}
-
-test()
+// proof-of-inclusion
+await trie.put(k1, v1)
+let proof = await trie.createProof(k1)
+let value = await trie.verifyProof(trie.root(), k1, proof)
+console.log(value ? bytesToUtf8(value) : 'not found') // 'one'
 ```
 
 #### Proof-of-Exclusion
 
 The following code demonstrates how to construct and subsequently verify a proof that confirms that the key `test3` does not exist within the given trie. This is also known as exclusion, hence the name 'Proof-of-Exclusion.'
 
-```typescript
-const trie = new Trie()
+```ts
+// ./examples/proofs.ts#L18-L23
 
-async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  await trie.put(Buffer.from('test2'), Buffer.from('two'))
-  const proof = await trie.createProof(Buffer.from('test3'))
-  const value = await trie.verifyProof(trie.root(), Buffer.from('test3'), proof)
-  console.log(value.toString()) // null
-}
-
-test()
+// proof-of-exclusion
+await trie.put(k1, v1)
+await trie.put(k2, v2)
+proof = await trie.createProof(utf8ToBytes('key3'))
+value = await trie.verifyProof(trie.root(), utf8ToBytes('key3'), proof)
+console.log(value ? bytesToUtf8(value) : 'null') // null
 ```
 
 #### Invalid Proofs
 
 If `verifyProof` detects an invalid proof, it will throw an error. While contrived, the below example illustrates the resulting error condition in the event a prover tampers with the data in a merkle proof.
 
-```typescript
-const trie = new Trie()
+```ts
+// ./examples/proofs.ts#L25-L34
 
-async function test() {
-  await trie.put(Buffer.from('test'), Buffer.from('one'))
-  await trie.put(Buffer.from('test2'), Buffer.from('two'))
-  const proof = await trie.createProof(Buffer.from('test2'))
-  proof[1].reverse()
-  try {
-    const value = await trie.verifyProof(trie.root(), Buffer.from('test2'), proof)
-    console.log(value.toString()) // results in error
-  } catch (err) {
-    console.log(err) // Missing node in DB
-  }
+// invalid proof
+await trie.put(k1, v1)
+await trie.put(k2, v2)
+proof = await trie.createProof(k2)
+proof[0].reverse()
+try {
+  const value = await trie.verifyProof(trie.root(), k2, proof) // results in error
+} catch (err) {
+  console.log(err)
 }
-
-test()
 ```
 
 ### Range Proofs
 
 You may use the `Trie.verifyRangeProof()` function to confirm if the given leaf nodes and edge proof possess the capacity to prove that the given trie leaves' range matches the specific root (which is useful for snap sync, for instance).
 
-## Read Stream on Geth DB
-
-```typescript
-import { Level } from 'level'
-import { LevelDB, Trie } from '@ethereumjs/trie'
-
-import { LevelDB } from './your-level-implementation'
-
-// Set stateRoot to block #222
-const stateRoot = '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544'
-// Convert the state root to a Buffer (strip the 0x prefix)
-const stateRootBuffer = Buffer.from(stateRoot.slice(2), 'hex')
-// Initialize trie
-const trie = new Trie({
-  db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAIN_DB')),
-  root: stateRootBuffer,
-  useKeyHashing: true,
-})
-
-trie
-  .createReadStream()
-  .on('data', console.log)
-  .on('end', () => console.log('End.'))
-```
-
-## Read Account State Including Storage From Geth DB
-
-```typescript
-import { Level } from 'level'
-import { Trie, LevelDB } from '@ethereumjs/trie'
-import { Account, bufferToHex } from '@ethereumjs/util'
-import { RLP } from '@ethereumjs/rlp'
-
-import { LevelDB } from './your-level-implementation'
-
-const stateRoot = 'STATE_ROOT_OF_A_BLOCK'
-
-const trie = new Trie({
-  db: new LevelDB(new Level('YOUR_PATH_TO_THE_GETH_CHAINDATA_FOLDER')),
-  root: stateRoot
-  useKeyHashing: true,
-})
-
-const address = 'AN_ETHEREUM_ACCOUNT_ADDRESS'
-
-async function test() {
-  const data = await trie.get(address)
-  const acc = Account.fromAccountData(data)
-
-  console.log('-------State-------')
-  console.log(`nonce: ${acc.nonce}`)
-  console.log(`balance in wei: ${acc.balance}`)
-  console.log(`storageRoot: ${bufferToHex(acc.stateRoot)}`)
-  console.log(`codeHash: ${bufferToHex(acc.codeHash)}`)
-
-  const storageTrie = trie.copy()
-  storageTrie.root(acc.stateRoot)
-
-  console.log('------Storage------')
-  const stream = storageTrie.createReadStream()
-  stream
-    .on('data', (data) => {
-      console.log(`key: ${bufferToHex(data.key)}`)
-      console.log(`Value: ${bufferToHex(Buffer.from(RLP.decode(data.value)))}`)
-    })
-    .on('end', () => console.log('Finished reading storage.'))
-}
-
-test()
-```
+## Examples
 
 You can find additional examples complete with detailed explanations [here](./examples/README.md).
+
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -253,33 +258,35 @@ You can find additional examples complete with detailed explanations [here](./ex
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```ts
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```ts
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
 ### BigInt Support
 
 With the 5.0.0 release, [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) takes the place of [BN.js](https://github.com/indutny/bn.js/).
 
 BigInt is a primitive that is used to represent and manipulate primitive `bigint` values that the number primitive is incapable of representing as a result of their magnitude. `ES2020` saw the introduction of this particular feature. Note that this version update resulted in the altering of number-related API signatures and that the minimal build target is now set to `ES2020`.
-
-## Testing
-
-You may run tests for browsers and node.js using:
-
-```shell
-npm run test
-```
-
-You may run tests for browsers using:
-
-```shell
-npm run test:browser
-```
-
-> Note that this requires an installation of [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/), otherwise the tests will fail.
-
-You may run tests for node.js using:
-
-```shell
-npm run test:node
-```
 
 ## Benchmarking
 
@@ -303,6 +310,62 @@ npm run profiling
 ```
 
 0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
+
+## Debugging
+
+The `Trie` class features optional debug logging.. Individual debug selections can be activated on the CL with `DEBUG=ethjs,[Logger Selection]`.
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,thislog,thatlog,otherlog,otherlog:sublog,anotherLog:* node myscript.js`
+
+The following options are available:
+
+| Logger            | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `trie`            | minimal info logging for all trie methods      |
+| `trie:<METHOD>`   | debug logging for specific trie method         |
+| `trie:<METHOD>:*` | verbose debug logging for specific trie method |
+| `trie:*`          | verbose debug logging for all trie methods     |
+
+To observe the logging in action at different levels:
+
+Run with minimal logging:
+
+```shell
+DEBUG=ethjs,trie npx vitest test/util/log.spec.ts
+```
+
+Run with **put** method logging:
+
+```shell
+DEBUG=ethjs,trie:PUT npx vitest test/util/log.spec.ts
+```
+
+Run with **trie** + **put**/**get**/**del** logging:
+
+```shell
+DEBUG=ethjs,trie,trie:PUT,trie:GET,trie:DEL npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** debug logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH npx vitest test/util/log.spec.ts
+```
+
+Run with **findPath** verbose logging:
+
+```shell
+DEBUG=ethjs,trie:FIND_PATH:* npx vitest test/util/log.spec.ts
+```
+
+Run with max logging:
+
+```shell
+DEBUG=ethjs,trie:* npx vitest test/util/log.spec.ts
+```
 
 ## References
 

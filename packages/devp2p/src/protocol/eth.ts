@@ -1,46 +1,49 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
+  BIGINT_0,
   bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
-  bytesToPrefixedHexString,
+  bytesToUnprefixedHex,
+  hexToBytes,
   intToBytes,
 } from '@ethereumjs/util'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 import * as snappy from 'snappyjs'
 
-import { assertEq, formatLogData, formatLogId } from '../util'
+import { ProtocolType } from '../types.js'
+import { assertEq, formatLogData, formatLogId } from '../util.js'
 
-import { EthProtocol, Protocol } from './protocol'
+import { Protocol } from './protocol.js'
 
-import type { Peer } from '../rlpx/peer'
-import type { SendMethod } from './protocol'
+import type { Peer } from '../rlpx/peer.js'
+import type { SendMethod } from '../types.js'
+import type { Input } from '@ethereumjs/rlp'
 
 export class ETH extends Protocol {
-  _status: ETH.StatusMsg | null = null
-  _peerStatus: ETH.StatusMsg | null = null
-  DEBUG: boolean = false
+  protected _status: ETH.StatusMsg | null = null
+  protected _peerStatus: ETH.StatusMsg | null = null
+  private DEBUG: boolean = false
 
   // Eth64
-  _hardfork: string = 'chainstart'
-  _latestBlock = BigInt(0)
-  _forkHash: string = ''
-  _nextForkBlock = BigInt(0)
+  protected _hardfork: string = 'chainstart'
+  protected _latestBlock = BIGINT_0
+  protected _forkHash: string = ''
+  protected _nextForkBlock = BIGINT_0
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, EthProtocol.ETH, version, ETH.MESSAGE_CODES)
+    super(peer, send, ProtocolType.ETH, version, ETH.MESSAGE_CODES)
 
     // Set forkHash and nextForkBlock
     if (this._version >= 64) {
-      const c = this._peer._common
+      const c = this._peer.common
       this._hardfork = c.hardfork() ?? this._hardfork
       // Set latestBlock minimally to start block of fork to have some more
       // accurate basis if no latestBlock is provided along status send
-      this._latestBlock = c.hardforkBlock(this._hardfork) ?? BigInt(0)
+      this._latestBlock = c.hardforkBlock(this._hardfork) ?? BIGINT_0
       this._forkHash = c.forkHash(this._hardfork)
       // Next fork block number or 0 if none available
-      this._nextForkBlock = c.nextHardforkBlockOrTimestamp(this._hardfork) ?? BigInt(0)
+      this._nextForkBlock = c.nextHardforkBlockOrTimestamp(this._hardfork) ?? BIGINT_0
     }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
@@ -52,17 +55,22 @@ export class ETH extends Protocol {
   static eth64 = { name: 'eth', version: 64, length: 17, constructor: ETH }
   static eth65 = { name: 'eth', version: 65, length: 17, constructor: ETH }
   static eth66 = { name: 'eth', version: 66, length: 17, constructor: ETH }
+  static eth67 = { name: 'eth', version: 67, length: 17, constructor: ETH }
+  static eth68 = { name: 'eth', version: 68, length: 17, constructor: ETH }
 
-  _handleMessage(code: ETH.MESSAGE_CODES, data: any) {
+  _handleMessage(code: ETH.MESSAGE_CODES, data: Uint8Array) {
     const payload = RLP.decode(data)
-    const messageName = this.getMsgPrefix(code)
-    const debugMsg = this.DEBUG
-      ? `Received ${messageName} message from ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}`
-      : undefined
 
     if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
+      const debugMsg = this.DEBUG
+        ? // @ts-ignore
+          `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
+            // @ts-ignore
+            this._peer._socket.remotePort
+          }`
+        : undefined
       const logData = formatLogData(bytesToHex(data), this._verbose)
-      this.debug(messageName, `${debugMsg}: ${logData}`)
+      this.debug(this.getMsgPrefix(code), `${debugMsg}: ${logData}`)
     }
     switch (code) {
       case ETH.MESSAGE_CODES.STATUS: {
@@ -78,7 +86,16 @@ export class ETH extends Protocol {
           this._peerStatus !== undefined ? this._getStatusString(this._peerStatus) : ''
         }`
         if (this.DEBUG) {
-          this.debug(messageName, `${debugMsg}: ${peerStatusMsg}`)
+          const debugMsg = this.DEBUG
+            ? `Received ${this.getMsgPrefix(code)} message from ${
+                // @ts-ignore
+                this._peer._socket.remoteAddress
+              }:${
+                // @ts-ignore
+                this._peer._socket.remotePort
+              }`
+            : undefined
+          this.debug(this.getMsgPrefix(code), `${debugMsg}: ${peerStatusMsg}`)
         }
         this._handleStatus()
         break
@@ -94,8 +111,6 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth62.version) break
         return
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
@@ -107,11 +122,16 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth65.version) break
         return
 
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+        if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
+        return
+
       default:
         return
     }
 
-    this.emit('message', code, payload)
+    this.events.emit('message', code, payload)
   }
 
   /**
@@ -119,14 +139,14 @@ export class ETH extends Protocol {
    * @param forkId Remote fork ID
    */
   _validateForkId(forkId: Uint8Array[]) {
-    const c = this._peer._common
+    const c = this._peer.common
 
-    const peerForkHash = bytesToPrefixedHexString(forkId[0])
+    const peerForkHash = bytesToHex(forkId[0])
     const peerNextFork = bytesToBigInt(forkId[1])
 
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
-      if (peerNextFork > BigInt(0)) {
+      if (peerNextFork > BIGINT_0) {
         if (this._latestBlock >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           if (this.DEBUG) {
@@ -136,7 +156,7 @@ export class ETH extends Protocol {
         }
       }
     }
-    const peerFork: any = c.hardforkForForkHash(peerForkHash)
+    const peerFork = c.hardforkForForkHash(peerForkHash)
     if (peerFork === null) {
       const msg = 'Unknown fork hash'
       if (this.DEBUG) {
@@ -187,11 +207,18 @@ export class ETH extends Protocol {
       'STATUS'
     )
 
-    const status: any = {
+    const status: {
+      networkId: Uint8Array | Uint8Array[]
+      td: Uint8Array
+      bestHash: Uint8Array
+      genesisHash: Uint8Array
+      forkId?: Uint8Array | Uint8Array[]
+    } = {
       networkId: this._peerStatus[1],
       td: this._peerStatus[2] as Uint8Array,
       bestHash: this._peerStatus[3] as Uint8Array,
       genesisHash: this._peerStatus[4] as Uint8Array,
+      forkId: undefined,
     }
 
     if (this._version >= 64) {
@@ -203,10 +230,10 @@ export class ETH extends Protocol {
         'STATUS'
       )
       this._validateForkId(this._peerStatus[5] as Uint8Array[])
-      status['forkId'] = this._peerStatus[5]
+      status.forkId = this._peerStatus[5]
     }
 
-    this.emit('status', status)
+    this.events.emit('status', status)
     if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }
@@ -217,7 +244,7 @@ export class ETH extends Protocol {
   }
 
   _forkHashFromForkId(forkId: Uint8Array): string {
-    return bytesToPrefixedHexString(forkId)
+    return bytesToUnprefixedHex(forkId)
   }
 
   _nextForkFromForkId(forkId: Uint8Array): number {
@@ -234,7 +261,7 @@ export class ETH extends Protocol {
     )}, GenH:${formatLogId(bytesToHex(status[4] as Uint8Array), this._verbose)}`
     if (this._version >= 64) {
       sStr += `, ForkHash: ${
-        status[5] !== undefined ? bytesToPrefixedHexString(status[5][0] as Uint8Array) : '-'
+        status[5] !== undefined ? bytesToHex(status[5][0] as Uint8Array) : '-'
       }`
       sStr += `, ForkNext: ${
         (status[5][1] as Uint8Array).length > 0 ? bytesToHex(status[5][1] as Uint8Array) : '-'
@@ -248,7 +275,7 @@ export class ETH extends Protocol {
     if (this._status !== null) return
     this._status = [
       intToBytes(this._version),
-      bigIntToBytes(this._peer._common.chainId()),
+      bigIntToBytes(this._peer.common.chainId()),
       status.td,
       status.bestHash,
       status.genesisHash,
@@ -263,10 +290,10 @@ export class ETH extends Protocol {
         }
         this._latestBlock = latestBlock
       }
-      const forkHashB = hexToBytes(this._forkHash.substr(2))
+      const forkHashB = hexToBytes(this._forkHash)
 
       const nextForkB =
-        this._nextForkBlock === BigInt(0) ? new Uint8Array() : bigIntToBytes(this._nextForkBlock)
+        this._nextForkBlock === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this._nextForkBlock)
 
       this._status.push([forkHashB, nextForkB])
     }
@@ -274,7 +301,10 @@ export class ETH extends Protocol {
     if (this.DEBUG) {
       this.debug(
         'STATUS',
+
+        // @ts-ignore
         `Send STATUS message to ${this._peer._socket.remoteAddress}:${
+          // @ts-ignore
           this._peer._socket.remotePort
         } (eth${this._version}): ${this._getStatusString(this._status)}`
       )
@@ -283,6 +313,7 @@ export class ETH extends Protocol {
     let payload = RLP.encode(this._status)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
@@ -291,10 +322,11 @@ export class ETH extends Protocol {
     this._handleStatus()
   }
 
-  sendMessage(code: ETH.MESSAGE_CODES, payload: any) {
-    const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
+  sendMessage(code: ETH.MESSAGE_CODES, payload: Input) {
     if (this.DEBUG) {
+      const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
+      // @ts-ignore
       const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
 
       this.debug(messageName, debugMsg)
@@ -314,8 +346,6 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth62.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
-      case ETH.MESSAGE_CODES.GET_NODE_DATA:
-      case ETH.MESSAGE_CODES.NODE_DATA:
       case ETH.MESSAGE_CODES.GET_RECEIPTS:
       case ETH.MESSAGE_CODES.RECEIPTS:
         if (this._version >= ETH.eth63.version) break
@@ -327,6 +357,11 @@ export class ETH extends Protocol {
         if (this._version >= ETH.eth65.version) break
         throw new Error(`Code ${code} not allowed with version ${this._version}`)
 
+      case ETH.MESSAGE_CODES.GET_NODE_DATA:
+      case ETH.MESSAGE_CODES.NODE_DATA:
+        if (this._version >= ETH.eth63.version && this._version <= ETH.eth66.version) break
+        throw new Error(`Code ${code} not allowed with version ${this._version}`)
+
       default:
         throw new Error(`Unknown code ${code}`)
     }
@@ -334,6 +369,7 @@ export class ETH extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
+    // @ts-ignore
     if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }

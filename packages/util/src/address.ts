@@ -1,13 +1,12 @@
-import { equalsBytes } from 'ethereum-cryptography/utils'
-
 import {
   generateAddress,
   generateAddress2,
   isValidAddress,
   privateToAddress,
   pubToAddress,
-} from './account'
-import { bigIntToBytes, bytesToBigInt, bytesToPrefixedHexString, toBytes, zeros } from './bytes'
+} from './account.js'
+import { bigIntToBytes, bytesToBigInt, bytesToHex, equalsBytes, toBytes, zeros } from './bytes.js'
+import { BIGINT_0 } from './constants.js'
 
 /**
  * Handling and generating Ethereum addresses
@@ -112,7 +111,7 @@ export class Address {
    */
   isPrecompileOrSystemAddress(): boolean {
     const address = bytesToBigInt(this.bytes)
-    const rangeMin = BigInt(0)
+    const rangeMin = BIGINT_0
     const rangeMax = BigInt('0xffff')
     return address >= rangeMin && address <= rangeMax
   }
@@ -121,7 +120,7 @@ export class Address {
    * Returns hex encoding of address.
    */
   toString(): string {
-    return bytesToPrefixedHexString(this.bytes)
+    return bytesToHex(this.bytes)
   }
 
   /**

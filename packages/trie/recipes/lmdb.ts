@@ -39,7 +39,7 @@ export class LMDB implements DB {
     }
   }
 
-  copy(): DB {
+  shallowCopy(): DB {
     return new LMDB(this._path)
   }
 

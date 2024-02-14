@@ -81,7 +81,7 @@ Readable.constructor
 
 #### Defined in
 
-[packages/trie/src/util/readStream.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L14)
+[packages/trie/src/util/readStream.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L36)
 
 ## Properties
 
@@ -277,7 +277,7 @@ node_modules/@types/readable-stream/index.d.ts:296
 
 #### Inherited from
 
-Readable.\_\_@asyncIterator@21362
+Readable.\_\_@asyncIterator@21529
 
 #### Defined in
 
@@ -324,7 +324,7 @@ Readable.\_read
 
 #### Defined in
 
-[packages/trie/src/util/readStream.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L21)
+[packages/trie/src/util/readStream.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L43)
 
 ___
 

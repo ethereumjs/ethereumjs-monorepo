@@ -9,9 +9,9 @@ Type output options
 ### Enumeration Members
 
 - [BigInt](TypeOutput.md#bigint)
-- [Buffer](TypeOutput.md#buffer)
 - [Number](TypeOutput.md#number)
 - [PrefixedHexString](TypeOutput.md#prefixedhexstring)
+- [Uint8Array](TypeOutput.md#uint8array)
 
 ## Enumeration Members
 
@@ -21,17 +21,7 @@ Type output options
 
 #### Defined in
 
-[packages/util/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L58)
-
-___
-
-### Buffer
-
-• **Buffer** = ``2``
-
-#### Defined in
-
-[packages/util/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L59)
+[packages/util/src/types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L44)
 
 ___
 
@@ -41,7 +31,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L57)
+[packages/util/src/types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L43)
 
 ___
 
@@ -51,4 +41,14 @@ ___
 
 #### Defined in
 
-[packages/util/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L60)
+[packages/util/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L46)
+
+___
+
+### Uint8Array
+
+• **Uint8Array** = ``2``
+
+#### Defined in
+
+[packages/util/src/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L45)

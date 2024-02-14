@@ -1,13 +1,12 @@
-import { DefaultStateManager } from '@ethereumjs/statemanager'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { assert, describe, it } from 'vitest'
 
-import { EVM } from '../src/evm'
+import { EVM } from '../src/evm.js'
 
-import type { InterpreterStep, RunState } from '../src/interpreter'
-import type { AddOpcode } from '../src/types'
+import type { InterpreterStep, RunState } from '../src/interpreter.js'
+import type { AddOpcode } from '../src/types.js'
 
-tape('VM: custom opcodes', (t) => {
+describe('VM: custom opcodes', () => {
   const fee = 333
   const logicFee = BigInt(33)
   const totalFee = BigInt(fee) + logicFee
@@ -25,10 +24,9 @@ tape('VM: custom opcodes', (t) => {
     },
   }
 
-  t.test('should add custom opcodes to the EVM', async (st) => {
-    const evm = await EVM.create({
+  it('should add custom opcodes to the EVM', async () => {
+    const evm = new EVM({
       customOpcodes: [testOpcode],
-      stateManager: new DefaultStateManager(),
     })
     const gas = 123456
     let correctOpcodeName = false
@@ -38,44 +36,40 @@ tape('VM: custom opcodes', (t) => {
       }
     })
     const res = await evm.runCode({
-      code: hexToBytes('21'),
+      code: hexToBytes('0x21'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    st.ok(res.runState!.stack._store[0] === stackPush, 'successfully ran opcode logic')
-    st.ok(correctOpcodeName, 'successfully set opcode name')
+    assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
+    assert.ok(correctOpcodeName, 'successfully set opcode name')
   })
 
-  t.test('should delete opcodes from the EVM', async (st) => {
-    const evm = await EVM.create({
+  it('should delete opcodes from the EVM', async () => {
+    const evm = new EVM({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
-      stateManager: new DefaultStateManager(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: hexToBytes('20'),
+      code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
+    assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
   })
 
-  t.test('should not override default opcodes', async (st) => {
+  it('should not override default opcodes', async () => {
     // This test ensures that always the original opcode map is used
     // Thus, each time you recreate a EVM, it is in a clean state
-    const evm = await EVM.create({
+    const evm = new EVM({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
-      stateManager: new DefaultStateManager(),
     })
     const gas = BigInt(123456)
     const res = await evm.runCode({
-      code: hexToBytes('01'),
+      code: hexToBytes('0x01'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
+    assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
-    const evmDefault = await EVM.create({
-      stateManager: new DefaultStateManager(),
-    })
+    const evmDefault = new EVM({})
 
     // PUSH 04
     // PUSH 01
@@ -86,28 +80,27 @@ tape('VM: custom opcodes', (t) => {
     // PUSH 1F // RETURNDATA offset
     // RETURN  // Returns 0x05
     const result = await evmDefault.runCode!({
-      code: hexToBytes('60046001016000526001601FF3'),
+      code: hexToBytes('0x60046001016000526001601FF3'),
       gasLimit: BigInt(gas),
     })
-    st.ok(equalsBytes(result.returnValue, hexToBytes('05')))
+    assert.ok(equalsBytes(result.returnValue, hexToBytes('0x05')))
   })
 
-  t.test('should override opcodes in the EVM', async (st) => {
+  it('should override opcodes in the EVM', async () => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
-    const evm = await EVM.create({
+    const evm = new EVM({
       customOpcodes: [testOpcode],
-      stateManager: new DefaultStateManager(),
     })
     const gas = 123456
     const res = await evm.runCode({
-      code: hexToBytes('20'),
+      code: hexToBytes('0x20'),
       gasLimit: BigInt(gas),
     })
-    st.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
-    st.ok(res.runState!.stack._store[0] === stackPush, 'successfully ran opcode logic')
+    assert.ok(res.executionGasUsed === totalFee, 'successfully charged correct gas')
+    assert.ok(res.runState!.stack.peek()[0] === stackPush, 'successfully ran opcode logic')
   })
 
-  t.test('should pass the correct EVM options when copying the EVM', async (st) => {
+  it('should pass the correct EVM options when copying the EVM', async () => {
     const fee = 333
     const stackPush = BigInt(1)
 
@@ -120,16 +113,28 @@ tape('VM: custom opcodes', (t) => {
       },
     }
 
-    const evm = await EVM.create({
+    const evm = new EVM({
       customOpcodes: [testOpcode],
-      stateManager: new DefaultStateManager(),
     })
-    const evmCopy = evm.copy()
+    evm.events.on('beforeMessage', () => {})
+    evm.events.on('beforeMessage', () => {})
+    const evmCopy = evm.shallowCopy()
 
-    st.deepEqual(
+    assert.deepEqual(
       (evmCopy as any)._customOpcodes,
       (evmCopy as any)._customOpcodes,
-      'evm.copy() successfully copied customOpcodes option'
+      'evm.shallowCopy() successfully copied customOpcodes option'
+    )
+
+    assert.equal(
+      evm.events.listenerCount('beforeMessage'),
+      2,
+      'original EVM instance should have two listeners'
+    )
+    assert.equal(
+      evmCopy!.events!.listenerCount('beforeMessage'),
+      0,
+      'copied EVM instance should have zero listeners'
     )
   })
 })

@@ -12,10 +12,11 @@ This class stores and interacts with blocks.
 
 ### Properties
 
-- [\_common](Blockchain.md#_common)
+- [common](Blockchain.md#common)
 - [consensus](Blockchain.md#consensus)
 - [db](Blockchain.md#db)
 - [dbManager](Blockchain.md#dbmanager)
+- [events](Blockchain.md#events)
 
 ### Accessors
 
@@ -24,17 +25,15 @@ This class stores and interacts with blocks.
 ### Methods
 
 - [checkAndTransitionHardForkByNumber](Blockchain.md#checkandtransitionhardforkbynumber)
-- [copy](Blockchain.md#copy)
 - [createGenesisBlock](Blockchain.md#creategenesisblock)
 - [delBlock](Blockchain.md#delblock)
-- [genesisState](Blockchain.md#genesisstate)
 - [getBlock](Blockchain.md#getblock)
 - [getBlocks](Blockchain.md#getblocks)
 - [getCanonicalHeadBlock](Blockchain.md#getcanonicalheadblock)
 - [getCanonicalHeadHeader](Blockchain.md#getcanonicalheadheader)
 - [getCanonicalHeader](Blockchain.md#getcanonicalheader)
-- [getHead](Blockchain.md#gethead)
 - [getIteratorHead](Blockchain.md#getiteratorhead)
+- [getIteratorHeadSafe](Blockchain.md#getiteratorheadsafe)
 - [getParentTD](Blockchain.md#getparenttd)
 - [getTotalDifficulty](Blockchain.md#gettotaldifficulty)
 - [iterator](Blockchain.md#iterator)
@@ -46,6 +45,7 @@ This class stores and interacts with blocks.
 - [safeNumberToHash](Blockchain.md#safenumbertohash)
 - [selectNeededHashes](Blockchain.md#selectneededhashes)
 - [setIteratorHead](Blockchain.md#setiteratorhead)
+- [shallowCopy](Blockchain.md#shallowcopy)
 - [validateBlock](Blockchain.md#validateblock)
 - [validateHeader](Blockchain.md#validateheader)
 - [create](Blockchain.md#create)
@@ -53,13 +53,13 @@ This class stores and interacts with blocks.
 
 ## Properties
 
-### \_common
+### common
 
-• **\_common**: `Common`
+• `Readonly` **common**: `Common`
 
 #### Defined in
 
-[blockchain.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L53)
+[blockchain.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L112)
 
 ___
 
@@ -73,17 +73,17 @@ ___
 
 #### Defined in
 
-[blockchain.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L25)
+[blockchain.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L83)
 
 ___
 
 ### db
 
-• **db**: `AbstractLevel`<`string` \| `Uint8Array` \| `Buffer`, `string` \| `Buffer`, `string` \| `Buffer`\>
+• **db**: `DB`<`string` \| `Uint8Array`, `string` \| `Uint8Array` \| `DBObject`\>
 
 #### Defined in
 
-[blockchain.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L26)
+[blockchain.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L84)
 
 ___
 
@@ -93,7 +93,23 @@ ___
 
 #### Defined in
 
-[blockchain.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L27)
+[blockchain.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L85)
+
+___
+
+### events
+
+• **events**: `AsyncEventEmitter`<[`BlockchainEvents`](../README.md#blockchainevents)\>
+
+Optional events emitter
+
+#### Implementation of
+
+[BlockchainInterface](../interfaces/BlockchainInterface.md).[events](../interfaces/BlockchainInterface.md#events)
+
+#### Defined in
+
+[blockchain.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L86)
 
 ## Accessors
 
@@ -109,7 +125,7 @@ The genesis Block for the blockchain.
 
 #### Defined in
 
-[blockchain.ts:1299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1299)
+[blockchain.ts:1412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1412)
 
 ## Methods
 
@@ -121,7 +137,7 @@ The genesis Block for the blockchain.
 
 | Name | Type |
 | :------ | :------ |
-| `number` | `bigint` |
+| `number` | `BigIntLike` |
 | `td?` | `BigIntLike` |
 | `timestamp?` | `BigIntLike` |
 
@@ -131,35 +147,7 @@ The genesis Block for the blockchain.
 
 #### Defined in
 
-[blockchain.ts:1236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1236)
-
-___
-
-### copy
-
-▸ **copy**(): [`Blockchain`](Blockchain.md)
-
-Returns a deep copy of this [Blockchain](Blockchain.md) instance.
-
-Note: this does not make a copy of the underlying db
-since it is unknown if the source is on disk or in memory.
-This should not be a significant issue in most usage since
-the queries will only reflect the instance's known data.
-If you would like this copied blockchain to use another db
-set the [db](Blockchain.md#db) of this returned instance to a copy of
-the original.
-
-#### Returns
-
-[`Blockchain`](Blockchain.md)
-
-#### Implementation of
-
-[BlockchainInterface](../interfaces/BlockchainInterface.md).[copy](../interfaces/BlockchainInterface.md#copy)
-
-#### Defined in
-
-[blockchain.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L173)
+[blockchain.ts:1349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1349)
 
 ___
 
@@ -173,7 +161,7 @@ Creates a genesis Block for the blockchain with params from Common.genesis
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `stateRoot` | `Buffer` | The genesis stateRoot |
+| `stateRoot` | `Uint8Array` | The genesis stateRoot |
 
 #### Returns
 
@@ -181,7 +169,7 @@ Creates a genesis Block for the blockchain with params from Common.genesis
 
 #### Defined in
 
-[blockchain.ts:1308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1308)
+[blockchain.ts:1421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1421)
 
 ___
 
@@ -202,7 +190,7 @@ we can be sure it is correct).
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `blockHash` | `Buffer` | The hash of the block to be deleted |
+| `blockHash` | `Uint8Array` | The hash of the block to be deleted |
 
 #### Returns
 
@@ -214,28 +202,7 @@ we can be sure it is correct).
 
 #### Defined in
 
-[blockchain.ts:867](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L867)
-
-___
-
-### genesisState
-
-▸ **genesisState**(): `GenesisState`
-
-Returns the genesis state of the blockchain.
-All values are provided as hex-prefixed strings.
-
-#### Returns
-
-`GenesisState`
-
-#### Implementation of
-
-[BlockchainInterface](../interfaces/BlockchainInterface.md).[genesisState](../interfaces/BlockchainInterface.md#genesisstate)
-
-#### Defined in
-
-[blockchain.ts:1342](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1342)
+[blockchain.ts:931](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L931)
 
 ___
 
@@ -250,7 +217,7 @@ block will be the canonical block at that number in the chain
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `blockId` | `number` \| `bigint` \| `Buffer` | The block's hash or number. If a hash is provided, then this will be immediately looked up, otherwise it will wait until we have unlocked the DB |
+| `blockId` | `number` \| `bigint` \| `Uint8Array` | The block's hash or number. If a hash is provided, then this will be immediately looked up, otherwise it will wait until we have unlocked the DB |
 
 #### Returns
 
@@ -262,7 +229,7 @@ block will be the canonical block at that number in the chain
 
 #### Defined in
 
-[blockchain.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L737)
+[blockchain.ts:799](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L799)
 
 ___
 
@@ -277,7 +244,7 @@ Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `blockId` | `number` \| `bigint` \| `Buffer` | The block's hash or number |
+| `blockId` | `number` \| `bigint` \| `Uint8Array` | The block's hash or number |
 | `maxBlocks` | `number` | Max number of blocks to return |
 | `skip` | `number` | Number of blocks to skip apart |
 | `reverse` | `boolean` | Fetch blocks in reverse |
@@ -288,7 +255,7 @@ Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
 
 #### Defined in
 
-[blockchain.ts:785](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L785)
+[blockchain.ts:848](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L848)
 
 ___
 
@@ -308,7 +275,7 @@ Returns the latest full block in the canonical chain.
 
 #### Defined in
 
-[blockchain.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L356)
+[blockchain.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L396)
 
 ___
 
@@ -324,7 +291,7 @@ Returns the latest header in the canonical chain.
 
 #### Defined in
 
-[blockchain.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L345)
+[blockchain.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L385)
 
 ___
 
@@ -346,37 +313,7 @@ Gets a header by number. Header must be in the canonical chain
 
 #### Defined in
 
-[blockchain.ts:1273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1273)
-
-___
-
-### getHead
-
-▸ **getHead**(`name?`): `Promise`<`Block`\>
-
-Returns the specified iterator head.
-
-**`Deprecated`**
-
-use [getIteratorHead](Blockchain.md#getiteratorhead) instead.
-Note that [getIteratorHead](Blockchain.md#getiteratorhead) doesn't return
-the `headHeader` but the genesis hash as an initial iterator
-head value (now matching the behavior of [iterator](Blockchain.md#iterator)
-on a first run)
-
-#### Parameters
-
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `name` | `string` | `'vm'` | Optional name of the iterator head (default: 'vm') |
-
-#### Returns
-
-`Promise`<`Block`\>
-
-#### Defined in
-
-[blockchain.ts:332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L332)
+[blockchain.ts:1390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1390)
 
 ___
 
@@ -386,7 +323,7 @@ ___
 
 Returns the specified iterator head.
 
-This function replaces the old [getHead](Blockchain.md#gethead) method. Note that
+This function replaces the old Blockchain.getHead() method. Note that
 the function deviates from the old behavior and returns the
 genesis hash instead of the current head block if an iterator
 has not been run. This matches the behavior of [iterator](Blockchain.md#iterator).
@@ -407,7 +344,29 @@ has not been run. This matches the behavior of [iterator](Blockchain.md#iterator
 
 #### Defined in
 
-[blockchain.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L312)
+[blockchain.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L355)
+
+___
+
+### getIteratorHeadSafe
+
+▸ **getIteratorHeadSafe**(`name?`): `Promise`<`undefined` \| `Block`\>
+
+This method differs from `getIteratorHead`. If the head is not found, it returns `undefined`.
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `name` | `string` | `'vm'` | Optional name of the iterator head (default: 'vm') |
+
+#### Returns
+
+`Promise`<`undefined` \| `Block`\>
+
+#### Defined in
+
+[blockchain.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L366)
 
 ___
 
@@ -429,7 +388,7 @@ Gets total difficulty for a header's parent, helpful for determining terminal bl
 
 #### Defined in
 
-[blockchain.ts:771](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L771)
+[blockchain.ts:834](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L834)
 
 ___
 
@@ -443,7 +402,7 @@ Gets total difficulty for a block specified by hash and number
 
 | Name | Type |
 | :------ | :------ |
-| `hash` | `Buffer` |
+| `hash` | `Uint8Array` |
 | `number?` | `bigint` |
 
 #### Returns
@@ -456,7 +415,7 @@ Gets total difficulty for a block specified by hash and number
 
 #### Defined in
 
-[blockchain.ts:760](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L760)
+[blockchain.ts:820](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L820)
 
 ___
 
@@ -473,7 +432,7 @@ head can be retrieved using [getIteratorHead](Blockchain.md#getiteratorhead).
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `name` | `string` | Name of the state root head |
-| `onBlock` | `OnBlock` | Function called on each block with params (block, reorg) |
+| `onBlock` | [`OnBlock`](../README.md#onblock) | Function called on each block with params (block, reorg) |
 | `maxBlocks?` | `number` | How many blocks to run. By default, run all unprocessed blocks in the canonical chain. |
 | `releaseLockOnCallback?` | `boolean` | Do not lock the blockchain for running the callback (default: `false`) |
 
@@ -489,7 +448,7 @@ number of blocks actually iterated
 
 #### Defined in
 
-[blockchain.ts:965](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L965)
+[blockchain.ts:1037](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1037)
 
 ___
 
@@ -519,7 +478,7 @@ heads/hashes are overwritten.
 
 #### Defined in
 
-[blockchain.ts:386](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L386)
+[blockchain.ts:426](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L426)
 
 ___
 
@@ -546,7 +505,7 @@ chain is rebuilt and any stale heads/hashes are overwritten.
 
 #### Defined in
 
-[blockchain.ts:372](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L372)
+[blockchain.ts:412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L412)
 
 ___
 
@@ -572,7 +531,7 @@ heads/hashes are overwritten.
 
 #### Defined in
 
-[blockchain.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L413)
+[blockchain.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L453)
 
 ___
 
@@ -599,7 +558,7 @@ chain is rebuilt and any stale heads/hashes are overwritten.
 
 #### Defined in
 
-[blockchain.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L399)
+[blockchain.ts:439](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L439)
 
 ___
 
@@ -624,16 +583,16 @@ canonicalHead and cleans up canonical references greater than canonicalHead
 
 #### Defined in
 
-[blockchain.ts:425](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L425)
+[blockchain.ts:465](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L465)
 
 ___
 
 ### safeNumberToHash
 
-▸ **safeNumberToHash**(`number`): `Promise`<``false`` \| `Buffer`\>
+▸ **safeNumberToHash**(`number`): `Promise`<``false`` \| `Uint8Array`\>
 
-This method either returns a Buffer if there exists one in the DB or if it
-does not exist (DB throws a `NotFoundError`) then return false If DB throws
+This method either returns a Uint8Array if there exists one in the DB or if it
+does not exist then return false If DB throws
 any other error, this function throws.
 
 #### Parameters
@@ -644,17 +603,17 @@ any other error, this function throws.
 
 #### Returns
 
-`Promise`<``false`` \| `Buffer`\>
+`Promise`<``false`` \| `Uint8Array`\>
 
 #### Defined in
 
-[blockchain.ts:1284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1284)
+[blockchain.ts:1404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1404)
 
 ___
 
 ### selectNeededHashes
 
-▸ **selectNeededHashes**(`hashes`): `Promise`<`Buffer`[]\>
+▸ **selectNeededHashes**(`hashes`): `Promise`<`Uint8Array`[]\>
 
 Given an ordered array, returns an array of hashes that are not in the
 blockchain yet. Uses binary search to find out what hashes are missing.
@@ -664,15 +623,15 @@ Therefore, the array needs to be ordered upon number.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `hashes` | `Buffer`[] | Ordered array of hashes (ordered on `number`). |
+| `hashes` | `Uint8Array`[] | Ordered array of hashes (ordered on `number`). |
 
 #### Returns
 
-`Promise`<`Buffer`[]\>
+`Promise`<`Uint8Array`[]\>
 
 #### Defined in
 
-[blockchain.ts:827](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L827)
+[blockchain.ts:890](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L890)
 
 ___
 
@@ -688,15 +647,47 @@ When calling the iterator, the iterator will start running the first child block
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `tag` | `string` | The tag to save the headHash to |
-| `headHash` | `Buffer` | The head hash to save |
+| `headHash` | `Uint8Array` | The head hash to save |
 
 #### Returns
 
 `Promise`<`void`\>
 
+#### Implementation of
+
+[BlockchainInterface](../interfaces/BlockchainInterface.md).[setIteratorHead](../interfaces/BlockchainInterface.md#setiteratorhead)
+
 #### Defined in
 
-[blockchain.ts:1028](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1028)
+[blockchain.ts:1120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1120)
+
+___
+
+### shallowCopy
+
+▸ **shallowCopy**(): [`Blockchain`](Blockchain.md)
+
+Returns a deep copy of this [Blockchain](Blockchain.md) instance.
+
+Note: this does not make a copy of the underlying db
+since it is unknown if the source is on disk or in memory.
+This should not be a significant issue in most usage since
+the queries will only reflect the instance's known data.
+If you would like this copied blockchain to use another db
+set the [db](Blockchain.md#db) of this returned instance to a copy of
+the original.
+
+#### Returns
+
+[`Blockchain`](Blockchain.md)
+
+#### Implementation of
+
+[BlockchainInterface](../interfaces/BlockchainInterface.md).[shallowCopy](../interfaces/BlockchainInterface.md#shallowcopy)
+
+#### Defined in
+
+[blockchain.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L243)
 
 ___
 
@@ -719,7 +710,7 @@ whether the block is internally consistent
 
 #### Defined in
 
-[blockchain.ts:640](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L640)
+[blockchain.ts:702](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L702)
 
 ___
 
@@ -757,7 +748,7 @@ It verifies the current block against the `parentHash`:
 
 #### Defined in
 
-[blockchain.ts:580](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L580)
+[blockchain.ts:635](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L635)
 
 ___
 
@@ -780,7 +771,7 @@ encouraged method to use when creating a blockchain object.
 
 #### Defined in
 
-[blockchain.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L65)
+[blockchain.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L131)
 
 ___
 
@@ -804,4 +795,4 @@ objects must be readable by Block.fromBlockData
 
 #### Defined in
 
-[blockchain.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L78)
+[blockchain.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L145)

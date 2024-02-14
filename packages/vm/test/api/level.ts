@@ -67,7 +67,7 @@ export class LevelDB implements DB {
   /**
    * @inheritDoc
    */
-  copy(): DB {
+  shallowCopy(): DB {
     //@ts-expect-error
     return new LevelDB(this._leveldb)
   }

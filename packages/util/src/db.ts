@@ -72,7 +72,7 @@ export interface DB<
    * Returns a copy of the DB instance, with a reference
    * to the **same** underlying db instance.
    */
-  copy(): DB<TKey, TValue>
+  shallowCopy(): DB<TKey, TValue>
 
   /**
    * Opens the database -- if applicable

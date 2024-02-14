@@ -10,9 +10,12 @@ import {
   isLegacyTx,
 } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  bytesToHex,
   bytesToInt,
+  hexToBytes,
   intToUnpaddedBytes,
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
@@ -88,7 +91,7 @@ function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
  */
 export class EthProtocol extends Protocol {
   private chain: Chain
-  private nextReqId = BigInt(0)
+  private nextReqId = BIGINT_0
   private chainTTD?: BigIntLike
 
   /* eslint-disable no-invalid-this */
@@ -114,14 +117,14 @@ export class EthProtocol extends Protocol {
       decode: (txs: Uint8Array[]) => {
         if (!this.config.synchronized) return
         const common = this.config.chainCommon.copy()
-        common.setHardforkByBlockNumber(
-          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+        common.setHardforkBy({
+          blockNumber:
+            this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
-            BigInt(0), // Use chainstart,
-          undefined,
-          this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
-        )
+            BIGINT_0, // Use chainstart,
+          timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
+        })
         return txs.map((txData) => TransactionFactory.fromSerializedData(txData, { common }))
       },
     },
@@ -163,9 +166,7 @@ export class EthProtocol extends Protocol {
           // to correct hardfork choice
           const header = BlockHeader.fromValuesArray(
             h,
-            difficulty > 0
-              ? { common, hardforkByBlockNumber: true }
-              : { common, hardforkByTTD: this.chainTTD }
+            difficulty > 0 ? { common, setHardfork: true } : { common, setHardfork: this.chainTTD }
           )
           return header
         }),
@@ -200,7 +201,7 @@ export class EthProtocol extends Protocol {
       decode: ([block, td]: [BlockBytes, Uint8Array]) => [
         Block.fromValuesArray(block, {
           common: this.config.chainCommon,
-          hardforkByBlockNumber: true,
+          setHardfork: true,
         }),
         td,
       ],
@@ -208,8 +209,36 @@ export class EthProtocol extends Protocol {
     {
       name: 'NewPooledTransactionHashes',
       code: 0x08,
-      encode: (hashes: Uint8Array[]) => hashes,
-      decode: (hashes: Uint8Array[]) => hashes,
+      // If eth protocol is eth/68, the parameter list for `NewPooledTransactionHashes` changes from
+      // `hashes: Uint8Array[]` to an tuple of arrays of `types, sizes, hashes`, where types corresponds to the
+      // transaction type, sizes is the size of each encoded transaction in bytes, and the transaction hashes
+      encode: (params: Uint8Array[] | [types: number[], sizes: number[], hashes: Uint8Array[]]) => {
+        if (params[0] instanceof Uint8Array) {
+          return params
+        } else {
+          const tupleParams = params as [number[], number[], Uint8Array[]]
+          const encodedData = [
+            bytesToHex(new Uint8Array(tupleParams[0])), // This matches the Geth implementation of this parameter (which is currently different than the spec)
+            tupleParams[1],
+            tupleParams[2],
+          ]
+          return encodedData
+        }
+      },
+      decode: (params: Uint8Array[] | [types: string, sizes: number[], hashes: Uint8Array[]]) => {
+        if (params[0] instanceof Uint8Array) {
+          return params
+        } else {
+          const tupleParams = params as [string, number[], Uint8Array[]]
+          const decodedData = [
+            hexToBytes(tupleParams[0]),
+            tupleParams[1].map((size) => BigInt(size)),
+            tupleParams[2],
+          ]
+
+          return decodedData
+        }
+      },
     },
     {
       name: 'GetPooledTransactions',
@@ -249,14 +278,14 @@ export class EthProtocol extends Protocol {
       },
       decode: ([reqId, txs]: [Uint8Array, any[]]) => {
         const common = this.config.chainCommon.copy()
-        common.setHardforkByBlockNumber(
-          this.chain.headers.latest?.number ?? // Use latest header number if available OR
+        common.setHardforkBy({
+          blockNumber:
+            this.chain.headers.latest?.number ?? // Use latest header number if available OR
             this.config.syncTargetHeight ?? // Use sync target height if available OR
             common.hardforkBlock(common.hardfork()) ?? // Use current hardfork block number OR
-            BigInt(0), // Use chainstart,
-          undefined,
-          this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000)
-        )
+            BIGINT_0, // Use chainstart,
+          timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
+        })
         return [
           bytesToBigInt(reqId),
           txs.map((txData) => {
@@ -345,7 +374,7 @@ export class EthProtocol extends Protocol {
    * Protocol versions supported
    */
   get versions() {
-    return [66]
+    return [66, 67, 68]
   }
 
   /**

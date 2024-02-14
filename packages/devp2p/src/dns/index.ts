@@ -1,4 +1,2 @@
-'use strict'
-
-export * from './dns'
-export * from './enr'
+export * from './dns.js'
+export * from './enr.js'

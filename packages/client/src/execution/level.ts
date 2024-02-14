@@ -112,7 +112,7 @@ export class LevelDB<
   /**
    * @inheritDoc
    */
-  copy(): DB<TKey, TValue> {
+  shallowCopy(): DB<TKey, TValue> {
     return new LevelDB<TKey, TValue>(this._leveldb)
   }
 

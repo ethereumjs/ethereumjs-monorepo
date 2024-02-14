@@ -1,9 +1,13 @@
-import type { Consensus } from './consensus'
+import type { Blockchain } from '.'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
-import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
+import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
+import type { AsyncEventEmitter, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
+
+export type BlockchainEvents = {
+  deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
+}
 
 export interface BlockchainInterface {
   consensus: Consensus
@@ -44,9 +48,9 @@ export interface BlockchainInterface {
   ): Promise<number>
 
   /**
-   * Returns a copy of the blockchain
+   * Returns a shallow copy of the blockchain that may share state with the original
    */
-  copy(): BlockchainInterface
+  shallowCopy(): BlockchainInterface
 
   /**
    * Validates a block header, throwing if invalid. It is being validated against the reported `parentHash`.
@@ -60,7 +64,7 @@ export interface BlockchainInterface {
    *
    * @param name - Optional name of the iterator head (default: 'vm')
    */
-  getIteratorHead?(name?: string): Promise<Block>
+  getIteratorHead(name?: string): Promise<Block>
 
   /**
    * Set header hash of a certain `tag`.
@@ -76,34 +80,62 @@ export interface BlockchainInterface {
   getTotalDifficulty?(hash: Uint8Array, number?: bigint): Promise<bigint>
 
   /**
-   * Returns the genesis state of the blockchain.
-   * All values are provided as hex-prefixed strings.
-   */
-  genesisState?(): GenesisState
-
-  /**
    * Returns the latest full block in the canonical chain.
    */
-  getCanonicalHeadBlock?(): Promise<Block>
+  getCanonicalHeadBlock(): Promise<Block>
+
+  /**
+   * Optional events emitter
+   */
+  events?: AsyncEventEmitter<BlockchainEvents>
 }
 
-export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
+export interface GenesisOptions {
+  /**
+   * The blockchain only initializes successfully if it has a genesis block. If
+   * there is no block available in the DB and a `genesisBlock` is provided,
+   * then the provided `genesisBlock` will be used as genesis. If no block is
+   * present in the DB and no block is provided, then the genesis block as
+   * provided from the `common` will be used.
+   */
+  genesisBlock?: Block
 
-export type AccountState = [
-  balance: PrefixedHexString,
-  code: PrefixedHexString,
-  storage: Array<StoragePair>,
-  nonce: PrefixedHexString
-]
+  /**
+   * If you are using a custom chain {@link Common}, pass the genesis state.
+   *
+   * Pattern 1 (with genesis state see {@link GenesisState} for format):
+   *
+   * ```javascript
+   * {
+   *   '0x0...01': '0x100', // For EoA
+   * }
+   * ```
+   *
+   * Pattern 2 (with complex genesis state, containing contract accounts and storage).
+   * Note that in {@link AccountState} there are two
+   * accepted types. This allows to easily insert accounts in the genesis state:
+   *
+   * A complex genesis state with Contract and EoA states would have the following format:
+   *
+   * ```javascript
+   * {
+   *   '0x0...01': '0x100', // For EoA
+   *   '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[storageKey1, storageValue1], [storageKey2, storageValue2]]] // For contracts
+   * }
+   * ```
+   */
+  genesisState?: GenesisState
 
-export interface GenesisState {
-  [key: PrefixedHexString]: PrefixedHexString | AccountState
+  /**
+   * State root of the genesis state
+   */
+  genesisStateRoot?: Uint8Array
 }
 
 /**
  * This are the options that the Blockchain constructor can receive.
  */
-export interface BlockchainOptions {
+export interface BlockchainOptions extends GenesisOptions {
   /**
    * Specify the chain and hardfork by passing a {@link Common} instance.
    *
@@ -149,42 +181,51 @@ export interface BlockchainOptions {
   validateBlocks?: boolean
 
   /**
-   * The blockchain only initializes successfully if it has a genesis block. If
-   * there is no block available in the DB and a `genesisBlock` is provided,
-   * then the provided `genesisBlock` will be used as genesis. If no block is
-   * present in the DB and no block is provided, then the genesis block as
-   * provided from the `common` will be used.
-   */
-  genesisBlock?: Block
-
-  /**
-   * If you are using a custom chain {@link Common}, pass the genesis state.
-   *
-   * Pattern 1 (with genesis state see {@link GenesisState} for format):
-   *
-   * ```javascript
-   * {
-   *   '0x0...01': '0x100', // For EoA
-   * }
-   * ```
-   *
-   * Pattern 2 (with complex genesis state, containing contract accounts and storage).
-   * Note that in {@link AccountState} there are two
-   * accepted types. This allows to easily insert accounts in the genesis state:
-   *
-   * A complex genesis state with Contract and EoA states would have the following format:
-   *
-   * ```javascript
-   * {
-   *   '0x0...01': '0x100', // For EoA
-   *   '0x0...02': ['0x1', '0xRUNTIME_BYTECODE', [[storageKey1, storageValue1], [storageKey2, storageValue2]]] // For contracts
-   * }
-   * ```
-   */
-  genesisState?: GenesisState
-
-  /**
    * Optional custom consensus that implements the {@link Consensus} class
    */
   consensus?: Consensus
+}
+
+/**
+ * Interface that a consensus class needs to implement.
+ */
+export interface Consensus {
+  algorithm: ConsensusAlgorithm | string
+  /**
+   * Initialize genesis for consensus mechanism
+   * @param genesisBlock genesis block
+   */
+  genesisInit(genesisBlock: Block): Promise<void>
+
+  /**
+   * Set up consensus mechanism
+   */
+  setup({ blockchain }: ConsensusOptions): Promise<void>
+
+  /**
+   * Validate block consensus parameters
+   * @param block block to be validated
+   */
+  validateConsensus(block: Block): Promise<void>
+
+  validateDifficulty(header: BlockHeader): Promise<void>
+
+  /**
+   * Update consensus on new block
+   * @param block new block
+   * @param commonAncestor common ancestor block header (optional)
+   * @param ancientHeaders array of ancestor block headers (optional)
+   */
+  newBlock(
+    block: Block,
+    commonAncestor?: BlockHeader,
+    ancientHeaders?: BlockHeader[]
+  ): Promise<void>
+}
+
+/**
+ * Options when initializing a class that implements the Consensus interface.
+ */
+export interface ConsensusOptions {
+  blockchain: Blockchain
 }

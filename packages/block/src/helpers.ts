@@ -1,7 +1,7 @@
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { TypeOutput, isHexString, toType } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, TypeOutput, isHexString, toType } from '@ethereumjs/util'
 
-import type { BlockHeaderBytes, HeaderData } from './types'
+import type { BlockHeaderBytes, HeaderData } from './types.js'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 /**
@@ -40,15 +40,20 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
-    dataGasUsed,
-    excessDataGas,
+    blobGasUsed,
+    excessBlobGas,
+    parentBeaconBlockRoot,
   ] = values
 
-  if (values.length > 19) {
-    throw new Error('invalid header. More values than expected were received')
+  if (values.length > 20) {
+    throw new Error(
+      `invalid header. More values than expected were received. Max: 20, got: ${values.length}`
+    )
   }
   if (values.length < 15) {
-    throw new Error('invalid header. Less values than expected were received')
+    throw new Error(
+      `invalid header. Less values than expected were received. Min: 15, got: ${values.length}`
+    )
   }
 
   return {
@@ -69,8 +74,9 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     nonce,
     baseFeePerGas,
     withdrawalsRoot,
-    dataGasUsed,
-    excessDataGas,
+    blobGasUsed,
+    excessBlobGas,
+    parentBeaconBlockRoot,
   }
 }
 
@@ -86,7 +92,7 @@ export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {
     if (tx instanceof BlobEIP4844Transaction) {
-      numBlobs += tx.versionedHashes.length
+      numBlobs += tx.blobVersionedHashes.length
     }
   }
   return numBlobs
@@ -96,10 +102,10 @@ export const getNumBlobs = (transactions: TypedTransaction[]) => {
  * Approximates `factor * e ** (numerator / denominator)` using Taylor expansion
  */
 export const fakeExponential = (factor: bigint, numerator: bigint, denominator: bigint) => {
-  let i = BigInt(1)
-  let output = BigInt(0)
+  let i = BIGINT_1
+  let output = BIGINT_0
   let numerator_accum = factor * denominator
-  while (numerator_accum > BigInt(0)) {
+  while (numerator_accum > BIGINT_0) {
     output += numerator_accum
     numerator_accum = (numerator_accum * numerator) / (denominator * i)
     i++

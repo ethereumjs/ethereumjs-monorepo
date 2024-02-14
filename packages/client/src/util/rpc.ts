@@ -1,6 +1,4 @@
 import { json as jsonParser } from 'body-parser'
-import * as Connect from 'connect'
-import * as cors from 'cors'
 import { createServer } from 'http'
 import { Server as RPCServer } from 'jayson/promise'
 import { decode } from 'jwt-simple'
@@ -8,15 +6,19 @@ import { inspect } from 'util'
 
 import type { Logger } from '../logging'
 import type { RPCManager } from '../rpc'
+import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
 
-type IncomingMessage = Connect.IncomingMessage
+const Connect = require('connect')
+const cors = require('cors')
+
 const algorithm: TAlgorithm = 'HS256'
 
 type CreateRPCServerOpts = {
   methodConfig: MethodConfig
-  rpcDebug: boolean
+  rpcDebug: string
+  rpcDebugVerbose: string
   logger?: Logger
 }
 type CreateRPCServerReturn = {
@@ -42,6 +44,28 @@ export enum MethodConfig {
 const ALLOWED_DRIFT = 60_000
 
 /**
+ * Check if the `method` matches the comma-separated filter string
+ * @param method - Method to check the filter on
+ * @param filterStringCSV - Comma-separated list of filters to use
+ * @returns
+ */
+function checkFilter(method: string, filterStringCSV: string) {
+  if (!filterStringCSV || filterStringCSV === '') {
+    return false
+  }
+  if (filterStringCSV === 'all') {
+    return true
+  }
+  const filters = filterStringCSV.split(',')
+  for (const filter of filters) {
+    if (method.includes(filter) === true) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Internal util to pretty print params for logging.
  */
 export function inspectParams(params: any, shorten?: number) {
@@ -62,32 +86,23 @@ export function createRPCServer(
   manager: RPCManager,
   opts: CreateRPCServerOpts
 ): CreateRPCServerReturn {
-  const { methodConfig, rpcDebug, logger } = opts
-
+  const { methodConfig, rpcDebug, rpcDebugVerbose, logger } = opts
   const onRequest = (request: any) => {
-    let msg = ''
-    if (rpcDebug) {
-      msg += `${request.method} called with params:\n${inspectParams(request.params)}`
-    } else {
-      msg += `${request.method} called with params: ${inspectParams(request.params, 125)}`
+    if (checkFilter(request.method, rpcDebugVerbose)) {
+      logger?.info(`${request.method} called with params:\n${inspectParams(request.params)}`)
+    } else if (checkFilter(request.method, rpcDebug)) {
+      logger?.info(`${request.method} called with params: ${inspectParams(request.params, 125)}`)
     }
-    logger?.debug(msg)
   }
 
   const handleResponse = (request: any, response: any, batchAddOn = '') => {
-    let msg = ''
-    if (rpcDebug) {
-      msg = `${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`
-    } else {
-      msg = `${request.method}${batchAddOn} responded with: `
-      if (response.result !== undefined) {
-        msg += inspectParams(response, 125)
-      }
-      if (response.error !== undefined) {
-        msg += `error: ${response.error.message}`
-      }
+    if (checkFilter(request.method, rpcDebugVerbose)) {
+      logger?.info(`${request.method}${batchAddOn} responded with:\n${inspectParams(response)}`)
+    } else if (checkFilter(request.method, rpcDebug)) {
+      logger?.info(
+        `${request.method}${batchAddOn} responded with:\n${inspectParams(response, 125)}`
+      )
     }
-    logger?.debug(msg)
   }
 
   const onBatchResponse = (request: any, response: any) => {
@@ -106,11 +121,14 @@ export function createRPCServer(
   }
 
   let methods
-  const ethMethods = manager.getMethods()
+  const ethMethods = manager.getMethods(false, rpcDebug !== 'false' && rpcDebug !== '')
 
   switch (methodConfig) {
     case MethodConfig.WithEngine:
-      methods = { ...ethMethods, ...manager.getMethods(true) }
+      methods = {
+        ...ethMethods,
+        ...manager.getMethods(true, rpcDebug !== 'false' && rpcDebug !== ''),
+      }
       break
     case MethodConfig.WithoutEngine:
       methods = { ...ethMethods }
@@ -164,14 +182,14 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
 export function createRPCServerListener(opts: CreateRPCServerListenerOpts): HttpServer {
   const { server, withEngineMiddleware, rpcCors } = opts
 
-  const app = Connect()
+  const app = Connect() as any
   if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
   app.use(jsonParser({ limit: '11mb' }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware
-    app.use((req, res, next) => {
+    app.use((req: any, res: any, next: any) => {
       try {
         if (unlessFn && unlessFn(req)) return next()
         checkHeaderAuth(req, jwtSecret)

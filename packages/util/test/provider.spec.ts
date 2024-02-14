@@ -1,6 +1,6 @@
-import * as tape from 'tape'
+import { assert, describe, it, vi } from 'vitest'
 
-import { fetchFromProvider, getProvider } from '../src'
+import { fetchFromProvider, getProvider } from '../src/index.js'
 
 const providerUrl = 'https://myfakeprovider.com'
 const fakeEthersProvider = {
@@ -11,36 +11,100 @@ const fakeEthersProvider = {
     return fakeConnection
   },
 }
-tape('getProvider', (t) => {
-  t.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
-  t.equal(
-    getProvider(fakeEthersProvider),
-    fakeEthersProvider._getConnection().url,
-    'returned correct provider url string'
-  )
-  t.throws(
-    () => getProvider(<any>1),
-    (err: any) => err.message.includes('Must provide valid provider URL or Web3Provider'),
-    'throws correct error'
-  )
-  t.end()
+
+describe('getProvider', () => {
+  it('should work', () => {
+    assert.equal(getProvider(providerUrl), providerUrl, 'returned correct provider url string')
+    assert.equal(
+      getProvider(fakeEthersProvider),
+      fakeEthersProvider._getConnection().url,
+      'returned correct provider url string'
+    )
+    assert.throws(
+      () => getProvider(<any>1),
+      'Must provide valid provider URL or Web3Provider',
+      undefined,
+      'throws correct error'
+    )
+  })
 })
 
-tape('fetchFromProvider', async (t) => {
-  try {
-    await fetchFromProvider(providerUrl, {
+describe('fetchFromProvider', () => {
+  it('should return the response of the jsonrpc request', async () => {
+    vi.stubGlobal('fetch', async (_url: string, _req: any) => {
+      return {
+        json: async () => {
+          return {
+            result: '0x1',
+          }
+        },
+        text: async () => {
+          return 'ERROR'
+        },
+        ok: true,
+      }
+    })
+    const res = await fetchFromProvider(providerUrl, {
       method: 'eth_getBalance',
       params: ['0xabcd'],
     })
-    t.fail('should throw')
-  } catch (err: any) {
-    if (global.fetch !== undefined) {
-      t.ok(err.message.includes('fetch'), 'tried to fetch and failed')
-    } else {
-      t.ok(
-        err.toString().includes(providerUrl.split('//')[1]),
-        'tries to fetch from specified provider url'
-      )
+    assert.equal(res, '0x1', 'returned correct response')
+    vi.unstubAllGlobals()
+  })
+
+  it('should work', async () => {
+    try {
+      await fetchFromProvider(providerUrl, {
+        method: 'eth_getBalance',
+        params: ['0xabcd'],
+      })
+      assert.fail('should throw')
+    } catch (err: any) {
+      assert.ok(err.message.includes('fetch'), 'tried to fetch and failed')
     }
-  }
+  })
+
+  it('should throw a formatted error when an error is returned from the RPC', async () => {
+    vi.stubGlobal('fetch', async (_url: string, _req: any) => {
+      return {
+        text: async () => {
+          return 'ERROR'
+        },
+        ok: false,
+      }
+    })
+    try {
+      await fetchFromProvider(providerUrl, {
+        method: 'eth_getBalance',
+        params: ['0xabcd'],
+      })
+      assert.fail('should throw')
+    } catch (err: any) {
+      assert.ok(err.message.includes('ERROR'), 'received a formatted RPC error')
+      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+    }
+    vi.unstubAllGlobals()
+  })
+
+  it('handles the corner case of res.text() failing because of a network error not recieving the full response', async () => {
+    vi.stubGlobal('fetch', async (_url: string, _req: any) => {
+      return {
+        text: async () => {
+          throw new Error('network dropped request halfway through')
+        },
+        ok: false,
+      }
+    })
+    try {
+      await fetchFromProvider(providerUrl, {
+        method: 'eth_getBalance',
+        params: ['0xabcd'],
+      })
+      assert.fail('should throw')
+    } catch (err: any) {
+      assert.ok(err.message.includes('Could not parse error'), 'received a formatted RPC error')
+      assert.ok(err.message.includes('eth_getBalance'), 'error is for correct method')
+    }
+    vi.unstubAllGlobals()
+  })
 })

@@ -1,20 +1,14 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToInt, intToBytes } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { bytesToHex, bytesToUtf8, concatBytes } from 'ethereum-cryptography/utils'
+import { bytesToHex, bytesToInt, bytesToUtf8, concatBytes, intToBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
 
-import {
-  assertEq,
-  ipToBytes,
-  ipToString,
-  isV4Format,
-  isV6Format,
-  keccak256,
-  unstrictDecode,
-} from '../util'
+import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.js'
 
-import type { PeerInfo } from './dpt'
+import type { PeerInfo } from '../types.js'
+import type { Common } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('devp2p:dpt:server')
 
@@ -136,7 +130,7 @@ type OutNeighborMsg = { [0]: Uint8Array[][]; [1]: Uint8Array }
 const neighbours = {
   encode(obj: InNeighborMsg): OutNeighborMsg {
     return [
-      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id! as Uint8Array)),
+      obj.peers.map((peer: PeerInfo) => endpoint.encode(peer).concat(peer.id as Uint8Array)),
       timestamp.encode(obj.timestamp),
     ]
   },
@@ -174,21 +168,21 @@ const types: Types = {
 // 97 type
 // [98, length) data
 
-export function encode<T>(typename: string, data: T, privateKey: Uint8Array) {
+export function encode<T>(typename: string, data: T, privateKey: Uint8Array, common?: Common) {
   const type: number = types.byName[typename] as number
   if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
-  const sighash = keccak256(typedata)
-  const sig = ecdsaSign(sighash, privateKey)
+  const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
+  const sig = (common?.customCrypto.ecdsaSign ?? ecdsaSign)(sighash, privateKey)
   const hashdata = concatBytes(sig.signature, Uint8Array.from([sig.recid]), typedata)
-  const hash = keccak256(hashdata)
+  const hash = (common?.customCrypto.keccak256 ?? keccak256)(hashdata)
   return concatBytes(hash, hashdata)
 }
 
-export function decode(bytes: Uint8Array) {
-  const hash = keccak256(bytes.subarray(32))
+export function decode(bytes: Uint8Array, common?: Common) {
+  const hash = (common?.customCrypto.keccak256 ?? keccak256)(bytes.subarray(32))
   assertEq(bytes.subarray(0, 32), hash, 'Hash verification failed', debug)
 
   const typedata = bytes.subarray(97)
@@ -197,9 +191,14 @@ export function decode(bytes: Uint8Array) {
   if (typename === undefined) throw new Error(`Invalid type: ${type}`)
   const data = messages[typename].decode(unstrictDecode(typedata.subarray(1)))
 
-  const sighash = keccak256(typedata)
+  const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
   const signature = bytes.subarray(32, 96)
   const recoverId = bytes[96]
-  const publicKey = ecdsaRecover(signature, recoverId, sighash, false)
+  const publicKey = (common?.customCrypto.ecdsaRecover ?? ecdsaRecover)(
+    signature,
+    recoverId,
+    sighash,
+    false
+  )
   return { typename, data, publicKey }
 }

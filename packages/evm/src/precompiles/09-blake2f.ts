@@ -1,10 +1,10 @@
 import { bytesToHex, short } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm'
-import { ERROR, EvmError } from '../exceptions'
+import { OOGResult } from '../evm.js'
+import { ERROR, EvmError } from '../exceptions.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../types.js'
+import type { PrecompileInput } from './types.js'
 
 // The following blake2 code has been taken from (license: Creative Commons CC0):
 // https://github.com/dcposch/blakejs/blob/410c640d0f08d3b26904c6d1ab3d81df3619d282/blake2b.js
@@ -181,14 +181,14 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     }
   }
 
-  const rounds = new DataView(data.subarray(0, 4).buffer).getUint32(0)
-  const hRaw = new DataView(data.buffer, 4, 64)
-  const mRaw = new DataView(data.buffer, 68, 128)
-  const tRaw = new DataView(data.buffer, 196, 16)
+  const rounds = new DataView(data.buffer, data.byteOffset).getUint32(0)
+  const hRaw = new DataView(data.buffer, data.byteOffset + 4, 64)
+  const mRaw = new DataView(data.buffer, data.byteOffset + 68, 128)
+  const tRaw = new DataView(data.buffer, data.byteOffset + 196, 16)
   // final
   const f = lastByte === 1
 
-  let gasUsed = opts._common.param('gasPrices', 'blake2Round')
+  let gasUsed = opts.common.param('gasPrices', 'blake2Round')
   gasUsed *= BigInt(rounds)
   if (opts._debug !== undefined) {
     opts._debug(

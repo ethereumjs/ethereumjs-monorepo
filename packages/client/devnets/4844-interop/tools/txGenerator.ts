@@ -3,31 +3,32 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, TransactionType, TxData } from '@ethereumjs/tx'
 import {
   Address,
-  initKZG,
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-  bytesToPrefixedHexString,
-  hexStringToBytes,
+  bytesToHex,
+  hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 
 import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
-const pkey = hexStringToBytes(process.argv[5]) // private key of tx sender as unprefixed hex string
-
-initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-
+const pkey = hexToBytes('0x' + process.argv[5]) // private key of tx sender as unprefixed hex string (unprefixed in args)
 const sender = Address.fromPrivateKey(pkey)
 const common = Common.fromGethGenesis(genesisJson, {
   chain: genesisJson.ChainName ?? 'devnet',
   hardfork: Hardfork.Cancun,
+  customCrypto: { kzg },
 })
+
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
   return nonce.result
@@ -47,8 +48,8 @@ async function run(data: any) {
     chainId: common.chainId(),
     blobs,
     kzgCommitments: commitments,
-    versionedHashes: hashes,
-    maxFeePerDataGas: undefined,
+    blobVersionedHashes: hashes,
+    maxFeePerBlobGas: undefined,
     maxPriorityFeePerGas: undefined,
     maxFeePerGas: undefined,
     nonce: undefined,
@@ -57,7 +58,7 @@ async function run(data: any) {
 
   txData.maxFeePerGas = BigInt(1000000000)
   txData.maxPriorityFeePerGas = BigInt(100000000)
-  txData.maxFeePerDataGas = BigInt(1000)
+  txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(28000000)
   const nonce = await getNonce(client, sender.toString())
   txData.nonce = BigInt(nonce)
@@ -65,11 +66,7 @@ async function run(data: any) {
 
   const serializedWrapper = blobTx.serializeNetworkWrapper()
 
-  const res = await client.request(
-    'eth_sendRawTransaction',
-    [bytesToPrefixedHexString(serializedWrapper)],
-    2.0
-  )
+  const res = await client.request('eth_sendRawTransaction', [bytesToHex(serializedWrapper)], 2.0)
 
   if (res.result.error !== undefined) {
     console.log('error sending transaction')

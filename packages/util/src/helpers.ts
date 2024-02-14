@@ -1,4 +1,4 @@
-import { isHexString } from './internal'
+import { isHexString } from './internal.js'
 
 /**
  * Throws if a string is not hex prefixed

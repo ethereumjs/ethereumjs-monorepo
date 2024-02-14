@@ -6,8 +6,16 @@ import {
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
-import { Account, Address, bytesToHex, equalsBytes, hexStringToBytes } from '@ethereumjs/util'
-import Heap = require('qheap')
+import {
+  Account,
+  Address,
+  BIGINT_0,
+  BIGINT_2,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
@@ -20,6 +28,9 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
+import type QHeap from 'qheap'
+
+const Heap = require('qheap')
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -75,7 +86,6 @@ type GasPrice = {
 export class TxPool {
   private config: Config
   private service: FullEthereumService
-  private vm: VM
 
   private opened: boolean
 
@@ -159,7 +169,6 @@ export class TxPool {
   constructor(options: TxPoolOptions) {
     this.config = options.config
     this.service = options.service
-    this.vm = this.service.execution.vm
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
     this.txsInPool = 0
@@ -200,7 +209,7 @@ export class TxPool {
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
     }
     this.running = true
-    this.config.logger.info('TxPool started.')
+    this.config.superMsg('TxPool started.')
     return true
   }
 
@@ -214,7 +223,7 @@ export class TxPool {
     // If height gte target, we are close enough to the
     // head of the chain that the tx pool can be started
     const target =
-      (this.config.syncTargetHeight ?? BigInt(0)) -
+      (this.config.syncTargetHeight ?? BIGINT_0) -
       BigInt(this.BLOCKS_BEFORE_TARGET_HEIGHT_ACTIVATION)
     if (this.service.chain.headers.height >= target) {
       this.start()
@@ -232,16 +241,19 @@ export class TxPool {
       existingTxGasPrice.maxFee +
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
-      throw new Error('replacement gas too low')
+      throw new Error(
+        `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`
+      )
     }
 
     if (addedTx instanceof BlobEIP4844Transaction && existingTx instanceof BlobEIP4844Transaction) {
-      const minDataGasFee =
-        (existingTx.maxFeePerDataGas *
-          (existingTx.maxFeePerDataGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT))) /
-        BigInt(100)
-      if (addedTx.maxFeePerDataGas < minDataGasFee) {
-        throw new Error('replacement data gas too low')
+      const minblobGasFee =
+        existingTx.maxFeePerBlobGas +
+        (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
+      if (addedTx.maxFeePerBlobGas < minblobGasFee) {
+        throw new Error(
+          `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`
+        )
       }
     }
   }
@@ -292,8 +304,8 @@ export class TxPool {
       }
     }
     const block = await this.service.chain.getCanonicalHeadHeader()
-    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BigInt(0)) {
-      if (currentGasPrice.maxFee < block.baseFeePerGas / BigInt(2) && !isLocalTransaction) {
+    if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
+      if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
         throw new Error(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`
         )
@@ -306,7 +318,7 @@ export class TxPool {
     }
 
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
-    const vmCopy = await this.vm.copy()
+    const vmCopy = await this.service.execution.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
     await vmCopy.stateManager.setStateRoot(block.stateRoot)
     let account = await vmCopy.stateManager.getAccount(senderAddress)
@@ -336,7 +348,7 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
-    const hash: UnprefixedHash = bytesToHex(tx.hash())
+    const hash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
     try {
@@ -365,7 +377,7 @@ export class TxPool {
   getByHash(txHashes: Uint8Array[]): TypedTransaction[] {
     const found = []
     for (const txHash of txHashes) {
-      const txHashStr = bytesToHex(txHash)
+      const txHashStr = bytesToUnprefixedHex(txHash)
       const handled = this.handled.get(txHashStr)
       if (!handled) continue
       const inPool = this.pool.get(handled.address)?.filter((poolObj) => poolObj.hash === txHashStr)
@@ -414,11 +426,11 @@ export class TxPool {
     for (const hash of txHashes) {
       const inSent = this.knownByPeer
         .get(peer.id)!
-        .filter((sentObject) => sentObject.hash === bytesToHex(hash)).length
+        .filter((sentObject) => sentObject.hash === bytesToUnprefixedHex(hash)).length
       if (inSent === 0) {
         const added = Date.now()
         const add = {
-          hash: bytesToHex(hash),
+          hash: bytesToUnprefixedHex(hash),
           added,
         }
         this.knownByPeer.get(peer.id)!.push(add)
@@ -437,7 +449,8 @@ export class TxPool {
    * @param txHashes Array with transactions to send
    * @param peers
    */
-  async sendNewTxHashes(txHashes: Uint8Array[], peers: Peer[]) {
+  sendNewTxHashes(txs: [number[], number[], Uint8Array[]], peers: Peer[]) {
+    const txHashes = txs[2]
     for (const peer of peers) {
       // Make sure data structure is initialized
       if (!this.knownByPeer.has(peer.id)) {
@@ -448,11 +461,35 @@ export class TxPool {
 
       // Broadcast to peer if at least 1 new tx hash to announce
       if (hashesToSend.length > 0) {
-        try {
-          await peer.eth?.request('NewPooledTransactionHashes', hashesToSend)
-        } catch (e) {
-          this.markFailedSends(peer, hashesToSend, e as Error)
+        if (
+          peer.eth !== undefined &&
+          peer.eth['versions'] !== undefined &&
+          peer.eth['versions'].includes(68)
+        ) {
+          // If peer supports eth/68, send eth/68 formatted message (tx_types[], tx_sizes[], hashes[])
+          const txsToSend: [number[], number[], Uint8Array[]] = [[], [], []]
+          for (const hash of hashesToSend) {
+            const index = txs[2].findIndex((el) => equalsBytes(el, hash))
+            txsToSend[0].push(txs[0][index])
+            txsToSend[1].push(txs[1][index])
+            txsToSend[2].push(hash)
+          }
+
+          try {
+            peer.eth?.send('NewPooledTransactionHashes', txsToSend.slice(0, 4096))
+          } catch (e) {
+            this.markFailedSends(peer, hashesToSend, e as Error)
+          }
         }
+        // If peer doesn't support eth/68, just send tx hashes
+        else
+          try {
+            // We `send` this directly instead of using devp2p's async `request` since NewPooledTransactionHashes has no response and is just sent to peers
+            // and this requires no tracking of a peer's response
+            peer.eth?.send('NewPooledTransactionHashes', hashesToSend.slice(0, 4096))
+          } catch (e) {
+            this.markFailedSends(peer, hashesToSend, e as Error)
+          }
       }
     }
   }
@@ -473,8 +510,8 @@ export class TxPool {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
         const newHashes = this.addToKnownByPeer(hashes, peer)
-        const newHashesHex = newHashes.map((txHash) => bytesToHex(txHash))
-        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToHex(tx.hash())))
+        const newHashesHex = newHashes.map((txHash) => bytesToUnprefixedHex(txHash))
+        const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToUnprefixedHex(tx.hash())))
         peer.eth?.request('Transactions', newTxs).catch((e) => {
           this.markFailedSends(peer, newHashes, e as Error)
         })
@@ -486,7 +523,7 @@ export class TxPool {
     for (const txHash of failedHashes) {
       const sendobject = this.knownByPeer
         .get(peer.id)
-        ?.filter((sendObject) => sendObject.hash === bytesToHex(txHash))[0]
+        ?.filter((sendObject) => sendObject.hash === bytesToUnprefixedHex(txHash))[0]
       if (sendobject) {
         sendobject.error = e
       }
@@ -508,11 +545,13 @@ export class TxPool {
       peer
     )
 
-    const newTxHashes = []
+    const newTxHashes: [number[], number[], Uint8Array[]] = [] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
-        newTxHashes.push(tx.hash())
+        newTxHashes[0].push(tx.type)
+        newTxHashes[1].push(tx.serialize().byteLength)
+        newTxHashes[2].push(tx.hash())
       } catch (error: any) {
         this.config.logger.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
@@ -523,7 +562,7 @@ export class TxPool {
     const numPeers = peers.length
     const sendFull = Math.max(1, Math.floor(numPeers / this.NUM_PEERS_REBROADCAST_QUOTIENT))
     this.sendTransactions(txs, peers.slice(0, sendFull))
-    await this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
+    this.sendNewTxHashes(newTxHashes, peers.slice(sendFull))
   }
 
   /**
@@ -534,12 +573,12 @@ export class TxPool {
    * @param peerPool Reference to the peer pool
    */
   async handleAnnouncedTxHashes(txHashes: Uint8Array[], peer: Peer, peerPool: PeerPool) {
-    if (!this.running || txHashes.length === 0) return
+    if (!this.running || txHashes === undefined || txHashes.length === 0) return
     this.addToKnownByPeer(txHashes, peer)
 
     const reqHashes = []
     for (const txHash of txHashes) {
-      const txHashStr: UnprefixedHash = bytesToHex(txHash)
+      const txHashStr: UnprefixedHash = bytesToUnprefixedHex(txHash)
       if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
       }
@@ -550,7 +589,7 @@ export class TxPool {
 
     this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
-    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToHex)
+    const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
     this.config.logger.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`
@@ -568,7 +607,7 @@ export class TxPool {
     const [_, txs] = getPooledTxs
     this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
 
-    const newTxHashes = []
+    const newTxHashes: [number[], number[], Uint8Array[]] = [[], [], []] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
@@ -577,9 +616,11 @@ export class TxPool {
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`
         )
       }
-      newTxHashes.push(tx.hash())
+      newTxHashes[0].push(tx.type)
+      newTxHashes[1].push(tx.serialize().length)
+      newTxHashes[2].push(tx.hash())
     }
-    await this.sendNewTxHashes(newTxHashes, peerPool.peers)
+    this.sendNewTxHashes(newTxHashes, peerPool.peers)
   }
 
   /**
@@ -589,7 +630,7 @@ export class TxPool {
     if (!this.running) return
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
-        const txHash: UnprefixedHash = bytesToHex(tx.hash())
+        const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
         this.removeByHash(txHash)
       }
     }
@@ -635,7 +676,7 @@ export class TxPool {
    */
   private normalizedGasPrice(tx: TypedTransaction, baseFee?: bigint) {
     const supports1559 = tx.supports(Capability.EIP1559FeeMarket)
-    if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
+    if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
       if (supports1559) {
         return (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
       } else {
@@ -708,7 +749,7 @@ export class TxPool {
         .map((obj) => obj.tx)
         .sort((a, b) => Number(a.nonce - b.nonce))
       // Check if the account nonce matches the lowest known tx nonce
-      let account = await vm.stateManager.getAccount(new Address(hexStringToBytes(address)))
+      let account = await vm.stateManager.getAccount(new Address(hexToBytes('0x' + address)))
       if (account === undefined) {
         account = new Account()
       }
@@ -719,7 +760,7 @@ export class TxPool {
         skippedStats.byNonce += txsSortedByNonce.length
         continue
       }
-      if (typeof baseFee === 'bigint' && baseFee !== BigInt(0)) {
+      if (typeof baseFee === 'bigint' && baseFee !== BIGINT_0) {
         // If any tx has an insufficient gasPrice,
         // remove all txs after that since they cannot be executed
         const found = txsSortedByNonce.findIndex((tx) => this.normalizedGasPrice(tx) < baseFee)
@@ -731,10 +772,10 @@ export class TxPool {
       byNonce.set(address, txsSortedByNonce)
     }
     // Initialize a price based heap with the head transactions
-    const byPrice = new Heap<TypedTransaction>({
+    const byPrice = new Heap({
       comparBefore: (a: TypedTransaction, b: TypedTransaction) =>
-        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BigInt(0),
-    })
+        this.normalizedGasPrice(b, baseFee) - this.normalizedGasPrice(a, baseFee) < BIGINT_0,
+    }) as QHeap<TypedTransaction>
     for (const [address, txs] of byNonce) {
       byPrice.insert(txs[0])
       byNonce.set(address, txs.slice(1))

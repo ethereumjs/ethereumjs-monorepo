@@ -1,35 +1,28 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 const method = 'net_listening'
 
-tape(`${method}: call while listening`, async (t) => {
-  const manager = createManager(createClient({ opened: true }))
-  const server = startRPC(manager.getMethods())
+describe(method, () => {
+  it('call while listening', async () => {
+    const manager = createManager(await createClient({ opened: true }))
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    let msg = 'result should be a boolean'
-    t.equal(typeof result, 'boolean', msg)
-    msg = 'should be listening'
-    t.equal(result, true, msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const res = await rpc.request(method, [])
+    const { result } = res
 
-tape(`${method}: call while not listening`, async (t) => {
-  const manager = createManager(createClient({ opened: false }))
-  const server = startRPC(manager.getMethods())
+    assert.equal(typeof result, 'boolean', 'result should be a boolean')
+    assert.equal(result, true, 'should be listening')
+  })
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    const { result } = res.body
-    let msg = 'result should be a boolean'
-    t.equal(typeof result, 'boolean', msg)
-    msg = 'should not be listening'
-    t.equal(result, false, msg)
-  }
-  await baseRequest(t, server, req, 200, expectRes)
+  it('call while not listening', async () => {
+    const manager = createManager(await createClient({ opened: false }))
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
+
+    const res = await rpc.request(method, [])
+    const { result } = res
+    assert.equal(typeof result, 'boolean', 'result should be a boolean')
+    assert.equal(result, false, 'should not be listening')
+  })
 })

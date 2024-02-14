@@ -1,10 +1,10 @@
-import type { Bloom } from './bloom'
+import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { EVM, EVMResult, Log } from '@ethereumjs/evm'
+import type { EVMInterface, EVMResult, Log } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
-import type { BigIntLike, WithdrawalData } from '@ethereumjs/util'
+import type { BigIntLike, GenesisState, WithdrawalData } from '@ethereumjs/util'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -49,19 +49,24 @@ export interface PostByzantiumTxReceipt extends BaseTxReceipt {
 
 export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
   /**
-   * Data gas consumed by a transaction
+   * blob gas consumed by a transaction
    *
    * Note: This value is not included in the receiptRLP used for encoding the receiptsRoot in a block
    * and is only provided as part of receipt metadata.
    */
-  dataGasUsed: bigint
+  blobGasUsed: bigint
   /**
-   * Data gas price for block transaction was included in
+   * blob gas price for block transaction was included in
    *
    * Note: This valus is not included in the `receiptRLP` used for encoding the `receiptsRoot` in a block
    * and is only provided as part of receipt metadata.
    */
-  dataGasPrice: bigint
+  blobGasPrice: bigint
+}
+
+export type EVMProfilerOpts = {
+  enabled: boolean
+  // extra options here (such as use X hardfork for gas)
 }
 
 export type VMEvents = {
@@ -69,6 +74,12 @@ export type VMEvents = {
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
   beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
   afterTx: (data: AfterTxEvent, resolve?: (result?: any) => void) => void
+}
+
+export type VMProfilerOpts = {
+  //evmProfilerOpts: EVMProfilerOpts
+  reportAfterTx?: boolean
+  reportAfterBlock?: boolean
 }
 
 /**
@@ -83,7 +94,7 @@ export interface VMOpts {
    *
    * - `chain`: all chains supported by `Common` or a custom chain
    * - `hardfork`: `mainnet` hardforks up to the `Paris` hardfork
-   * - `eips`: `2537` (usage e.g. `eips: [ 2537, ]`)
+   * - `eips`: `1559` (usage e.g. `eips: [ 1559, ]`)
    *
    * Note: check the associated `@ethereumjs/evm` instance options
    * documentation for supported EIPs.
@@ -120,36 +131,28 @@ export interface VMOpts {
    */
   activatePrecompiles?: boolean
   /**
-   * If true, the state of the VM will add the genesis state given by {@link Blockchain.genesisState} to a newly
-   * created state manager instance. Note that if stateManager option is also passed as argument
-   * this flag won't have any effect.
-   *
-   * Default: `false`
+   * A genesisState to generate canonical genesis for the "in-house" created stateManager if external
+   * stateManager not provided for the VM, defaults to an empty state
    */
-  activateGenesisState?: boolean
+  genesisState?: GenesisState
 
   /**
-   * Select hardfork based upon block number. This automatically switches to the right hard fork based upon the block number.
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
    *
-   * Default: `false`
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
+   *
+   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByBlockNumber?: boolean
-  /**
-   * Select the HF by total difficulty (Paris Merge HF)
-   *
-   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
-   * and determines the HF by both the block number and the TD.
-   *
-   * Since the TD is only a threshold the block number will in doubt take precedence (imagine
-   * e.g. both Paris (Merge) and Shanghai HF blocks set and the block number from the block provided
-   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
-   */
-  hardforkByTTD?: BigIntLike
+  setHardfork?: boolean | BigIntLike
 
   /**
    * Use a custom EVM to run Messages on. If this is not present, use the default EVM.
    */
-  evm?: EVM
+  evm?: EVMInterface
+
+  profilerOpts?: VMProfilerOpts
 }
 
 /**
@@ -262,9 +265,15 @@ export interface RunBlockOpts {
    */
   skipBalance?: boolean
   /**
-   * For merge transition support, pass the chain TD up to the block being run
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
+   *
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
+   *
+   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByTTD?: bigint
+  setHardfork?: boolean | BigIntLike
 }
 
 /**
@@ -396,9 +405,9 @@ export interface RunTxResult extends EVMResult {
   minerValue: bigint
 
   /**
-   * This is the data gas units times the fee per data gas for 4844 transactions
+   * This is the blob gas units times the fee per blob gas for 4844 transactions
    */
-  dataGasUsed?: bigint
+  blobGasUsed?: bigint
 }
 
 export interface AfterTxEvent extends RunTxResult {

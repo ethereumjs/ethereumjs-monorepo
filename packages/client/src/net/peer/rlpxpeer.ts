@@ -4,7 +4,7 @@ import {
   RLPx as Devp2pRLPx,
   SNAP as Devp2pSNAP,
 } from '@ethereumjs/devp2p'
-import { hexStringToBytes, randomBytes } from '@ethereumjs/util'
+import { randomBytes, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { RlpxSender } from '../protocol'
@@ -18,6 +18,8 @@ import type { Capabilities as Devp2pCapabilities, Peer as Devp2pRlpxPeer } from 
 const devp2pCapabilities = {
   snap1: Devp2pSNAP.snap,
   eth66: Devp2pETH.eth66,
+  eth67: Devp2pETH.eth67,
+  eth68: Devp2pETH.eth68,
   les2: Devp2pLES.les2,
   les3: Devp2pLES.les3,
   les4: Devp2pLES.les4,
@@ -35,7 +37,7 @@ export interface RlpxPeerOptions extends Omit<PeerOptions, 'address' | 'transpor
  * Devp2p/RLPx peer
  * @memberof module:net/peer
  * @example
- * ```typescript
+ * ```ts
  * import { RlpxPeer } from './src/net/peer'
  * import { Chain } from './src/blockchain'
  * import { EthProtocol } from './src/net/protocol'
@@ -59,7 +61,6 @@ export class RlpxPeer extends Peer {
   public rlpx: Devp2pRLPx | null
   public rlpxPeer: Devp2pRlpxPeer | null
   public connected: boolean
-
   /**
    * Create new devp2p/rlpx peer
    */
@@ -111,7 +112,7 @@ export class RlpxPeer extends Peer {
       common: this.config.chainCommon,
     })
     await this.rlpx.connect({
-      id: hexStringToBytes(this.id),
+      id: unprefixedHexToBytes(this.id),
       address: this.host,
       tcpPort: this.port,
     })
@@ -135,11 +136,11 @@ export class RlpxPeer extends Peer {
       this.rlpxPeer = null
       this.connected = false
       this.config.events.emit(Event.PEER_DISCONNECTED, this)
-      this.rlpx?.removeListener('peer:error', peerErrorHandlerBound)
+      this.rlpx?.events.removeListener('peer:error', peerErrorHandlerBound)
     }
-    this.rlpx.on('peer:error', peerErrorHandlerBound)
-    this.rlpx.once('peer:added', peerAddedHandler.bind(this))
-    this.rlpx.once('peer:removed', peerRemovedHandler.bind(this))
+    this.rlpx.events.on('peer:error', peerErrorHandlerBound)
+    this.rlpx.events.once('peer:added', peerAddedHandler.bind(this))
+    this.rlpx.events.once('peer:removed', peerRemovedHandler.bind(this))
   }
 
   /**
@@ -166,8 +167,8 @@ export class RlpxPeer extends Peer {
         // Since snap is running atop/besides eth, it doesn't need a separate sender
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
-          const sender = new RlpxSender(rlpxProtocol)
-          return this.bindProtocol(protocol, sender).then(() => {
+          const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
+          return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
                 .getProtocols()
@@ -179,8 +180,10 @@ export class RlpxPeer extends Peer {
                     )
                   : undefined
               if (snapProtocol !== undefined) {
-                const snapSender = new RlpxSender(snapRlpxProtocol)
-                return this.bindProtocol(snapProtocol, snapSender)
+                const snapSender = new RlpxSender(
+                  snapRlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP
+                )
+                return this.addProtocol(snapSender, snapProtocol)
               }
             }
           })

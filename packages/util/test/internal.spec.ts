@@ -1,8 +1,10 @@
-import { bytesToUtf8, utf8ToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
 import {
   arrayContainsArray,
+  bytesToUtf8,
+  fromAscii,
+  fromUtf8,
   getBinarySize,
   getKeys,
   isHexPrefixed,
@@ -10,43 +12,38 @@ import {
   padToEven,
   stripHexPrefix,
   toAscii,
-} from '../src/internal'
+  utf8ToBytes,
+} from '../src/index.js'
 
 const buf = utf8ToBytes('hello')
 
-tape('internal', (t) => {
-  t.test('isHexPrefixed', (st) => {
-    st.equal(isHexPrefixed('0xabc'), true)
-    st.equal(isHexPrefixed('abc'), false)
-    st.end()
+describe('internal', () => {
+  it('isHexPrefixed', () => {
+    assert.equal(isHexPrefixed('0xabc'), true)
+    assert.equal(isHexPrefixed('abc'), false)
   })
-  t.test('stripHexPrefix', (st) => {
-    st.equal(stripHexPrefix('0xabc'), 'abc')
-    st.equal(stripHexPrefix('abc'), 'abc')
-    st.end()
+  it('stripHexPrefix', () => {
+    assert.equal(stripHexPrefix('0xabc'), 'abc')
+    assert.equal(stripHexPrefix('abc'), 'abc')
   })
-  t.test('padToEven', (st) => {
-    st.equal(padToEven('123'), '0123')
-    st.equal(padToEven('1234'), '1234')
-    st.end()
+  it('padToEven', () => {
+    assert.equal(padToEven('123'), '0123')
+    assert.equal(padToEven('1234'), '1234')
   })
-  t.test('getBinarySize', (st) => {
-    st.equal(getBinarySize('hello'), buf.byteLength)
-    st.end()
+  it('getBinarySize', () => {
+    assert.equal(getBinarySize('hello'), buf.byteLength)
   })
-  t.test('arrayContainsArray', (st) => {
-    st.equal(arrayContainsArray([1, 2, 3], [1, 2]), true)
-    st.equal(arrayContainsArray([1, 2, 3], [4, 5]), false)
-    st.equal(arrayContainsArray([1, 2, 3], [3, 5], true), true)
-    st.equal(arrayContainsArray([1, 2, 3], [4, 5], true), false)
-    st.end()
+  it('arrayContainsArray', () => {
+    assert.equal(arrayContainsArray([1, 2, 3], [1, 2]), true)
+    assert.equal(arrayContainsArray([1, 2, 3], [4, 5]), false)
+    assert.equal(arrayContainsArray([1, 2, 3], [3, 5], true), true)
+    assert.equal(arrayContainsArray([1, 2, 3], [4, 5], true), false)
   })
-  t.test('toAscii', (st) => {
-    st.equal(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
-    st.end()
+  it('toAscii', () => {
+    assert.equal(toAscii(bytesToUtf8(buf)), '\x00\x00\x00')
   })
-  t.test('getKeys', (st) => {
-    st.deepEqual(
+  it('getKeys', () => {
+    assert.deepEqual(
       getKeys(
         [
           { a: '1', b: '2' },
@@ -56,7 +53,7 @@ tape('internal', (t) => {
       ),
       ['1', '3']
     )
-    st.deepEqual(
+    assert.deepEqual(
       getKeys(
         [
           { a: '', b: '2' },
@@ -67,12 +64,75 @@ tape('internal', (t) => {
       ),
       ['', '3']
     )
-    st.end()
   })
-  t.test('isHexString', (st) => {
-    st.equal(isHexString('0x0000000000000000000000000000000000000000'), true)
-    st.equal(isHexString('123'), false)
-    st.end()
+  it('isHexString', () => {
+    assert.equal(isHexString('0x0000000000000000000000000000000000000000'), true)
+    assert.equal(isHexString('123'), false)
   })
-  t.end()
+
+  describe('isHexPrefixed', () => {
+    it('should return true for hex-prefixed string', () => {
+      assert.isTrue(isHexPrefixed('0x123'))
+    })
+
+    it('should return false for non-hex-prefixed string', () => {
+      assert.isFalse(isHexPrefixed('123'))
+    })
+  })
+
+  describe('padToEven', () => {
+    it('should pad odd-length string to even', () => {
+      assert.equal(padToEven('123'), '0123')
+    })
+
+    it('should not pad even-length string', () => {
+      assert.equal(padToEven('1234'), '1234')
+    })
+  })
+
+  describe('getBinarySize', () => {
+    it('should return the correct binary size of a string', () => {
+      assert.equal(getBinarySize('Hello, World!'), 13)
+    })
+  })
+
+  describe('arrayContainsArray', () => {
+    it('should return true when the first array contains all elements of the second', () => {
+      assert.isTrue(arrayContainsArray([1, 2, 3, 4, 5], [3, 4]))
+    })
+
+    it('should return false when the first array does not contain any elements of the second', () => {
+      assert.isFalse(arrayContainsArray([1, 2, 3, 4, 5], [6, 7]))
+    })
+
+    it('should return false when the first array contains some but not all elements of the second', () => {
+      assert.isFalse(arrayContainsArray([1, 2, 3, 4, 5], [5, 6]))
+    })
+  })
+
+  describe('fromUtf8', () => {
+    it('should convert a UTF-8 string to a hex string', () => {
+      assert.equal(fromUtf8('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
+    })
+
+    it('should convert a UTF-8 string with 2-byte characters to a hex string', () => {
+      assert.equal(fromUtf8('ϋύϒϗϘϢϰЂ'), '0xcf8bcf8dcf92cf97cf98cfa2cfb0d082')
+    })
+  })
+
+  describe('fromAscii', () => {
+    it('should convert an ASCII string to a hex string', () => {
+      assert.equal(fromAscii('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
+    })
+  })
+
+  describe('getKeys', () => {
+    it('should extract keys from an array of objects', () => {
+      const input = [
+        { a: '1', b: '2' },
+        { a: '3', b: '4' },
+      ]
+      assert.deepEqual(getKeys(input, 'a'), ['1', '3'])
+    })
+  })
 })

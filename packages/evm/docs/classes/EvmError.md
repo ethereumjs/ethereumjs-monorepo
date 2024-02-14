@@ -23,21 +23,21 @@
 
 | Name | Type |
 | :------ | :------ |
-| `error` | [`EvmErrorMessage`](../enums/EvmErrorMessage.md) |
+| `error` | [`EVMErrorMessage`](../enums/EVMErrorMessage.md) |
 
 #### Defined in
 
-[exceptions.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L44)
+[exceptions.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L46)
 
 ## Properties
 
 ### error
 
-• **error**: [`EvmErrorMessage`](../enums/EvmErrorMessage.md)
+• **error**: [`EVMErrorMessage`](../enums/EVMErrorMessage.md)
 
 #### Defined in
 
-[exceptions.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L41)
+[exceptions.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L43)
 
 ___
 
@@ -47,4 +47,4 @@ ___
 
 #### Defined in
 
-[exceptions.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L42)
+[exceptions.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/exceptions.ts#L44)

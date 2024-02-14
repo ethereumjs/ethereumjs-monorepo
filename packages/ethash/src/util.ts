@@ -1,5 +1,5 @@
 import { isProbablyPrime } from 'bigint-crypto-utils'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 export const params = {
   DATASET_BYTES_INIT: 1073741824, // 2^30

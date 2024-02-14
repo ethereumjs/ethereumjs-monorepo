@@ -6,20 +6,14 @@
 // 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
 // 5. Runs the Blockchain on the VM.
 
-import {
-  Account,
-  Address,
-  toBytes,
-  setLengthLeft,
-  bytesToPrefixedHexString,
-} from '@ethereumjs/util'
+import { Account, Address, toBytes, setLengthLeft, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Common, ConsensusType } from '@ethereumjs/common'
-import { VM } from '../'
-import { testData } from './helpers/blockchain-mock-data'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import { VM } from '@ethereumjs/vm'
+//import testData from './helpers/blockchain-mock-data.json'
 
+const testData = require('./helpers/blockchain-mock-data.json')
 async function main() {
   const common = new Common({ chain: 1, hardfork: testData.network.toLowerCase() })
   const validatePow = common.consensusType() === ConsensusType.ProofOfWork
@@ -50,17 +44,17 @@ async function main() {
   const blockchainHead = await vm.blockchain.getIteratorHead!()
 
   console.log('--- Finished processing the Blockchain ---')
-  console.log('New head:', bytesToPrefixedHexString(blockchainHead.hash()))
+  console.log('New head:', bytesToHex(blockchainHead.hash()))
   console.log('Expected:', testData.lastblockhash)
 }
 
-async function setupPreConditions(vm: VM, data: typeof testData) {
+async function setupPreConditions(vm: VM, data: any) {
   await vm.stateManager.checkpoint()
 
   for (const [addr, acct] of Object.entries(data.pre)) {
-    const { nonce, balance, storage, code } = acct
+    const { nonce, balance, storage, code } = acct as any
 
-    const address = new Address(hexToBytes(addr.slice(2)))
+    const address = new Address(hexToBytes(addr))
     const account = Account.fromAccountData({ nonce, balance })
     await vm.stateManager.putAccount(address, account)
 
@@ -70,7 +64,7 @@ async function setupPreConditions(vm: VM, data: typeof testData) {
       await vm.stateManager.putContractStorage(address, storageKey, storageVal)
     }
 
-    const codeBuf = hexToBytes(code.slice(2))
+    const codeBuf = hexToBytes('0x' + code)
     await vm.stateManager.putContractCode(address, codeBuf)
   }
 

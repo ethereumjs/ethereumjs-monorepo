@@ -1,5 +1,4 @@
-import { debug as createDebugLogger } from 'debug'
-import Heap = require('qheap')
+import debugDefault from 'debug'
 import { Readable, Writable } from 'stream'
 
 import { Event } from '../../types'
@@ -10,6 +9,10 @@ import type { PeerPool } from '../../net/peerpool'
 import type { JobTask as BlockFetcherJobTask } from './blockfetcherbase'
 import type { Job } from './types'
 import type { Debugger } from 'debug'
+import type QHeap from 'qheap'
+
+const Heap = require('qheap')
+const { debug: createDebugLogger } = debugDefault
 
 export interface FetcherOptions {
   /* Common chain config*/
@@ -45,6 +48,7 @@ export interface FetcherOptions {
  */
 export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable {
   public config: Config
+  public fetchPromise: Promise<boolean> | null = null
   protected debug: Debugger
 
   protected pool: PeerPool
@@ -52,8 +56,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   protected interval: number
   protected banTime: number
   protected maxQueue: number
-  protected in: Heap<Job<JobTask, JobResult, StorageItem>>
-  protected out: Heap<Job<JobTask, JobResult, StorageItem>>
+  protected in: QHeap<Job<JobTask, JobResult, StorageItem>>
+  protected out: QHeap<Job<JobTask, JobResult, StorageItem>>
   protected total: number
   protected processed: number // number of processed tasks, awaiting the write job
   protected finished: number // number of tasks which are both processed and also finished writing
@@ -84,18 +88,22 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     this.banTime = options.banTime ?? 60000
     this.maxQueue = options.maxQueue ?? 4
 
+    this.debug(
+      `Fetcher initialized timeout=${this.timeout} interval=${this.interval} banTime=${this.banTime} maxQueue=${this.maxQueue}`
+    )
+
     this.in = new Heap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
       ) => a.index < b.index,
-    })
+    }) as QHeap<Job<JobTask, JobResult, StorageItem>>
     this.out = new Heap({
       comparBefore: (
         a: Job<JobTask, JobResult, StorageItem>,
         b: Job<JobTask, JobResult, StorageItem>
       ) => a.index < b.index,
-    })
+    }) as QHeap<Job<JobTask, JobResult, StorageItem>>
     this.total = 0
     this.processed = 0
     this.finished = 0
@@ -179,7 +187,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     for (let f = this.out.peek(); f && f.index <= this.processed; ) {
       this.processed++
       const job = this.out.remove()
-      if (!this.push(job)) {
+      // Push the job to the Readable stream
+      const success = this.push(job)
+      if (!success) {
         return
       }
       f = this.out.peek()
@@ -222,17 +232,30 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param result job result
    */
   private success(job: Job<JobTask, JobResult, StorageItem>, result?: JobResult) {
-    if (job.state !== 'active') return
     let jobStr = this.jobStr(job, true)
+    if (job.state !== 'active') return
+
     let reenqueue = false
     let resultSet = ''
     if (result === undefined) {
       resultSet = 'undefined'
       reenqueue = true
     }
-    if (result !== undefined && (result as any).length === 0) {
-      resultSet = 'empty'
-      reenqueue = true
+    if (result !== undefined) {
+      if ('length' in (result as any)) {
+        if ((result as any).length === 0) {
+          resultSet = 'empty'
+          reenqueue = true
+        }
+      } else {
+        // Hot-Fix for lightsync, 2023-12-29
+        // (delete (only the if clause) in case lightsync code
+        // has been removed at some point)
+        if (!('reqId' in (result as any))) {
+          resultSet = 'unknown'
+          reenqueue = true
+        }
+      }
     }
     if (reenqueue) {
       this.debug(
@@ -249,7 +272,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       job.peer!.idle = true
       job.result = this.process(job, result)
       jobStr = this.jobStr(job, true)
-      if (job.result) {
+      if (job.result !== undefined) {
+        this.debug(`Successful job completion job ${jobStr}, writing to out and dequeue`)
         this.out.insert(job)
         this.dequeue()
       } else {
@@ -313,11 +337,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   next() {
     this.nextTasks()
     const job = this.in.peek()
-    if (!job) {
+    if (job === undefined) {
       if (this.finished !== this.total) {
         // There are still jobs waiting to be processed out in the writer pipe
         this.debug(
-          `No job found on next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`
+          `No job found as next task, skip next job execution processed=${this.processed} finished=${this.finished} total=${this.total}`
         )
       } else {
         // There are no more jobs in the fetcher, so its better to resolve
@@ -327,19 +351,21 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       }
       return false
     }
-    if (this._readableState!.length > this.maxQueue) {
+    const jobStr = this.jobStr(job)
+    if (this._readableState === undefined || this._readableState!.length > this.maxQueue) {
       this.debug(
         `Readable state length=${this._readableState!.length} exceeds max queue size=${
           this.maxQueue
-        }, skip next job execution.`
+        }, skip job ${jobStr} execution.`
       )
       return false
     }
-    if (job.index > this.processed + this.maxQueue) {
-      this.debug(`Job index greater than processed + max queue size, skip next job execution.`)
+    if (job.index > this.finished + this.maxQueue) {
+      this.debug(`Job index greater than finished + max queue size, skip job ${jobStr} execution.`)
+      return false
     }
     if (this.processed === this.total) {
-      this.debug(`Total number of tasks reached, skip next job execution.`)
+      this.debug(`Total number of tasks reached, skip job ${jobStr} execution.`)
       return false
     }
     const peer = this.peer()
@@ -351,8 +377,11 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       const timeout = setTimeout(() => {
         this.expire(job)
       }, this.timeout)
+      this.debug(`All requirements met for job ${jobStr}, start requesting.`)
       this.request(job, peer)
-        .then((result?: JobResult) => this.success(job, result))
+        .then((result?: JobResult) => {
+          this.success(job, result)
+        })
         .catch((error: Error) => {
           const { banPeer } = this.processStoreError(error, job.task)
           this.failure(job, error, false, false, banPeer)
@@ -360,7 +389,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
         .finally(() => clearTimeout(timeout))
       return job
     } else {
-      this.debug(`No idle peer available, skip next job execution.`)
+      this.debug(`No idle peer available, skip execution for job ${jobStr}.`)
       return false
     }
   }
@@ -411,6 +440,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
       cb: Function
     ) => {
       const jobItems = job instanceof Array ? job : [job]
+      this.debug(`Starting write for ${jobItems.length} jobs...`)
       try {
         for (const jobItem of jobItems) {
           await this.store(jobItem.result as StorageItem[])
@@ -477,28 +507,49 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   /**
    * Run the fetcher. Returns a promise that resolves once all tasks are completed.
    */
+  async _fetch() {
+    try {
+      this.write()
+      this.running = true
+      this.nextTasks()
+
+      while (this.running) {
+        if (this.next() === false) {
+          if (this.finished === this.total && this.destroyWhenDone) {
+            this.push(null)
+          }
+          await this.wait()
+        }
+      }
+      this.running = false
+      if (this.destroyWhenDone) {
+        this.destroy()
+        this.writer = null
+      }
+      if (this.syncErrored) throw this.syncErrored
+      return true
+    } finally {
+      this.fetchPromise = null
+    }
+  }
+
+  /**
+   * Wraps the internal fetcher to track its promise
+   */
   async fetch() {
     if (this.running) {
       return false
     }
-    this.write()
-    this.running = true
-    this.nextTasks()
 
-    while (this.running) {
-      if (this.next() === false) {
-        if (this.finished === this.total && this.destroyWhenDone) {
-          this.push(null)
-        }
-        await this.wait()
-      }
+    if (this.fetchPromise === null) {
+      this.fetchPromise = this._fetch()
     }
-    this.running = false
-    if (this.destroyWhenDone) {
-      this.destroy()
-      this.writer = null
-    }
-    if (this.syncErrored) throw this.syncErrored
+    return this.fetchPromise
+  }
+
+  async blockingFetch(): Promise<boolean> {
+    const blockingPromise = this.fetchPromise ?? this.fetch()
+    return blockingPromise
   }
 
   /**
@@ -533,6 +584,8 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
    * @param task
    */
   private isBlockFetcherJobTask(task: JobTask | BlockFetcherJobTask): task is BlockFetcherJobTask {
-    return task !== undefined && 'first' in task && 'count' in task
+    if (task === undefined || task === null) return false
+    const keys = Object.keys(task)
+    return keys.filter((key) => key === 'first' || key === 'count').length === 2
   }
 }

@@ -1,10 +1,11 @@
+import { Block } from '@ethereumjs/block'
 import { Common, parseGethGenesis } from '@ethereumjs/common'
-import * as tape from 'tape'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src'
-import { CLConnectionManager } from '../../../src/rpc/util/CLConnectionManager'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/util/CLConnectionManager'
 import { Event } from '../../../src/types'
-import genesisJSON = require('../../testdata/geth-genesis/post-merge.json')
+import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
 const payload = {
   payload: {
@@ -32,63 +33,144 @@ const update = {
     finalizedBlockHash: '0x90ce8a06162cf161cc7323aa30f1de70b30542cd5da65e521884f517a4548017',
   },
 }
-
-tape('[CLConnectionManager]', (t) => {
-  t.test('Initialization', async (st) => {
-    st.plan(5)
-    let config = new Config()
-    let manager = new CLConnectionManager({ config })
+describe('starts and stops connection manager', () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  it('should start', () => {
     manager.start()
-    st.ok(manager.running, 'should start')
-    manager.stop()
-    st.ok(!manager.running, 'should stop')
-    const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
-    ;(genesisJSON.config as any).mergeForkBlock = 0
-    const params = parseGethGenesis(genesisJSON, 'post-merge', false)
-    let common = new Common({
-      chain: params.name,
-      customChains: [params],
-    })
-    common.setHardforkByBlockNumber(0)
-    config = new Config({ common })
-    manager = new CLConnectionManager({ config })
-    st.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
-    manager.stop()
-    ;(genesisJSON.config as any).mergeForkBlock = 10
-    common = new Common({
-      chain: params.name,
-      customChains: [params],
-    })
-    config = new Config({ common })
-    manager = new CLConnectionManager({ config })
-    config.chainCommon.setHardforkByBlockNumber(11)
-    config.events.on(Event.CHAIN_UPDATED, () => {
-      st.ok(manager.running, 'connection manager started on chain update on mergeBlock')
-    })
-    config.events.on(Event.CLIENT_SHUTDOWN, () => {
-      st.ok(!manager.running, 'connection manager stopped on client shutdown')
-    })
-    config.events.emit(Event.CHAIN_UPDATED)
-    config.events.emit(Event.CLIENT_SHUTDOWN)
-    // reset prevMergeForkBlock as it seems to be polluting other tests
-    ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
+    assert.ok(manager.running, 'should start')
   })
+  it('should stop', () => {
+    manager.stop()
+    assert.notOk(manager.running, 'should stop')
+  })
+})
 
-  t.test('Status updates', async (st) => {
-    st.plan(2)
-    const config = new Config()
+describe('hardfork MergeForkBlock', () => {
+  ;(genesisJSON.config as any).mergeForkBlock = 0
+  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+  const common = new Common({
+    chain: params.name,
+    customChains: [params],
+  })
+  common.setHardforkBy({ blockNumber: 0 })
+  const config = new Config({ common })
+  it('instantiates with config', () => {
     const manager = new CLConnectionManager({ config })
-    config.logger.on('data', (chunk) => {
+    assert.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
+    manager.stop()
+  })
+})
+describe('postmerge hardfork', () => {
+  ;(genesisJSON.config as any).mergeForkBlock = 10
+  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+
+  const common = new Common({
+    chain: params.name,
+    customChains: [params],
+  })
+  common.setHardforkBy({ blockNumber: 11 })
+  const config = new Config({ common })
+  const manager = new CLConnectionManager({ config })
+
+  config.events.on(Event.CHAIN_UPDATED, () => {
+    it('starts on mergeBlock', () => {
+      assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
+      config.events.emit(Event.CLIENT_SHUTDOWN)
+    })
+  })
+  config.events.emit(Event.CHAIN_UPDATED)
+  config.events.on(Event.CLIENT_SHUTDOWN, () => {
+    it('stops on client shutdown', () => {
+      assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+    })
+  })
+})
+
+describe('Status updates', async () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  config.logger.on('data', (chunk) => {
+    it('received status message', () => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
-        st.pass('received last fork choice message')
+        assert.ok(true, 'received last fork choice message')
       }
       if ((chunk.message as string).includes('consensus payload received number=55504')) {
-        st.pass('received last payload message')
+        assert.ok(true, 'received last payload message')
         manager.stop()
         config.logger.removeAllListeners()
       }
     })
-    manager.lastForkchoiceUpdate(update)
-    manager.lastNewPayload(payload)
+  })
+  manager.lastForkchoiceUpdate(update)
+  manager.lastNewPayload(payload)
+})
+describe('updates stats when a new block is processed', async () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  manager.lastForkchoiceUpdate(update)
+  manager.lastNewPayload(payload)
+  const block = Block.fromBlockData({
+    header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
+  })
+  config.logger.on('data', (chunk) => {
+    it('received message', () => {
+      if ((chunk.message as string).includes('Payload stats blocks count=1')) {
+        assert.ok(true, 'received last payload stats message')
+        manager.stop()
+        config.logger.removeAllListeners()
+      }
+    })
+  })
+
+  manager.updatePayloadStats(block)
+  manager['lastPayloadLog']()
+})
+describe('updates status correctly', async () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  manager['updateStatus']()
+  it('updates status correctly', () => {
+    assert.ok(manager.running, 'connection manager started when updateStatus called')
+    assert.equal(
+      manager['connectionStatus'],
+      ConnectionStatus.Connected,
+      'connection status updated correctly'
+    )
+  })
+})
+describe('updates connection status correctly', async () => {
+  vi.useFakeTimers()
+  vi.setSystemTime(1696528979492)
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  it('should disconnect from CL', () => {
+    manager['connectionStatus'] = ConnectionStatus.Connected
+    manager['lastRequestTimestamp'] = Date.now() - manager['DISCONNECTED_THRESHOLD'] - 1
+    manager['connectionCheck']()
+    assert.equal(
+      manager['connectionStatus'],
+      ConnectionStatus.Disconnected,
+      'should disconnect from CL'
+    )
+  })
+  it('should change status to uncertain', () => {
+    manager['connectionStatus'] = ConnectionStatus.Connected
+    manager['lastRequestTimestamp'] = Date.now() - manager['UNCERTAIN_THRESHOLD'] - 1
+    manager['connectionCheck']()
+    assert.equal(
+      manager['connectionStatus'],
+      ConnectionStatus.Uncertain,
+      'should update status to uncertain'
+    )
+  })
+
+  it('incremented disconnection check', () => {
+    manager['config'].chainCommon.setHardfork('paris')
+    ;(manager as any)._inActivityCb = () => vi.fn()
+    const callbackSpy = vi.spyOn(manager as any, '_inActivityCb')
+    manager['connectionCheck']()
+    expect(callbackSpy).toHaveBeenCalledTimes(1)
+    assert.equal(manager['disconnectedCheckIndex'], 1, 'disconnection check incremented correctly')
   })
 })

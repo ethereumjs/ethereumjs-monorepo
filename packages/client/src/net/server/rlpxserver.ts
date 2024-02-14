@@ -1,5 +1,5 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
-import { bytesToHex, hexToBytes, utf8ToBytes } from 'ethereum-cryptography/utils'
+import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { Event } from '../../types'
 import { getClientVersion } from '../../util'
@@ -105,7 +105,7 @@ export class RlpxServer extends Server {
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
-    const id = bytesToHex(this.rlpx._id)
+    const id = bytesToUnprefixedHex(this.rlpx.id)
     return {
       enode: `enode://${id}@${listenAddr}`,
       id,
@@ -188,7 +188,7 @@ export class RlpxServer extends Server {
       return false
     }
     this.dpt!.banPeer(peerId, maxAge)
-    this.rlpx!.disconnect(hexToBytes(peerId))
+    this.rlpx!.disconnect(unprefixedHexToBytes(peerId))
     return true
   }
 
@@ -216,22 +216,35 @@ export class RlpxServer extends Server {
           udpPort: null,
           tcpPort: null,
         },
+        onlyConfirmed: this.config.chainCommon.chainName() === 'mainnet' ? false : true,
         shouldFindNeighbours: this.config.discV4,
         shouldGetDnsPeers: this.config.discDns,
         dnsRefreshQuantity: this.config.maxPeers,
         dnsNetworks: this.dnsNetworks,
         dnsAddr: this.config.dnsAddr,
+        common: this.config.chainCommon,
       })
 
-      this.dpt.on('error', (e: Error) => this.error(e))
+      this.dpt.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
-      this.dpt.on('listening', () => {
+      this.dpt.events.on('listening', () => {
         resolve()
+      })
+
+      this.config.events.on(Event.PEER_CONNECTED, (peer) => {
+        this.dpt?.confirmPeer(peer.id)
       })
 
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
+      this.config.logger.info(
+        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`
+      )
     })
   }
 
@@ -250,11 +263,13 @@ export class RlpxServer extends Server {
         common: this.config.chainCommon,
       })
 
-      this.rlpx.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
+      this.rlpx.events.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
-          id: bytesToHex(rlpxPeer.getId()!),
+          id: bytesToUnprefixedHex(rlpxPeer.getId()!),
+          // @ts-ignore
           host: rlpxPeer._socket.remoteAddress!,
+          // @ts-ignore
           port: rlpxPeer._socket.remotePort!,
           protocols: Array.from(this.protocols),
           // @ts-ignore: Property 'server' does not exist on type 'Socket'.
@@ -274,8 +289,8 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
-        const id = bytesToHex(rlpxPeer.getId() as Uint8Array)
+      this.rlpx.events.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
+        const id = bytesToUnprefixedHex(rlpxPeer.getId() as Uint8Array)
         const peer = this.peers.get(id)
         if (peer) {
           this.peers.delete(peer.id)
@@ -286,11 +301,17 @@ export class RlpxServer extends Server {
         }
       })
 
-      this.rlpx.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) => this.error(error))
+      this.rlpx.events.on('peer:error', (rlpxPeer: Devp2pRLPxPeer, error: Error) =>
+        this.error(error)
+      )
 
-      this.rlpx.on('error', (e: Error) => this.error(e))
+      this.rlpx.events.on('error', (e: Error) => {
+        this.error(e)
+        // If DPT can't bind to port, resolve anyway so client startup doesn't hang
+        if (e.message.includes('EADDRINUSE')) resolve()
+      })
 
-      this.rlpx.on('listening', () => {
+      this.rlpx.events.on('listening', () => {
         this.config.events.emit(Event.SERVER_LISTENING, {
           transport: this.name,
           url: this.getRlpxInfo().enode ?? '',

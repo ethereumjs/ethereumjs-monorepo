@@ -10,9 +10,14 @@ Target EIPs are: `3540,3651,3670,3855,3860`
 
 ### Prerequisite(s)
 
-- Docker since lodestar docker image is used to run CL to drive the post-merge sim run
-- Docker should run without `sudo`, else prefix `sudo` in from of docker commands in `test/sim/single-run.sh`
-- Mac users should skip `docker` and install directly install and use lodestar binary as instructed below
+1. Bash terminal
+2. Docker (without sudo)
+3. `jq` & `curl` installed
+4. `ethereumjs-monorepo` codebase build via `npm i` (for e.g. at `ethjs/`)
+
+You may pre-download docker images for lodestar (`docker pull chainsafe/lodestar:latest`) to avoid any test timeout issues. Mac users should skip `docker` and install directly install and use lodestar binary as instructed below
+
+Note: All commands should be run from the `client` package directory root (so something like `ethjs/packages/client`)
 
 ### How to run
 

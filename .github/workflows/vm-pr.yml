@@ -19,13 +19,13 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -33,7 +33,7 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-      - run: npm run test:API:browser
+      #     - run: npm run test:API:browser -- disabled until we fix browser tests for vitest
 
       - uses: codecov/codecov-action@v3
         with:
@@ -44,16 +44,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['London', 'Berlin', 'Paris', 'MuirGlacier', 'Istanbul', 'Shanghai']
+        fork: ['London', 'Berlin', 'Paris', 'MuirGlacier', 'Istanbul', 'Shanghai', 'Cancun']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -68,6 +68,7 @@ jobs:
       matrix:
         fork:
           [
+            'Cancun',
             'Shanghai',
             'Paris',
             'London',
@@ -84,12 +85,12 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -118,16 +119,18 @@ jobs:
             '--fork=ArrowGlacierToMergeAtDiffC0000',
             '--fork=Shanghai --dir=GeneralStateTests/stTimeConsuming',
             '--fork=Shanghai --excludeDir=stTimeConsuming',
+            '--fork=Cancun --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Cancun --excludeDir=stTimeConsuming',
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -156,6 +159,7 @@ jobs:
             '--fork=London --verify-test-amount-alltests',
             '--fork=Paris --verify-test-amount-alltests',
             '--fork=Shanghai --verify-test-amount-alltests',
+            '--fork=Cancun --verify-test-amount-alltests',
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
@@ -165,12 +169,12 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -181,11 +185,11 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci

@@ -1,24 +1,18 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToInt, concatBytes, intToBytes } from '@ethereumjs/util'
+import { bytesToInt, concatBytes, hexToBytes, intToBytes } from '@ethereumjs/util'
 import * as crypto from 'crypto'
-import { debug as createDebugLogger } from 'debug'
-import { getRandomBytesSync } from 'ethereum-cryptography/random'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
+import { ecdh, ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
-import {
-  assertEq,
-  genPrivateKey,
-  id2pk,
-  keccak256,
-  pk2id,
-  unstrictDecode,
-  xor,
-  zfill,
-} from '../util'
+import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.js'
 
-import { MAC } from './mac'
+import { MAC } from './mac.js'
+
+import type { Common } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 type Decipher = crypto.Decipher
 
 const debug = createDebugLogger('devp2p:rlpx:peer')
@@ -58,26 +52,41 @@ function concatKDF(keyMaterial: Uint8Array, keyLength: number) {
 }
 
 export class ECIES {
-  _privateKey: Uint8Array
-  _publicKey: Uint8Array
-  _remotePublicKey: Uint8Array | null
-  _nonce: Uint8Array
-  _remoteNonce: Uint8Array | null = null
-  _initMsg: Uint8Array | null | undefined = null
-  _remoteInitMsg: Uint8Array | null = null
-  _gotEIP8Auth: boolean = false
-  _gotEIP8Ack: boolean = false
-  _ingressAes: Decipher | null = null
-  _egressAes: Decipher | null = null
-  _ingressMac: MAC | null = null
-  _egressMac: MAC | null = null
-  _ephemeralPrivateKey: Uint8Array
-  _ephemeralPublicKey: Uint8Array
-  _remoteEphemeralPublicKey: Uint8Array | null = null // we don't need store this key, but why don't?
-  _ephemeralSharedSecret: Uint8Array | null = null
-  _bodySize: number | null = null
+  protected _privateKey: Uint8Array
+  protected _publicKey: Uint8Array
+  protected _remotePublicKey: Uint8Array | null
+  protected _nonce: Uint8Array
+  protected _remoteNonce: Uint8Array | null = null
+  protected _initMsg: Uint8Array | null | undefined = null
+  protected _remoteInitMsg: Uint8Array | null = null
+  protected _gotEIP8Auth: boolean = false
+  protected _gotEIP8Ack: boolean = false
+  protected _ingressAes: Decipher | null = null
+  protected _egressAes: Decipher | null = null
+  protected _ingressMac: MAC | null = null
+  protected _egressMac: MAC | null = null
+  protected _ephemeralPrivateKey: Uint8Array
+  protected _ephemeralPublicKey: Uint8Array
+  protected _remoteEphemeralPublicKey: Uint8Array | null = null // we don't need store this key, but why don't?
+  protected _ephemeralSharedSecret: Uint8Array | null = null
+  protected _bodySize: number | null = null
 
-  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array) {
+  protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected _ecdsaSign: (
+    msg: Uint8Array,
+    pk: Uint8Array
+  ) => {
+    signature: Uint8Array
+    recid: number
+  }
+  protected _ecdsaRecover: (
+    sig: Uint8Array,
+    recId: number,
+    hash: Uint8Array,
+    compressed?: boolean
+  ) => Uint8Array
+
+  constructor(privateKey: Uint8Array, id: Uint8Array, remoteId: Uint8Array, common?: Common) {
     this._privateKey = privateKey
     this._publicKey = id2pk(id)
     this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
@@ -85,6 +94,10 @@ export class ECIES {
     this._nonce = getRandomBytesSync(32)
     this._ephemeralPrivateKey = genPrivateKey()
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
+
+    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
+    this._ecdsaSign = common?.customCrypto.ecdsaSign ?? ecdsaSign
+    this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
   }
 
   _encryptMessage(
@@ -119,7 +132,7 @@ export class ECIES {
   _decryptMessage(data: Uint8Array, sharedMacData: Uint8Array | null = null): Uint8Array {
     assertEq(
       data.subarray(0, 1),
-      hexToBytes('04'),
+      hexToBytes('0x04'),
       'wrong ecies header (possible cause: EIP8 upgrade)',
       debug
     )
@@ -156,17 +169,17 @@ export class ECIES {
     const nonceMaterial = incoming
       ? concatBytes(this._nonce, this._remoteNonce)
       : concatBytes(this._remoteNonce, this._nonce)
-    const hNonce = keccak256(nonceMaterial)
+    const hNonce = this._keccakFunction(nonceMaterial)
 
     if (!this._ephemeralSharedSecret) return
     const IV = new Uint8Array(16).fill(0x00)
-    const sharedSecret = keccak256(this._ephemeralSharedSecret, hNonce)
+    const sharedSecret = this._keccakFunction(concatBytes(this._ephemeralSharedSecret, hNonce))
 
-    const aesSecret = keccak256(this._ephemeralSharedSecret, sharedSecret)
+    const aesSecret = this._keccakFunction(concatBytes(this._ephemeralSharedSecret, sharedSecret))
     this._ingressAes = crypto.createDecipheriv('aes-256-ctr', aesSecret, IV)
     this._egressAes = crypto.createDecipheriv('aes-256-ctr', aesSecret, IV)
 
-    const macSecret = keccak256(this._ephemeralSharedSecret, aesSecret)
+    const macSecret = this._keccakFunction(concatBytes(this._ephemeralSharedSecret, aesSecret))
     this._ingressMac = new MAC(macSecret)
     this._ingressMac.update(concatBytes(xor(macSecret, this._nonce), remoteData))
     this._egressMac = new MAC(macSecret)
@@ -178,10 +191,10 @@ export class ECIES {
   createAuthEIP8() {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
-    const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
+    const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
       concatBytes(sig.signature, Uint8Array.from([sig.recid])),
-      // keccak256(pk2id(this._ephemeralPublicKey)),
+      // this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
       Uint8Array.from([0x04]),
@@ -201,11 +214,11 @@ export class ECIES {
   createAuthNonEIP8(): Uint8Array | undefined {
     if (!this._remotePublicKey) return
     const x = ecdhX(this._remotePublicKey, this._privateKey)
-    const sig = ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
+    const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = concatBytes(
       sig.signature,
       Uint8Array.from([sig.recid]),
-      keccak256(pk2id(this._ephemeralPublicKey)),
+      this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
       Uint8Array.from([0x00])
@@ -256,7 +269,7 @@ export class ECIES {
     if (this._remoteNonce === null) {
       return
     }
-    this._remoteEphemeralPublicKey = ecdsaRecover(
+    this._remoteEphemeralPublicKey = this._ecdsaRecover(
       signature,
       recoveryId,
       xor(x, this._remoteNonce),
@@ -267,7 +280,7 @@ export class ECIES {
     this._ephemeralSharedSecret = ecdhX(this._remoteEphemeralPublicKey, this._ephemeralPrivateKey)
     if (heid !== null && this._remoteEphemeralPublicKey !== null) {
       assertEq(
-        keccak256(pk2id(this._remoteEphemeralPublicKey)),
+        this._keccakFunction(pk2id(this._remoteEphemeralPublicKey)),
         heid,
         'the hash of the ephemeral key should match',
         debug

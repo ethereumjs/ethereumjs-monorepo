@@ -1,9 +1,10 @@
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { equalsBytes } from '@ethereumjs/util'
 
-import { BranchNode, ExtensionNode, LeafNode, Trie } from '../trie'
-import { nibblesCompare, nibblestoBytes } from '../util/nibbles'
+import { BranchNode, ExtensionNode, LeafNode } from '../node/index.js'
+import { Trie } from '../trie.js'
+import { nibblesCompare, nibblestoBytes } from '../util/nibbles.js'
 
-import type { HashKeysFunction, Nibbles, TrieNode } from '../types'
+import type { HashKeysFunction, Nibbles, TrieNode } from '../types.js'
 
 // reference: https://github.com/ethereum/go-ethereum/blob/20356e57b119b4e70ce47665a71964434e15200d/trie/proof.go
 
@@ -77,7 +78,7 @@ async function unset(
       return pos - 1
     } else {
       const _child = await trie.lookupNode(child.value())
-      if (_child && _child instanceof LeafNode) {
+      if (_child instanceof LeafNode) {
         // The child of this node is leaf node, remove it from parent too
         ;(parent as BranchNode).setBranch(key[pos - 1], null)
         return pos - 1
@@ -203,7 +204,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
   // 2. Starting from the fork point, delete all nodes between `left` and `right`
 
   const saveStack = (key: Nibbles, stack: TrieNode[]) => {
-    return trie._saveStack(key, stack, [])
+    return trie.saveStack(key, stack, [])
   }
 
   if (node instanceof ExtensionNode || node instanceof LeafNode) {
@@ -246,7 +247,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      if (child instanceof LeafNode) {
         return removeSelfFromParentAndSaveStack(left)
       }
 
@@ -263,7 +264,7 @@ async function unsetInternal(trie: Trie, left: Nibbles, right: Nibbles): Promise
       }
 
       const child = await trie.lookupNode(node._value)
-      if (child && child instanceof LeafNode) {
+      if (child instanceof LeafNode) {
         return removeSelfFromParentAndSaveStack(right)
       }
 
@@ -321,12 +322,7 @@ async function verifyProof(
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = new Trie({ root: rootHash, useKeyHashingFunction })
-  try {
-    await proofTrie.fromProof(proof)
-  } catch (e) {
-    throw new Error('Invalid proof nodes given')
-  }
+  const proofTrie = await Trie.fromProof(proof, { root: rootHash, useKeyHashingFunction })
   try {
     const value = await proofTrie.get(key, true)
     return {
@@ -350,7 +346,7 @@ async function verifyProof(
  */
 async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
   let pos = 0
-  let node = await trie.lookupNode(trie.root())
+  let node: TrieNode | null = await trie.lookupNode(trie.root())
   while (node !== null) {
     if (node instanceof BranchNode) {
       for (let i = key[pos] + 1; i < 16; i++) {
@@ -401,12 +397,12 @@ async function hasRightElement(trie: Trie, key: Nibbles): Promise<boolean> {
  *
  * NOTE: Currently only supports verification when the length of firstKey and lastKey are the same.
  *
- * @param rootHash - root hash.
- * @param firstKey - first key.
- * @param lastKey - last key.
- * @param keys - key list.
- * @param values - value list, one-to-one correspondence with keys.
- * @param proof - proof node list, if proof is null, both `firstKey` and `lastKey` must be null
+ * @param rootHash - root hash of state trie this proof is being verified against.
+ * @param firstKey - first key of range being proven.
+ * @param lastKey - last key of range being proven.
+ * @param keys - key list of leaf data being proven.
+ * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
+ * @param proof - proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
 export async function verifyRangeProof(
@@ -498,8 +494,10 @@ export async function verifyRangeProof(
     )
   }
 
-  const trie = new Trie({ root: rootHash, useKeyHashingFunction })
-  await trie.fromProof(proof)
+  const trie = await Trie.fromProof(proof, {
+    useKeyHashingFunction,
+    root: rootHash,
+  })
 
   // Remove all nodes between two edge proofs
   const empty = await unsetInternal(trie, firstKey, lastKey)

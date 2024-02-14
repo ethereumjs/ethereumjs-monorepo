@@ -33,158 +33,158 @@
 
 ### announceType
 
-• **announceType**: `Buffer`
+• **announceType**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L275)
+[packages/devp2p/src/protocol/les.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L296)
 
 ___
 
 ### flowControl/BL
 
-• **flowControl/BL**: `Buffer`
+• **flowControl/BL**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L272)
+[packages/devp2p/src/protocol/les.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L293)
 
 ___
 
 ### flowControl/MRC
 
-• **flowControl/MRC**: `Buffer`
+• **flowControl/MRC**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L274)
+[packages/devp2p/src/protocol/les.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L295)
 
 ___
 
 ### flowControl/MRR
 
-• **flowControl/MRR**: `Buffer`
+• **flowControl/MRR**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L273)
+[packages/devp2p/src/protocol/les.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L294)
 
 ___
 
 ### forkID
 
-• **forkID**: [`Buffer`, `Buffer`]
+• **forkID**: [`Uint8Array`, `Uint8Array`]
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L276)
+[packages/devp2p/src/protocol/les.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L297)
 
 ___
 
 ### genesisHash
 
-• **genesisHash**: `Buffer`
+• **genesisHash**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L267)
+[packages/devp2p/src/protocol/les.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L288)
 
 ___
 
 ### headHash
 
-• **headHash**: `Buffer`
+• **headHash**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L265)
+[packages/devp2p/src/protocol/les.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L286)
 
 ___
 
 ### headNum
 
-• **headNum**: `Buffer`
+• **headNum**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L266)
+[packages/devp2p/src/protocol/les.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L287)
 
 ___
 
 ### headTd
 
-• **headTd**: `Buffer`
+• **headTd**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L264)
+[packages/devp2p/src/protocol/les.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L285)
 
 ___
 
 ### networkId
 
-• **networkId**: `Buffer`
+• **networkId**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L263)
+[packages/devp2p/src/protocol/les.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L284)
 
 ___
 
 ### protocolVersion
 
-• **protocolVersion**: `Buffer`
+• **protocolVersion**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L262)
+[packages/devp2p/src/protocol/les.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L283)
 
 ___
 
 ### recentTxLookup
 
-• **recentTxLookup**: `Buffer`
+• **recentTxLookup**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L277)
+[packages/devp2p/src/protocol/les.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L298)
 
 ___
 
 ### serveChainSince
 
-• **serveChainSince**: `Buffer`
+• **serveChainSince**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L269)
+[packages/devp2p/src/protocol/les.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L290)
 
 ___
 
 ### serveHeaders
 
-• **serveHeaders**: `Buffer`
+• **serveHeaders**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L268)
+[packages/devp2p/src/protocol/les.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L289)
 
 ___
 
 ### serveStateSince
 
-• **serveStateSince**: `Buffer`
+• **serveStateSince**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L270)
+[packages/devp2p/src/protocol/les.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L291)
 
 ___
 
 ### txRelay
 
-• **txRelay**: `Buffer`
+• **txRelay**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/protocol/les.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L271)
+[packages/devp2p/src/protocol/les.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/les.ts#L292)

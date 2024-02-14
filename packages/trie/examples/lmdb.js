@@ -36,7 +36,7 @@ class LMDB {
     }
   }
 
-  copy() {
+  shallowCopy() {
     return new LMDB(this.path)
   }
 }

@@ -1,10 +1,8 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToBigInt, bytesToHex, toBytes } from './bytes.js'
+import { isHexString } from './internal.js'
 
-import { bytesToBigInt, toBytes } from './bytes'
-import { isHexString } from './internal'
-
-import type { Address } from './address'
-import type { ToBytesInputTypes } from './bytes'
+import type { Address } from './address.js'
+import type { ToBytesInputTypes } from './bytes.js'
 
 /*
  * A type that represents an input that can be converted to a BigInt.

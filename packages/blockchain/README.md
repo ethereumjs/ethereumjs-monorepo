@@ -33,31 +33,70 @@ The library also supports reorg scenarios e.g. by allowing to add a new block wi
 
 ## Example
 
-The following is an example to iterate through an existing Geth DB (needs `level` to be installed separately).
+The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
-This module performs write operations. Making a backup of your data before trying it is recommended. Otherwise, you can end up with a compromised DB state.
+```ts
+// ./examples/simple.ts
 
-```typescript
+import { Block } from '@ethereumjs/block'
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
 
-const { Level } = require('level')
+const main = async () => {
+  const common = new Common({ chain: 'mainnet', hardfork: Hardfork.London })
+  // Use the safe static constructor which awaits the init method
+  const blockchain = await Blockchain.create({
+    validateBlocks: false, // Skipping validation so we can make a simple chain without having to provide complete blocks
+    validateConsensus: false,
+    common,
+  })
 
-const gethDbPath = './chaindata' // Add your own path here. It will get modified, see remarks.
+  // We use minimal data to provide a sequence of blocks (increasing number, difficulty, and then setting parent hash to previous block)
+  const block = Block.fromBlockData(
+    {
+      header: {
+        number: 1n,
+        parentHash: blockchain.genesisBlock.hash(),
+        difficulty: blockchain.genesisBlock.header.difficulty + 1n,
+      },
+    },
+    { common, setHardfork: true }
+  )
+  const block2 = Block.fromBlockData(
+    {
+      header: {
+        number: 2n,
+        parentHash: block.header.hash(),
+        difficulty: block.header.difficulty + 1n,
+      },
+    },
+    { common, setHardfork: true }
+  )
+  // See @ethereumjs/block for more details on how to create a block
+  await blockchain.putBlock(block)
+  await blockchain.putBlock(block2)
 
-const common = new Common({ chain: Chain.Ropsten })
-const db = new Level(gethDbPath)
-// Use the safe static constructor which awaits the init method
-const blockchain = Blockchain.create({ common, db })
+  // We iterate over the blocks in the chain to the current head (block 2)
+  await blockchain.iterator('i', (block) => {
+    const blockNumber = block.header.number.toString()
+    const blockHash = bytesToHex(block.hash())
+    console.log(`Block ${blockNumber}: ${blockHash}`)
+  })
 
-blockchain.iterator('i', (block) => {
-  const blockNumber = block.header.number.toString()
-  const blockHash = block.hash().toString('hex')
-  console.log(`Block ${blockNumber}: ${blockHash}`)
-})
+  // Block 1: 0xa1a061528d74ba81f560e1ebc4f29d6b58171fc13b72b876cdffe6e43b01bdc5
+  // Block 2: 0x5583be91cf9fb14f5dbeb03ad56e8cef19d1728f267c35a25ba5a355a528f602
+}
+main()
 ```
 
-**WARNING**: Since `@ethereumjs/blockchain` is also doing write operations on the DB for safety reasons only run this on a copy of your database, otherwise this might lead to a compromised DB state.
+### Database Abstraction / Removed LevelDB Dependency
+
+With the v7 release the Blockchain library database has gotten an additional abstraction layer which allows to switch the backend to whatever is fitting the best for a use case, see PR [#2669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2669) and PR [#2673](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2673). The database just needs to conform to the new [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
+
+By default the blockchain package now uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
+
+If you need a persistent data store for your use case you can consider using the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
 
 ### Consensus
 
@@ -69,7 +108,7 @@ Starting with v6 there is a dedicated consensus class for each type of supported
 - `validateDifficulty(header: BlockHeader): Promise<void>`
 - `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
 
-#### Custom Conensus Algorithms
+#### Custom Consensus Algorithms
 
 Also part of V6, you can also create a custom consensus class implementing the above interface and pass it into the `Blockchain` constructor using the `consensus` option at instantiation. See [this test script](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/test/customConsensus.spec.ts) for a complete example of how write and use a custom consensus implementation.
 
@@ -77,7 +116,21 @@ Note, if you construct a blockchain with a custom consensus implementation, tran
 
 ## Custom Genesis State
 
-Starting with v6 responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
+### Genesis in v7 (removed genesis dependency)
+
+Genesis state was huge and had previously been bundled with the `Blockchain` package with the burden going over to the VM, since `Blockchain` is a dependency.
+
+Starting with the v7 release genesis state has been removed from `blockchain` and moved into its own auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
+
+This goes along with some changes in Blockchain and VM API:
+
+- Blockchain: There is a new constructor option `genesisStateRoot` beside `genesisBlock` and `genesisState` for an alternative condensed way to provide the genesis state root directly
+- Blockchain: `genesisState(): GenesisState` method has been replaced by the async `getGenesisStateRoot(chainId: Chain): Promise<Uint8Array>` method
+- VM: `activateGenesisState?: boolean` constructor option has been replaced with a `genesisState?: GenesisState` option
+
+### Genesis in v6
+
+For the v6 release responsibility for setting up a custom genesis state moved from the [Common](../common/) library to the `Blockchain` package, see PR [#1924](https://github.com/ethereumjs/ethereumjs-monorepo/pull/1924) for some work context.
 
 A genesis state can be set along `Blockchain` creation by passing in a custom `genesisBlock` and `genesisState`. For `mainnet` and the official test networks like `sepolia` or `goerli` genesis is already provided with the block data coming from `@ethereumjs/common`. The genesis state is being integrated in the `Blockchain` library (see `genesisStates` folder).
 
@@ -85,32 +138,51 @@ A genesis state can be set along `Blockchain` creation by passing in a custom `g
 
 For many custom chains we might come across a genesis configuration, which can be used to build both chain config as well the genesis state (and hence the genesis block as well to start off with)
 
-```typescript
-import { Blockchain, parseGethGenesisState } from '@ethereumjs/blockchain'
-import { Common, parseGethGenesis } from '@ethereumjs/common'
+```ts
+// ./examples/gethGenesis.ts
 
-// Load geth genesis json file into lets say `gethGenesisJson`
-const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
-const genesisState = parseGethGenesisState(gethGenesisJson)
-const blockchain = await Blockchain.create({
-  genesisState,
-  common,
-})
-const genesisBlockHash = blockchain.genesisBlock.hash()
-common.setForkHashes(genesisBlockHash)
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, parseGethGenesis } from '@ethereumjs/common'
+import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
+import gethGenesisJson from './genesisData/post-merge.json'
+
+const main = async () => {
+  // Load geth genesis json file into lets say `gethGenesisJson`
+  const common = Common.fromGethGenesis(gethGenesisJson, { chain: 'customChain' })
+  const genesisState = parseGethGenesisState(gethGenesisJson)
+  const blockchain = await Blockchain.create({
+    genesisState,
+    common,
+  })
+  const genesisBlockHash = blockchain.genesisBlock.hash()
+  common.setForkHashes(genesisBlockHash)
+  console.log(
+    `Genesis hash from geth genesis parameters - ${bytesToHex(blockchain.genesisBlock.hash())}`
+  )
+}
+
+main()
 ```
 
 The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
 
-## EIP-1559 Support
+## Supported Blocks and Tx Types
+
+### EIP-1559 Support
 
 This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
 
-### EIP-4844 Shard Blob Transactions Support (experimental)
+### EIP-4844 Shard Blob Transactions Support
 
-This library supports an experimental version of the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [01d3209](https://github.com/ethereum/EIPs/commit/01d320998d1d53d95f347b5f43feaf606f230703) EIP version from February 8, 2023 and deployed along `eip4844-devnet-4` (January 2023) starting with `v6.2.0`.
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
-The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP (see latest tx library release for additional details).
+The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP.
+
+## Browser
+
+With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+
+It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
@@ -118,11 +190,43 @@ The blockchain library now allows for blob transactions to be validated and incl
 
 Generated TypeDoc API [Documentation](./docs/README.md)
 
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```ts
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```ts
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+### Buffer -> Uint8Array
+
+With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
+
+We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
+
 ### BigInt Support
 
 Starting with v6 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
 
 Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
+
+## Events
+
+The `Blockchain` class has a public property `events` which contains an `EventEmitter`. Following events are emitted on which you can react within your code:
+
+| Event                    | Description                                 |
+| ------------------------ | ------------------------------------------- |
+| `deletedCanonicalBlocks` | Emitted when blocks are reorged and deleted |
 
 ## Developer
 
@@ -139,7 +243,7 @@ The following is an example for a logger run:
 Run with the clique logger:
 
 ```shell
-DEBUG=blockchain:clique ts-node test.ts
+DEBUG=ethjs,blockchain:clique tsx test.ts
 ```
 
 ## EthereumJS

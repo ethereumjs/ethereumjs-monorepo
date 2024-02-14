@@ -11,18 +11,19 @@
 ### Properties
 
 - [consensus](BlockchainInterface.md#consensus)
+- [events](BlockchainInterface.md#events)
 
 ### Methods
 
-- [copy](BlockchainInterface.md#copy)
 - [delBlock](BlockchainInterface.md#delblock)
-- [genesisState](BlockchainInterface.md#genesisstate)
 - [getBlock](BlockchainInterface.md#getblock)
 - [getCanonicalHeadBlock](BlockchainInterface.md#getcanonicalheadblock)
 - [getIteratorHead](BlockchainInterface.md#getiteratorhead)
 - [getTotalDifficulty](BlockchainInterface.md#gettotaldifficulty)
 - [iterator](BlockchainInterface.md#iterator)
 - [putBlock](BlockchainInterface.md#putblock)
+- [setIteratorHead](BlockchainInterface.md#setiteratorhead)
+- [shallowCopy](BlockchainInterface.md#shallowcopy)
 - [validateHeader](BlockchainInterface.md#validateheader)
 
 ## Properties
@@ -33,25 +34,21 @@
 
 #### Defined in
 
-[types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L10)
+[types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L13)
 
-## Methods
+___
 
-### copy
+### events
 
-▸ **copy**(): [`BlockchainInterface`](BlockchainInterface.md)
+• `Optional` **events**: `AsyncEventEmitter`<[`BlockchainEvents`](../README.md#blockchainevents)\>
 
-Returns a copy of the blockchain
-
-#### Returns
-
-[`BlockchainInterface`](BlockchainInterface.md)
+Optional events emitter
 
 #### Defined in
 
-[types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L50)
+[types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L90)
 
-___
+## Methods
 
 ### delBlock
 
@@ -64,7 +61,7 @@ deleted and any encountered heads are set to the parent block.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `blockHash` | `Buffer` | The hash of the block to be deleted |
+| `blockHash` | `Uint8Array` | The hash of the block to be deleted |
 
 #### Returns
 
@@ -72,24 +69,7 @@ deleted and any encountered heads are set to the parent block.
 
 #### Defined in
 
-[types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L24)
-
-___
-
-### genesisState
-
-▸ `Optional` **genesisState**(): `GenesisState`
-
-Returns the genesis state of the blockchain.
-All values are provided as hex-prefixed strings.
-
-#### Returns
-
-`GenesisState`
-
-#### Defined in
-
-[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L75)
+[types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L27)
 
 ___
 
@@ -103,7 +83,7 @@ Returns a block by its hash or number.
 
 | Name | Type |
 | :------ | :------ |
-| `blockId` | `number` \| `bigint` \| `Buffer` |
+| `blockId` | `number` \| `bigint` \| `Uint8Array` |
 
 #### Returns
 
@@ -111,13 +91,13 @@ Returns a block by its hash or number.
 
 #### Defined in
 
-[types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L29)
+[types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L32)
 
 ___
 
 ### getCanonicalHeadBlock
 
-▸ `Optional` **getCanonicalHeadBlock**(): `Promise`<`Block`\>
+▸ **getCanonicalHeadBlock**(): `Promise`<`Block`\>
 
 Returns the latest full block in the canonical chain.
 
@@ -127,13 +107,13 @@ Returns the latest full block in the canonical chain.
 
 #### Defined in
 
-[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L80)
+[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L85)
 
 ___
 
 ### getIteratorHead
 
-▸ `Optional` **getIteratorHead**(`name?`): `Promise`<`Block`\>
+▸ **getIteratorHead**(`name?`): `Promise`<`Block`\>
 
 Returns the specified iterator head.
 
@@ -149,7 +129,7 @@ Returns the specified iterator head.
 
 #### Defined in
 
-[types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L64)
+[types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L67)
 
 ___
 
@@ -163,7 +143,7 @@ Gets total difficulty for a block specified by hash and number
 
 | Name | Type |
 | :------ | :------ |
-| `hash` | `Buffer` |
+| `hash` | `Uint8Array` |
 | `number?` | `bigint` |
 
 #### Returns
@@ -172,7 +152,7 @@ Gets total difficulty for a block specified by hash and number
 
 #### Defined in
 
-[types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L69)
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L80)
 
 ___
 
@@ -188,7 +168,7 @@ the onBlock function on each block.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `name` | `string` | Name of the state root head |
-| `onBlock` | `OnBlock` | Function called on each block with params (block: Block, |
+| `onBlock` | [`OnBlock`](../README.md#onblock) | Function called on each block with params (block: Block, |
 | `maxBlocks?` | `number` | optional maximum number of blocks to iterate through reorg: boolean) |
 | `releaseLockOnCallback?` | `boolean` | - |
 
@@ -198,7 +178,7 @@ the onBlock function on each block.
 
 #### Defined in
 
-[types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L40)
+[types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L43)
 
 ___
 
@@ -220,7 +200,47 @@ Adds a block to the blockchain.
 
 #### Defined in
 
-[types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L16)
+[types.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L19)
+
+___
+
+### setIteratorHead
+
+▸ **setIteratorHead**(`tag`, `headHash`): `Promise`<`void`\>
+
+Set header hash of a certain `tag`.
+When calling the iterator, the iterator will start running the first child block after the header hash currently stored.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `tag` | `string` | The tag to save the headHash to |
+| `headHash` | `Uint8Array` | The head hash to save |
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Defined in
+
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L75)
+
+___
+
+### shallowCopy
+
+▸ **shallowCopy**(): [`BlockchainInterface`](BlockchainInterface.md)
+
+Returns a shallow copy of the blockchain that may share state with the original
+
+#### Returns
+
+[`BlockchainInterface`](BlockchainInterface.md)
+
+#### Defined in
+
+[types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L53)
 
 ___
 
@@ -243,4 +263,4 @@ Validates a block header, throwing if invalid. It is being validated against the
 
 #### Defined in
 
-[types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L57)
+[types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L60)

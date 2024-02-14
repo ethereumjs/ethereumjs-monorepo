@@ -8,11 +8,6 @@
 
 - [constructor](MAC.md#constructor)
 
-### Properties
-
-- [\_hash](MAC.md#_hash)
-- [\_secret](MAC.md#_secret)
-
 ### Methods
 
 - [digest](MAC.md#digest)
@@ -30,41 +25,21 @@
 
 | Name | Type |
 | :------ | :------ |
-| `secret` | `Buffer` |
+| `secret` | `Uint8Array` |
 
 #### Defined in
 
 [packages/devp2p/src/rlpx/mac.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L11)
 
-## Properties
-
-### \_hash
-
-• **\_hash**: `Hash`<`Keccak`\>
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/mac.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L9)
-
-___
-
-### \_secret
-
-• **\_secret**: `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/mac.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L10)
-
 ## Methods
 
 ### digest
 
-▸ **digest**(): `Buffer`
+▸ **digest**(): `Uint8Array`
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
@@ -80,7 +55,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `string` \| `Buffer` |
+| `data` | `string` \| `Uint8Array` |
 
 #### Returns
 
@@ -100,7 +75,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `string` \| `Buffer` |
+| `data` | `string` \| `Uint8Array` |
 
 #### Returns
 
@@ -120,7 +95,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `string` \| `Buffer` |
+| `data` | `string` \| `Uint8Array` |
 
 #### Returns
 

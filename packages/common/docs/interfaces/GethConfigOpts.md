@@ -13,6 +13,7 @@
 ### Properties
 
 - [chain](GethConfigOpts.md#chain)
+- [customCrypto](GethConfigOpts.md#customcrypto)
 - [eips](GethConfigOpts.md#eips)
 - [genesisHash](GethConfigOpts.md#genesishash)
 - [hardfork](GethConfigOpts.md#hardfork)
@@ -26,7 +27,30 @@
 
 #### Defined in
 
-[packages/common/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L119)
+[types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L149)
+
+___
+
+### customCrypto
+
+• `Optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+
+This option can be used to replace the most common crypto primitives
+(keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
+with alternative implementations (e.g. more performant WASM libraries).
+
+Note: please be aware that this is adding new dependencies for your
+system setup to be used for sensitive/core parts of the functionality
+and a choice on the libraries to add should be handled with care
+and be made with eventual security implications considered.
+
+#### Inherited from
+
+BaseOpts.customCrypto
+
+#### Defined in
+
+[types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L110)
 
 ___
 
@@ -35,11 +59,7 @@ ___
 • `Optional` **eips**: `number`[]
 
 Selected EIPs which can be activated, please use an array for instantiation
-(e.g. `eips: [ 2537, ]`)
-
-Currently supported:
-
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+(e.g. `eips: [ 1559, 3860 ]`)
 
 #### Inherited from
 
@@ -47,17 +67,17 @@ BaseOpts.eips
 
 #### Defined in
 
-[packages/common/src/types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
+[types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L99)
 
 ___
 
 ### genesisHash
 
-• `Optional` **genesisHash**: `Buffer`
+• `Optional` **genesisHash**: `Uint8Array`
 
 #### Defined in
 
-[packages/common/src/types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L120)
+[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L150)
 
 ___
 
@@ -75,7 +95,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[packages/common/src/types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L71)
+[types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L94)
 
 ___
 
@@ -85,4 +105,4 @@ ___
 
 #### Defined in
 
-[packages/common/src/types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L121)
+[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L151)

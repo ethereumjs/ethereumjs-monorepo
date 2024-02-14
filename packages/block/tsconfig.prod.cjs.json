@@ -8,6 +8,7 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
+    { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../rlp/tsconfig.prod.cjs.json" },
     { "path": "../trie/tsconfig.prod.cjs.json" },
     { "path": "../tx/tsconfig.prod.cjs.json" },

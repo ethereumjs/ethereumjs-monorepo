@@ -1,15 +1,27 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bigIntToBytes, setLengthLeft, setLengthRight } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { bytesToHex, equalsBytes } from 'ethereum-cryptography/utils'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_160,
+  BIGINT_2,
+  BIGINT_32,
+  BIGINT_64,
+  BIGINT_NEG1,
+  bigIntToBytes,
+  bytesToHex,
+  equalsBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions'
+import { EvmError } from '../exceptions.js'
 
-import type { ERROR } from '../exceptions'
-import type { RunState } from '../interpreter'
+import type { ERROR } from '../exceptions.js'
+import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const MASK_160 = (BigInt(1) << BigInt(160)) - BigInt(1)
+const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
 /**
  * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
@@ -45,7 +57,8 @@ export function addresstoBytes(address: bigint | Uint8Array) {
  * Error message helper - generates location string
  */
 export function describeLocation(runState: RunState): string {
-  const hash = bytesToHex(keccak256(runState.interpreter.getCode()))
+  const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
+  const hash = bytesToHex(keccakFunction(runState.interpreter.getCode()))
   const address = runState.interpreter.getAddress().toString()
   const pc = runState.programCounter - 1
   return `${hash}/${address}:${pc}`
@@ -63,10 +76,10 @@ export function divCeil(a: bigint, b: bigint): bigint {
   const modulus = mod(a, b)
 
   // Fast case - exact division
-  if (modulus === BigInt(0)) return div
+  if (modulus === BIGINT_0) return div
 
   // Round up
-  return div < BigInt(0) ? div - BigInt(1) : div + BigInt(1)
+  return div < BIGINT_0 ? div - BIGINT_1 : div + BIGINT_1
 }
 
 /**
@@ -145,7 +158,7 @@ export function maxCallGas(
   common: Common
 ): bigint {
   if (common.gteHardfork(Hardfork.TangerineWhistle)) {
-    const gasAllowed = gasLeft - gasLeft / BigInt(64)
+    const gasAllowed = gasLeft - gasLeft / BIGINT_64
     return gasLimit > gasAllowed ? gasAllowed : gasLimit
   } else {
     return gasLimit
@@ -157,10 +170,10 @@ export function maxCallGas(
  */
 export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
-  if (length === BigInt(0)) return BigInt(0)
+  if (length === BIGINT_0) return BIGINT_0
 
-  const newMemoryWordCount = divCeil(offset + length, BigInt(32))
-  if (newMemoryWordCount <= runState.memoryWordCount) return BigInt(0)
+  const newMemoryWordCount = divCeil(offset + length, BIGINT_32)
+  if (newMemoryWordCount <= runState.memoryWordCount) return BIGINT_0
 
   const words = newMemoryWordCount
   const fee = common.param('gasPrices', 'memory')
@@ -190,7 +203,7 @@ export function writeCallOutput(runState: RunState, outOffset: bigint, outLength
     if (BigInt(returnData.length) < dataLength) {
       dataLength = returnData.length
     }
-    const data = getDataSlice(returnData, BigInt(0), BigInt(dataLength))
+    const data = getDataSlice(returnData, BIGINT_0, BigInt(dataLength))
     runState.memory.extend(memOffset, dataLength)
     runState.memory.write(memOffset, dataLength, data)
   }
@@ -229,7 +242,7 @@ export function updateSstoreGas(
 
 export function mod(a: bigint, b: bigint) {
   let r = a % b
-  if (r < BigInt(0)) {
+  if (r < BIGINT_0) {
     r = b + r
   }
   return r
@@ -247,18 +260,18 @@ export function abs(a: bigint) {
   if (a > 0) {
     return a
   }
-  return a * BigInt(-1)
+  return a * BIGINT_NEG1
 }
 
 const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
 export function exponentiation(bas: bigint, exp: bigint) {
-  let t = BigInt(1)
-  while (exp > BigInt(0)) {
-    if (exp % BigInt(2) !== BigInt(0)) {
+  let t = BIGINT_1
+  while (exp > BIGINT_0) {
+    if (exp % BIGINT_2 !== BIGINT_0) {
       t = (t * bas) % N
     }
     bas = (bas * bas) % N
-    exp = exp / BigInt(2)
+    exp = exp / BIGINT_2
   }
   return t
 }

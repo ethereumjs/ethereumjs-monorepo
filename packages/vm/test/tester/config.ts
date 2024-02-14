@@ -1,4 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import * as path from 'path'
 
 /**
@@ -38,90 +40,15 @@ export const SKIP_PERMANENT = [
  * tests running slow (run from time to time)
  */
 export const SKIP_SLOW = [
-  'Call50000',
-  'Call50000_ecrec',
-  'Call50000_identity',
-  'Call50000_identity2',
-  'Call50000_sha256',
-  'Call50000_rip160',
-  'Call50000bytesContract50_1',
-  'Call50000bytesContract50_2',
-  'Call1MB1024Calldepth',
-  'static_Call1MB1024Calldepth',
-  'static_Call50000',
-  'static_Call50000_ecrec',
-  'static_Call50000_identity',
-  'static_Call50000_identity2',
-  'static_Call50000_rip160',
-  'static_Return50000_2',
-  'Callcode50000',
-  'Return50000',
-  'Return50000_2',
-  'static_Call50000',
-  'static_Call50000_ecrec',
-  'static_Call50000_identity',
-  'static_Call50000_identity2',
-  'static_Call50000_sha256',
-  'static_Call50000_rip160',
-  'static_Call50000bytesContract50_1',
-  'static_Call50000bytesContract50_2',
-  'static_Call1MB1024Calldepth',
-  'static_Callcode50000',
-  'static_Return50000',
-  'static_Return50000_2',
-  'QuadraticComplexitySolidity_CallDataCopy',
-  'CALLBlake2f_MaxRounds',
-  'randomStatetest94_Istanbul',
+  'Call50000_sha256', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'CALLBlake2f_MaxRounds', // Last check: 2023-08-24, Berlin HF, still very slow (several minutes per block execution)
+  'Return50000', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'Return50000_2', // Last check: 2023-08-24, Constantinople HF, still slow (1-2 minutes per block execution)
+  'static_Call50000_sha256', // Last check: 2023-08-24, Berlin HF, still slow (30-60 secs per block execution)
   // vmPerformance tests
-  'ackermann',
-  'fibonacci',
-  'loop-add-10M',
-  'loop-divadd-10M',
-  'loop-divadd-unr100-10M',
-  'loop-exp',
-  'loop-mul',
-  'manyFunctions100',
-  'loopMul',
-  'loopExp',
+  'loopMul', // Last check: 2023-08-24, Berlin HF, still very slow (up to minutes per block execution)
+  'loopExp', // Last check: 2023-08-24, Berlin HF, somewhat slow (5-10 secs per block execution)
 ]
-
-/**
- * VMTests have been deprecated, see https://github.com/ethereum/tests/issues/593
- * skipVM test list is currently not used but might be useful in the future since VMTests
- * have now been converted to BlockchainTests, see https://github.com/ethereum/tests/pull/680
- * Disabling this due to ESLint, but will keep it here for possible future reference
- */
-/*const SKIP_VM = [
-  // slow performance tests
-  'loop-mul',
-  'loop-add-10M',
-  'loop-divadd-10M',
-  'loop-divadd-unr100-10M',
-  'loop-exp-16b-100k',
-  'loop-exp-1b-1M',
-  'loop-exp-2b-100k',
-  'loop-exp-32b-100k',
-  'loop-exp-4b-100k',
-  'loop-exp-8b-100k',
-  'loop-exp-nop-1M',
-  'loop-mulmod-2M',
-  'ABAcalls0',
-  'ABAcallsSuicide0',
-  'ABAcallsSuicide1',
-  'sha3_bigSize',
-  'CallRecursiveBomb0',
-  'CallToNameRegistrator0',
-  'CallToPrecompiledContract',
-  'CallToReturn1',
-  'PostToNameRegistrator0',
-  'PostToReturn1',
-  'callcodeToNameRegistrator0',
-  'callcodeToReturn1',
-  'callstatelessToNameRegistrator0',
-  'callstatelessToReturn1',
-  'createNameRegistrator',
-  'randomTest643',
-]*/
 
 /**
  * Returns an alias for specified hardforks to meet test dependencies requirements/assumptions.
@@ -276,11 +203,11 @@ export function getTestDirs(network: string, testType: string) {
 }
 /**
  * Setups the common with networks
- * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
+ * @param network Network target (this can include EIPs, such as Byzantium+1559+2929)
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(network: string, ttd?: number) {
+function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -323,14 +250,26 @@ function setupCommonWithNetworks(network: string, ttd?: number) {
           ttd: BigInt(ttd),
         })
       }
+      if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
+        testHardforks.push({
+          name: hf.name,
+          block: null,
+          timestamp,
+        })
+      }
     }
+  }
+  try {
+    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
+  } catch {
+    // no-op
   }
   const common = Common.custom(
     {
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
-    { eips: [3607] }
+    { eips: [3607], customCrypto: { kzg } }
   )
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g)
@@ -369,6 +308,8 @@ export function getCommon(network: string): Common {
     const startNetwork = network.substring(0, start) // HF before the merge
     const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
     return setupCommonWithNetworks(startNetwork, TTD)
+  } else if (networkLowercase === 'shanghaitocancunattime15k') {
+    return setupCommonWithNetworks('Shanghai', undefined, 15000)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
@@ -405,7 +346,12 @@ export function getCommon(network: string): Common {
         })
       }
     }
-    return Common.custom(
+    try {
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+    } catch {
+      // no-op
+    }
+    const common = Common.custom(
       {
         hardforks: testHardforks,
       },
@@ -413,8 +359,10 @@ export function getCommon(network: string): Common {
         baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
+        customCrypto: { kzg },
       }
     )
+    return common
   }
 }
 
@@ -431,8 +379,8 @@ const expectedTestsFull: {
     Byzantium: 15703,
     Constantinople: 33146,
     Petersburg: 33128,
-    Istanbul: 38773,
-    MuirGlacier: 38773,
+    Istanbul: 38340,
+    MuirGlacier: 38340,
     Berlin: 41365,
     London: 61197,
     ArrowGlacier: 0,
@@ -444,6 +392,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
     BerlinToLondonAt5: 24,
+    Cancun: 61633,
   },
   GeneralStateTests: {
     Chainstart: 1045,
@@ -454,8 +403,8 @@ const expectedTestsFull: {
     Byzantium: 4857,
     Constantinople: 10648,
     Petersburg: 10642,
-    Istanbul: 12439,
-    MuirGlacier: 12439,
+    Istanbul: 12271,
+    MuirGlacier: 12271,
     Berlin: 13214,
     London: 19449,
     Paris: 19598,
@@ -466,6 +415,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 0,
     HomesteadToEIP150At5: 0,
     BerlinToLondonAt5: 0,
+    Cancun: 19048,
   },
 }
 

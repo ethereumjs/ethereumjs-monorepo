@@ -1,15 +1,15 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src'
+import { RLP, utils } from '../src/index.js'
 
 import * as official from './fixture/rlptest.json'
-import { numberToBytes } from './utils'
+import { numberToBytes } from './utils.js'
 
 const { bytesToHex, hexToBytes } = utils
 
-tape('official tests', (t) => {
+describe('official tests', () => {
   for (const [testName, test] of Object.entries(official.tests)) {
-    t.test(`should pass ${testName}`, (st) => {
+    it(`should pass ${testName}`, () => {
       let incoming: any = test.in
       // if we are testing a big number
       if (incoming[0] === '#') {
@@ -18,8 +18,7 @@ tape('official tests', (t) => {
 
       const encoded = RLP.encode(incoming)
       const out = test.out[0] === '0' && test.out[1] === 'x' ? test.out.slice(2) : test.out
-      st.deepEqual(encoded, hexToBytes(out))
-      st.end()
+      assert.deepEqual(encoded, hexToBytes(out))
     })
   }
 })
@@ -161,28 +160,27 @@ function arrToStringArr(arr: any): any {
   })
 }
 
-tape('geth tests', (t) => {
+describe('geth tests', () => {
   for (const gethCase of gethCases) {
     const input = hexToBytes(gethCase.input)
-    t.test('should pass Geth test', (st) => {
-      st.doesNotThrow(() => {
+    it('should pass Geth test', () => {
+      assert.doesNotThrow(() => {
         const output = RLP.decode(input)
         if (Array.isArray(output)) {
           const arrayOutput = arrToStringArr(output)
-          st.deepEqual(
+          assert.deepEqual(
             JSON.stringify(arrayOutput),
             JSON.stringify(gethCase.value!),
             `invalid output: ${gethCase.input}`
           )
         } else {
-          st.deepEqual(
+          assert.deepEqual(
             bytesToHex(Uint8Array.from(output as any)),
             gethCase.value,
             `invalid output: ${gethCase.input}`
           )
         }
       }, `should not throw: ${gethCase.input}`)
-      st.end()
     })
   }
 })

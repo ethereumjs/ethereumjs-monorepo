@@ -1,4 +1,4 @@
-import { bytesToHex } from '@ethereumjs/util'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import type { Address } from '@ethereumjs/util'
 
@@ -13,10 +13,10 @@ export class OriginalStorageCache {
   }
 
   async get(address: Address, key: Uint8Array): Promise<Uint8Array> {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     const map = this.map.get(addressHex)
     if (map !== undefined) {
-      const keyHex = bytesToHex(key)
+      const keyHex = bytesToUnprefixedHex(key)
       const value = map.get(keyHex)
       if (value !== undefined) {
         return value
@@ -28,13 +28,13 @@ export class OriginalStorageCache {
   }
 
   put(address: Address, key: Uint8Array, value: Uint8Array) {
-    const addressHex = bytesToHex(address.bytes)
+    const addressHex = bytesToUnprefixedHex(address.bytes)
     let map = this.map.get(addressHex)
     if (map === undefined) {
       map = new Map()
       this.map.set(addressHex, map)
     }
-    const keyHex = bytesToHex(key)
+    const keyHex = bytesToUnprefixedHex(key)
     if (map!.has(keyHex) === false) {
       map!.set(keyHex, value)
     }

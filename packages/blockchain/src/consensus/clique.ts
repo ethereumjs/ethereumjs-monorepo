@@ -1,18 +1,29 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, TypeOutput, bigIntToBytes, bytesToBigInt, toType } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import {
+  Address,
+  BIGINT_0,
+  BIGINT_1,
+  BIGINT_2,
+  TypeOutput,
+  bigIntToBytes,
+  bytesToBigInt,
+  equalsBytes,
+  hexToBytes,
+  toType,
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
 
-import type { Blockchain } from '..'
-import type { Consensus, ConsensusOptions } from './interface'
+import type { Blockchain } from '../index.js'
+import type { Consensus, ConsensusOptions } from '../types.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = hexToBytes('ffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
@@ -21,9 +32,9 @@ const CLIQUE_VOTES_KEY = 'CliqueVotes'
 const CLIQUE_BLOCK_SIGNERS_SNAPSHOT_KEY = 'CliqueBlockSignersSnapshot'
 
 // Block difficulty for in-turn signatures
-export const CLIQUE_DIFF_INTURN = BigInt(2)
+export const CLIQUE_DIFF_INTURN = BIGINT_2
 // Block difficulty for out-of-turn signatures
-export const CLIQUE_DIFF_NOTURN = BigInt(1)
+export const CLIQUE_DIFF_NOTURN = BIGINT_1
 
 // Clique Signer State
 type CliqueSignerState = [blockNumber: bigint, signers: Address[]]
@@ -185,7 +196,7 @@ export class CliqueConsensus implements Consensus {
     const { header } = block
     const commonAncestorNumber = commonAncestor?.number
     if (commonAncestorNumber !== undefined) {
-      await this._cliqueDeleteSnapshots(commonAncestorNumber + BigInt(1))
+      await this._cliqueDeleteSnapshots(commonAncestorNumber + BIGINT_1)
       for (let number = commonAncestorNumber + BigInt(1); number <= header.number; number++) {
         const canonicalHeader = await this.blockchain!.getCanonicalHeader(number)
         await this._cliqueBuildSnapshots(canonicalHeader)
@@ -200,7 +211,7 @@ export class CliqueConsensus implements Consensus {
    */
   private async cliqueSaveGenesisSigners(genesisBlock: Block) {
     const genesisSignerState: CliqueSignerState = [
-      BigInt(0),
+      BIGINT_0,
       genesisBlock.header.cliqueEpochTransitionSigners(),
     ]
     await this.cliqueUpdateSignerStates(genesisSignerState)
@@ -282,7 +293,7 @@ export class CliqueConsensus implements Consensus {
         const lastEpochBlockNumber =
           header.number -
           (header.number %
-            BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
+            BigInt((this.blockchain!.common.consensusConfig() as CliqueConfig).epoch))
         const limit = this.cliqueSignerLimit(header.number)
         let activeSigners = [...this.cliqueActiveSigners(header.number)]
         let consensus = false
@@ -399,7 +410,7 @@ export class CliqueConsensus implements Consensus {
       const lastEpochBlockNumber =
         lastBlockNumber -
         (lastBlockNumber %
-          BigInt((this.blockchain!._common.consensusConfig() as CliqueConfig).epoch))
+          BigInt((this.blockchain!.common.consensusConfig() as CliqueConfig).epoch))
       const blockLimit = lastEpochBlockNumber - BigInt(limit)
       this._cliqueLatestVotes = this._cliqueLatestVotes.filter((state) => state[0] >= blockLimit)
     }

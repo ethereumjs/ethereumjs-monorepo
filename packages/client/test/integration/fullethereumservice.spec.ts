@@ -3,9 +3,9 @@ import { Blockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { Account, bytesToHex, equalsBytes, hexStringToBytes, toBytes } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
+import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config'
 import { FullEthereumService } from '../../src/service'
@@ -17,57 +17,63 @@ import { destroy } from './util'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
-tape('[Integration:FullEthereumService]', async (t) => {
-  // Stub out setStateRoot since correct state root doesn't exist in mock state.
-  const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
-  DefaultStateManager.prototype.setStateRoot = (): any => {}
-  const originalStateManagerCopy = DefaultStateManager.prototype.copy
-  DefaultStateManager.prototype.copy = function () {
-    return this
-  }
-  async function setup(): Promise<[MockServer, FullEthereumService]> {
-    const server = new MockServer({ config })
-    const blockchain = await Blockchain.create({
-      common: config.chainCommon,
-      validateBlocks: false,
-      validateConsensus: false,
-    })
-    const chain = new MockChain({ config, blockchain })
-    const serviceConfig = new Config({ servers: [server as any], lightserv: true })
-    const service = new FullEthereumService({
-      config: serviceConfig,
-      chain,
-    })
+// Stub out setStateRoot since correct state root doesn't exist in mock state.
+const ogSetStateRoot = DefaultStateManager.prototype.setStateRoot
+DefaultStateManager.prototype.setStateRoot = (): any => {}
+const originalStateManagerCopy = DefaultStateManager.prototype.shallowCopy
+DefaultStateManager.prototype.shallowCopy = function () {
+  return this
+}
+async function setup(): Promise<[MockServer, FullEthereumService]> {
+  const server = new MockServer({ config }) as any
+  const blockchain = await Blockchain.create({
+    common: config.chainCommon,
+    validateBlocks: false,
+    validateConsensus: false,
+  })
+  const chain = new MockChain({ config, blockchain })
+  const serviceConfig = new Config({ server, lightserv: true })
+  const service = new FullEthereumService({
+    config: serviceConfig,
+    chain,
+  })
 
-    await service.open()
-    await server.start()
-    await service.start()
-    service.txPool.start()
-    return [server, service]
-  }
+  await service.open()
+  await server.start()
+  await service.start()
+  service.txPool.start()
+  return [server, service]
+}
 
-  t.test('should handle ETH requests', async (t) => {
-    t.plan(8)
+describe(
+  'should handle ETH requests',
+  async () => {
     const [server, service] = await setup()
     const peer = await server.accept('peer0')
+    const hash = hexToBytes('0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
-    const hash = hexStringToBytes(
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069'
-    )
-    t.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
-    t.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
+    it('handled getBlockHeaders', async () => {
+      assert.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
+      assert.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
+    })
     const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
-    const [reqId2, bodies] = res
-    t.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
-    t.deepEquals(bodies, [[[], []]], 'handled GetBlockBodies')
+    it('handled getBlockBodies', async () => {
+      const [reqId2, bodies] = res
+      assert.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
+      assert.deepEqual(bodies, [[[], []]], 'handled GetBlockBodies')
+    })
     service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
       switch (msg.name) {
         case 'NewBlockHashes': {
-          t.pass('handled NewBlockHashes')
+          it('should handle newBlockHashes', () => {
+            assert.ok(true, 'handled NewBlockHashes')
+          })
           break
         }
         case 'NewBlock': {
-          t.pass('handled NewBlock')
+          it('should handle NewBlock', () => {
+            assert.ok(true, 'handled NewBlock')
+          })
           await destroy(server, service)
           break
         }
@@ -94,44 +100,34 @@ tape('[Integration:FullEthereumService]', async (t) => {
       new Account(BigInt(0), BigInt('40000000000100000'))
     )
     await service.txPool.add(tx)
-    service.config.chainCommon.getHardforkByBlockNumber =
-      td.func<typeof config.chainCommon.getHardforkByBlockNumber>()
-    td.when(
-      service.config.chainCommon.getHardforkByBlockNumber(
-        td.matchers.anything(),
-        td.matchers.anything(),
-        td.matchers.anything()
-      )
-    ).thenReturn(Hardfork.London)
-    td.when(
-      service.config.chainCommon.getHardforkByBlockNumber(
-        td.matchers.anything(),
-        td.matchers.anything()
-      )
-    ).thenReturn(Hardfork.London)
-    td.when(service.config.chainCommon.getHardforkByBlockNumber(td.matchers.anything())).thenReturn(
+    service.config.chainCommon.getHardforkBy = td.func<typeof config.chainCommon.getHardforkBy>()
+    td.when(service.config.chainCommon.getHardforkBy(td.matchers.anything())).thenReturn(
       Hardfork.London
     )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
-    t.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
+    it('should handle GetPooledTransactions', async () => {
+      assert.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
+    })
 
     peer.eth!.send('Transactions', [tx])
-    t.pass('handled Transactions')
-  })
+  },
+  { timeout: 30000 }
+)
 
-  t.test('should handle LES requests', async (t) => {
-    const [server, service] = await setup()
-    const peer = await server.accept('peer0')
-    const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
-    t.equals(
+describe('should handle LES requests', async () => {
+  const [server, service] = await setup()
+  const peer = await server.accept('peer0')
+  const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
+  it('should handle GetBlockHeaders', () => {
+    assert.equal(
       bytesToHex(headers[1].hash()),
-      'a321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
+      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
       'handled GetBlockHeaders'
     )
-    await destroy(server, service)
-
-    // unstub setStateRoot
-    DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
-    DefaultStateManager.prototype.copy = originalStateManagerCopy
   })
-})
+  await destroy(server, service)
+
+  // unstub setStateRoot
+  DefaultStateManager.prototype.setStateRoot = ogSetStateRoot
+  DefaultStateManager.prototype.shallowCopy = originalStateManagerCopy
+}, 30000)

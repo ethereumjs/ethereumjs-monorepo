@@ -24,7 +24,7 @@ Representation of EIP-4895 withdrawal data
 - [toValue](Withdrawal.md#tovalue)
 - [fromValuesArray](Withdrawal.md#fromvaluesarray)
 - [fromWithdrawalData](Withdrawal.md#fromwithdrawaldata)
-- [toBufferArray](Withdrawal.md#tobufferarray)
+- [toBytesArray](Withdrawal.md#tobytesarray)
 
 ## Constructors
 
@@ -47,7 +47,7 @@ Its amount is in Gwei to match CL representation and for eventual ssz withdrawal
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L40)
+[packages/util/src/withdrawal.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L41)
 
 ## Properties
 
@@ -57,7 +57,7 @@ Its amount is in Gwei to match CL representation and for eventual ssz withdrawal
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L43)
+[packages/util/src/withdrawal.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L44)
 
 ___
 
@@ -69,7 +69,7 @@ withdrawal amount in Gwei to match the CL repesentation and eventually ssz withd
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L47)
+[packages/util/src/withdrawal.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L48)
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L41)
+[packages/util/src/withdrawal.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L42)
 
 ___
 
@@ -89,21 +89,21 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L42)
+[packages/util/src/withdrawal.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L43)
 
 ## Methods
 
 ### raw
 
-▸ **raw**(): [`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+▸ **raw**(): [`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 #### Returns
 
-[`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+[`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L102)
+[packages/util/src/withdrawal.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L100)
 
 ___
 
@@ -124,7 +124,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L115)
+[packages/util/src/withdrawal.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L113)
 
 ___
 
@@ -138,14 +138,14 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `address` | `Buffer` |
+| `address` | `Uint8Array` |
 | `amount` | `bigint` |
 | `index` | `bigint` |
 | `validatorIndex` | `bigint` |
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L106)
+[packages/util/src/withdrawal.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L104)
 
 ___
 
@@ -157,7 +157,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `withdrawalArray` | [`WithdrawalBuffer`](../README.md#withdrawalbuffer) |
+| `withdrawalArray` | [`WithdrawalBytes`](../README.md#withdrawalbytes) |
 
 #### Returns
 
@@ -165,7 +165,7 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L65)
+[packages/util/src/withdrawal.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L66)
 
 ___
 
@@ -185,13 +185,13 @@ ___
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L50)
+[packages/util/src/withdrawal.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L51)
 
 ___
 
-### toBufferArray
+### toBytesArray
 
-▸ `Static` **toBufferArray**(`withdrawal`): [`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+▸ `Static` **toBytesArray**(`withdrawal`): [`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 Convert a withdrawal to a buffer array
 
@@ -203,10 +203,10 @@ Convert a withdrawal to a buffer array
 
 #### Returns
 
-[`WithdrawalBuffer`](../README.md#withdrawalbuffer)
+[`WithdrawalBytes`](../README.md#withdrawalbytes)
 
 buffer array of the withdrawal
 
 #### Defined in
 
-[packages/util/src/withdrawal.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L78)
+[packages/util/src/withdrawal.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L79)

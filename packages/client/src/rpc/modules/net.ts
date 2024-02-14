@@ -1,11 +1,12 @@
 import { addHexPrefix } from '@ethereumjs/util'
 
+import { callWithStackTrace } from '../helpers'
 import { middleware } from '../validation'
 
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { PeerPool } from '../../net/peerpool'
-import type { EthereumService } from '../../service/ethereumservice'
+import type { Service } from '../../service/service'
 
 /**
  * net_* RPC module
@@ -15,20 +16,30 @@ export class Net {
   private _chain: Chain
   private _client: EthereumClient
   private _peerPool: PeerPool
+  private _rpcDebug: boolean
 
   /**
    * Create net_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
-    const service = client.services.find((s) => s.name === 'eth') as EthereumService
+  constructor(client: EthereumClient, rpcDebug: boolean) {
+    const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
     this._client = client
     this._peerPool = service.pool
+    this._rpcDebug = rpcDebug
 
-    this.version = middleware(this.version.bind(this), 0, [])
-    this.listening = middleware(this.listening.bind(this), 0, [])
-    this.peerCount = middleware(this.peerCount.bind(this), 0, [])
+    this.version = middleware(callWithStackTrace(this.version.bind(this), this._rpcDebug), 0, [])
+    this.listening = middleware(
+      callWithStackTrace(this.listening.bind(this), this._rpcDebug),
+      0,
+      []
+    )
+    this.peerCount = middleware(
+      callWithStackTrace(this.peerCount.bind(this), this._rpcDebug),
+      0,
+      []
+    )
   }
 
   /**

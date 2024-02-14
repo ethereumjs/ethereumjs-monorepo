@@ -1,15 +1,15 @@
 import { short } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm'
+import { OOGResult } from '../evm.js'
 
-import type { ExecResult } from '../evm'
-import type { PrecompileInput } from './types'
+import type { ExecResult } from '../types.js'
+import type { PrecompileInput } from './types.js'
 
 export function precompile04(opts: PrecompileInput): ExecResult {
   const data = opts.data
 
-  let gasUsed = opts._common.param('gasPrices', 'identity')
-  gasUsed += opts._common.param('gasPrices', 'identityWord') * BigInt(Math.ceil(data.length / 32))
+  let gasUsed = opts.common.param('gasPrices', 'identity')
+  gasUsed += opts.common.param('gasPrices', 'identityWord') * BigInt(Math.ceil(data.length / 32))
   if (opts._debug !== undefined) {
     opts._debug(
       `Run IDENTITY (0x04) precompile data=${short(opts.data)} length=${

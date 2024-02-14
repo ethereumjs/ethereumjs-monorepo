@@ -16,29 +16,51 @@
 - [BlockchainInterface](interfaces/BlockchainInterface.md)
 - [BlockchainOptions](interfaces/BlockchainOptions.md)
 - [Consensus](interfaces/Consensus.md)
+- [ConsensusOptions](interfaces/ConsensusOptions.md)
+- [GenesisOptions](interfaces/GenesisOptions.md)
 
-### Functions
+### Type Aliases
 
-- [parseGethGenesisState](README.md#parsegethgenesisstate)
+- [BlockchainEvents](README.md#blockchainevents)
+- [OnBlock](README.md#onblock)
 
-## Functions
+## Type Aliases
 
-### parseGethGenesisState
+### BlockchainEvents
 
-▸ **parseGethGenesisState**(`json`): `GenesisState`
+Ƭ **BlockchainEvents**: `Object`
 
-Parses the geth genesis state into Blockchain GenesisState
+#### Type declaration
 
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `json` | `any` | representing the `alloc` key in a Geth genesis file |
-
-#### Returns
-
-`GenesisState`
+| Name | Type |
+| :------ | :------ |
+| `deletedCanonicalBlocks` | (`data`: `Block`[], `resolve?`: (`result?`: `any`) => `void`) => `void` |
 
 #### Defined in
 
-[utils.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/utils.ts#L9)
+[types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L8)
+
+___
+
+### OnBlock
+
+Ƭ **OnBlock**: (`block`: `Block`, `reorg`: `boolean`) => `Promise`<`void`\> \| `void`
+
+#### Type declaration
+
+▸ (`block`, `reorg`): `Promise`<`void`\> \| `void`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `block` | `Block` |
+| `reorg` | `boolean` |
+
+##### Returns
+
+`Promise`<`void`\> \| `void`
+
+#### Defined in
+
+[types.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L6)

@@ -7,13 +7,18 @@ import { INVALID_PARAMS } from './error-code'
  * @param requiredParamsCount required parameters count
  * @param validators array of validators
  */
-export function middleware(method: any, requiredParamsCount: number, validators: any[] = []): any {
+export function middleware(
+  method: any,
+  requiredParamsCount: number,
+  validators: any[] = [],
+  names: string[] = []
+): any {
   return function (params: any[] = []) {
     return new Promise((resolve, reject) => {
       if (params.length < requiredParamsCount) {
         const error = {
           code: INVALID_PARAMS,
-          message: `missing value for required argument ${params.length}`,
+          message: `missing value for required argument ${names[params.length] ?? params.length}`,
         }
         return reject(error)
       }
@@ -186,6 +191,33 @@ export const validators = {
     // "each blob is FIELD_ELEMENTS_PER_BLOB * BYTES_PER_FIELD_ELEMENT = 4096 * 32 = 131072"
     // See: https://github.com/ethereum/execution-apis/blob/b7c5d3420e00648f456744d121ffbd929862924d/src/engine/experimental/blob-extension.md
     return (params: any[], index: number) => bytes(131072, params, index)
+  },
+
+  /**
+   * Validator to ensure a valid integer [0, Number.MAX_SAFE_INTEGER], represented as a `number`.
+   * @returns A validator function with parameters:
+   *   - @param params Parameters of the method.
+   *   - @param index The index of the parameter.
+   */
+  get unsignedInteger() {
+    return (params: any[], index: number) => {
+      // This check guards against non-number types, decimal numbers,
+      // numbers that are too large (or small) to be represented exactly,
+      // NaN, null, and undefined.
+      if (!Number.isSafeInteger(params[index])) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be an integer`,
+        }
+      }
+
+      if (params[index] < 0) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument must be larger than 0`,
+        }
+      }
+    }
   },
 
   /**

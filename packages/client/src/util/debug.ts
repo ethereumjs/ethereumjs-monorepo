@@ -1,4 +1,4 @@
-import { bytesToHex } from 'ethereum-cryptography/utils'
+import { bytesToHex } from '@ethereumjs/util'
 
 import { DataDirectory } from '..'
 
@@ -21,7 +21,7 @@ export async function debugCodeReplayBlock(execution: VMExecution, block: Block)
  * Block: ${block.header.number}
  * Hardfork: ${execution.hardfork}
  *
- * Run with: DEBUG=ethjs,vm:*:*,vm:*,-vm:ops:* ts-node [SCRIPT_NAME].ts
+ * Run with: DEBUG=ethjs,vm:*:*,vm:*,-vm:ops:* tsx [SCRIPT_NAME].ts
  *
  */
 
@@ -37,7 +37,7 @@ const main = async () => {
   const common = new Common({ chain: '${execution.config.execCommon.chainName()}', hardfork: '${
     execution.hardfork
   }' })
-  const block = Block.fromRLPSerializedBlock(hexStringToBytes('${bytesToHex(
+  const block = Block.fromRLPSerializedBlock(hexToBytes('${bytesToHex(
     block.serialize()
   )}'), { common })
 
@@ -45,7 +45,7 @@ const main = async () => {
   const trie = new Trie({ db: stateDB, useKeyHashing: true })
   const stateManager = new DefaultStateManager({ trie, common })
   // Ensure we run on the right root
-  stateManager.setStateRoot(hexStringToBytes('${bytesToHex(
+  stateManager.setStateRoot(hexToBytes('${bytesToHex(
     await execution.vm.stateManager.getStateRoot()
   )}'))
 

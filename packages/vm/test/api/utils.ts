@@ -1,8 +1,12 @@
 import { Blockchain } from '@ethereumjs/blockchain'
 import { TransactionFactory, TransactionType } from '@ethereumjs/tx'
-import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
-import { hexToBytes } from 'ethereum-cryptography/utils'
+import {
+  Account,
+  blobsToCommitments,
+  computeVersionedHash,
+  getBlobs,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { VM } from '../../src/vm'
@@ -89,16 +93,22 @@ export function getTransaction(
     txParams['maxFeePerGas'] = BigInt(100)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
   } else if (txType === TransactionType.BlobEIP4844) {
+    if (common.customCrypto?.kzg === undefined) {
+      throw new Error('kzg instance required to instantiate blobg txs')
+    }
     txParams['gasPrice'] = undefined
     txParams['maxFeePerGas'] = BigInt(1000000000)
     txParams['maxPriorityFeePerGas'] = BigInt(10)
-    txParams['maxFeePerDataGas'] = BigInt(100)
+    txParams['maxFeePerBlobGas'] = BigInt(100)
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(txParams['blobs'])
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
-      kzg.computeBlobKzgProof(blob, txParams['kzgCommitments'][ctx] as Uint8Array)
+      common.customCrypto?.kzg?.computeBlobKzgProof(
+        blob,
+        txParams['kzgCommitments'][ctx] as Uint8Array
+      )
     )
-    txParams['versionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
+    txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
       computeVersionedHash(commitment, 0x1)
     )
   }
@@ -107,19 +117,10 @@ export function getTransaction(
 
   if (sign) {
     const privateKey = hexToBytes(
-      'e331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
+      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109'
     )
     return tx.sign(privateKey)
   }
 
   return tx
-}
-
-/**
- * Checks if in a karma test runner.
- * @returns boolean whether running in karma
- */
-export function isRunningInKarma(): boolean {
-  // eslint-disable-next-line no-undef
-  return typeof (<any>globalThis).window !== 'undefined' && (<any>globalThis).window.__karma__
 }

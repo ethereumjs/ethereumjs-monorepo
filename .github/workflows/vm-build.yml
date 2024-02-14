@@ -19,13 +19,13 @@ jobs:
   test-vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -33,7 +33,7 @@ jobs:
 
       - run: npm run lint
       - run: npm run coverage
-      - run: npm run test:API:browser
+      #     - run: npm run test:API:browser
 
       - uses: codecov/codecov-action@v3
         with:
@@ -43,13 +43,13 @@ jobs:
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -60,13 +60,13 @@ jobs:
   test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci
@@ -77,11 +77,11 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 18
           cache: 'npm'
 
       - run: npm ci

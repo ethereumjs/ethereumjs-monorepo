@@ -1,20 +1,20 @@
-import * as tape from 'tape'
+import { assert, describe, it } from 'vitest'
 
-import { baseRequest, baseSetup, params } from '../helpers'
+import { baseSetup } from '../helpers.js'
 
 const method = 'engine_exchangeCapabilities'
 
-tape(`${method}: call with invalid payloadId`, async (t) => {
-  const { server } = baseSetup({ engine: true })
+describe(method, () => {
+  it('call with invalid payloadId', async () => {
+    const { rpc } = await baseSetup({ engine: true })
 
-  const req = params(method, [])
-  const expectRes = (res: any) => {
-    t.ok(res.body.result.length > 0, 'got more than 1 engine capability')
-    t.equal(
-      res.body.result.findIndex((el: string) => el === 'engine_exchangeCapabilities'),
+    const res = await rpc.request(method, [])
+
+    assert.ok(res.result.length > 0, 'got more than 1 engine capability')
+    assert.equal(
+      res.result.findIndex((el: string) => el === 'engine_exchangeCapabilities'),
       -1,
       'should not include engine_exchangeCapabilities in response'
     )
-  }
-  await baseRequest(t, server, req, 200, expectRes)
+  })
 })

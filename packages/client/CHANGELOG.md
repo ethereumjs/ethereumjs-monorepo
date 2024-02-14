@@ -6,6 +6,204 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.0 - 2024-02-08
+
+This client release now comes with official Dencun hardfork support 🎉 and by default uses WASM for crypto primitives for faster block execution times.
+
+### Dencun Hardfork Support
+
+This release now officially supports networks running with or switching to the Dencun hardfork ruleset by including the finalized underlying EthereumJS libraries for the various functionality parts (EVM, Block and Tx libraries).
+
+While `EIP-4844` - activating shard blob transactions - is for sure the most prominent EIP from this hardfork, enabling better scaling for the Ethereum ecosystem by providing cheaper block space for L2s, there are in total 6 EIPs contained in the Dencun hardfork. The following is an overview of EIPs now supported along a Dencun switch (called `Cancun` for the execution switch part):
+
+- EIP-1153: Transient storage opcodes (`@ethereumjs/evm`)
+- EIP-4788: Beacon block root in the EVM (`@ethereumjs/block`, `@ethereumjs/evm`, `@ethereumjs/vm`)
+- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`, `@ethereumjs/evm`)
+- EIP-5656: MCOPY - Memory copying instruction (`@ethereumjs/evm`)
+- EIP-6780: SELFDESTRUCT only in same transaction (`@ethereumjs/vm`)
+- EIP-7516: BLOBBASEFEE opcode (`@ethereumjs/block`, `@ethereumjs/evm`)
+
+Note that while HF timestamp switches for all testnets are included, a mainnet HF timestamp has not yet been set in this release.
+
+### WASM Crypto Support
+
+With this release the client uses WASM by default for all crypto related operations like hashing or signature verification, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192). As a WASM crypto library [@polkadot/wasm-crypto](https://github.com/polkadot-js/wasm/tree/master/packages/wasm-crypto) is being used and WASM comes into play in the EVM for hashing opcodes and precompiles, block and tx hashing and ECDSA signature verfication down to trie key hashing and all hashing and signature functionality in the devp2p layer.
+
+This makes up for a significantly lighter and sped-up client experience regarding both block execution and sync times.
+
+Note that this functionality can be disabled by using the `--useJsCrypto` flag.
+
+### Stability Fixes
+
+- Patch fcu skeleton blockfill process to avoid chain reset, PR [#3137](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3137)
+- Fix bug in tx pool during handling `NewPooledTransactionHashes` message, PR [#3156](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3156)
+- Improved receipt reorg logic, PR [#3146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3146)
+- Block fetcher stabilizations, PR [#3240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3240)
+
+### Other Changes
+
+- Fix RPC debug inconsistencies, PR [#3125](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3125)
+- Better typing/refactoring for devp2p ETH method binding, PR [#3164](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3164)
+- Replace superagent with direct RPC calls in RPC tests, PR [#3173](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3173)
+- testdouble to vi refactoring, PR [#3182](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3182)
+- Fetcher Small Bugfixes and Log Improvements, PR [#3024](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3024)
+
+## 0.9.0 - 2023-10-26
+
+This client release now syncs with the new Holesky and Dencun devnet-11 test networks and comes with improved sync performance, a revamped post-Merge client UX experience and various beacon sync related fixes and robustness improvements.
+
+### Holesky Testnet Support
+
+This client release now fully supports running the new [Holesky](https://holesky.ethpandaops.io/) public Ethereum testnet replacing the `Goerli` test network, see , PR [#2982](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2982) and some following PRs.
+
+The following command starts an EthereumJS client on Holesky:
+
+```ts
+ethereumjs --network=holesky --rpc --rpcEngine
+```
+
+Then start a corresponding CL client (e.g. Lodestar with checkpoint sync towards `https://lodestar-holesky.chainsafe.io`), also see client [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client/README.md).
+
+### Dencun devnet-11 Compatibility
+
+Another testnet to be run with this client: Dencun `devnet-11`, which is one of the last and eventually the _very_ last testnet before running the Dencun hardfork on the official testnet.
+
+Following spec updates included:
+
+- Update `EIP-4788`: do not use precompile anymore but use the pre-deployed bytecode, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
+- Additional `EIP-4788` updates (address + modulus), PR [#3068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3068)
+- Update the beacon block root contract address, PR [#3003](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3003)
+- Fix `newPayloadV2` having `PayloadV3` params, PR [#2954](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2954)
+- Include parent beacon block root for proposal payload uniquness, PR [#2967](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2967)
+- Fixes for new engine api method validations for hive pr-834, PR [#2973](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2973)
+- Track and respond to invalid blocks in engine api and other hive engine-cancun fixes, PR [#3077](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3077)
+- Make the newpayload execution of big blocks non blocking, PR [#3076](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3076)
+- Hive Cancun fixes, PR [#3099](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3099)
+
+See [devnet-11](https://github.com/ethpandaops/dencun-testnet) EthPandaOps GitHub repository for instructions on how to run the testnet.
+
+### Sync and EVM/VM (Execution) Performance
+
+This client release integrates with the EthereumJS EVM v2.1.0 (see EVM [CHANGELOG](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/CHANGELOG.md) for details) which comes with significant performance improvements for various opcodes as well as overall EVM execution.
+
+Furthermore the data model for saving the state has been optimized to improve storage DB read performance, see PR [#3023](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3023) and PR [#3067](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3067).
+
+Both changes together should increase client sync performance by 30% or more.
+
+**Important**: The new db model is not backwards-compatible with existing client databases. Use the new `--prefixStorageTrieKeys` (set it to `false`) and `--useStringValueTrieDB` (set it to `true`) flags to preserve the old DB behavior.
+
+### New Post-Merge UX Experience
+
+We have gone through the complete post-Merge beacon sync process and reworked the client output along, see PR [#3085](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3085) and some follow-up PRs. It is now substantially easier to follow the different stages of the sync process (backfilling, forwardfilling & execution, following the chain) and track the overall sync progress. Holesky with its newly initialized state is a great testbed to see the new client capabilities in practice! 🤩
+
+### Block/Tx Profiling
+
+The client can be now leveraged as a tool for block and/or tx profiling by using the new `--vmProfileBlocks` and `--vmProfileTxs` options, see PR [#3042](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3042). This gives details into the EVM/VM execution performance for specific blocks. See profiler related EVM [README section](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/README.md#profiling-the-evm) for further details.
+
+### Discovery Improvements
+
+A new more fine-tuned discovery `discV4` mechanism has been integrated along PR [#3120](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3120). This should now make it substantially easier to find new peers especially on smaller networks like the `devnet-11` and related Dencun test networks. Additionally the `--bootnodes` option has been expanded to now also take `bootnode.txt` files for easier loading of bootnodes.
+
+### Skeleton/Beacon Sync Reworks and Fixes
+
+- Some skeleton improvements from observations on devnet syncs, PR [#3014](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3014)
+- Decouple skeleton from beacon sync, PR [#3028](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3028)
+- Fix canonical reset of the chain by the skeleton, PR [#3078](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3078)
+- Skeleton reorg head fixes, PR [#3085](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3085)
+- Fixes regarding beacon sync, vmexecution and further log improvs, PR [#3094](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3094)
+- Various rebase and sync related improvements along PR [#3031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3031)
+
+### Other Features
+
+- Add `eth_coinbase` RPC method, PR [#3079](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3079)
+- Add Option to Return Actual Caught Error Message and Stack Trace when RPC Call Fails, PR [#3059](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3059)
+- More fine-grained `--rpcDebug` option (enable/disable specific RPC module logs), PRs [#3102](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3102) and [#3127](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3127)
+
+### Other Changes and Fixes
+
+- Properly handle errors in `storageRangeAt` RPC method, PR [#2952](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2952)
+- Fix TxPool not being started along FCU, PR [#3100](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3100)
+- Fix initialization order when blocks are preloaded, PR [#2979](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2979)
+- Add error handling for async errors in client, PR [#2984](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2984)
+- Deactivate storage/account caches for cache size 0, PR [#3012](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3012)
+- Rewrites block fetcher `sync()` without the `async-promise-generator` api, PR [#3030](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3030)
+- Clean up CLI arg passing, PR [#3036](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3036)
+- Docker related updates, PR [#3065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3065)
+- Use same Cache Setup for normal and executeBlocks-triggered Execution, PR [#3063](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3063)
+- Simplify client transports, **breaking**: removed `--transports`, PR [#3069](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3069)
+- Experimental SNAP sync integration (larger announcement later on, but feel free to already experiment with it using the `--snap` option)! 😆), PR [#3031](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3031)
+- Guard against rpc port collisions, PR [#3083](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3083)
+- Change execution stats intervals, PR [#3106](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3106)
+- pendingBlock fix if FCU is called with withdrawals=null pre-cancun, PR [#3119](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3119)
+- Handle an edge case in `newpayload` block execution, PR [#3131](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3131)
+
+## 0.8.1 - 2023-08-09
+
+Note: this release is not yet fully ready for `4844-devnet-8` (launch in August 2023).
+
+### EIP-4844 / devnet-8 Updates
+
+- 4844: Rename `dataGas` to `blobGas` (see EIP-4844 PR [#7354](https://github.com/ethereum/EIPs/pull/7354)), PR [#2919](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2919)
+- Engine api changes for devnet 8, PR [#2896](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2896)
+  - forkChoiceUpdated v3
+  - change validations of newPayload v3, make them 1-1
+
+### Features
+
+- Add `debug_traceCall` RPC method, PR [#2913](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2913)
+- Add `debug_storageRangeAt` RPC method, PR [#2922](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2922)
+- Handle SIGTERM kernel signal, PR [#2921](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2921)
+
+### Bugfixes / Maintenance
+
+- Broadcast the contents of the transaction pool to newly connected peers, PR [#2935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2935)
+- Add support for multiple same-type messages over devp2p, PR [#2940](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2940)
+- Fix RPC server custom address/port bugs, PR [#2930](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2930)
+- Address security vulnerabilities, PR [#2912](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2912)
+
+## 0.8.0 - 2023-07-11
+
+### Permanent Account, Storage and Trie Node Caches
+
+The client now has integrated persistent caches for accounts and storage as well as trie nodes and a lot less trie reads and writes are needed over time, see PR [#2630](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2630), [#2634](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2634), [#2667](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2667) and [#2681](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2681). This is a quantum leap for client sync and execution performance leading to the ability sync substantially more extensive networks (no: `mainnet` not yet 😋).
+
+The new caches are activated by default and stats are provided in regular intervals. Caches can be adopted and resized with the new `--accountCache`, `--storageCache` and `--trieCache` options as well as completely deactivated by setting size to `0`, e.g. with `--accountCache=0`.
+
+### EIP-4844 Support (Status: Review, 4844-devnet-7, July 2023)
+
+While there might be last-round final tweaks,, [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) is closing in on its final format with a lot of spec changes during the last 2-3 months still happening.
+
+This release supports EIP-4844 along this snapshot [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) from the EIP repository with the EIP being in `Review` status and features/changes included which made it into [4844-devnet-7](https://github.com/ethpandaops/4844-testnet).
+
+The following changes are included:
+
+- Add proofs to engine API BlobsBundleV1, PR [#2642](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2642)
+- Limit blobs as per the maxDataGasPerBlock for block building, PR [#2661](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2661)
+- Add 4844 devnet5 blob post utility, PR [#2674](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2674)
+- De-sszify 4844 blob transaction, PR [#2708](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2708)
+- Extend newPayloadV3 for blob versioned hashes checks, PR [#2716](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2716)
+- Fix double runs of the block execution, PR [#2730](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2730)
+- Merge get blobs engine api into `getPayloadV3`, PR [#2650](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2650)
+- Update eip4844 blocks/txs to decoupled blobs spec, PR [#2567](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2567)
+- Update the kzg validation and replace trusted setup with latest (devnet6), PR [#2756](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2756)
+- Fix new payload excessDataGas/4844 validation, PR [#2784](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2784)
+- Add `shouldOverrideBuilder` flag for `getPayloadV3`, PR [#2891](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2891)
+
+### Other Changes
+
+- Memory logging and memory optimizations, PR [#2675](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2675) and [#2678](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2678)
+- New `--execute` option to activate/deactivate VM execution, PR [#2675](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2675)
+- Fix unclean shutdown scenario where SIGINT may come before client fully started, PR [#2677](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2677)
+- Fix PeerPool Memory Leak, PR [#2752](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2752)
+- Allow to disable transports and/or sync, PR [#2668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2668)
+- Fix `eth_getStorage` RPC method, PR [#2646](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2646)
+- Fix `newPayloadV3` engine API validations, PR [#2762](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2762)
+- Fixes for block and blob building uncovered in devnet6, PR [#2763](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2763)
+- Discard blob txs with missing blobs for block building, PR [#2765](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2765)
+- Remove unused `libp2p` transport layer (preserved for future re-introduction if there is demand 🙂), PR [#2758](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2758)
+- Optimize engine API `newPayload` block executions, PR [#2787](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2787)
+- Improve engine API `newPayload` and `forkChoiceUpdated` block executions, PR [#2880](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2880)
+
 ## 0.7.1 - 2023-04-20
 
 ### Features

@@ -1,4 +1,4 @@
-import type { BlockHeader } from './header'
+import type { BlockHeader } from './header.js'
 import type { Common } from '@ethereumjs/common'
 import type { JsonRpcTx, JsonTx, TransactionType, TxData } from '@ethereumjs/tx'
 import type {
@@ -6,6 +6,7 @@ import type {
   BigIntLike,
   BytesLike,
   JsonRpcWithdrawal,
+  PrefixedHexString,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -29,22 +30,15 @@ export interface BlockOptions {
    */
   common?: Common
   /**
-   * Determine the HF by the block number
+   * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
+   * for older Hfs.
+   *
+   * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
+   * transitions. Note that this should only be needed in very rare and specific scenarios.
    *
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
-  hardforkByBlockNumber?: boolean
-  /**
-   * Determine the HF by total difficulty (Merge HF)
-   *
-   * This option is a superset of `hardforkByBlockNumber` (so only use one of both options)
-   * and determines the HF by both the block number and the TD.
-   *
-   * Since the TTD is only a threshold the block number will in doubt take precedence (imagine
-   * e.g. both Merge and Shanghai HF blocks set and the block number from the block provided
-   * pointing to a Shanghai block: this will lead to set the HF as Shanghai and not the Merge).
-   */
-  hardforkByTTD?: BigIntLike
+  setHardfork?: boolean | BigIntLike
   /**
    * If a preceding {@link BlockHeader} (usually the parent header) is given the preceding
    * header will be used to calculate the difficulty for this block and the calculated
@@ -77,6 +71,45 @@ export interface BlockOptions {
   skipConsensusFormatValidation?: boolean
 }
 
+export interface VerkleProof {
+  commitmentsByPath: PrefixedHexString[]
+  d: PrefixedHexString
+  depthExtensionPresent: PrefixedHexString
+  ipaProof: {
+    cl: PrefixedHexString[]
+    cr: PrefixedHexString[]
+    finalEvaluation: PrefixedHexString
+  }
+  otherStems: PrefixedHexString[]
+}
+
+export interface VerkleStateDiff {
+  stem: PrefixedHexString
+  suffixDiffs: {
+    currentValue: PrefixedHexString | null
+    newValue: PrefixedHexString | null
+    suffix: number | string
+  }[]
+}
+
+/**
+ * Experimental, object format could eventual change.
+ * An object that provides the state and proof necessary for verkle stateless execution
+ * */
+export interface VerkleExecutionWitness {
+  /**
+   * An array of state diffs.
+   * Each item corresponding to state accesses or state modifications of the block.
+   * In the current design, it also contains the resulting state of the block execution (post-state).
+   */
+  stateDiff: VerkleStateDiff[]
+  /**
+   * The verkle proof for the block.
+   * Proves that the provided stateDiff belongs to the canonical verkle tree.
+   */
+  verkleProof: VerkleProof
+}
+
 /**
  * A block header's data.
  */
@@ -98,8 +131,9 @@ export interface HeaderData {
   nonce?: BytesLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BytesLike
-  dataGasUsed?: BigIntLike
-  excessDataGas?: BigIntLike
+  blobGasUsed?: BigIntLike
+  excessBlobGas?: BigIntLike
+  parentBeaconBlockRoot?: BytesLike
 }
 
 /**
@@ -113,13 +147,29 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
+  /**
+   * EIP-6800: Verkle Proof Data (experimental)
+   */
+  executionWitness?: VerkleExecutionWitness | null
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
+export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+  | [
+      BlockHeaderBytes,
+      TransactionsBytes,
+      UncleHeadersBytes,
+      WithdrawalsBytes,
+      ExecutionWitnessBytes
+    ]
+
+/**
+ * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
+ */
 export type BlockHeaderBytes = Uint8Array[]
 export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
@@ -139,6 +189,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
+  executionWitness?: VerkleExecutionWitness | null
 }
 
 /**
@@ -162,8 +213,9 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
-  dataGasUsed?: string
-  excessDataGas?: string
+  blobGasUsed?: string
+  excessBlobGas?: string
+  parentBeaconBlockRoot?: string
 }
 
 /*
@@ -193,33 +245,40 @@ export interface JsonRpcBlock {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
-  dataGasUsed?: string // If EIP-4844 is enabled for this block, returns the data gas used for the block
-  excessDataGas?: string // If EIP-4844 is enabled for this block, returns the excess data gas for the block
+  blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
+  excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
+  parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
+  executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
 }
 
+// Note: all these strings are 0x-prefixed
 export type WithdrawalV1 = {
-  index: string // Quantity, 8 Bytes
-  validatorIndex: string // Quantity, 8 bytes
-  address: string // DATA, 20 bytes
-  amount: string // Quantity, 32 bytes
+  index: PrefixedHexString // Quantity, 8 Bytes
+  validatorIndex: PrefixedHexString // Quantity, 8 bytes
+  address: PrefixedHexString // DATA, 20 bytes
+  amount: PrefixedHexString // Quantity, 32 bytes
 }
 
+// Note: all these strings are 0x-prefixed
 export type ExecutionPayload = {
-  parentHash: string // DATA, 32 Bytes
-  feeRecipient: string // DATA, 20 Bytes
-  stateRoot: string // DATA, 32 Bytes
-  receiptsRoot: string // DATA, 32 bytes
-  logsBloom: string // DATA, 256 Bytes
-  prevRandao: string // DATA, 32 Bytes
-  blockNumber: string // QUANTITY, 64 Bits
-  gasLimit: string // QUANTITY, 64 Bits
-  gasUsed: string // QUANTITY, 64 Bits
-  timestamp: string // QUANTITY, 64 Bits
-  extraData: string // DATA, 0 to 32 Bytes
-  baseFeePerGas: string // QUANTITY, 256 Bits
-  blockHash: string // DATA, 32 Bytes
-  transactions: string[] // Array of DATA - Array of transaction rlp strings,
+  parentHash: PrefixedHexString // DATA, 32 Bytes
+  feeRecipient: PrefixedHexString // DATA, 20 Bytes
+  stateRoot: PrefixedHexString // DATA, 32 Bytes
+  receiptsRoot: PrefixedHexString // DATA, 32 bytes
+  logsBloom: PrefixedHexString // DATA, 256 Bytes
+  prevRandao: PrefixedHexString // DATA, 32 Bytes
+  blockNumber: PrefixedHexString // QUANTITY, 64 Bits
+  gasLimit: PrefixedHexString // QUANTITY, 64 Bits
+  gasUsed: PrefixedHexString // QUANTITY, 64 Bits
+  timestamp: PrefixedHexString // QUANTITY, 64 Bits
+  extraData: PrefixedHexString // DATA, 0 to 32 Bytes
+  baseFeePerGas: PrefixedHexString // QUANTITY, 256 Bits
+  blockHash: PrefixedHexString // DATA, 32 Bytes
+  transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
-  dataGasUsed?: string // QUANTITY, 64 Bits
-  excessDataGas?: string // QUANTITY, 64 Bits
+  blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
+  excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
+  parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
+  // VerkleExecutionWitness is already a hex serialized object
+  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null imples not available
 }

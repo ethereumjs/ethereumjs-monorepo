@@ -7,7 +7,7 @@ which validates inputs and sets encoding type.
 
 ## Implements
 
-- [`DB`](../interfaces/DB.md)
+- `DB`
 
 ## Table of contents
 
@@ -17,6 +17,8 @@ which validates inputs and sets encoding type.
 
 ### Properties
 
+- [\_stats](CheckpointDB.md#_stats)
+- [cacheSize](CheckpointDB.md#cachesize)
 - [checkpoints](CheckpointDB.md#checkpoints)
 - [db](CheckpointDB.md#db)
 
@@ -25,19 +27,21 @@ which validates inputs and sets encoding type.
 - [batch](CheckpointDB.md#batch)
 - [checkpoint](CheckpointDB.md#checkpoint)
 - [commit](CheckpointDB.md#commit)
-- [copy](CheckpointDB.md#copy)
 - [del](CheckpointDB.md#del)
 - [get](CheckpointDB.md#get)
 - [hasCheckpoints](CheckpointDB.md#hascheckpoints)
+- [open](CheckpointDB.md#open)
 - [put](CheckpointDB.md#put)
 - [revert](CheckpointDB.md#revert)
 - [setCheckpoints](CheckpointDB.md#setcheckpoints)
+- [shallowCopy](CheckpointDB.md#shallowcopy)
+- [stats](CheckpointDB.md#stats)
 
 ## Constructors
 
 ### constructor
 
-• **new CheckpointDB**(`db`)
+• **new CheckpointDB**(`opts`)
 
 Initialize a DB instance.
 
@@ -45,13 +49,46 @@ Initialize a DB instance.
 
 | Name | Type |
 | :------ | :------ |
-| `db` | [`DB`](../interfaces/DB.md) |
+| `opts` | [`CheckpointDBOpts`](../interfaces/CheckpointDBOpts.md) |
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L14)
+[packages/trie/src/db/checkpoint.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L50)
 
 ## Properties
+
+### \_stats
+
+• **\_stats**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `cache` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
+| `cache.hits` | `number` |
+| `cache.reads` | `number` |
+| `cache.writes` | `number` |
+| `db` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
+| `db.hits` | `number` |
+| `db.reads` | `number` |
+| `db.writes` | `number` |
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L34)
+
+___
+
+### cacheSize
+
+• `Readonly` **cacheSize**: `number`
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L19)
+
+___
 
 ### checkpoints
 
@@ -59,17 +96,17 @@ Initialize a DB instance.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L8)
+[packages/trie/src/db/checkpoint.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L17)
 
 ___
 
 ### db
 
-• **db**: [`DB`](../interfaces/DB.md)
+• **db**: `DB`<`string`, `string` \| `Uint8Array`\>
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L9)
+[packages/trie/src/db/checkpoint.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L18)
 
 ## Methods
 
@@ -77,13 +114,13 @@ ___
 
 ▸ **batch**(`opStack`): `Promise`<`void`\>
 
-Performs a batch operation on db.
+**`Inherit Doc`**
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `opStack` | [`BatchDBOp`](../README.md#batchdbop)[] | A stack of levelup operations |
+| Name | Type |
+| :------ | :------ |
+| `opStack` | `BatchDBOp`<`Uint8Array`, `Uint8Array`\>[] |
 
 #### Returns
 
@@ -91,11 +128,11 @@ Performs a batch operation on db.
 
 #### Implementation of
 
-[DB](../interfaces/DB.md).[batch](../interfaces/DB.md#batch)
+DB.batch
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L140)
+[packages/trie/src/db/checkpoint.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L230)
 
 ___
 
@@ -109,7 +146,7 @@ Adds a new checkpoint to the stack
 
 | Name | Type |
 | :------ | :------ |
-| `root` | `Buffer` |
+| `root` | `Uint8Array` |
 
 #### Returns
 
@@ -117,7 +154,7 @@ Adds a new checkpoint to the stack
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L46)
+[packages/trie/src/db/checkpoint.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L92)
 
 ___
 
@@ -133,28 +170,7 @@ Commits the latest checkpoint
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L53)
-
-___
-
-### copy
-
-▸ **copy**(): [`CheckpointDB`](CheckpointDB.md)
-
-Returns a copy of the DB instance, with a reference
-to the **same** underlying leveldb instance.
-
-#### Returns
-
-[`CheckpointDB`](CheckpointDB.md)
-
-#### Implementation of
-
-[DB](../interfaces/DB.md).[copy](../interfaces/DB.md#copy)
-
-#### Defined in
-
-[packages/trie/src/db/checkpoint.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L157)
+[packages/trie/src/db/checkpoint.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L99)
 
 ___
 
@@ -162,13 +178,13 @@ ___
 
 ▸ **del**(`key`): `Promise`<`void`\>
 
-Removes a raw value in the underlying leveldb.
+**`Inherit Doc`**
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `key` | `Buffer` |
+| `key` | `Uint8Array` |
 
 #### Returns
 
@@ -176,39 +192,37 @@ Removes a raw value in the underlying leveldb.
 
 #### Implementation of
 
-[DB](../interfaces/DB.md).[del](../interfaces/DB.md#del)
+DB.del
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L127)
+[packages/trie/src/db/checkpoint.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L208)
 
 ___
 
 ### get
 
-▸ **get**(`key`): `Promise`<``null`` \| `Buffer`\>
+▸ **get**(`key`): `Promise`<`undefined` \| `Uint8Array`\>
 
-Retrieves a raw value from leveldb.
+**`Inherit Doc`**
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `key` | `Buffer` |
+| `key` | `Uint8Array` |
 
 #### Returns
 
-`Promise`<``null`` \| `Buffer`\>
-
-A Promise that resolves to `Buffer` if a value is found or `null` if no value is found.
+`Promise`<`undefined` \| `Uint8Array`\>
 
 #### Implementation of
 
-[DB](../interfaces/DB.md).[get](../interfaces/DB.md#get)
+DB.get
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L93)
+[packages/trie/src/db/checkpoint.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L139)
 
 ___
 
@@ -224,22 +238,13 @@ Is the DB during a checkpoint phase?
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L38)
+[packages/trie/src/db/checkpoint.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L84)
 
 ___
 
-### put
+### open
 
-▸ **put**(`key`, `val`): `Promise`<`void`\>
-
-Writes a value directly to leveldb.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `key` | `Buffer` | The key as a `Buffer` |
-| `val` | `Buffer` | - |
+▸ **open**(): `Promise`<`void`\>
 
 #### Returns
 
@@ -247,27 +252,54 @@ Writes a value directly to leveldb.
 
 #### Implementation of
 
-[DB](../interfaces/DB.md).[put](../interfaces/DB.md#put)
+DB.open
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L115)
+[packages/trie/src/db/checkpoint.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L291)
+
+___
+
+### put
+
+▸ **put**(`key`, `value`): `Promise`<`void`\>
+
+**`Inherit Doc`**
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `key` | `Uint8Array` |
+| `value` | `Uint8Array` |
+
+#### Returns
+
+`Promise`<`void`\>
+
+#### Implementation of
+
+DB.put
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L184)
 
 ___
 
 ### revert
 
-▸ **revert**(): `Promise`<`Buffer`\>
+▸ **revert**(): `Promise`<`Uint8Array`\>
 
 Reverts the latest checkpoint
 
 #### Returns
 
-`Promise`<`Buffer`\>
+`Promise`<`Uint8Array`\>
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L85)
+[packages/trie/src/db/checkpoint.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L131)
 
 ___
 
@@ -289,4 +321,56 @@ Flush the checkpoints and use the given checkpoints instead.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L24)
+[packages/trie/src/db/checkpoint.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L70)
+
+___
+
+### shallowCopy
+
+▸ **shallowCopy**(): [`CheckpointDB`](CheckpointDB.md)
+
+**`Inherit Doc`**
+
+#### Returns
+
+[`CheckpointDB`](CheckpointDB.md)
+
+#### Implementation of
+
+DB.shallowCopy
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L283)
+
+___
+
+### stats
+
+▸ **stats**(`reset?`): `Object`
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `reset` | `boolean` | `true` |
+
+#### Returns
+
+`Object`
+
+| Name | Type |
+| :------ | :------ |
+| `cache` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
+| `cache.hits` | `number` |
+| `cache.reads` | `number` |
+| `cache.writes` | `number` |
+| `db` | { `hits`: `number` = 0; `reads`: `number` = 0; `writes`: `number` = 0 } |
+| `db.hits` | `number` |
+| `db.reads` | `number` |
+| `db.writes` | `number` |
+| `size` | `number` |
+
+#### Defined in
+
+[packages/trie/src/db/checkpoint.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L261)

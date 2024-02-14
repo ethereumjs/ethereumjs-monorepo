@@ -1,15 +1,23 @@
 import { zeros } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+
+import type { Common } from '@ethereumjs/common'
 
 const BYTE_SIZE = 256
 
 export class Bloom {
   bitvector: Uint8Array
+  keccakFunction: (msg: Uint8Array) => Uint8Array
 
   /**
    * Represents a Bloom filter.
    */
-  constructor(bitvector?: Uint8Array) {
+  constructor(bitvector?: Uint8Array, common?: Common) {
+    if (common?.customCrypto.keccak256 !== undefined) {
+      this.keccakFunction = common.customCrypto.keccak256
+    } else {
+      this.keccakFunction = keccak256
+    }
     if (!bitvector) {
       this.bitvector = zeros(BYTE_SIZE)
     } else {
@@ -23,7 +31,7 @@ export class Bloom {
    * @param e - The element to add
    */
   add(e: Uint8Array) {
-    e = keccak256(e)
+    e = this.keccakFunction(e)
     const mask = 2047 // binary 11111111111
 
     for (let i = 0; i < 3; i++) {
@@ -40,7 +48,7 @@ export class Bloom {
    * @param e - The element to check
    */
   check(e: Uint8Array): boolean {
-    e = keccak256(e)
+    e = this.keccakFunction(e)
     const mask = 2047 // binary 11111111111
     let match = true
 

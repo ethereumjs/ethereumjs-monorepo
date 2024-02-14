@@ -1,40 +1,31 @@
 import { Chain, Common } from '@ethereumjs/common'
 import {
   Address,
+  BIGINT_0,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
-  bytesToPrefixedHexString,
   ecsign,
   publicToAddress,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
 
-import { Capability, TransactionType } from './types'
-import { checkMaxInitCodeSize } from './util'
+import { Capability, TransactionType } from './types.js'
+import { checkMaxInitCodeSize } from './util.js'
 
 import type {
   JsonTx,
   Transaction,
+  TransactionCache,
   TransactionInterface,
   TxData,
   TxOptions,
   TxValuesArray,
-} from './types'
-import type { Hardfork } from '@ethereumjs/common'
+} from './types.js'
 import type { BigIntLike } from '@ethereumjs/util'
-
-interface TransactionCache {
-  hash: Uint8Array | undefined
-  dataFee?: {
-    value: bigint
-    hardfork: string | Hardfork
-  }
-}
 
 /**
  * This base class will likely be subject to further
@@ -46,7 +37,7 @@ interface TransactionCache {
 export abstract class BaseTransaction<T extends TransactionType>
   implements TransactionInterface<T>
 {
-  private readonly _type: TransactionType
+  protected readonly _type: TransactionType
 
   public readonly nonce: bigint
   public readonly gasLimit: bigint
@@ -60,9 +51,10 @@ export abstract class BaseTransaction<T extends TransactionType>
 
   public readonly common!: Common
 
-  protected cache: TransactionCache = {
+  public cache: TransactionCache = {
     hash: undefined,
     dataFee: undefined,
+    senderPubKey: undefined,
   }
 
   protected readonly txOptions: TxOptions
@@ -143,7 +135,7 @@ export abstract class BaseTransaction<T extends TransactionType>
    * tx type is unknown (e.g. when instantiated with
    * the tx factory).
    *
-   * See `Capabilites` in the `types` module for a reference
+   * See `Capabilities` in the `types` module for a reference
    * on all supported capabilities.
    */
   supports(capability: Capability) {
@@ -151,46 +143,31 @@ export abstract class BaseTransaction<T extends TransactionType>
   }
 
   /**
-   * Checks if the transaction has the minimum amount of gas required
-   * (DataFee + TxFee + Creation Fee).
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {string[]} an array of error strings
    */
-  validate(): boolean
-  validate(stringError: false): boolean
-  validate(stringError: true): string[]
-  validate(stringError: boolean = false): boolean | string[] {
+  getValidationErrors(): string[] {
     const errors = []
-
-    if (this.getBaseFee() > this.gasLimit) {
-      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
-    }
 
     if (this.isSigned() && !this.verifySignature()) {
       errors.push('Invalid Signature')
     }
 
-    return stringError ? errors : errors.length === 0
-  }
-
-  protected _validateYParity() {
-    const { v } = this
-    if (v !== undefined && v !== BigInt(0) && v !== BigInt(1)) {
-      const msg = this._errorMsg('The y-parity of the transaction should either be 0 or 1')
-      throw new Error(msg)
+    if (this.getBaseFee() > this.gasLimit) {
+      errors.push(`gasLimit is too low. given ${this.gasLimit}, need at least ${this.getBaseFee()}`)
     }
+
+    return errors
   }
 
   /**
-   * EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2are considered invalid.
-   * Reasoning: https://ethereum.stackexchange.com/a/55728
+   * Validates the transaction signature and minimum gas requirements.
+   * @returns {boolean} true if the transaction is valid, false otherwise
    */
-  protected _validateHighS() {
-    const { s } = this
-    if (this.common.gteHardfork('homestead') && s !== undefined && s > SECP256K1_ORDER_DIV_2) {
-      const msg = this._errorMsg(
-        'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid'
-      )
-      throw new Error(msg)
-    }
+  isValid(): boolean {
+    const errors = this.getValidationErrors()
+
+    return errors.length === 0
   }
 
   /**
@@ -214,7 +191,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     const txDataZero = this.common.param('gasPrices', 'txDataZero')
     const txDataNonZero = this.common.param('gasPrices', 'txDataNonZero')
 
-    let cost = BigInt(0)
+    let cost = BIGINT_0
     for (let i = 0; i < this.data.length; i++) {
       this.data[i] === 0 ? (cost += txDataZero) : (cost += txDataNonZero)
     }
@@ -257,12 +234,11 @@ export abstract class BaseTransaction<T extends TransactionType>
    */
   abstract serialize(): Uint8Array
 
-  // Returns the unsigned tx (hashed or raw), which is used to sign the transaction.
-  //
-  // Note: do not use code docs here since VS Studio is then not able to detect the
-  // comments from the inherited methods
-  abstract getMessageToSign(hashMessage: false): Uint8Array | Uint8Array[]
-  abstract getMessageToSign(hashMessage?: true): Uint8Array
+  // Returns the raw unsigned tx, which is used to sign the transaction.
+  abstract getMessageToSign(): Uint8Array | Uint8Array[]
+
+  // Returns the hashed unsigned tx, which is used to sign the transaction.
+  abstract getHashedMessageToSign(): Uint8Array
 
   abstract hash(): Uint8Array
 
@@ -331,9 +307,10 @@ export abstract class BaseTransaction<T extends TransactionType>
       hackApplied = true
     }
 
-    const msgHash = this.getMessageToSign(true)
-    const { v, r, s } = ecsign(msgHash, privateKey)
-    const tx = this._processSignature(v, r, s)
+    const msgHash = this.getHashedMessageToSign()
+    const ecSignFunction = this.common.customCrypto?.ecsign ?? ecsign
+    const { v, r, s } = ecSignFunction(msgHash, privateKey)
+    const tx = this.addSignature(v, r, s, true)
 
     // Hack part 2
     if (hackApplied) {
@@ -356,15 +333,28 @@ export abstract class BaseTransaction<T extends TransactionType>
       gasLimit: bigIntToHex(this.gasLimit),
       to: this.to !== undefined ? this.to.toString() : undefined,
       value: bigIntToHex(this.value),
-      data: bytesToPrefixedHexString(this.data),
+      data: bytesToHex(this.data),
       v: this.v !== undefined ? bigIntToHex(this.v) : undefined,
       r: this.r !== undefined ? bigIntToHex(this.r) : undefined,
       s: this.s !== undefined ? bigIntToHex(this.s) : undefined,
     }
   }
 
-  // Accept the v,r,s values from the `sign` method, and convert this into a T
-  protected abstract _processSignature(v: bigint, r: Uint8Array, s: Uint8Array): Transaction[T]
+  /**
+   * Returns a new transaction with the same data fields as the current, but now signed
+   * @param v The `v` value of the signature
+   * @param r The `r` value of the signature
+   * @param s The `s` value of the signature
+   * @param convertV Set this to `true` if the raw output of `ecsign` is used. If this is `false` (default)
+   *                 then the raw value passed for `v` will be used for the signature. For legacy transactions,
+   *                 if this is set to `true`, it will also set the right `v` value for the chain id.
+   */
+  abstract addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV?: boolean
+  ): Transaction[T]
 
   /**
    * Does chain ID checks on common and returns a common
@@ -380,7 +370,9 @@ export abstract class BaseTransaction<T extends TransactionType>
       const chainIdBigInt = bytesToBigInt(toBytes(chainId))
       if (common) {
         if (common.chainId() !== chainIdBigInt) {
-          const msg = this._errorMsg('The chain ID does not match the chain ID of Common')
+          const msg = this._errorMsg(
+            `The chain ID does not match the chain ID of Common. Got: ${chainIdBigInt}, expected: ${common.chainId}`
+          )
           throw new Error(msg)
         }
         // Common provided, chain ID does match

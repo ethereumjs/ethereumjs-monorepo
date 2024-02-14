@@ -1,16 +1,17 @@
-import { Address } from '@ethereumjs/util'
+import { Address, BIGINT_0 } from '@ethereumjs/util'
 
-import type { PrecompileFunc } from './precompiles'
+import type { PrecompileFunc } from './precompiles/index.js'
+import type { AccessWitness } from '@ethereumjs/statemanager'
 
 const defaults = {
-  value: BigInt(0),
+  value: BIGINT_0,
   caller: Address.zero(),
   data: new Uint8Array(0),
   depth: 0,
   isStatic: false,
   isCompiled: false,
   delegatecall: false,
-  gasRefund: BigInt(0),
+  gasRefund: BIGINT_0,
 }
 
 interface MessageOpts {
@@ -26,13 +27,18 @@ interface MessageOpts {
   isCompiled?: boolean
   salt?: Uint8Array
   /**
-   * A map of addresses to selfdestruct, see {@link Message.selfdestruct}
+   * A set of addresses to selfdestruct, see {@link Message.selfdestruct}
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   delegatecall?: boolean
   authcallOrigin?: Address
   gasRefund?: bigint
-  versionedHashes?: Uint8Array[]
+  blobVersionedHashes?: Uint8Array[]
+  accessWitness?: AccessWitness
 }
 
 export class Message {
@@ -48,11 +54,15 @@ export class Message {
   isCompiled: boolean
   salt?: Uint8Array
   containerCode?: Uint8Array /** container code for EOF1 contracts - used by CODECOPY/CODESIZE */
+  chargeCodeAccesses?: boolean
   /**
-   * Map of addresses to selfdestruct. Key is the unprefixed address.
-   * Value is a boolean when marked for destruction and replaced with a Uint8Array containing the address where the remaining funds are sent.
+   * Set of addresses to selfdestruct. Key is the unprefixed address.
    */
-  selfdestruct?: { [key: string]: boolean } | { [key: string]: Uint8Array }
+  selfdestruct?: Set<string>
+  /**
+   * Map of addresses which were created (used in EIP 6780)
+   */
+  createdAddresses?: Set<string>
   delegatecall: boolean
   /**
    * This is used to store the origin of the AUTHCALL,
@@ -63,7 +73,8 @@ export class Message {
   /**
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
-  versionedHashes?: Uint8Array[]
+  blobVersionedHashes?: Uint8Array[]
+  accessWitness?: AccessWitness
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -78,10 +89,12 @@ export class Message {
     this.isCompiled = opts.isCompiled ?? defaults.isCompiled
     this.salt = opts.salt
     this.selfdestruct = opts.selfdestruct
+    this.createdAddresses = opts.createdAddresses
     this.delegatecall = opts.delegatecall ?? defaults.delegatecall
     this.authcallOrigin = opts.authcallOrigin
     this.gasRefund = opts.gasRefund ?? defaults.gasRefund
-    this.versionedHashes = opts.versionedHashes
+    this.blobVersionedHashes = opts.blobVersionedHashes
+    this.accessWitness = opts.accessWitness
     if (this.value < 0) {
       throw new Error(`value field cannot be negative, received ${this.value}`)
     }

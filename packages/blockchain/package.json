@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "6.2.2",
+  "version": "7.1.0",
   "description": "A module to store and interact with blocks",
   "keywords": [
     "ethereum",
@@ -16,6 +16,7 @@
   },
   "license": "MPL-2.0",
   "author": "mjbecze <mjbecze@gmail.com>",
+  "type": "commonjs",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
@@ -31,36 +32,33 @@
   "scripts": {
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
-    "docs:build": "typedoc --options typedoc.js",
+    "coverage": "DEBUG=ethjs npx vitest run --coverage.enabled --coverage.reporter=lcov",
+    "docs:build": "typedoc --options typedoc.cjs",
+    "examples": "tsx ../../scripts/examples-runner.ts -- blockchain",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "tape": "tape -r ts-node/register",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "karma start karma.conf.js",
-    "test:node": "npm run tape -- ./test/*.spec.ts",
+    "test:browser": "npx vitest run --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^4.2.2",
-    "@ethereumjs/common": "^3.1.2",
-    "@ethereumjs/ethash": "^2.0.5",
-    "@ethereumjs/rlp": "^4.0.1",
-    "@ethereumjs/trie": "^5.0.5",
-    "@ethereumjs/tx": "^4.1.2",
-    "@ethereumjs/util": "^8.0.6",
+    "@ethereumjs/block": "^5.1.1",
+    "@ethereumjs/common": "^4.2.0",
+    "@ethereumjs/ethash": "^3.0.2",
+    "@ethereumjs/rlp": "^5.0.2",
+    "@ethereumjs/trie": "^6.1.1",
+    "@ethereumjs/tx": "^5.2.1",
+    "@ethereumjs/util": "^9.0.2",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.0.0",
-    "level": "^8.0.0",
-    "lru-cache": "^7.18.3"
+    "ethereum-cryptography": "^2.1.3",
+    "lru-cache": "^10.0.0"
   },
-  "devDependencies": {
-    "@types/async": "^2.4.1",
-    "@types/level-errors": "^3.0.0"
-  },
+  "devDependencies": {},
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

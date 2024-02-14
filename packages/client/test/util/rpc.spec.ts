@@ -1,28 +1,34 @@
-import { bytesToPrefixedHexString } from '@ethereumjs/util'
-import * as tape from 'tape'
+import { bytesToHex } from '@ethereumjs/util'
+import { MemoryLevel } from 'memory-level'
+import { assert, describe, it } from 'vitest'
 
-import { EthereumClient } from '../../src/client'
-import { Config } from '../../src/config'
-import { RPCManager } from '../../src/rpc'
-import { METHOD_NOT_FOUND } from '../../src/rpc/error-code'
+import { EthereumClient } from '../../src/client.js'
+import { Config } from '../../src/config.js'
+import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.js'
+import { RPCManager } from '../../src/rpc/index.js'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../../src/util/rpc'
+} from '../../src/util/rpc.js'
+import { getRpcClient, setupChain } from '../rpc/helpers.js'
+import pow from '../testdata/geth-genesis/pow.json'
 
-const request = require('supertest')
-
-tape('[Util/RPC]', (t) => {
-  t.test('should return enabled RPC servers', async (st) => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
-    const client = await EthereumClient.create({ config })
+describe('[Util/RPC]', () => {
+  it('should return enabled RPC servers', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
     const manager = new RPCManager(client, config)
     const { logger } = config
     for (const methodConfig of Object.values(MethodConfig)) {
-      for (const rpcDebug of [false, true]) {
-        const { server } = createRPCServer(manager, { methodConfig, rpcDebug, logger })
+      for (const rpcDebug of ['', 'eth']) {
+        const { server } = createRPCServer(manager, {
+          methodConfig,
+          rpcDebug,
+          logger,
+          rpcDebugVerbose: '',
+        })
         const httpServer = createRPCServerListener({
           server,
           withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
@@ -34,7 +40,7 @@ tape('[Util/RPC]', (t) => {
         const req = { id: 1, method: 'eth_getCanonicalHeadBlock', params: [] }
         const resp = {
           id: 1,
-          result: { test: bytesToPrefixedHexString(new Uint8Array(64).fill(1)) },
+          result: { test: bytesToHex(new Uint8Array(64).fill(1)) },
         }
         const reqBulk = [req, req]
         const respBulk = [resp, { id: 2, error: { err0: '456' } }]
@@ -46,30 +52,43 @@ tape('[Util/RPC]', (t) => {
         server.emit('response', req, []) // empty
         server.emit('response', [req], respBulk) // mismatch length
 
-        st.ok(
+        assert.ok(
           httpServer !== undefined && wsServer !== undefined,
           'should return http and ws servers'
         )
       }
     }
-    st.end()
+  })
+  it('should not throw if rpcDebugVerbose string is undefined', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
+    const manager = new RPCManager(client, config)
+    const { logger } = config
+    const methodConfig = Object.values(MethodConfig)[0]
+    const { server } = createRPCServer(manager, {
+      methodConfig,
+      rpcDebug: 'eth',
+      logger,
+      rpcDebugVerbose: undefined as any,
+    })
+    const httpServer = createRPCServerListener({
+      server,
+      withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+    })
+    const wsServer = createWsRPCServerListener({
+      server,
+      withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+    })
+    assert.ok(
+      httpServer !== undefined && wsServer !== undefined,
+      'should return http and ws servers'
+    )
   })
 })
 
-tape('[Util/RPC/Engine eth methods]', async (t) => {
-  const config = new Config({
-    transports: [],
-    accountCache: 10000,
-    storageCache: 1000,
-    saveReceipts: true,
-  })
-  const client = await EthereumClient.create({ config })
-  const manager = new RPCManager(client, config)
-  const { server } = createRPCServer(manager, {
-    methodConfig: MethodConfig.EngineOnly,
-    rpcDebug: false,
-  })
-  const httpServer = createRPCServerListener({ server })
+describe('[Util/RPC/Engine eth methods]', async () => {
+  const { server } = await setupChain(pow, 'pow')
+  const rpc = getRpcClient(server)
   const methods = [
     'eth_blockNumber',
     'eth_call',
@@ -81,26 +100,11 @@ tape('[Util/RPC/Engine eth methods]', async (t) => {
     'eth_sendRawTransaction',
     'eth_syncing',
   ]
-  for (const method of methods) {
-    t.test(`should have method ${method}`, (st) => {
-      const req = {
-        jsonrpc: '2.0',
-        method,
-        id: 1,
-      }
 
-      request(httpServer)
-        .post('/')
-        .set('Content-Type', 'application/json')
-        .send(req)
-        .expect((res: any) => {
-          if (res.body.error?.code === METHOD_NOT_FOUND) {
-            throw new Error(`should have an error code ${METHOD_NOT_FOUND}`)
-          }
-        })
-        .end((err: any) => {
-          st.end(err)
-        })
+  for (const method of methods) {
+    it(`should have method ${method}`, async () => {
+      const res = await rpc.request(method, [])
+      assert.notEqual(res.error?.code, METHOD_NOT_FOUND, `should have ${method}`)
     })
   }
 })

@@ -6,7 +6,7 @@
 
 - **`PeerInfo`**
 
-  ↳ [`CustomContact`](CustomContact.md)
+  ↳ [`Contact`](Contact.md)
 
 ## Table of contents
 
@@ -16,6 +16,7 @@
 - [id](PeerInfo.md#id)
 - [tcpPort](PeerInfo.md#tcpport)
 - [udpPort](PeerInfo.md#udpport)
+- [vectorClock](PeerInfo.md#vectorclock)
 
 ## Properties
 
@@ -25,17 +26,17 @@
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L19)
+[packages/devp2p/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L174)
 
 ___
 
 ### id
 
-• `Optional` **id**: `Uint8Array` \| `Buffer`
+• `Optional` **id**: `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L18)
+[packages/devp2p/src/types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L173)
 
 ___
 
@@ -45,7 +46,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L21)
+[packages/devp2p/src/types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L176)
 
 ___
 
@@ -55,4 +56,14 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/dpt/dpt.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L20)
+[packages/devp2p/src/types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L175)
+
+___
+
+### vectorClock
+
+• `Optional` **vectorClock**: `number`
+
+#### Defined in
+
+[packages/devp2p/src/types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L177)

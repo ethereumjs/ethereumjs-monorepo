@@ -1,8 +1,9 @@
-import { Address } from './address'
-import { bigIntToHex, bytesToPrefixedHexString, toBytes } from './bytes'
-import { TypeOutput, toType } from './types'
+import { Address } from './address.js'
+import { bigIntToHex, bytesToHex, toBytes } from './bytes.js'
+import { BIGINT_0 } from './constants.js'
+import { TypeOutput, toType } from './types.js'
 
-import type { AddressLike, BigIntLike } from './types'
+import type { AddressLike, BigIntLike } from './types.js'
 
 /**
  * Flexible input data type for EIP-4895 withdrawal data with amount in Gwei to
@@ -78,18 +79,18 @@ export class Withdrawal {
   public static toBytesArray(withdrawal: Withdrawal | WithdrawalData): WithdrawalBytes {
     const { index, validatorIndex, address, amount } = withdrawal
     const indexBytes =
-      toType(index, TypeOutput.BigInt) === BigInt(0)
+      toType(index, TypeOutput.BigInt) === BIGINT_0
         ? new Uint8Array()
         : toType(index, TypeOutput.Uint8Array)
     const validatorIndexBytes =
-      toType(validatorIndex, TypeOutput.BigInt) === BigInt(0)
+      toType(validatorIndex, TypeOutput.BigInt) === BIGINT_0
         ? new Uint8Array()
         : toType(validatorIndex, TypeOutput.Uint8Array)
     const addressBytes =
       address instanceof Address ? (<Address>address).bytes : toType(address, TypeOutput.Uint8Array)
 
     const amountBytes =
-      toType(amount, TypeOutput.BigInt) === BigInt(0)
+      toType(amount, TypeOutput.BigInt) === BIGINT_0
         ? new Uint8Array()
         : toType(amount, TypeOutput.Uint8Array)
 
@@ -113,7 +114,7 @@ export class Withdrawal {
     return {
       index: bigIntToHex(this.index),
       validatorIndex: bigIntToHex(this.validatorIndex),
-      address: bytesToPrefixedHexString(this.address.bytes),
+      address: bytesToHex(this.address.bytes),
       amount: bigIntToHex(this.amount),
     }
   }

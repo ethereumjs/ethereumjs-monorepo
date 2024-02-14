@@ -1,11 +1,23 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
-import { Account, Address, KECCAK256_NULL, bytesToPrefixedHexString, short } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
-import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
+import {
+  Account,
+  Address,
+  BIGINT_0,
+  KECCAK256_NULL,
+  bigIntToBytes,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  equalsBytes,
+  generateAddress,
+  hexToBytes,
+  short,
+} from '@ethereumjs/util'
+import debugDefault from 'debug'
 
-import { Bloom } from './bloom'
+import { Bloom } from './bloom/index.js'
 
 import type {
   AfterTxEvent,
@@ -16,18 +28,31 @@ import type {
   RunTxOpts,
   RunTxResult,
   TxReceipt,
-} from './types'
-import type { VM } from './vm'
-import type { AccessList, AccessListItem } from '@ethereumjs/common'
+} from './types.js'
+import type { VM } from './vm.js'
+import type { AccessList, AccessListItem, Common } from '@ethereumjs/common'
+import type { EVM } from '@ethereumjs/evm'
 import type {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
   TypedTransaction,
 } from '@ethereumjs/tx'
+const { debug: createDebugLogger } = debugDefault
 
 const debug = createDebugLogger('vm:tx')
 const debugGas = createDebugLogger('vm:tx:gas')
+
+let enableProfiler = false
+const initLabel = 'EVM journal init, address/slot warming, fee validation'
+const balanceNonceLabel = 'Balance/Nonce checks and update'
+const executionLabel = 'Execution'
+const logsGasBalanceLabel = 'Logs, gas usage, account/miner balances'
+const accountsCleanUpLabel = 'Accounts clean up'
+const accessListLabel = 'Access list label'
+const journalCacheCleanUpLabel = 'Journal/cache cleanup'
+const receiptsLabel = 'Receipts'
+const entireTxLabel = 'Entire tx'
 
 /**
  * Returns the hardfork excluding the merge hf which has
@@ -50,12 +75,26 @@ function execHardfork(
  * @ignore
  */
 export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
+  if (this._opts.profilerOpts?.reportAfterTx === true) {
+    enableProfiler = true
+  }
+
+  if (enableProfiler) {
+    const title = `Profiler run - Tx ${bytesToHex(opts.tx.hash())}`
+    // eslint-disable-next-line no-console
+    console.log(title)
+    // eslint-disable-next-line no-console
+    console.time(initLabel)
+    // eslint-disable-next-line no-console
+    console.time(entireTxLabel)
+  }
+
   // create a reasonable default if no block is given
-  opts.block = opts.block ?? Block.fromBlockData({}, { common: this._common })
+  opts.block = opts.block ?? Block.fromBlockData({}, { common: this.common })
 
   if (opts.skipHardForkValidation !== true) {
     // Find and set preMerge hf for easy access later
-    const hfs = this._common.hardforks()
+    const hfs = this.common.hardforks()
     const preMergeIndex = hfs.findIndex((hf) => hf.ttd !== null && hf.ttd !== undefined) - 1
     // If no pre merge hf found, set it to first hf even if its merge
     const preMergeHf = preMergeIndex >= 0 ? hfs[preMergeIndex].name : hfs[0].name
@@ -63,13 +102,13 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // If block and tx don't have a same hardfork, set tx hardfork to block
     if (
       execHardfork(opts.tx.common.hardfork(), preMergeHf) !==
-      execHardfork(opts.block._common.hardfork(), preMergeHf)
+      execHardfork(opts.block.common.hardfork(), preMergeHf)
     ) {
-      opts.tx.common.setHardfork(opts.block._common.hardfork())
+      opts.tx.common.setHardfork(opts.block.common.hardfork())
     }
     if (
-      execHardfork(opts.block._common.hardfork(), preMergeHf) !==
-      execHardfork(this._common.hardfork(), preMergeHf)
+      execHardfork(opts.block.common.hardfork(), preMergeHf) !==
+      execHardfork(this.common.hardfork(), preMergeHf)
     ) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', this, opts.block, opts.tx)
@@ -86,7 +125,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await this.evm.journal.cleanup()
 
   if (opts.reportAccessList === true) {
-    this.evm.journal.reportAccessList()
+    this.evm.journal.startReportingAccessList()
   }
 
   await this.evm.journal.checkpoint()
@@ -98,10 +137,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Typed transaction specific setup tasks
   if (
     opts.tx.supports(Capability.EIP2718TypedTransaction) &&
-    this._common.isActivatedEIP(2718) === true
+    this.common.isActivatedEIP(2718) === true
   ) {
     // Is it an Access List transaction?
-    if (this._common.isActivatedEIP(2930) === false) {
+    if (this.common.isActivatedEIP(2930) === false) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
         'Cannot run transaction: EIP 2930 is not activated.',
@@ -113,7 +152,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     if (
       opts.tx.supports(Capability.EIP1559FeeMarket) &&
-      this._common.isActivatedEIP(1559) === false
+      this.common.isActivatedEIP(1559) === false
     ) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
@@ -149,15 +188,36 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     throw e
   } finally {
-    if (this._common.isActivatedEIP(2929) === true) {
+    if (this.common.isActivatedEIP(2929) === true) {
       this.evm.journal.cleanJournal()
     }
     this.evm.stateManager.originalStorageCache.clear()
+    if (enableProfiler) {
+      // eslint-disable-next-line no-console
+      console.timeEnd(entireTxLabel)
+      const logs = (<EVM>this.evm).getPerformanceLogs()
+      if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
+        // eslint-disable-next-line no-console
+        console.log('No precompile or opcode execution.')
+      }
+      this.emitEVMProfile(logs.precompiles, 'Precompile performance')
+      this.emitEVMProfile(logs.opcodes, 'Opcodes performance')
+      ;(<EVM>this.evm).clearPerformanceLogs()
+    }
   }
 }
 
 async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = this.stateManager
+
+  let stateAccesses
+  if (this.common.isActivatedEIP(6800)) {
+    if (!(this.stateManager instanceof StatelessVerkleStateManager)) {
+      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    }
+    stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
+  }
+  let txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -183,7 +243,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
-  if (this._common.isActivatedEIP(2929) === true) {
+  if (this.common.isActivatedEIP(2929) === true) {
     // Add origin and precompiles to warm addresses
     const activePrecompiles = this.evm.precompiles
     for (const [addressStr] of activePrecompiles.entries()) {
@@ -192,10 +252,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.journal.addAlwaysWarmAddress(caller.toString())
     if (tx.to !== undefined) {
       // Note: in case we create a contract, we do this in EVMs `_executeCreate` (this is also correct in inner calls, per the EIP)
-      this.evm.journal.addAlwaysWarmAddress(bytesToHex(tx.to.bytes))
+      this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(tx.to.bytes))
     }
-    if (this._common.isActivatedEIP(3651) === true) {
-      this.evm.journal.addAlwaysWarmAddress(bytesToHex(block.header.coinbase.bytes))
+    if (this.common.isActivatedEIP(3651) === true) {
+      this.evm.journal.addAlwaysWarmAddress(bytesToUnprefixedHex(block.header.coinbase.bytes))
     }
   }
 
@@ -203,7 +263,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txBaseFee = tx.getBaseFee()
   let gasLimit = tx.gasLimit
   if (gasLimit < txBaseFee) {
-    const msg = _errorMsg('base fee exceeds gas limit', this, block, tx)
+    const msg = _errorMsg(
+      `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
+        txBaseFee
+      )}`,
+      this,
+      block,
+      tx
+    )
     throw new Error(msg)
   }
   gasLimit -= txBaseFee
@@ -211,7 +278,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`Subtracting base fee (${txBaseFee}) from gasLimit (-> ${gasLimit})`)
   }
 
-  if (this._common.isActivatedEIP(1559) === true) {
+  if (this.common.isActivatedEIP(1559) === true) {
     // EIP-1559 spec:
     // Ensure that the user was willing to at least pay the base fee
     // assert transaction.max_fee_per_gas >= block.base_fee_per_gas
@@ -219,13 +286,21 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const baseFeePerGas = block.header.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerGas (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
+        `Transaction's ${
+          'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
+        } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         this,
         block,
         tx
       )
       throw new Error(msg)
     }
+  }
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(initLabel)
+    // eslint-disable-next-line no-console
+    console.time(balanceNonceLabel)
   }
 
   // Check from account's balance and nonce
@@ -239,15 +314,36 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   // EIP-3607: Reject transactions from senders with deployed code
   if (
-    this._common.isActivatedEIP(3607) === true &&
+    this.common.isActivatedEIP(3607) === true &&
     !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)
   ) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
     throw new Error(msg)
   }
 
+  let upfrontAwGas = BIGINT_0
+  if (this.common.isActivatedEIP(6800)) {
+    upfrontAwGas += txAccesses!.touchTxOriginAndComputeGas(caller)
+    const sendsValue = tx.value !== BIGINT_0
+    if (tx.to !== undefined) {
+      upfrontAwGas += txAccesses!.touchTxExistingAndComputeGas(tx.to, { sendsValue })
+      debug(`Sender upfront awGas requirement for non contract creation tx is ${upfrontAwGas}`)
+    } else {
+      const contractTo = new Address(generateAddress(caller.bytes, bigIntToBytes(nonce)))
+      upfrontAwGas += txAccesses!.touchAndChargeContractCreateInit(contractTo, { sendsValue })
+      debug(
+        `Sender upfront awGas requirement is contract creation at=${short(
+          contractTo.bytes
+        )} is ${upfrontAwGas}`
+      )
+    }
+
+    // reset txAccesses to remove the caches so that access gas can be correctly consumed inside the evm run
+    txAccesses = stateAccesses?.shallowCopy()
+  }
+
   // Check balance against upfront tx cost
-  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
+  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas) + upfrontAwGas
   if (balance < upFrontCost) {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
@@ -268,8 +364,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Check balance against max potential cost (for EIP 1559 and 4844)
   let maxCost = tx.value
-  let dataGasPrice = BigInt(0)
-  let totalDataGas = BigInt(0)
+  let blobGasPrice = BIGINT_0
+  let totalblobGas = BIGINT_0
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // EIP-1559 spec:
     // The signer must be able to afford the transaction
@@ -278,7 +374,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   if (tx instanceof BlobEIP4844Transaction) {
-    if (!this._common.isActivatedEIP(4844)) {
+    if (!this.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', this, block, tx)
       throw new Error(msg)
     }
@@ -286,23 +382,23 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // the signer must be able to afford the transaction
     // assert signer(tx).balance >= tx.message.gas * tx.message.max_fee_per_gas + get_total_data_gas(tx) * tx.message.max_fee_per_data_gas
     const castTx = tx as BlobEIP4844Transaction
-    totalDataGas = castTx.common.param('gasConfig', 'dataGasPerBlob') * BigInt(castTx.numBlobs())
-    maxCost += totalDataGas * castTx.maxFeePerDataGas
+    totalblobGas = castTx.common.param('gasConfig', 'blobGasPerBlob') * BigInt(castTx.numBlobs())
+    maxCost += totalblobGas * castTx.maxFeePerBlobGas
 
-    // 4844 minimum datagas price check
+    // 4844 minimum blobGas price check
     if (opts.block === undefined) {
       const msg = _errorMsg(
-        `Block option must be supplied to compute data gas price`,
+        `Block option must be supplied to compute blob gas price`,
         this,
         block,
         tx
       )
       throw new Error(msg)
     }
-    dataGasPrice = opts.block.header.getDataGasPrice()
-    if (castTx.maxFeePerDataGas < dataGasPrice) {
+    blobGasPrice = opts.block.header.getBlobGasPrice()
+    if (castTx.maxFeePerBlobGas < blobGasPrice) {
       const msg = _errorMsg(
-        `Transaction's maxFeePerDataGas ${castTx.maxFeePerDataGas}) is less than block dataGasPrice (${dataGasPrice}).`,
+        `Transaction's maxFeePerBlobGas ${castTx.maxFeePerBlobGas}) is less than block blobGasPrice (${blobGasPrice}).`,
         this,
         block,
         tx
@@ -354,29 +450,35 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
     gasPrice = (<LegacyTransaction>tx).gasPrice
-    if (this._common.isActivatedEIP(1559) === true) {
+    if (this.common.isActivatedEIP(1559) === true) {
       const baseFee = block.header.baseFeePerGas!
       inclusionFeePerGas = (<LegacyTransaction>tx).gasPrice - baseFee
     }
   }
 
   // EIP-4844 tx
-  let versionedHashes
+  let blobVersionedHashes
   if (tx instanceof BlobEIP4844Transaction) {
-    versionedHashes = (tx as BlobEIP4844Transaction).versionedHashes
+    blobVersionedHashes = (tx as BlobEIP4844Transaction).blobVersionedHashes
   }
 
   // Update from account's balance
   const txCost = tx.gasLimit * gasPrice
-  const dataGasCost = totalDataGas * dataGasPrice
+  const blobGasCost = totalblobGas * blobGasPrice
   fromAccount.balance -= txCost
-  fromAccount.balance -= dataGasCost
-  if (opts.skipBalance === true && fromAccount.balance < BigInt(0)) {
-    fromAccount.balance = BigInt(0)
+  fromAccount.balance -= blobGasCost
+  if (opts.skipBalance === true && fromAccount.balance < BIGINT_0) {
+    fromAccount.balance = BIGINT_0
   }
   await this.evm.journal.putAccount(caller, fromAccount)
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
+  }
+  let executionTimerPrecise: number
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(balanceNonceLabel)
+    executionTimerPrecise = performance.now()
   }
 
   /*
@@ -386,11 +488,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this.DEBUG) {
     debug(
-      `Running tx=0x${
+      `Running tx=${
         tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
       } with caller=${caller} gasLimit=${gasLimit} to=${
         to?.toString() ?? 'none'
-      } value=${value} data=0x${short(data)}`
+      } value=${value} data=${short(data)}`
     )
   }
 
@@ -402,8 +504,22 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     to,
     value,
     data,
-    versionedHashes,
+    blobVersionedHashes,
+    accessWitness: txAccesses,
   })) as RunTxResult
+
+  if (this.common.isActivatedEIP(6800)) {
+    stateAccesses?.merge(txAccesses!)
+  }
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.log(`${executionLabel}: ${performance.now() - executionTimerPrecise!}ms`)
+    // eslint-disable-next-line no-console
+    console.log('[ For execution details see table output ]')
+    // eslint-disable-next-line no-console
+    console.time(logsGasBalanceLabel)
+  }
 
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) nonce (-> ${fromAccount.nonce})`)
@@ -415,7 +531,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(
       `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
         exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
-      } returnValue=0x${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
+      } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`
     )
   }
 
@@ -423,7 +539,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Parse results
    */
   // Generate the bloom for the tx
-  results.bloom = txLogsBloom(results.execResult.logs)
+  results.bloom = txLogsBloom(results.execResult.logs, this.common)
   if (this.DEBUG) {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
@@ -434,16 +550,16 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debugGas(`tx add baseFee ${txBaseFee} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
 
-  // Add data gas used to result
+  // Add blob gas used to result
   if (isBlobEIP4844Tx(tx)) {
-    results.dataGasUsed = totalDataGas
+    results.blobGasUsed = totalblobGas
   }
 
   // Process any gas refund
-  let gasRefund = results.execResult.gasRefund ?? BigInt(0)
+  let gasRefund = results.execResult.gasRefund ?? BIGINT_0
   results.gasRefund = gasRefund
-  const maxRefundQuotient = this._common.param('gasConfig', 'maxRefundQuotient')
-  if (gasRefund !== BigInt(0)) {
+  const maxRefundQuotient = this.common.param('gasConfig', 'maxRefundQuotient')
+  if (gasRefund !== BIGINT_0) {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
     gasRefund = gasRefund < maxRefund ? gasRefund : maxRefund
     results.totalGasSpent -= gasRefund
@@ -474,7 +590,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Update miner's balance
   let miner
-  if (this._common.consensusType() === ConsensusType.ProofOfAuthority) {
+  if (this.common.consensusType() === ConsensusType.ProofOfAuthority) {
     miner = block.header.cliqueSigner()
   } else {
     miner = block.header.coinbase
@@ -482,14 +598,24 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
+    if (this.common.isActivatedEIP(6800)) {
+      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+    }
     minerAccount = new Account()
   }
   // add the amount spent on gas to the miner's account
   results.minerValue =
-    this._common.isActivatedEIP(1559) === true
+    this.common.isActivatedEIP(1559) === true
       ? results.totalGasSpent * inclusionFeePerGas!
       : results.amountSpent
   minerAccount.balance += results.minerValue
+
+  if (this.common.isActivatedEIP(6800)) {
+    // use this utility to build access but the computed gas is not charged and hence free
+    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(miner, {
+      sendsValue: true,
+    })
+  }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts this into the "touched" accounts. This will thus be removed when
@@ -499,13 +625,25 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`tx update miner account (${miner}) balance (-> ${minerAccount.balance})`)
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(logsGasBalanceLabel)
+    // eslint-disable-next-line no-console
+    console.time(accountsCleanUpLabel)
+  }
+
   /*
    * Cleanup accounts
    */
   if (results.execResult.selfdestruct !== undefined) {
-    const keys = Object.keys(results.execResult.selfdestruct)
-    for (const k of keys) {
-      const address = new Address(hexToBytes(k))
+    for (const addressToSelfdestructHex of results.execResult.selfdestruct) {
+      const address = new Address(hexToBytes(addressToSelfdestructHex))
+      if (this.common.isActivatedEIP(6780)) {
+        // skip cleanup of addresses not in createdAddresses
+        if (!results.execResult.createdAddresses!.has(address.toString())) {
+          continue
+        }
+      }
       await this.evm.journal.deleteAccount(address)
       if (this.DEBUG) {
         debug(`tx selfdestruct on address=${address}`)
@@ -513,7 +651,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
   }
 
-  if (opts.reportAccessList === true && this._common.isActivatedEIP(2930)) {
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accountsCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(accessListLabel)
+  }
+
+  if (opts.reportAccessList === true && this.common.isActivatedEIP(2930)) {
     // Convert the Map to the desired type
     const accessList: AccessList = []
     for (const [address, set] of this.evm.journal.accessList!) {
@@ -532,8 +677,22 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     results.accessList = accessList
   }
 
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(accessListLabel)
+    // eslint-disable-next-line no-console
+    console.time(journalCacheCleanUpLabel)
+  }
+
   await this.evm.journal.cleanup()
   state.originalStorageCache.clear()
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(journalCacheCleanUpLabel)
+    // eslint-disable-next-line no-console
+    console.time(receiptsLabel)
+  }
 
   // Generate the tx receipt
   const gasUsed = opts.blockGasUsed !== undefined ? opts.blockGasUsed : block.header.gasUsed
@@ -542,9 +701,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     tx,
     results,
     cumulativeGasUsed,
-    totalDataGas,
-    dataGasPrice
+    totalblobGas,
+    blobGasPrice
   )
+
+  if (enableProfiler) {
+    // eslint-disable-next-line no-console
+    console.timeEnd(receiptsLabel)
+  }
 
   /**
    * The `afterTx` event
@@ -558,7 +722,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(
       `tx run finished hash=${
-        opts.tx.isSigned() ? bytesToPrefixedHexString(opts.tx.hash()) : 'unsigned'
+        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`
     )
   }
@@ -570,8 +734,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
  * @method txLogsBloom
  * @private
  */
-function txLogsBloom(logs?: any[]): Bloom {
-  const bloom = new Bloom()
+function txLogsBloom(logs?: any[], common?: Common): Bloom {
+  const bloom = new Bloom(undefined, common)
   if (logs) {
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i]
@@ -593,16 +757,16 @@ function txLogsBloom(logs?: any[]): Bloom {
  * @param tx The transaction
  * @param txResult The tx result
  * @param cumulativeGasUsed The gas used in the block including this tx
- * @param dataGasUsed The data gas used in the tx
- * @param dataGasPrice The data gas price for the block including this tx
+ * @param blobGasUsed The blob gas used in the tx
+ * @param blobGasPrice The blob gas price for the block including this tx
  */
 export async function generateTxReceipt(
   this: VM,
   tx: TypedTransaction,
   txResult: RunTxResult,
   cumulativeGasUsed: bigint,
-  dataGasUsed?: bigint,
-  dataGasPrice?: bigint
+  blobGasUsed?: bigint,
+  blobGasPrice?: bigint
 ): Promise<TxReceipt> {
   const baseReceipt: BaseTxReceipt = {
     cumulativeBlockGasUsed: cumulativeGasUsed,
@@ -623,7 +787,7 @@ export async function generateTxReceipt(
 
   if (!tx.supports(Capability.EIP2718TypedTransaction)) {
     // Legacy transaction
-    if (this._common.gteHardfork(Hardfork.Byzantium) === true) {
+    if (this.common.gteHardfork(Hardfork.Byzantium) === true) {
       // Post-Byzantium
       receipt = {
         status: txResult.execResult.exceptionError !== undefined ? 0 : 1, // Receipts have a 0 as status on error
@@ -641,8 +805,8 @@ export async function generateTxReceipt(
     // Typed EIP-2718 Transaction
     if (isBlobEIP4844Tx(tx)) {
       receipt = {
-        dataGasUsed,
-        dataGasPrice,
+        blobGasUsed,
+        blobGasPrice,
         status: txResult.execResult.exceptionError ? 0 : 1,
         ...baseReceipt,
       } as EIP4844BlobTxReceipt

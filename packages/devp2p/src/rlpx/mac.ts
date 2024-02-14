@@ -1,13 +1,13 @@
 import { createCipheriv } from 'crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { xor } from '../util'
+import { xor } from '../util.js'
 
-export type Hash = ReturnType<typeof keccak256.create>
+type Hash = ReturnType<typeof keccak256.create>
 
 export class MAC {
-  _hash: Hash
-  _secret: Uint8Array
+  protected _hash: Hash
+  protected _secret: Uint8Array
   constructor(secret: Uint8Array) {
     this._hash = keccak256.create()
     this._secret = secret

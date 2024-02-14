@@ -1,95 +1,86 @@
-import { debug as createDebugLogger } from 'debug'
+import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
+import debugDefault from 'debug'
 import * as dgram from 'dgram'
-import { bytesToHex } from 'ethereum-cryptography/utils'
 import { EventEmitter } from 'events'
+import { LRUCache } from 'lru-cache'
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
 
-import { decode, encode } from './message'
+import { decode, encode } from './message.js'
 
-import type { DPT, PeerInfo } from './dpt'
+import type { DPTServerOptions, PeerInfo } from '../types.js'
+import type { DPT } from './dpt.js'
+import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { Socket as DgramSocket, RemoteInfo } from 'dgram'
-import type LRUCache from 'lru-cache'
-
-const LRU = require('lru-cache')
+const { debug: createDebugLogger } = debugDefault
 
 const DEBUG_BASE_NAME = 'dpt:server'
 const verbose = createDebugLogger('verbose').enabled
 
 const VERSION = 0x04
 
-export interface DPTServerOptions {
-  /**
-   * Timeout for peer requests
-   *
-   * Default: 10s
-   */
-  timeout?: number
+export class Server {
+  public events: EventEmitter
+  protected _dpt: DPT
+  protected _privateKey: Uint8Array
+  protected _timeout: number
+  protected _endpoint: PeerInfo
+  protected _requests: Map<string, any>
+  protected _requestsCache: LRUCache<string, Promise<any>>
+  protected _socket: DgramSocket | null
+  private _debug: Debugger
 
-  /**
-   * Network info to send a long a request
-   *
-   * Default: 0.0.0.0, no UDP or TCP port provided
-   */
-  endpoint?: PeerInfo
+  protected _common?: Common
 
-  /**
-   * Function for socket creation
-   *
-   * Default: dgram-created socket
-   */
-  createSocket?: Function
-}
-
-export class Server extends EventEmitter {
-  _dpt: DPT
-  _privateKey: Uint8Array
-  _timeout: number
-  _endpoint: PeerInfo
-  _requests: Map<string, any>
-  _requestsCache: LRUCache<string, Promise<any>>
-  _socket: DgramSocket | null
-  _debug: Debugger
+  private DEBUG: boolean
 
   constructor(dpt: DPT, privateKey: Uint8Array, options: DPTServerOptions) {
-    super()
-
+    this.events = new EventEmitter()
     this._dpt = dpt
     this._privateKey = privateKey
 
-    this._timeout = options.timeout ?? 2000 // 2 * 1000
+    this._timeout = options.timeout ?? 4000 // 4 * 1000
     this._endpoint = options.endpoint ?? { address: '0.0.0.0', udpPort: null, tcpPort: null }
     this._requests = new Map()
-    this._requestsCache = new LRU({ max: 1000, ttl: 1000, stale: false }) // 1 sec * 1000
+    this._requestsCache = new LRUCache({ max: 1000, ttl: 1000 }) // 1 sec * 1000
 
     const createSocket = options.createSocket ?? dgram.createSocket.bind(null, { type: 'udp4' })
     this._socket = createSocket()
     this._debug = devp2pDebug.extend(DEBUG_BASE_NAME)
     if (this._socket) {
-      this._socket.once('listening', () => this.emit('listening'))
-      this._socket.once('close', () => this.emit('close'))
-      this._socket.on('error', (err) => this.emit('error', err))
+      this._socket.once('listening', () => this.events.emit('listening'))
+      this._socket.once('close', () => this.events.emit('close'))
+      this._socket.on('error', (err) => this.events.emit('error', err))
       this._socket.on('message', (msg: Uint8Array, rinfo: RemoteInfo) => {
         try {
           this._handler(msg, rinfo)
         } catch (err: any) {
-          this.emit('error', err)
+          this.events.emit('error', err)
         }
       })
     }
+
+    this._common = options.common
+
+    this.DEBUG =
+      typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
   }
 
   bind(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .bind')
+    if (this.DEBUG) {
+      this._debug('call .bind')
+    }
 
     if (this._socket) this._socket.bind(...args)
   }
 
   destroy(...args: any[]) {
     this._isAliveCheck()
-    this._debug('call .destroy')
+    if (this.DEBUG) {
+      this._debug('call .destroy')
+    }
 
     if (this._socket) {
       this._socket.close(...args)
@@ -111,17 +102,19 @@ export class Server extends EventEmitter {
     })
 
     const deferred = createDeferred()
-    const rkey = bytesToHex(hash)
+    const rkey = bytesToUnprefixedHex(hash)
     this._requests.set(rkey, {
       peer,
       deferred,
       timeoutId: setTimeout(() => {
         if (this._requests.get(rkey) !== undefined) {
-          this._debug(
-            `ping timeout: ${peer.address}:${peer.udpPort} ${
-              peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-            }`
-          )
+          if (this.DEBUG) {
+            this._debug(
+              `ping timeout: ${peer.address}:${peer.udpPort} ${
+                peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+              }`
+            )
+          }
           this._requests.delete(rkey)
           deferred.reject(new Error(`Timeout error: ping ${peer.address}:${peer.udpPort}`))
         } else {
@@ -143,12 +136,16 @@ export class Server extends EventEmitter {
   }
 
   _send(peer: PeerInfo, typename: string, data: any) {
-    const debugMsg = `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
-      peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
-    })`
-    this.debug(typename, debugMsg)
+    if (this.DEBUG) {
+      this.debug(
+        typename,
+        `send ${typename} to ${peer.address}:${peer.udpPort} (peerId: ${
+          peer.id ? formatLogId(bytesToHex(peer.id), verbose) : '-'
+        })`
+      )
+    }
 
-    const msg = encode(typename, data, this._privateKey)
+    const msg = encode(typename, data, this._privateKey, this._common)
 
     if (this._socket && typeof peer.udpPort === 'number')
       this._socket.send(msg, 0, msg.length, peer.udpPort, peer.address)
@@ -156,17 +153,22 @@ export class Server extends EventEmitter {
   }
 
   _handler(msg: Uint8Array, rinfo: RemoteInfo) {
-    const info = decode(msg) // Dgram serializes everything to `Uint8Array`
+    const info = decode(msg, this._common) // Dgram serializes everything to `Uint8Array`
     const peerId = pk2id(info.publicKey)
-    const debugMsg = `received ${info.typename} from ${rinfo.address}:${
-      rinfo.port
-    } (peerId: ${formatLogId(bytesToHex(peerId), verbose)})`
-    this.debug(info.typename.toString(), debugMsg)
+    if (this.DEBUG) {
+      this.debug(
+        info.typename.toString(),
+        `received ${info.typename} from ${rinfo.address}:${rinfo.port} (peerId: ${formatLogId(
+          bytesToHex(peerId),
+          verbose
+        )})`
+      )
+    }
 
     // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
     if (peer === null && info.typename === 'ping' && info.data.from.udpPort !== null) {
-      setTimeout(() => this.emit('peers', [info.data.from]), 100) // 100 ms
+      setTimeout(() => this.events.emit('peers', [info.data.from]), 100) // 100 ms
     }
 
     switch (info.typename) {
@@ -188,7 +190,7 @@ export class Server extends EventEmitter {
       }
 
       case 'pong': {
-        const rkey = bytesToHex(info.data.hash)
+        const rkey = bytesToUnprefixedHex(info.data.hash)
         const request = this._requests.get(rkey)
         if (request !== undefined) {
           this._requests.delete(rkey)
@@ -214,7 +216,7 @@ export class Server extends EventEmitter {
       }
 
       case 'neighbours': {
-        this.emit(
+        this.events.emit(
           'peers',
           info.data.peers.map((peer: any) => peer.endpoint)
         )

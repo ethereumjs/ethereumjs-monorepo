@@ -108,3 +108,6 @@ Temporary Items
 
 # ethereumjs 
 datadir*
+
+## Vitest
+__snapshots__

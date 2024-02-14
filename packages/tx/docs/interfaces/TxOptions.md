@@ -2,7 +2,7 @@
 
 # Interface: TxOptions
 
-The options for initializing a [Transaction](../classes/Transaction.md).
+The options for initializing a [Transaction](Transaction.md).
 
 ## Table of contents
 
@@ -23,7 +23,7 @@ Gas cost for initcode size analysis will still be charged. Use with caution.
 
 #### Defined in
 
-[types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L98)
+[tx/src/types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L78)
 
 ___
 
@@ -42,7 +42,7 @@ Current default hardfork: `istanbul`
 
 #### Defined in
 
-[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L80)
+[tx/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L60)
 
 ___
 
@@ -62,4 +62,4 @@ Default: true
 
 #### Defined in
 
-[types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L92)
+[tx/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L72)

@@ -8,27 +8,6 @@
 
 - [constructor](ECIES.md#constructor)
 
-### Properties
-
-- [\_bodySize](ECIES.md#_bodysize)
-- [\_egressAes](ECIES.md#_egressaes)
-- [\_egressMac](ECIES.md#_egressmac)
-- [\_ephemeralPrivateKey](ECIES.md#_ephemeralprivatekey)
-- [\_ephemeralPublicKey](ECIES.md#_ephemeralpublickey)
-- [\_ephemeralSharedSecret](ECIES.md#_ephemeralsharedsecret)
-- [\_gotEIP8Ack](ECIES.md#_goteip8ack)
-- [\_gotEIP8Auth](ECIES.md#_goteip8auth)
-- [\_ingressAes](ECIES.md#_ingressaes)
-- [\_ingressMac](ECIES.md#_ingressmac)
-- [\_initMsg](ECIES.md#_initmsg)
-- [\_nonce](ECIES.md#_nonce)
-- [\_privateKey](ECIES.md#_privatekey)
-- [\_publicKey](ECIES.md#_publickey)
-- [\_remoteEphemeralPublicKey](ECIES.md#_remoteephemeralpublickey)
-- [\_remoteInitMsg](ECIES.md#_remoteinitmsg)
-- [\_remoteNonce](ECIES.md#_remotenonce)
-- [\_remotePublicKey](ECIES.md#_remotepublickey)
-
 ### Methods
 
 - [\_decryptMessage](ECIES.md#_decryptmessage)
@@ -57,235 +36,55 @@
 
 | Name | Type |
 | :------ | :------ |
-| `privateKey` | `Buffer` |
-| `id` | `Buffer` |
-| `remoteId` | `Buffer` |
+| `privateKey` | `Uint8Array` |
+| `id` | `Uint8Array` |
+| `remoteId` | `Uint8Array` |
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L78)
-
-## Properties
-
-### \_bodySize
-
-• **\_bodySize**: ``null`` \| `number` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L76)
-
-___
-
-### \_egressAes
-
-• **\_egressAes**: ``null`` \| `Decipher` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L69)
-
-___
-
-### \_egressMac
-
-• **\_egressMac**: ``null`` \| [`MAC`](MAC.md) = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L71)
-
-___
-
-### \_ephemeralPrivateKey
-
-• **\_ephemeralPrivateKey**: `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L72)
-
-___
-
-### \_ephemeralPublicKey
-
-• **\_ephemeralPublicKey**: `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L73)
-
-___
-
-### \_ephemeralSharedSecret
-
-• **\_ephemeralSharedSecret**: ``null`` \| `Buffer` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L75)
-
-___
-
-### \_gotEIP8Ack
-
-• **\_gotEIP8Ack**: `boolean` = `false`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L67)
-
-___
-
-### \_gotEIP8Auth
-
-• **\_gotEIP8Auth**: `boolean` = `false`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L66)
-
-___
-
-### \_ingressAes
-
-• **\_ingressAes**: ``null`` \| `Decipher` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L68)
-
-___
-
-### \_ingressMac
-
-• **\_ingressMac**: ``null`` \| [`MAC`](MAC.md) = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L70)
-
-___
-
-### \_initMsg
-
-• **\_initMsg**: `undefined` \| ``null`` \| `Buffer` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L64)
-
-___
-
-### \_nonce
-
-• **\_nonce**: `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L62)
-
-___
-
-### \_privateKey
-
-• **\_privateKey**: `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L59)
-
-___
-
-### \_publicKey
-
-• **\_publicKey**: `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L60)
-
-___
-
-### \_remoteEphemeralPublicKey
-
-• **\_remoteEphemeralPublicKey**: ``null`` \| `Buffer` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L74)
-
-___
-
-### \_remoteInitMsg
-
-• **\_remoteInitMsg**: ``null`` \| `Buffer` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L65)
-
-___
-
-### \_remoteNonce
-
-• **\_remoteNonce**: ``null`` \| `Buffer` = `null`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L63)
-
-___
-
-### \_remotePublicKey
-
-• **\_remotePublicKey**: ``null`` \| `Buffer`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/ecies.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L61)
+[packages/devp2p/src/rlpx/ecies.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L80)
 
 ## Methods
 
 ### \_decryptMessage
 
-▸ **_decryptMessage**(`data`, `sharedMacData?`): `Buffer`
+▸ **_decryptMessage**(`data`, `sharedMacData?`): `Uint8Array`
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `data` | `Buffer` | `undefined` |
-| `sharedMacData` | ``null`` \| `Buffer` | `null` |
+| `data` | `Uint8Array` | `undefined` |
+| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
 
 #### Returns
 
-`Buffer`
+`Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L115)
+[packages/devp2p/src/rlpx/ecies.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L119)
 
 ___
 
 ### \_encryptMessage
 
-▸ **_encryptMessage**(`data`, `sharedMacData?`): `undefined` \| `Buffer`
+▸ **_encryptMessage**(`data`, `sharedMacData?`): `undefined` \| `Uint8Array`
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `data` | `Buffer` | `undefined` |
-| `sharedMacData` | ``null`` \| `Buffer` | `null` |
+| `data` | `Uint8Array` | `undefined` |
+| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L88)
+[packages/devp2p/src/rlpx/ecies.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L90)
 
 ___
 
@@ -297,7 +96,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `remoteData` | `Buffer` |
+| `remoteData` | `Uint8Array` |
 | `incoming` | `boolean` |
 
 #### Returns
@@ -306,89 +105,89 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L150)
+[packages/devp2p/src/rlpx/ecies.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L154)
 
 ___
 
 ### createAckEIP8
 
-▸ **createAckEIP8**(): `undefined` \| `Buffer`
+▸ **createAckEIP8**(): `undefined` \| `Uint8Array`
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L274)
+[packages/devp2p/src/rlpx/ecies.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L284)
 
 ___
 
 ### createAckOld
 
-▸ **createAckOld**(): `undefined` \| `Buffer`
+▸ **createAckOld**(): `undefined` \| `Uint8Array`
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L291)
+[packages/devp2p/src/rlpx/ecies.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L301)
 
 ___
 
 ### createAuthEIP8
 
-▸ **createAuthEIP8**(): `undefined` \| `Buffer`
+▸ **createAuthEIP8**(): `undefined` \| `Uint8Array`
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L174)
+[packages/devp2p/src/rlpx/ecies.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L178)
 
 ___
 
 ### createAuthNonEIP8
 
-▸ **createAuthNonEIP8**(): `undefined` \| `Buffer`
+▸ **createAuthNonEIP8**(): `undefined` \| `Uint8Array`
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L197)
+[packages/devp2p/src/rlpx/ecies.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L201)
 
 ___
 
 ### createBody
 
-▸ **createBody**(`data`): `undefined` \| `Buffer`
+▸ **createBody**(`data`): `undefined` \| `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `Buffer` |
+| `data` | `Uint8Array` |
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L368)
+[packages/devp2p/src/rlpx/ecies.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L378)
 
 ___
 
 ### createHeader
 
-▸ **createHeader**(`size`): `undefined` \| `Buffer`
+▸ **createHeader**(`size`): `undefined` \| `Uint8Array`
 
 #### Parameters
 
@@ -398,11 +197,11 @@ ___
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L337)
+[packages/devp2p/src/rlpx/ecies.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L347)
 
 ___
 
@@ -414,7 +213,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `Buffer` |
+| `data` | `Uint8Array` |
 
 #### Returns
 
@@ -422,7 +221,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L331)
+[packages/devp2p/src/rlpx/ecies.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L341)
 
 ___
 
@@ -434,8 +233,8 @@ ___
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `data` | `Buffer` | `undefined` |
-| `sharedMacData` | ``null`` \| `Buffer` | `null` |
+| `data` | `Uint8Array` | `undefined` |
+| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
 
 #### Returns
 
@@ -443,7 +242,7 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L301)
+[packages/devp2p/src/rlpx/ecies.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L311)
 
 ___
 
@@ -455,7 +254,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `Buffer` |
+| `data` | `Uint8Array` |
 
 #### Returns
 
@@ -463,48 +262,48 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L268)
+[packages/devp2p/src/rlpx/ecies.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L278)
 
 ___
 
 ### parseAuthPlain
 
-▸ **parseAuthPlain**(`data`, `sharedMacData?`): `undefined` \| `Buffer`
+▸ **parseAuthPlain**(`data`, `sharedMacData?`): `undefined` \| `Uint8Array`
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `data` | `Buffer` | `undefined` |
-| `sharedMacData` | ``null`` \| `Buffer` | `null` |
+| `data` | `Uint8Array` | `undefined` |
+| `sharedMacData` | ``null`` \| `Uint8Array` | `null` |
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L214)
+[packages/devp2p/src/rlpx/ecies.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L218)
 
 ___
 
 ### parseBody
 
-▸ **parseBody**(`data`): `undefined` \| `Buffer`
+▸ **parseBody**(`data`): `undefined` \| `Uint8Array`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `Buffer` |
+| `data` | `Uint8Array` |
 
 #### Returns
 
-`undefined` \| `Buffer`
+`undefined` \| `Uint8Array`
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L379)
+[packages/devp2p/src/rlpx/ecies.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L389)
 
 ___
 
@@ -516,7 +315,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `data` | `Buffer` |
+| `data` | `Uint8Array` |
 
 #### Returns
 
@@ -524,4 +323,4 @@ ___
 
 #### Defined in
 
-[packages/devp2p/src/rlpx/ecies.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L352)
+[packages/devp2p/src/rlpx/ecies.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L362)

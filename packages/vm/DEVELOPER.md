@@ -15,11 +15,11 @@ or the associated YouTube video introduction to [Core Development with Ethereumj
 
 Running the State tests:
 
-`ts-node ./test/tester --state`
+`tsx ./test/tester --state`
 
 Running the Blockchain tests:
 
-`ts-node ./test/tester --blockchain`
+`tsx ./test/tester --blockchain`
 
 Tests run against source by default. They can be run with the `--dist` flag:
 
@@ -29,7 +29,7 @@ See `package.json` for all the scripts in the `test:` namespace, such as `npm ru
 
 Use `--fork` to pass in the desired hardfork:
 
-`ts-node ./test/tester --state --fork='Constantinople'`
+`tsx ./test/tester --state --fork='Constantinople'`
 
 or
 
@@ -53,29 +53,29 @@ State tests run significantly faster than Blockchain tests, so it is often a goo
 
 Running all the blockchain tests in a file:
 
-`ts-node ./test/tester --blockchain --file='randomStatetest303'`
+`tsx ./test/tester --blockchain --file='randomStatetest303'`
 
 Running tests from a specific directory:
 
-`ts-node ./test/tester --blockchain --dir='bcBlockGasLimitTest'`
+`tsx ./test/tester --blockchain --dir='bcBlockGasLimitTest'`
 
 Running a specific state test case:
 
-`ts-node ./test/tester --state --test='stackOverflow'`
+`tsx ./test/tester --state --test='stackOverflow'`
 
 Only run test cases with selected `data`, `gas` and/or `value` values (see
 [attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in
 test docs), provided by the index of the array element in the test `transaction` section:
 
-`ts-node ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
+`tsx ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
 
 Recursively run all tests from a custom directory:
 
-`ts-node ./test/tester --state --fork='London' --customTestsPath=../../my_custom_test_folder`
+`tsx ./test/tester --state --fork='London' --customTestsPath=../../my_custom_test_folder`
 
 Run a test from a specified source file not under the `tests` directory (only state tests):
 
-`ts-node ./test/tester --state --customStateTest='{path_to_file}'`
+`tsx ./test/tester --state --customStateTest='{path_to_file}'`
 
 #### Running tests with a reporter/formatter
 
@@ -97,14 +97,20 @@ can be found in `test/tester.js`. By default tests from all skip lists are omitt
 
 You can change this behaviour with:
 
-`ts-node ./test/tester --state --skip=BROKEN,PERMANENT`
+`tsx ./test/tester --state --skip=BROKEN,PERMANENT`
 
 to skip only the `BROKEN` and `PERMANENT` tests and include the `SLOW` tests.
 There are also the keywords `NONE` or `ALL` for convenience.
 
 It is also possible to only run the tests from the skip lists:
 
-`ts-node ./test/tester --state --runSkipped=SLOW`
+`tsx ./test/tester --state --runSkipped=SLOW`
+
+#### Profiling Tests
+
+Test runs can be profiled using the new EVM/VM profiling functionality by using the `--profile` option for test runs:
+
+`tsx ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
 
 ### CI Test Integration
 
@@ -124,7 +130,7 @@ For state tests you can use the `--jsontrace` flag to output opcode trace inform
 
 Blockchain tests support `--debug` to verify the postState:
 
-`ts-node ./test/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+`tsx ./test/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/BlockchainTests/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
 
@@ -192,7 +198,7 @@ This helps us see how the VM performs when running mainnet blocks.
 
 View the historical benchmark data for the master branch on the [github page](http://ethereumjs.github.io/ethereumjs-monorepo/dev/bench/vm).
 
-We want to use the compiled JS so `ts-node` does not show up in the profile. So run:
+We want to use the compiled JS so `tsx` does not show up in the profile. So run:
 
 `npm run build:benchmarks`
 
