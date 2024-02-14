@@ -222,6 +222,7 @@ export class RlpxServer extends Server {
         dnsRefreshQuantity: this.config.maxPeers,
         dnsNetworks: this.dnsNetworks,
         dnsAddr: this.config.dnsAddr,
+        common: this.config.chainCommon,
       })
 
       this.dpt.events.on('error', (e: Error) => {

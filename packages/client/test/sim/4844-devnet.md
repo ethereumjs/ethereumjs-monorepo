@@ -24,7 +24,7 @@ Step 3. To send a single blob transaction to the network, you may just run spec 
 
 OR, you can use the `txGenerator.ts` script as follows:
 
-`ts-node test/sim/txGenerator 8545 'hello'`. The first argument is the port number of the EthereumJS client you which to submit the transaction to and the second is any data to include in the blob.
+`tsx test/sim/txGenerator 8545 'hello'`. The first argument is the port number of the EthereumJS client you which to submit the transaction to and the second is any data to include in the blob.
 
 This script was adapted from the [interop repo blob script](https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js)
 

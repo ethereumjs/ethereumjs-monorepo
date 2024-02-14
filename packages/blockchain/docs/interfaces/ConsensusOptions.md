@@ -18,4 +18,4 @@ Options when initializing a class that implements the Consensus interface.
 
 #### Defined in
 
-[types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L221)
+[types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L230)

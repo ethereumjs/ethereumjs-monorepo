@@ -17,6 +17,8 @@
 
 - [EVMInterface](interfaces/EVMInterface.md)
 - [EVMResult](interfaces/EVMResult.md)
+- [EVMRunCallOpts](interfaces/EVMRunCallOpts.md)
+- [EVMRunCodeOpts](interfaces/EVMRunCodeOpts.md)
 - [ExecResult](interfaces/ExecResult.md)
 - [InterpreterStep](interfaces/InterpreterStep.md)
 - [PrecompileInput](interfaces/PrecompileInput.md)
@@ -43,7 +45,7 @@ Log that the contract emits.
 
 #### Defined in
 
-[types.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L329)
+[types.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L334)
 
 ## Variables
 

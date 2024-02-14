@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Utilities for handling Ethereum keys",
   "keywords": [
     "ethereum",
@@ -35,7 +35,8 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
     "docs:build": "npx typedoc --options typedoc.cjs",
-    "examples": "ts-node ../../scripts/examples-runner.ts -- wallet",
+    "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
+    "examples:build": "npx embedme README.md",
     "lint": "../../config/cli/lint.sh",
     "lint:diff": "../../config/cli/lint-diff.sh",
     "lint:fix": "../../config/cli/lint-fix.sh",
@@ -46,11 +47,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.0.1",
-    "@scure/base": "^1.1.1",
-    "ethereum-cryptography": "^2.1.2",
-    "js-md5": "^0.7.3",
-    "uuid": "^9.0.0"
+    "@ethereumjs/util": "^9.0.2",
+    "@scure/base": "^1.1.5",
+    "ethereum-cryptography": "^2.1.3",
+    "js-md5": "^0.8.3",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/js-md5": "^0.4.3",

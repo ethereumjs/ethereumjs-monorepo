@@ -42,6 +42,7 @@ Typed transaction with optional access lists
 
 ### Methods
 
+- [addSignature](AccessListEIP2930Transaction.md#addsignature)
 - [errorStr](AccessListEIP2930Transaction.md#errorstr)
 - [getBaseFee](AccessListEIP2930Transaction.md#getbasefee)
 - [getDataFee](AccessListEIP2930Transaction.md#getdatafee)
@@ -297,6 +298,33 @@ BaseTransaction.type
 
 ## Methods
 
+### addSignature
+
+▸ **addSignature**(`v`, `r`, `s`, `convertV?`): [`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `v` | `bigint` | `undefined` |
+| `r` | `bigint` \| `Uint8Array` | `undefined` |
+| `s` | `bigint` \| `Uint8Array` | `undefined` |
+| `convertV` | `boolean` | `false` |
+
+#### Returns
+
+[`AccessListEIP2930Transaction`](AccessListEIP2930Transaction.md)
+
+#### Overrides
+
+BaseTransaction.addSignature
+
+#### Defined in
+
+[tx/src/eip2930Transaction.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L283)
+
+___
+
 ### errorStr
 
 ▸ **errorStr**(): `string`
@@ -313,7 +341,7 @@ BaseTransaction.errorStr
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L322)
+[tx/src/eip2930Transaction.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L329)
 
 ___
 
@@ -738,7 +766,7 @@ BaseTransaction.toJSON
 
 #### Defined in
 
-[tx/src/eip2930Transaction.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L307)
+[tx/src/eip2930Transaction.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/eip2930Transaction.ts#L314)
 
 ___
 

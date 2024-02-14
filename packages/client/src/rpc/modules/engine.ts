@@ -528,9 +528,10 @@ export class Engine {
     })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
 
-    this.remoteBlocks = new Map()
-    this.executedBlocks = new Map()
-    this.invalidBlocks = new Map()
+    // refactor to move entire chainCache to chain itself including skeleton
+    this.remoteBlocks = this.chain.blockCache.remoteBlocks
+    this.executedBlocks = this.chain.blockCache.executedBlocks
+    this.invalidBlocks = this.chain.blockCache.invalidBlocks
     this.chainCache = {
       remoteBlocks: this.remoteBlocks,
       executedBlocks: this.executedBlocks,
@@ -699,7 +700,6 @@ export class Engine {
     // we remove this block from invalidBlocks for it to be evaluated again against the
     // new data/corrections the CL might be calling newPayload with
     this.invalidBlocks.delete(blockHash.slice(2))
-
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block: headBlock, error } = await assembleBlock(
       {
@@ -959,7 +959,9 @@ export class Engine {
       }
     }
 
-    const vmHead = await this.chain.blockchain.getIteratorHead()
+    const vmHead =
+      this.chainCache.executedBlocks.get(parentHash.slice(2)) ??
+      (await this.chain.blockchain.getIteratorHead())
     let blocks: Block[]
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
@@ -976,6 +978,7 @@ export class Engine {
       for (const [i, block] of blocks.entries()) {
         lastBlock = block
         const bHash = block.hash()
+
         const isBlockExecuted =
           (this.executedBlocks.get(bytesToUnprefixedHex(bHash)) ??
             (await validExecutedChainBlock(bHash, this.chain))) !== null
@@ -985,16 +988,29 @@ export class Engine {
           //   i) if number of blocks pending to be executed are within limit
           //   ii) Txs to execute in blocking call is within the supported limit
           // else return SYNCING/ACCEPTED and let skeleton led chain execution catch up
-          const executed =
+          const shouldExecuteBlock =
             blocks.length - i <= this.chain.config.engineNewpayloadMaxExecute &&
             block.transactions.length <= this.chain.config.engineNewpayloadMaxTxsExecute
-              ? await this.execution.runWithoutSetHead({
-                  block,
-                  root: (i > 0 ? blocks[i - 1] : await this.chain.getBlock(block.header.parentHash))
-                    .header.stateRoot,
-                  setHardfork: this.chain.headers.td,
-                })
-              : false
+
+          const executed =
+            shouldExecuteBlock &&
+            (await (async () => {
+              // just keeping its name different from the parentBlock to not confuse the context even
+              // though scope rules will not let it conflict with the parent of the new payload block
+              const blockParent =
+                i > 0
+                  ? blocks[i - 1]
+                  : this.chainCache.remoteBlocks.get(
+                      bytesToHex(block.header.parentHash).slice(2)
+                    ) ?? (await this.chain.getBlock(block.header.parentHash))
+              const blockExecuted = await this.execution.runWithoutSetHead({
+                block,
+                root: blockParent.header.stateRoot,
+                setHardfork: this.chain.headers.td,
+                parentBlock: blockParent,
+              })
+              return blockExecuted
+            })())
 
           // if can't be executed then return syncing/accepted
           if (!executed) {

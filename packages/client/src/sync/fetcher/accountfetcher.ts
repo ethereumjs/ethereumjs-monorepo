@@ -17,6 +17,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Event } from '../../types'
 import { short } from '../../util'
@@ -318,11 +319,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie()
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
+    return Trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
+      common: this.config.chainCommon,
+      useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
+    })
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {

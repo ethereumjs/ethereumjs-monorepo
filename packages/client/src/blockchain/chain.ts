@@ -110,6 +110,12 @@ export interface ChainHeaders {
   height: bigint
 }
 
+type BlockCache = {
+  remoteBlocks: Map<String, Block>
+  executedBlocks: Map<String, Block>
+  invalidBlocks: Map<String, Error>
+}
+
 /**
  * Blockchain
  * @memberof module:blockchain
@@ -118,6 +124,7 @@ export class Chain {
   public config: Config
   public chainDB: DB<string | Uint8Array, string | Uint8Array | DBObject>
   public blockchain: Blockchain
+  public blockCache: BlockCache
   public _customGenesisState?: GenesisState
   public _customGenesisStateRoot?: Uint8Array
 
@@ -177,6 +184,11 @@ export class Chain {
   protected constructor(options: ChainOptions) {
     this.config = options.config
     this.blockchain = options.blockchain!
+    this.blockCache = {
+      remoteBlocks: new Map(),
+      executedBlocks: new Map(),
+      invalidBlocks: new Map(),
+    }
 
     this.chainDB = this.blockchain.db
     this._customGenesisState = options.genesisState
