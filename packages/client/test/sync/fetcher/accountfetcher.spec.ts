@@ -1,7 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
@@ -168,7 +168,7 @@ describe('[AccountFetcher]', async () => {
     fetcher.highestKnownHash = Uint8Array.from([5])
     const task = { count: 3, first: BigInt(1) }
     const peer = {
-      snap: { getAccountRange: td.func<any>() },
+      snap: { getAccountRange: vi.fn() },
       id: 'random',
       address: 'random',
     }
@@ -217,20 +217,22 @@ describe('[AccountFetcher]', async () => {
 
     const task = { count: 3, first: BigInt(1) }
     const peer = {
-      snap: { getAccountRange: td.func<any>() },
+      snap: {
+        getAccountRange: vi.fn((input) => {
+          const expected = {
+            root: new Uint8Array(0),
+            origin: hexToBytes('0x000000000000000000000000000000000000000000000000000000000000001'),
+            limit: hexToBytes('0x000000000000000000000000000000000000000000000000000000000000003'),
+            bytes: BigInt(50000),
+          }
+          assert.deepEqual(input, expected)
+        }),
+      },
       id: 'random',
       address: 'random',
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
-    td.verify(
-      job.peer.snap.getAccountRange({
-        root: new Uint8Array(0),
-        origin: td.matchers.anything(),
-        limit: td.matchers.anything(),
-        bytes: BigInt(50000),
-      })
-    )
   })
 
   it('should verify proof correctly', async () => {
@@ -257,11 +259,12 @@ describe('[AccountFetcher]', async () => {
       p.messages.filter((message) => message.name === 'AccountRange')[0],
       resData
     )
-    const mockedGetAccountRange = td.func<any>()
-    td.when(mockedGetAccountRange(td.matchers.anything())).thenReturn({
-      reqId: BigInt(1),
-      accounts,
-      proof,
+    const mockedGetAccountRange = vi.fn(() => {
+      return {
+        reqId: BigInt(1),
+        accounts,
+        proof,
+      }
     })
     const peer = {
       snap: { getAccountRange: mockedGetAccountRange },
@@ -277,8 +280,8 @@ describe('[AccountFetcher]', async () => {
     )
 
     // mock storageFetches's enqueue so to not having a hanging storage fetcher
-    fetcher.storageFetcher.enqueueByStorageRequestList = td.func<any>()
-    fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = td.func<any>()
+    fetcher.storageFetcher.enqueueByStorageRequestList = vi.fn()
+    fetcher.byteCodeFetcher.enqueueByByteCodeRequestList = vi.fn()
     try {
       await fetcher.store(results!)
       assert.ok(true, 'fetcher stored results successfully')
@@ -310,6 +313,7 @@ describe('[AccountFetcher]', async () => {
   it('should find a fetchable peer', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
+    pool.idle = vi.fn(() => 'peer0')
     const fetcher = new AccountFetcher({
       config,
       pool,
@@ -317,11 +321,6 @@ describe('[AccountFetcher]', async () => {
       first: BigInt(1),
       count: BigInt(10),
     })
-    td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

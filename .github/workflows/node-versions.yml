@@ -12,17 +12,17 @@ jobs:
         node-version: [18, 20]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - run: npm ci --omit=peer
+      - run: npm ci
 
       - name: Test Block
         run: npm run test:node

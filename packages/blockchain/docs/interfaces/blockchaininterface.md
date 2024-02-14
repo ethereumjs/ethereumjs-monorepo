@@ -11,6 +11,7 @@
 ### Properties
 
 - [consensus](BlockchainInterface.md#consensus)
+- [events](BlockchainInterface.md#events)
 
 ### Methods
 
@@ -33,7 +34,19 @@
 
 #### Defined in
 
-[types.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L9)
+[types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L13)
+
+___
+
+### events
+
+• `Optional` **events**: `AsyncEventEmitter`<[`BlockchainEvents`](../README.md#blockchainevents)\>
+
+Optional events emitter
+
+#### Defined in
+
+[types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L90)
 
 ## Methods
 
@@ -56,7 +69,7 @@ deleted and any encountered heads are set to the parent block.
 
 #### Defined in
 
-[types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L23)
+[types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L27)
 
 ___
 
@@ -78,7 +91,7 @@ Returns a block by its hash or number.
 
 #### Defined in
 
-[types.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L28)
+[types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L32)
 
 ___
 
@@ -94,7 +107,7 @@ Returns the latest full block in the canonical chain.
 
 #### Defined in
 
-[types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L81)
+[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L85)
 
 ___
 
@@ -116,7 +129,7 @@ Returns the specified iterator head.
 
 #### Defined in
 
-[types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L63)
+[types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L67)
 
 ___
 
@@ -139,7 +152,7 @@ Gets total difficulty for a block specified by hash and number
 
 #### Defined in
 
-[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L76)
+[types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L80)
 
 ___
 
@@ -165,7 +178,7 @@ the onBlock function on each block.
 
 #### Defined in
 
-[types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L39)
+[types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L43)
 
 ___
 
@@ -187,7 +200,7 @@ Adds a block to the blockchain.
 
 #### Defined in
 
-[types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L15)
+[types.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L19)
 
 ___
 
@@ -211,7 +224,7 @@ When calling the iterator, the iterator will start running the first child block
 
 #### Defined in
 
-[types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L71)
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L75)
 
 ___
 
@@ -227,7 +240,7 @@ Returns a shallow copy of the blockchain that may share state with the original
 
 #### Defined in
 
-[types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L49)
+[types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L53)
 
 ___
 
@@ -250,4 +263,4 @@ Validates a block header, throwing if invalid. It is being validated against the
 
 #### Defined in
 
-[types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L56)
+[types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L60)

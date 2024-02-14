@@ -1,11 +1,21 @@
 import { Common, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import { assert, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
 import { Block, BlockHeader } from '../src/index.js'
 
+import * as payloadKaustinen from './testdata/payload-kaustinen.json'
 import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
+import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
+
+try {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+} catch {
+  // no-op
+}
 
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   const network = 'sharding'
@@ -13,7 +23,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   // safely change chainId without modifying undelying json
   const commonJson = { ...shardingJson }
   commonJson.config = { ...commonJson.config, chainId: 4844001005 }
-  const common = Common.fromGethGenesis(commonJson, { chain: network })
+  const common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
   common.setHardfork(Hardfork.Cancun)
 
   it('reconstruct cancun block with blob txs', async () => {
@@ -63,5 +73,26 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
       assert.ok(true, `correctly failed constructing block, error: ${e}`)
       assert.ok(`${e}`.includes('block excessBlobGas mismatch'), 'failed with correct error')
     }
+  })
+})
+
+describe('[fromExecutionPayloadJson]: kaustinen', () => {
+  const network = 'kaustinen'
+
+  // safely change chainId without modifying undelying json
+  const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
+    chain: network,
+    eips: [6800],
+  })
+  it('reconstruct kaustinen block', async () => {
+    assert.ok(common.isActivatedEIP(6800), 'verkle eip should be activated')
+    const block = await Block.fromBeaconPayloadJson(payloadKaustinen, { common })
+    // the witness object in payload has camel casing for now
+    // the current block hash doesn't include witness data so deep match is required
+    assert.deepEqual(
+      block.executionWitness,
+      payloadKaustinen.execution_witness,
+      'execution witness should match'
+    )
   })
 })

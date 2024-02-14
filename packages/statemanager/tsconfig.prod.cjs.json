@@ -9,6 +9,7 @@
   "references": [
     { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../trie/tsconfig.prod.cjs.json" },
-    { "path": "../util/tsconfig.prod.cjs.json" }
+    { "path": "../util/tsconfig.prod.cjs.json" },
+    { "path": "../verkle/tsconfig.prod.cjs.json" }
   ]
 }

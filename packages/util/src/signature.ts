@@ -50,7 +50,7 @@ export function ecsign(
   return { r, s, v }
 }
 
-function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
+export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   if (v === BIGINT_0 || v === BIGINT_1) return v
 
   if (chainId === undefined) {

@@ -27,6 +27,8 @@ describe('[fromJsonRpcProvider]', () => {
       if (json.params[0] === '0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0') {
         const txData = await import(`./json/rpcTx.json`)
         return {
+          ok: true,
+          status: 200,
           json: () => {
             return {
               result: txData,
@@ -35,6 +37,8 @@ describe('[fromJsonRpcProvider]', () => {
         }
       } else {
         return {
+          ok: true,
+          status: 200,
           json: () => {
             return {
               result: null, // This is the value Infura returns if no transaction is found matching the provided hash

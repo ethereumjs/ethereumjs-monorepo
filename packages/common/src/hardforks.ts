@@ -839,4 +839,12 @@ export const hardforks: HardforksDict = {
     status: Status.Final,
     eips: [1153, 4844, 4788, 5656, 6780, 7516],
   },
+  prague: {
+    name: 'prague',
+    comment:
+      'Next feature hardfork after cancun, internally used for verkle testing/implementation (incomplete/experimental)',
+    url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
+    status: Status.Draft,
+    eips: [6800],
+  },
 }

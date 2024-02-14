@@ -19,11 +19,11 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -47,11 +47,11 @@ jobs:
         fork: ['London', 'Berlin', 'Paris', 'MuirGlacier', 'Istanbul', 'Shanghai', 'Cancun']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -85,10 +85,10 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -119,14 +119,16 @@ jobs:
             '--fork=ArrowGlacierToMergeAtDiffC0000',
             '--fork=Shanghai --dir=GeneralStateTests/stTimeConsuming',
             '--fork=Shanghai --excludeDir=stTimeConsuming',
+            '--fork=Cancun --dir=GeneralStateTests/stTimeConsuming',
+            '--fork=Cancun --excludeDir=stTimeConsuming',
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -157,6 +159,7 @@ jobs:
             '--fork=London --verify-test-amount-alltests',
             '--fork=Paris --verify-test-amount-alltests',
             '--fork=Shanghai --verify-test-amount-alltests',
+            '--fork=Cancun --verify-test-amount-alltests',
             '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
             '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
             '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
@@ -166,10 +169,10 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
@@ -182,9 +185,9 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'

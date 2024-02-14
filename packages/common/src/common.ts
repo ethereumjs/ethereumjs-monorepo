@@ -7,10 +7,10 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { crc32 as crc } from 'crc'
 import { EventEmitter } from 'events'
 
 import { chains as CHAIN_SPECS } from './chains.js'
+import { crc32 } from './crc.js'
 import { EIPs } from './eips.js'
 import { Chain, CustomChain, Hardfork } from './enums.js'
 import { hardforks as HARDFORK_SPECS } from './hardforks.js'
@@ -26,6 +26,7 @@ import type {
   CliqueConfig,
   CommonOpts,
   CustomCommonOpts,
+  CustomCrypto,
   EIPConfig,
   EIPOrHFConfig,
   EthashConfig,
@@ -57,6 +58,8 @@ export class Common {
   protected _hardfork: string | Hardfork
   protected _eips: number[] = []
   protected _customChains: ChainConfig[]
+
+  public readonly customCrypto: CustomCrypto
 
   protected _paramsCache: ParamsCacheConfig = {}
   protected _activatedEIPsCache: number[] = []
@@ -182,7 +185,7 @@ export class Common {
    */
   static fromGethGenesis(
     genesisJson: any,
-    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
+    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
   ): Common {
     const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
@@ -190,6 +193,7 @@ export class Common {
       customChains: [genesisParams],
       eips,
       hardfork: hardfork ?? genesisParams.hardfork,
+      customCrypto,
     })
     if (genesisHash !== undefined) {
       common.setForkHashes(genesisHash)
@@ -248,6 +252,8 @@ export class Common {
     if (opts.eips) {
       this.setEIPs(opts.eips)
     }
+    this.customCrypto = opts.customCrypto ?? {}
+
     if (Object.keys(this._paramsCache).length === 0) {
       this._buildParamsCache()
       this._buildActivatedEIPsCache()
@@ -872,7 +878,7 @@ export class Common {
 
     // CRC32 delivers result as signed (negative) 32-bit integer,
     // convert to hex string
-    const forkhash = bytesToHex(intToBytes(crc(inputBytes) >>> 0))
+    const forkhash = bytesToHex(intToBytes(crc32(inputBytes) >>> 0))
     return forkhash
   }
 

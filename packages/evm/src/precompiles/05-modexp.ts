@@ -103,7 +103,7 @@ export function expmod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
-  const data = opts.data
+  const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
   if (adjustedELen < BIGINT_1) {
@@ -151,17 +151,10 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BIGINT_0) {
+  if (bLen === BIGINT_0 && mLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
-      returnValue: setLengthLeft(bigIntToBytes(BIGINT_0), Number(mLen)),
-    }
-  }
-
-  if (mLen === BIGINT_0) {
-    return {
-      executionGasUsed: gasUsed,
-      returnValue: new Uint8Array(0),
+      returnValue: new Uint8Array(),
     }
   }
 
@@ -172,10 +165,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
-  const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
-  const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
-
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
       opts._debug(`MODEXP (0x05) failed: OOG`)
@@ -183,20 +172,29 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
+  const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
+  const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
+  const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
+
   let R
   if (M === BIGINT_0) {
-    R = BIGINT_0
+    R = new Uint8Array()
   } else {
     R = expmod(B, E, M)
+    if (R === BIGINT_0) {
+      R = new Uint8Array()
+    } else {
+      R = bigIntToBytes(R)
+    }
   }
 
-  const res = setLengthLeft(bigIntToBytes(R), Number(mLen))
+  const res = setLengthLeft(R, Number(mLen))
   if (opts._debug !== undefined) {
     opts._debug(`MODEXP (0x05) return value=${bytesToHex(res)}`)
   }
 
   return {
     executionGasUsed: gasUsed,
-    returnValue: setLengthLeft(bigIntToBytes(R), Number(mLen)),
+    returnValue: res,
   }
 }

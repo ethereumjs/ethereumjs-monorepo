@@ -6,23 +6,22 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code'
-import { baseRequest, createClient, createManager, params, startRPC } from '../helpers'
-import { checkError } from '../util'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
+import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullEthereumService } from '../../../src/service'
+import type { FullEthereumService } from '../../../src/service/index.js'
 
 const method = 'eth_getCode'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
 
 describe(method, () => {
   it('call with valid arguments', async () => {
     const blockchain = await Blockchain.create({ common })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -33,12 +32,8 @@ describe(method, () => {
     const address = Address.fromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
     // verify code is null
-    const req = params(method, [address.toString(), 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct code'
-      assert.equal(res.body.result, '0x', msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [address.toString(), 'latest'])
+    assert.equal(res.result, '0x', 'should return the correct code')
   })
 
   it('ensure returns correct code', async () => {
@@ -48,9 +43,9 @@ describe(method, () => {
       validateConsensus: false,
     })
 
-    const client = createClient({ blockchain, commonChain: common, includeVM: true })
+    const client = await createClient({ blockchain, commonChain: common, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
     const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
     assert.notEqual(execution, undefined, 'should have valid execution')
@@ -98,23 +93,19 @@ describe(method, () => {
     )
 
     // verify contract has code
-    const req = params(method, [expectedContractAddress.toString(), 'latest'])
-    const expectRes = (res: any) => {
-      const msg = 'should return the correct code'
-      assert.equal(res.body.result, code, msg)
-    }
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, [expectedContractAddress.toString(), 'latest'])
+    assert.equal(res.result, code, 'should return the correct code')
   })
 
   it('call with unsupported block argument', async () => {
     const blockchain = await Blockchain.create()
 
-    const client = createClient({ blockchain, includeVM: true })
+    const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const server = startRPC(manager.getMethods())
+    const rpc = getRpcClient(startRPC(manager.getMethods()))
 
-    const req = params(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    const expectRes = checkError(INVALID_PARAMS, '"pending" is not yet supported')
-    await baseRequest(server, req, 200, expectRes)
+    const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
+    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.ok(res.error.message.includes('"pending" is not yet supported'))
   })
 })

@@ -1,4 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
 import * as path from 'path'
 
 /**
@@ -257,12 +259,17 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       }
     }
   }
+  try {
+    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
+  } catch {
+    // no-op
+  }
   const common = Common.custom(
     {
       hardforks: testHardforks,
       defaultHardfork: hfName,
     },
-    { eips: [3607] }
+    { eips: [3607], customCrypto: { kzg } }
   )
   // Activate EIPs
   const eips = network.match(/(?<=\+)(.\d+)/g)
@@ -339,7 +346,12 @@ export function getCommon(network: string): Common {
         })
       }
     }
-    return Common.custom(
+    try {
+      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+    } catch {
+      // no-op
+    }
+    const common = Common.custom(
       {
         hardforks: testHardforks,
       },
@@ -347,8 +359,10 @@ export function getCommon(network: string): Common {
         baseChain: 'mainnet',
         hardfork: transitionForks.startFork,
         eips: [3607],
+        customCrypto: { kzg },
       }
     )
+    return common
   }
 }
 
@@ -378,7 +392,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 32,
     HomesteadToEIP150At5: 3,
     BerlinToLondonAt5: 24,
-    Cancun: 0,
+    Cancun: 61633,
   },
   GeneralStateTests: {
     Chainstart: 1045,
@@ -401,7 +415,7 @@ const expectedTestsFull: {
     HomesteadToDaoAt5: 0,
     HomesteadToEIP150At5: 0,
     BerlinToLondonAt5: 0,
-    Cancun: 0,
+    Cancun: 19048,
   },
 }
 

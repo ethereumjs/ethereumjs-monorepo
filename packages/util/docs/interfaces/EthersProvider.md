@@ -32,4 +32,4 @@ retrieve the necessary data
 
 #### Defined in
 
-[packages/util/src/provider.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L55)
+[packages/util/src/provider.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L79)

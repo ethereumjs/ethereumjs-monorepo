@@ -1,9 +1,10 @@
 {
   "name": "@ethereumjs/verkle",
   "version": "0.0.1",
-  "description": "Implementation of verkle tries as used in Ethereum.",
+  "description": "Implementation of verkle trees as used in Ethereum.",
   "keywords": [
     "verkle",
+    "tree",
     "trie",
     "ethereum"
   ],
@@ -15,7 +16,7 @@
     "type": "git",
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
-  "license": "MPL-2.0",
+  "license": "MIT",
   "author": "EthereumJS Team",
   "contributors": [
     {
@@ -50,8 +51,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "5.0.1",
-    "@ethereumjs/util": "9.0.1",
+    "@ethereumjs/rlp": "5.0.2",
+    "@ethereumjs/util": "9.0.2",
     "lru-cache": "^10.0.0",
     "rust-verkle-wasm": "^0.0.1"
   },

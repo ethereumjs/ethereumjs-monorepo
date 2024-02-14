@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { TWO_POW256, equalsBytes, hexToBytes } from '@ethereumjs/util'
+import { TWO_POW256, ecsign, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { FeeMarketEIP1559Transaction } from '../src/index.js'
@@ -97,6 +97,41 @@ describe('[FeeMarketEIP1559Transaction]', () => {
         'Should sign txs correctly'
       )
     }
+  })
+
+  it('addSignature() -> correctly adds correct signature values', () => {
+    const privKey = hexToBytes(testdata[0].privateKey)
+    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> correctly converts raw ecrecover values', () => {
+    const privKey = hexToBytes(testdata[0].privateKey)
+    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(v, r, s, true)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> throws when adding the wrong v value', () => {
+    const privKey = hexToBytes(testdata[0].privateKey)
+    const tx = FeeMarketEIP1559Transaction.fromTxData({})
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    assert.throws(() => {
+      // This will throw, since we now try to set either v=27 or v=28
+      tx.addSignature(v, r, s, false)
+    })
   })
 
   it('hash()', () => {
