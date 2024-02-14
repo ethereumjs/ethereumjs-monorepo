@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707419391944,
+  "lastUpdate": 1707914107779,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "fc0433eccc8a7d6cf327b01a77463ad92743c2af",
-          "message": "Use permalink to avoid future breakage of link (#3230)",
-          "timestamp": "2024-01-12T11:16:14+01:00",
-          "tree_id": "54d05fe86ba5ccc3253f4cfecd2eff9a56a981a7",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/fc0433eccc8a7d6cf327b01a77463ad92743c2af"
-        },
-        "date": 1705054738329,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41676,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39476,
-            "range": "±3.12%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39488,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39140,
-            "range": "±1.96%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38194,
-            "range": "±2.27%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.20%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "simon@klein-homepage.de",
+            "name": "box25",
+            "username": "simone1999"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c62cce0ce5c21294a07b15d02a511f9d5be8ccc3",
+          "message": "fixed requests.msgTypes in devp2p/examples/peer-communication.ts (#2778)\n\nthe intended behaviour from the requests.msgTypes dict of counters seems to be different from what was implemented.\r\nWith this fix the message counter should probably count the amount of received messages per peer and message type.\r\nThis counter later is used to disconect from peers that did not broadcast any blocks while submitting 8 other requests with the same message type to this node.\r\n\r\nCo-authored-by: acolytec3 <konjou@gmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-02-14T13:32:18+01:00",
+          "tree_id": "00fe0c1802eb9af8f61f923a7834d917af98c2eb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c62cce0ce5c21294a07b15d02a511f9d5be8ccc3"
+        },
+        "date": 1707914107176,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40400,
+            "range": "±2.78%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39618,
+            "range": "±1.87%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39353,
+            "range": "±1.90%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36587,
+            "range": "±4.70%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37473,
+            "range": "±2.25%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
