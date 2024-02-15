@@ -325,7 +325,6 @@ async function verifyProof(
   const proofTrie = await Trie.fromProof(proof, {
     root: rootHash,
     useKeyHashingFunction,
-    useKeyHashing: true,
   })
   try {
     const value = await proofTrie.get(key, true)
