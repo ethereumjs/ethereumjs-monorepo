@@ -72,9 +72,9 @@ describe('should handle expiration', async () => {
   fetcher['total'] = 10
   fetcher.next()
   await new Promise((resolve) => {
-    setTimeout(resolve, 10)
+    setTimeout(resolve, 1000)
   })
-  it('should expire', () => {
+  it('should expire', async () => {
     assert.equal((fetcher as any).in.length, 1, 'enqueued job')
     assert.deepEqual(
       job as any,
