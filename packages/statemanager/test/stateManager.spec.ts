@@ -4,11 +4,9 @@ import {
   Address,
   KECCAK256_RLP,
   bigIntToBytes,
-  bytesToHex,
   equalsBytes,
   hexToBytes,
   intToBytes,
-  randomBytes,
   setLengthLeft,
   utf8ToBytes,
 } from '@ethereumjs/util'
