@@ -255,9 +255,9 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     if (rangeResult === undefined || task.storageRequests.length < rangeResult.slots.length) {
       this.debug(
         `Slot set is larger than hash set: slotset ${
-          rangeResult ? rangeResult.slots.length : 0
+          rangeResult?.slots !== undefined ? rangeResult.slots.length : 0
         } hashset ${task.storageRequests.length} proofset ${
-          rangeResult ? rangeResult.slots.length : 0
+          rangeResult?.proof !== undefined ? rangeResult.proof.length : 0
         } `
       )
       return undefined
