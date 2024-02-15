@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707914107779,
+  "lastUpdate": 1707990032791,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "willcory10@gmail.com",
-            "name": "Will Cory",
-            "username": "roninjin10"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "51fc6dae08b6cec678323c09ed56907d39194e00",
-          "message": "chore: Add missing jsdoc to client (#3233)\n\nNoticed this was missing while reading client code",
-          "timestamp": "2024-01-15T20:32:23+01:00",
-          "tree_id": "5fbb12dc4aefe2382f4a05b2f2936b8afdd0beea",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/51fc6dae08b6cec678323c09ed56907d39194e00"
-        },
-        "date": 1705347301249,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39663,
-            "range": "±3.14%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38876,
-            "range": "±1.90%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38968,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 35868,
-            "range": "±4.35%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36971,
-            "range": "±2.33%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.25%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c68ad7aeaf1f616decc75491210d8ab8dde2ed67",
+          "message": "Remove nodejs import from trie.ts (#3280)\n\n* Remove nodejs import from trie.ts\r\n\r\n* Remove async trie stream dependency",
+          "timestamp": "2024-02-15T10:37:43+01:00",
+          "tree_id": "260221332bb117ee12ca93d634bb3f521ec7f8c8",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/c68ad7aeaf1f616decc75491210d8ab8dde2ed67"
+        },
+        "date": 1707990032157,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40211,
+            "range": "±2.36%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38493,
+            "range": "±2.79%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39348,
+            "range": "±2.01%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36262,
+            "range": "±4.69%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37001,
+            "range": "±2.23%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
           }
         ]
       }
