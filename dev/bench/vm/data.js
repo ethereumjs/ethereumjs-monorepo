@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707990032791,
+  "lastUpdate": 1707991671223,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a8f326aa6023afa9eb968959c8007e5caf10406e",
-          "message": "Readable stream analysis refactor (#3231)\n\n* Experiment with importing webstreams\r\n\r\n* Suppress implicit-import eslint error\r\n\r\n* Replace readable-stream with web stream api\r\n\r\n* Remove unnecessary null check\r\n\r\n* Update package-lock and dependencies\r\n\r\n* Fix test\r\n\r\n* Make nonbreaking\r\n\r\n* Use async stream in statemanager\r\n\r\n* Update package-lock file and dependencies\r\n\r\n* Include comment to detail deviation from import policy\r\n\r\n* Revert \"Update package-lock file and dependencies\"\r\n\r\nThis reverts commit baf67f4ada44f7bfd23d1896d7cbb88d033ad657.\r\n\r\n* Revert \"Update package-lock and dependencies\"\r\n\r\nThis reverts commit 02b8845a0e35b8a97efa7b69a6fc26f03e210c38.\r\n\r\n* Update package-lock",
-          "timestamp": "2024-01-17T13:22:37+01:00",
-          "tree_id": "234296a83446816eee46dd81a936a973be43eac2",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a8f326aa6023afa9eb968959c8007e5caf10406e"
-        },
-        "date": 1705494323877,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41073,
-            "range": "±2.14%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38809,
-            "range": "±3.08%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39502,
-            "range": "±2.02%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38577,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37496,
-            "range": "±2.45%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.23%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5d522f731f6bee1b8626a3558fa8c5d5c0f6ebbd",
+          "message": "block: rpc: also parse parentBeaconBlockRoot (#3283)\n\n* block: rpc: also parse parentBeaconBlockRoot\r\n\r\n* block: add rpc test",
+          "timestamp": "2024-02-15T11:05:03+01:00",
+          "tree_id": "184e6a80d812b62ff303d5155ecd41dfd00030cb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5d522f731f6bee1b8626a3558fa8c5d5c0f6ebbd"
+        },
+        "date": 1707991670586,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40297,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38126,
+            "range": "±3.00%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38490,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38025,
+            "range": "±1.99%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34529,
+            "range": "±6.03%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
