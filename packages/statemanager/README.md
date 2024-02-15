@@ -71,7 +71,9 @@ Have a loot at the extended `CacheOptions` on how to use and leverage the new ca
 
 #### Instantiating from a Proof
 
-The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). See below example:
+The `DefaultStateManager` has a static constructor `fromProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `DefaultStateManager` with a partial trie containing the state provided by the proof(s). Be aware that this constructor accepts the `StateManagerOpts` dictionary as a second parameter (i.e. `stateManager.fromProof(proof, opts)`). Therefore, if you need to use a customized trie (e.g. one that does not use key hashing) or specify caching options, you can pass them in here. If you do instantiate a trie and pass it into the `fromProof` constructor, you also need to instantiate the trie using the corresponding `fromProof` constructor to ensure the state root matches when the proof data is added to the trie. See [this test](./test/stateManager.spec.ts#L287-L288) for more details.
+
+See below example for common usage:
 
 ```ts
 // ./examples/fromProofInstantiation.ts
