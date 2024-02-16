@@ -152,6 +152,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   private getOrigin(job: Job<JobTask, StorageData[][], StorageData[]>): Uint8Array {
     let origin: Uint8Array
 
+    // this try block contains code that is currently susceptible to typing issues and resulting errors
     try {
       const { task, partialResult } = job
 
