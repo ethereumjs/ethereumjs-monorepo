@@ -59,15 +59,23 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
     const address = new Address(randomBytes(20))
 
-    let check = await stateManager.getAccount(address)
-    assert.isUndefined(check, 'should return undefined for nonexistent account')
+    try {
+      await stateManager.getAccount(address)
+      assert.fail('should throw on getting account that is not found in witness')
+    } catch (e) {
+      assert.equal(
+        e.message.slice(0, 25),
+        'Missing execution witness',
+        'should throw on getting account that does not exist in cache and witness'
+      )
+    }
 
     const account = Account.fromAccountData({
       nonce: BigInt(2),
     })
     await stateManager.putAccount(address, account)
 
-    check = await stateManager.getAccount(address)
+    let check = await stateManager.getAccount(address)
     assert.deepEqual(check, account, 'should return correct account')
 
     await stateManager.modifyAccountFields(address, {
