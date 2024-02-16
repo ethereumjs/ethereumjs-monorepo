@@ -446,20 +446,22 @@ export async function verifyRangeProof(
     return false
   }
 
-  // Zero element proof
-  if (keys.length === 0) {
-    const { trie, value } = await verifyProof(
-      rootHash,
-      nibblestoBytes(firstKey as any),
-      proof as any,
-      useKeyHashingFunction
-    )
+  if (proof !== null && firstKey !== null && lastKey === null) {
+    // Zero element proof
+    if (keys.length === 0) {
+      const { trie, value } = await verifyProof(
+        rootHash,
+        nibblestoBytes(firstKey),
+        proof,
+        useKeyHashingFunction
+      )
 
-    if (value !== null || (await hasRightElement(trie, firstKey as any))) {
-      throw new Error('invalid zero element proof: value mismatch')
+      if (value !== null || (await hasRightElement(trie, firstKey))) {
+        throw new Error('invalid zero element proof: value mismatch')
+      }
+
+      return false
     }
-
-    return false
   }
 
   if (proof === null || firstKey === null || lastKey === null) {
