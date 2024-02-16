@@ -26,7 +26,7 @@ import type { Job, SnapFetcherDoneFlags } from './types'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
-const TOTAL_RANGE_END = BigInt(BIGINT_2 ** BIGINT_256 - BIGINT_1)
+const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 
 type StorageDataResponse = StorageData[][] & { completed?: boolean }
 
