@@ -86,7 +86,11 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       }
       // Supply the common from the corresponding block header already set on correct fork
       const block = Block.fromValuesArray(values, { common: headers[i].common })
-      await block.validateData()
+      // Only validate the data integrity
+      // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
+      // In ReverseBlockFetcher we do not need to validate the entire block, since CL
+      // expects us to sync with the requested chain tip header
+      await block.validateData(false, false)
       blocks.push(block)
     }
     this.debug(

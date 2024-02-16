@@ -62,7 +62,7 @@ async function genGenesisStateRoot(
     timestamp: genCommon.genesis().timestamp,
   })
   if (genCommon.isActivatedEIP(6800)) {
-    throw Error(`Verkle trie state not yet supported`)
+    throw Error(`Verkle tree state not yet supported`)
   } else {
     return genMerkleGenesisStateRoot(genesisState)
   }
@@ -529,7 +529,9 @@ export class Blockchain implements BlockchainInterface {
         let dbOps: DBOp[] = []
 
         if (block.common.chainId() !== this.common.chainId()) {
-          throw new Error('Chain mismatch while trying to put block or header')
+          throw new Error(
+            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`
+          )
         }
 
         if (this._validateBlocks && !isGenesis) {

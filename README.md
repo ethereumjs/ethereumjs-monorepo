@@ -86,14 +86,17 @@ Detailed version can be seen on [Codecov.io][coverage-link]
    common --> evm
    common --> client
    common --> devp2p
+   common --> genesis
    evm --> vm
    evm --> client
    genesis --> client
    genesis --> statemanager
    genesis --> trie
    tx --> block
+   tx --> evm
    tx --> vm
    vm --> client
+   statemanager --> evm
    statemanager --> vm
 ```
 

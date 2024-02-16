@@ -11,12 +11,12 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionFactory, TypedTransaction } from '@ethereumjs/tx'
 import chalk from 'chalk'
-
 import { LRUCache } from 'lru-cache'
+
 import ms from 'ms'
 
-import * as devp2p from '../dist/cjs/index.js'
-import { ETH, Peer } from '../dist/cjs/index.js'
+import * as devp2p from '@ethereumjs/devp2p'
+import { ETH, Peer } from '@ethereumjs/devp2p'
 
 const PRIVATE_KEY = randomBytes(32)
 
@@ -114,8 +114,9 @@ rlpx.events.on('peer:added', (peer) => {
   })
 
   eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
-    if (code in ETH.MESSAGE_CODES) {
-      requests.msgTypes[code] = code + 1
+    // We keep track of how many of each message type are received
+    if (code in requests.msgTypes) {
+      requests.msgTypes[code]++
     } else {
       requests.msgTypes[code] = 1
     }
