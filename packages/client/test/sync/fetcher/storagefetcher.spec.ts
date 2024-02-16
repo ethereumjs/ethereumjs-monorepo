@@ -1,4 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
@@ -14,7 +15,6 @@ import {
   _zeroElementProofOrigin,
   _zeroElementProofRoot,
 } from './accountfetcher.spec'
-import { Trie } from '@ethereumjs/trie'
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
@@ -361,7 +361,7 @@ describe('[StorageFetcher]', async () => {
     // calculate new root with a key all the way to the right of the trie
     const trie = await Trie.createFromProof(_zeroElementProof)
     await trie.put(hexToBytes('0x' + 'F'.repeat(32)), hexToBytes('0x' + '123'), true)
-    const newRoot = await trie.root()
+    const newRoot = trie.root()
 
     const fetcher = new StorageFetcher({
       config,
