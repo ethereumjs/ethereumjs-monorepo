@@ -3,7 +3,7 @@ import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
-import * as md5 from 'js-md5'
+import { md5 } from 'js-md5'
 
 import { Wallet } from './wallet.js'
 

@@ -105,6 +105,10 @@ export class EVMPerformanceLogger {
     }
   }
 
+  hasTimer() {
+    return this.currentTimer !== undefined
+  }
+
   // Start a new timer
   // Only one timer can be timing at the same time
   startTimer(tag: string) {
@@ -144,8 +148,8 @@ export class EVMPerformanceLogger {
     staticGas?: number,
     dynamicGas?: number
   ) {
-    if (this.currentTimer !== undefined && this.currentTimer !== timer) {
-      throw new Error('Cannot unpause timer: another timer is already running')
+    if (this.currentTimer === undefined || this.currentTimer !== timer) {
+      throw new Error('Cannot stop timer: another timer is already running')
     }
     const time = timer.time()
     const tag = timer.tag

@@ -235,12 +235,9 @@ export class RPCStateManager implements EVMStateManagerInterface {
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
-    const trie = new Trie({ useKeyHashing: true, common: this.common })
-    const verified = await trie.verifyProof(
-      this.keccakFunction(proofBuf[0]),
-      address.bytes,
-      proofBuf
-    )
+    const verified = await Trie.verifyProof(address.bytes, proofBuf, {
+      useKeyHashing: true,
+    })
     // if not verified (i.e. verifyProof returns null), account does not exist
     return verified === null ? false : true
   }

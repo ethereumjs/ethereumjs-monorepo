@@ -516,7 +516,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     const versionKey = this.getTreeKeyForVersion(stem)
     const versionChunk = this._state[bytesToHex(versionKey)]
     if (versionChunk === undefined) {
-      throw Error(`Missing execution witness for address=${address} versionKey=${versionKey}`)
+      throw Error(
+        `Missing execution witness for address=${address} versionKey=${bytesToHex(versionKey)}`
+      )
     }
 
     // if the versionChunk is null it means the account doesn't exist in pre state

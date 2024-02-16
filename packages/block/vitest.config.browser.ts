@@ -6,6 +6,7 @@ export default defineConfig({
       ...configDefaults.exclude,
       // c-kzg dependency
       'test/eip4844block.spec.ts',
+      'test/from-beacon-payload.spec.ts',
       // Cannot access uninitialized variable.
       // (likely local fix possible)
       'test/mergeBlock.spec.ts',
