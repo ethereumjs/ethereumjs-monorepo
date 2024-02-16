@@ -322,6 +322,20 @@ describe('StateManager -> General', () => {
         await partialSM.getContractStorage(address, hexToBytes(keys[0]))
       )
       assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
+      const partialSM2 = await DefaultStateManager.fromProof(proof, true, {
+        trie: newTrie,
+      })
+      await partialSM2.addProofData(proof2, true)
+      assert.equal(
+        partialSM2['_trie']['_opts'].useKeyHashing,
+        false,
+        'trie opts are preserved in new sm'
+      )
+      assert.deepEqual(
+        intToBytes(32),
+        await partialSM2.getContractStorage(address, hexToBytes(keys[0]))
+      )
+      assert.equal((await partialSM2.getAccount(address2))?.balance, 100n)
     }
   )
 })
