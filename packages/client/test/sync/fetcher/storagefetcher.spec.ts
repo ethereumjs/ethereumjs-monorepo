@@ -14,6 +14,7 @@ import {
   _zeroElementProofOrigin,
   _zeroElementProofRoot,
 } from './accountfetcher.spec'
+import { Trie } from '@ethereumjs/trie'
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
@@ -350,6 +351,49 @@ describe('[StorageFetcher]', async () => {
     assert.ok(
       ret?.completed === true,
       'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
+    )
+  })
+
+  it('should reject zero-element proof if elements still remain to right of requested range', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+
+    // calculate new root with a key all the way to the right of the trie
+    const trie = await Trie.createFromProof(_zeroElementProof)
+    await trie.put(hexToBytes('0x' + 'F'.repeat(32)), hexToBytes('0x' + '123'), true)
+    const newRoot = await trie.root()
+
+    const fetcher = new StorageFetcher({
+      config,
+      pool,
+      root: _zeroElementProofRoot,
+    })
+    const task = {
+      storageRequests: [
+        {
+          accountHash: hexToBytes('0x0'),
+          storageRoot: newRoot,
+          first: _zeroElementProofOrigin,
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        },
+      ],
+    }
+    const mockedGetStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId: BigInt(1),
+      slots: [],
+      proof: _zeroElementProof,
+    })
+    const peer = {
+      snap: { getStorageRanges: mockedGetStorageRanges },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, task }
+
+    const ret = await fetcher.request(job as any)
+    assert.ok(
+      ret?.completed === undefined,
+      'proof verification should fail if elements still remain to the right of the proof'
     )
   })
 
