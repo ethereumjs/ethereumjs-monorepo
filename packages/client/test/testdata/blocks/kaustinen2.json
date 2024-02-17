@@ -1,6 +1,6 @@
 {
-  "block12":{
-    "parent":{
+  "block12": {
+    "parent": {
       "parent_hash": "0x1f6b2657716798142d316f6cd439c1bd79e8ccb4adff583eb95cc0bc7116da09",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x5e8519756841faf0b2c28951c451b61a4b407b70a5ce5b57992f4bec973173ff",
@@ -50,9 +50,7 @@
           }
         ],
         "verkle_proof": {
-          "other_stems": [
-            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
-          ],
+          "other_stems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
           "depth_extension_present": "0x09",
           "commitments_by_path": [
             "0x12823635f1b4863990e04f17b699b018c8909455710ec2aed425d49d4af58db3"
@@ -84,7 +82,7 @@
         }
       }
     },
-    "execute":{
+    "execute": {
       "parent_hash": "0xb3b593ec721b3210f1d95938e52b231d22520250f7a1df018559171e843eadf4",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x606482e583d5b8349862a43df0b2e0994d2c434b3099bb01fca5fe7a4f568dc6",
@@ -227,9 +225,7 @@
           }
         ],
         "verkleProof": {
-          "otherStems": [
-            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
-          ],
+          "otherStems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
           "depthExtensionPresent": "0x080a0910",
           "commitmentsByPath": [
             "0x00f2c2af75fb32d073540aa153d5dd3a87f7e24b62b3b266b0fcca7bbae77a56",
@@ -265,7 +261,7 @@
       }
     }
   },
-  "block13":{
+  "block13": {
     "parent": {
       "parent_hash": "0xb3b593ec721b3210f1d95938e52b231d22520250f7a1df018559171e843eadf4",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
@@ -409,9 +405,7 @@
           }
         ],
         "verkleProof": {
-          "otherStems": [
-            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
-          ],
+          "otherStems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
           "depthExtensionPresent": "0x080a0910",
           "commitmentsByPath": [
             "0x00f2c2af75fb32d073540aa153d5dd3a87f7e24b62b3b266b0fcca7bbae77a56",
@@ -725,10 +719,10 @@
           }
         }
       }
-    }         
+    }
   },
-  "block16":{
-    "parent":{
+  "block16": {
+    "parent": {
       "parent_hash": "0x47a219fe29fe617f09db8b1286ebe8b08dabf478d794d3b6785f30bad6b8b034",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x2c33cf556c7f8ce18be8cea11451e52c8b343a229a4ad2587cb68a29b072946e",
@@ -912,7 +906,7 @@
         }
       }
     },
-    "execute":{
+    "execute": {
       "parent_hash": "0xec63025d318947bb19e62592700bff413774f5f4221fdf5f43483d2d4f7282e2",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x23da55eeb85eb25e41ef77cf90f48cc233ca61dbd358ea4eb18e948f1a1eb8aa",
@@ -1157,9 +1151,7 @@
           }
         ],
         "verkleProof": {
-          "otherStems": [
-            "0x9444524c2261a7086dd332bb05d79b1c63e74913a97b7b85c680368b19db0e"
-          ],
+          "otherStems": ["0x9444524c2261a7086dd332bb05d79b1c63e74913a97b7b85c680368b19db0e"],
           "depthExtensionPresent": "0x0a101209120808",
           "commitmentsByPath": [
             "0x1ba24c38c9aff43cf2793ed22a2fdd04282d558bcfad33589b5e4697c0662e45",
@@ -1199,6 +1191,6 @@
           }
         }
       }
-    }    
+    }
   }
 }
