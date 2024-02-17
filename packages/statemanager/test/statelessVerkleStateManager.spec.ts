@@ -9,8 +9,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { getStem } from '@ethereumjs/verkle'
-import { skip } from 'tape'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, test } from 'vitest'
 
 import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 
@@ -147,7 +146,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   // TODO contract storage functions not yet completely implemented
-  skip('get/put/clear contract storage', async () => {
+  test.skip('get/put/clear contract storage', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.executionWitness)
 
