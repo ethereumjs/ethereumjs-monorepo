@@ -26,7 +26,6 @@ BEACON_SYNC=true  NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth npx vitest run
 ```
 
 or just
-
 ```bash
 rm -rf ./datadir; DEBUG=ethjs,client:* BEACON_SYNC=true  NETWORK=mainnet NETWORKID=1337903 ELCLIENT=geth npx vitest run test/sim/beaconsync.spec.ts
 ```

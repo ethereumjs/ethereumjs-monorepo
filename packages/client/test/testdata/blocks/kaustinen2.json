@@ -50,7 +50,9 @@
           }
         ],
         "verkle_proof": {
-          "other_stems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
+          "other_stems": [
+            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
+          ],
           "depth_extension_present": "0x09",
           "commitments_by_path": [
             "0x12823635f1b4863990e04f17b699b018c8909455710ec2aed425d49d4af58db3"
@@ -225,7 +227,9 @@
           }
         ],
         "verkleProof": {
-          "otherStems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
+          "otherStems": [
+            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
+          ],
           "depthExtensionPresent": "0x080a0910",
           "commitmentsByPath": [
             "0x00f2c2af75fb32d073540aa153d5dd3a87f7e24b62b3b266b0fcca7bbae77a56",
@@ -405,7 +409,9 @@
           }
         ],
         "verkleProof": {
-          "otherStems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
+          "otherStems": [
+            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
+          ],
           "depthExtensionPresent": "0x080a0910",
           "commitmentsByPath": [
             "0x00f2c2af75fb32d073540aa153d5dd3a87f7e24b62b3b266b0fcca7bbae77a56",
@@ -1151,7 +1157,9 @@
           }
         ],
         "verkleProof": {
-          "otherStems": ["0x9444524c2261a7086dd332bb05d79b1c63e74913a97b7b85c680368b19db0e"],
+          "otherStems": [
+            "0x9444524c2261a7086dd332bb05d79b1c63e74913a97b7b85c680368b19db0e"
+          ],
           "depthExtensionPresent": "0x0a101209120808",
           "commitmentsByPath": [
             "0x1ba24c38c9aff43cf2793ed22a2fdd04282d558bcfad33589b5e4697c0662e45",
