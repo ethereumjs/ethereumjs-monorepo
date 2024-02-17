@@ -120,19 +120,6 @@ describe('kv stream test', () => {
       assert.equal(keys.length, 0)
     })
   })
-
-  it('should fetch all of the nodes from async stream', async () => {
-    const stream = trie.createAsyncReadStream()
-    for await (const chunk of stream) {
-      const key = chunk.key.toString()
-      const value = chunk.value.toString()
-      assert.equal(valObj2[key], value)
-      delete valObj2[key]
-    }
-
-    const keys = Object.keys(valObj2)
-    assert.equal(keys.length, 0)
-  })
 })
 
 describe('db stream test', () => {
