@@ -124,4 +124,4 @@ Returns the encoded tx receipt.
 
 #### Defined in
 
-[vm/src/runBlock.ts:538](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L538)
+[vm/src/runBlock.ts:592](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L592)

@@ -69,7 +69,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Copy the common object to not create long-lasting
   // references in memory which might prevent GC
   const common = options.common.copy()
-
   // Have to create a blockchain with empty block as genesisBlock for Merge
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
@@ -141,6 +140,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
         await vm.runTx({ tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
+        console.log(e)
         execInfo = `tx runtime error :${e.message}`
       }
     } else {

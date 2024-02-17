@@ -174,8 +174,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
   protected _checkpointCount: number
 
-  protected _proofTrie: Trie
-
   private keccakFunction: Function
 
   /**
@@ -200,8 +198,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._debug = createDebugLogger('statemanager:statemanager')
 
     this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
-
-    this._proofTrie = new Trie({ useKeyHashing: true, common: this.common })
 
     this._checkpointCount = 0
 
@@ -757,9 +753,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Create a StateManager and initialize this with proof(s) gotten previously from getProof
    * This generates a (partial) StateManager where one can retrieve all items from the proof
    * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
-   * @param safe Wether or not to verify that the roots of the proof items match the reported roots
-   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
-   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+   * @param safe Whether or not to verify that the roots of the proof items match the reported roots
+   * @param opts a dictionary of StateManager opts
    * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
    */
   static async fromProof(
@@ -773,7 +768,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       } else {
         const trie =
           opts.trie ??
-          (await Trie.createTrieFromProof(
+          (await Trie.createFromProof(
             proof[0].accountProof.map((e) => hexToBytes(e)),
             { useKeyHashing: true }
           ))
@@ -788,7 +783,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         return sm
       }
     } else {
-      return DefaultStateManager.fromProof([proof])
+      return DefaultStateManager.fromProof([proof], safe, opts)
     }
   }
 
@@ -808,7 +803,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     const trie = this._getStorageTrie(address)
     trie.root(hexToBytes(storageHash))
     for (let i = 0; i < storageProof.length; i++) {
-      await trie.updateTrieFromProof(
+      await trie.updateFromProof(
         storageProof[i].proof.map((e) => hexToBytes(e)),
         safe
       )
@@ -824,7 +819,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
   async addProofData(proof: Proof | Proof[], safe: boolean = false) {
     if (Array.isArray(proof)) {
       for (let i = 0; i < proof.length; i++) {
-        await this._trie.updateTrieFromProof(
+        await this._trie.updateFromProof(
           proof[i].accountProof.map((e) => hexToBytes(e)),
           safe
         )
@@ -845,7 +840,6 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * @param proof the proof to prove
    */
   async verifyProof(proof: Proof): Promise<boolean> {
-    const rootHash = this.keccakFunction(hexToBytes(proof.accountProof[0]))
     const key = hexToBytes(proof.address)
     const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
       hexToBytes(rlpString)
@@ -853,7 +847,9 @@ export class DefaultStateManager implements EVMStateManagerInterface {
 
     // This returns the account if the proof is valid.
     // Verify that it matches the reported account.
-    const value = await this._proofTrie.verifyProof(rootHash, key, accountProof)
+    const value = await Trie.verifyProof(key, accountProof, {
+      useKeyHashing: true,
+    })
 
     if (value === null) {
       // Verify that the account is empty in the proof.
@@ -893,19 +889,23 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageRoot = hexToBytes(proof.storageHash)
-
     for (const stProof of proof.storageProof) {
       const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
       const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
       const storageKey = hexToBytes(stProof.key)
-      const proofValue = await this._proofTrie.verifyProof(storageRoot, storageKey, storageProof)
+      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
+        useKeyHashing: true,
+      })
       const reportedValue = setLengthLeft(
         RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
         32
       )
       if (!equalsBytes(reportedValue, storageValue)) {
-        throw new Error('Reported trie value does not match storage')
+        throw new Error(
+          `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
+            reportedValue
+          )}, actual: ${bytesToHex(storageValue)}`
+        )
       }
     }
     return true
@@ -966,14 +966,21 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
-    const storage: StorageDump = {}
-    const stream = trie.createAsyncReadStream()
 
-    for await (const chunk of stream) {
-      storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
-    }
+    return new Promise((resolve, reject) => {
+      const storage: StorageDump = {}
+      const stream = trie.createReadStream()
 
-    return storage
+      stream.on('data', (val: any) => {
+        storage[bytesToHex(val.key)] = bytesToHex(val.value)
+      })
+      stream.on('end', () => {
+        resolve(storage)
+      })
+      stream.on('error', (e) => {
+        reject(e)
+      })
+    })
   }
 
   /**
@@ -996,35 +1003,44 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`Account does not exist.`)
     }
     const trie = this._getStorageTrie(address, account)
-    let inRange = false
-    let i = 0
 
-    /** Object conforming to {@link StorageRange.storage}. */
-    const storageMap: StorageRange['storage'] = {}
-    const stream = trie.createAsyncReadStream()
-    for await (const chunk of stream) {
-      if (!inRange) {
-        // Check if the key is already in the correct range.
-        if (bytesToBigInt(chunk.key) >= startKey) {
-          inRange = true
-        } else {
-          continue
+    return new Promise((resolve, reject) => {
+      let inRange = false
+      let i = 0
+
+      /** Object conforming to {@link StorageRange.storage}. */
+      const storageMap: StorageRange['storage'] = {}
+      const stream = trie.createReadStream()
+
+      stream.on('data', (val: any) => {
+        if (!inRange) {
+          // Check if the key is already in the correct range.
+          if (bytesToBigInt(val.key) >= startKey) {
+            inRange = true
+          } else {
+            return
+          }
         }
-      }
-      if (i < limit) {
-        storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
-        i++
-      } else if (i === limit) {
-        return {
+
+        if (i < limit) {
+          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
+          i++
+        } else if (i === limit) {
+          resolve({
+            storage: storageMap,
+            nextKey: bytesToHex(val.key),
+          })
+        }
+      })
+
+      stream.on('end', () => {
+        resolve({
           storage: storageMap,
-          nextKey: bytesToHex(chunk.key),
-        }
-      }
-    }
-    return {
-      storage: storageMap,
-      nextKey: null,
-    }
+          nextKey: null,
+        })
+      })
+      stream.on('error', (e) => reject(e))
+    })
   }
 
   /**

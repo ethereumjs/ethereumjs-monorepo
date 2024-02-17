@@ -9,8 +9,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { getStem } from '@ethereumjs/verkle'
-import { skip } from 'tape'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, test } from 'vitest'
 
 import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 
@@ -39,15 +38,15 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
     )
 
-    assert.equal(account.balance, 99765345920194942688594n, 'should have correct balance')
-    assert.equal(account.nonce, 3963257n, 'should have correct nonce')
+    assert.equal(account!.balance, 99765345920194942688594n, 'should have correct balance')
+    assert.equal(account!.nonce, 3963257n, 'should have correct nonce')
     assert.equal(
-      bytesToHex(account.storageRoot),
+      bytesToHex(account!.storageRoot),
       '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
       'should have correct storageRoot'
     )
     assert.equal(
-      bytesToHex(account.codeHash),
+      bytesToHex(account!.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
       'should have correct codeHash'
     )
@@ -59,27 +58,44 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
     const address = new Address(randomBytes(20))
 
-    let check = await stateManager.getAccount(address)
-    assert.isUndefined(check, 'should return undefined for nonexistent account')
+    try {
+      await stateManager.getAccount(address)
+      assert.fail('should throw on getting account that is not found in witness')
+    } catch (e) {
+      assert.equal(
+        e.message.slice(0, 25),
+        'Missing execution witness',
+        'should throw on getting account that does not exist in cache and witness'
+      )
+    }
 
     const account = Account.fromAccountData({
       nonce: BigInt(2),
     })
-    await stateManager.putAccount(address, account)
 
-    check = await stateManager.getAccount(address)
-    assert.deepEqual(check, account, 'should return correct account')
+    await stateManager.putAccount(address, account)
+    assert.deepEqual(
+      await stateManager.getAccount(address),
+      account,
+      'should return correct account'
+    )
 
     await stateManager.modifyAccountFields(address, {
-      nonce: BigInt(2),
+      nonce: BigInt(3),
     })
-    check = await stateManager.getAccount(address)
-    assert.deepEqual(check, account, 'should return correct account')
+    account.nonce = BigInt(3)
+    assert.deepEqual(
+      await stateManager.getAccount(address),
+      account,
+      'should return correct account'
+    )
 
     await stateManager.deleteAccount(address)
 
-    check = await stateManager.getAccount(address)
-    assert.isUndefined(check, 'should return undefined for deleted account')
+    assert.isUndefined(
+      await stateManager.getAccount(address),
+      'should return undefined for deleted account'
+    )
   })
 
   it('getTreeKeyFor* functions', async () => {
@@ -113,7 +129,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it(`copy()`, async () => {
-    const sm = new StatelessVerkleStateManager({
+    const stateManager = new StatelessVerkleStateManager({
       accountCacheOpts: {
         type: CacheType.ORDERED_MAP,
       },
@@ -122,24 +138,24 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       },
       common,
     })
-    sm.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
-    const smCopy = sm.shallowCopy()
+    const stateManagerCopy = stateManager.shallowCopy()
 
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      stateManagerCopy['_accountCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()'
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      stateManagerCopy['_storageCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )
   })
 
   // TODO contract storage functions not yet completely implemented
-  skip('get/put/clear contract storage', async () => {
+  test.skip('get/put/clear contract storage', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
     stateManager.initVerkleExecutionWitness(block.executionWitness)
 

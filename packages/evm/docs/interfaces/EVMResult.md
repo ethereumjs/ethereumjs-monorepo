@@ -21,7 +21,7 @@ Address of created account during transaction, if any
 
 #### Defined in
 
-[types.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L276)
+[types.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L281)
 
 ___
 
@@ -33,4 +33,4 @@ Contains the results from running the code, if any, as described in runCode
 
 #### Defined in
 
-[types.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L280)
+[types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L285)

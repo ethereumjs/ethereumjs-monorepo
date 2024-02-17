@@ -12,10 +12,10 @@
     "berlinBlock": 0,
     "londonBlock": 0,
     "mergeNetsplitBlock": 0,
-    "terminalTotalDifficulty": 0,
-    "terminalTotalDifficultyPassed": true,
     "shanghaiTime": 0,
     "pragueTime": 0,
+    "terminalTotalDifficulty": 0,
+    "terminalTotalDifficultyPassed": true,
     "proofInBlocks": true
   },
   "alloc": {
