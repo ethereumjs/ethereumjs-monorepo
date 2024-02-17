@@ -45,6 +45,8 @@ export interface TxPoolOptions {
 
   /* FullEthereumService */
   service: FullEthereumService
+
+  txGauge: any
 }
 
 type TxPoolObject = {
@@ -162,6 +164,8 @@ export class TxPool {
    */
   private LOG_STATISTICS_INTERVAL = 100000 // ms
 
+  private txGauge: any
+
   /**
    * Create new tx pool
    * @param options constructor parameters
@@ -177,6 +181,8 @@ export class TxPool {
 
     this.opened = false
     this.running = false
+
+    this.txGauge = options.txGauge
   }
 
   /**
@@ -362,7 +368,9 @@ export class TxPool {
       add.push({ tx, added, hash })
       this.pool.set(address, add)
       this.handled.set(hash, { address, added })
+
       this.txsInPool++
+      this.txGauge.inc()
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
@@ -399,7 +407,10 @@ export class TxPool {
     const poolObjects = this.pool.get(address)
     if (!poolObjects) return
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
+
     this.txsInPool--
+    this.txGauge.dec()
+
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
       this.pool.delete(address)
@@ -840,7 +851,10 @@ export class TxPool {
   close() {
     this.pool.clear()
     this.handled.clear()
+
     this.txsInPool = 0
+    this.txGauge.set(0)
+
     this.opened = false
   }
 

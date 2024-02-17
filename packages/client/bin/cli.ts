@@ -59,6 +59,10 @@ import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
+const promClient = require('prom-client')
+const http = require('http')
+const url = require('url')
+
 type Account = [address: Address, privateKey: Uint8Array]
 
 const networks = Object.entries(Common.getInitializedChains().names)
@@ -554,8 +558,39 @@ async function startClient(
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
+  let txGauge
+  if (true) {
+    // later configure this with a prometheus cli option
+
+    // Create custom metrics
+    txGauge = new promClient.Gauge({
+      name: 'tx_pool_size',
+      help: 'Size of the client transaction pool',
+    })
+
+    const register = new promClient.Registry()
+    register.setDefaultLabels({
+      app: 'ethereumjs-client',
+    })
+    promClient.collectDefaultMetrics({ register })
+
+    register.registerMetric(txGauge)
+    // @ts-ignore
+    const server = http.createServer(async (req, res) => {
+      const route = url.parse(req.url).pathname
+      if (route === '/metrics') {
+        // Return all metrics the Prometheus exposition format
+        res.setHeader('Content-Type', register.contentType)
+        res.end(await register.metrics())
+      }
+    })
+    // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
+    server.listen(8080)
+  }
+
   const client = await EthereumClient.create({
     config,
+    txGauge,
     blockchain,
     ...genesisMeta,
     ...dbs,
