@@ -72,21 +72,29 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const account = Account.fromAccountData({
       nonce: BigInt(2),
     })
-    await stateManager.putAccount(address, account)
 
-    let check = await stateManager.getAccount(address)
-    assert.deepEqual(check, account, 'should return correct account')
+    await stateManager.putAccount(address, account)
+    assert.deepEqual(
+      await stateManager.getAccount(address),
+      account,
+      'should return correct account'
+    )
 
     await stateManager.modifyAccountFields(address, {
       nonce: BigInt(2),
     })
-    check = await stateManager.getAccount(address)
-    assert.deepEqual(check, account, 'should return correct account')
+    assert.deepEqual(
+      await stateManager.getAccount(address),
+      account,
+      'should return correct account'
+    )
 
     await stateManager.deleteAccount(address)
 
-    check = await stateManager.getAccount(address)
-    assert.isUndefined(check, 'should return undefined for deleted account')
+    assert.isUndefined(
+      await stateManager.getAccount(address),
+      'should return undefined for deleted account'
+    )
   })
 
   it('getTreeKeyFor* functions', async () => {
