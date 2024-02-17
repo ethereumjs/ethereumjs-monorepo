@@ -128,7 +128,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it(`copy()`, async () => {
-    const sm = new StatelessVerkleStateManager({
+    const stateManager = new StatelessVerkleStateManager({
       accountCacheOpts: {
         type: CacheType.ORDERED_MAP,
       },
@@ -137,17 +137,17 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       },
       common,
     })
-    sm.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.executionWitness)
 
-    const smCopy = sm.shallowCopy()
+    const stateManagerCopy = stateManager.shallowCopy()
 
     assert.equal(
-      smCopy['_accountCacheSettings'].type,
+      stateManagerCopy['_accountCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()'
     )
     assert.equal(
-      smCopy['_storageCacheSettings'].type,
+      stateManagerCopy['_storageCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )
