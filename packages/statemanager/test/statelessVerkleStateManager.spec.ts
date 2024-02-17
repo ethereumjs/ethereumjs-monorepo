@@ -81,8 +81,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     )
 
     await stateManager.modifyAccountFields(address, {
-      nonce: BigInt(2),
+      nonce: BigInt(3),
     })
+    account.nonce = BigInt(3)
     assert.deepEqual(
       await stateManager.getAccount(address),
       account,
