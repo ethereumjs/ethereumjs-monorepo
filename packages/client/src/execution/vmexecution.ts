@@ -125,7 +125,7 @@ export class VMExecution extends Execution {
           }
         )
       }
-      if (this.config.savePreimages === true) {
+      if (this.config.savePreimages) {
         this.preimagesManager = new PreimagesManager({
           chain: this.chain,
           config: this.config,
@@ -712,7 +712,7 @@ export class VMExecution extends Execution {
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
 
-                  if (this.config.savePreimages === true && this.preimagesManager !== undefined) {
+                  if (this.config.savePreimages && this.preimagesManager !== undefined) {
                     for (const txResult of result.results) {
                       if (txResult.preimages === undefined) {
                         continue
