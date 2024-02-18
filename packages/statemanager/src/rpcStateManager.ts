@@ -374,8 +374,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
    * @returns {Uint8Array} - The applied key (e.g. hashed address)
    */
   getAppliedKey(address: Uint8Array): Uint8Array {
-    // TODO: Consider not hardcoding keccak256 as a hashing function?
-    return keccak256(address)
+    return this.keccakFunction(address)
   }
 
   /**
