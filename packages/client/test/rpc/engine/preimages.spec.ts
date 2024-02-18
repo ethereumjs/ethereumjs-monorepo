@@ -12,6 +12,7 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
+import blocks from '../../testdata/blocks/kaustinen2.json'
 import genesisJSON from '../../testdata/geth-genesis/kaustinen2.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
@@ -26,17 +27,21 @@ const originalValidate = (BlockHeader as any).prototype._consensusFormatValidati
 BlockHeader.prototype['_consensusFormatValidation'] = () => {} //stub
 
 async function genBlockWithdrawals(blockNumber: number) {
-  const withdrawals = Array.from({ length: 8 }, (_v, i) => {
-    const withdrawalIndex = blockNumber * 16 + i
+  // if block 1, bundle 0 withdrawals
+  const withdrawals =
+    blockNumber === 1
+      ? []
+      : Array.from({ length: 8 }, (_v, i) => {
+          const withdrawalIndex = blockNumber * 16 + i
 
-    // just return a withdrawal based on withdrawalIndex
-    return {
-      index: intToHex(withdrawalIndex),
-      validatorIndex: intToHex(withdrawalIndex),
-      address: bytesToHex(setLengthRight(intToBytes(withdrawalIndex), 20)),
-      amount: intToHex(withdrawalIndex),
-    }
-  })
+          // just return a withdrawal based on withdrawalIndex
+          return {
+            index: intToHex(withdrawalIndex),
+            validatorIndex: intToHex(withdrawalIndex),
+            address: bytesToHex(setLengthRight(intToBytes(withdrawalIndex), 20)),
+            amount: intToHex(withdrawalIndex),
+          }
+        })
   const withdrawalsRoot = bytesToHex(
     await Block.genWithdrawalsTrieRoot(withdrawals.map(Withdrawal.fromWithdrawalData))
   )
@@ -52,9 +57,12 @@ async function runBlock(
     blockNumber: PrefixedHexString
     stateRoot: PrefixedHexString
     receiptTrie: PrefixedHexString
+    gasUsed: PrefixedHexString
+    coinbase: PrefixedHexString
   }
 ) {
-  const { transactions, parentHash, blockNumber, stateRoot, receiptTrie } = runData
+  const { transactions, parentHash, blockNumber, stateRoot, receiptTrie, gasUsed, coinbase } =
+    runData
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
@@ -78,8 +86,10 @@ async function runBlock(
     transactionsTrie,
     stateRoot,
     receiptTrie,
+    gasUsed,
+    coinbase,
   }
-  const blockData = { header: headerData, transactions, withdrawals }
+  const blockData = { header: headerData, transactions: txs, withdrawals }
   const executeBlock = Block.fromBlockData(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
@@ -107,14 +117,58 @@ describe(`valid verkle network setup`, async () => {
     assert.equal(block0.stateRoot, genesisStateRoot)
   })
 
+  // build some testcases uses some transactions from kaustinen2 which have
+  // normal txs, contract fail, contract success tx, although kaustinen2
+  // is verkle, but we run the tests in the merkle (pre-verkle) setup
+  //
+  // withdrawals are generated and bundled using genBlockWithdrawals util
+  // and for block1 are coded to return no withdrawals
+  //
+  // third consideration is for feerecipient which are added here as random
+  // coinbase addrs
   const testCases = [
     {
       name: 'block 1 no txs',
       blockData: {
         transactions: [],
         blockNumber: '0x01',
-        stateRoot: '0xa7a1687c948aa6466cbb91d9dae6ad1fac5f7c789f392912bfdb34d492e1dc7d',
+        stateRoot: '0x78026f1e4f2ff57c340634f844f47cb241beef4c965be86a483c855793e4b07d',
         receiptTrie: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        gasUsed: '0x0',
+        coinbase: '0x78026f1e4f2ff57c340634f844f47cb241beef4c',
+      },
+    },
+    {
+      name: 'block 2 having kaustinen2 block 12 txs',
+      blockData: {
+        transactions: blocks.block12.execute.transactions,
+        blockNumber: '0x02',
+        stateRoot: '0xa86d54279c8faebed72e112310b29115d3600e8cc6ff2a2e4466a788b8776ad9',
+        receiptTrie: '0xd95b673818fa493deec414e01e610d97ee287c9421c8eff4102b1647c1a184e4',
+        gasUsed: '0xa410',
+        coinbase: '0x9da2abca45e494476a21c49982619ee038b68556',
+      },
+    },
+    {
+      name: 'block 3 no txs with just withdrawals but zero coinbase',
+      blockData: {
+        transactions: [],
+        blockNumber: '0x03',
+        stateRoot: '0xe4538f9d7531eb76e82edf7480e4578bc2be5f454ab02db4d9db6187dfa1f9ca',
+        receiptTrie: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        gasUsed: '0x0',
+        coinbase: '0x0000000000000000000000000000000000000000',
+      },
+    },
+    {
+      name: 'block 3 no txs with just withdrawals',
+      blockData: {
+        transactions: blocks.block13.execute.transactions,
+        blockNumber: '0x04',
+        stateRoot: '0x57e675e1d6b2ab5d65601e81658de1468afad77752a271a48364dcefda856614',
+        receiptTrie: '0x6a0be0e8208f625225e43681258eb9901ed753e2656f0cd6c0a3971fada5f190',
+        gasUsed: '0x3c138',
+        coinbase: '0xa874386cdb13f6cb3b974d1097b25116e67fc21e',
       },
     },
   ] as const
