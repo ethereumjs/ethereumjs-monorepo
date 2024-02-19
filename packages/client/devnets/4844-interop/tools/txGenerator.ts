@@ -15,7 +15,7 @@ import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
 
-initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number

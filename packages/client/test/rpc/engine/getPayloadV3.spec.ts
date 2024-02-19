@@ -69,7 +69,7 @@ describe(method, () => {
     }
 
     try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
     } catch {
       //no-op
     }
@@ -119,7 +119,7 @@ describe(method, () => {
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
       executionPayload.blockHash,
-      '0xe8175305416ee94c996164162044338b4f4d93a8dc458b574ecad4ce84323fb5',
+      '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
       'built expected block'
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')
