@@ -17,7 +17,7 @@ Note: All commands should be run from the `client` package directory root (so so
 
 ```bash
 rm -rf ./datadir
-``` 
+```
 
 2. Run the sim
 

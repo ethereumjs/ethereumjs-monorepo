@@ -9,6 +9,7 @@ import {
   BIGINT_1,
   BIGINT_2,
   GWEI_TO_WEI,
+  KECCAK256_RLP,
   TypeOutput,
   Withdrawal,
   toBytes,
@@ -131,14 +132,14 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return Block.genTransactionsTrieRoot(this.transactions)
+    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
   }
 
   /**
    * Calculates and returns the logs bloom for the block.
    */
   public logsBloom() {
-    const bloom = new Bloom()
+    const bloom = new Bloom(undefined, this.vm.common)
     for (const txResult of this.transactionResults) {
       // Combine blooms via bitwise OR
       bloom.or(txResult.bloom)
@@ -150,7 +151,10 @@ export class BlockBuilder {
    * Calculates and returns the receiptTrie for the block.
    */
   public async receiptTrie() {
-    const receiptTrie = new Trie()
+    if (this.transactionResults.length === 0) {
+      return KECCAK256_RLP
+    }
+    const receiptTrie = new Trie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -169,7 +173,7 @@ export class BlockBuilder {
       this.headerData.coinbase !== undefined
         ? new Address(toBytes(this.headerData.coinbase))
         : Address.zero()
-    await rewardAccount(this.vm.evm, coinbase, reward)
+    await rewardAccount(this.vm.evm, coinbase, reward, this.vm.common)
   }
 
   /**
@@ -185,7 +189,7 @@ export class BlockBuilder {
       if (amount === 0n) continue
       // Withdrawal amount is represented in Gwei so needs to be
       // converted to wei
-      await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI)
+      await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI, this.vm.common)
     }
   }
 
@@ -298,7 +302,7 @@ export class BlockBuilder {
     const stateRoot = await this.vm.stateManager.getStateRoot()
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await Block.genWithdrawalsTrieRoot(this.withdrawals)
+      ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()

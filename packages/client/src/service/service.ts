@@ -57,7 +57,7 @@ export class Service {
    *
    * (for info there will be somewhat reduced output)
    */
-  private STATS_INTERVAL = 1000 * 20 // 20 seconds
+  private STATS_INTERVAL = 1000 * 30 // 30 seconds
 
   /**
    * Shutdown the client when memory threshold is reached (in percent)
@@ -198,6 +198,7 @@ export class Service {
       const heapUsed = Math.round(used_heap_size / 1000 / 1000) // MB
       const percentage = Math.round((100 * used_heap_size) / heap_size_limit)
       const msg = `Memory stats usage=${heapUsed} MB percentage=${percentage}%`
+
       if (this._statsCounter % 4 === 0) {
         this.config.logger.info(msg)
         this._statsCounter = 0

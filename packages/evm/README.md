@@ -29,19 +29,28 @@ With the v2 release (Summer 2023) the EVM/VM packages have been further decouple
 
 The following is the simplest example for an EVM instantiation:
 
-```typescript
+```ts
+// ./examples/simple.ts
+
 import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
 const evm = new EVM()
-evm.runCode({ code: hexToBytes('0x01') })
+const main = async () => {
+  const res = await evm.runCode({ code: hexToBytes('0x6001') }) // PUSH1 01 -- simple bytecode to push 1 onto the stack
+  console.log(res.executionGasUsed) // 3n
+}
+
+main()
 ```
 
 ### Blockchain, State and Events
 
 If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
 
-```typescript
+```ts
+// ./examples/withBlockchain.ts
+
 import { Blockchain } from '@ethereumjs/blockchain'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
@@ -113,13 +122,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -186,15 +195,17 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ### EIP Support
 
-It is possible to individually activate EIP support in the EVM by instantiate the `Common` instance passed to the
-outer VM with the respective EIPs, e.g.:
+If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
 
-```typescript
+```ts
+// ./examples/eips.ts
+
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
+const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
 const evm = new EVM({ common })
+console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
 ```
 
 Currently supported EIPs:
@@ -204,13 +215,13 @@ Currently supported EIPs:
 - [EIP-2315](https://eips.ethereum.org/EIPS/eip-2315) - Simple subroutines for the EVM (`outdated`)
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565) - Transaction Types
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
 - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
 - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
+- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) - EVM Object Format (EOF) v1 (`outdated`)
 - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
 - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
 - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
@@ -222,22 +233,28 @@ Currently supported EIPs:
 - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
 - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
 - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
-- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun) (`experimental`)
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
 - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
 - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
 - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+- [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
 ### EIP-4844 Shard Blob Transactions Support
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) EIP version from July 2023 deployed along [4844-devnet-7](https://github.com/ethpandaops/4844-testnet) (July 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and following.
-
-**Note:** 4844 support is not yet completely stable and there will still be (4844-)breaking changes along all types of library releases.
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
 #### Initialization
 
 To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
+// ./examples/4844.ts
+
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -309,31 +326,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=ethjs,evm ts-node test.ts
+DEBUG=ethjs,evm tsx test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=ethjs,evm:*,evm:*:* ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:* tsx test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=ethjs,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm:*:gas tsx test.ts
 ```
 
 Excluding the ops logger:
 
 ```shell
-DEBUG=ethjs,evm:*,evm:*:*,-evm:ops ts-node test.ts
+DEBUG=ethjs,evm:*,evm:*:*,-evm:ops tsx test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
 
 ```shell
-DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas ts-node test.ts
+DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
 ```
 
 ### Internal Structure
@@ -360,6 +377,40 @@ The EVM processes state changes at many levels.
 The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
 
 TODO: this section likely needs an update.
+
+## Profiling the EVM
+
+Starting with the `v2.1.0` release the EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+
+While the EVM now has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+
+To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
+
+```shell
+npm run client:start -- --sync=none --vmProfileBlocks --executeBlocks=962720
+```
+
+This will give a profile output like the following:
+
+![EthereumJS EVM Profiler](./profiler.png?raw=true)
+
+The `total (ms)` column gives you a good overview what takes the most significant amount of time, to be put in relation with the number of calls.
+
+The number to optimize for is the `Mgas/s` value. This value indicates how much gas (being a measure for the computational cost for an opcode) can be processed by the second.
+
+A good measure to putting this relation with is by taking both the Ethereum gas limit (the max amount of "computation" per block) and the time/slot into account. With a gas limit of 30 Mio and a 12 sec slot time this leads to a following (very) minimum `Mgas/s` value:
+
+```shell
+30M / 12 sec = 2.5 Million gas per second
+```
+
+Note that this is nevertheless a very theoretical value but pretty valuable for some first rough orientation though.
+
+Another note: profiler results for at least some opcodes are heavily distorted, first to mention the `SSTORE` opcode where the major "cost" occurs after block execution on checkpoint commit, which is not taken into account by the profiler.
+
+Generally all results should rather encourage and need "self thinking" 😋 and are not suited to be blindedly taken over without a deeper understanding/grasping of the underlying measurement conditions.
+
+Happy EVM Profiling! 🎉 🤩
 
 ## Development
 

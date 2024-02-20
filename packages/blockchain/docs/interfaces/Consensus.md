@@ -32,7 +32,7 @@ Interface that a consensus class needs to implement.
 
 #### Defined in
 
-[types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L184)
+[types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L193)
 
 ## Methods
 
@@ -54,7 +54,7 @@ Initialize genesis for consensus mechanism
 
 #### Defined in
 
-[types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L189)
+[types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L198)
 
 ___
 
@@ -78,7 +78,7 @@ Update consensus on new block
 
 #### Defined in
 
-[types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L210)
+[types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L219)
 
 ___
 
@@ -100,7 +100,7 @@ Set up consensus mechanism
 
 #### Defined in
 
-[types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L194)
+[types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L203)
 
 ___
 
@@ -122,7 +122,7 @@ Validate block consensus parameters
 
 #### Defined in
 
-[types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L200)
+[types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L209)
 
 ___
 
@@ -142,4 +142,4 @@ ___
 
 #### Defined in
 
-[types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L202)
+[types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L211)

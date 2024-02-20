@@ -65,6 +65,22 @@ export class FullSynchronizer extends Synchronizer {
     this._fetcher = fetcher
   }
 
+  async sync() {
+    const syncWithFetcher = super.sync()
+    const syncEvent: Promise<boolean> = new Promise((resolve) => {
+      // This event listener listens for other instances of the fetcher that might be syncing from a different peer
+      // and reach the head of the chain before the current fetcher.
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
+        this.resolveSync(height)
+        resolve(true)
+      })
+    })
+
+    // This "race" ensures that either the current fetcher (or any other fetcher that happens to be syncing)
+    // resolve this current call to `sync` so we don't have orphan processes running in the background
+    return Promise.race([syncWithFetcher, syncEvent])
+  }
+
   /**
    * Open synchronizer. Must be called before sync() is called
    */

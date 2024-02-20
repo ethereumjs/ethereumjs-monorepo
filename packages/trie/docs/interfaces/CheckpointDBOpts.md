@@ -8,6 +8,7 @@
 
 - [cacheSize](CheckpointDBOpts.md#cachesize)
 - [db](CheckpointDBOpts.md#db)
+- [valueEncoding](CheckpointDBOpts.md#valueencoding)
 
 ## Properties
 
@@ -19,16 +20,28 @@ Cache size (default: 0)
 
 #### Defined in
 
-[packages/trie/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L92)
+[packages/trie/src/types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L126)
 
 ___
 
 ### db
 
-• **db**: `DB`<`string`, `string`\>
+• **db**: `DB`<`string`, `string` \| `Uint8Array`\>
 
 A database instance.
 
 #### Defined in
 
-[packages/trie/src/types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L87)
+[packages/trie/src/types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L116)
+
+___
+
+### valueEncoding
+
+• `Optional` **valueEncoding**: `ValueEncoding`
+
+ValueEncoding of the database (the values which are `put`/`get` in the db are of this type). Defaults to `string`
+
+#### Defined in
+
+[packages/trie/src/types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L121)

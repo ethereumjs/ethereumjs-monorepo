@@ -32,24 +32,32 @@ npm install @ethereumjs/vm
 
 ### Running a Transaction
 
-```typescript
+```ts
+// ./examples/runTx.ts
+
 import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
-const vm = await VM.create({ common })
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+  const vm = await VM.create({ common })
 
-const tx = LegacyTransaction.fromTxData({
-  gasLimit: BigInt(21000),
-  value: BigInt(1),
-  to: Address.zero(),
-  v: BigInt(37),
-  r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
-  s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
-})
-await vm.runTx({ tx, skipBalance: true })
+  const tx = LegacyTransaction.fromTxData({
+    gasLimit: BigInt(21000),
+    gasPrice: BigInt(1000000000),
+    value: BigInt(1),
+    to: Address.zero(),
+    v: BigInt(37),
+    r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
+    s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
+  })
+  const res = await vm.runTx({ tx, skipBalance: true })
+  console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
+}
+
+main()
 ```
 
 Note that there is an additional API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
@@ -60,34 +68,63 @@ The VM package can also be used to construct a new valid block by executing and 
 
 The following non-complete example gives some illustration on how to use the Block Builder API:
 
-```typescript
+```ts
+// ./examples/buildBlock.ts
+
+import { Block } from '@ethereumjs/block'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { LegacyTransaction } from '@ethereumjs/tx'
+import { Account, Address, bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet })
-const vm = await VM.create({ common })
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet })
+  const vm = await VM.create({ common })
 
-const blockBuilder = await vm.buildBlock({
-  parentBlock, // the parent @ethereumjs/block Block
-  headerData, // header values for the new block
-  blockOpts: { calcDifficultyFromHeader: parentBlock.header, freeze: false },
-})
+  const parentBlock = Block.fromBlockData(
+    { header: { number: 1n } },
+    { skipConsensusFormatValidation: true }
+  )
+  const headerData = {
+    number: 2n,
+  }
+  const blockBuilder = await vm.buildBlock({
+    parentBlock, // the parent @ethereumjs/block Block
+    headerData, // header values for the new block
+    blockOpts: {
+      calcDifficultyFromHeader: parentBlock.header,
+      freeze: false,
+      skipConsensusFormatValidation: true,
+      putBlockIntoBlockchain: false,
+    },
+  })
 
-const tx = LegacyTransaction.fromTxData()
-await blockBuilder.addTransaction(tx)
+  const pk = hexToBytes('0x26f81cbcffd3d23eace0bb4eac5274bb2f576d310ee85318b5428bf9a71fc89a')
+  const address = Address.fromPrivateKey(pk)
+  const account = new Account(0n, 0xfffffffffn)
+  await vm.stateManager.putAccount(address, account) // create a sending account and give it a big balance
+  const tx = LegacyTransaction.fromTxData({ gasLimit: 0xffffff, gasPrice: 75n }).sign(pk)
+  await blockBuilder.addTransaction(tx)
 
-// Add more transactions
+  // Add more transactions
 
-const block = await blockBuilder.build()
+  const block = await blockBuilder.build()
+  console.log(`Built a block with hash ${bytesToHex(block.hash())}`)
+}
+
+main()
 ```
+
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
 ## Example
 
 This projects contain the following examples:
 
-1. [./examples/run-blockchain](./examples/run-blockchain.cts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-1. [./examples/run-solidity-contract](./examples/run-solidity-contract.cts): Compiles a Solidity contract, and calls constant and non-constant functions.
+1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
+1. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
 
 All of the examples have their own `README.md` explaining how to run them.
 
@@ -109,13 +146,13 @@ With the breaking releases from Summer 2023 we have started to ship our librarie
 
 If you use an ES6-style `import` in your code files from the ESM build will be used:
 
-```typescript
+```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
 If you use Node.js specific `require`, the CJS build will be used:
 
-```typescript
+```ts
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
@@ -141,8 +178,8 @@ Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previo
 
 It is still possible to access all `EVM` functionality through the `evm` property of the initialized `vm` object, e.g.:
 
-```typescript
-vm.evm.runCode() // or
+```ts
+vm.evm.runCode()
 vm.evm.events.on('step', function (data) {
   console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
 })
@@ -170,17 +207,25 @@ Starting with `v5.1.0` the VM supports running both `Ethash/PoW` and `Clique/PoA
 
 The following is a simple example for a block run on `Goerli`:
 
-```typescript
+```ts
+// ./examples/runGoerliBlock.ts
+
+import { Block } from '@ethereumjs/block'
 import { Chain, Common } from '@ethereumjs/common'
-import { hexToBytes } from '@ethereumjs/util'
-import { VM } from '@ethereumjs/vm'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { VM } from '../src/vm.js'
+import goerliBlock2 from './testData/goerliBlock2.json'
 
-const common = new Common({ chain: Chain.Goerli })
-const vm = await VM.create({ common, setHardfork: true })
+const main = async () => {
+  const common = new Common({ chain: Chain.Goerli, hardfork: 'london' })
+  const vm = await VM.create({ common, setHardfork: true })
 
-const serialized = hexToBytes('0xf901f7a06bfee7294bf4457...')
-const block = Block.fromRLPSerializedBlock(serialized, { setHardfork: true })
-const result = await vm.runBlock(block)
+  const block = Block.fromRPC(goerliBlock2, undefined, { common })
+  const result = await vm.runBlock({ block, generate: true, skipHeaderValidation: true }) // we skip header validaiton since we are running a block without the full Ethereum history available
+  console.log(`The state root for Goerli block 2 is ${bytesToHex(result.stateRoot)}`)
+}
+
+main()
 ```
 
 ### Hardfork Support
@@ -189,12 +234,17 @@ For hardfork support see the [Hardfork Support](../evm#hardfork-support) section
 
 An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
 
-```typescript
+```ts
+// ./examples/runTx.ts#L1-L8
+
+import { Address } from '@ethereumjs/util'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { LegacyTransaction } from '@ethereumjs/tx'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-const vm = await VM.create({ common })
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
+  const vm = await VM.create({ common })
 ```
 
 ### Custom genesis state support
@@ -207,16 +257,30 @@ Starting with the v7 release genesis state has been removed from `blockchain` an
 
 For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
 
-```typescript
+```ts
+// ./examples/vmWithGenesisState.ts
+
 import { Blockchain } from '@ethereumjs/blockchain'
-import { Chain, Common } from '@ethereumjs/common'
+import { Chain } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
+import { Address } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
-const genesisState = getGenesis(Chain.Mainnet)
+const main = async () => {
+  const genesisState = getGenesis(Chain.Mainnet)
 
-const blockchain = await Blockchain.create({ genesisState })
-const vm = await VM.create({ blockchain, genesisState })
+  const blockchain = await Blockchain.create({ genesisState })
+  const vm = await VM.create({ blockchain, genesisState })
+  const account = await vm.stateManager.getAccount(
+    Address.fromString('0x000d836201318ec6899a67540690382780743280')
+  )
+  console.log(
+    `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
+      account?.balance
+    )}`
+  )
+}
+main()
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -232,12 +296,18 @@ A genesis state can be set along `Blockchain` creation by passing in a custom `g
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
 with the respective EIPs, e.g.:
 
-```typescript
+```ts
+// ./examples/vmWithEIPs.ts
+
 import { Chain, Common } from '@ethereumjs/common'
 import { VM } from '@ethereumjs/vm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
-const vm = await VM.create({ common })
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
+  const vm = await VM.create({ common })
+  console.log(`EIP 3074 is active in the VM - ${vm.common.isActivatedEIP(3074)}`)
+}
+main()
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
@@ -248,15 +318,24 @@ This library supports an experimental version of the blob transaction type intro
 
 #### Initialization
 
-To run VM/EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
+To run VM/EVM related EIP-4844 functionality you have to activate the EIP in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
+// ./examples/vmWith4844.ts
+
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { VM } from '../src/vm.js'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+  const vm = await VM.create({ common })
+  console.log(`4844 is active in the VM - ${vm.common.isActivatedEIP(4844)}`)
+}
+
+main()
 ```
 
-EIP-4844 comes with a new opcode `DATAHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
+EIP-4844 comes with a new opcode `BLOBHASH` and adds a new point evaluation precompile at address `0x14` in the underlying `@ethereumjs/evm` package.
 
 **Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
@@ -322,31 +401,31 @@ Here are some examples for useful logger combinations.
 Run one specific logger:
 
 ```shell
-DEBUG=ethjs,vm:tx ts-node test.ts
+DEBUG=ethjs,vm:tx tsx test.ts
 ```
 
 Run all loggers currently available:
 
 ```shell
-DEBUG=ethjs,vm:*,vm:*:* ts-node test.ts
+DEBUG=ethjs,vm:*,vm:*:* tsx test.ts
 ```
 
 Run only the gas loggers:
 
 ```shell
-DEBUG=ethjs,vm:*:gas ts-node test.ts
+DEBUG=ethjs,vm:*:gas tsx test.ts
 ```
 
 Excluding the state logger:
 
 ```shell
-DEBUG=ethjs,vm:*,vm:*:*,-vm:state ts-node test.ts
+DEBUG=ethjs,vm:*,vm:*:*,-vm:state tsx test.ts
 ```
 
 Run some specific loggers including a logger specifically logging the `SSTORE` executions from the VM (this is from the screenshot above):
 
 ```shell
-DEBUG=ethjs,vm:tx,vm:evm,vm:ops:sstore,vm:*:gas ts-node test.ts
+DEBUG=ethjs,vm:tx,vm:evm,vm:ops:sstore,vm:*:gas tsx test.ts
 ```
 
 ## Internal Structure

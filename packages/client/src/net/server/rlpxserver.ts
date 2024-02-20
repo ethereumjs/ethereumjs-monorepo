@@ -216,11 +216,13 @@ export class RlpxServer extends Server {
           udpPort: null,
           tcpPort: null,
         },
+        onlyConfirmed: this.config.chainCommon.chainName() === 'mainnet' ? false : true,
         shouldFindNeighbours: this.config.discV4,
         shouldGetDnsPeers: this.config.discDns,
         dnsRefreshQuantity: this.config.maxPeers,
         dnsNetworks: this.dnsNetworks,
         dnsAddr: this.config.dnsAddr,
+        common: this.config.chainCommon,
       })
 
       this.dpt.events.on('error', (e: Error) => {
@@ -233,9 +235,16 @@ export class RlpxServer extends Server {
         resolve()
       })
 
+      this.config.events.on(Event.PEER_CONNECTED, (peer) => {
+        this.dpt?.confirmPeer(peer.id)
+      })
+
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
+      this.config.logger.info(
+        `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`
+      )
     })
   }
 

@@ -133,7 +133,7 @@ export class PendingBlock {
 
     let withdrawalsBuf = zeros(0)
 
-    if (withdrawals !== undefined) {
+    if (withdrawals !== undefined && withdrawals !== null) {
       const withdrawalsBufTemp: Uint8Array[] = []
       for (const withdrawal of withdrawals) {
         const indexBuf = bigIntToUnpaddedBytes(toType(withdrawal.index ?? 0, TypeOutput.BigInt))
@@ -147,8 +147,10 @@ export class PendingBlock {
       withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
     }
 
+    const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+
     const payloadIdBytes = toBytes(
-      keccak256(
+      keccakFunction(
         concatBytes(
           parentBlock.hash(),
           mixHashBuf,

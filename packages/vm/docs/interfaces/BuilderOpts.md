@@ -124,7 +124,7 @@ Default: true
 
 #### Defined in
 
-[vm/src/types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L158)
+[vm/src/types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L171)
 
 ___
 

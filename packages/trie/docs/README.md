@@ -18,7 +18,9 @@
 ### Interfaces
 
 - [CheckpointDBOpts](interfaces/CheckpointDBOpts.md)
+- [CommonInterface](interfaces/CommonInterface.md)
 - [TrieOpts](interfaces/TrieOpts.md)
+- [TrieShallowCopyOpts](interfaces/TrieShallowCopyOpts.md)
 
 ### Type Aliases
 
@@ -37,6 +39,7 @@
 
 ### Functions
 
+- [asyncTrieReadStream](README.md#asynctriereadstream)
 - [byteTypeToNibbleType](README.md#bytetypetonibbletype)
 - [bytesToNibbles](README.md#bytestonibbles)
 - [compactBytesToNibbles](README.md#compactbytestonibbles)
@@ -69,7 +72,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L95)
+[packages/trie/src/types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L129)
 
 ___
 
@@ -106,7 +109,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L17)
+[packages/trie/src/types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L23)
 
 ___
 
@@ -130,7 +133,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L24)
+[packages/trie/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L30)
 
 ___
 
@@ -170,7 +173,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L75)
+[packages/trie/src/types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L99)
 
 ## Variables
 
@@ -180,9 +183,29 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L102)
+[packages/trie/src/types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L136)
 
 ## Functions
+
+### asyncTrieReadStream
+
+▸ **asyncTrieReadStream**(`trie`): `ReadableStream`<`any`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `trie` | [`Trie`](classes/Trie.md) |
+
+#### Returns
+
+`ReadableStream`<`any`\>
+
+#### Defined in
+
+[packages/trie/src/util/readStream.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/util/readStream.ts#L69)
+
+___
 
 ### byteTypeToNibbleType
 
@@ -250,13 +273,13 @@ ___
 
 ### decodeNode
 
-▸ **decodeNode**(`raw`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
+▸ **decodeNode**(`node`): [`BranchNode`](classes/BranchNode.md) \| [`ExtensionNode`](classes/ExtensionNode.md) \| [`LeafNode`](classes/LeafNode.md)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `raw` | `Uint8Array` |
+| `node` | `Uint8Array` |
 
 #### Returns
 
@@ -264,7 +287,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L24)
+[packages/trie/src/node/util.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L30)
 
 ___
 
@@ -284,7 +307,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L10)
+[packages/trie/src/node/util.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L12)
 
 ___
 
@@ -355,21 +378,21 @@ ___
 
 ### isRawNode
 
-▸ **isRawNode**(`n`): `boolean`
+▸ **isRawNode**(`n`): n is Uint8Array[]
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `n` | `any` |
+| `n` | `Uint8Array` \| `NestedUint8Array` |
 
 #### Returns
 
-`boolean`
+n is Uint8Array[]
 
 #### Defined in
 
-[packages/trie/src/node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L32)
+[packages/trie/src/node/util.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/node/util.ts#L26)
 
 ___
 
@@ -551,4 +574,4 @@ a flag to indicate whether there exists more trie node in the trie
 
 #### Defined in
 
-[packages/trie/src/proof/range.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L413)
+[packages/trie/src/proof/range.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/proof/range.ts#L408)

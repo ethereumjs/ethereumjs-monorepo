@@ -53,7 +53,7 @@ Initialize a DB instance.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L49)
+[packages/trie/src/db/checkpoint.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L50)
 
 ## Properties
 
@@ -76,7 +76,7 @@ Initialize a DB instance.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L33)
+[packages/trie/src/db/checkpoint.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L34)
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 ### db
 
-• **db**: `DB`<`string`, `string`\>
+• **db**: `DB`<`string`, `string` \| `Uint8Array`\>
 
 #### Defined in
 
@@ -132,7 +132,7 @@ DB.batch
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L222)
+[packages/trie/src/db/checkpoint.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L230)
 
 ___
 
@@ -154,7 +154,7 @@ Adds a new checkpoint to the stack
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L90)
+[packages/trie/src/db/checkpoint.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L92)
 
 ___
 
@@ -170,7 +170,7 @@ Commits the latest checkpoint
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L97)
+[packages/trie/src/db/checkpoint.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L99)
 
 ___
 
@@ -196,7 +196,7 @@ DB.del
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L200)
+[packages/trie/src/db/checkpoint.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L208)
 
 ___
 
@@ -222,7 +222,7 @@ DB.get
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L137)
+[packages/trie/src/db/checkpoint.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L139)
 
 ___
 
@@ -238,7 +238,7 @@ Is the DB during a checkpoint phase?
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L82)
+[packages/trie/src/db/checkpoint.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L84)
 
 ___
 
@@ -256,7 +256,7 @@ DB.open
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L272)
+[packages/trie/src/db/checkpoint.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L291)
 
 ___
 
@@ -283,7 +283,7 @@ DB.put
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L177)
+[packages/trie/src/db/checkpoint.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L184)
 
 ___
 
@@ -299,7 +299,7 @@ Reverts the latest checkpoint
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L129)
+[packages/trie/src/db/checkpoint.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L131)
 
 ___
 
@@ -321,7 +321,7 @@ Flush the checkpoints and use the given checkpoints instead.
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L68)
+[packages/trie/src/db/checkpoint.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L70)
 
 ___
 
@@ -341,7 +341,7 @@ DB.shallowCopy
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L268)
+[packages/trie/src/db/checkpoint.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L283)
 
 ___
 
@@ -373,4 +373,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/db/checkpoint.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L246)
+[packages/trie/src/db/checkpoint.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/db/checkpoint.ts#L261)

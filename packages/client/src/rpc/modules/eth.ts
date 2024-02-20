@@ -6,6 +6,7 @@ import {
   TypeOutput,
   bigIntToHex,
   bytesToHex,
+  equalsBytes,
   hexToBytes,
   intToHex,
   setLengthLeft,
@@ -748,6 +749,12 @@ export class Eth {
     if (!result) return null
     const [receipt, blockHash, txIndex, logIndex] = result
     const block = await this._chain.getBlock(blockHash)
+    // Check if block is in canonical chain
+    const blockByNumber = await this._chain.getBlock(block.header.number)
+    if (!equalsBytes(blockByNumber.hash(), block.hash())) {
+      return null
+    }
+
     const parentBlock = await this._chain.getBlock(block.header.parentHash)
     const tx = block.transactions[txIndex]
     const effectiveGasPrice = tx.supports(Capability.EIP1559FeeMarket)

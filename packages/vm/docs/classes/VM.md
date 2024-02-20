@@ -37,7 +37,7 @@ The blockchain the VM operates on
 
 #### Defined in
 
-[vm/src/vm.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L41)
+[vm/src/vm.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L42)
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 #### Defined in
 
-[vm/src/vm.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L43)
+[vm/src/vm.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L44)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[vm/src/vm.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L45)
+[vm/src/vm.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L46)
 
 ___
 
@@ -69,7 +69,7 @@ The EVM used for bytecode execution
 
 #### Defined in
 
-[vm/src/vm.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L49)
+[vm/src/vm.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L50)
 
 ___
 
@@ -81,7 +81,7 @@ The StateManager used by the VM
 
 #### Defined in
 
-[vm/src/vm.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L36)
+[vm/src/vm.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L37)
 
 ## Methods
 
@@ -113,7 +113,7 @@ An instance of [BlockBuilder](BlockBuilder.md) with methods:
 
 #### Defined in
 
-[vm/src/vm.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L215)
+[vm/src/vm.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L235)
 
 ___
 
@@ -129,7 +129,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[vm/src/vm.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L248)
+[vm/src/vm.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L277)
 
 ___
 
@@ -150,7 +150,7 @@ ___
 
 #### Defined in
 
-[vm/src/vm.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L139)
+[vm/src/vm.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L159)
 
 ___
 
@@ -176,7 +176,7 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 #### Defined in
 
-[vm/src/vm.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L184)
+[vm/src/vm.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L204)
 
 ___
 
@@ -202,17 +202,29 @@ reverted.
 
 #### Defined in
 
-[vm/src/vm.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L197)
+[vm/src/vm.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L217)
 
 ___
 
 ### shallowCopy
 
-▸ **shallowCopy**(): `Promise`<[`VM`](VM.md)\>
+▸ **shallowCopy**(`downlevelCaches?`): `Promise`<[`VM`](VM.md)\>
 
 Returns a copy of the [VM](VM.md) instance.
 
-Note that the returned copy will share the same db as the original for the blockchain and the statemanager
+Note that the returned copy will share the same db as the original for the blockchain and the statemanager.
+
+Associated caches will be deleted and caches will be re-initialized for a more short-term focused
+usage, being less memory intense (the statemanager caches will switch to using an ORDERED_MAP cache
+datastructure more suitable for short-term usage, the trie node LRU cache will not be activated at all).
+To fine-tune this behavior (if the shallow-copy-returned object has a longer life span e.g.) you can set
+the `downlevelCaches` option to `false`.
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `downlevelCaches` | `boolean` | `true` | Downlevel (so: adopted for short-term usage) associated state caches (default: true) |
 
 #### Returns
 
@@ -220,7 +232,7 @@ Note that the returned copy will share the same db as the original for the block
 
 #### Defined in
 
-[vm/src/vm.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L224)
+[vm/src/vm.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L252)
 
 ___
 
@@ -242,4 +254,4 @@ VM async constructor. Creates engine instance and initializes it.
 
 #### Defined in
 
-[vm/src/vm.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L78)
+[vm/src/vm.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L79)

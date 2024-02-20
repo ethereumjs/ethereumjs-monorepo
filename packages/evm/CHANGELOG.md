@@ -6,6 +6,97 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.2.1 - 2024-02-08
+
+- Hotfix release moving the `@ethereumjs/verkle` dependency for `@ethereumjs/statemanager` from a peer dependency to the main dependencis (note that this decision might be temporary)
+
+## 2.2.0 - 2024-02-08
+
+### Dencun Hardfork Support
+
+While all EIPs contained in the upcoming Dencun hardfork run pretty much stable within the EthereumJS libraries for quite some time, this is the first release round which puts all this in the official space and removes "experimental" labeling preparing for an imminent Dencun launch on the last testnets (Holesky) and mainnet activation! 🎉
+
+Dencun hardfork on the execution side is called [Cancun](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md) and can be activated within the EthereumJS libraries (default hardfork still `Shanghai`) with a following `common` instance:
+
+```typescript
+import * as kzg from 'c-kzg'
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+  customCrypto: { kzg: kzg },
+})
+console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+```
+
+Note that the `kzg` initialization slightly changed from previous experimental releases and a custom KZG instance is now passed to `Common` by using the `customCrypto` parameter, see PR [#3262](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3262).
+
+At the moment using the Node.js bindings for the `c-kzg` library is the only option to get KZG related functionality to work, note that this solution is not browser compatible. We are currently working on a WASM build of that respective library. Let us know on the urgency of this task! 😆
+
+While `EIP-4844` - activating shard blob transactions - is for sure the most prominent EIP from this hardfork, enabling better scaling for the Ethereum ecosystem by providing cheaper block space for L2s, there are in total 6 EIPs contained in the Dencun hardfork. The following is an overview of which EthereumJS libraries mainly implement the various EIPs:
+
+- EIP-1153: Transient storage opcodes (`@ethereumjs/evm`)
+- EIP-4788: Beacon block root in the EVM (`@ethereumjs/block`, `@ethereumjs/evm`, `@ethereumjs/vm`)
+- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`, `@ethereumjs/evm`)
+- EIP-5656: MCOPY - Memory copying instruction (`@ethereumjs/evm`)
+- EIP-6780: SELFDESTRUCT only in same transaction (`@ethereumjs/vm`)
+- EIP-7516: BLOBBASEFEE opcode (`@ethereumjs/block`, `@ethereumjs/evm`)
+
+### WASM Crypto Support
+
+With this release round there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192).
+
+This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation, see `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for some detailed guidance on how to use.
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+
+### Other Changes
+
+- Fix `modexp` precompile edge cases (❤️ to @last-las for reporting!), PR [#3169](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3169)
+- Fix bug in custom precompile functionality (❤️ to @roninjin10 for the contribution!), PR [#3158](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3158)
+- Fix Blake2F gas + output calculation on non-zero aligned inputs (❤️ to @kchojn for the contribution!), PR [#3201](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3201)
+- Ensure `modexp` right-pads input data (❤️ to @last-las for reporting!), PR [#3206](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3206)
+- Fix CALL(CODE) gas (❤️ to @last-las for reporting!), PR [#3195](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3195)
+- Add `runCallOpts` and `runCodeOpts` to evm exports, PR [#3172](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3172)
+- Add test for `ecrecover` precompile, PR [#3184](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3184)
+- Additional tests for the `ripemd160` and `blake2f` precompiles, PR [#3189](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3189)
+
+## 2.1.0 - 2023-10-26
+
+### New EVM Profiler / EVM Performance
+
+This releases ships with a completely new dedicated EVM profiler (❤️ to Jochem for the integration) to measure how the different opcode implementations are doing, see PR [#2988](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2988), [#3011](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3011), [#3013](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3013) and [#3041](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3041).
+
+See the new dedicated [README section](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/README.md#profiling-the-evm) for a detailed usage instruction.
+
+We were already able to do various performance related improvements using this tool (and we hope that you will be too) 🤩:
+
+- Substantial stack optimizations (`PUSH` and `POPn` +30-40%, `DUP` +40%), PR [#3000](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3000)
+- `JUMPDEST` optimizations, PR [#3000](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3000)
+- Various EVM interpreter optimizations (overall 7-15% performance gain), PR [#2996](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2996)
+- Memory optimizations (`MLOAD` and `MSTORE` + 10-20%), PR [#3032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3032)
+- Reused BigInts cache, PR [#3034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3034) and [#3050](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3050)
+- `EXP` opcode optimizations (real-world 3x gain, not attack resistant), PR [#3034](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3034)
+
+### EIP-7516 BLOBBASEFEE Opcode
+
+This release supports [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) with a new `BLOBBASEFEE` opcode added to and scheduled for the Dencun HF, see PR [#3035](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3035) and [#3068](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3068). The opcode returns the value of the blob base-fee of the current block it is executing in.
+
+### Dencun devnet-11 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update `EIP-4788`: do not use precompile anymore but use the pre-deployed bytecode, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
+
+### Other Changes
+
+- Add missing `debug` dependency types, PR [#3072](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3072)
+
 ## 2.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -55,14 +146,14 @@ The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefor
 
 Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
 And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
@@ -81,7 +172,7 @@ So the mandatory `eei` option now goes away and is replaced by two optional `sta
 
 So the EVM initialization in its most simple form now goes to:
 
-```typescript
+```ts
 import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
@@ -97,7 +188,7 @@ This release adds support for [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656
 
 You can initialize an EIP-5656 activated EVM with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
@@ -115,7 +206,7 @@ Support for [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) "SELFDESTRUCT on
 
 You can initialize an EIP-6780 activated EVM with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
@@ -145,7 +236,7 @@ The global initialization method for the KZG setup has been moved to a dedicated
 
 The `initKZG()` method can be used as follows:
 
-```typescript
+```ts
 // Make the kzg library available globally
 import * as kzg from 'c-kzg'
 import { initKZG } from '@ethereumjs/util'
@@ -175,14 +266,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -201,7 +292,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // evm
 EVM.runCall(opts: EVMRunCallOpts): Promise<EVMResult> // data, code, salt, versionedHashes (4844)
 EVM.runCode(opts: EVMRunCodeOpts): Promise<ExecResult> // data, code, versionedHashes (4844)
@@ -276,7 +367,7 @@ This release fully supports all EIPs included in the [Shanghai](https://github.c
 
 You can instantiate a Shanghai-enabled Common instance for your transactions with:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -292,7 +383,7 @@ This release supports an experimental version of the blob transaction type intro
 
 To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
@@ -348,7 +439,7 @@ For lots of custom chains (for e.g. devnets and testnets), you might come across
 
 `Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
 
-```typescript
+```ts
 import { Common } from '@ethereumjs/common'
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
 const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
@@ -396,7 +487,7 @@ This allows for an easier typing of the `EVM` and makes the core EVM class leane
 
 Usage code of events needs to be slighly adopted and updated from:
 
-```typescript
+```ts
 evm.on('step', (e) => {
   // Do something
 }
@@ -404,7 +495,7 @@ evm.on('step', (e) => {
 
 To:
 
-```typescript
+```ts
 evm.events.on('step', (e) => {
   // Do something
 }
@@ -433,7 +524,7 @@ This means that if this library is instantiated without providing an explicit `C
 
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -464,7 +555,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -472,7 +563,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -482,13 +573,13 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 The main `EVM` class import has been updated, so import changes from:
 
-```typescript
+```ts
 import EVM from '@ethereumjs/evm'
 ```
 
 to:
 
-```typescript
+```ts
 import { EVM } from '@ethereumjs/evm'
 ```
 
@@ -548,7 +639,7 @@ This means that a Block object instantiated without providing an explicit `Commo
 
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -610,7 +701,7 @@ Small EIP - see [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) considered f
 
 EIP can be activated manually with:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3651] })
 ```
 
@@ -624,7 +715,7 @@ Hardfork inclusion of the EIP was extensively discussed during [ACD 135, April 1
 
 EIP can be activated manually with:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [1153] })
 ```
 
@@ -634,7 +725,7 @@ It is now possible to add, override or delete precompiles in the VM with a new `
 
 An EVM initialization with a custom precompile looks roughly like this where you can provide the intended precompile `address` and some precompile `function` which needs to adhere to some specific format to be internally readable and executable:
 
-```typescript
+```ts
 const vm = await VM.create({
   customPrecompiles: [
     {
@@ -658,7 +749,7 @@ This release fully supports the Merge [Kiln](https://kiln.themerge.dev/) testnet
 
 In the VM the `merge` HF is now activated as being supported and an (experimental) Merge-ready VM can be instantiated with:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
@@ -678,7 +769,7 @@ Note that this EIP is not part of a specific hardfork yet and is considered `EXP
 
 For now the EIP has to be activated manually which can be done by using a respective `Common` instance:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3540, 3670] })
 ```
 
@@ -688,7 +779,7 @@ Support for [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) has been added t
 
 Also here, implementation still `EXPERIMENTAL` and needs to be manually activated:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3860] })
 ```
 
@@ -763,7 +854,7 @@ Please note that for backwards-compatibility reasons the associated Common is st
 
 An ArrowGlacier VM can be instantiated with:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
@@ -870,7 +961,7 @@ This release comes with some additional `EIP-1559` checks and functionality:
 
 This `VM` release comes with full functional support for the `london` hardfork (all EIPs are finalized and integrated and `london` HF can be activated, there are no final block numbers for the HF integrated though yet). Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `VM` with the `london` HF activated:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'london' })
@@ -886,7 +977,7 @@ Support for the following EIPs has been added:
 
 It is also possible to run these EIPs in isolation by instantiating a `berlin` common and activate selected EIPs with the `eips` option:
 
-```typescript
+```ts
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin', eips: [3529] })
 ```
 
@@ -965,7 +1056,7 @@ There is a new Block Builder API for creating new blocks on top of the current s
 
 It can be used like the following:
 
-```typescript
+```ts
 const blockBuilder = await vm.buildBlock({ parentBlock, blockData, blockOpts })
 const txResult = await blockBuilder.addTransaction(tx)
 // reset the state with `blockBuilder.revert()`
@@ -993,7 +1084,7 @@ This release is the first VM release with official `berlin` HF support. All `Eth
 
 Please note that the default HF is still set to `istanbul`. You therefore need to explicitly set the `hardfork` parameter for instantiating a `VM` instance with a `berlin` HF activated:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common from '@ethereumjs/common'
 const common = new Common({ chain: 'mainnet', hardfork: 'berlin' })
@@ -1014,7 +1105,7 @@ Our implementation of `EIP-2929` (gas cost increases for state access opcodes) w
 
 Along with this rework a new `StateManager` interface `EIP2929StateManager` has been introduced which inherits from `StateManager` and adds the following methods:
 
-```typescript
+```ts
 export interface EIP2929StateManager extends StateManager {
   addWarmedAddress(address: Buffer): void
   isWarmedAddress(address: Buffer): boolean
@@ -1062,7 +1153,7 @@ This release introduces Clique/PoA support, see the main PR [#1032](https://gith
 
 Here is a simple example:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common from '@ethereumjs/common'
 
@@ -1162,7 +1253,7 @@ The following HFs have been added:
 
 A VM with the specific HF rules (on the chain provided) can be instantiated by passing in a `Common` instance:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common from '@ethereumjs/common'
 
@@ -1188,7 +1279,7 @@ These integrations come along with an API addition to the VM to support the acti
 
 This API can be used as follows:
 
-```typescript
+```ts
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 
@@ -1315,7 +1406,7 @@ The following HFs have been added:
 A VM with the specific HF rules (on the chain provided) can be instantiated
 by passing in a `Common` instance:
 
-```typescript
+```ts
 import VM from '@ethereumjs/vm'
 import Common from '@ethereumjs/common'
 
@@ -1358,7 +1449,7 @@ PR [#872](https://github.com/ethereumjs/ethereumjs-monorepo/pull/872).
 
 This API can be used as follows:
 
-```typescript
+```ts
 import Common from '@ethereumjs/common'
 import VM from '@ethereumjs/vm'
 

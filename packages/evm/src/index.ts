@@ -4,7 +4,14 @@ import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { InterpreterStep } from './interpreter.js'
 import { Message } from './message.js'
 import { PrecompileInput, getActivePrecompiles } from './precompiles/index.js'
-import { EVMInterface, EVMResult, ExecResult, Log } from './types.js'
+import {
+  EVMInterface,
+  EVMResult,
+  EVMRunCallOpts,
+  EVMRunCodeOpts,
+  ExecResult,
+  Log,
+} from './types.js'
 export {
   EOF,
   EVM,
@@ -12,6 +19,8 @@ export {
   EVMErrorMessage,
   EVMInterface,
   EVMResult,
+  EVMRunCallOpts,
+  EVMRunCodeOpts,
   ExecResult,
   getActivePrecompiles,
   InterpreterStep,

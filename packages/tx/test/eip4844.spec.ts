@@ -1,10 +1,12 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import {
+  Address,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
   concatBytes,
+  ecsign,
   equalsBytes,
   getBlobs,
   hexToBytes,
@@ -20,16 +22,74 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-const pk = randomBytes(32)
 if (isBrowser() === false) {
   try {
     initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
+  } catch {
+    // no-op
+  }
 }
+
+const pk = randomBytes(32)
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
+  customCrypto: { kzg },
+})
+
+describe('EIP4844 addSignature tests', () => {
+  it('addSignature() -> correctly adds correct signature values', () => {
+    const privateKey = pk
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        to: Address.zero(),
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+      },
+      { common }
+    )
+    const signedTx = tx.sign(privateKey)
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> correctly converts raw ecrecover values', () => {
+    const privKey = pk
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        to: Address.zero(),
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+      },
+      { common }
+    )
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(v, r, s, true)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> throws when adding the wrong v value', () => {
+    const privKey = pk
+    const tx = BlobEIP4844Transaction.fromTxData(
+      {
+        to: Address.zero(),
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+      },
+      { common }
+    )
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    assert.throws(() => {
+      // This will throw, since we now try to set either v=27 or v=28
+      tx.addSignature(v, r, s, false)
+    })
+  })
 })
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
@@ -39,6 +99,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
         type: 0x03,
         blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
         maxFeePerBlobGas: 1n,
+        to: Address.zero(),
       }
       const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
       assert.equal(tx.type, 3, 'successfully instantiated a blob transaction from txData')
@@ -132,6 +193,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       const baseTxData = {
         type: 0x03,
         maxFeePerBlobGas: 1n,
+        to: Address.zero(),
       }
       const shortVersionHash = {
         blobVersionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(3))],
@@ -307,26 +369,22 @@ describe('Network wrapper tests', () => {
         'throws on blobsData and KZG proofs in txData'
       )
 
-      const txWithEmptyBlob = BlobEIP4844Transaction.fromTxData(
-        {
-          blobVersionedHashes: [],
-          blobs: [],
-          kzgCommitments: [],
-          kzgProofs: [],
-          maxFeePerBlobGas: 100000000n,
-          gasLimit: 0xffffffn,
-          to: randomBytes(20),
-        },
-        { common }
-      )
-
-      const serializedWithEmptyBlob = txWithEmptyBlob.serializeNetworkWrapper()
       assert.throws(
-        () =>
-          BlobEIP4844Transaction.fromSerializedBlobTxNetworkWrapper(serializedWithEmptyBlob, {
-            common,
-          }),
-        'Invalid transaction with empty blobs',
+        () => {
+          BlobEIP4844Transaction.fromTxData(
+            {
+              blobVersionedHashes: [],
+              blobs: [],
+              kzgCommitments: [],
+              kzgProofs: [],
+              maxFeePerBlobGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common }
+          )
+        },
+        'tx should contain at least one blob',
         undefined,
         'throws a transaction with no blobs'
       )
@@ -439,12 +497,13 @@ describe('hash() and signature verification', () => {
               storageKeys: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
             },
           ],
+          to: Address.zero(),
         },
         { common }
       )
       assert.equal(
         bytesToHex(unsignedTx.getHashedMessageToSign()),
-        '0x8ce8c3544ca173c0e8dd0e86319d4ebfe649e15a730137a6659ba3a721a9ff8b',
+        '0x02560c5173b0d793ce019cfa515ece6a04a4b3f3d67eab67fbca78dd92d4ed76',
         'produced the correct transaction hash'
       )
       const signedTx = unsignedTx.sign(
@@ -463,6 +522,13 @@ describe('hash() and signature verification', () => {
 
 describe('Network wrapper deserialization test', () => {
   it('should work', async () => {
+    const common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
+    })
     if (isBrowser() === false) {
       const txData = {
         type: '0x3',

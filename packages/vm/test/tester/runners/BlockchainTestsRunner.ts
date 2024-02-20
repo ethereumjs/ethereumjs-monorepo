@@ -10,12 +10,10 @@ import {
   bytesToBigInt,
   bytesToHex,
   hexToBytes,
-  initKZG,
   isHexPrefixed,
   stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 
 import { VM } from '../../../dist/cjs'
 import { setupPreConditions, verifyPostConditions } from '../../util'
@@ -23,8 +21,6 @@ import { setupPreConditions, verifyPostConditions } from '../../util'
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
-
-initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -48,7 +44,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true })
+  let state = new Trie({ useKeyHashing: true, common })
   let stateManager = new DefaultStateManager({
     trie: state,
     common,
@@ -102,7 +98,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   await setupPreConditions(vm.stateManager, testData)
 
   t.deepEquals(
-    (vm.stateManager as any)._trie.root(),
+    await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
     'correct pre stateRoot'
   )
@@ -193,7 +189,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       // blockchain tests come with their own `pre` world state.
       // TODO: Add option to `runBlockchain` not to generate genesis state.
       //
-      //vm.common.genesis().stateRoot = vm.stateManager._trie.root()
+      //vm.common.genesis().stateRoot = await vm.stateManager.getStateRoot()
       try {
         await blockchain.iterator('vm', async (block: Block) => {
           const parentBlock = await blockchain!.getBlock(block.header.parentHash)
@@ -217,7 +213,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
-          ;(vm.stateManager as any)._trie.root(headBlock.header.stateRoot)
+          await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
         }

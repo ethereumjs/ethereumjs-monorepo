@@ -7,8 +7,6 @@
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
-    { "path": "../block/tsconfig.prod.cjs.json" },
-    { "path": "../blockchain/tsconfig.prod.cjs.json" },
     { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../rlp/tsconfig.prod.cjs.json" },
     { "path": "../statemanager/tsconfig.prod.cjs.json" },

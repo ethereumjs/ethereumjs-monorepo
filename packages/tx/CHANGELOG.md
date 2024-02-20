@@ -6,6 +6,90 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 5.2.1 - 2024-02-08
+
+- Hotfix release adding a missing `debug` dependency to the `@ethereumjs/trie` package (dependency), PR [#3271](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3271)
+
+## 5.2.0 - 2024-02-08
+
+### Dencun Hardfork Support
+
+While all EIPs contained in the upcoming Dencun hardfork run pretty much stable within the EthereumJS libraries for quite some time, this is the first release round which puts all this in the official space and removes "experimental" labelling preparing for an imminent Dencun launch on the last testnets (Holesky) and mainnet activation! 🎉
+
+Dencun hardfork on the execution side is called [Cancun](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md) and can be activated within the EthereumJS libraries (default hardfork still `Shanghai`) with a following `common` instance:
+
+```typescript
+import * as kzg from 'c-kzg'
+import { Common, Chain, Hardfork } from '@ethereumjs/common'
+import { initKZG } from '@ethereumjs/util'
+
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Cancun,
+  customCrypto: { kzg: kzg },
+})
+console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+```
+
+Note that the `kzg` initialization slightly changed from previous experimental releases and a custom KZG instance is now passed to `Common` by using the `customCrypto` parameter, see PR [#3262](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3262).
+
+At the moment using the Node.js bindings for the `c-kzg` library is the only option to get KZG related functionality to work, note that this solution is not browser compatible. We are currently working on a WASM build of that respective library. Let us know on the urgency of this task! 😆
+
+While `EIP-4844` - activating shard blob transactions - is for sure the most prominent EIP from this hardfork, enabling better scaling for the Ethereum ecosystem by providing cheaper block space for L2s, there are in total 6 EIPs contained in the Dencun hardfork. The following is an overview of which EthereumJS libraries mainly implement the various EIPs:
+
+- EIP-1153: Transient storage opcodes (`@ethereumjs/evm`)
+- EIP-4788: Beacon block root in the EVM (`@ethereumjs/block`, `@ethereumjs/evm`, `@ethereumjs/vm`)
+- EIP-4844: Shard Blob Transactions (`@ethereumjs/tx`, `@ethereumjs/block`, `@ethereumjs/evm`)
+- EIP-5656: MCOPY - Memory copying instruction (`@ethereumjs/evm`)
+- EIP-6780: SELFDESTRUCT only in same transaction (`@ethereumjs/vm`)
+- EIP-7516: BLOBBASEFEE opcode (`@ethereumjs/block`, `@ethereumjs/evm`)
+
+### WASM Crypto Support
+
+With this release round there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192).
+
+This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation, see `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for some detailed guidance on how to use.
+
+### New addSignature() API Method
+
+There is a new dedicated method `addSignature()` introduced for all tx types which allows to add the raw signature values to a transaction without the need to call into `tx.sign()`, which would need a private key to do so, see PR [#3238](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3238).
+
+This functionality is e.g. handy for hardware wallet implementations where the signature generation is taking place externally.
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in the respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect all examples are now run in CI on new PRs and so do not risk to get outdated or broken over time.
+
+## 5.1.0 - 2023-10-26
+
+### More Type-Aligned Library Structure
+
+This release gently introduces a backwards-compatible new/adopted library structure which is more aligned with the idea of independent tx types, bundling various functionalities together in a way that is not necessarily hierarchical, see PR [#2993](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2993) and [#3010](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3010).
+
+Reused functionality (e.g. calculating the upfront-cost (`getUpfrontCost()`) of an `EIP-1559`-compatible tx - is internally bundled in capability files (e.g. `capabilities/eip1559.ts`), which provide static call access to the respective methods.
+
+These methods are then called and the functionality exposed by the respective methods in the tx classes, see the following example code for an `FeeMarketEIP1559Transaction`:
+
+```ts
+getUpfrontCost(baseFee: bigint = BigInt(0)): bigint {
+    return EIP1559.getUpfrontCost(this, baseFee)
+  }
+```
+
+This makes creating additional or custom tx types and reusing of existing functionality substantially easier and makes the library substantially more robust by largely consolidating previously redundant code parts.
+
+### Dencun devnet-11 Compatibility
+
+This release contains various fixes and spec updates related to the Dencun (Deneb/Cancun) HF and is now compatible with the specs as used in [devnet-11](https://github.com/ethpandaops/dencun-testnet) (October 2023).
+
+- Update peer dependency for `kzg` module to use the official trusted setup for `mainnet`, PR [#3107](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3107)
+
+### Other Changes
+
+- Performance: cache tx sender to avoid redundant and costly `ecrecover` calls, PR [#2985](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2985)
+- Add new method `getDataFee()` to `BlobEIP4844Transaction`, PR [#2955](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2955)
+
 ## 5.0.0 - 2023-08-09
 
 Final release version from the breaking release round from Summer 2023 on the EthereumJS libraries, thanks to the whole team for this amazing accomplishment! ❤️ 🥳
@@ -50,14 +134,14 @@ The Shanghai hardfork is now the default HF in `@ethereumjs/common` and therefor
 
 Also the Merge HF has been renamed to Paris (`Hardfork.Paris`) which is the correct HF name on the execution side, see [#2652](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2652). To set the HF to Paris in Common you can do:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Paris })
 ```
 
 And third on hardforks 🙂: the upcoming Cancun hardfork is now fully supported and all EIPs are included (see PRs [#2659](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2659) and [#2892](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2892)). The Cancun HF can be activated with:
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 ```
@@ -70,14 +154,14 @@ We have cleaned up and unified the validation methods in the `Tx` library, see P
 
 The `Tx.validate()` method (so: for all tx types), previously overloaded with different return types depending on the input, has been split up into:
 
-```typescript
+```ts
 Tx.isValid(): boolean
 Tx.getValidationErrors(): string[] // If you are interested in the errors, can also be used for validation by checking return array length
 ```
 
 The overloaded method `Tx.getMessageToSign()` has been split up into two methods:
 
-```typescript
+```ts
 getMessageToSign(): Uint8Array | Uint8Array[] // For the unhashed message
 getHashedMessageToSign(): Uint8Array // For the hashed message
 ```
@@ -94,7 +178,7 @@ The global initialization method for the KZG setup has been moved to a dedicated
 
 The `initKZG()` method can be used as follows:
 
-```typescript
+```ts
 // Make the kzg library available globally
 import * as kzg from 'c-kzg'
 import { initKZG } from '@ethereumjs/util'
@@ -111,7 +195,7 @@ We have added a new `blobsData` parameter to `BlobEIP4844TxData` which allows fo
 
 You can simply pass any arbitrary data to this new data parameter, and separate blobs are automatically extracted and `kzgCommitments` and `versionedHashes` computed for you 🤯:
 
-```typescript
+```ts
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
 const simpleBlobTx = BlobEIP4844Transaction.fromTxData(
@@ -145,14 +229,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -171,7 +255,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 // All tx types (Transaction is placeholder for specific type class, e.g. FeeMarketEIP1559Transaction)
 TransactionFactory.fromTxData() // data field
 Transaction.fromValuesArray() // whole array
@@ -281,7 +365,7 @@ This release fully supports all EIPs included in the [Shanghai](https://github.c
 
 You can instantiate a Shanghai-enabled Common instance for your transactions with:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai })
@@ -297,7 +381,7 @@ This release supports an experimental version of the blob transaction type intro
 
 See the following code snipped for an example on how to instantiate.
 
-```typescript
+```ts
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, initKZG } from '@ethereumjs/tx'
 import * as kzg from 'c-kzg'
@@ -344,7 +428,7 @@ For lots of custom chains (for e.g. devnets and testnets), you might come across
 
 `Common` now has a new constructor `Common.fromGethGenesis()` - see PRs [#2300](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2300) and [#2319](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2319) - which can be used in following manner to instantiate for example a VM run or a tx with a `genesis.json` based Common:
 
-```typescript
+```ts
 import { Common } from '@ethereumjs/common'
 // Load geth genesis json file into lets say `genesisJson` and optional `chain` and `genesisHash`
 const common = Common.fromGethGenesis(genesisJson, { chain: 'customChain', genesisHash })
@@ -397,7 +481,7 @@ This means that if this library is instantiated without providing an explicit `C
 
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -427,7 +511,7 @@ Since our [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo
 
 So Common import and usage is changing from:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -435,7 +519,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
 
 to:
 
-```typescript
+```ts
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -469,7 +553,7 @@ This means that a Transaction object instantiated without providing an explicit 
 
 If you want to prevent these kind of implicit HF switches in the future it is likely a good practice to just always do your upper-level library instantiations with a `Common` instance setting an explicit HF, e.g.:
 
-```typescript
+```ts
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Merge })
@@ -554,7 +638,7 @@ Note that this EIP is not part of a specific hardfork yet and is considered `EXP
 
 For now the EIP has to be activated manually which can be done by using a respective `Common` instance:
 
-```typescript
+```ts
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London, eips: [3860] })
 ```
 
@@ -578,7 +662,7 @@ Please note that for backwards-compatibility reasons the associated Common is st
 
 An ArrowGlacier transaction can be instantiated with:
 
-```typescript
+```ts
 import { Transaction } from '@ethereumjs/tx'
 import Common, { Chain, Hardfork } from '@ethereumjs/common'
 
@@ -633,7 +717,7 @@ This tx release bumps the `Common` library dependency version to `v2.4.0` and is
 
 `Common.custom()` comes with support for predefined custom chains (Arbitrum testnet, Polygon testnet & mainnet, xDai chain), see e.g. the following code example:
 
-```typescript
+```ts
 import { Transaction } from '@ethereumjs/tx'
 import Common from '@ethereumjs/common'
 
@@ -658,7 +742,7 @@ const signedTx = tx.sign(Buffer.from(PRIV_KEY, 'hex'))
 
 For a non-predefined custom chain it is also possible to just provide a chain ID as well as other parameters to `Common`:
 
-```typescript
+```ts
 const common = Common.custom({ chainId: 1234 })
 ```
 
@@ -672,7 +756,7 @@ While it sometimes might make sense to do a switch by `tx.type` it is often more
 
 Such a switch can now be done with the method above
 
-```typescript
+```ts
 import { Transaction, Capability } from '@ethereumjs/tx'
 
 // 1. Instantiate tx
@@ -685,7 +769,7 @@ if (tx.supports(Capability.EIP2930AccessLists)) {
 
 The following capabilities are currently supported:
 
-```typescript
+```ts
 enum Capabilitiy {
   EIP155ReplayProtection: 155, // Only for legacy txs
   EIP1559FeeMarket: 1559,
@@ -718,7 +802,7 @@ We tried to get more intelligent on the instantiation with a default chain if no
 
 Both these changes with the new default HF rules and the more intelligent chain ID instantiation now allows for an e.g. `EIP-155` tx instantiation without a Common (and generally for a safer non-Common tx instantiation) like this:
 
-```typescript
+```ts
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
@@ -747,7 +831,7 @@ Note that depending on your usage context it might still be a good idea to insta
 
 This is just a note on documentation. There has been some confusion around how to use the tx library for signing of a tx with a HW wallet device (e.g. a Ledger) - see Issue [#1228](https://github.com/ethereumjs/ethereumjs-monorepo/issues/1228) - especially around the usage of `tx.getMessageToSign()`. This is now better documented in the code. Dropping here the associated code on how to do for awareness, for some more context have a look into the associated issue:
 
-```typescript
+```ts
 import { rlp } from 'ethereumjs-util'
 import Common from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
@@ -776,7 +860,7 @@ An `EIP-1559` tx inherits the access list feature from the `AccessListEIP2930Tra
 
 An `EIP-1559` tx can be instantiated with:
 
-```typescript
+```ts
 import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
 
@@ -851,7 +935,7 @@ This release comes with full support for the `berlin` hardfork by updating the l
 
 `EIP-2930` transactions can be instantiated with:
 
-```typescript
+```ts
 import Common from '@ethereumjs/common'
 import { AccessListEIP2930Transaction } from '@ethereumjs/tx'
 
@@ -943,7 +1027,7 @@ The constructor has been reworked and new static factory methods `fromTxData`, `
 
 Examples:
 
-```typescript
+```ts
 // Initializing from serialized data
 const s1 = tx1.serialize().toString('hex')
 const tx = Transaction.fromRlpSerializedTx(toBuffer('0x' + s1))
@@ -1037,7 +1121,7 @@ This release is a major refactoring of the transaction library to simplify and s
 
 The constructor used to accept a varying amount of options but now has the following shape:
 
-```typescript
+```ts
   Transaction(
     nonce: BN,
     gasPrice: BN,
@@ -1056,7 +1140,7 @@ Initializing from other data types is assisted with new static factory helpers `
 
 Examples:
 
-```typescript
+```ts
 // Initializing from serialized data
 const s1 = tx1.serialize().toString('hex')
 const tx = Transaction.fromRlpSerializedTx(toBuffer('0x' + s1))

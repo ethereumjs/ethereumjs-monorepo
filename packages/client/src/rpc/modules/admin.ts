@@ -1,6 +1,7 @@
 import { bytesToHex } from '@ethereumjs/util'
 
 import { getClientVersion } from '../../util'
+import { callWithStackTrace } from '../helpers'
 import { middleware } from '../validation'
 
 import type { Chain } from '../../blockchain'
@@ -14,17 +15,19 @@ import type { Service } from '../../service'
 export class Admin {
   readonly _chain: Chain
   readonly _client: EthereumClient
+  private _rpcDebug: boolean
 
   /**
    * Create admin_* RPC module
    * @param client Client to which the module binds
    */
-  constructor(client: EthereumClient) {
+  constructor(client: EthereumClient, rpcDebug: boolean) {
     const service = client.services.find((s) => s.name === 'eth') as Service
     this._chain = service.chain
     this._client = client
+    this._rpcDebug = rpcDebug
 
-    this.nodeInfo = middleware(this.nodeInfo.bind(this), 0, [])
+    this.nodeInfo = middleware(callWithStackTrace(this.nodeInfo.bind(this), this._rpcDebug), 0, [])
   }
 
   /**

@@ -7,6 +7,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
+  ecsign,
   equalsBytes,
   hexToBytes,
   privateToAddress,
@@ -362,6 +363,41 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         `should throw with invalid s value (${txType.name})`
       )
     }
+  })
+
+  it('addSignature() -> correctly adds correct signature values', () => {
+    const privateKey = pKey
+    const tx = AccessListEIP2930Transaction.fromTxData({})
+    const signedTx = tx.sign(privateKey)
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> correctly converts raw ecrecover values', () => {
+    const privKey = pKey
+    const tx = AccessListEIP2930Transaction.fromTxData({})
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(v, r, s, true)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> throws when adding the wrong v value', () => {
+    const privKey = pKey
+    const tx = AccessListEIP2930Transaction.fromTxData({})
+
+    const msgHash = tx.getHashedMessageToSign()
+    const { v, r, s } = ecsign(msgHash, privKey)
+
+    assert.throws(() => {
+      // This will throw, since we now try to set either v=27 or v=28
+      tx.addSignature(v, r, s, false)
+    })
   })
 
   it('getDataFee()', () => {

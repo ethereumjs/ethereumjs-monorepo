@@ -14,12 +14,13 @@ and not all the values are present on all tx types
 ### Properties
 
 - [accessList](JsonTx.md#accesslist)
+- [blobVersionedHashes](JsonTx.md#blobversionedhashes)
 - [chainId](JsonTx.md#chainid)
 - [data](JsonTx.md#data)
 - [gasLimit](JsonTx.md#gaslimit)
 - [gasPrice](JsonTx.md#gasprice)
+- [maxFeePerBlobGas](JsonTx.md#maxfeeperblobgas)
 - [maxFeePerGas](JsonTx.md#maxfeepergas)
-- [maxFeePerblobGas](JsonTx.md#maxfeeperblobgas)
 - [maxPriorityFeePerGas](JsonTx.md#maxpriorityfeepergas)
 - [nonce](JsonTx.md#nonce)
 - [r](JsonTx.md#r)
@@ -28,7 +29,6 @@ and not all the values are present on all tx types
 - [type](JsonTx.md#type)
 - [v](JsonTx.md#v)
 - [value](JsonTx.md#value)
-- [versionedHashes](JsonTx.md#versionedhashes)
 
 ## Properties
 
@@ -38,7 +38,17 @@ and not all the values are present on all tx types
 
 #### Defined in
 
-[tx/src/types.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L399)
+[tx/src/types.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L450)
+
+___
+
+### blobVersionedHashes
+
+• `Optional` **blobVersionedHashes**: `string`[]
+
+#### Defined in
+
+[tx/src/types.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L455)
 
 ___
 
@@ -48,7 +58,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L398)
+[tx/src/types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L449)
 
 ___
 
@@ -58,7 +68,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L393)
+[tx/src/types.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L444)
 
 ___
 
@@ -68,7 +78,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:391](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L391)
+[tx/src/types.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L442)
 
 ___
 
@@ -78,7 +88,17 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L390)
+[tx/src/types.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L441)
+
+___
+
+### maxFeePerBlobGas
+
+• `Optional` **maxFeePerBlobGas**: `string`
+
+#### Defined in
+
+[tx/src/types.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L454)
 
 ___
 
@@ -88,17 +108,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L402)
-
-___
-
-### maxFeePerblobGas
-
-• `Optional` **maxFeePerblobGas**: `string`
-
-#### Defined in
-
-[tx/src/types.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L403)
+[tx/src/types.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L453)
 
 ___
 
@@ -108,7 +118,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:401](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L401)
+[tx/src/types.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L452)
 
 ___
 
@@ -118,7 +128,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L389)
+[tx/src/types.ts:440](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L440)
 
 ___
 
@@ -128,7 +138,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L395)
+[tx/src/types.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L446)
 
 ___
 
@@ -138,7 +148,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L396)
+[tx/src/types.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L447)
 
 ___
 
@@ -148,7 +158,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:392](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L392)
+[tx/src/types.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L443)
 
 ___
 
@@ -158,7 +168,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L400)
+[tx/src/types.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L451)
 
 ___
 
@@ -168,7 +178,7 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L394)
+[tx/src/types.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L445)
 
 ___
 
@@ -178,14 +188,4 @@ ___
 
 #### Defined in
 
-[tx/src/types.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L397)
-
-___
-
-### versionedHashes
-
-• `Optional` **versionedHashes**: `string`[]
-
-#### Defined in
-
-[tx/src/types.ts:404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L404)
+[tx/src/types.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L448)

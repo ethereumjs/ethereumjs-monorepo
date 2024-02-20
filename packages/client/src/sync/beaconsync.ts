@@ -118,7 +118,7 @@ export class BeaconSynchronizer extends Synchronizer {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
+        if (!best || best[1] < number) {
           best = [peer, number]
         }
       }
@@ -307,7 +307,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.chain.blocks.height > this.skeleton.bounds().head - BigInt(50)
     )
     if (!shouldRunOnlyBatched || this.chain.blocks.height % BigInt(50) === BIGINT_0) {
-      void this.execution.run(true, shouldRunOnlyBatched)
+      await this.execution.run(true, shouldRunOnlyBatched)
     }
   }
 

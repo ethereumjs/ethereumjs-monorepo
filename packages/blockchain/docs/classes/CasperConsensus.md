@@ -34,7 +34,7 @@ This class encapsulates Casper-related consensus functionality when used with th
 
 #### Defined in
 
-[consensus/casper.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L12)
+[consensus/casper.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L13)
 
 ## Properties
 
@@ -48,7 +48,7 @@ This class encapsulates Casper-related consensus functionality when used with th
 
 #### Defined in
 
-[consensus/casper.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L10)
+[consensus/casper.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L11)
 
 ## Methods
 
@@ -68,7 +68,7 @@ Initialize genesis for consensus mechanism
 
 #### Defined in
 
-[consensus/casper.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L16)
+[consensus/casper.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L17)
 
 ___
 
@@ -88,7 +88,7 @@ Update consensus on new block
 
 #### Defined in
 
-[consensus/casper.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L28)
+[consensus/casper.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L29)
 
 ___
 
@@ -108,7 +108,7 @@ Set up consensus mechanism
 
 #### Defined in
 
-[consensus/casper.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L18)
+[consensus/casper.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L19)
 
 ___
 
@@ -128,7 +128,7 @@ Validate block consensus parameters
 
 #### Defined in
 
-[consensus/casper.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L20)
+[consensus/casper.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L21)
 
 ___
 
@@ -152,4 +152,4 @@ ___
 
 #### Defined in
 
-[consensus/casper.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L22)
+[consensus/casper.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L23)

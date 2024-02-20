@@ -7,6 +7,7 @@ import { blockHeaderFromRpc } from '../src/header-from-rpc.js'
 import { Block } from '../src/index.js'
 
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
+import * as infuraGoerliBlock10536893 from './testdata/infura-goerli-block-10536893.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
 import * as infura2000004woTxs from './testdata/infura2000004wotxns.json'
@@ -153,6 +154,13 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       'created post merge block with txns'
     )
   })
+
+  it('should correctly parse a cancun block over rpc', () => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Cancun })
+    const block = blockHeaderFromRpc(infuraGoerliBlock10536893, { common })
+    const hash = hexToBytes(infuraGoerliBlock10536893.hash)
+    assert.ok(equalsBytes(block.hash(), hash))
+  })
 })
 
 describe('[fromJsonRpcProvider]', () => {
@@ -167,6 +175,8 @@ describe('[fromJsonRpcProvider]', () => {
       if (json.params[0] === '0x1850b014065b23d804ecf71a8a4691d076ca87c2e6fb8fe81ee20a4d8e884c24') {
         const txData = await import(`./testdata/infura15571241wtxns.json`)
         return {
+          ok: true,
+          status: 200,
           json: () => {
             return {
               result: txData,
@@ -175,6 +185,8 @@ describe('[fromJsonRpcProvider]', () => {
         }
       } else {
         return {
+          ok: true,
+          status: 200,
           json: () => {
             return {
               result: null, // This is the value Infura returns if no transaction is found matching the provided hash

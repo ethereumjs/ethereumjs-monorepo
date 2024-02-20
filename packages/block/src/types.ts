@@ -71,6 +71,45 @@ export interface BlockOptions {
   skipConsensusFormatValidation?: boolean
 }
 
+export interface VerkleProof {
+  commitmentsByPath: PrefixedHexString[]
+  d: PrefixedHexString
+  depthExtensionPresent: PrefixedHexString
+  ipaProof: {
+    cl: PrefixedHexString[]
+    cr: PrefixedHexString[]
+    finalEvaluation: PrefixedHexString
+  }
+  otherStems: PrefixedHexString[]
+}
+
+export interface VerkleStateDiff {
+  stem: PrefixedHexString
+  suffixDiffs: {
+    currentValue: PrefixedHexString | null
+    newValue: PrefixedHexString | null
+    suffix: number | string
+  }[]
+}
+
+/**
+ * Experimental, object format could eventual change.
+ * An object that provides the state and proof necessary for verkle stateless execution
+ * */
+export interface VerkleExecutionWitness {
+  /**
+   * An array of state diffs.
+   * Each item corresponding to state accesses or state modifications of the block.
+   * In the current design, it also contains the resulting state of the block execution (post-state).
+   */
+  stateDiff: VerkleStateDiff[]
+  /**
+   * The verkle proof for the block.
+   * Proves that the provided stateDiff belongs to the canonical verkle tree.
+   */
+  verkleProof: VerkleProof
+}
+
 /**
  * A block header's data.
  */
@@ -108,13 +147,29 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
+  /**
+   * EIP-6800: Verkle Proof Data (experimental)
+   */
+  executionWitness?: VerkleExecutionWitness | null
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
+export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
+  | [
+      BlockHeaderBytes,
+      TransactionsBytes,
+      UncleHeadersBytes,
+      WithdrawalsBytes,
+      ExecutionWitnessBytes
+    ]
+
+/**
+ * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
+ */
 export type BlockHeaderBytes = Uint8Array[]
 export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
@@ -134,6 +189,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
+  executionWitness?: VerkleExecutionWitness | null
 }
 
 /**
@@ -192,6 +248,7 @@ export interface JsonRpcBlock {
   blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
+  executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
 }
 
 // Note: all these strings are 0x-prefixed
@@ -222,4 +279,6 @@ export type ExecutionPayload = {
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
+  // VerkleExecutionWitness is already a hex serialized object
+  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null imples not available
 }
