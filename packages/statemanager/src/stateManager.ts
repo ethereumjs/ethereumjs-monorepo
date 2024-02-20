@@ -753,9 +753,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Create a StateManager and initialize this with proof(s) gotten previously from getProof
    * This generates a (partial) StateManager where one can retrieve all items from the proof
    * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
-   * @param safe Wether or not to verify that the roots of the proof items match the reported roots
-   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
-   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+   * @param safe Whether or not to verify that the roots of the proof items match the reported roots
+   * @param opts a dictionary of StateManager opts
    * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
    */
   static async fromProof(
@@ -784,7 +783,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         return sm
       }
     } else {
-      return DefaultStateManager.fromProof([proof])
+      return DefaultStateManager.fromProof([proof], safe, opts)
     }
   }
 
