@@ -7,7 +7,8 @@ import {
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+//import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
@@ -19,10 +20,12 @@ import gethGenesis from './testdata/4844-hardfork.json'
 import type { TypedTransaction } from '@ethereumjs/tx'
 // Hack to detect if running in browser or not
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
+let kzg
 if (isBrowser() === false) {
   try {
-    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+    //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+    kzg = await initKzg()
+    initKZG(kzg, '')
   } catch {
     // no-op
   }
