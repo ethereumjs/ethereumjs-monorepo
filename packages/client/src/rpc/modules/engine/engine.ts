@@ -1,4 +1,3 @@
-import { Block } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
@@ -29,10 +28,15 @@ import { middleware, validators } from '../../validation'
 
 import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types'
 import {
+  assembleBlock,
   blockToExecutionPayload,
+  getPayloadBody,
   pruneCachedBlocks,
   recursivelyFindParents,
   validExecutedChainBlock,
+  validHash,
+  validateHardforkRange,
+  validateTerminalBlock,
 } from './util'
 import {
   executionPayloadV1FieldValidators,
@@ -64,147 +68,10 @@ import type {
   PayloadAttributesV3,
   TransitionConfigurationV1,
 } from './types'
-import type { ExecutionPayload } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
+import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
-
-/**
- * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
- */
-const validHash = async (
-  hash: Uint8Array,
-  chain: Chain,
-  chainCache: ChainCache
-): Promise<string | null> => {
-  const { remoteBlocks, executedBlocks, invalidBlocks, skeleton } = chainCache
-  const maxDepth = chain.config.engineParentLookupMaxDepth
-
-  try {
-    let validParent: Block | null = null
-    for (let inspectedParents = 0; inspectedParents < maxDepth; inspectedParents++) {
-      const unPrefixedHashStr = bytesToUnprefixedHex(hash)
-      validParent =
-        remoteBlocks.get(unPrefixedHashStr) ??
-        (await skeleton.getBlockByHash(hash, true)) ??
-        (await chain.getBlock(hash))
-
-      // if block is invalid throw error and respond with null validHash
-      if (invalidBlocks.get(unPrefixedHashStr) !== undefined) {
-        throw Error(`References an invalid ancestor`)
-      }
-
-      // if block is executed the return with this hash
-      const isBlockExecuted =
-        (executedBlocks.get(unPrefixedHashStr) ?? (await validExecutedChainBlock(hash, chain))) !==
-        null
-      if (isBlockExecuted) {
-        return bytesToHex(hash)
-      } else {
-        hash = validParent.header.parentHash
-      }
-    }
-  } catch (_error: any) {
-    // ignore error thrown by the loop and return null below
-  }
-
-  // if we are here, either we can't find valid parent till maxDepth or the ancestor was invalid
-  // or there was a lookup error. in all these instances return null
-  return null
-}
-
-/**
- * Validates that the block satisfies post-merge conditions.
- */
-const validateTerminalBlock = async (block: Block, chain: Chain): Promise<boolean> => {
-  const ttd = chain.config.chainCommon.hardforkTTD(Hardfork.Paris)
-  if (ttd === null) return false
-  const blockTd = await chain.getTd(block.hash(), block.header.number)
-
-  // Block is terminal if its td >= ttd and its parent td < ttd.
-  // In case the Genesis block has td >= ttd it is the terminal block
-  if (block.isGenesis()) return blockTd >= ttd
-
-  const parentBlockTd = await chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
-  return blockTd >= ttd && parentBlockTd < ttd
-}
-
-/**
- * Returns a block from a payload.
- * If errors, returns {@link PayloadStatusV1}
- */
-const assembleBlock = async (
-  payload: ExecutionPayload,
-  chain: Chain,
-  chainCache: ChainCache
-): Promise<{ block?: Block; error?: PayloadStatusV1 }> => {
-  const { blockNumber, timestamp } = payload
-  const { config } = chain
-  const common = config.chainCommon.copy()
-
-  // This is a post merge block, so set its common accordingly
-  // Can't use setHardfork flag, as the transactions will need to be deserialized
-  // first before the header can be constucted with their roots
-  const ttd = common.hardforkTTD(Hardfork.Paris)
-  common.setHardforkBy({ blockNumber, td: ttd !== null ? ttd : undefined, timestamp })
-
-  try {
-    const block = await Block.fromExecutionPayload(payload, { common })
-    // TODO: validateData is also called in applyBlock while runBlock, may be it can be optimized
-    // by removing/skipping block data validation from there
-    await block.validateData()
-    return { block }
-  } catch (error) {
-    const validationError = `Error assembling block from payload: ${error}`
-    config.logger.error(validationError)
-    const latestValidHash = await validHash(hexToBytes(payload.parentHash), chain, chainCache)
-    const response = {
-      status: `${error}`.includes('Invalid blockHash') ? Status.INVALID_BLOCK_HASH : Status.INVALID,
-      latestValidHash,
-      validationError,
-    }
-    return { error: response }
-  }
-}
-
-const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {
-  const transactions = block.transactions.map((tx) => bytesToHex(tx.serialize()))
-  const withdrawals = block.withdrawals?.map((wt) => wt.toJSON()) ?? null
-
-  return {
-    transactions,
-    withdrawals,
-  }
-}
-
-function validateHardforkRange(
-  chainCommon: Common,
-  methodVersion: number,
-  checkNotBeforeHf: Hardfork | null,
-  checkNotAfterHf: Hardfork | null,
-  timestamp: bigint
-) {
-  if (checkNotBeforeHf !== null) {
-    const hfTimeStamp = chainCommon.hardforkTimestamp(checkNotBeforeHf)
-    if (hfTimeStamp !== null && timestamp < hfTimeStamp) {
-      throw {
-        code: UNSUPPORTED_FORK,
-        message: `V${methodVersion} cannot be called pre-${checkNotBeforeHf}`,
-      }
-    }
-  }
-
-  if (checkNotAfterHf !== null) {
-    const nextHFTimestamp = chainCommon.nextHardforkBlockOrTimestamp(checkNotAfterHf)
-    if (nextHFTimestamp !== null && timestamp >= nextHFTimestamp) {
-      throw {
-        code: UNSUPPORTED_FORK,
-        message: `V${methodVersion + 1} MUST be called post-${checkNotAfterHf}`,
-      }
-    }
-  }
-}
 
 /**
  * engine_* RPC module
