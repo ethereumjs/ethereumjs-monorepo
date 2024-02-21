@@ -13,120 +13,55 @@ import {
   zeros,
 } from '@ethereumjs/util'
 
-import { ExecStatus } from '../../execution'
-import { PendingBlock } from '../../miner'
-import { PutStatus } from '../../sync'
-import { short } from '../../util'
+import { ExecStatus } from '../../../execution'
+import { PendingBlock } from '../../../miner'
+import { PutStatus } from '../../../sync'
+import { short } from '../../../util'
 import {
   INTERNAL_ERROR,
   INVALID_PARAMS,
   TOO_LARGE_REQUEST,
-  UNKNOWN_PAYLOAD,
   UNSUPPORTED_FORK,
   validEngineCodes,
-} from '../error-code'
-import { callWithStackTrace } from '../helpers'
-import { CLConnectionManager, middleware as cmMiddleware } from '../util/CLConnectionManager'
-import { middleware, validators } from '../validation'
+} from '../../error-code'
+import { callWithStackTrace } from '../../helpers'
+import { CLConnectionManager, middleware as cmMiddleware } from '../../util/CLConnectionManager'
+import { middleware, validators } from '../../validation'
 
-import type { Chain } from '../../blockchain'
-import type { EthereumClient } from '../../client'
-import type { Config } from '../../config'
-import type { VMExecution } from '../../execution'
-import type { BlobsBundle } from '../../miner'
-import type { FullEthereumService, Skeleton } from '../../service'
+import {
+  type BlobsBundleV1,
+  type ChainCache,
+  EngineError,
+  type PayloadStatusV1,
+  Status,
+} from './types'
+
+import type { Chain } from '../../../blockchain'
+import type { EthereumClient } from '../../../client'
+import type { Config } from '../../../config'
+import type { VMExecution } from '../../../execution'
+import type { BlobsBundle } from '../../../miner'
+import type { FullEthereumService, Skeleton } from '../../../service'
+import type {
+  Bytes32,
+  Bytes8,
+  ExecutionPayloadBodyV1,
+  ExecutionPayloadV1,
+  ExecutionPayloadV2,
+  ExecutionPayloadV3,
+  ForkchoiceResponseV1,
+  ForkchoiceStateV1,
+  PayloadAttributes,
+  PayloadAttributesV1,
+  PayloadAttributesV2,
+  PayloadAttributesV3,
+  TransitionConfigurationV1,
+} from './types'
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
-
-export enum Status {
-  ACCEPTED = 'ACCEPTED',
-  INVALID = 'INVALID',
-  INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
-  SYNCING = 'SYNCING',
-  VALID = 'VALID',
-}
-
-type Bytes8 = string
-type Bytes20 = string
-type Bytes32 = string
-// type Root = Bytes32
-type Blob = Bytes32
-type Bytes48 = string
-type Uint64 = string
-type Uint256 = string
-
-type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
-
-// ExecutionPayload has higher version fields as optionals to make it easy for typescript
-export type ExecutionPayloadV1 = ExecutionPayload
-export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
-// parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
-export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; blobGasUsed: Uint64 }
-
-export type ForkchoiceStateV1 = {
-  headBlockHash: Bytes32
-  safeBlockHash: Bytes32
-  finalizedBlockHash: Bytes32
-}
-
-// PayloadAttributes has higher version fields as optionals to make it easy for typescript
-type PayloadAttributes = {
-  timestamp: Uint64
-  prevRandao: Bytes32
-  suggestedFeeRecipient: Bytes20
-  // add higher version fields as optionals to make it easy for typescript
-  withdrawals?: WithdrawalV1[]
-  parentBeaconBlockRoot?: Bytes32
-}
-
-type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals' | 'parentBeaconBlockRoot'>
-type PayloadAttributesV2 = PayloadAttributesV1 & { withdrawals: WithdrawalV1[] }
-type PayloadAttributesV3 = PayloadAttributesV2 & { parentBeaconBlockRoot: Bytes32 }
-
-export type PayloadStatusV1 = {
-  status: Status
-  latestValidHash: Bytes32 | null
-  validationError: string | null
-}
-
-export type ForkchoiceResponseV1 = {
-  payloadStatus: PayloadStatusV1
-  payloadId: Bytes8 | null
-}
-
-type TransitionConfigurationV1 = {
-  terminalTotalDifficulty: Uint256
-  terminalBlockHash: Bytes32
-  terminalBlockNumber: Uint64
-}
-
-type BlobsBundleV1 = {
-  commitments: Bytes48[]
-  blobs: Blob[]
-  proofs: Bytes48[]
-}
-
-type ExecutionPayloadBodyV1 = {
-  transactions: string[]
-  withdrawals: WithdrawalV1[] | null
-}
-
-type ChainCache = {
-  remoteBlocks: Map<String, Block>
-  executedBlocks: Map<String, Block>
-  invalidBlocks: Map<String, Error>
-  skeleton: Skeleton
-}
-
-const EngineError = {
-  UnknownPayload: {
-    code: UNKNOWN_PAYLOAD,
-    message: 'Unknown payload',
-  },
-}
 
 const executionPayloadV1FieldValidators = {
   parentHash: validators.blockHash,
