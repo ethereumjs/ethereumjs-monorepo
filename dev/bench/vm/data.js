@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1708427535293,
+  "lastUpdate": 1708508623175,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "865034bd66354c7cff40221386f0e5b881094182",
-          "message": "block: validate transactions are signed (#3239)\n\n* block: validate transactions are signed\r\n\r\n* vm: fix tests\r\n\r\n* client: fix tests\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-01-19T19:53:09-05:00",
-          "tree_id": "91b37917d0586a1e2b81854a85b8346060d92378",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/865034bd66354c7cff40221386f0e5b881094182"
-        },
-        "date": 1705712937783,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40783,
-            "range": "±2.50%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38307,
-            "range": "±3.15%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38793,
-            "range": "±2.16%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38498,
-            "range": "±2.08%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34041,
-            "range": "±7.16%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.79%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9994875902932128ee7c229d897bb36035e8c5cc",
+          "message": "Remove devnet6 trusted setup (#3288)\n\n* Update to official trusted setup\r\n\r\n* Remove devnet6\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-02-21T10:40:52+01:00",
+          "tree_id": "a038b0a931d5744dbb66d27999df61e217fe60c1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9994875902932128ee7c229d897bb36035e8c5cc"
+        },
+        "date": 1708508621629,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 39946,
+            "range": "±3.01%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39309,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38885,
+            "range": "±2.01%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36344,
+            "range": "±4.29%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36765,
+            "range": "±2.22%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
