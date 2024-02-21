@@ -312,9 +312,9 @@ export class FlatStateManager implements EVMStateManagerInterface {
    * checkpoints on the instance.
    * @returns {Promise<Uint8Array>} - Returns the state-root of the `StateManager`
    */
-  async getStateRoot(): Promise<Uint8Array> {
+  async getStateRoot(checkpointStateRoot = false): Promise<Uint8Array> {
     await this.flush()
-    return this._snapshot.merkleize()
+    return this._snapshot.merkleize(checkpointStateRoot)
   }
 
   /**
@@ -330,7 +330,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
     //
     // can keep the supported state roots of the last n blocks in a set to check if root is valid and supported
     // then can set a class field
-    throw new Error('Not yet implemented')
+    await this._snapshot.setStateRoot(stateRoot)
   }
 
   /**

@@ -2,6 +2,7 @@ import { merkleizeList } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
+  KECCAK256_NULL_S,
   KeyEncoding,
   LevelDB,
   bigIntToBytes,
@@ -27,6 +28,11 @@ type SnapshotElement = {
   data: Uint8Array | undefined
 }
 
+type rootDiffMap = {
+  diff: Map<string, SnapshotElement | undefined>
+  root: string
+}
+
 // function concatenateUint8Arrays(arrays: Uint8Array[]) {
 //   const l = arrays.reduce((prev, curr) => prev + curr.length, 0)
 //   const concatenatedArray = new Uint8Array(l)
@@ -43,7 +49,6 @@ type SnapshotElement = {
 export class Snapshot {
   _db: LevelDB<Uint8Array, Uint8Array>
   _debug: Debugger
-  _checkpoints = 0
 
   /**
    * Diff cache collecting the state of the cache
@@ -51,29 +56,69 @@ export class Snapshot {
    * (respectively: before a first modification)
    *
    * If the whole cache element is undefined (in contrast
-   * to the account), the element didn't exist in the cache
+   * to the data), the element didn't exist in the cache
    * before.
    */
   _diffCache: Map<string, SnapshotElement | undefined>[] = []
+  _checkpoints = 0
+
+  _stateRoot: string = KECCAK256_NULL_S
+  _stateRootDiffCache: rootDiffMap[] = []
+  _knownStateRoots: Set<string> = new Set<string>()
+  _stateRootCheckpoints = 0
+
   constructor(db?: LevelDB<Uint8Array, Uint8Array>) {
     this._db = db ?? new LevelDB<Uint8Array, Uint8Array>()
     this._diffCache.push(new Map<string, SnapshotElement | undefined>())
+
+    this._knownStateRoots.add(this._stateRoot)
+    this._stateRootDiffCache.push({
+      diff: new Map<string, SnapshotElement | undefined>(),
+      root: this._stateRoot,
+    })
+
     this._debug = createDebugLogger('client:snapshot')
   }
 
   async _saveCachePreState(key: Uint8Array) {
     const keyHex = bytesToHex(key)
+    const stateRootDiffMap = this._stateRootDiffCache[this._stateRootCheckpoints].diff
     const diffMap = this._diffCache[this._checkpoints]
+
     if (!diffMap.has(keyHex)) {
       const oldElem: SnapshotElement | undefined = {
         data: (await this._db.get(key)) as Uint8Array | undefined,
       }
       diffMap.set(keyHex, oldElem)
     }
+
+    // console.log('dbg101')
+    // console.log(stateRootDiffMap)
+    // console.log(!stateRootDiffMap.has(keyHex))
+    // console.log(this._stateRootDiffCache)
+    if (!stateRootDiffMap.has(keyHex)) {
+      const oldElem: SnapshotElement | undefined = {
+        data: (await this._db.get(key)) as Uint8Array | undefined,
+      }
+      // console.log(oldElem)
+      stateRootDiffMap.set(keyHex, oldElem)
+    }
+    // console.log(stateRootDiffMap)
+    // console.log(this._stateRootDiffCache)
+
+    // this._stateRootDiffCache[this._stateRootCheckpoints].diff = stateRootDiffMap
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
     const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
+
+    // console.log('dbg200')
+    // console.log(`key: ${bytesToHex(key)}`)
+    // console.log(`nonce: ${account.nonce}`)
+    // console.log(`balance: ${account.balance}`)
+    // console.log(`storageRoot: ${bytesToHex(account.storageRoot)}`)
+    // console.log(`codeHash: ${bytesToHex(account.codeHash)}\n`)
+
     await this._saveCachePreState(key)
 
     const value = account.serialize()
@@ -177,10 +222,15 @@ export class Snapshot {
     return this._db.get(key)
   }
 
-  async merkleize(): Promise<Uint8Array> {
+  async merkleize(checkpointStateRoot = false): Promise<Uint8Array> {
     // Merkleize all the storage tries in the db
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
     const accounts = await this._getAccounts()
+
+    // console.log('dbg210')
+    // console.trace()
+    // console.log(storageRoots)
+    // console.log(accounts)
     const leaves: [Uint8Array, Uint8Array][] = []
     accounts.map(([key, value]) => {
       const accountKey = key.slice(ACCOUNT_PREFIX.length)
@@ -192,12 +242,30 @@ export class Snapshot {
       let v = value
       if (storageRoot !== undefined) {
         const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
+        // console.log(acc)
         acc.storageRoot = storageRoot
         v = acc.serialize()
       }
       leaves.push([accountKey, v ?? KECCAK256_NULL])
     })
-    return merkleizeList(leaves)
+
+    const root = merkleizeList(leaves)
+    if (checkpointStateRoot === true) {
+      this._stateRoot = bytesToHex(root)
+
+      // console.log('dbg211')
+      // console.log(this._stateRoot)
+
+      this._knownStateRoots.add(this._stateRoot)
+
+      this._stateRootCheckpoints += 1
+      this._stateRootDiffCache.push({
+        diff: new Map<string, SnapshotElement | undefined>(),
+        root: this._stateRoot,
+      })
+    }
+
+    return root
   }
 
   async _merkleizeStorageTries(): Promise<{ [k: string]: Uint8Array }> {
@@ -222,6 +290,48 @@ export class Snapshot {
       roots[address] = merkleizeList(leaves as Uint8Array[][])
     }
     return roots
+  }
+
+  async setStateRoot(root: Uint8Array): Promise<void> {
+    try {
+      const rootString = bytesToHex(root)
+      // console.log('dbg102')
+      // console.log(rootString)
+      // console.log(this._stateRootDiffCache)
+      if (this._knownStateRoots.has(rootString) !== true) throw new Error('Root does not exist')
+      while (this._stateRootDiffCache.length > 0) {
+        this._stateRootCheckpoints -= 1
+        const { diff, root } = this._stateRootDiffCache.pop()!
+        // console.log('dbg100')
+        // console.log(diff)
+        // console.log(root)
+        // console.log('dbg107')
+        for (const entry of diff.entries()) {
+          const addressHex = entry[0]
+          const elem = entry[1]
+          if (elem === undefined) {
+            await this._db.del(hexToBytes(addressHex))
+          } else {
+            if (elem.data !== undefined) {
+              await this._db.put(hexToBytes(addressHex), elem.data)
+            } else {
+              await this._db.del(hexToBytes(addressHex))
+            }
+          }
+        }
+        // console.log('dbg107')
+        if (root === rootString) {
+          const calculatedRoot = bytesToHex(await this.merkleize())
+          // console.log('dbg105')
+          // console.log(calculatedRoot)
+          if (calculatedRoot !== rootString)
+            throw new Error('Rollback failed to produce expected root')
+          break
+        }
+      }
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   // /**
