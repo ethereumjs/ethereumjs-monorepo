@@ -9,12 +9,13 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 
-import { UNSUPPORTED_FORK } from '../../../error-code'
-import { type BlobsBundleV1, type ChainCache, type PayloadStatusV1, Status } from '../types'
+import { UNSUPPORTED_FORK } from '../../error-code'
 
-import type { Chain } from '../../../../blockchain'
-import type { BlobsBundle } from '../../../../miner'
-import type { ExecutionPayloadBodyV1 } from '../types'
+import { type BlobsBundleV1, type ChainCache, type PayloadStatusV1, Status } from './types'
+
+import type { Chain } from '../../../blockchain'
+import type { BlobsBundle } from '../../../miner'
+import type { ExecutionPayloadBodyV1 } from './types'
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 
