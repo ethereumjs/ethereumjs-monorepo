@@ -1,5 +1,6 @@
 import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+// import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -15,8 +16,11 @@ const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
+    let kzg
     try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
+      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      kzg = await initKzg()
+      initKZG(kzg, '')
     } catch {
       // no-op
     }

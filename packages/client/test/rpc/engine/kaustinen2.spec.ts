@@ -1,6 +1,7 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+// import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -33,8 +34,11 @@ async function runBlock(
 }
 
 describe(`valid verkle network setup`, async () => {
+  let kzg
   try {
-    initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
+    // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+    kzg = await initKzg()
+    initKZG(kzg, '')
   } catch {
     // no-op
   }

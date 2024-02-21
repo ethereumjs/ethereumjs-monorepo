@@ -1,5 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-// import { initKZG } from '@ethereumjs/util'
+import { initKZG } from '@ethereumjs/util'
 // import * as kzg from 'c-kzg'
 import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
@@ -16,6 +16,7 @@ let kzg
 try {
   // initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
   kzg = await initKzg()
+  initKZG(kzg, '')
 } catch {
   // no-op
 }

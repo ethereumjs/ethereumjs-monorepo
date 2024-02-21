@@ -2,14 +2,18 @@ import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, hexToBytes, initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+// import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
+let kzg
 try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
+  // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+  kzg = await initKzg()
+  initKZG(kzg, '')
 } catch {
   // no-op
 }

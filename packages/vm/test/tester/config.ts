@@ -1,8 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+// import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import * as path from 'path'
 
+const kzg = await initKzg()
+initKZG(kzg, '')
 /**
  * Default tests path (git submodule: ethereum-tests)
  */
@@ -259,11 +262,6 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
       }
     }
   }
-  try {
-    initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
-  } catch {
-    // no-op
-  }
   const common = Common.custom(
     {
       hardforks: testHardforks,
@@ -346,11 +344,11 @@ export function getCommon(network: string): Common {
         })
       }
     }
-    try {
-      initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
-    } catch {
-      // no-op
-    }
+    // try {
+    //   initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
+    // } catch {
+    //   // no-op
+    // }
     const common = Common.custom(
       {
         hardforks: testHardforks,

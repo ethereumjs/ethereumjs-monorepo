@@ -7,7 +7,8 @@ import {
   initKZG,
   unpadBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+// import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -23,8 +24,11 @@ describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
     if (isBrowser() === false) {
       const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
+      let kzg
       try {
-        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
+        // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+        kzg = await initKzg()
+        initKZG(kzg, '')
       } catch {
         // no-op
       }
