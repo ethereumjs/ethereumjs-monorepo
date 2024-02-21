@@ -8,6 +8,7 @@ import {
   intToHex,
   setLengthRight,
 } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -103,9 +104,14 @@ describe(`valid verkle network setup`, async () => {
     ...genesisJSON,
     config: { ...genesisJSON.config, pragueTime: undefined },
   }
-  const { server, chain, common } = await setupChain(unschedulePragueJson, 'post-merge', {
-    engine: true,
-  })
+  const { server, chain, common, execution } = await setupChain(
+    unschedulePragueJson,
+    'post-merge',
+    {
+      engine: true,
+      savePreimages: true,
+    }
+  )
   ;(chain.blockchain as any).validateHeader = () => {}
 
   const rpc = getRpcClient(server)
@@ -137,6 +143,12 @@ describe(`valid verkle network setup`, async () => {
         gasUsed: '0x0',
         coinbase: '0x78026f1e4f2ff57c340634f844f47cb241beef4c',
       },
+      preimages: [
+        // coinbase
+        '0x78026f1e4f2ff57c340634f844f47cb241beef4c',
+        // no withdrawals
+        // no tx accesses
+      ],
     },
     {
       name: 'block 2 having kaustinen2 block 12 txs',
@@ -148,6 +160,21 @@ describe(`valid verkle network setup`, async () => {
         gasUsed: '0xa410',
         coinbase: '0x9da2abca45e494476a21c49982619ee038b68556',
       },
+      // add preimages for addresses accessed in txs
+      preimages: [
+        // coinbase
+        '0x9da2abca45e494476a21c49982619ee038b68556',
+        // withdrawals
+        '0x2000000000000000000000000000000000000000',
+        '0x2100000000000000000000000000000000000000',
+        '0x2200000000000000000000000000000000000000',
+        '0x2300000000000000000000000000000000000000',
+        '0x2400000000000000000000000000000000000000',
+        '0x2500000000000000000000000000000000000000',
+        '0x2600000000000000000000000000000000000000',
+        '0x2700000000000000000000000000000000000000',
+        // txs
+      ],
     },
     {
       name: 'block 3 no txs with just withdrawals but zero coinbase',
@@ -159,9 +186,23 @@ describe(`valid verkle network setup`, async () => {
         gasUsed: '0x0',
         coinbase: '0x0000000000000000000000000000000000000000',
       },
+      preimages: [
+        // coinbase
+        '0x0000000000000000000000000000000000000000',
+        // withdrawals,
+        '0x3000000000000000000000000000000000000000',
+        '0x3100000000000000000000000000000000000000',
+        '0x3200000000000000000000000000000000000000',
+        '0x3300000000000000000000000000000000000000',
+        '0x3400000000000000000000000000000000000000',
+        '0x3500000000000000000000000000000000000000',
+        '0x3600000000000000000000000000000000000000',
+        '0x3700000000000000000000000000000000000000',
+        // no txs
+      ],
     },
     {
-      name: 'block 3 no txs with just withdrawals',
+      name: 'block 4 no txs with just withdrawals',
       blockData: {
         transactions: blocks.block13.execute.transactions,
         blockNumber: '0x04',
@@ -170,14 +211,34 @@ describe(`valid verkle network setup`, async () => {
         gasUsed: '0x3c138',
         coinbase: '0xa874386cdb13f6cb3b974d1097b25116e67fc21e',
       },
+      preimages: [
+        // coinbase
+        '0xa874386cdb13f6cb3b974d1097b25116e67fc21e',
+        // withdrawals
+        '0x4000000000000000000000000000000000000000',
+        '0x4100000000000000000000000000000000000000',
+        '0x4200000000000000000000000000000000000000',
+        '0x4300000000000000000000000000000000000000',
+        '0x4400000000000000000000000000000000000000',
+        '0x4500000000000000000000000000000000000000',
+        '0x4600000000000000000000000000000000000000',
+        '0x4700000000000000000000000000000000000000',
+      ],
+      // no txs
     },
   ] as const
 
   let parentHash = genesisBlockHash
   for (const testCase of testCases) {
-    const { name, blockData } = testCase
+    const { name, blockData, preimages } = testCase
     it(`run ${name}`, async () => {
       const { blockHash } = await runBlock({ common, rpc }, { ...blockData, parentHash })
+      // check the preimages are in  the preimage managaer
+      for (const preimage of preimages) {
+        const hashedImage = keccak256(hexToBytes(preimage))
+        const savedPreImage = await execution.preimagesManager!.getPreimage(hashedImage)
+        assert.equal(bytesToHex(savedPreImage), preimage)
+      }
       parentHash = blockHash
     })
   }
