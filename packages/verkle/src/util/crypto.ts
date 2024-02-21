@@ -1,5 +1,6 @@
 import {
   type Address,
+  bigIntToBytes,
   bytesToHex,
   concatBytes,
   int32ToBytes,
@@ -39,13 +40,17 @@ export function verifyUpdate(
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
-export function getStem(address: Address, treeIndex: number = 0): Uint8Array {
+export function getStem(address: Address, treeIndex: number | bigint = 0): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
-  const treeIndexBytes = setLengthRight(int32ToBytes(treeIndex, true), 32)
+  let treeIndexBytes: Uint8Array
+  if (typeof treeIndex === 'number') {
+    treeIndexBytes = setLengthRight(int32ToBytes(Number(treeIndex), true), 32)
+  } else {
+    treeIndexBytes = setLengthRight(bigIntToBytes(BigInt(treeIndex), true).slice(0, 32), 32)
+  }
 
   const input = concatBytes(address32, treeIndexBytes)
-
   const treeStem = pedersenHash(input).slice(0, 31)
 
   return treeStem

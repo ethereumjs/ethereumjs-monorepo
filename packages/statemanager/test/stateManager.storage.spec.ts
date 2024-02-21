@@ -14,6 +14,7 @@ import { DefaultStateManager, FlatStateManager } from '../src/index.js'
 
 import { createAccount } from './util.js'
 
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 describe('StateManager -> Storage', () => {
   for (const storageCacheOpts of [
     { deactivate: false },
@@ -23,7 +24,7 @@ describe('StateManager -> Storage', () => {
     const stateManagers: any[] = [FlatStateManager, DefaultStateManager]
     for (const smType of stateManagers) {
       for (const prefixStorageTrieKeys of [false, true]) {
-        it(`should dump storage`, async () => {
+        it.skipIf(isBrowser() === true)(`should dump storage`, async () => {
           const stateManager = new smType({ prefixStorageTrieKeys, storageCacheOpts })
           const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
           const account = createAccount()

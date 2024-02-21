@@ -22,16 +22,18 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
     if (isBrowser() === false) {
-      try {
-        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
-        // eslint-disable-next-line
-      } catch {}
-
       const genesisJSON = require('../../../client/test/testdata/geth-genesis/eip4844.json')
+      try {
+        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
+      } catch {
+        // no-op
+      }
       const common = Common.fromGethGenesis(genesisJSON, {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
+        customCrypto: { kzg },
       })
+
       const evm = new EVM({
         common,
       })
@@ -39,28 +41,24 @@ describe('Precompiles: point evaluation', () => {
       const pointEvaluation = getActivePrecompiles(common).get(addressStr)!
 
       const testCase = {
-        Proof: hexToBytes(
-          '0x8ad6f539bc7280de6af4c95e7cef39bb6873f18c46ee5eb67299324ee7c6e6da71be2dbd5e2cbafbae4b2d60b40a808c'
+        commitment: hexToBytes(
+          '0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
         ),
-        Commitment: hexToBytes(
-          '0xabb6bcbe313530ce7779abdf633d5a3594a41fbad9a79f4a9b46b89c0cfe78f6a15948dec92c4404aedac8b5e7dd6059'
-        ),
-        InputPoint: hexToBytes(
-          '0x0000000000000000000000000000000000000000000000000000000000002001'
-        ),
-        ClaimedValue: hexToBytes(
-          '0x0f69060fb771fa559a9e842e1dd79dde8a107486e801707032d93b5965d0cd48'
+        z: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000002'),
+        y: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+        proof: hexToBytes(
+          '0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
         ),
       }
-      const versionedHash = computeVersionedHash(testCase.Commitment, 1)
+      const versionedHash = computeVersionedHash(testCase.commitment, 1)
 
       const opts: PrecompileInput = {
         data: concatBytes(
           versionedHash,
-          testCase.InputPoint,
-          testCase.ClaimedValue,
-          testCase.Commitment,
-          testCase.Proof
+          testCase.z,
+          testCase.y,
+          testCase.commitment,
+          testCase.proof
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,
@@ -77,10 +75,10 @@ describe('Precompiles: point evaluation', () => {
       const optsWithInvalidCommitment: PrecompileInput = {
         data: concatBytes(
           concatBytes(Uint8Array.from([0]), versionedHash.slice(1)),
-          testCase.InputPoint,
-          testCase.ClaimedValue,
-          testCase.Commitment,
-          testCase.Proof
+          testCase.z,
+          testCase.y,
+          testCase.commitment,
+          testCase.proof
         ),
         gasLimit: 0xfffffffffn,
         _EVM: evm,

@@ -1,3 +1,4 @@
+export * from './accessWitness.js'
 export * from './cache/index.js'
 export * from './flat/flatStateManager.js'
 export * from './flat/snapshot.js'

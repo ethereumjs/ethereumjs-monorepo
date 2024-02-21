@@ -87,17 +87,22 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      try {
-        // Verified KZG is loaded correctly -- NOOP if throws
-        initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-        //eslint-disable-next-line
-      } catch {}
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
+      try {
+        initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
+      } catch {
+        // no-op
+      }
       const common = Common.fromGethGenesis(gethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg,
+        },
       })
-      const { chain, execution, server } = await setupChain(gethGenesis, 'customChain')
+      const { chain, execution, server } = await setupChain(gethGenesis, 'customChain', {
+        customCrypto: { kzg },
+      })
       common.setHardfork(Hardfork.Cancun)
       const rpc = getRpcClient(server)
 

@@ -116,7 +116,8 @@ export const chains: ChainsDict = {
       {
         name: 'cancun',
         block: null,
-        forkHash: null,
+        timestamp: '1710338135',
+        forkHash: '0x9f3d2254',
       },
     ],
     bootstrapNodes: [
@@ -249,7 +250,8 @@ export const chains: ChainsDict = {
       {
         name: 'cancun',
         block: null,
-        forkHash: null,
+        timestamp: '1705473120',
+        forkHash: '0x70cc14e2',
       },
     ],
     bootstrapNodes: [
@@ -411,7 +413,8 @@ export const chains: ChainsDict = {
       {
         name: 'cancun',
         block: null,
-        forkHash: null,
+        timestamp: '1706655072',
+        forkHash: '0x88cf81d9',
       },
     ],
     bootstrapNodes: [
@@ -543,7 +546,8 @@ export const chains: ChainsDict = {
       {
         name: 'cancun',
         block: null,
-        forkHash: null,
+        timestamp: '1707305664',
+        forkHash: '0x9b192ad0',
       },
     ],
     bootstrapNodes: [

@@ -20,4 +20,4 @@ This command runs a specific test, namely `Invalid Missing Ancestor Syncing ReOr
 
 When changing code in the cloned monorepo, it is noted that re-running hive is rather slow. In order to make this faster, see [this PR](https://github.com/jochem-brouwer/hive/pull/1). The state of the PR should be leading, but in order for it to work, ensure that `.dockerignore`, `Dockerfile` and `ethereumjs.sh` are copied into the `clients/ethereumjs` folder of the hive repo.
 
-This runner will use `ts-node` (better debug output!) and is taking advantage of Docker's caching mechanism in order to ensure that any changes of code will get imported on a fresh start of a hive run fast.
+This runner will use `tsx` (better debug output!) and is taking advantage of Docker's caching mechanism in order to ensure that any changes of code will get imported on a fresh start of a hive run fast.

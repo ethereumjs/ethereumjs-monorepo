@@ -354,13 +354,18 @@ describe('[PendingBlock]', async () => {
 
   it('construct blob bundles', async () => {
     try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+    } catch {
+      // no-op
+    }
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
@@ -431,15 +436,18 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    try {
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+    } catch {
+      //no-op
+    }
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')

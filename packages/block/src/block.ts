@@ -51,6 +51,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly common: Common
+  protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
@@ -59,7 +60,7 @@ export class Block {
    */
   public readonly executionWitness?: VerkleExecutionWitness | null
 
-  private cache: {
+  protected cache: {
     txTrieRoot?: Uint8Array
   } = {}
 
@@ -103,6 +104,7 @@ export class Block {
       withdrawals: withdrawalsData,
       executionWitness: executionWitnessData,
     } = blockData
+
     const header = BlockHeader.fromHeaderData(headerData, opts)
 
     // parse transactions
@@ -166,7 +168,9 @@ export class Block {
    */
   public static fromValuesArray(values: BlockBytes, opts?: BlockOptions) {
     if (values.length > 5) {
-      throw new Error(`invalid block. More values=${values.length} than expected were received`)
+      throw new Error(
+        `invalid block. More values=${values.length} than expected were received (at most 5)`
+      )
     }
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
@@ -240,7 +244,7 @@ export class Block {
    *
    * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
    * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
-   * @param options - An object describing the blockchain
+   * @param opts - An object describing the blockchain
    */
   public static fromRPC(blockData: JsonRpcBlock, uncles?: any[], opts?: BlockOptions) {
     return blockFromRpc(blockData, uncles, opts)
@@ -315,7 +319,7 @@ export class Block {
    */
   public static async fromExecutionPayload(
     payload: ExecutionPayload,
-    options?: BlockOptions
+    opts?: BlockOptions
   ): Promise<Block> {
     const {
       blockNumber: number,
@@ -331,7 +335,7 @@ export class Block {
     for (const [index, serializedTx] of transactions.entries()) {
       try {
         const tx = TransactionFactory.fromSerializedData(hexToBytes(serializedTx), {
-          common: options?.common,
+          common: opts?.common,
         })
         txs.push(tx)
       } catch (error) {
@@ -340,10 +344,13 @@ export class Block {
       }
     }
 
-    const transactionsTrie = await Block.genTransactionsTrieRoot(txs)
+    const transactionsTrie = await Block.genTransactionsTrieRoot(
+      txs,
+      new Trie({ common: opts?.common })
+    )
     const withdrawals = withdrawalsData?.map((wData) => Withdrawal.fromWithdrawalData(wData))
     const withdrawalsRoot = withdrawals
-      ? await Block.genWithdrawalsTrieRoot(withdrawals)
+      ? await Block.genWithdrawalsTrieRoot(withdrawals, new Trie({ common: opts?.common }))
       : undefined
     const header: HeaderData = {
       ...payload,
@@ -358,7 +365,7 @@ export class Block {
     // we are not setting setHardfork as common is already set to the correct hf
     const block = Block.fromBlockData(
       { header, transactions: txs, withdrawals, executionWitness },
-      options
+      opts
     )
     if (
       block.common.isActivatedEIP(6800) &&
@@ -385,10 +392,10 @@ export class Block {
    */
   public static async fromBeaconPayloadJson(
     payload: BeaconPayloadJson,
-    options?: BlockOptions
+    opts?: BlockOptions
   ): Promise<Block> {
     const executionPayload = executionPayloadFromBeaconPayload(payload)
-    return Block.fromExecutionPayload(executionPayload, options)
+    return Block.fromExecutionPayload(executionPayload, opts)
   }
 
   /**
@@ -405,6 +412,7 @@ export class Block {
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
@@ -510,7 +518,7 @@ export class Block {
    * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<Uint8Array> {
-    return Block.genTransactionsTrieRoot(this.transactions, new Trie())
+    return Block.genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
   }
 
   /**
@@ -600,16 +608,30 @@ export class Block {
    * - The transactions trie is valid
    * - The uncle hash is valid
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
+   * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
    */
-  async validateData(onlyHeader: boolean = false): Promise<void> {
-    const txErrors = this.getTransactionsValidationErrors()
-    if (txErrors.length > 0) {
-      const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
-      throw new Error(msg)
+  async validateData(onlyHeader: boolean = false, verifyTxs: boolean = true): Promise<void> {
+    if (verifyTxs) {
+      const txErrors = this.getTransactionsValidationErrors()
+      if (txErrors.length > 0) {
+        const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
+        throw new Error(msg)
+      }
     }
 
     if (onlyHeader) {
       return
+    }
+
+    if (verifyTxs) {
+      for (const [index, tx] of this.transactions.entries()) {
+        if (!tx.isSigned()) {
+          const msg = this._errorMsg(
+            `invalid transactions: transaction at index ${index} is unsigned`
+          )
+          throw new Error(msg)
+        }
+      }
     }
 
     if (!(await this.transactionsTrieIsValid())) {
@@ -696,7 +718,7 @@ export class Block {
   uncleHashIsValid(): boolean {
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
-    return equalsBytes(keccak256(raw), this.header.uncleHash)
+    return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
   }
 
   /**
@@ -707,7 +729,10 @@ export class Block {
     if (!this.common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(this.withdrawals!)
+    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(
+      this.withdrawals!,
+      new Trie({ common: this.common })
+    )
     return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
   }
 

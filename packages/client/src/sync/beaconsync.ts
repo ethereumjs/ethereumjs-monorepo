@@ -118,7 +118,7 @@ export class BeaconSynchronizer extends Synchronizer {
       const latest = await this.latest(peer)
       if (latest) {
         const { number } = latest
-        if ((!best && number >= this.chain.blocks.height) || (best && best[1] < number)) {
+        if (!best || best[1] < number) {
           best = [peer, number]
         }
       }

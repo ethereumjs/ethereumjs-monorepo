@@ -47,6 +47,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
   hashes: Uint8Array[]
 
+  keccakFunction: Function
+
   /**
    * Create new block fetcher
    */
@@ -57,6 +59,8 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.fetcherDoneFlags = options.fetcherDoneFlags ?? getInitFecherDoneFlags()
     this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()
+
+    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
     this.debug = createDebugLogger('client:ByteCodeFetcher')
     if (this.hashes.length > 0) {
@@ -109,7 +113,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     let requestedHashIndex = 0
     for (let i = 0; i < rangeResult.codes.length; i++) {
       const receivedCode = rangeResult.codes[i]
-      const receivedHash = keccak256(receivedCode)
+      const receivedHash = this.keccakFunction(receivedCode)
 
       // move forward requestedHashIndex till the match has been found
       while (
@@ -168,7 +172,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     const ops = []
     let storeCount = 0
     for (const [_, value] of codeHashToByteCode) {
-      const codeHash = keccak256(value)
+      const codeHash = this.keccakFunction(value)
       const computedKey = concatBytes(CODEHASH_PREFIX, codeHash)
       ops.push({
         type: 'put',

@@ -4,19 +4,18 @@ import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
 import { Event } from '../../../src/types'
 
+class PeerPool {
+  idle() {}
+  ban() {}
+}
+PeerPool.prototype.idle = vi.fn()
+PeerPool.prototype.ban = vi.fn()
+vi.mock('../../src/net/peerpool', () => {
+  return PeerPool
+})
+
+const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
 describe('[HeaderFetcher]', async () => {
-  class PeerPool {
-    idle() {}
-    ban() {}
-  }
-  PeerPool.prototype.idle = vi.fn()
-  PeerPool.prototype.ban = vi.fn()
-  vi.mock('../../src/net/peerpool', () => {
-    return PeerPool
-  })
-
-  const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
-
   it('should process', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool()
@@ -94,35 +93,38 @@ describe('[HeaderFetcher]', async () => {
       reverse: false,
     })
   })
-
-  it('store()', async () => {
-    const config = new Config({ maxPerRequest: 5 })
-    const pool = new PeerPool() as any
-    const chain = await Chain.create({ config })
-    const fetcher = new HeaderFetcher({
-      config,
-      pool,
-      chain,
-      first: BigInt(1),
-      count: BigInt(10),
-      timeout: 5,
-    })
-
+})
+describe('store()', async () => {
+  const config = new Config({ maxPerRequest: 5 })
+  const pool = new PeerPool() as any
+  const chain = await Chain.create({ config })
+  const fetcher = new HeaderFetcher({
+    config,
+    pool,
+    chain,
+    first: BigInt(1),
+    count: BigInt(10),
+    timeout: 5,
+  })
+  it('should handle bad header', async () => {
     chain.putHeaders = vi.fn((input) => {
       if (input[0] === 0) throw new Error('err0')
     }) as any
     try {
       await fetcher.store([0 as any])
+      assert.fail('should fail')
     } catch (err: any) {
       assert.equal(err.message, 'err0', 'store() threw on invalid header')
     }
-
-    chain.putHeaders = vi.fn((input) => {
-      if (input[0] === 1) return 1
-    }) as any
-    config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
-      assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
-    )
-    await fetcher.store([1 as any])
   })
+
+  chain.putHeaders = vi.fn((input) => {
+    if (input[0] === 1) return 1
+  }) as any
+  config.events.on(Event.SYNC_FETCHED_HEADERS, () =>
+    it('should emit event on put headers', () => {
+      assert.ok(true, 'store() emitted SYNC_FETCHED_HEADERS event on putting headers')
+    })
+  )
+  await fetcher.store([1 as any])
 })

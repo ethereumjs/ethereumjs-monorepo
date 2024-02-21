@@ -24,6 +24,7 @@
 - [ChainsConfig](interfaces/ChainsConfig.md)
 - [CommonOpts](interfaces/CommonOpts.md)
 - [CustomCommonOpts](interfaces/CustomCommonOpts.md)
+- [CustomCrypto](interfaces/CustomCrypto.md)
 - [EVMStateManagerInterface](interfaces/EVMStateManagerInterface.md)
 - [GenesisBlockConfig](interfaces/GenesisBlockConfig.md)
 - [GethConfigOpts](interfaces/GethConfigOpts.md)
@@ -149,7 +150,7 @@ ___
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
+[types.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L186)
 
 ___
 
@@ -172,7 +173,7 @@ ___
 
 #### Defined in
 
-[types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L136)
+[types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L165)
 
 ___
 
@@ -192,7 +193,7 @@ ___
 
 #### Defined in
 
-[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L162)
+[types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L191)
 
 ___
 
@@ -244,7 +245,7 @@ GenesisState info about well known ethereum chains
 
 #### Defined in
 
-[enums.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L25)
+[enums.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L26)
 
 ## Functions
 
@@ -290,4 +291,4 @@ parsed params
 
 #### Defined in
 
-[utils.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L205)
+[utils.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L209)
