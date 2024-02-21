@@ -23,9 +23,9 @@ import {
   validEngineCodes,
 } from '../../error-code'
 import { callWithStackTrace } from '../../helpers'
-import { CLConnectionManager, middleware as cmMiddleware } from '../../util/CLConnectionManager'
 import { middleware, validators } from '../../validation'
 
+import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager'
 import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types'
 import {
   assembleBlock,
