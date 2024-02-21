@@ -350,6 +350,10 @@ export class Engine {
     // we remove this block from invalidBlocks for it to be evaluated again against the
     // new data/corrections the CL might be calling newPayload with
     this.invalidBlocks.delete(blockHash.slice(2))
+
+    /**
+     * See if block can be assembled from payload
+     */
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block: headBlock, error } = await assembleBlock(
       {
@@ -372,6 +376,9 @@ export class Engine {
       return response
     }
 
+    /**
+     * Validate blob versioned hashes in the context of EIP-4844 blob transactions
+     */
     if (headBlock.common.isActivatedEIP(4844)) {
       let validationError: string | null = null
       if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
@@ -396,8 +403,10 @@ export class Engine {
       return response
     }
 
+    /**
+     * Stats and hardfork updates
+     */
     this.connectionManager.updatePayloadStats(headBlock)
-
     const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
       this.config.logger.info(
@@ -408,9 +417,11 @@ export class Engine {
     }
     this.lastNewPayloadHF = hardfork
 
-    // get the parent from beacon skeleton or from remoteBlocks cache or from the chain
-    // to run basic validations based on parent
     try {
+      /**
+       * get the parent from beacon skeleton or from remoteBlocks cache or from the chain
+       * to run basic validations based on parent
+       */
       const parent =
         (await this.skeleton.getBlockByHash(hexToBytes(parentHash), true)) ??
         this.remoteBlocks.get(parentHash.slice(2)) ??
@@ -433,8 +444,10 @@ export class Engine {
         }
       }
 
-      // validate 4844 transactions and fields as these validations generally happen on putBlocks
-      // when parent is confirmed to be in the chain. But we can do it here early
+      /**
+       * validate 4844 transactions and fields as these validations generally happen on putBlocks
+       * when parent is confirmed to be in the chain. But we can do it here early
+       */
       if (headBlock.common.isActivatedEIP(4844)) {
         try {
           headBlock.validateBlobTransactions(parent.header)
@@ -451,6 +464,9 @@ export class Engine {
         }
       }
 
+      /**
+       * Check for executed parent
+       */
       const executedParentExists =
         this.executedBlocks.get(parentHash.slice(2)) ??
         (await validExecutedChainBlock(hexToBytes(parentHash), this.chain))
@@ -463,6 +479,9 @@ export class Engine {
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
       const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
+      /**
+       * Invalid skeleton PUT
+       */
       if (
         this.skeleton.fillStatus?.status === PutStatus.INVALID &&
         optimisticLookup &&
@@ -480,6 +499,9 @@ export class Engine {
         return response
       }
 
+      /**
+       * Invalid execution
+       */
       if (
         this.execution.chainStatus?.status === ExecStatus.INVALID &&
         optimisticLookup &&
@@ -524,6 +546,10 @@ export class Engine {
     //
     // Call skeleton.setHead without forcing head change to return if the block is reorged or not
     // Do optimistic lookup if not reorged
+    //
+    // TODO: Determine if this optimistic lookup can be combined with the optimistic lookup above
+    // from within the catch clause (by skipping the code from the catch clause), code looks
+    // identical, same for executedBlockExists code below ??
     const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
     if (
       this.skeleton.fillStatus?.status === PutStatus.INVALID &&
@@ -586,6 +612,12 @@ export class Engine {
       }
     }
 
+    /**
+     * 1. Determine non-executed blocks from beyond vmHead to headBlock
+     * 2. Iterate through non-executed blocks
+     * 3. Determine if block should be executed by some extra conditions
+     * 4. Execute block with this.execution.runWithoutSetHead()
+     */
     const vmHead =
       this.chainCache.executedBlocks.get(parentHash.slice(2)) ??
       (await this.chain.blockchain.getIteratorHead())
@@ -711,6 +743,12 @@ export class Engine {
     return response
   }
 
+  /**
+   * V1 (Paris HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#engine_newpayloadv1
+   * @param params V1 payload
+   * @returns
+   */
   async newPayloadV1(params: [ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     const ts = parseInt(params[0].timestamp)
@@ -724,6 +762,12 @@ export class Engine {
     return this.newPayload(params)
   }
 
+  /**
+   * V2 (Shanghai HF) including withdrawals, see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#executionpayloadv2
+   * @param params V1 or V2 payload
+   * @returns
+   */
   async newPayloadV2(params: [ExecutionPayloadV2 | ExecutionPayloadV1]): Promise<PayloadStatusV1> {
     const shanghaiTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Shanghai)
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
@@ -774,6 +818,12 @@ export class Engine {
     return newPayloadRes
   }
 
+  /**
+   * V3 (Cancun HF) including blob versioned hashes + parent beacon block root, see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#engine_newpayloadv3
+   * @param params V3 payload, expectedBlobVersionedHashes, parentBeaconBlockRoot
+   * @returns
+   */
   async newPayloadV3(params: [ExecutionPayloadV3, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
     const eip4844Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Cancun)
     const ts = parseInt(params[0].timestamp)
