@@ -28,7 +28,12 @@ import { CLConnectionManager, middleware as cmMiddleware } from '../../util/CLCo
 import { middleware, validators } from '../../validation'
 
 import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types'
-import { blockToExecutionPayload, pruneCachedBlocks } from './util'
+import {
+  blockToExecutionPayload,
+  pruneCachedBlocks,
+  recursivelyFindParents,
+  validExecutedChainBlock,
+} from './util'
 import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
@@ -64,68 +69,6 @@ import type { Common } from '@ethereumjs/common'
 import type { VM } from '@ethereumjs/vm'
 
 const zeroBlockHash = zeros(32)
-
-/**
- * Recursively finds parent blocks starting from the parentHash.
- */
-const recursivelyFindParents = async (
-  vmHeadHash: Uint8Array,
-  parentHash: Uint8Array,
-  chain: Chain
-) => {
-  if (equalsBytes(parentHash, vmHeadHash) || equalsBytes(parentHash, new Uint8Array(32))) {
-    return []
-  }
-  const maxDepth = chain.config.engineParentLookupMaxDepth
-
-  const parentBlocks = []
-  const block = await chain.getBlock(parentHash)
-  parentBlocks.push(block)
-
-  while (!equalsBytes(parentBlocks[parentBlocks.length - 1].hash(), vmHeadHash)) {
-    const block: Block = await chain.getBlock(
-      parentBlocks[parentBlocks.length - 1].header.parentHash
-    )
-    parentBlocks.push(block)
-
-    if (block.isGenesis()) {
-      // In case we hit the genesis block we should stop finding additional parents
-      break
-    }
-
-    // throw error if lookups have exceeded maxDepth
-    if (parentBlocks.length > maxDepth) {
-      throw Error(`recursivelyFindParents lookups deeper than maxDepth=${maxDepth}`)
-    }
-  }
-  return parentBlocks.reverse()
-}
-
-/**
- * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
- */
-const validExecutedChainBlock = async (
-  blockOrHash: Uint8Array | Block,
-  chain: Chain
-): Promise<Block | null> => {
-  try {
-    const block = blockOrHash instanceof Block ? blockOrHash : await chain.getBlock(blockOrHash)
-    const vmHead = await chain.blockchain.getIteratorHead()
-
-    if (vmHead.header.number >= block.header.number) {
-      // check if block is canonical
-      const canonicalHash = await chain.blockchain.safeNumberToHash(block.header.number)
-      if (canonicalHash instanceof Uint8Array && equalsBytes(block.hash(), canonicalHash)) {
-        return block
-      }
-    }
-
-    // if the block was canonical and executed we would have returned by now
-    return null
-  } catch (error: any) {
-    return null
-  }
-}
 
 /**
  * Returns the block hash as a 0x-prefixed hex string if found valid in the blockchain, otherwise returns null.
