@@ -144,6 +144,9 @@ export class Engine {
     this.initValidators()
   }
 
+  /**
+   * Log EL sync status
+   */
   private logELStatus = () => {
     const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
     if (forceShowInfo) {
@@ -161,7 +164,13 @@ export class Engine {
     })
   }
 
+  /**
+   * Configuration and initialization of custom Engine API call validators
+   */
   private initValidators() {
+    /**
+     * newPayload
+     */
     this.newPayloadV1 = cmMiddleware(
       middleware(callWithStackTrace(this.newPayloadV1.bind(this), this._rpcDebug), 1, [
         [validators.object(executionPayloadV1FieldValidators)],
@@ -195,6 +204,9 @@ export class Engine {
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response })
     )
 
+    /**
+     * forkchoiceUpdated
+     */
     const forkchoiceUpdatedResponseCMHandler = (
       [state]: ForkchoiceStateV1[],
       response?: ForkchoiceResponseV1 & { headBlock?: Block },
@@ -232,6 +244,9 @@ export class Engine {
       forkchoiceUpdatedResponseCMHandler
     )
 
+    /**
+     * getPayload
+     */
     this.getPayloadV1 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadV1.bind(this), this._rpcDebug), 1, [
         [validators.bytes8],
@@ -253,6 +268,9 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
+    /**
+     * exchangeTransitionConfiguration
+     */
     this.exchangeTransitionConfigurationV1 = cmMiddleware(
       middleware(
         callWithStackTrace(this.exchangeTransitionConfigurationV1.bind(this), this._rpcDebug),
@@ -270,11 +288,17 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
+    /**
+     * exchangeCapabilities
+     */
     this.exchangeCapabilities = cmMiddleware(
       middleware(callWithStackTrace(this.exchangeCapabilities.bind(this), this._rpcDebug), 0, []),
       () => this.connectionManager.updateStatus()
     )
 
+    /**
+     * getPayloadBodiesByHash
+     */
     this.getPayloadBodiesByHashV1 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadBodiesByHashV1.bind(this), this._rpcDebug), 1, [
         [validators.array(validators.bytes32)],
@@ -282,6 +306,9 @@ export class Engine {
       () => this.connectionManager.updateStatus()
     )
 
+    /**
+     * getPayloadBodiesByRange
+     */
     this.getPayloadBodiesByRangeV1 = cmMiddleware(
       middleware(callWithStackTrace(this.getPayloadBodiesByRangeV1.bind(this), this._rpcDebug), 2, [
         [validators.bytes8],
