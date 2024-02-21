@@ -363,7 +363,7 @@ export class Engine {
     if (headBlock === undefined || error !== undefined) {
       let response = error
       if (!response) {
-        const validationError = `Error assembling block during init`
+        const validationError = `Error assembling block from payload during initialization`
         this.config.logger.debug(validationError)
         const latestValidHash = await validHash(hexToBytes(parentHash), this.chain, this.chainCache)
         response = { status: Status.INVALID, latestValidHash, validationError }
