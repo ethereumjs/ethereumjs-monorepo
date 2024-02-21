@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1708508623175,
+  "lastUpdate": 1708532609974,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4b358b431f0fea0721bb18bd37155d86c53011d4",
-          "message": "tx: add `addSignature` method (#3238)\n\n* tx: add `addSignature` method\r\n\r\n* Fix typos and remove protected\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-01-20T02:54:33+01:00",
-          "tree_id": "ceefc948264661515621b0f141934a4faad104c1",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4b358b431f0fea0721bb18bd37155d86c53011d4"
-        },
-        "date": 1705716354935,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41677,
-            "range": "±2.49%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39020,
-            "range": "±2.91%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39583,
-            "range": "±1.97%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37821,
-            "range": "±3.99%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35454,
-            "range": "±5.49%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.22%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1221c98f3be0ba4224416f10d91ed4aa50130d8",
+          "message": "Client: Refactor Engine API (#3291)\n\n* Move engine.ts to dedicated engine API code folder\r\n\r\n* Move types to dedicated types.ts file\r\n\r\n* Move validators to a dedicated validators.ts file\r\n\r\n* Add dedicated util.ts file, move first two methods\r\n\r\n* Move next two methods to util.ts\r\n\r\n* Move last remaining methods to util.ts\r\n\r\n* Move CLConnectionManager from generic util folder to engine API RPC folder\r\n\r\n* Adjust test paths\r\n\r\n* Move validator initialization in Engine API constructor to dedicated private method\r\n\r\n* Some additional initValidators() structuring and documentation\r\n\r\n* Move util.ts to dedicated util folder, rename to generic.ts\r\n\r\n* Adjust paths\r\n\r\n* Add call-specific util files\r\n\r\n* Delete accidentally re-checked in util.ts file\r\n\r\n* Move first two methods to dedicated per-call util files\r\n\r\n* Move remaining per-call methods to dedicated util files\r\n\r\n* Add new validate4844BlobVersionedHashes helper\r\n\r\n* Better newPayload documentation\r\n\r\n* Better forkchoiceUpdate documentation, additional structuring\r\n\r\n* Additional documentation and Engine API doc references for remaining API calls",
+          "timestamp": "2024-02-21T17:20:39+01:00",
+          "tree_id": "2f185f505b3e1552a09a7176af9ce2138f93b0d5",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e1221c98f3be0ba4224416f10d91ed4aa50130d8"
+        },
+        "date": 1708532609062,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40688,
+            "range": "±2.13%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39059,
+            "range": "±2.97%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39235,
+            "range": "±1.93%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36553,
+            "range": "±5.23%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36752,
+            "range": "±3.55%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
