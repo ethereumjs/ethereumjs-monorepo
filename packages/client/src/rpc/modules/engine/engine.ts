@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -35,6 +34,7 @@ import {
   recursivelyFindParents,
   validExecutedChainBlock,
   validHash,
+  validate4844BlobVersionedHashes,
   validateHardforkRange,
   validateTerminalBlock,
 } from './util'
@@ -377,30 +377,7 @@ export class Engine {
       if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
         validationError = `Error verifying blobVersionedHashes: received none`
       } else {
-        // Collect versioned hashes in the flat array `txVersionedHashes` to match with received
-        const txVersionedHashes = []
-        for (const tx of headBlock.transactions) {
-          if (tx instanceof BlobEIP4844Transaction) {
-            for (const vHash of tx.blobVersionedHashes) {
-              txVersionedHashes.push(vHash)
-            }
-          }
-        }
-
-        if (blobVersionedHashes.length !== txVersionedHashes.length) {
-          validationError = `Error verifying blobVersionedHashes: expected=${txVersionedHashes.length} received=${blobVersionedHashes.length}`
-        } else {
-          // match individual hashes
-          for (let vIndex = 0; vIndex < blobVersionedHashes.length; vIndex++) {
-            // if mismatch, record error and break
-            if (!equalsBytes(hexToBytes(blobVersionedHashes[vIndex]), txVersionedHashes[vIndex])) {
-              validationError = `Error verifying blobVersionedHashes: mismatch at index=${vIndex} expected=${short(
-                txVersionedHashes[vIndex]
-              )} received=${short(blobVersionedHashes[vIndex])}`
-              break
-            }
-          }
-        }
+        validationError = validate4844BlobVersionedHashes(headBlock, blobVersionedHashes)
       }
 
       // if there was a validation error return invalid
