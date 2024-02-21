@@ -1297,6 +1297,9 @@ export class Engine {
   private async getPayload(params: [Bytes8], payloadVersion: number) {
     const payloadId = params[0]
     try {
+      /**
+       * Build the pending block
+       */
       const built = await this.pendingBlock.build(payloadId)
       if (!built) {
         throw EngineError.UnknownPayload
@@ -1314,6 +1317,9 @@ export class Engine {
       }
 
       this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
+      /**
+       * Creates the payload in ExecutionPayloadV1 format to be returned
+       */
       const executionPayload = blockToExecutionPayload(block, value, blobs)
 
       let checkNotBeforeHf: Hardfork | null
@@ -1357,21 +1363,44 @@ export class Engine {
     }
   }
 
+  /**
+   * V1 (Paris HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#engine_getpayloadv1
+   * @param params Identifier of the payload build process
+   * @returns
+   */
   async getPayloadV1(params: [Bytes8]) {
     const { executionPayload } = await this.getPayload(params, 1)
     return executionPayload
   }
 
+  /**
+   * V2 (Shanghai HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#engine_getpayloadv2
+   * @param params Identifier of the payload build process
+   * @returns
+   */
   async getPayloadV2(params: [Bytes8]) {
     const { executionPayload, blockValue } = await this.getPayload(params, 2)
     return { executionPayload, blockValue }
   }
 
+  /**
+   * V3 (Cancun HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#engine_getpayloadv3
+   * @param params Identifier of the payload build process
+   * @returns
+   */
   async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params, 3)
   }
   /**
    * Compare transition configuration parameters.
+   *
+   * V1 (Paris HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#engine_exchangetransitionconfigurationv1
+   *
+   * Note: This method is deprecated starting with the Cancun HF
    *
    * @param params An array of one parameter:
    *   1. transitionConfiguration: Object - instance of {@link TransitionConfigurationV1}
@@ -1403,6 +1432,9 @@ export class Engine {
 
   /**
    * Returns a list of engine API endpoints supported by the client
+   *
+   * See:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/common.md#engine_exchangecapabilities
    */
   private exchangeCapabilities(_params: []): string[] {
     const caps = Object.getOwnPropertyNames(Engine.prototype)
@@ -1411,6 +1443,8 @@ export class Engine {
   }
 
   /**
+   * V1 (Shanghai HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#engine_getpayloadbodiesbyhashv1
    *
    * @param params a list of block hashes as hex prefixed strings
    * @returns an array of ExecutionPayloadBodyV1 objects or null if a given execution payload isn't stored locally
@@ -1439,6 +1473,8 @@ export class Engine {
   }
 
   /**
+   * V1 (Shanghai HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#engine_getpayloadbodiesbyrangev1
    *
    * @param params an array of 2 parameters
    *    1.  start: Bytes8 - the first block in the range
