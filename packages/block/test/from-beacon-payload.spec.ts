@@ -1,6 +1,7 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+// import { initKZG } from '@ethereumjs/util'
+// import * as kzg from 'c-kzg'
+import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
@@ -11,8 +12,10 @@ import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
+let kzg
 try {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  // initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  kzg = await initKzg()
 } catch {
   // no-op
 }
