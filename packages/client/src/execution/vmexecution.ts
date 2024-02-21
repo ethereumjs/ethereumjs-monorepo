@@ -34,7 +34,7 @@ import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
+import type { RunBlockOpts, RunTxResult, TxReceipt } from '@ethereumjs/vm'
 
 export enum ExecStatus {
   VALID = 'VALID',
@@ -426,8 +426,18 @@ export class VMExecution extends Execution {
           if (skipHeaderValidation) {
             skipBlockchain = true
           }
+          const reportPreimages = this.config.savePreimages
 
-          const result = await vm.runBlock({ clearCache, ...opts, skipHeaderValidation })
+          const result = await vm.runBlock({
+            clearCache,
+            ...opts,
+            skipHeaderValidation,
+            reportPreimages,
+          })
+
+          if (this.config.savePreimages) {
+            await this.savePreimages(result.results)
+          }
           receipts = result.receipts
         }
         if (receipts !== undefined) {
@@ -455,6 +465,22 @@ export class VMExecution extends Execution {
       }
     })
     return true
+  }
+
+  async savePreimages(results: RunTxResult[]) {
+    const preimages = []
+    if (this.preimagesManager !== undefined) {
+      for (const txResult of results) {
+        if (txResult.preimages === undefined) {
+          continue
+        }
+
+        for (const [key, preimage] of txResult.preimages) {
+          preimages.push(bytesToHex(preimage))
+          await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
+        }
+      }
+    }
   }
 
   /**
@@ -711,17 +737,8 @@ export class VMExecution extends Execution {
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
-
-                  if (this.config.savePreimages && this.preimagesManager !== undefined) {
-                    for (const txResult of result.results) {
-                      if (txResult.preimages === undefined) {
-                        continue
-                      }
-
-                      for (const [key, preimage] of txResult.preimages) {
-                        await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
-                      }
-                    }
+                  if (this.config.savePreimages) {
+                    await this.savePreimages(result.results)
                   }
 
                   txCounter += block.transactions.length
