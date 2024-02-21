@@ -3,7 +3,7 @@ import { Common, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src'
-import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/util/CLConnectionManager'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine'
 import { Event } from '../../../src/types'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
