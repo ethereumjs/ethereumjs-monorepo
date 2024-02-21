@@ -47,7 +47,7 @@ import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
-interface Path {
+export interface Path {
   node: TrieNode | null
   remaining: Nibbles
   stack: TrieNode[]
