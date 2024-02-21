@@ -124,26 +124,9 @@ export class Engine {
     }
     this.skeleton = this.service.skeleton
 
-    const logELStatus = () => {
-      const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
-      if (forceShowInfo) {
-        this.lastAnnouncementTime = Date.now()
-      }
-      const fetcher = this.service.beaconSync?.fetcher
-
-      this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
-        forceShowInfo,
-        lastStatus: this.lastAnnouncementStatus,
-        vmexecution: { started: this.execution.started, running: this.execution.running },
-        fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
-        snapsync: this.service.snapsync?.fetcherDoneFlags,
-        peers: (this.service.beaconSync as any)?.pool.size,
-      })
-    }
-
     this.connectionManager = new CLConnectionManager({
       config: this.chain.config,
-      inActivityCb: logELStatus,
+      inActivityCb: this.logELStatus,
     })
     this.pendingBlock = new PendingBlock({ config: this.config, txPool: this.service.txPool })
 
@@ -158,6 +141,27 @@ export class Engine {
       skeleton: this.skeleton,
     }
 
+    this.initValidators()
+  }
+
+  private logELStatus = () => {
+    const forceShowInfo = Date.now() - this.lastAnnouncementTime > 6_000
+    if (forceShowInfo) {
+      this.lastAnnouncementTime = Date.now()
+    }
+    const fetcher = this.service.beaconSync?.fetcher
+
+    this.lastAnnouncementStatus = this.skeleton.logSyncStatus('[ EL ]', {
+      forceShowInfo,
+      lastStatus: this.lastAnnouncementStatus,
+      vmexecution: { started: this.execution.started, running: this.execution.running },
+      fetching: fetcher !== undefined && fetcher !== null && fetcher.syncErrored === undefined,
+      snapsync: this.service.snapsync?.fetcherDoneFlags,
+      peers: (this.service.beaconSync as any)?.pool.size,
+    })
+  }
+
+  private initValidators() {
     this.newPayloadV1 = cmMiddleware(
       middleware(callWithStackTrace(this.newPayloadV1.bind(this), this._rpcDebug), 1, [
         [validators.object(executionPayloadV1FieldValidators)],
@@ -202,7 +206,7 @@ export class Engine {
         headBlock: response?.headBlock,
         error,
       })
-      logELStatus()
+      this.logELStatus()
       delete response?.headBlock
     }
 
