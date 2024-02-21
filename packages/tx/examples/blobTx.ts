@@ -3,7 +3,7 @@ import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { bytesToHex, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
 
 const common = new Common({
   chain: Chain.Mainnet,

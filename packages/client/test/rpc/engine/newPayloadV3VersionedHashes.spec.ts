@@ -16,7 +16,7 @@ const [blockData] = blocks
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
     try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
     } catch {
       // no-op
     }

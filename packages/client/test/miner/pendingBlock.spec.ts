@@ -354,7 +354,7 @@ describe('[PendingBlock]', async () => {
 
   it('construct blob bundles', async () => {
     try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
     } catch {
       // no-op
     }
@@ -438,7 +438,7 @@ describe('[PendingBlock]', async () => {
   it('should exclude missingBlobTx', async () => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
+      initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
     } catch {
       //no-op
     }

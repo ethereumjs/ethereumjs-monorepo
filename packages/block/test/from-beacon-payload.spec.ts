@@ -12,7 +12,7 @@ import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
 try {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
 } catch {
   // no-op
 }

@@ -9,7 +9,7 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
 try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
+  initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
 } catch {
   // no-op
 }
