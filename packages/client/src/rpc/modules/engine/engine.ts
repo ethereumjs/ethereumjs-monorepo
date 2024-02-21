@@ -872,7 +872,7 @@ export class Engine {
     if (!equalsBytes(finalized, zeroBlockHash) && equalsBytes(safe, zeroBlockHash)) {
       throw {
         code: INVALID_PARAMS,
-        message: 'safe block can not be zero if finalized is not zero',
+        message: 'safe block can not be zero if finalized block is not zero',
       }
     }
 
@@ -887,6 +887,9 @@ export class Engine {
       await this.service.switchToBeaconSync()
     }
 
+    /**
+     * Block previously marked INVALID
+     */
     const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
     if (prevError !== undefined) {
       const validationError = `Received block previously marked INVALID: ${prevError.message}`
@@ -897,6 +900,10 @@ export class Engine {
       return response
     }
 
+    /**
+     * Forkchoice head block announced not known (neither in remote blocks, skeleton or chain)
+     * by EL
+     */
     let headBlock: Block | undefined
     try {
       const head = toBytes(headBlockHash)
@@ -905,7 +912,9 @@ export class Engine {
         (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
     } catch (error) {
-      this.config.logger.debug(`Forkchoice requested unknown head hash=${short(headBlockHash)}`)
+      this.config.logger.debug(
+        `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`
+      )
       const payloadStatus = {
         status: Status.SYNCING,
         latestValidHash: null,
@@ -915,6 +924,9 @@ export class Engine {
       return response
     }
 
+    /**
+     * Hardfork Update
+     */
     const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastForkchoiceUpdatedHF && this.lastForkchoiceUpdatedHF !== '') {
       this.config.logger.info(
@@ -933,7 +945,9 @@ export class Engine {
       )}`
     )
 
-    // call skeleton sethead with force head change and reset beacon sync if reorg
+    /**
+     * call skeleton sethead with force head change and reset beacon sync if reorg
+     */
     const { reorged, safeBlock, finalizedBlock } = await this.skeleton.forkchoiceUpdate(headBlock, {
       safeBlockHash: safe,
       finalizedBlockHash: finalized,
@@ -957,6 +971,9 @@ export class Engine {
 
     if (reorged) await this.service.beaconSync?.reorged(headBlock)
 
+    /**
+     * Terminal block validation
+     */
     // Only validate this as terminal block if this block's difficulty is non-zero,
     // else this is a PoS block but its hardfork could be indeterminable if the skeleton
     // is not yet connected.
@@ -966,7 +983,7 @@ export class Engine {
         const response = {
           payloadStatus: {
             status: Status.INVALID,
-            validationError: null,
+            validationError: 'Invalid terminal block',
             latestValidHash: bytesToHex(zeros(32)),
           },
           payloadId: null,
@@ -975,6 +992,9 @@ export class Engine {
       }
     }
 
+    /**
+     * Check execution status
+     */
     const isHeadExecuted =
       (this.executedBlocks.get(headBlockHash.slice(2)) ??
         (await validExecutedChainBlock(headBlock, this.chain))) !== null
@@ -1009,7 +1029,9 @@ export class Engine {
       // Trigger the statebuild here since we have finalized and safeblock available
       void this.service.buildHeadState()
 
-      // execution has not yet caught up, so lets just return sync
+      /**
+       * execution has not yet caught up, so lets just return sync
+       */
       const payloadStatus = {
         status: Status.SYNCING,
         latestValidHash: null,
@@ -1019,6 +1041,10 @@ export class Engine {
       return response
     }
 
+    /**
+     * It is confirmed here that the head block has been executed and
+     * we can therefore safely call `this.execution.setHead()` (below)
+     */
     const vmHeadHash = (await this.chain.blockchain.getIteratorHead()).hash()
     if (!equalsBytes(vmHeadHash, headBlock.hash())) {
       let parentBlocks: Block[] = []
@@ -1073,12 +1099,18 @@ export class Engine {
       }
     }
 
+    /**
+     * Synchronized and tx pool update
+     */
     this.config.updateSynchronizedState(headBlock.header)
     if (this.chain.config.synchronized) {
       this.service.txPool.checkRunState()
     }
 
-    // prepare valid response
+    /**
+     * Start building the block and
+     * prepare valid response
+     */
     let validResponse
     // If payloadAttributes is present, start building block and return payloadId
     if (payloadAttributes) {
@@ -1095,6 +1127,7 @@ export class Engine {
         }
       }
 
+      // TODO: rename pendingBlock.start() to something more expressive
       const payloadId = await this.pendingBlock.start(
         await this.vm.shallowCopy(),
         headBlock,
@@ -1115,13 +1148,21 @@ export class Engine {
       validResponse = { payloadStatus, payloadId: null, headBlock }
     }
 
-    // before returning response prune cached blocks based on finalized and vmHead
+    /**
+     * Before returning response prune cached blocks based on finalized and vmHead
+     */
     if (this.chain.config.pruneEngineCache) {
       pruneCachedBlocks(this.chain, this.chainCache)
     }
     return validResponse
   }
 
+  /**
+   * V1 (Paris HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/paris.md#engine_forkchoiceupdatedv1
+   * @param params V1 forkchoice state (block hashes) + optional payload V1 attributes (timestamp,...)
+   * @returns
+   */
   private async forkchoiceUpdatedV1(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV1 | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
@@ -1148,6 +1189,12 @@ export class Engine {
     return this.forkchoiceUpdated(params)
   }
 
+  /**
+   * V2 (Shanghai HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/shanghai.md#engine_forkchoiceupdatedv2
+   * @param params V1 forkchoice state (block hashes) + optional payload V1 or V2 attributes (+ withdrawals)
+   * @returns
+   */
   private async forkchoiceUpdatedV2(
     params: [
       forkchoiceState: ForkchoiceStateV1,
@@ -1205,6 +1252,12 @@ export class Engine {
     return this.forkchoiceUpdated(params)
   }
 
+  /**
+   * V3 (Cancun HF), see:
+   * https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md#engine_forkchoiceupdatedv3
+   * @param params V1 forkchoice state (block hashes) + optional payload V3 attributes (withdrawals + parentBeaconBlockRoot)
+   * @returns
+   */
   private async forkchoiceUpdatedV3(
     params: [forkchoiceState: ForkchoiceStateV1, payloadAttributes: PayloadAttributesV3 | undefined]
   ): Promise<ForkchoiceResponseV1 & { headBlock?: Block }> {
