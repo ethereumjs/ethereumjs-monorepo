@@ -2,7 +2,7 @@ import { merkleizeList } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
-  KECCAK256_NULL_S,
+  KECCAK256_RLP_S,
   KeyEncoding,
   LevelDB,
   bigIntToBytes,
@@ -62,7 +62,7 @@ export class Snapshot {
   _diffCache: Map<string, SnapshotElement | undefined>[] = []
   _checkpoints = 0
 
-  _stateRoot: string = KECCAK256_NULL_S
+  _stateRoot: string = KECCAK256_RLP_S // TODO in case of a rollback to the empty root, skip applying diffs and just clear state to speed this up
   _stateRootDiffCache: rootDiffMap[] = []
   _knownStateRoots: Set<string> = new Set<string>()
   _stateRootCheckpoints = 0
@@ -295,17 +295,10 @@ export class Snapshot {
   async setStateRoot(root: Uint8Array): Promise<void> {
     try {
       const rootString = bytesToHex(root)
-      // console.log('dbg102')
-      // console.log(rootString)
-      // console.log(this._stateRootDiffCache)
       if (this._knownStateRoots.has(rootString) !== true) throw new Error('Root does not exist')
       while (this._stateRootDiffCache.length > 0) {
         this._stateRootCheckpoints -= 1
         const { diff, root } = this._stateRootDiffCache.pop()!
-        // console.log('dbg100')
-        // console.log(diff)
-        // console.log(root)
-        // console.log('dbg107')
         for (const entry of diff.entries()) {
           const addressHex = entry[0]
           const elem = entry[1]
@@ -319,11 +312,8 @@ export class Snapshot {
             }
           }
         }
-        // console.log('dbg107')
         if (root === rootString) {
           const calculatedRoot = bytesToHex(await this.merkleize())
-          // console.log('dbg105')
-          // console.log(calculatedRoot)
           if (calculatedRoot !== rootString)
             throw new Error('Rollback failed to produce expected root')
           break
@@ -331,6 +321,7 @@ export class Snapshot {
       }
     } catch (e) {
       console.error(e)
+      throw e
     }
   }
 

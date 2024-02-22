@@ -1,7 +1,7 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import { merkleizeList } from '@ethereumjs/trie'
-import { Account, unpadBytes } from '@ethereumjs/util'
+import { Account, KECCAK256_RLP_S, unpadBytes } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import { OriginalStorageCache } from '../cache/originalStorageCache.js'
@@ -10,9 +10,16 @@ import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
 
 import type { Proof } from '../index.js'
 import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { StorageRange } from '@ethereumjs/common/src'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import { setLengthLeft } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
+import { equalsBytes } from '@ethereumjs/util'
+import { PrefixedHexString } from '@ethereumjs/util'
+import { Trie } from '@ethereumjs/trie'
+import { bytesToHex } from '@ethereumjs/util'
+import { KECCAK256_RLP } from '@ethereumjs/util'
+import { KECCAK256_NULL } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -303,7 +310,76 @@ export class FlatStateManager implements EVMStateManagerInterface {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async verifyProof(proof: Proof): Promise<boolean> {
-    throw new Error('Not yet implemented')
+    // TODO make the verifyProof implementation in the DSM static and just reuse it here
+    const key = hexToBytes(proof.address)
+    const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
+      hexToBytes(rlpString)
+    )
+
+    // This returns the account if the proof is valid.
+    // Verify that it matches the reported account.
+    const value = await Trie.verifyProof(key, accountProof, {
+      useKeyHashing: true,
+    })
+
+    if (value === null) {
+      // Verify that the account is empty in the proof.
+      const emptyBytes = new Uint8Array(0)
+      const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
+      const nonce = unpadBytes(hexToBytes(proof.nonce))
+      if (!equalsBytes(nonce, emptyBytes)) {
+        throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
+      }
+      const balance = unpadBytes(hexToBytes(proof.balance))
+      if (!equalsBytes(balance, emptyBytes)) {
+        throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
+      }
+      const storageHash = hexToBytes(proof.storageHash)
+      if (!equalsBytes(storageHash, KECCAK256_RLP)) {
+        throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
+      }
+      const codeHash = hexToBytes(proof.codeHash)
+      if (!equalsBytes(codeHash, KECCAK256_NULL)) {
+        throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
+      }
+    } else {
+      const account = Account.fromRlpSerializedAccount(value)
+      const { nonce, balance, storageRoot, codeHash } = account
+      const invalidErrorMsg = 'Invalid proof provided:'
+      if (nonce !== BigInt(proof.nonce)) {
+        throw new Error(`${invalidErrorMsg} nonce does not match`)
+      }
+      if (balance !== BigInt(proof.balance)) {
+        throw new Error(`${invalidErrorMsg} balance does not match`)
+      }
+      if (!equalsBytes(storageRoot, hexToBytes(proof.storageHash))) {
+        throw new Error(`${invalidErrorMsg} storageHash does not match`)
+      }
+      if (!equalsBytes(codeHash, hexToBytes(proof.codeHash))) {
+        throw new Error(`${invalidErrorMsg} codeHash does not match`)
+      }
+    }
+
+    for (const stProof of proof.storageProof) {
+      const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
+      const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
+      const storageKey = hexToBytes(stProof.key)
+      const proofValue = await Trie.verifyProof(storageKey, storageProof, {
+        useKeyHashing: true,
+      })
+      const reportedValue = setLengthLeft(
+        RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
+        32
+      )
+      if (!equalsBytes(reportedValue, storageValue)) {
+        throw new Error(
+          `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
+            reportedValue
+          )}, actual: ${bytesToHex(storageValue)}`
+        )
+      }
+    }
+    return true
   }
 
   /**
@@ -342,7 +418,23 @@ export class FlatStateManager implements EVMStateManagerInterface {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async dumpStorage(address: Address): Promise<StorageDump> {
-    throw new Error('Not yet implemented')
+    // TODO the "Both are represented as hex strings without the `0x` prefix." is untrue
+    await this.flush()
+    const account = await this.getAccount(address)
+    if (!account) {
+      throw new Error(`dumpStorage f() can only be called for an existing account`)
+    }
+    const slots = await this._snapshot.getStorageSlots(address)
+
+    return new Promise((resolve, reject) => {
+      const storage: StorageDump = {}
+      for (const s of slots) {
+        // TODO we are slicing by 64 to remove key prefix... this should be handled inside of the snapshot implementation
+        storage['0x' + bytesToHex(s[0]).slice(-64)] =
+          s[1] !== undefined ? bytesToHex(s[1]) : KECCAK256_RLP_S
+      }
+      resolve(storage)
+    })
   }
 
   /**
