@@ -39,7 +39,6 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-sonarjs": "0.19.0",
-    "kzg-wasm": "file:../kzg-wasm",
     "lint-staged": "13.0.3",
     "lockfile-lint-api": "^5.5.1",
     "prettier": "2.7.1",
@@ -56,7 +55,8 @@
   "peerDependencies": {
     "@vitest/browser": "^0.32.2",
     "playwright": "^1.36.1",
-    "webdriverio": "^8.13.12"
+    "webdriverio": "^8.13.12",
+    "kzg-wasm": "github:acolytec3/kzg-wasm"
   },
   "peerDependenciesMeta": {
     "playwright": {
@@ -66,6 +66,9 @@
       "optional": true
     },
     "@vitest/browser": {
+      "optional": true
+    },
+    "kzg-wasm": {
       "optional": true
     }
   },
