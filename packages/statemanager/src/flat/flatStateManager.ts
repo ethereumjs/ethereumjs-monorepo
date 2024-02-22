@@ -9,7 +9,12 @@ import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
 
 import type { Proof } from '../index.js'
-import type { AccountFields, EVMStateManagerInterface, StorageDump } from '@ethereumjs/common'
+import type {
+  AccountFields,
+  EVMStateManagerInterface,
+  StorageDump,
+  StorageRange,
+} from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import { setLengthLeft } from '@ethereumjs/util'
