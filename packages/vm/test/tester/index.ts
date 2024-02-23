@@ -1,3 +1,5 @@
+import { initKZG } from '@ethereumjs/util'
+import { initKzg } from 'kzg-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -99,6 +101,8 @@ async function runTests() {
   /**
    * Run-time configuration
    */
+  const kzg = await initKzg()
+  initKZG(kzg, '')
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string

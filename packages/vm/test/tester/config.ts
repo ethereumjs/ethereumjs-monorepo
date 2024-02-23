@@ -1,11 +1,8 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
-// import * as kzg from 'c-kzg'
-import { initKzg } from 'kzg-wasm'
 import * as path from 'path'
 
-const kzg = await initKzg()
-initKZG(kzg, '')
+import type { Kzg } from '@ethereumjs/util'
+
 /**
  * Default tests path (git submodule: ethereum-tests)
  */
@@ -286,7 +283,7 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
  * For instance, "London+3855+3860" will also activate EIP-3855 and EIP-3860.
  * @returns the Common which should be used
  */
-export function getCommon(network: string): Common {
+export function getCommon(network: string, kzg: Kzg): Common {
   if (retestethAlias[network as keyof typeof retestethAlias] !== undefined) {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }
@@ -344,11 +341,6 @@ export function getCommon(network: string): Common {
         })
       }
     }
-    // try {
-    //   initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
-    // } catch {
-    //   // no-op
-    // }
     const common = Common.custom(
       {
         hardforks: testHardforks,
