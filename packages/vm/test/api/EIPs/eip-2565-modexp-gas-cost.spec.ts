@@ -2,6 +2,7 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+// eslint-disable-next-line import/order
 import { VM } from '../../../src/vm.js'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
