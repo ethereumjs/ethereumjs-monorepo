@@ -1,7 +1,17 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { merkleizeList } from '@ethereumjs/trie'
-import { Account, KECCAK256_RLP_S, unpadBytes } from '@ethereumjs/util'
+import { Trie, merkleizeList } from '@ethereumjs/trie'
+import {
+  Account,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  KECCAK256_RLP_S,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+  setLengthLeft,
+  unpadBytes,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import { OriginalStorageCache } from '../cache/originalStorageCache.js'
@@ -15,16 +25,8 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import { setLengthLeft } from '@ethereumjs/util'
-import { hexToBytes } from '@ethereumjs/util'
-import { equalsBytes } from '@ethereumjs/util'
-import { PrefixedHexString } from '@ethereumjs/util'
-import { Trie } from '@ethereumjs/trie'
-import { bytesToHex } from '@ethereumjs/util'
-import { KECCAK256_RLP } from '@ethereumjs/util'
-import { KECCAK256_NULL } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -431,7 +433,7 @@ export class FlatStateManager implements EVMStateManagerInterface {
     }
     const slots = await this._snapshot.getStorageSlots(address)
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       const storage: StorageDump = {}
       for (const s of slots) {
         // TODO we are slicing by 64 to remove key prefix... this should be handled inside of the snapshot implementation

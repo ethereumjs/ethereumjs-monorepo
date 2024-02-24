@@ -6,8 +6,8 @@ import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
-  LevelDB,
   BIGINT_2,
+  LevelDB,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,

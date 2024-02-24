@@ -3,7 +3,6 @@ import { Trie, decodeNode } from '@ethereumjs/trie'
 import {
   KECCAK256_NULL,
   KECCAK256_RLP,
-  LevelDB,
   accountBodyToRLP,
   bigIntToBytes,
   bytesToHex,
