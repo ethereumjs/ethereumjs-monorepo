@@ -885,7 +885,7 @@ describe('EIP 4844 transaction tests', () => {
 
     if (isBrowser() === false) {
       try {
-        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
+        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/official.txt')
       } catch {
         // no-op
       }

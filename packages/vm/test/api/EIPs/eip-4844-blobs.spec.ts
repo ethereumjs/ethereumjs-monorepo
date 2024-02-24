@@ -31,7 +31,7 @@ describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
     if (isBrowser() === false) {
       try {
-        initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
+        initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/official.txt')
       } catch {
         // no-op
       }
