@@ -3,6 +3,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Withdrawal,
   bytesToHex,
+  equalsBytes,
   hexToBytes,
   intToBytes,
   intToHex,
@@ -136,7 +137,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 1 no txs',
       blockData: {
-        transactions: [],
+        transactions: [] as string[],
         blockNumber: '0x01',
         stateRoot: '0x78026f1e4f2ff57c340634f844f47cb241beef4c965be86a483c855793e4b07d',
         receiptTrie: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -179,7 +180,7 @@ describe(`valid verkle network setup`, async () => {
     {
       name: 'block 3 no txs with just withdrawals but zero coinbase',
       blockData: {
-        transactions: [],
+        transactions: [] as string[],
         blockNumber: '0x03',
         stateRoot: '0xe4538f9d7531eb76e82edf7480e4578bc2be5f454ab02db4d9db6187dfa1f9ca',
         receiptTrie: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
@@ -235,9 +236,11 @@ describe(`valid verkle network setup`, async () => {
       const { blockHash } = await runBlock({ common, rpc }, { ...blockData, parentHash })
       // check the preimages are in  the preimage managaer
       for (const preimage of preimages) {
-        const hashedImage = keccak256(hexToBytes(preimage))
-        const savedPreImage = await execution.preimagesManager!.getPreimage(hashedImage)
-        assert.equal(bytesToHex(savedPreImage), preimage)
+        const preimageBytes = hexToBytes(preimage)
+        const savedPreImage = await execution.preimagesManager!.getPreimage(
+          keccak256(preimageBytes)
+        )
+        assert.ok(savedPreImage !== null && equalsBytes(savedPreImage, preimageBytes))
       }
       parentHash = blockHash
     })
