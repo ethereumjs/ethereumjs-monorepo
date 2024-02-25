@@ -234,13 +234,17 @@ describe(`valid verkle network setup`, async () => {
     const { name, blockData, preimages } = testCase
     it(`run ${name}`, async () => {
       const { blockHash } = await runBlock({ common, rpc }, { ...blockData, parentHash })
-      // check the preimages are in  the preimage managaer
+      // check the preimages are in  the preimage manager
       for (const preimage of preimages) {
         const preimageBytes = hexToBytes(preimage)
-        const savedPreImage = await execution.preimagesManager!.getPreimage(
+        const savedPreimage = await execution.preimagesManager!.getPreimage(
           keccak256(preimageBytes)
         )
-        assert.ok(savedPreImage !== null && equalsBytes(savedPreImage, preimageBytes))
+        assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
+        assert.ok(
+          savedPreimage !== null && equalsBytes(savedPreimage, preimageBytes),
+          `Incorrect preimage for ${preimage}`
+        )
       }
       parentHash = blockHash
     })
