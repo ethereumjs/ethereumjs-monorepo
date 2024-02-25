@@ -283,9 +283,21 @@ export interface RunBlockOpts {
 }
 
 /**
- * Result of {@link runBlock}
+ * Result of {@link applyBlock}
  */
-export interface RunBlockResult {
+export interface ApplyBlockResult {
+  /**
+   * The Bloom filter
+   */
+  bloom: Bloom
+  /**
+   * The gas used after executing the block
+   */
+  gasUsed: bigint
+  /**
+   * The receipt root after executing the block
+   */
+  receiptsRoot: Uint8Array
   /**
    * Receipts generated for transactions in the block
    */
@@ -295,21 +307,23 @@ export interface RunBlockResult {
    */
   results: RunTxResult[]
   /**
+   * Preimages mapping of the touched accounts from the block (see reportPreimages option)
+   */
+  preimages?: Map<string, Uint8Array>
+}
+
+/**
+ * Result of {@link runBlock}
+ */
+export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
+  /**
    * The stateRoot after executing the block
    */
   stateRoot: Uint8Array
   /**
-   * The gas used after executing the block
-   */
-  gasUsed: bigint
-  /**
    * The bloom filter of the LOGs (events) after executing the block
    */
   logsBloom: Uint8Array
-  /**
-   * The receipt root after executing the block
-   */
-  receiptsRoot: Uint8Array
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

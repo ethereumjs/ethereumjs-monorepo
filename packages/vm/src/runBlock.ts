@@ -27,6 +27,7 @@ import { Bloom } from './bloom/index.js'
 
 import type {
   AfterBlockEvent,
+  ApplyBlockResult,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
@@ -158,7 +159,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint`)
   }
 
-  let result: Awaited<ReturnType<typeof applyBlock>>
+  let result: ApplyBlockResult
 
   try {
     result = await applyBlock.bind(this)(block, opts)
@@ -273,6 +274,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     stateRoot,
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
+    preimages: result.preimages,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -318,7 +320,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
+async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
@@ -365,8 +367,31 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     console.time(withdrawalsRewardsCommitLabel)
   }
 
+  // Add txResult preimages to the blockResults preimages
+  // Also add the coinbase preimage
+
+  if (opts.reportPreimages === true) {
+    blockResults.preimages.set(
+      bytesToHex(this.evm.stateManager.getAppliedKey(block.header.coinbase.toBytes())),
+      block.header.coinbase.toBytes()
+    )
+    for (const txResult of blockResults.results) {
+      if (txResult.preimages !== undefined) {
+        for (const [key, preimage] of txResult.preimages) {
+          blockResults.preimages.set(key, preimage)
+        }
+      }
+    }
+  }
+
   if (this.common.isActivatedEIP(4895)) {
+    if (opts.reportPreimages === true) this.evm.journal.startReportingPreimages()
     await assignWithdrawals.bind(this)(block)
+    if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
+      for (const [key, preimage] of this.evm.journal.preimages) {
+        blockResults.preimages.set(key, preimage)
+      }
+    }
     await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
@@ -495,6 +520,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   return {
     bloom,
     gasUsed,
+    preimages: new Map<string, Uint8Array>(),
     receiptsRoot,
     receipts,
     results: txResults,
