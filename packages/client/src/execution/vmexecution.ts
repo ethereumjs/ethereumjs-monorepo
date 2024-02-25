@@ -34,7 +34,7 @@ import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
 import type { Block } from '@ethereumjs/block'
-import type { RunBlockOpts, RunTxResult, TxReceipt } from '@ethereumjs/vm'
+import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 
 export enum ExecStatus {
   VALID = 'VALID',
@@ -435,8 +435,8 @@ export class VMExecution extends Execution {
             reportPreimages,
           })
 
-          if (this.config.savePreimages) {
-            await this.savePreimages(result.results)
+          if (this.config.savePreimages && result.preimages !== undefined) {
+            await this.savePreimages(result.preimages)
           }
           receipts = result.receipts
         }
@@ -467,18 +467,10 @@ export class VMExecution extends Execution {
     return true
   }
 
-  async savePreimages(results: RunTxResult[]) {
-    const preimages = []
+  async savePreimages(preimages: Map<string, Uint8Array>) {
     if (this.preimagesManager !== undefined) {
-      for (const txResult of results) {
-        if (txResult.preimages === undefined) {
-          continue
-        }
-
-        for (const [key, preimage] of txResult.preimages) {
-          preimages.push(bytesToHex(preimage))
-          await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
-        }
+      for (const [key, preimage] of preimages) {
+        await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
       }
     }
   }
@@ -737,8 +729,8 @@ export class VMExecution extends Execution {
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
-                  if (this.config.savePreimages) {
-                    await this.savePreimages(result.results)
+                  if (this.config.savePreimages && result.preimages !== undefined) {
+                    await this.savePreimages(result.preimages)
                   }
 
                   txCounter += block.transactions.length
