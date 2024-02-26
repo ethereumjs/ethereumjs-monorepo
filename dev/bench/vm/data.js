@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1708532609974,
+  "lastUpdate": 1708942355680,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e1605cf63a1dd6793d8081196ca43ccfd1f24c22",
-          "message": "Update more examples (#3242)\n\n* Update tx examples\n\n* Add rlp examples\n\n* Build tx README examples\n\n* Wrap initKzg in try/catch\n\n* update readme\n\n* Update evm examples\n\n* Update genesis examples\n\n* Update examples file extensions\n\n* address feedback\n\n---------\n\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-01-20T14:23:16-05:00",
-          "tree_id": "e22c15bd1299a76c424a227706deb04320960795",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e1605cf63a1dd6793d8081196ca43ccfd1f24c22"
-        },
-        "date": 1705778763691,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40835,
-            "range": "±2.44%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38126,
-            "range": "±3.70%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39406,
-            "range": "±2.13%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38404,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37770,
-            "range": "±2.25%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 36752,
             "range": "±3.55%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "66335769+ScottyPoi@users.noreply.github.com",
+            "name": "Scotty",
+            "username": "ScottyPoi"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e186fd9ba59afecfd62217d56332d188db64008",
+          "message": "trie: export \"Path\" interface (#3292)\n\n* trie: export \"Path\" interface\r\n\r\n* Move over Path interface export to types for consistency\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-02-26T11:09:32+01:00",
+          "tree_id": "46746e80436d06f8e2b86cab47716d268f6b5955",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0e186fd9ba59afecfd62217d56332d188db64008"
+        },
+        "date": 1708942354225,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 40706,
+            "range": "±2.15%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 37630,
+            "range": "±3.41%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 38723,
+            "range": "±1.92%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 35844,
+            "range": "±4.69%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 37465,
+            "range": "±2.08%",
             "unit": "ops/sec",
             "extra": "87 samples"
           }
