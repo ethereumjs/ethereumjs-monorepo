@@ -165,6 +165,7 @@ describe('[StorageFetcher]', async () => {
           count: BigInt(2) ** BigInt(256) - BigInt(1),
         },
       ],
+      multi: false,
     }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
@@ -286,11 +287,11 @@ describe('[StorageFetcher]', async () => {
         accounts: [
           hexToBytes('0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'),
         ],
-        origin: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+        origin: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001'),
         limit: hexToBytes('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
         bytes: BigInt(50000),
       }
-      if (JSON.stringify(input) !== JSON.stringify(expected)) throw Error('input not as expected')
+      assert.deepEqual(input, expected, 'Input as expected')
     })
     const peer = {
       snap: { getStorageRanges: mockedGetStorageRanges },
