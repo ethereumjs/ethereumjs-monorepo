@@ -103,12 +103,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  // const sm = vm.stateManager
-  // const root =
-  //   sm instanceof FlatStateManager ? await sm.getStateRoot(true) : await sm.getStateRoot()
+  const sm = vm.stateManager
+  const root =
+    sm instanceof FlatStateManager ? await sm.getStateRoot(true) : await sm.getStateRoot()
 
   t.deepEquals(
-    await vm.stateManager.getStateRoot(),
+    // await vm.stateManager.getStateRoot(),
+    root,
     genesisBlock.header.stateRoot,
     'correct pre stateRoot'
   )
@@ -224,6 +225,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         if (options.debug !== true) {
           // make sure the state is set before checking post conditions
           const headBlock = await vm.blockchain.getIteratorHead()
+          // console.log('dbg100')
+          // console.log(bytesToHex(headBlock.header.stateRoot))
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
           await verifyPostConditions(state, testData.postState, t)
@@ -241,7 +244,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     } catch (error: any) {
       // caught an error, reduce block number
       currentBlock--
-      // console.log('dbg500')
+      // console.log('dbg100')
       // console.log(error.stack)
       await handleError(error, expectException)
     }
