@@ -37,6 +37,7 @@ import type {
   EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
+  Path,
   Proof,
   TrieNode,
   TrieOpts,
@@ -46,12 +47,6 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-
-export interface Path {
-  node: TrieNode | null
-  remaining: Nibbles
-  stack: TrieNode[]
-}
 
 /**
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
