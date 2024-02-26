@@ -83,7 +83,7 @@ export interface StateManagerInterface {
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
-  getAppliedKey(address: Uint8Array): Uint8Array
+  getAppliedKey?(address: Uint8Array): Uint8Array
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
