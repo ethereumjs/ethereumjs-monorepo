@@ -207,10 +207,7 @@ export class Trie {
       keys.map((k) => k).map(bytesToNibbles),
       values,
       proof,
-      opts?.useKeyHashingFunction ??
-        ((msg) => {
-          return msg
-        })
+      opts?.useKeyHashingFunction ?? keccak256
     )
   }
 
