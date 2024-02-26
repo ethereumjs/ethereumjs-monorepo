@@ -371,6 +371,11 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
   // Also add the coinbase preimage
 
   if (opts.reportPreimages === true) {
+    if (this.evm.stateManager.getAppliedKey === undefined) {
+      throw new Error(
+        'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true'
+      )
+    }
     blockResults.preimages.set(
       bytesToHex(this.evm.stateManager.getAppliedKey(block.header.coinbase.toBytes())),
       block.header.coinbase.toBytes()

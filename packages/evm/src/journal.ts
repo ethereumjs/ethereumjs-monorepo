@@ -100,6 +100,11 @@ export class Journal {
     // If preimages are being reported, add the address to the preimages map
     if (this.preimages !== undefined) {
       const bytesAddress = unprefixedHexToBytes(address)
+      if (this.stateManager.getAppliedKey === undefined) {
+        throw new Error(
+          'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled'
+        )
+      }
       const hashedKey = this.stateManager.getAppliedKey(bytesAddress)
       this.preimages.set(bytesToHex(hashedKey), bytesAddress)
     }

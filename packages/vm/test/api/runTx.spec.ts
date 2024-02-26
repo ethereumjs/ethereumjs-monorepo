@@ -330,7 +330,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
 
     const res = await vm.runTx({ tx, reportPreimages: true })
 
-    const hashedCallerKey = vm.stateManager.getAppliedKey(caller.bytes)
+    const hashedCallerKey = vm.stateManager.getAppliedKey!(caller.bytes)
 
     const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
 
