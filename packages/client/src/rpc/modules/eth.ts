@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
@@ -203,50 +202,6 @@ const jsonRpcReceipt = async (
   blobGasUsed: blobGasUsed !== undefined ? bigIntToHex(blobGasUsed) : undefined,
   blobGasPrice: blobGasPrice !== undefined ? bigIntToHex(blobGasPrice) : undefined,
 })
-
-/**
- * Get block by option
- */
-const getBlockByOption = async (blockOpt: string, chain: Chain) => {
-  if (blockOpt === 'pending') {
-    throw {
-      code: INVALID_PARAMS,
-      message: `"pending" is not yet supported`,
-    }
-  }
-
-  let block: Block
-  const latest = chain.blocks.latest ?? (await chain.getCanonicalHeadBlock())
-
-  switch (blockOpt) {
-    case 'earliest':
-      block = await chain.getBlock(BigInt(0))
-      break
-    case 'latest':
-      block = latest
-      break
-    case 'safe':
-      block = chain.blocks.safe ?? (await chain.getCanonicalSafeBlock())
-      break
-    case 'finalized':
-      block = chain.blocks.finalized ?? (await chain.getCanonicalFinalizedBlock())
-      break
-    default: {
-      const blockNumber = BigInt(blockOpt)
-      if (blockNumber === latest.header.number) {
-        block = latest
-      } else if (blockNumber > latest.header.number) {
-        throw {
-          code: INVALID_PARAMS,
-          message: 'specified block greater than current height',
-        }
-      } else {
-        block = await chain.getBlock(blockNumber)
-      }
-    }
-  }
-  return block
-}
 
 const calculateRewards = async (
   block: Block,
@@ -1257,7 +1212,7 @@ export class Eth {
       [[], []] as [(bigint | undefined)[], number[]]
     )
 
-    const londonHardforkBlockNumber = this._chain.blockchain._common.hardforkBlock(Hardfork.London)!
+    const londonHardforkBlockNumber = this._chain.blockchain.common.hardforkBlock(Hardfork.London)!
     const nextBaseFee =
       lastRequestedBlockNumber - londonHardforkBlockNumber >= -1n
         ? requestedBlocks[requestedBlocks.length - 1].header.calcNextBaseFee()
