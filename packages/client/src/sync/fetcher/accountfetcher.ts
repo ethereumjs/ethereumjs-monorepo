@@ -395,8 +395,26 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       rangeResult.accounts.length === 0 ||
       equalsBytes(limit, bigIntToBytes(BIGINT_2EXP256)) === true
     ) {
-      // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
+      // check zero-element proof
       if (rangeResult.proof.length > 0) {
+        try {
+          const isMissingRightRange = await Trie.verifyRangeProof(
+            this.root,
+            origin,
+            null,
+            [],
+            [],
+            <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 }
+          )
+          // if proof is false, reject corrupt peer
+          if (isMissingRightRange !== false) return undefined
+        } catch (e) {
+          this.debug(e)
+          // if proof is false, reject corrupt peer
+          return undefined
+        }
+
         this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
         return Object.assign([], [Object.create(null)], { completed: true })

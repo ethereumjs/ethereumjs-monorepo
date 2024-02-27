@@ -20,6 +20,12 @@ export interface CommonInterface {
   }
 }
 
+export interface Path {
+  node: TrieNode | null
+  remaining: Nibbles
+  stack: TrieNode[]
+}
+
 export type FoundNodeFunction = (
   nodeRef: Uint8Array,
   node: TrieNode | null,

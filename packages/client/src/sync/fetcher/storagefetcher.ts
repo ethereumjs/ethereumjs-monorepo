@@ -269,9 +269,27 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     // retrieved was either already pruned remotely, or the peer is not yet
     // synced to our head.
     if (rangeResult.slots.length === 0) {
-      // TODO have to check proof of nonexistence since we are statically partitioning ranges --
-      // as a shortcut for now, we can mark as completed if a proof is present
+      // zero-element proof
       if (rangeResult.proof.length > 0) {
+        try {
+          const isMissingRightRange = await Trie.verifyRangeProof(
+            task.storageRequests[0].storageRoot,
+            origin,
+            null,
+            [],
+            [],
+            <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 }
+          )
+
+          // if proof is false, reject corrupt peer
+          if (isMissingRightRange !== false) return undefined
+        } catch (e) {
+          this.debug(e)
+          // if proof is false, reject corrupt peer
+          return undefined
+        }
+
         this.debug(`Empty range was requested - Terminating task`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
         return Object.assign([], [Object.create(null) as any], { completed: true })
