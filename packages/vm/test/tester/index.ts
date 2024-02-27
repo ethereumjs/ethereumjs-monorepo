@@ -118,7 +118,7 @@ async function runTests() {
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
-    common: getCommon(FORK_CONFIG_VM),
+    common: getCommon(FORK_CONFIG_VM, kzg),
     jsontrace: argv.jsontrace,
     dist: argv.dist,
     data: argv.data, // GeneralStateTests

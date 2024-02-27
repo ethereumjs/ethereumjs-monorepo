@@ -69,7 +69,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "kzg-wasm": "github:ethereumjs/kzg-wasm#30cbb58f44216fe8d8f67aa6affb1a6e40a1350c",
+    "kzg-wasm": "github:ethereumjs/kzg-wasm#47d5e538dcf7be53963ac6058985b1389ab68879",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "minimist": "^1.2.5",
