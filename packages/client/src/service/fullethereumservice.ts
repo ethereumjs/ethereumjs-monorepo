@@ -24,6 +24,7 @@ import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
   lightserv?: boolean
+  txGauge: any
 }
 
 /**
@@ -45,6 +46,8 @@ export class FullEthereumService extends Service {
   /** building head state via snapsync or vmexecution */
   private building = false
 
+  private txGauge: any
+
   /**
    * Create new ETH service
    */
@@ -54,6 +57,8 @@ export class FullEthereumService extends Service {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
+
+    this.txGauge = options.txGauge
 
     const { metaDB } = options
     if (metaDB !== undefined) {
@@ -85,6 +90,7 @@ export class FullEthereumService extends Service {
     this.txPool = new TxPool({
       config: this.config,
       service: this,
+      txGauge: this.txGauge,
     })
 
     if (this.config.syncmode === SyncMode.Full) {
