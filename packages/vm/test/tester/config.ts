@@ -207,7 +207,7 @@ export function getTestDirs(network: string, testType: string) {
  * @param ttd If set: total terminal difficulty to switch to merge
  * @returns
  */
-function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number) {
+function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: number, kzg?: Kzg) {
   let networkLowercase: string // This only consists of the target hardfork, so without the EIPs
   if (network.includes('+')) {
     const index = network.indexOf('+')
@@ -294,7 +294,7 @@ export function getCommon(network: string, kzg?: Kzg): Common {
   }
   if (normalHardforks.map((str) => str.toLowerCase()).includes(networkLowercase)) {
     // Case 1: normal network, such as "London" or "Byzantium" (without any EIPs enabled, and it is not a transition network)
-    return setupCommonWithNetworks(network)
+    return setupCommonWithNetworks(network, undefined, undefined, kzg)
   } else if (networkLowercase.match('tomergeatdiff')) {
     // Case 2: special case of a transition network, this setups the right common with the right Merge properties (TTD)
     // This is a HF -> Merge transition
@@ -302,9 +302,9 @@ export function getCommon(network: string, kzg?: Kzg): Common {
     const end = start + 'tomergeatdiff'.length
     const startNetwork = network.substring(0, start) // HF before the merge
     const TTD = Number('0x' + network.substring(end)) // Total difficulty to transition to PoS
-    return setupCommonWithNetworks(startNetwork, TTD)
+    return setupCommonWithNetworks(startNetwork, TTD, undefined, kzg)
   } else if (networkLowercase === 'shanghaitocancunattime15k') {
-    return setupCommonWithNetworks('Shanghai', undefined, 15000)
+    return setupCommonWithNetworks('Shanghai', undefined, 15000, kzg)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
