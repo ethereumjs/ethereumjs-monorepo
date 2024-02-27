@@ -9,4 +9,7 @@ export default defineConfig({
       'test/transactionRunner.spec.ts',
     ],
   },
+  optimizeDeps: {
+    exclude: ['kzg-wasm'],
+  },
 })

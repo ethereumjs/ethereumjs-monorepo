@@ -39,7 +39,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-sonarjs": "0.19.0",
-    "kzg-wasm": "github:acolytec3/kzg-wasm#e1e17c7ed70717121d2675f4d345972dc5bcbae9",
+    "kzg-wasm": "github:ethereumjs/kzg-wasm#30cbb58f44216fe8d8f67aa6affb1a6e40a1350c",
     "lint-staged": "13.0.3",
     "lockfile-lint-api": "^5.5.1",
     "prettier": "2.7.1",

@@ -12,38 +12,27 @@ import {
   hexToBytes,
   initKZG,
 } from '@ethereumjs/util'
-// import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 import { initKzg } from 'kzg-wasm'
-import { assert, describe, it } from 'vitest'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
 import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
 
-// Hack to detect if running in browser or not
-//const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
-let kzg
-{
-  try {
-    //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-    kzg = await initKzg()
-    initKZG(kzg, '')
-  } catch {
-    // no-op
-  }
-}
-
 const pk = randomBytes(32)
-const common = Common.fromGethGenesis(gethGenesis, {
-  chain: 'customChain',
-  hardfork: Hardfork.Cancun,
-  customCrypto: { kzg },
-})
-
 describe('EIP4844 addSignature tests', () => {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
+    })
+  })
   it('addSignature() -> correctly adds correct signature values', () => {
     const privateKey = pk
     const tx = BlobEIP4844Transaction.fromTxData(
@@ -99,6 +88,16 @@ describe('EIP4844 addSignature tests', () => {
 })
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
+    })
+  })
   it('should work', () => {
     const txData = {
       type: 0x03,
@@ -128,6 +127,16 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
 })
 
 describe('fromTxData using from a json', () => {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
+    })
+  })
   it('should work', () => {
     const txData = {
       type: '0x3',
@@ -190,6 +199,16 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('EIP4844 constructor tests - invalid scenarios', () => {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
+    })
+  })
   it('should work', () => {
     const baseTxData = {
       type: 0x03,
@@ -237,6 +256,16 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
+    })
+  })
   it('should work', async () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(blobs)
@@ -471,6 +500,16 @@ describe('Network wrapper tests', () => {
 })
 
 describe('hash() and signature verification', () => {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
+    })
+  })
   it('should work', async () => {
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
@@ -512,14 +551,19 @@ describe('hash() and signature verification', () => {
 })
 
 describe('Network wrapper deserialization test', () => {
-  it('should work', async () => {
-    const common = Common.fromGethGenesis(gethGenesis, {
+  let common: Common
+  beforeAll(async () => {
+    const kzg = await initKzg()
+    initKZG(kzg, '')
+    common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
         kzg,
       },
     })
+  })
+  it('should work', async () => {
     const txData = {
       type: '0x3',
       nonce: '0x0',

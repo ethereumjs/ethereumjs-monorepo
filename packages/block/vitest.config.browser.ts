@@ -11,4 +11,7 @@ export default defineConfig({
       'test/eip1559block.spec.ts',
     ],
   },
+  optimizeDeps: {
+    exclude: ['kzg-wasm'],
+  },
 })
