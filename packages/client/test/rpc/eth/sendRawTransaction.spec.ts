@@ -16,7 +16,6 @@ import {
   initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-// import * as kzg from 'c-kzg'
 import { initKzg } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 

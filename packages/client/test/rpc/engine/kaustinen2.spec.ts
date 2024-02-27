@@ -1,6 +1,5 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
 import { initKZG } from '@ethereumjs/util'
-// import * as kzg from 'c-kzg'
 import { initKzg } from 'kzg-wasm'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
