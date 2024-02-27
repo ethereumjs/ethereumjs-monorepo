@@ -5,7 +5,7 @@ import * as tape from 'tape'
 
 import { baseRequest, gethGenesisStartLondon, params, setupChain } from '../helpers'
 
-import pow = require('./../../testdata/geth-genesis/pow.json')
+import pow from '../../testdata/geth-genesis/pow.json'
 
 import type { Chain } from '../../../src/blockchain'
 import type { VMExecution } from '../../../src/execution'
@@ -15,7 +15,7 @@ const method = 'eth_feeHistory'
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
   const parentBlock = await chain.getCanonicalHeadBlock()
-  const vmCopy = await vm.copy()
+  const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
   const blockBuilder = await vmCopy.buildBlock({
     parentBlock,
