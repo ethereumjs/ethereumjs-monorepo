@@ -13,8 +13,8 @@ import {
   Address,
   KECCAK256_NULL,
   MAX_INTEGER,
-  createKZG,
   hexToBytes,
+  initKZG,
   zeros,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'

@@ -6,11 +6,11 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   concatBytes,
-  createKZG,
   ecsign,
   equalsBytes,
   getBlobs,
   hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { createKZG } from 'kzg-wasm'

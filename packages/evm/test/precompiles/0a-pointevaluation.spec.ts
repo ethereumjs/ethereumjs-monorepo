@@ -3,8 +3,8 @@ import {
   bytesToBigInt,
   computeVersionedHash,
   concatBytes,
-  createKZG,
   hexToBytes,
+  initKZG,
   unpadBytes,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
