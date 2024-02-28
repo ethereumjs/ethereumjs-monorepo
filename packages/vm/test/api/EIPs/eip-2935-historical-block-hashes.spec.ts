@@ -1,42 +1,167 @@
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { Address, bigIntToHex } from '@ethereumjs/util'
-import { describe, it } from 'vitest'
+import { Blockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork } from '@ethereumjs/common'
+import {
+  Address,
+  BIGINT_1,
+  bigIntToBytes,
+  bigIntToHex,
+  equalsBytes,
+  setLengthLeft,
+  zeros,
+} from '@ethereumjs/util'
+import { hexToBytes } from 'ethereum-cryptography/utils'
+import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-// TODO: create a Common where EIP 2935 is activated at a certain timestamp
-// It does not seem that this is possible with common.custom
-// We can insert hardforks with certain times, but in this case we need a "custom hardfork" (this is thus 2935)
-// And then schedule this on a timestamp
-// The alternative is to currently use Prague, but this also means we need to use Verkle (6800)
-// This is not handy and this will bloat these tests up with non-EIP 2935 tests
-const common = new Common({ chain: Chain.Mainnet, eips: [2935], hardfork: Hardfork.Shanghai })
-const historyAddress = Address.fromString(bigIntToHex(common.param('vm', 'historyStorageAddress')))
+function eip2935ActiveAtCommon(timestamp: number) {
+  const hfs = [
+    Hardfork.Chainstart,
+    Hardfork.Homestead,
+    Hardfork.Dao,
+    Hardfork.Chainstart,
+    Hardfork.SpuriousDragon,
+    Hardfork.Byzantium,
+    Hardfork.Constantinople,
+    Hardfork.Petersburg,
+    Hardfork.Istanbul,
+    Hardfork.Berlin,
+    Hardfork.London,
+    Hardfork.ArrowGlacier,
+    Hardfork.GrayGlacier,
+    Hardfork.Shanghai,
+    Hardfork.Paris,
+    Hardfork.MergeForkIdTransition,
+    Hardfork.Shanghai,
+    Hardfork.Cancun,
+  ]
+  const hardforks = []
+  for (const hf of hfs) {
+    hardforks.push({
+      name: hf,
+      block: 0,
+    })
+  }
+  hardforks.push({
+    name: 'testEIP2935Hardfork',
+    block: null,
+    timestamp,
+  })
+  const c = Common.custom({
+    customHardforks: {
+      testEIP2935Hardfork: {
+        name: 'testEIP2935Hardfork',
+        comment: 'Start of the Ethereum main chain',
+        url: '',
+        status: 'final',
+        eips: [2935],
+      },
+    },
+    hardforks,
+    /*genesis: {
+      gasLimit: 30_000_000,
+      timestamp: "0x0",
+      extraData: "0x",
+      difficulty: "0x0",
+      nonce: "0x0000000000000000"
+    }*/
+  })
+  return c
+}
+
+const commonGenesis = eip2935ActiveAtCommon(1)
+commonGenesis.setHardforkBy({
+  timestamp: 1,
+})
+const historyAddress = Address.fromString(
+  bigIntToHex(commonGenesis.param('vm', 'historyStorageAddress'))
+)
 
 describe('EIP 2935: historical block hashes', () => {
   it('should save genesis block hash to the history block hash contract', async () => {
-    const vm = await VM.create({ common })
+    commonGenesis.setHardfork(Hardfork.Chainstart)
+    const blockchain = await Blockchain.create({
+      common: commonGenesis,
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const vm = await VM.create({ common: commonGenesis, blockchain })
+    commonGenesis.setHardforkBy({
+      timestamp: 1,
+    })
     const genesis = await vm.blockchain.getBlock(0)
     const block = await (
       await vm.buildBlock({
         parentBlock: genesis,
+        blockOpts: {
+          putBlockIntoBlockchain: false,
+        },
       })
     ).build()
     await vm.blockchain.putBlock(block)
-    await vm.runBlock({ block })
-    // TODO: finish
-    // Run block 1 and then verify that if you get the state from the history contract,
-    // The genesis hash is indeed written to it
+    await vm.runBlock({ block, generate: true })
+
+    const storage = await vm.stateManager.getContractStorage(
+      historyAddress,
+      setLengthLeft(bigIntToBytes(BigInt(0)), 32)
+    )
+    assert.ok(equalsBytes(storage, genesis.hash()))
   })
   it('should ensure blocks older than 256 blocks can be retrieved from the history contract', async () => {
     // Test: build a chain with 256+ blocks and then retrieve BLOCKHASH of the genesis block and block 1
-  })
-  it('should ensure that the history of 256 blocks is added to the blockhash contract upon activation', async () => {
-    // Test: build a chain with 300 blocks where the fork gets activated at block 280
-    // Ensure that blocks 280-256=24 (note: can be off by one) to block 299 can be retrieved from block 300
-  })
-  it('should ensure that the history address does not get deleted from state when touched', async () => {
-    // Test: touch the history contract (with a CALL for instance)
-    // And then verify that the account / storage still exists and is thus not wiped from the chain
+    const blocksActivation = 256 // This ensures that block 0 - 255 all get stored into the hash contract
+    // More than blocks activation to build, so we can ensure that we can also retrieve block 0 or block 1 hash at block 300
+    const blocksToBuild = 300
+    const common = eip2935ActiveAtCommon(blocksActivation)
+    const blockchain = await Blockchain.create({
+      common,
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const vm = await VM.create({ common, blockchain })
+    let parentBlock = await vm.blockchain.getBlock(0)
+    for (let i = 1; i <= blocksToBuild; i++) {
+      parentBlock = await (
+        await vm.buildBlock({
+          parentBlock,
+          blockOpts: {
+            putBlockIntoBlockchain: false,
+            setHardfork: true,
+          },
+          headerData: {
+            timestamp: parentBlock.header.number + BIGINT_1,
+          },
+        })
+      ).build()
+      await vm.blockchain.putBlock(parentBlock)
+      await vm.runBlock({
+        block: parentBlock,
+        generate: true,
+        skipHeaderValidation: true,
+        setHardfork: true,
+      })
+    }
+
+    for (let i = 0; i <= blocksToBuild; i++) {
+      const block = await vm.blockchain.getBlock(i)
+      const storage = await vm.stateManager.getContractStorage(
+        historyAddress,
+        setLengthLeft(bigIntToBytes(BigInt(i)), 32)
+      )
+      const ret = await vm.evm.runCall({
+        // Code: RETURN the BLOCKHASH of block i
+        // PUSH(i) BLOCKHASH PUSH(32) MSTORE PUSH(64) PUSH(0) RETURN
+        // Note: need to return a contract with starting zero bytes to avoid non-deployable contracts by EIP 3540
+        data: hexToBytes('0x61' + i.toString(16).padStart(4, '0') + '4060205260406000F3'),
+        block: parentBlock,
+      })
+      if (i <= blocksToBuild - 1) {
+        assert.ok(equalsBytes(setLengthLeft(storage, 32), block.hash()))
+        assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
+      } else {
+        assert.ok(equalsBytes(setLengthLeft(storage, 32), zeros(32)))
+        assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
+      }
+    }
   })
 })
