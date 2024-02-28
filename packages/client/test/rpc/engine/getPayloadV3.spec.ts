@@ -12,7 +12,7 @@ import {
   hexToBytes,
   initKZG,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -68,11 +68,9 @@ describe(method, () => {
       return this
     }
 
-    try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
-    } catch {
-      //no-op
-    }
+    const kzg = await createKZG()
+    initKZG(kzg, '')
+
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
