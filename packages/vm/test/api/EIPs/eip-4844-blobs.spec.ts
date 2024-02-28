@@ -8,13 +8,13 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createKZG,
   getBlobs,
   hexToBytes,
-  initKZG,
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
-import { initKzg } from 'kzg-wasm'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
@@ -29,9 +29,9 @@ describe('EIP4844 tests', () => {
     let kzg
     {
       try {
-        //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-        kzg = await initKzg()
-        initKZG(kzg, '')
+        //createKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+        kzg = await createKZG()
+        createKZG(kzg, '')
       } catch {
         // no-op
       }

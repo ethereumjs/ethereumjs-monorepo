@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
-import { initKzg } from 'kzg-wasm'
+import { createKZG } from '@ethereumjs/util'
+import { createKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
@@ -15,8 +15,8 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   let kzg
   let common: Common
   beforeAll(async () => {
-    kzg = await initKzg()
-    initKZG(kzg, '')
+    kzg = await createKZG()
+    createKZG(kzg, '')
     const commonJson = { ...shardingJson }
     commonJson.config = { ...commonJson.config, chainId: 4844001005 }
     const network = 'sharding'
@@ -79,8 +79,8 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
 describe('[fromExecutionPayloadJson]: kaustinen', () => {
   let kzg
   beforeAll(async () => {
-    kzg = await initKzg()
-    initKZG(kzg, '')
+    kzg = await createKZG()
+    createKZG(kzg, '')
   })
   const network = 'kaustinen'
 

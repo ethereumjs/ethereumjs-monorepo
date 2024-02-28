@@ -13,14 +13,14 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createKZG,
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import { initKzg } from 'kzg-wasm'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
@@ -355,9 +355,9 @@ describe('[PendingBlock]', async () => {
   it('construct blob bundles', async () => {
     let kzg
     try {
-      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-      kzg = await initKzg()
-      initKZG(kzg, '')
+      // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      kzg = await createKZG()
+      createKZG(kzg, '')
     } catch {
       // no-op
     }
@@ -442,8 +442,8 @@ describe('[PendingBlock]', async () => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     let kzg
     try {
-      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-      kzg = await initKzg()
+      // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      kzg = await createKZG()
     } catch {
       // no-op
     }

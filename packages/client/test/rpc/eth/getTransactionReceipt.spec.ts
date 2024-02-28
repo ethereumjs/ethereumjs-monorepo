@@ -8,11 +8,11 @@ import {
   blobsToCommitments,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createKZG,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import { initKzg } from 'kzg-wasm'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
@@ -90,9 +90,9 @@ describe(method, () => {
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
       let kzg
       try {
-        // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-        kzg = await initKzg()
-        initKZG(kzg, '')
+        // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+        kzg = await createKZG()
+        createKZG(kzg, '')
       } catch {
         // no-op
       }

@@ -3,11 +3,11 @@ import {
   bytesToBigInt,
   computeVersionedHash,
   concatBytes,
+  createKZG,
   hexToBytes,
-  initKZG,
   unpadBytes,
 } from '@ethereumjs/util'
-import { initKzg } from 'kzg-wasm'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -22,8 +22,8 @@ describe('Precompiles: point evaluation', () => {
   it('should work', async () => {
     const genesisJSON = await import('../../../client/test/testdata/geth-genesis/eip4844.json')
 
-    const kzg = await initKzg()
-    initKZG(kzg, '')
+    const kzg = await createKZG()
+    createKZG(kzg, '')
 
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',

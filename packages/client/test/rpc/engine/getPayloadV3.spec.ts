@@ -8,11 +8,11 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
+  createKZG,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
-import { initKzg } from 'kzg-wasm'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -70,9 +70,9 @@ describe(method, () => {
 
     let kzg
     try {
-      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-      kzg = await initKzg()
-      initKZG(kzg, '')
+      // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      kzg = await createKZG()
+      createKZG(kzg, '')
     } catch {
       // no-op
     }
