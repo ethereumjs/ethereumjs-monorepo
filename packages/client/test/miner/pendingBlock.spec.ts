@@ -440,13 +440,8 @@ describe('[PendingBlock]', async () => {
 
   it('should exclude missingBlobTx', async () => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
-    let kzg
-    try {
-      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-      kzg = await createKZG()
-    } catch {
-      // no-op
-    }
+    const kzg = await createKZG()
+
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
