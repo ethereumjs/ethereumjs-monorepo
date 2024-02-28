@@ -1,7 +1,7 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
-import { assert, describe, it } from 'vitest'
+import { createKZG } from 'kzg-wasm'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import * as shardingJson from '../../client/test/sim/configs/4844-devnet.json'
 import { Block, BlockHeader } from '../src/index.js'
@@ -11,20 +11,20 @@ import * as payload87335 from './testdata/payload-slot-87335.json'
 import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
-try {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-} catch {
-  // no-op
-}
-
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
-  const network = 'sharding'
+  let kzg
+  let common: Common
+  beforeAll(async () => {
+    kzg = await createKZG()
+    initKZG(kzg, '')
+    const commonJson = { ...shardingJson }
+    commonJson.config = { ...commonJson.config, chainId: 4844001005 }
+    const network = 'sharding'
+    common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
+    // safely change chainId without modifying undelying json
 
-  // safely change chainId without modifying undelying json
-  const commonJson = { ...shardingJson }
-  commonJson.config = { ...commonJson.config, chainId: 4844001005 }
-  const common = Common.fromGethGenesis(commonJson, { chain: network, customCrypto: { kzg } })
-  common.setHardfork(Hardfork.Cancun)
+    common.setHardfork(Hardfork.Cancun)
+  })
 
   it('reconstruct cancun block with blob txs', async () => {
     for (const payload of [payload87335, payload87475]) {
@@ -77,6 +77,11 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
 })
 
 describe('[fromExecutionPayloadJson]: kaustinen', () => {
+  let kzg
+  beforeAll(async () => {
+    kzg = await createKZG()
+    initKZG(kzg, '')
+  })
   const network = 'kaustinen'
 
   // safely change chainId without modifying undelying json

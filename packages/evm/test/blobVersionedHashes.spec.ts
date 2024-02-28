@@ -9,7 +9,7 @@ import type { EVMRunCallOpts } from '../src/types.js'
 describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
+    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
@@ -39,7 +39,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
 describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
+    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
@@ -90,7 +90,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
 describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () => {
   it('should work', async () => {
     // setup the evm
-    const genesisJSON = require('../../client/test/testdata/geth-genesis/eip4844.json')
+    const genesisJSON = await import('../../client/test/testdata/geth-genesis/eip4844.json')
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,

@@ -28,12 +28,12 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import * as kzg from 'c-kzg'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
+import { createKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
@@ -806,8 +806,8 @@ async function run() {
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
-
-  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
+  const kzg = await createKZG()
+  initKZG(kzg, '')
 
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
