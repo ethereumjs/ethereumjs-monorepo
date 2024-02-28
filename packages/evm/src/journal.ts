@@ -137,18 +137,11 @@ export class Journal {
           }
         }
       }
-      const exemptAddresses = new Set<string>()
-      // If RIPEMD160 is touched, keep it touched.
-      exemptAddresses.add(RIPEMD160_ADDRESS_STRING)
-
-      if (this.common.isActivatedEIP(2935)) {
-        // The history storage address is exempt of state clearing by EIP-158 if the EIP is activated
-        exemptAddresses.add(bigIntToHex(this.common.param('vm', 'historyStorageAddress')).slice(2))
-      }
 
       for (const address of touchedSet) {
-        // Delete the address from the journal if it is not in exemptAddresses
-        if (!exemptAddresses.has(address)) {
+        // Delete the address from the journal
+        if (address !== RIPEMD160_ADDRESS_STRING) {
+          // If RIPEMD160 is touched, keep it touched.
           // Default behavior for others.
           this.touched.delete(address)
         }
@@ -182,6 +175,13 @@ export class Journal {
         const address = new Address(toBytes('0x' + addressHex))
         const account = await this.stateManager.getAccount(address)
         if (account === undefined || account.isEmpty()) {
+          if (this.common.isActivatedEIP(2935)) {
+            // The history storage address is exempt of state clearing by EIP-158 if the EIP is activated
+            const addr = bigIntToHex(this.common.param('vm', 'historyStorageAddress')).slice(2)
+            if (addressHex === addr) {
+              continue
+            }
+          }
           await this.deleteAccount(address)
           if (this.DEBUG) {
             this._debug(`Cleanup touched account address=${address} (>= SpuriousDragon)`)
