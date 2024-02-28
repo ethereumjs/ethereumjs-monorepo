@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1708953544692,
+  "lastUpdate": 1709154309791,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4c37cccd7cb42805e49d421a9277072620ced89d",
-          "message": "Update vm/wallet examples (#3250)\n\n* add vm examples\r\n\r\n* Update vm examples\r\n\r\n* Update vm examples\r\n\r\n* Update readme\r\n\r\n* update wallet readme ts references\r\n\r\n* Update wallet examples\r\n\r\n* fix example imports\r\n\r\n* Add more complete wallet examples",
-          "timestamp": "2024-01-23T08:37:51+01:00",
-          "tree_id": "6e2173e3cb9eef148991e06d008d4af1019a5584",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4c37cccd7cb42805e49d421a9277072620ced89d"
-        },
-        "date": 1705995633606,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41611,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39165,
-            "range": "±3.15%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40176,
-            "range": "±1.99%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38606,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37838,
-            "range": "±2.49%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.17%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "17355484+acolytec3@users.noreply.github.com",
+            "name": "acolytec3",
+            "username": "acolytec3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0596d16b3aa8781acdd4906a40d6d23cb7478ed1",
+          "message": "Integrate `kzg-wasm` into monorepo (#3294)\n\n* Update to official trusted setup\n\n* Remove devnet6\n\n* Add kzg-wasm\n\n* Update block tests to use kzg-wasm\n\n* Update tests\n\n* Add more 4844 tests to browser run\n\n* Initial integration of kzg-wasm on git\n\n* Update kzg-wasm build\n\n* Fix linter weirdness\n\n* Move initKzg to `runTests`\n\n* Fix tests\n\n* More cleanup\n\n* Goodbye c-kzg\n\n* fix kzg references\n\n* Replace c-kzg with kzg-wasm in package.json\n\n* Update kzg wasm commit and vm tester config\n\n* Update initKzg to createKZG\n\n* fix copy pasta\n\n* Fix more copy pasta\n\n* update kzg-wasm to npm release\n\n* One last bit of copy pasta\n\n* Address feedback\n\n* client: remove try/catch blocks createKZG() and remove the initKZG stale comment\n\n---------\n\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
+          "timestamp": "2024-02-28T16:02:03-05:00",
+          "tree_id": "d2586d84a3e1933c4722f433577c7c364c43de90",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0596d16b3aa8781acdd4906a40d6d23cb7478ed1"
+        },
+        "date": 1709154308435,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41687,
+            "range": "±1.79%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39584,
+            "range": "±2.95%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40328,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39252,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38785,
+            "range": "±1.63%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
