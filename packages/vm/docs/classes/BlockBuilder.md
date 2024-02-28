@@ -44,7 +44,7 @@
 
 #### Defined in
 
-[vm/src/buildBlock.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L74)
+[vm/src/buildBlock.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L75)
 
 ## Properties
 
@@ -56,7 +56,7 @@ The cumulative blob gas used by the blobs in a block
 
 #### Defined in
 
-[vm/src/buildBlock.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L50)
+[vm/src/buildBlock.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L51)
 
 ___
 
@@ -68,7 +68,7 @@ The cumulative gas used by the transactions added to the block.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L46)
+[vm/src/buildBlock.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L47)
 
 ## Accessors
 
@@ -82,7 +82,7 @@ The cumulative gas used by the transactions added to the block.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L70)
+[vm/src/buildBlock.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L71)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[vm/src/buildBlock.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L66)
+[vm/src/buildBlock.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L67)
 
 ## Methods
 
@@ -123,7 +123,7 @@ the remaining gas in the block.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L198)
+[vm/src/buildBlock.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L202)
 
 ___
 
@@ -153,7 +153,7 @@ as the signer will be awarded the txs amount spent on gas as they are added.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L288)
+[vm/src/buildBlock.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L292)
 
 ___
 
@@ -167,7 +167,7 @@ ___
 
 #### Defined in
 
-[vm/src/buildBlock.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L126)
+[vm/src/buildBlock.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L127)
 
 ___
 
@@ -181,7 +181,7 @@ ___
 
 #### Defined in
 
-[vm/src/buildBlock.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L352)
+[vm/src/buildBlock.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L356)
 
 ___
 
@@ -197,7 +197,7 @@ Calculates and returns the logs bloom for the block.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L140)
+[vm/src/buildBlock.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L141)
 
 ___
 
@@ -213,7 +213,7 @@ Calculates and returns the receiptTrie for the block.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L152)
+[vm/src/buildBlock.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L153)
 
 ___
 
@@ -229,7 +229,7 @@ Reverts the checkpoint on the StateManager to reset the state from any transacti
 
 #### Defined in
 
-[vm/src/buildBlock.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L269)
+[vm/src/buildBlock.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L273)
 
 ___
 
@@ -245,4 +245,4 @@ Calculates and returns the transactionsTrie for the block.
 
 #### Defined in
 
-[vm/src/buildBlock.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L133)
+[vm/src/buildBlock.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L134)

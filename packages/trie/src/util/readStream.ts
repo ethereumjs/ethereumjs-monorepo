@@ -1,5 +1,4 @@
 // eslint-disable-next-line implicit-dependencies/no-implicit
-import { ReadableStream } from 'node:stream/web'
 import { Readable } from 'readable-stream'
 
 import { BranchNode, LeafNode } from '../node/index.js'
@@ -64,29 +63,4 @@ export class TrieReadStream extends Readable {
     }
     this.push(null)
   }
-}
-
-export function asyncTrieReadStream(trie: Trie) {
-  return new ReadableStream({
-    async start(controller) {
-      try {
-        await _findValueNodes(trie, async (_, node, key, walkController) => {
-          if (node !== null) {
-            controller.enqueue({
-              key: nibblestoBytes(key),
-              value: node.value(),
-            })
-            walkController.allChildren(node, key)
-          }
-        })
-      } catch (error: any) {
-        if (error.message === 'Missing node in DB') {
-          // pass
-        } else {
-          throw error
-        }
-      }
-      controller.close()
-    },
-  })
 }

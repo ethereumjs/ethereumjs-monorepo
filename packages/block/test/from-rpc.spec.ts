@@ -7,6 +7,7 @@ import { blockHeaderFromRpc } from '../src/header-from-rpc.js'
 import { Block } from '../src/index.js'
 
 import * as alchemy14151203 from './testdata/alchemy14151203.json'
+import * as infuraGoerliBlock10536893 from './testdata/infura-goerli-block-10536893.json'
 import * as infura15571241woTxs from './testdata/infura15571241.json'
 import * as infura15571241wTxs from './testdata/infura15571241wtxns.json'
 import * as infura2000004woTxs from './testdata/infura2000004wotxns.json'
@@ -152,6 +153,13 @@ describe('[fromRPC] - Alchemy/Infura API block responses', () => {
       infura15571241wTxs.hash,
       'created post merge block with txns'
     )
+  })
+
+  it('should correctly parse a cancun block over rpc', () => {
+    const common = new Common({ chain: Chain.Goerli, hardfork: Hardfork.Cancun })
+    const block = blockHeaderFromRpc(infuraGoerliBlock10536893, { common })
+    const hash = hexToBytes(infuraGoerliBlock10536893.hash)
+    assert.ok(equalsBytes(block.hash(), hash))
   })
 })
 

@@ -842,7 +842,7 @@ export const hardforks: HardforksDict = {
   prague: {
     name: 'prague',
     comment:
-      'Next feature hardfork after cancun replaing merkle based state with a verkle based one (incomplete/experimental)',
+      'Next feature hardfork after cancun, internally used for verkle testing/implementation (incomplete/experimental)',
     url: 'https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md',
     status: Status.Draft,
     eips: [2935, 6800],

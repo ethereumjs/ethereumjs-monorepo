@@ -22,14 +22,18 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 if (isBrowser() === false) {
   try {
-    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
+    initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  } catch {
+    // no-op
+  }
 }
+
 const common = Common.fromGethGenesis(gethGenesis, {
   chain: 'customChain',
   hardfork: Hardfork.Cancun,
+  customCrypto: { kzg },
 })
+
 const blobGasPerBlob = common.param('gasConfig', 'blobGasPerBlob')
 
 describe('EIP4844 header tests', () => {

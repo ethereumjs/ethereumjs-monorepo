@@ -41,10 +41,6 @@ const validPayload = [
   },
 ]
 
-try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
 const method = 'engine_getPayloadV3'
 
 describe(method, () => {
@@ -71,10 +67,18 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+
+    try {
+      initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
+    } catch {
+      //no-op
+    }
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
@@ -115,7 +119,7 @@ describe(method, () => {
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
       executionPayload.blockHash,
-      '0xe8175305416ee94c996164162044338b4f4d93a8dc458b574ecad4ce84323fb5',
+      '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
       'built expected block'
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')

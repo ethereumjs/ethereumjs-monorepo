@@ -9,11 +9,13 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
 try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
+  initKZG(kzg, __dirname + '/../../../src/trustedSetups/official.txt')
+} catch {
+  // no-op
+}
 
-const common = Common.custom({ chainId: 1 })
+const common = Common.custom({ chainId: 1 }, { customCrypto: { kzg } })
+
 common.setHardfork('cancun')
 const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
 const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)

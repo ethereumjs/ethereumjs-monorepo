@@ -1,9 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../../types'
-import { short, timeDiff } from '../../util'
+import { Event } from '../../../types'
+import { short, timeDiff } from '../../../util'
 
-import type { Config } from '../../config'
+import type { Config } from '../../../config'
 import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
@@ -11,7 +11,7 @@ import type {
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadStatusV1,
-} from '../modules/engine'
+} from './types'
 import type { Block } from '@ethereumjs/block'
 import type winston from 'winston'
 

@@ -3,13 +3,14 @@ import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { bytesToHex, initKZG } from '@ethereumjs/util'
 import * as kzg from 'c-kzg'
 
-try {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-} catch {
-  // No-op if KZG is already loaded
-}
+initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
+const common = new Common({
+  chain: Chain.Mainnet,
+  hardfork: Hardfork.Shanghai,
+  eips: [4844],
+  customCrypto: { kzg },
+})
 
 const txData = {
   data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',

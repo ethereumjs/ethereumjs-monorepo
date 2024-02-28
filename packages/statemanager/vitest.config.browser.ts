@@ -11,8 +11,6 @@ export default defineConfig({
       'test/statelessVerkleStateManager.spec.ts',
       // Importing a module script failed.
       'test/rpcStateManager.spec.ts',
-      // undefined is not an object (evaluating 'state.reading')
-      'test/stateManager.storage.spec.ts',
     ],
   },
 })

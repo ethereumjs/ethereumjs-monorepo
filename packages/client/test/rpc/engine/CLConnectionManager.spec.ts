@@ -3,7 +3,7 @@ import { Common, parseGethGenesis } from '@ethereumjs/common'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src'
-import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/util/CLConnectionManager'
+import { CLConnectionManager, ConnectionStatus } from '../../../src/rpc/modules/engine'
 import { Event } from '../../../src/types'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 
@@ -33,51 +33,65 @@ const update = {
     finalizedBlockHash: '0x90ce8a06162cf161cc7323aa30f1de70b30542cd5da65e521884f517a4548017',
   },
 }
-
-describe('[CLConnectionManager]', () => {
-  it('Initialization', async () => {
-    let config = new Config()
-    let manager = new CLConnectionManager({ config })
+describe('starts and stops connection manager', () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  it('should start', () => {
     manager.start()
     assert.ok(manager.running, 'should start')
+  })
+  it('should stop', () => {
     manager.stop()
-    assert.ok(!manager.running, 'should stop')
-    const prevMergeForkBlock = (genesisJSON.config as any).mergeForkBlock
-    ;(genesisJSON.config as any).mergeForkBlock = 0
-    const params = parseGethGenesis(genesisJSON, 'post-merge', false)
-    let common = new Common({
-      chain: params.name,
-      customChains: [params],
-    })
-    common.setHardforkBy({ blockNumber: 0 })
-    config = new Config({ common })
-    manager = new CLConnectionManager({ config })
+    assert.notOk(manager.running, 'should stop')
+  })
+})
+
+describe('hardfork MergeForkBlock', () => {
+  ;(genesisJSON.config as any).mergeForkBlock = 0
+  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+  const common = new Common({
+    chain: params.name,
+    customChains: [params],
+  })
+  common.setHardforkBy({ blockNumber: 0 })
+  const config = new Config({ common })
+  it('instantiates with config', () => {
+    const manager = new CLConnectionManager({ config })
     assert.ok(manager.running, 'starts on instantiation if hardfork is MergeForkBlock')
     manager.stop()
-    ;(genesisJSON.config as any).mergeForkBlock = 10
-    common = new Common({
-      chain: params.name,
-      customChains: [params],
-    })
-    config = new Config({ common })
-    manager = new CLConnectionManager({ config })
-    config.chainCommon.setHardforkBy({ blockNumber: 11 })
-    config.events.on(Event.CHAIN_UPDATED, () => {
-      assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
-    })
-    config.events.on(Event.CLIENT_SHUTDOWN, () => {
-      assert.ok(!manager.running, 'connection manager stopped on client shutdown')
-    })
-    config.events.emit(Event.CHAIN_UPDATED)
-    config.events.emit(Event.CLIENT_SHUTDOWN)
-    // reset prevMergeForkBlock as it seems to be polluting other test   ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
-    ;(genesisJSON.config as any).mergeForkBlock = prevMergeForkBlock
   })
+})
+describe('postmerge hardfork', () => {
+  ;(genesisJSON.config as any).mergeForkBlock = 10
+  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
 
-  it('Status updates', async () => {
-    const config = new Config()
-    const manager = new CLConnectionManager({ config })
-    config.logger.on('data', (chunk) => {
+  const common = new Common({
+    chain: params.name,
+    customChains: [params],
+  })
+  common.setHardforkBy({ blockNumber: 11 })
+  const config = new Config({ common })
+  const manager = new CLConnectionManager({ config })
+
+  config.events.on(Event.CHAIN_UPDATED, () => {
+    it('starts on mergeBlock', () => {
+      assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
+      config.events.emit(Event.CLIENT_SHUTDOWN)
+    })
+  })
+  config.events.emit(Event.CHAIN_UPDATED)
+  config.events.on(Event.CLIENT_SHUTDOWN, () => {
+    it('stops on client shutdown', () => {
+      assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+    })
+  })
+})
+
+describe('Status updates', async () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  config.logger.on('data', (chunk) => {
+    it('received status message', () => {
       if ((chunk.message as string).includes('consensus forkchoice update head=0x67b9')) {
         assert.ok(true, 'received last fork choice message')
       }
@@ -87,35 +101,36 @@ describe('[CLConnectionManager]', () => {
         config.logger.removeAllListeners()
       }
     })
-    manager.lastForkchoiceUpdate(update)
-    manager.lastNewPayload(payload)
   })
-  it('updates stats when a new block is processed', async () => {
-    const config = new Config()
-    const manager = new CLConnectionManager({ config })
-    manager.lastForkchoiceUpdate(update)
-    manager.lastNewPayload(payload)
-    const block = Block.fromBlockData({
-      header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
+  manager.lastForkchoiceUpdate(update)
+  manager.lastNewPayload(payload)
+})
+describe('updates stats when a new block is processed', async () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  manager.lastForkchoiceUpdate(update)
+  manager.lastNewPayload(payload)
+  const block = Block.fromBlockData({
+    header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
+  })
+  config.logger.on('data', (chunk) => {
+    it('received message', () => {
+      if ((chunk.message as string).includes('Payload stats blocks count=1')) {
+        assert.ok(true, 'received last payload stats message')
+        manager.stop()
+        config.logger.removeAllListeners()
+      }
     })
+  })
 
-    await new Promise((resolve) => {
-      config.logger.on('data', (chunk) => {
-        if ((chunk.message as string).includes('Payload stats blocks count=1')) {
-          assert.ok(true, 'received last payload stats message')
-          manager.stop()
-          config.logger.removeAllListeners()
-          resolve(undefined)
-        }
-      })
-      manager.updatePayloadStats(block)
-      manager['lastPayloadLog']()
-    })
-  })
-  it('updates status correctly', async () => {
-    const config = new Config()
-    const manager = new CLConnectionManager({ config })
-    manager['updateStatus']()
+  manager.updatePayloadStats(block)
+  manager['lastPayloadLog']()
+})
+describe('updates status correctly', async () => {
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  manager['updateStatus']()
+  it('updates status correctly', () => {
     assert.ok(manager.running, 'connection manager started when updateStatus called')
     assert.equal(
       manager['connectionStatus'],
@@ -123,11 +138,13 @@ describe('[CLConnectionManager]', () => {
       'connection status updated correctly'
     )
   })
-  it('updates connection status correctly', async () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(1696528979492)
-    const config = new Config()
-    const manager = new CLConnectionManager({ config })
+})
+describe('updates connection status correctly', async () => {
+  vi.useFakeTimers()
+  vi.setSystemTime(1696528979492)
+  const config = new Config()
+  const manager = new CLConnectionManager({ config })
+  it('should disconnect from CL', () => {
     manager['connectionStatus'] = ConnectionStatus.Connected
     manager['lastRequestTimestamp'] = Date.now() - manager['DISCONNECTED_THRESHOLD'] - 1
     manager['connectionCheck']()
@@ -136,6 +153,8 @@ describe('[CLConnectionManager]', () => {
       ConnectionStatus.Disconnected,
       'should disconnect from CL'
     )
+  })
+  it('should change status to uncertain', () => {
     manager['connectionStatus'] = ConnectionStatus.Connected
     manager['lastRequestTimestamp'] = Date.now() - manager['UNCERTAIN_THRESHOLD'] - 1
     manager['connectionCheck']()
@@ -144,7 +163,9 @@ describe('[CLConnectionManager]', () => {
       ConnectionStatus.Uncertain,
       'should update status to uncertain'
     )
+  })
 
+  it('incremented disconnection check', () => {
     manager['config'].chainCommon.setHardfork('paris')
     ;(manager as any)._inActivityCb = () => vi.fn()
     const callbackSpy = vi.spyOn(manager as any, '_inActivityCb')

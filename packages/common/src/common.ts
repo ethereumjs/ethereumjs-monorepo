@@ -185,7 +185,7 @@ export class Common {
    */
   static fromGethGenesis(
     genesisJson: any,
-    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
+    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
   ): Common {
     const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
@@ -193,6 +193,7 @@ export class Common {
       customChains: [genesisParams],
       eips,
       hardfork: hardfork ?? genesisParams.hardfork,
+      customCrypto,
     })
     if (genesisHash !== undefined) {
       common.setForkHashes(genesisHash)

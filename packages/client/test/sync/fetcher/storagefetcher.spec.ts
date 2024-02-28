@@ -1,4 +1,5 @@
 import { RLP } from '@ethereumjs/rlp'
+import { Trie } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
@@ -8,7 +9,12 @@ import { Config } from '../../../src/config'
 import { SnapProtocol } from '../../../src/net/protocol'
 import { wait } from '../../integration/util'
 
-import { _accountRangeRLP } from './accountfetcher.spec'
+import {
+  _accountRangeRLP,
+  _zeroElementProof,
+  _zeroElementProofOrigin,
+  _zeroElementProofRoot,
+} from './accountfetcher.spec'
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
@@ -159,6 +165,7 @@ describe('[StorageFetcher]', async () => {
           count: BigInt(2) ** BigInt(256) - BigInt(1),
         },
       ],
+      multi: false,
     }
     ;(fetcher as any).running = true
     fetcher.enqueueTask(task)
@@ -280,11 +287,11 @@ describe('[StorageFetcher]', async () => {
         accounts: [
           hexToBytes('0x00009e5969eba9656d7e4dad5b0596241deb87c29bbab71c23b602c2b88a7276'),
         ],
-        origin: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000'),
+        origin: hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000001'),
         limit: hexToBytes('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
         bytes: BigInt(50000),
       }
-      if (JSON.stringify(input) !== JSON.stringify(expected)) throw Error('input not as expected')
+      assert.deepEqual(input, expected, 'Input as expected')
     })
     const peer = {
       snap: { getStorageRanges: mockedGetStorageRanges },
@@ -296,21 +303,10 @@ describe('[StorageFetcher]', async () => {
 
     peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
       reqId,
-      slots: [],
-      proof: [new Uint8Array()],
-    })
-    let ret = await fetcher.request(job as any)
-    assert.ok(
-      ret?.completed === true,
-      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
-    )
-
-    peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
-      reqId,
       slots: slots + [new Uint8Array()],
       proof,
     })
-    ret = await fetcher.request(job as any)
+    let ret = await fetcher.request(job as any)
     assert.notOk(ret, "Reject the response if the hash sets and slot sets don't match")
 
     peer.snap.getStorageRanges = vi.fn().mockReturnValueOnce({
@@ -320,6 +316,86 @@ describe('[StorageFetcher]', async () => {
     })
     ret = await fetcher.request(job as any)
     assert.notOk(ret, 'Should stop requesting from peer that rejected storage request')
+  })
+
+  it('should verify zero-element proof correctly', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+    const fetcher = new StorageFetcher({
+      config,
+      pool,
+      root: _zeroElementProofRoot,
+    })
+    const task = {
+      storageRequests: [
+        {
+          accountHash: hexToBytes('0x0'),
+          storageRoot: _zeroElementProofRoot,
+          first: _zeroElementProofOrigin,
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        },
+      ],
+    }
+    const mockedGetStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId: BigInt(1),
+      slots: [],
+      proof: _zeroElementProof,
+    })
+    const peer = {
+      snap: { getStorageRanges: mockedGetStorageRanges },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, task }
+
+    const ret = await fetcher.request(job as any)
+    assert.ok(
+      ret?.completed === true,
+      'should handle peer that is signaling that an empty range has been requested with no elements remaining to the right'
+    )
+  })
+
+  it('should reject zero-element proof if elements still remain to right of requested range', async () => {
+    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const pool = new PeerPool() as any
+
+    // calculate new root with a key all the way to the right of the trie
+    const trie = await Trie.createFromProof(_zeroElementProof)
+    await trie.put(hexToBytes('0x' + 'F'.repeat(32)), hexToBytes('0x' + '123'), true)
+    const newRoot = trie.root()
+
+    const fetcher = new StorageFetcher({
+      config,
+      pool,
+      root: _zeroElementProofRoot,
+    })
+    const task = {
+      storageRequests: [
+        {
+          accountHash: hexToBytes('0x0'),
+          storageRoot: newRoot,
+          first: _zeroElementProofOrigin,
+          count: BigInt(2) ** BigInt(256) - BigInt(1),
+        },
+      ],
+    }
+    const mockedGetStorageRanges = vi.fn().mockReturnValueOnce({
+      reqId: BigInt(1),
+      slots: [],
+      proof: _zeroElementProof,
+    })
+    const peer = {
+      snap: { getStorageRanges: mockedGetStorageRanges },
+      id: 'random',
+      address: 'random',
+    }
+    const job = { peer, task }
+
+    const ret = await fetcher.request(job as any)
+    assert.ok(
+      ret?.completed === undefined,
+      'proof verification should fail if elements still remain to the right of the proof'
+    )
   })
 
   it('should verify proof correctly', async () => {

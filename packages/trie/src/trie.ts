@@ -30,16 +30,14 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
-import {
-  TrieReadStream as ReadStream,
-  asyncTrieReadStream as asyncReadStream,
-} from './util/readStream.js'
+import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
   EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
+  Path,
   Proof,
   TrieNode,
   TrieOpts,
@@ -49,18 +47,6 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-// Since ReadableStream is from a Web API, the following type import
-// is not needed in and should be ignored by the browser, so an exeption
-// is made here to deviate from our policy to not add Node.js specific
-// package imports. -- 16/01/24
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { ReadableStream } from 'node:stream/web'
-
-interface Path {
-  node: TrieNode | null
-  remaining: Nibbles
-  stack: TrieNode[]
-}
 
 /**
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
@@ -221,10 +207,7 @@ export class Trie {
       keys.map((k) => k).map(bytesToNibbles),
       values,
       proof,
-      opts?.useKeyHashingFunction ??
-        ((msg) => {
-          return msg
-        })
+      opts?.useKeyHashingFunction ?? keccak256
     )
   }
 
@@ -459,7 +442,9 @@ export class Trie {
       }
       this.DEBUG && this.debug(`Setting root to ${bytesToHex(value)}`)
       if (value.length !== this._hashLen) {
-        throw new Error(`Invalid root length. Roots are ${this._hashLen} bytes`)
+        throw new Error(
+          `Invalid root length. Roots are ${this._hashLen} bytes, got ${value.length} bytes`
+        )
       }
 
       this._root = value
@@ -1202,19 +1187,10 @@ export class Trie {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
-   * @deprecated Use `createAsyncReadStream`
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
     return new ReadStream(this)
-  }
-
-  /**
-   * Use asynchronous iteration over the chunks in a web stream using the for await...of syntax.
-   * @return Returns a [web stream](https://nodejs.org/api/webstreams.html#example-readablestream) of the contents of the `trie`
-   */
-  createAsyncReadStream(): ReadableStream {
-    return asyncReadStream(this)
   }
 
   /**
