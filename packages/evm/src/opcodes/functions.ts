@@ -598,7 +598,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const number = runState.stack.pop()
 
       if (common.isActivatedEIP(2935)) {
-        if (runState.interpreter.getBlockNumber() >= number) {
+        if (number >= runState.interpreter.getBlockNumber()) {
           runState.stack.push(BIGINT_0)
           return
         }

@@ -8,6 +8,7 @@ import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_1,
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
@@ -393,13 +394,11 @@ export async function accumulateParentBlockHash(this: VM, block: Block) {
     await this.evm.journal.putAccount(historyAddress, new Account())
   }
 
-  async function putBlockHash(this: VM, block: Block) {
-    const number = block.header.number
-    const hash = block.header.parentHash
+  async function putBlockHash(this: VM, hash: Uint8Array, number: bigint) {
     const key = setLengthLeft(bigIntToBytes(number), 32)
     await this.stateManager.putContractStorage(historyAddress, key, hash)
   }
-  await putBlockHash.bind(this)(block)
+  await putBlockHash.bind(this)(block.header.parentHash, block.header.number - BIGINT_1)
 
   // Check if we are on the fork block
   const forkTime = this.common.eipTimestamp(2935)
@@ -411,13 +410,13 @@ export async function accumulateParentBlockHash(this: VM, block: Block) {
   if (parentBlock.header.timestamp < forkTime) {
     let ancestor = parentBlock
     const range = this.common.param('vm', 'minHistoryServeWindow')
-    for (let i = 0; i < Number(range); i++) {
+    for (let i = 0; i < Number(range) - 1; i++) {
       if (ancestor.header.number === BIGINT_0) {
         break
       }
 
       ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
-      await putBlockHash.bind(this)(ancestor)
+      await putBlockHash.bind(this)(ancestor.hash(), ancestor.header.number)
     }
   }
 }
