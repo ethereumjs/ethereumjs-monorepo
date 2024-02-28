@@ -158,7 +158,7 @@ describe('[Common]: Custom chains', () => {
       customHardforks: {
         testEIP2935Hardfork: {
           name: 'testEIP2935Hardfork',
-          comment: 'Start of the Ethereum main chain',
+          comment: 'Hardfork to test EIP 2935',
           url: '',
           status: Status.Final,
           eips: [2935],
