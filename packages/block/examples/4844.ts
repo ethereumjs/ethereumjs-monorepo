@@ -7,7 +7,7 @@ import { randomBytes } from 'crypto'
 
 const main = async () => {
   const kzg = await createKZG()
-  createKZG(kzg, '')
+  initKZG(kzg, '')
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.Cancun,

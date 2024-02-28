@@ -29,9 +29,9 @@ describe('EIP4844 tests', () => {
     let kzg
     {
       try {
-        //createKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+        //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
         kzg = await createKZG()
-        createKZG(kzg, '')
+        initKZG(kzg, '')
       } catch {
         // no-op
       }

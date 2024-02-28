@@ -17,9 +17,9 @@ describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
     let kzg
     try {
-      // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
       kzg = await createKZG()
-      createKZG(kzg, '')
+      initKZG(kzg, '')
     } catch {
       // no-op
     }

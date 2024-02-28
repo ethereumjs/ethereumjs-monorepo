@@ -355,9 +355,9 @@ describe('[PendingBlock]', async () => {
   it('construct blob bundles', async () => {
     let kzg
     try {
-      // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
       kzg = await createKZG()
-      createKZG(kzg, '')
+      initKZG(kzg, '')
     } catch {
       // no-op
     }
@@ -442,7 +442,7 @@ describe('[PendingBlock]', async () => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
     let kzg
     try {
-      // createKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
+      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
       kzg = await createKZG()
     } catch {
       // no-op

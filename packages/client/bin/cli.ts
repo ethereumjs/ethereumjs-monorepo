@@ -10,10 +10,10 @@ import {
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
-  createKZG,
   ecrecover,
   ecsign,
   hexToBytes,
+  initKZG,
   parseGethGenesisState,
   randomBytes,
   setLengthLeft,
@@ -807,7 +807,7 @@ async function run() {
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
   const kzg = await createKZG()
-  createKZG(kzg, '')
+  initKZG(kzg, '')
 
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
