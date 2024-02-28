@@ -1,10 +1,51 @@
 import { assert, describe, it } from 'vitest'
 
+import { Status } from '../src/hardforks.js'
 import { Chain, Common, ConsensusType, CustomChain, Hardfork } from '../src/index.js'
 
 import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
 import * as testnet3 from './data/testnet3.json'
+
+describe('Test common custom hardforks', () => {
+  it('Instantiate new hardfork with EIPs', () => {
+    const c = Common.custom({
+      customHardforks: {
+        testEIP2935Hardfork: {
+          name: 'testEIP2935Hardfork',
+          comment: 'Start of the Ethereum main chain',
+          url: '',
+          status: Status.Final,
+          eips: [2935],
+        },
+      },
+      hardforks: [
+        {
+          name: 'chainstart',
+          block: 0,
+        },
+        {
+          // Note: this custom hardfork name MUST be in customHardforks as field
+          // If this is not the case, Common will throw with a random error
+          // Should we throw early with a descriptive error? TODO
+          name: 'testEIP2935Hardfork',
+          block: null,
+          timestamp: 1000,
+        },
+      ],
+    })
+    assert.equal(c.hardfork(), Hardfork.Shanghai)
+    c.setHardforkBy({
+      blockNumber: 0,
+    })
+    assert.equal(c.hardfork(), Hardfork.Chainstart)
+    c.setHardforkBy({
+      blockNumber: 5,
+      timestamp: 1000,
+    })
+    assert.equal(c.hardfork(), 'testEIP2935Hardfork')
+  })
+})
 
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {
@@ -150,6 +191,56 @@ describe('[Common]: Custom chains', () => {
       ConsensusType.ProofOfWork,
       'customChains, should allow to switch custom chain'
     )
+  })
+
+  it('customHardforks parameter: initialization and transition tests', () => {
+    const c = Common.custom({
+      customHardforks: {
+        testEIP2935Hardfork: {
+          name: 'testEIP2935Hardfork',
+          comment: 'Start of the Ethereum main chain',
+          url: '',
+          status: Status.Final,
+          eips: [2935],
+        },
+      },
+      hardforks: [
+        {
+          name: 'chainstart',
+          block: 0,
+        },
+        {
+          name: 'berlin',
+          block: null,
+          timestamp: 999,
+        },
+        {
+          // Note: this custom hardfork name MUST be in customHardforks as field
+          // If this is not the case, Common will throw with a random error
+          // Should we throw early with a descriptive error? TODO
+          name: 'testEIP2935Hardfork',
+          block: null,
+          timestamp: 1000,
+        },
+      ],
+    })
+    // Note: default HF of Common is currently Shanghai
+    // Did not pass any "hardfork" param
+    assert.equal(c.hardfork(), Hardfork.Shanghai)
+    c.setHardforkBy({
+      blockNumber: 0,
+    })
+    assert.equal(c.hardfork(), Hardfork.Chainstart)
+    c.setHardforkBy({
+      blockNumber: 1,
+      timestamp: 999,
+    })
+    assert.equal(c.hardfork(), Hardfork.Berlin)
+    c.setHardforkBy({
+      blockNumber: 1,
+      timestamp: 1000,
+    })
+    assert.equal(c.hardfork(), 'testEIP2935Hardfork')
   })
 })
 

@@ -243,7 +243,8 @@ export class Common {
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name as HardforkSpecKeys,
-      HARDFORK_SPECS[hf.name as HardforkSpecKeys],
+      HARDFORK_SPECS[hf.name] ??
+        (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork !== undefined) {
@@ -966,7 +967,11 @@ export class Common {
    * @returns {Array} Array with arrays of hardforks
    */
   hardforks(): HardforkTransitionConfig[] {
-    return this._chainParams.hardforks
+    const hfs = this._chainParams.hardforks
+    if (this._chainParams.customHardforks !== undefined) {
+      this._chainParams.customHardforks
+    }
+    return hfs
   }
 
   /**
