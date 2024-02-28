@@ -33,14 +33,9 @@ async function runBlock(
 }
 
 describe(`valid verkle network setup`, async () => {
-  let kzg
-  try {
-    // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-    kzg = await createKZG()
-    initKZG(kzg, '')
-  } catch {
-    // no-op
-  }
+  const kzg = await createKZG()
+  initKZG(kzg, '')
+
   const { server, chain, common } = await setupChain(genesisJSON, 'post-merge', {
     engine: true,
     genesisStateRoot: genesisVerkleStateRoot,

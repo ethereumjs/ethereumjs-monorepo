@@ -68,14 +68,9 @@ describe(method, () => {
       return this
     }
 
-    let kzg
-    try {
-      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-      kzg = await createKZG()
-      initKZG(kzg, '')
-    } catch {
-      // no-op
-    }
+    const kzg = await createKZG()
+    initKZG(kzg, '')
+
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,

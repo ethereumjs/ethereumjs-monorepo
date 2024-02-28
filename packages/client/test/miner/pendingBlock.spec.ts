@@ -353,14 +353,8 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    let kzg
-    try {
-      // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-      kzg = await createKZG()
-      initKZG(kzg, '')
-    } catch {
-      // no-op
-    }
+    const kzg = await createKZG()
+    initKZG(kzg, '')
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

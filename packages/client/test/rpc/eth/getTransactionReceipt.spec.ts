@@ -88,14 +88,10 @@ describe(method, () => {
       assert.ok(true)
     } else {
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
-      let kzg
-      try {
-        // initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-        kzg = await createKZG()
-        initKZG(kzg, '')
-      } catch {
-        // no-op
-      }
+
+      const kzg = await createKZG()
+      initKZG(kzg, '')
+
       const common = Common.fromGethGenesis(gethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
