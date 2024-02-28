@@ -8,9 +8,9 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  createKZG,
   getBlobs,
   hexToBytes,
+  initKZG,
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
