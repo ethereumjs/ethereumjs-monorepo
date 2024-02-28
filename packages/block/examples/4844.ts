@@ -1,7 +1,7 @@
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { Address, createKZG } from '@ethereumjs/util'
+import { Address, initKZG } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
 import { randomBytes } from 'crypto'
 

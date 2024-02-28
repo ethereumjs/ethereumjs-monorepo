@@ -1,5 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { createKZG } from '@ethereumjs/util'
+import { initKZG } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 

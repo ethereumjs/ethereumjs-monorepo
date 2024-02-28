@@ -8,9 +8,9 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  createKZG,
   getBlobs,
   hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'

@@ -13,10 +13,10 @@ import {
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  createKZG,
   equalsBytes,
   getBlobs,
   hexToBytes,
+  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
