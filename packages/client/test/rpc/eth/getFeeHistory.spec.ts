@@ -1,11 +1,10 @@
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import * as tape from 'tape'
-
-import { baseRequest, gethGenesisStartLondon, params, setupChain } from '../helpers'
+import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
+import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers'
 
 import type { Chain } from '../../../src/blockchain'
 import type { VMExecution } from '../../../src/execution'
@@ -35,19 +34,17 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
   await execution.run()
 }
 
-tape(`${method}: should return 12.5% increased baseFee if parent block is full`, async (t) => {
-  const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-  const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit))
+describe(method, () => {
+  it(`${method}: should return 12.5% increased baseFee if parent block is full`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit))
 
-  await produceFakeGasUsedBlock(execution, chain, gasUsed)
-  const req = params(method, ['0x2', 'latest', []])
+    await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-  const expectRes = (res: any) => {
-    const [, previousBaseFee, nextBaseFee] = res.body.result.baseFeePerGas as [
-      string,
-      string,
-      string
-    ]
+    const rpc = getRpcClient(server)
+
+    const res = await rpc.request(method, ['0x2', 'latest', []])
+    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
     const increase =
       Number(
         (1000n *
@@ -55,25 +52,18 @@ tape(`${method}: should return 12.5% increased baseFee if parent block is full`,
           bytesToBigInt(hexToBytes(previousBaseFee))
       ) / 1000
 
-    t.equal(increase, 0.125)
-  }
+    assert.equal(increase, 0.125)
+  })
 
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  it(`${method}: should return 12.5% decreased base fee if the block is empty`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const gasUsed = BigInt(0)
 
-tape(`${method}: should return 12.5% decreased base fee if the block is empty`, async (t) => {
-  const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-  const gasUsed = BigInt(0)
+    await produceFakeGasUsedBlock(execution, chain, gasUsed)
+    const rpc = getRpcClient(server)
 
-  await produceFakeGasUsedBlock(execution, chain, gasUsed)
-  const req = params(method, ['0x2', 'latest', []])
-
-  const expectRes = (res: any) => {
-    const [, previousBaseFee, nextBaseFee] = res.body.result.baseFeePerGas as [
-      string,
-      string,
-      string
-    ]
+    const res = await rpc.request(method, ['0x2', 'latest', []])
+    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
     const increase =
       Number(
         (1000n *
@@ -81,15 +71,10 @@ tape(`${method}: should return 12.5% decreased base fee if the block is empty`, 
           bytesToBigInt(hexToBytes(previousBaseFee))
       ) / 1000
 
-    t.equal(increase, -0.125)
-  }
+    assert.equal(increase, -0.125)
+  })
 
-  await baseRequest(t, server, req, 200, expectRes)
-})
-
-tape(
-  `${method}: should return initial base fee if the block number is london hard fork`,
-  async (t) => {
+  it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
     const common = new Common({
       eips: [1559],
       chain: CommonChain.Mainnet,
@@ -99,70 +84,62 @@ tape(
     const initialBaseFee = common.param('gasConfig', 'initialBaseFee')
     const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
-    const req = params(method, ['0x1', 'latest', []])
+    const rpc = getRpcClient(server)
 
-    const expectRes = (res: any) => {
-      const [baseFee] = res.body.result.baseFeePerGas as [string]
+    const res = await rpc.request(method, ['0x1', 'latest', []])
 
-      t.equal(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
-    }
+    const [baseFee] = res.result.baseFeePerGas as [string]
 
-    await baseRequest(t, server, req, 200, expectRes)
-  }
-)
+    assert.equal(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
+  })
 
-tape(`${method}: should return 0x0 for base fees requested before eip-1559`, async (t) => {
-  const { chain, execution, server } = await setupChain(pow, 'pow')
-  const gasUsed = BigInt(0)
+  it(`${method}: should return 0x0 for base fees requested before eip-1559`, async () => {
+    const { chain, execution, server } = await setupChain(pow, 'pow')
+    const gasUsed = BigInt(0)
 
-  await produceFakeGasUsedBlock(execution, chain, gasUsed)
-  const req = params(method, ['0x1', 'latest', []])
+    await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-  const expectRes = (res: any) => {
-    const [previousBaseFee, nextBaseFee] = res.body.result.baseFeePerGas as [string, string]
+    const rpc = getRpcClient(server)
 
-    t.equal(previousBaseFee, '0x0')
-    t.equal(nextBaseFee, '0x0')
-  }
+    const res = await rpc.request(method, ['0x1', 'latest', []])
 
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const [previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string]
 
-tape(`${method}: should return correct gas used ratios`, async (t) => {
-  const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
-  const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit)) / 2n
+    assert.equal(previousBaseFee, '0x0')
+    assert.equal(nextBaseFee, '0x0')
+  })
 
-  await produceFakeGasUsedBlock(execution, chain, gasUsed)
-  const req = params(method, ['0x2', 'latest', []])
+  it(`${method}: should return correct gas used ratios`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit)) / 2n
 
-  const expectRes = (res: any) => {
-    const [genesisGasUsedRatio, nextGasUsedRatio] = res.body.result.gasUsedRatio as [number, number]
+    await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
-    t.equal(genesisGasUsedRatio, 0)
-    t.equal(nextGasUsedRatio, 0.5)
-  }
+    const rpc = getRpcClient(server)
 
-  await baseRequest(t, server, req, 200, expectRes)
-})
+    const res = await rpc.request(method, ['0x2', 'latest', []])
 
-tape(`${method}: should throw error if block count is below 1`, async (t) => {
-  const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const [genesisGasUsedRatio, nextGasUsedRatio] = res.result.gasUsedRatio as [number, number]
 
-  const req = params(method, ['0x0', 'latest', []])
-  const expectRes = (res: any) => {
-    t.assert('error' in res.body)
-  }
+    assert.equal(genesisGasUsedRatio, 0)
+    assert.equal(nextGasUsedRatio, 0.5)
+  })
 
-  await baseRequest(t, server, req, 200, expectRes)
-})
+  it(`${method}: should throw error if block count is below 1`, async () => {
+    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
 
-tape(`${method}: should throw error if block count is above 1024`, async (t) => {
-  const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const rpc = getRpcClient(server)
 
-  const req = params(method, ['0x401', 'latest', []])
-  const expectRes = (res: any) => {
-    t.assert('error' in res.body)
-  }
+    const req = await rpc.request(method, ['0x0', 'latest', []])
+    assert.ok(req.error !== undefined)
+  })
 
-  await baseRequest(t, server, req, 200, expectRes)
+  it(`${method}: should throw error if block count is above 1024`, async () => {
+    const { server } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+
+    const rpc = getRpcClient(server)
+
+    const req = await rpc.request(method, ['0x401', 'latest', []])
+    assert.ok(req.error !== undefined)
+  })
 })
