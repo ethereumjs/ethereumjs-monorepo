@@ -34,7 +34,7 @@ async function runBlock(
 
 describe(`valid verkle network setup`, async () => {
   const kzg = await createKZG()
-  initKZG(kzg, '')
+  initKZG(kzg)
 
   const { server, chain, common } = await setupChain(genesisJSON, 'post-merge', {
     engine: true,
