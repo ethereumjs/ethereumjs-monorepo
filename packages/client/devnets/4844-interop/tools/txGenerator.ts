@@ -29,7 +29,7 @@ async function getNonce(client: Client, account: string) {
 
 async function run(data: any) {
   const kzg = await createKZG()
-  initKZG(kzg, '')
+  initKZG(kzg)
 
   const common = Common.fromGethGenesis(genesisJson, {
     chain: genesisJson.ChainName ?? 'devnet',
