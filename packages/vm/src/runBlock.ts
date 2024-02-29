@@ -385,6 +385,15 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
   return blockResults
 }
 
+/**
+ * This method runs the logic of EIP 2935 (save blockhashes to state)
+ * It will put the `parentHash` of the block to the storage slot of `block.number - 1` of the history storage contract.
+ * This contract is used to retrieve BLOCKHASHes in EVM if EIP 2935 is activated.
+ * In case that the previous block of `block` is pre-EIP-2935 (so we are on the EIP 2935 fork block), additionally
+ * also add the currently available past blockhashes which are available by BLOCKHASH (so, the past 256 block hashes)
+ * @param this The VM to run on
+ * @param block The current block to save the parent block hash of
+ */
 export async function accumulateParentBlockHash(this: VM, block: Block) {
   const historyAddress = Address.fromString(
     bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
