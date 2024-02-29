@@ -173,7 +173,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     }
   }
 
-  getEffectivePriorityFee(baseFee: bigint): bigint {
+  getEffectivePriorityFee(baseFee?: bigint): bigint {
     return Legacy.getEffectivePriorityFee(this.gasPrice, baseFee)
   }
 

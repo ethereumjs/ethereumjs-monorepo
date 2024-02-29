@@ -550,6 +550,32 @@ describe('hash() and signature verification', () => {
   })
 })
 
+it('getEffectivePriorityFee()', async () => {
+  const kzg = await createKZG()
+  initKZG(kzg, '')
+  const common = Common.fromGethGenesis(gethGenesis, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+  const tx = BlobEIP4844Transaction.fromTxData(
+    {
+      maxFeePerGas: 10,
+      maxPriorityFeePerGas: 8,
+      to: Address.zero(),
+      blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+    },
+    { common }
+  )
+  assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
+  assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
+})
+
 describe('Network wrapper deserialization test', () => {
   let common: Common
   beforeAll(async () => {
