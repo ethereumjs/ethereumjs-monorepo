@@ -102,7 +102,7 @@ async function runTests() {
    * Run-time configuration
    */
   const kzg = await createKZG()
-  initKZG(kzg, '')
+  initKZG(kzg)
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
