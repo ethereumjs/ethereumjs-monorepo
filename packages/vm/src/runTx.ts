@@ -439,6 +439,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let inclusionFeePerGas: bigint
   // EIP-1559 tx
   if (tx.supports(Capability.EIP1559FeeMarket)) {
+    // TODO make txs use the new getEffectivePriorityFee
     const baseFee = block.header.baseFeePerGas!
     inclusionFeePerGas =
       (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
