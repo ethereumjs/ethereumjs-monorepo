@@ -481,6 +481,50 @@ export const validators = {
   },
 
   /**
+   * Verification of the rewardsPercentile
+   */
+  get rewardPercentile() {
+    return (params: any[], index: number) => {
+      const field = params[index]
+      if (!Array.isArray(field)) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not array`,
+        }
+      }
+      let low = -1
+      for (let i = 0; i < field.length; i++) {
+        const ratio = field[i]
+        if (typeof ratio !== 'number') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: entry at ${i} is not a number`,
+          }
+        }
+        if (ratio < 0) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: entry at ${i} is lower than 0`,
+          }
+        }
+        if (ratio > 100) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: entry at ${i} is higher than 100`,
+          }
+        }
+        if (ratio <= low) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: array is not monotonically increasing`,
+          }
+        }
+        low = ratio
+      }
+    }
+  },
+
+  /**
    * validator to ensure that contains one of the string values
    * @param values array of possible values
    * @returns validator function with params:
