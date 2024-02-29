@@ -1,3 +1,5 @@
+import { initKZG } from '@ethereumjs/util'
+import { createKZG } from 'kzg-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -99,6 +101,8 @@ async function runTests() {
   /**
    * Run-time configuration
    */
+  const kzg = await createKZG()
+  initKZG(kzg)
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
@@ -114,7 +118,7 @@ async function runTests() {
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
-    common: getCommon(FORK_CONFIG_VM),
+    common: getCommon(FORK_CONFIG_VM, kzg),
     jsontrace: argv.jsontrace,
     dist: argv.dist,
     data: argv.data, // GeneralStateTests

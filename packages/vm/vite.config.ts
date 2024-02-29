@@ -4,4 +4,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [wasm(), topLevelAwait()],
+  optimizeDeps: {
+    exclude: ['kzg-wasm'],
+  },
 })
