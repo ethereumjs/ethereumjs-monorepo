@@ -207,8 +207,15 @@ const jsonRpcReceipt = async (
 const calculateRewards = async (
   block: Block,
   receiptsManager: ReceiptsManager,
-  priorityFeePercentiles: bigint[]
+  priorityFeePercentiles: number[]
 ) => {
+  if (priorityFeePercentiles.length === 0) {
+    return []
+  }
+  if (block.transactions.length === 0) {
+    return Array.from({ length: priorityFeePercentiles.length }, () => BIGINT_0)
+  }
+
   const blockRewards: bigint[] = []
   const txGasUsed: bigint[] = []
   const baseFee = block.header.baseFeePerGas
@@ -216,37 +223,41 @@ const calculateRewards = async (
 
   if (receipts.length > 0) {
     txGasUsed.push(receipts[0].cumulativeBlockGasUsed)
-    receipts.shift()
-  }
-
-  for (const receipt of receipts) {
-    txGasUsed.push(receipt.cumulativeBlockGasUsed - txGasUsed[txGasUsed.length - 1])
   }
 
   const txs = block.transactions
   const txsWithGasUsed = txs.map((tx, i) => ({
-    ...tx,
-    gasUsed: txGasUsed[i],
+    cumulativeGasUsed: txGasUsed[i],
     // Can assume baseFee exists, since if EIP1559/EIP4844 txs are included, this is a post-EIP-1559 block.
     effectivePriorityFee: tx.getEffectivePriorityFee(baseFee!),
   }))
 
-  const txsWithGasUsedSorted = txsWithGasUsed.sort((currTx, nextTx) =>
-    currTx.effectivePriorityFee > nextTx.effectivePriorityFee ? 1 : -1
-  )
-
-  let totalGasUsed = BIGINT_0
-  let rewardPercentileIndex = 0
-  for (const tx of txsWithGasUsedSorted) {
-    totalGasUsed += tx.gasUsed
-
+  let priorityFeeIndex = 0
+  // Loop over all txs ...
+  let targetCumulativeGasUsed =
+    (block.header.gasUsed * BigInt(priorityFeePercentiles[0])) / BIGINT_100
+  for (let txIndex = 0; txIndex < txsWithGasUsed.length; txIndex++) {
+    const cumulativeGasUsed = txsWithGasUsed[txIndex].cumulativeGasUsed
     while (
-      rewardPercentileIndex < priorityFeePercentiles.length &&
-      (totalGasUsed / block.header.gasUsed) * BIGINT_100 >=
-        priorityFeePercentiles[rewardPercentileIndex]
+      cumulativeGasUsed >= targetCumulativeGasUsed &&
+      priorityFeeIndex < priorityFeePercentiles.length
     ) {
-      blockRewards.push(tx.effectivePriorityFee)
-      rewardPercentileIndex++
+      /*
+            Idea: keep adding the premium fee to the priority fee percentile until we actually get above the threshold
+            For instance, take the priority fees [0,1,2,100]
+            The gas used in the block is 1.05 million
+            The first tx takes 1 million gas with prio fee A, the second the remainder over 0.05M with prio fee B
+            Then it is clear that the priority fees should be [A,A,A,B]
+            -> So A should be added three times
+          */
+      blockRewards.push(txsWithGasUsed[txIndex].effectivePriorityFee)
+      priorityFeeIndex++
+      if (priorityFeeIndex >= priorityFeePercentiles.length) {
+        // prevent out-of-bounds read
+        break
+      }
+      const priorityFeePercentile = priorityFeePercentiles[priorityFeeIndex]
+      targetCumulativeGasUsed = (block.header.gasUsed * BigInt(priorityFeePercentile)) / BIGINT_100
     }
   }
 
@@ -1174,7 +1185,7 @@ export class Eth {
     return bigIntToHex(gasPrice)
   }
 
-  async feeHistory(params: [string | number | bigint, string, [bigint]?]) {
+  async feeHistory(params: [string | number | bigint, string, [number]?]) {
     const blockCount = BigInt(params[0])
     const [, lastBlockRequested, priorityFeePercentiles] = params
 
