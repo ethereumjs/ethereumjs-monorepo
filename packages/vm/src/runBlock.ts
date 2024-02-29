@@ -394,11 +394,11 @@ export async function accumulateParentBlockHash(this: VM, block: Block) {
     await this.evm.journal.putAccount(historyAddress, new Account())
   }
 
-  async function putBlockHash(this: VM, hash: Uint8Array, number: bigint) {
+  async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
     const key = setLengthLeft(bigIntToBytes(number), 32)
-    await this.stateManager.putContractStorage(historyAddress, key, hash)
+    await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }
-  await putBlockHash.bind(this)(block.header.parentHash, block.header.number - BIGINT_1)
+  await putBlockHash(this, block.header.parentHash, block.header.number - BIGINT_1)
 
   // Check if we are on the fork block
   const forkTime = this.common.eipTimestamp(2935)
@@ -416,7 +416,7 @@ export async function accumulateParentBlockHash(this: VM, block: Block) {
       }
 
       ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
-      await putBlockHash.bind(this)(ancestor.hash(), ancestor.header.number)
+      await putBlockHash(this, ancestor.hash(), ancestor.header.number)
     }
   }
 }
