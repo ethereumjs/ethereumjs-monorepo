@@ -227,10 +227,6 @@ export class Snapshot {
     const storageRoots: { [k: string]: Uint8Array } = await this._merkleizeStorageTries()
     const accounts = await this._getAccounts()
 
-    // console.log('dbg210')
-    // console.trace()
-    // console.log(storageRoots)
-    // console.log(accounts)
     const leaves: [Uint8Array, Uint8Array][] = []
     accounts.map(([key, value]) => {
       const accountKey = key.slice(ACCOUNT_PREFIX.length)
@@ -242,7 +238,6 @@ export class Snapshot {
       let v = value
       if (storageRoot !== undefined) {
         const acc = Account.fromRlpSerializedAccount(v ?? KECCAK256_NULL)
-        // console.log(acc)
         acc.storageRoot = storageRoot
         v = acc.serialize()
       }
@@ -252,12 +247,7 @@ export class Snapshot {
     const root = merkleizeList(leaves)
     if (checkpointStateRoot === true) {
       this._stateRoot = bytesToHex(root)
-
-      // console.log('dbg211')
-      // console.log(this._stateRoot)
-
       this._knownStateRoots.add(this._stateRoot)
-
       this._stateRootCheckpoints += 1
       this._stateRootDiffCache.push({
         diff: new Map<string, SnapshotElement | undefined>(),

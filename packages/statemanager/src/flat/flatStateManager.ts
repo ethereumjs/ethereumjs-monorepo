@@ -4,8 +4,10 @@ import { Trie, merkleizeList } from '@ethereumjs/trie'
 import {
   Account,
   KECCAK256_NULL,
+  KECCAK256_NULL_S,
   KECCAK256_RLP,
   KECCAK256_RLP_S,
+  bigIntToHex,
   bytesToHex,
   equalsBytes,
   hexToBytes,
@@ -28,8 +30,6 @@ import type {
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-import { KECCAK256_NULL_S } from '@ethereumjs/util'
-import { bigIntToHex } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
