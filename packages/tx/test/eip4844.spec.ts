@@ -26,7 +26,7 @@ describe('EIP4844 addSignature tests', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -91,7 +91,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -130,7 +130,7 @@ describe('fromTxData using from a json', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -202,7 +202,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -259,7 +259,7 @@ describe('Network wrapper tests', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -503,7 +503,7 @@ describe('hash() and signature verification', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -580,7 +580,7 @@ describe('Network wrapper deserialization test', () => {
   let common: Common
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

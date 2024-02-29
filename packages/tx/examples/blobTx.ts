@@ -5,7 +5,7 @@ import { createKZG } from 'kzg-wasm'
 
 const main = async () => {
   const kzg = await createKZG()
-  initKZG(kzg, '')
+  initKZG(kzg)
 
   const common = new Common({
     chain: Chain.Mainnet,

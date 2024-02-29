@@ -23,7 +23,7 @@ describe('EIP4844 header tests', () => {
 
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -102,7 +102,7 @@ describe('blob gas tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -156,7 +156,7 @@ describe('transaction validation tests', () => {
   let blobGasPerBlob: bigint
   beforeAll(async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

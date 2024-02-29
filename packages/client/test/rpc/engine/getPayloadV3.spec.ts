@@ -69,7 +69,7 @@ describe(method, () => {
     }
 
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
 
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,

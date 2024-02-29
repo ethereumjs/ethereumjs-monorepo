@@ -23,7 +23,7 @@ describe('Precompiles: point evaluation', () => {
     const genesisJSON = await import('../../../client/test/testdata/geth-genesis/eip4844.json')
 
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
 
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'custom',

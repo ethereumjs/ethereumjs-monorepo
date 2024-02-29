@@ -90,7 +90,7 @@ describe(method, () => {
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
 
       const kzg = await createKZG()
-      initKZG(kzg, '')
+      initKZG(kzg)
 
       const common = Common.fromGethGenesis(gethGenesis, {
         chain: 'customChain',

@@ -16,7 +16,7 @@ const [blockData] = blocks
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
     const kzg = await createKZG()
-    initKZG(kzg, '')
+    initKZG(kzg)
 
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
