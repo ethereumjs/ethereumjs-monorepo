@@ -193,8 +193,8 @@ export const EIPs: EIPsDict = {
   },
   2935: {
     comment: 'Save historical block hashes in state',
-    url: 'https://eips.ethereum.org/EIPS/eip-2935',
-    status: Status.Stagnant,
+    url: 'https://github.com/ethereum/EIPs/pull/8166/commits/941d3beb084d638be258b8fded6171cf0705a5db',
+    status: Status.Draft,
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
     vm: {
