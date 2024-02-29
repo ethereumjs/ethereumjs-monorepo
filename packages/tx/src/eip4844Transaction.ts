@@ -219,17 +219,10 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
 
   /**
    * Returns the minimum of calculated priority fee (from maxFeePerGas and baseFee) and maxPriorityFeePerGas
-   *
-   * * @param baseFee Base fee retrieved from block
+   * @param baseFee Base fee retrieved from block
    */
-  getEffectivePriorityFee(baseFee: bigint | undefined): bigint {
-    if (baseFee === undefined || baseFee >= this.maxFeePerGas) {
-      return 0n
-    }
-
-    const priorityFee = this.maxFeePerGas - baseFee
-
-    return this.maxPriorityFeePerGas < priorityFee ? this.maxPriorityFeePerGas : priorityFee
+  getEffectivePriorityFee(baseFee: bigint): bigint {
+    return EIP1559.getEffectivePriorityFee(this, baseFee)
   }
 
   /**

@@ -147,12 +147,8 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     }
   }
 
-  getEffectivePriorityFee(baseFee: bigint | undefined): bigint {
-    if (baseFee === undefined || baseFee >= this.gasPrice) {
-      return 0n
-    }
-
-    return this.gasPrice - baseFee
+  getEffectivePriorityFee(baseFee: bigint): bigint {
+    return Legacy.getEffectivePriorityFee(this.gasPrice, baseFee)
   }
 
   /**

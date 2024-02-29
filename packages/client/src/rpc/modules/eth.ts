@@ -226,7 +226,8 @@ const calculateRewards = async (
   const txsWithGasUsed = txs.map((tx, i) => ({
     ...tx,
     gasUsed: txGasUsed[i],
-    effectivePriorityFee: tx.getEffectivePriorityFee(baseFee),
+    // Can assume baseFee exists, since if EIP1559/EIP4844 txs are included, this is a post-EIP-1559 block.
+    effectivePriorityFee: tx.getEffectivePriorityFee(baseFee!),
   }))
 
   const txsWithGasUsedSorted = txsWithGasUsed.sort((currTx, nextTx) =>

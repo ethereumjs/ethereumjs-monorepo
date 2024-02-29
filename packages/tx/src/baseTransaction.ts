@@ -205,6 +205,11 @@ export abstract class BaseTransaction<T extends TransactionType>
     return cost
   }
 
+  /**
+   * Returns the effective priority fee. This is the priority fee which the coinbase will receive
+   * once it is included in the block
+   * @param baseFee Optional baseFee of the block. Note for EIP1559 and EIP4844 this is required.
+   */
   abstract getEffectivePriorityFee(baseFee: bigint | undefined): bigint
 
   /**
