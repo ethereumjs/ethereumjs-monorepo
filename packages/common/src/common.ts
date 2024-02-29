@@ -781,13 +781,11 @@ export class Common {
   }
 
   /**
-   * Returns the hardfork change block for eip
+   * Returns the scheduled timestamp of the EIP (if scheduled and scheduled by timestamp)
    * @param eip EIP number
-   * @returns Block timestamp or null if unscheduled
+   * @returns Scheduled timestamp. If this EIP is unscheduled, or the EIP is scheduled by block number or ttd, then it returns `null`.
    */
   eipTimestamp(eip: number): bigint | null {
-    // NOTE: this is not elegant, what if the eip got activated on a block and not timestamp?
-    // How does the end user know?
     for (const hfChanges of this.HARDFORK_CHANGES) {
       const hf = hfChanges[1]
       if ('eips' in hf) {
