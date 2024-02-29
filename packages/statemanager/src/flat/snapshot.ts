@@ -265,34 +265,30 @@ export class Snapshot {
   }
 
   async setStateRoot(root: Uint8Array): Promise<void> {
-    try {
-      const rootString = bytesToHex(root)
-      if (this._knownStateRoots.has(rootString) !== true) throw new Error('Root does not exist')
-      while (this._stateRootDiffCache.length > 0) {
-        this._stateRootCheckpoints -= 1
-        const { diff, root } = this._stateRootDiffCache.pop()!
-        for (const entry of diff.entries()) {
-          const addressHex = entry[0]
-          const elem = entry[1]
-          if (elem === undefined) {
-            await this._db.del(hexToBytes(addressHex))
+    const rootString = bytesToHex(root)
+    if (this._knownStateRoots.has(rootString) !== true) throw new Error('Root does not exist')
+    while (this._stateRootDiffCache.length > 0) {
+      this._stateRootCheckpoints -= 1
+      const { diff, root } = this._stateRootDiffCache.pop()!
+      for (const entry of diff.entries()) {
+        const addressHex = entry[0]
+        const elem = entry[1]
+        if (elem === undefined) {
+          await this._db.del(hexToBytes(addressHex))
+        } else {
+          if (elem.data !== undefined) {
+            await this._db.put(hexToBytes(addressHex), elem.data)
           } else {
-            if (elem.data !== undefined) {
-              await this._db.put(hexToBytes(addressHex), elem.data)
-            } else {
-              await this._db.del(hexToBytes(addressHex))
-            }
+            await this._db.del(hexToBytes(addressHex))
           }
         }
-        if (root === rootString) {
-          const calculatedRoot = bytesToHex(await this.merkleize())
-          if (calculatedRoot !== rootString)
-            throw new Error('Rollback failed to produce expected root')
-          break
-        }
       }
-    } catch (e) {
-      throw e
+      if (root === rootString) {
+        const calculatedRoot = bytesToHex(await this.merkleize())
+        if (calculatedRoot !== rootString)
+          throw new Error('Rollback failed to produce expected root')
+        break
+      }
     }
   }
 
