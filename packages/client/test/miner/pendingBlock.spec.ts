@@ -20,7 +20,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
@@ -353,11 +353,8 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-    } catch {
-      // no-op
-    }
+    const kzg = await createKZG()
+    initKZG(kzg)
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -437,11 +434,8 @@ describe('[PendingBlock]', async () => {
 
   it('should exclude missingBlobTx', async () => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/official.txt')
-    } catch {
-      //no-op
-    }
+    const kzg = await createKZG()
+
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
