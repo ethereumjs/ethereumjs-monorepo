@@ -213,7 +213,7 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
    */
   getEffectivePriorityFee(baseFee: bigint | undefined): bigint {
     if (baseFee === undefined || baseFee >= this.maxFeePerGas) {
-      return 0n
+      return BIGINT_0
     }
 
     const priorityFee = this.maxFeePerGas - baseFee

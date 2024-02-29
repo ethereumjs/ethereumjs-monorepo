@@ -4,8 +4,8 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
+  BIGINT_100,
   TypeOutput,
-  // eslint-disable-next-line import/named
   bigIntMax,
   bigIntToHex,
   bytesToHex,
@@ -233,14 +233,15 @@ const calculateRewards = async (
     currTx.effectivePriorityFee > nextTx.effectivePriorityFee ? 1 : -1
   )
 
-  let totalGasUsed = 0n
+  let totalGasUsed = BIGINT_0
   let rewardPercentileIndex = 0
   for (const tx of txsWithGasUsedSorted) {
     totalGasUsed += tx.gasUsed
 
     while (
       rewardPercentileIndex < priorityFeePercentiles.length &&
-      (totalGasUsed / block.header.gasUsed) * 100n >= priorityFeePercentiles[rewardPercentileIndex]
+      (totalGasUsed / block.header.gasUsed) * BIGINT_100 >=
+        priorityFeePercentiles[rewardPercentileIndex]
     ) {
       blockRewards.push(tx.effectivePriorityFee)
       rewardPercentileIndex++
@@ -1172,10 +1173,8 @@ export class Eth {
   }
 
   async feeHistory(params: [string | number | bigint, string, [bigint]?]) {
-    let [blockCount] = params
+    const blockCount = BigInt(params[0])
     const [, lastBlockRequested, priorityFeePercentiles] = params
-
-    blockCount = BigInt(blockCount)
 
     if (blockCount < 1 || blockCount > 1024) {
       throw {
@@ -1230,9 +1229,7 @@ export class Eth {
     }
 
     return {
-      baseFeePerGas: baseFees.map((f) =>
-        f !== undefined ? bigIntToHex(f) : bigIntToHex(BigInt(0))
-      ),
+      baseFeePerGas: baseFees.map((f) => (f !== undefined ? bigIntToHex(f) : '0x0')),
       gasUsedRatio: gasUsedRatios,
       oldestBlock: bigIntToHex(oldestBlockNumber),
       reward: rewards.map((r) => r.map((n) => bigIntToHex(n))),
