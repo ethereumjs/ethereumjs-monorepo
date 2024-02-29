@@ -16,17 +16,20 @@ import debugDefault from 'debug'
 
 import { OriginalStorageCache } from '../cache/originalStorageCache.js'
 
-import { STORAGE_PREFIX, Snapshot } from './snapshot.js'
+import { ACCOUNT_PREFIX, STORAGE_PREFIX, Snapshot } from './snapshot.js'
 
 import type { Proof } from '../index.js'
 import type {
   AccountFields,
   EVMStateManagerInterface,
   StorageDump,
+  StorageProof,
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import { KECCAK256_NULL_S } from '@ethereumjs/util'
+import { bigIntToHex } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -308,7 +311,69 @@ export class FlatStateManager implements EVMStateManagerInterface {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    throw new Error('Not yet implemented')
+    // TODO currenlty, just use a trie to produce proofs, and later implement proofs on stackTries similar to tries to optimize this
+    await this.flush()
+
+    // generate trie from all accounts to help with proof generation
+    const accountTrie = new Trie({ useKeyHashing: true, common: this.common })
+
+    const accounts = await this._snapshot._getAccounts()
+    await Promise.all(
+      accounts.map(async ([key, value]) => {
+        const accountKey = key.slice(ACCOUNT_PREFIX.length)
+        await accountTrie.put(accountKey, value ?? KECCAK256_NULL, true)
+      })
+    )
+
+    const account = await this.getAccount(address)
+    if (!account) {
+      const returnValue: Proof = {
+        address: address.toString(),
+        balance: '0x0',
+        codeHash: KECCAK256_NULL_S,
+        nonce: '0x0',
+        storageHash: KECCAK256_RLP_S,
+        accountProof: (await accountTrie.createProof(address.bytes)).map((p) => bytesToHex(p)),
+        storageProof: [],
+      }
+      return returnValue
+    }
+    const accountProof: PrefixedHexString[] = (await accountTrie.createProof(address.bytes)).map(
+      (p) => bytesToHex(p)
+    )
+
+    const storageProof: StorageProof[] = []
+    const storageTrie = new Trie({ useKeyHashing: true, common: this.common })
+
+    const slots = await this._snapshot.getStorageSlots(address)
+    await Promise.all(
+      slots.map(async ([key, value]) => {
+        const storageKey = key.slice(-32)
+        await storageTrie.put(storageKey, RLP.encode(value) ?? KECCAK256_RLP, true)
+      })
+    )
+
+    for (const storageKey of storageSlots) {
+      const proof = (await storageTrie.createProof(storageKey)).map((p) => bytesToHex(p))
+      const value = bytesToHex(await this.getContractStorage(address, storageKey))
+      const proofItem: StorageProof = {
+        key: bytesToHex(storageKey),
+        value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response
+        proof,
+      }
+      storageProof.push(proofItem)
+    }
+
+    const returnValue: Proof = {
+      address: address.toString(),
+      balance: bigIntToHex(account.balance),
+      codeHash: bytesToHex(account.codeHash),
+      nonce: bigIntToHex(account.nonce),
+      storageHash: bytesToHex(account.storageRoot),
+      accountProof,
+      storageProof,
+    }
+    return returnValue
   }
 
   /**
