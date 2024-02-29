@@ -175,6 +175,9 @@ describe(`valid verkle network setup`, async () => {
         '0x2600000000000000000000000000000000000000',
         '0x2700000000000000000000000000000000000000',
         // txs
+        '0x7e454a14b8e7528465eef86f0dc1da4f235d9d79',
+        '0x6177843db3138ae69679a54b95cf345ed759450d',
+        '0x687704db07e902e9a8b3754031d168d46e3d586e',
       ],
     },
     {
@@ -203,7 +206,7 @@ describe(`valid verkle network setup`, async () => {
       ],
     },
     {
-      name: 'block 4 no txs with just withdrawals',
+      name: 'block 4 with kaustinen block13 txs and withdrawals',
       blockData: {
         transactions: blocks.block13.execute.transactions,
         blockNumber: '0x04',
@@ -224,8 +227,14 @@ describe(`valid verkle network setup`, async () => {
         '0x4500000000000000000000000000000000000000',
         '0x4600000000000000000000000000000000000000',
         '0x4700000000000000000000000000000000000000',
+        // txs
+        '0x687704db07e902e9a8b3754031d168d46e3d586e',
+        '0xdfd66120239099c0a9ad623a5af2b26ea6b4fb8d',
+        '0xbbbbde4ca27f83fc18aa108170547ff57675936a',
+        '0x6177843db3138ae69679a54b95cf345ed759450d',
+        '0x2971704d406f9efef2f4a36ea2a40aa994922fb9',
+        '0xad692144cd452a8a85bf683b2a80bb22aab2f9ed',
       ],
-      // no txs
     },
   ] as const
 
