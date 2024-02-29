@@ -31,7 +31,7 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
 
   const block = await blockBuilder.build()
   await chain.putBlocks([block], false)
-  await execution.run()
+  //await execution.run()
 }
 
 describe(method, () => {
@@ -39,12 +39,21 @@ describe(method, () => {
     const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
     const gasUsed = bytesToBigInt(hexToBytes(pow.gasLimit))
 
+    // Produce 3 fake blocks on the chain.
+    // This also ensures that the correct blocks are being retrieved.
+    await produceFakeGasUsedBlock(execution, chain, gasUsed / BigInt(2))
+    await produceFakeGasUsedBlock(execution, chain, gasUsed / BigInt(2))
     await produceFakeGasUsedBlock(execution, chain, gasUsed)
 
     const rpc = getRpcClient(server)
 
+    // Expect to retrieve the blocks [2,3]
     const res = await rpc.request(method, ['0x2', 'latest', []])
-    const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
+    const [firstBaseFee, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [
+      string,
+      string,
+      string
+    ]
     const increase =
       Number(
         (1000n *
@@ -52,7 +61,23 @@ describe(method, () => {
           bytesToBigInt(hexToBytes(previousBaseFee))
       ) / 1000
 
+    // Note: this also ensures that block 2,3 are returned, since gas of block 0 -> 1 and 1 -> 2 does not change
     assert.equal(increase, 0.125)
+    // Sanity check
+    assert.equal(firstBaseFee, previousBaseFee)
+    // 2 blocks are requested, but the next baseFee is able to be calculated from the latest block
+    // Per spec, also return this. So return 3 baseFeePerGas
+    assert.equal(res.result.baseFeePerGas.length, 3)
+
+    // Check that the expected gasRatios of the blocks are correct
+    assert.equal(res.result.gasUsedRatio[0], 0.5) // Block 2
+    assert.equal(res.result.gasUsedRatio[1], 1) // Block 3
+
+    // No ratios were requested
+    assert.deepEqual(res.result.reward, [[], []])
+
+    // oldestBlock is correct
+    assert.equal(res.result.oldestBlock, '0x2')
   })
 
   it(`${method}: should return 12.5% decreased base fee if the block is empty`, async () => {

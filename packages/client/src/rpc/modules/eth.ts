@@ -5,6 +5,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_100,
+  BIGINT_NEG1,
   TypeOutput,
   bigIntMax,
   bigIntToHex,
@@ -1188,7 +1189,7 @@ export class Eth {
       await getBlockByOption(lastBlockRequested, this._chain)
     ).header
 
-    const oldestBlockNumber = bigIntMax(lastRequestedBlockNumber - blockCount - 1n, BigInt(0))
+    const oldestBlockNumber = bigIntMax(lastRequestedBlockNumber - blockCount + BIGINT_1, BIGINT_0)
 
     const requestedBlockNumbers = Array.from(
       { length: Number(blockCount) },
@@ -1204,7 +1205,7 @@ export class Eth {
         const [prevBaseFees, prevGasUsedRatios] = v
         const { baseFeePerGas, gasUsed, gasLimit } = b.header
 
-        prevBaseFees.push(baseFeePerGas ?? BigInt(0))
+        prevBaseFees.push(baseFeePerGas ?? BIGINT_0)
         prevGasUsedRatios.push(Number(gasUsed) / Number(gasLimit))
 
         return [prevBaseFees, prevGasUsedRatios]
@@ -1214,9 +1215,9 @@ export class Eth {
 
     const londonHardforkBlockNumber = this._chain.blockchain.common.hardforkBlock(Hardfork.London)!
     const nextBaseFee =
-      lastRequestedBlockNumber - londonHardforkBlockNumber >= -1n
+      lastRequestedBlockNumber - londonHardforkBlockNumber >= BIGINT_NEG1
         ? requestedBlocks[requestedBlocks.length - 1].header.calcNextBaseFee()
-        : BigInt(0)
+        : BIGINT_0
     baseFees.push(nextBaseFee)
 
     let rewards: bigint[][] = []
