@@ -39,6 +39,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-simple-import-sort": "7.0.0",
     "eslint-plugin-sonarjs": "0.19.0",
+    "kzg-wasm": "^0.1.0",
     "lint-staged": "13.0.3",
     "lockfile-lint-api": "^5.5.1",
     "prettier": "2.7.1",
@@ -65,6 +66,9 @@
       "optional": true
     },
     "@vitest/browser": {
+      "optional": true
+    },
+    "kzg-wasm": {
       "optional": true
     }
   },
