@@ -196,11 +196,13 @@ describe('[Common]: Custom chains', () => {
       timestamp: 999,
     })
     assert.equal(c.hardfork(), Hardfork.Berlin)
+    assert.notOk(c.isActivatedEIP(2935))
     c.setHardforkBy({
       blockNumber: 1,
       timestamp: 1000,
     })
     assert.equal(c.hardfork(), 'testEIP2935Hardfork')
+    assert.ok(c.isActivatedEIP(2935))
   })
 })
 
