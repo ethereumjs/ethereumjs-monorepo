@@ -92,35 +92,17 @@ export class Snapshot {
       diffMap.set(keyHex, oldElem)
     }
 
-    // console.log('dbg101')
-    // console.log(stateRootDiffMap)
-    // console.log(!stateRootDiffMap.has(keyHex))
-    // console.log(this._stateRootDiffCache)
     if (!stateRootDiffMap.has(keyHex)) {
       const oldElem: SnapshotElement | undefined = {
         data: (await this._db.get(key)) as Uint8Array | undefined,
       }
-      // console.log(oldElem)
       stateRootDiffMap.set(keyHex, oldElem)
     }
-    // console.log(stateRootDiffMap)
-    // console.log(this._stateRootDiffCache)
-
-    // this._stateRootDiffCache[this._stateRootCheckpoints].diff = stateRootDiffMap
   }
 
   async putAccount(address: Address, account: Account): Promise<void> {
     const key = concatBytes(ACCOUNT_PREFIX, keccak256(address.bytes))
-
-    // console.log('dbg200')
-    // console.log(`key: ${bytesToHex(key)}`)
-    // console.log(`nonce: ${account.nonce}`)
-    // console.log(`balance: ${account.balance}`)
-    // console.log(`storageRoot: ${bytesToHex(account.storageRoot)}`)
-    // console.log(`codeHash: ${bytesToHex(account.codeHash)}\n`)
-
     await this._saveCachePreState(key)
-
     const value = account.serialize()
     await this._db.put(key, value)
   }
@@ -310,7 +292,6 @@ export class Snapshot {
         }
       }
     } catch (e) {
-      console.error(e)
       throw e
     }
   }
