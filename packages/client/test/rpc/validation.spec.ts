@@ -592,6 +592,22 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.array(validators.bool)([[true, 'true']], 0)))
   })
 
+  it('rewardPercentile', () => {
+    // valid
+    assert.ok(validatorResult(validators.rewardPercentile([[]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentile([[0]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentile([[100]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentile([[0, 2, 5, 30, 100]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentile([[0, 2.1, 5.35, 30.999, 60, 100]], 0)))
+
+    // invalid
+    assert.notOk(validatorResult(validators.rewardPercentile([[[]]], 0))) // Argument is not number
+    assert.notOk(validatorResult(validators.rewardPercentile([[-1]], 0))) // Argument < 0
+    assert.notOk(validatorResult(validators.rewardPercentile([[100.1]], 0))) // Argument > 100
+    assert.notOk(validatorResult(validators.rewardPercentile([[1, 2, 3, 2.5]], 0))) // Not monotonically increasing
+    assert.notOk(validatorResult(validators.rewardPercentile([0], 0))) // Input not array
+  })
+
   it('values', () => {
     // valid
     assert.ok(validatorResult(validators.values(['VALID', 'INVALID'])(['VALID'], 0)))
