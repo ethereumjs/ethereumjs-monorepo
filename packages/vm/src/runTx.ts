@@ -129,7 +129,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   if (opts.reportPreimages === true) {
-    this.evm.journal.startReportingPreimages()
+    this.evm.journal.startReportingPreimages!()
   }
 
   await this.evm.journal.checkpoint()

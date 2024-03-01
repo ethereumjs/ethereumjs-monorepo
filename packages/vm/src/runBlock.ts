@@ -390,7 +390,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
   }
 
   if (this.common.isActivatedEIP(4895)) {
-    if (opts.reportPreimages === true) this.evm.journal.startReportingPreimages()
+    if (opts.reportPreimages === true) this.evm.journal.startReportingPreimages!()
     await assignWithdrawals.bind(this)(block)
     if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
       for (const [key, preimage] of this.evm.journal.preimages) {

@@ -154,7 +154,7 @@ export interface EVMInterface {
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
     startReportingAccessList(): void
-    startReportingPreimages(): void
+    startReportingPreimages?(): void
   }
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
