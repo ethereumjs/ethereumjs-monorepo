@@ -22,6 +22,7 @@ Execution result of a transaction
 - [execResult](AfterTxEvent.md#execresult)
 - [gasRefund](AfterTxEvent.md#gasrefund)
 - [minerValue](AfterTxEvent.md#minervalue)
+- [preimages](AfterTxEvent.md#preimages)
 - [receipt](AfterTxEvent.md#receipt)
 - [totalGasSpent](AfterTxEvent.md#totalgasspent)
 - [transaction](AfterTxEvent.md#transaction)
@@ -40,7 +41,7 @@ EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
 #### Defined in
 
-[vm/src/types.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L400)
+[vm/src/types.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L427)
 
 ___
 
@@ -56,7 +57,7 @@ The amount of ether used by this transaction
 
 #### Defined in
 
-[vm/src/types.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L378)
+[vm/src/types.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L405)
 
 ___
 
@@ -72,7 +73,7 @@ This is the blob gas units times the fee per blob gas for 4844 transactions
 
 #### Defined in
 
-[vm/src/types.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L410)
+[vm/src/types.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L442)
 
 ___
 
@@ -88,7 +89,7 @@ Bloom filter resulted from transaction
 
 #### Defined in
 
-[vm/src/types.ts:373](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L373)
+[vm/src/types.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L400)
 
 ___
 
@@ -104,7 +105,7 @@ Address of created account during transaction, if any
 
 #### Defined in
 
-evm/dist/cjs/types.d.ts:245
+evm/dist/cjs/types.d.ts:247
 
 ___
 
@@ -120,7 +121,7 @@ Contains the results from running the code, if any, as described in runCode
 
 #### Defined in
 
-evm/dist/cjs/types.d.ts:249
+evm/dist/cjs/types.d.ts:251
 
 ___
 
@@ -136,7 +137,7 @@ The amount of gas as that was refunded during the transaction (i.e. `gasUsed = t
 
 #### Defined in
 
-[vm/src/types.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L395)
+[vm/src/types.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L422)
 
 ___
 
@@ -152,7 +153,23 @@ The value that accrues to the miner by this transaction
 
 #### Defined in
 
-[vm/src/types.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L405)
+[vm/src/types.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L437)
+
+___
+
+### preimages
+
+• `Optional` **preimages**: `Map`<`string`, `Uint8Array`\>
+
+Preimages mapping of the touched accounts from the tx (see `reportPreimages` option)
+
+#### Inherited from
+
+[RunTxResult](RunTxResult.md).[preimages](RunTxResult.md#preimages)
+
+#### Defined in
+
+[vm/src/types.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L432)
 
 ___
 
@@ -168,7 +185,7 @@ The tx receipt
 
 #### Defined in
 
-[vm/src/types.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L383)
+[vm/src/types.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L410)
 
 ___
 
@@ -186,7 +203,7 @@ which consists of calldata cost, intrinsic cost and optionally the access list c
 
 #### Defined in
 
-[vm/src/types.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L390)
+[vm/src/types.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L417)
 
 ___
 
@@ -198,4 +215,4 @@ The transaction which just got finished
 
 #### Defined in
 
-[vm/src/types.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L417)
+[vm/src/types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L449)

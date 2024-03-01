@@ -1792,14 +1792,14 @@ ___
 
 ### initKZG
 
-▸ **initKZG**(`kzgLib`, `trustedSetupPath`): `void`
+▸ **initKZG**(`kzgLib`, `trustedSetupPath?`): `void`
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `kzgLib` | [`Kzg`](interfaces/Kzg.md) | a KZG implementation (defaults to c-kzg) |
-| `trustedSetupPath` | `string` | the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file |
+| `trustedSetupPath?` | `string` | the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file |
 
 #### Returns
 

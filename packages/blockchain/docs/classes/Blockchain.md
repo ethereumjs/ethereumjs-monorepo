@@ -125,7 +125,7 @@ The genesis Block for the blockchain.
 
 #### Defined in
 
-[blockchain.ts:1412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1412)
+[blockchain.ts:1414](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1414)
 
 ## Methods
 
@@ -147,7 +147,7 @@ The genesis Block for the blockchain.
 
 #### Defined in
 
-[blockchain.ts:1349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1349)
+[blockchain.ts:1351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1351)
 
 ___
 
@@ -169,7 +169,7 @@ Creates a genesis Block for the blockchain with params from Common.genesis
 
 #### Defined in
 
-[blockchain.ts:1421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1421)
+[blockchain.ts:1423](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1423)
 
 ___
 
@@ -202,7 +202,7 @@ we can be sure it is correct).
 
 #### Defined in
 
-[blockchain.ts:931](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L931)
+[blockchain.ts:933](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L933)
 
 ___
 
@@ -229,7 +229,7 @@ block will be the canonical block at that number in the chain
 
 #### Defined in
 
-[blockchain.ts:799](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L799)
+[blockchain.ts:801](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L801)
 
 ___
 
@@ -255,7 +255,7 @@ Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
 
 #### Defined in
 
-[blockchain.ts:848](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L848)
+[blockchain.ts:850](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L850)
 
 ___
 
@@ -313,7 +313,7 @@ Gets a header by number. Header must be in the canonical chain
 
 #### Defined in
 
-[blockchain.ts:1390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1390)
+[blockchain.ts:1392](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1392)
 
 ___
 
@@ -388,7 +388,7 @@ Gets total difficulty for a header's parent, helpful for determining terminal bl
 
 #### Defined in
 
-[blockchain.ts:834](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L834)
+[blockchain.ts:836](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L836)
 
 ___
 
@@ -415,7 +415,7 @@ Gets total difficulty for a block specified by hash and number
 
 #### Defined in
 
-[blockchain.ts:820](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L820)
+[blockchain.ts:822](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L822)
 
 ___
 
@@ -448,7 +448,7 @@ number of blocks actually iterated
 
 #### Defined in
 
-[blockchain.ts:1037](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1037)
+[blockchain.ts:1039](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1039)
 
 ___
 
@@ -607,7 +607,7 @@ any other error, this function throws.
 
 #### Defined in
 
-[blockchain.ts:1404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1404)
+[blockchain.ts:1406](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1406)
 
 ___
 
@@ -631,7 +631,7 @@ Therefore, the array needs to be ordered upon number.
 
 #### Defined in
 
-[blockchain.ts:890](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L890)
+[blockchain.ts:892](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L892)
 
 ___
 
@@ -659,7 +659,7 @@ When calling the iterator, the iterator will start running the first child block
 
 #### Defined in
 
-[blockchain.ts:1120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1120)
+[blockchain.ts:1122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1122)
 
 ___
 
@@ -710,7 +710,7 @@ whether the block is internally consistent
 
 #### Defined in
 
-[blockchain.ts:702](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L702)
+[blockchain.ts:704](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L704)
 
 ___
 
@@ -748,7 +748,7 @@ It verifies the current block against the `parentHash`:
 
 #### Defined in
 
-[blockchain.ts:635](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L635)
+[blockchain.ts:637](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L637)
 
 ___
 

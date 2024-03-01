@@ -45,7 +45,7 @@ Log that the contract emits.
 
 #### Defined in
 
-[types.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L334)
+[types.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L336)
 
 ## Variables
 

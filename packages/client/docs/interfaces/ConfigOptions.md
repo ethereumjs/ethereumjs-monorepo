@@ -6,44 +6,79 @@
 
 ### Properties
 
+- [accountCache](ConfigOptions.md#accountcache)
 - [accounts](ConfigOptions.md#accounts)
 - [bootnodes](ConfigOptions.md#bootnodes)
+- [codeCache](ConfigOptions.md#codecache)
 - [common](ConfigOptions.md#common)
 - [datadir](ConfigOptions.md#datadir)
 - [debugCode](ConfigOptions.md#debugcode)
-- [disableBeaconSync](ConfigOptions.md#disablebeaconsync)
 - [discDns](ConfigOptions.md#discdns)
 - [discV4](ConfigOptions.md#discv4)
 - [dnsAddr](ConfigOptions.md#dnsaddr)
 - [dnsNetworks](ConfigOptions.md#dnsnetworks)
+- [enableSnapSync](ConfigOptions.md#enablesnapsync)
+- [engineNewpayloadMaxExecute](ConfigOptions.md#enginenewpayloadmaxexecute)
+- [engineNewpayloadMaxTxsExecute](ConfigOptions.md#enginenewpayloadmaxtxsexecute)
+- [engineParentLookupMaxDepth](ConfigOptions.md#engineparentlookupmaxdepth)
+- [execution](ConfigOptions.md#execution)
 - [extIP](ConfigOptions.md#extip)
-- [forceSnapSync](ConfigOptions.md#forcesnapsync)
+- [isSingleNode](ConfigOptions.md#issinglenode)
 - [key](ConfigOptions.md#key)
 - [lightserv](ConfigOptions.md#lightserv)
 - [logger](ConfigOptions.md#logger)
+- [maxAccountRange](ConfigOptions.md#maxaccountrange)
 - [maxFetcherJobs](ConfigOptions.md#maxfetcherjobs)
+- [maxFetcherRequests](ConfigOptions.md#maxfetcherrequests)
+- [maxInvalidBlocksErrorCache](ConfigOptions.md#maxinvalidblockserrorcache)
 - [maxPeers](ConfigOptions.md#maxpeers)
 - [maxPerRequest](ConfigOptions.md#maxperrequest)
+- [maxRangeBytes](ConfigOptions.md#maxrangebytes)
+- [maxStorageRange](ConfigOptions.md#maxstoragerange)
 - [minPeers](ConfigOptions.md#minpeers)
 - [mine](ConfigOptions.md#mine)
 - [minerCoinbase](ConfigOptions.md#minercoinbase)
 - [multiaddrs](ConfigOptions.md#multiaddrs)
+- [numBlocksPerIteration](ConfigOptions.md#numblocksperiteration)
 - [port](ConfigOptions.md#port)
+- [prefixStorageTrieKeys](ConfigOptions.md#prefixstoragetriekeys)
+- [pruneEngineCache](ConfigOptions.md#pruneenginecache)
 - [safeReorgDistance](ConfigOptions.md#safereorgdistance)
+- [savePreimages](ConfigOptions.md#savepreimages)
 - [saveReceipts](ConfigOptions.md#savereceipts)
-- [servers](ConfigOptions.md#servers)
+- [server](ConfigOptions.md#server)
 - [skeletonFillCanonicalBackStep](ConfigOptions.md#skeletonfillcanonicalbackstep)
 - [skeletonSubchainMergeMinimum](ConfigOptions.md#skeletonsubchainmergeminimum)
+- [snapAvailabilityDepth](ConfigOptions.md#snapavailabilitydepth)
+- [snapTransitionSafeDepth](ConfigOptions.md#snaptransitionsafedepth)
+- [statelessVerkle](ConfigOptions.md#statelessverkle)
+- [storageCache](ConfigOptions.md#storagecache)
+- [syncedStateRemovalPeriod](ConfigOptions.md#syncedstateremovalperiod)
 - [syncmode](ConfigOptions.md#syncmode)
-- [transports](ConfigOptions.md#transports)
+- [trieCache](ConfigOptions.md#triecache)
 - [txLookupLimit](ConfigOptions.md#txlookuplimit)
+- [useStringValueTrieDB](ConfigOptions.md#usestringvaluetriedb)
 - [vm](ConfigOptions.md#vm)
+- [vmProfileBlocks](ConfigOptions.md#vmprofileblocks)
+- [vmProfileTxs](ConfigOptions.md#vmprofiletxs)
 
 ## Properties
 
+### accountCache
+
+• `Optional` **accountCache**: `number`
+
+Size for the account cache (max number of accounts)
+
+#### Defined in
+
+[config.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L199)
+
+___
+
 ### accounts
 
-• `Optional` **accounts**: [address: Address, privKey: Buffer][]
+• `Optional` **accounts**: [address: Address, privKey: Uint8Array][]
 
 Unlocked accounts of form [address, privateKey]
 Currently only the first account is used to seal mined PoA blocks
@@ -52,7 +87,7 @@ Default: []
 
 #### Defined in
 
-[config.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L221)
+[config.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L269)
 
 ___
 
@@ -65,7 +100,19 @@ Network bootnodes
 
 #### Defined in
 
-[config.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L98)
+[config.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L96)
+
+___
+
+### codeCache
+
+• `Optional` **codeCache**: `number`
+
+Size for the code cache (max number of contracts)
+
+#### Defined in
+
+[config.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L209)
 
 ___
 
@@ -80,7 +127,7 @@ Default: 'mainnet' Common
 
 #### Defined in
 
-[config.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L34)
+[config.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L36)
 
 ___
 
@@ -92,7 +139,7 @@ Root data directory for the blockchain
 
 #### Defined in
 
-[config.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L78)
+[config.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L83)
 
 ___
 
@@ -108,22 +155,7 @@ EthereumJS VM on execution errors
 
 #### Defined in
 
-[config.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L192)
-
-___
-
-### disableBeaconSync
-
-• `Optional` **disableBeaconSync**: `boolean`
-
-Whether to disable beacon (optimistic) sync if CL provides
-blocks at the head of chain.
-
-Default: false
-
-#### Defined in
-
-[config.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L49)
+[config.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L223)
 
 ___
 
@@ -137,7 +169,7 @@ Default: `true` for testnets, false for mainnet
 
 #### Defined in
 
-[config.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L199)
+[config.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L230)
 
 ___
 
@@ -151,7 +183,7 @@ Default: `false` for testnets, true for mainnet
 
 #### Defined in
 
-[config.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L206)
+[config.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L237)
 
 ___
 
@@ -165,7 +197,7 @@ Default `8.8.8.8` (Google)
 
 #### Defined in
 
-[config.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L178)
+[config.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L179)
 
 ___
 
@@ -177,7 +209,69 @@ EIP-1459 ENR Tree urls to query via DNS for peer discovery
 
 #### Defined in
 
-[config.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L183)
+[config.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L184)
+
+___
+
+### enableSnapSync
+
+• `Optional` **enableSnapSync**: `boolean`
+
+Whether to enable and run snapSync, currently experimental
+
+Default: false
+
+#### Defined in
+
+[config.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L50)
+
+___
+
+### engineNewpayloadMaxExecute
+
+• `Optional` **engineNewpayloadMaxExecute**: `number`
+
+Max blocks including unexecuted parents to be executed in engine's newPayload
+
+#### Defined in
+
+[config.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L313)
+
+___
+
+### engineNewpayloadMaxTxsExecute
+
+• `Optional` **engineNewpayloadMaxTxsExecute**: `number`
+
+Limit max transactions per block to execute in engine's newPayload for responsive engine api
+
+#### Defined in
+
+[config.ts:318](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L318)
+
+___
+
+### engineParentLookupMaxDepth
+
+• `Optional` **engineParentLookupMaxDepth**: `number`
+
+Max depth for parent lookups in engine's newPayload and forkchoiceUpdated
+
+#### Defined in
+
+[config.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L308)
+
+___
+
+### execution
+
+• `Optional` **execution**: `boolean`
+
+Start continuous VM execution (pre-Merge setting)
+
+#### Defined in
+
+[config.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L189)
 
 ___
 
@@ -189,30 +283,27 @@ RLPx external IP
 
 #### Defined in
 
-[config.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L110)
+[config.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L108)
 
 ___
 
-### forceSnapSync
+### isSingleNode
 
-• `Optional` **forceSnapSync**: `boolean`
+• `Optional` **isSingleNode**: `boolean`
 
-Whether to test and run snapSync. When fully ready, this needs to
-be replaced by a more sophisticated condition based on how far back we are
-from the head, and how to run it in conjunction with the beacon sync
-blocks at the head of chain.
+Is a single node and doesn't need peers for synchronization
 
-Default: false
+Default: `false`
 
 #### Defined in
 
-[config.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L59)
+[config.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L251)
 
 ___
 
 ### key
 
-• `Optional` **key**: `Buffer`
+• `Optional` **key**: `Uint8Array`
 
 Private key for the client.
 Use return value of [getClientKey](../classes/Config.md#getclientkey).
@@ -220,7 +311,7 @@ If left blank, a random key will be generated and used.
 
 #### Defined in
 
-[config.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L85)
+[config.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L90)
 
 ___
 
@@ -234,7 +325,7 @@ Default: `false`
 
 #### Defined in
 
-[config.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L73)
+[config.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L78)
 
 ___
 
@@ -249,7 +340,17 @@ Default: Logger with loglevel 'info'
 
 #### Defined in
 
-[config.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L143)
+[config.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L139)
+
+___
+
+### maxAccountRange
+
+• `Optional` **maxAccountRange**: `bigint`
+
+#### Defined in
+
+[config.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L299)
 
 ___
 
@@ -263,7 +364,31 @@ Default: `100`
 
 #### Defined in
 
-[config.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L157)
+[config.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L153)
+
+___
+
+### maxFetcherRequests
+
+• `Optional` **maxFetcherRequests**: `number`
+
+Max outgoing multi-peer requests by the fetcher at any given time
+
+#### Defined in
+
+[config.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L158)
+
+___
+
+### maxInvalidBlocksErrorCache
+
+• `Optional` **maxInvalidBlocksErrorCache**: `number`
+
+Cache size of invalid block hashes and their errors
+
+#### Defined in
+
+[config.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L325)
 
 ___
 
@@ -277,7 +402,7 @@ Default: `25`
 
 #### Defined in
 
-[config.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L171)
+[config.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L172)
 
 ___
 
@@ -287,11 +412,31 @@ ___
 
 Max items per block or header request
 
-Default: `50``
+Default: `100`
 
 #### Defined in
 
-[config.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L150)
+[config.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L146)
+
+___
+
+### maxRangeBytes
+
+• `Optional` **maxRangeBytes**: `number`
+
+#### Defined in
+
+[config.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L297)
+
+___
+
+### maxStorageRange
+
+• `Optional` **maxStorageRange**: `bigint`
+
+#### Defined in
+
+[config.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L320)
 
 ___
 
@@ -305,7 +450,7 @@ Default: `1`
 
 #### Defined in
 
-[config.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L164)
+[config.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L165)
 
 ___
 
@@ -319,7 +464,7 @@ Default: `false`
 
 #### Defined in
 
-[config.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L213)
+[config.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L244)
 
 ___
 
@@ -332,7 +477,7 @@ If not provided, defaults to the primary account.
 
 #### Defined in
 
-[config.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L227)
+[config.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L275)
 
 ___
 
@@ -345,7 +490,19 @@ Network multiaddrs for libp2p
 
 #### Defined in
 
-[config.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L116)
+[config.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L114)
+
+___
+
+### numBlocksPerIteration
+
+• `Optional` **numBlocksPerIteration**: `number`
+
+Number of blocks to execute in batch mode and logged to console
+
+#### Defined in
+
+[config.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L194)
 
 ___
 
@@ -359,7 +516,32 @@ Default: `30303`
 
 #### Defined in
 
-[config.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L105)
+[config.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L103)
+
+___
+
+### prefixStorageTrieKeys
+
+• `Optional` **prefixStorageTrieKeys**: `boolean`
+
+A temporary option to offer backward compatibility with already-synced databases that are
+using non-prefixed keys for storage tries
+
+Default: true
+
+#### Defined in
+
+[config.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L58)
+
+___
+
+### pruneEngineCache
+
+• `Optional` **pruneEngineCache**: `boolean`
+
+#### Defined in
+
+[config.ts:326](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L326)
 
 ___
 
@@ -372,7 +554,19 @@ to try to refetch and refeed the blocks.
 
 #### Defined in
 
-[config.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L233)
+[config.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L281)
+
+___
+
+### savePreimages
+
+• `Optional` **savePreimages**: `boolean`
+
+Save account keys preimages in the meta db (default: false)
+
+#### Defined in
+
+[config.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L333)
 
 ___
 
@@ -384,22 +578,20 @@ Save tx receipts and logs in the meta db (default: false)
 
 #### Defined in
 
-[config.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L129)
+[config.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L125)
 
 ___
 
-### servers
+### server
 
-• `Optional` **servers**: (`Libp2pServer` \| `RlpxServer`)[]
+• `Optional` **server**: `RlpxServer`
 
-Transport servers (RLPx or Libp2p)
-Use `transports` option, only used for testing purposes
-
-Default: servers created from `transports` option
+Transport servers (RLPx)
+Only used for testing purposes
 
 #### Defined in
 
-[config.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L124)
+[config.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L120)
 
 ___
 
@@ -413,7 +605,7 @@ to backstep and fill again using reverse block fetcher.
 
 #### Defined in
 
-[config.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L240)
+[config.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L288)
 
 ___
 
@@ -427,7 +619,63 @@ reset
 
 #### Defined in
 
-[config.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L247)
+[config.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L295)
+
+___
+
+### snapAvailabilityDepth
+
+• `Optional` **snapAvailabilityDepth**: `bigint`
+
+#### Defined in
+
+[config.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L327)
+
+___
+
+### snapTransitionSafeDepth
+
+• `Optional` **snapTransitionSafeDepth**: `bigint`
+
+#### Defined in
+
+[config.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L328)
+
+___
+
+### statelessVerkle
+
+• `Optional` **statelessVerkle**: `boolean`
+
+Enables stateless verkle block execution (default: false)
+
+#### Defined in
+
+[config.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L338)
+
+___
+
+### storageCache
+
+• `Optional` **storageCache**: `number`
+
+Size for the storage cache (max number of contracts)
+
+#### Defined in
+
+[config.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L204)
+
+___
+
+### syncedStateRemovalPeriod
+
+• `Optional` **syncedStateRemovalPeriod**: `number`
+
+The time after which synced state is downgraded to unsynced
+
+#### Defined in
+
+[config.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L303)
 
 ___
 
@@ -435,27 +683,25 @@ ___
 
 • `Optional` **syncmode**: [`SyncMode`](../enums/SyncMode.md)
 
-Synchronization mode ('full' or 'light')
+Synchronization mode ('full', 'light', 'none')
 
 Default: 'full'
 
 #### Defined in
 
-[config.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L41)
+[config.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L43)
 
 ___
 
-### transports
+### trieCache
 
-• `Optional` **transports**: `string`[]
+• `Optional` **trieCache**: `number`
 
-Network transports ('rlpx' and/or 'libp2p')
-
-Default: `['rlpx', 'libp2p']`
+Size for the trie cache (max number of trie nodes)
 
 #### Defined in
 
-[config.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L92)
+[config.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L214)
 
 ___
 
@@ -468,7 +714,20 @@ Number of recent blocks to maintain transactions index for
 
 #### Defined in
 
-[config.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L135)
+[config.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L131)
+
+___
+
+### useStringValueTrieDB
+
+• `Optional` **useStringValueTrieDB**: `boolean`
+
+A temporary option to offer backward compatibility with already-synced databases that stores
+trie items as `string`, instead of the more performant `Uint8Array`
+
+#### Defined in
+
+[config.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L64)
 
 ___
 
@@ -482,4 +741,28 @@ Default: VM instance created by client
 
 #### Defined in
 
-[config.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/lib/config.ts#L66)
+[config.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L71)
+
+___
+
+### vmProfileBlocks
+
+• `Optional` **vmProfileBlocks**: `boolean`
+
+Whether to profile VM blocks
+
+#### Defined in
+
+[config.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L256)
+
+___
+
+### vmProfileTxs
+
+• `Optional` **vmProfileTxs**: `boolean`
+
+Whether to profile VM txs
+
+#### Defined in
+
+[config.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L261)

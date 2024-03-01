@@ -17,6 +17,7 @@
 
 - [AfterBlockEvent](interfaces/AfterBlockEvent.md)
 - [AfterTxEvent](interfaces/AfterTxEvent.md)
+- [ApplyBlockResult](interfaces/ApplyBlockResult.md)
 - [BaseTxReceipt](interfaces/BaseTxReceipt.md)
 - [BuildBlockOpts](interfaces/BuildBlockOpts.md)
 - [BuilderOpts](interfaces/BuilderOpts.md)
@@ -124,4 +125,4 @@ Returns the encoded tx receipt.
 
 #### Defined in
 
-[vm/src/runBlock.ts:592](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L592)
+[vm/src/runBlock.ts:625](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L625)

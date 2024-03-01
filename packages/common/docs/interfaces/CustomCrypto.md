@@ -11,6 +11,7 @@
 - [ecrecover](CustomCrypto.md#ecrecover)
 - [ecsign](CustomCrypto.md#ecsign)
 - [keccak256](CustomCrypto.md#keccak256)
+- [kzg](CustomCrypto.md#kzg)
 - [sha256](CustomCrypto.md#sha256)
 
 ## Properties
@@ -148,6 +149,16 @@ Interface for providing custom cryptographic primitives in place of `ethereum-cr
 #### Defined in
 
 [types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L74)
+
+___
+
+### kzg
+
+• `Optional` **kzg**: `Kzg`
+
+#### Defined in
+
+[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L86)
 
 ___
 

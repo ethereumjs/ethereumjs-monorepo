@@ -27,7 +27,7 @@
 
 #### Defined in
 
-[types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L149)
+[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L150)
 
 ___
 
@@ -50,7 +50,7 @@ BaseOpts.customCrypto
 
 #### Defined in
 
-[types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L110)
+[types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L111)
 
 ___
 
@@ -67,7 +67,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L99)
+[types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L100)
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 #### Defined in
 
-[types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L150)
+[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L151)
 
 ___
 
@@ -95,7 +95,7 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L94)
+[types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L95)
 
 ___
 
@@ -105,4 +105,4 @@ ___
 
 #### Defined in
 
-[types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L151)
+[types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L152)

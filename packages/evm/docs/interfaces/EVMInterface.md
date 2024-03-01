@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L161)
+[types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L163)
 
 ___
 
@@ -37,6 +37,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `accessList?` | `Map`<`string`, `Set`<`string`\>\> |
+| `preimages?` | `Map`<`string`, `Uint8Array`\> |
 | `addAlwaysWarmAddress` | (`address`: `string`, `addToAccessList?`: `boolean`) => `void` |
 | `addAlwaysWarmSlot` | (`address`: `string`, `slot`: `string`, `addToAccessList?`: `boolean`) => `void` |
 | `checkpoint` | () => `Promise`<`void`\> |
@@ -47,6 +48,7 @@ ___
 | `putAccount` | (`address`: `Address`, `account`: `Account`) => `Promise`<`void`\> |
 | `revert` | () => `Promise`<`void`\> |
 | `startReportingAccessList` | () => `void` |
+| `startReportingPreimages` | () => `void` |
 
 #### Defined in
 
@@ -60,7 +62,7 @@ ___
 
 #### Defined in
 
-[types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L158)
+[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
 
 ___
 
@@ -70,7 +72,7 @@ ___
 
 #### Defined in
 
-[types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L157)
+[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L159)
 
 ## Methods
 
@@ -90,7 +92,7 @@ ___
 
 #### Defined in
 
-[types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L159)
+[types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L161)
 
 ___
 
@@ -110,4 +112,4 @@ ___
 
 #### Defined in
 
-[types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
+[types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L162)
