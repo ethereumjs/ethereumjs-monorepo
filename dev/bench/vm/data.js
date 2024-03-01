@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709208611399,
+  "lastUpdate": 1709293761576,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "05d253011b120e4ce395c7249f192faf47b4afdf",
-          "message": "client: Check for undefined pathStrings\n\n* client: check for undefined filterStringCSV\n\n* client:  trieNodeFetcher:  use empty string if pathString undefined\n\n* client: add test case for added line\n\n* client: add test case for added line\n\n* Merge branch 'master' into checkFilter-bug",
-          "timestamp": "2024-01-23T15:06:08-05:00",
-          "tree_id": "c79a07c1ad216f1e234edf3d4323e3ec22bf7400",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/05d253011b120e4ce395c7249f192faf47b4afdf"
-        },
-        "date": 1706040538520,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 39884,
-            "range": "±3.47%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38944,
-            "range": "±2.10%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38600,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36221,
-            "range": "±4.33%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37031,
-            "range": "±2.36%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.81%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f01264cba33d8eb2c875b3e4e97e70ef4b02bf27",
+          "message": "client: save preimages feature (#3143)\n\n* client: PreimageManager and Preimage storage in MetaDB\r\n\r\n* common: add getAppliedKey method to StateManagerInterface\r\n\r\n* evm: add preimage reporting\r\n\r\n* statemanager: add getAppliedKey methods to the statemanager implementations\r\n\r\n* vm: improve some types\r\n\r\n* vm: implement preimage reporting\r\n\r\n* client: add preimage saving\r\n\r\n* evm: update to unprefixedHexToBytes\r\n\r\n* vm: add reportPreimages test to runTx tests\r\n\r\n* vm: pass down reportPreimages arg from block to tx\r\n\r\n* client: pass down reportPreimages from client to vm through runBlock\r\n\r\n* client: unify config options naming\r\n\r\n* client: preimageManager test\r\n\r\n* client: test preimage, wip\r\n\r\n* common: add todo to gasPrices from 6800\r\n\r\n* statemanager: fix type issues\r\n\r\n* dev accessWitness class on the lines of geth impl\r\n\r\n* integrate accesswitness in evm/vm/runtx flow\r\n\r\n* plugin the gas schedule for tx origin and destination accesses\r\n\r\n* complete, debug and fix the call and create access charges\r\n\r\n* plug the access gas usage on the evm opcode runs\r\n\r\n* debug and fix the code chunk accesses and the poststate setting\r\n\r\n* implement access merging and accessed state tracking and traversing\r\n\r\n* also provide chunkKey for easy reference\r\n\r\n* decode raw accesses to structured ones and debug log them\r\n\r\n* debug and add the missing accesses for coinbase, withdrawals\r\n\r\n* stateManager: implement cache handling in the context of statelessness\r\n\r\n* modify poststate to use accesses from the accesswitness to compare and fix mising chunkKey in returned accesses\r\n\r\n* stateManager: getComputedValue\r\n\r\n* fixes for the getcomputedval fn helper for the code\r\n\r\n* correctly implement the getcontractcode with partial accessed segments available  and corresponding error handling in evm run\r\n\r\n* statemanager: tentative fixes & improvements to code cache handling\r\n\r\n* statemanager: checkpoint code cache\r\n\r\n* fix the code chunk comparision in post state verification\r\n\r\n* rename kaustinen2 local testnet data for\r\n\r\n* fix pre and post state null chunks handling and corresponding get computed fixes\r\n\r\n* setup the client to statelessly execute the verkle blocks randomly from anywhere the chain\r\n\r\n* setup to statelessly run block13 of kaustinen2 in client test spec for easy debugging\r\n\r\n* setup the client kaustinen2 stateless test to test and debug block 16\r\n\r\n* improve the post state witness mismatch logging to be more comprehensible for debugging\r\n\r\n* improve chunk verification tracking logging and fix post/prestate key coding from the witnesses\r\n\r\n* debug and fix code accesses and overhaul/fix accesscharges on create/call\r\n\r\n* add a more complete matching of generated and provided executed witnesses\r\n\r\n* fix return\r\n\r\n* debug, discuss and remove proof of absence charges for contract create for fixing the extra witnesses\r\n\r\n* only charge code accesses if accessed from state and when code is written on contract creation\r\n\r\n* handle bigint treeIndex for the bigint slot and debug/match the predersenhash with kauntinen2 usage\r\n\r\n* client: fix kaustinen tests and migrate to new testing framework\r\n\r\n* shift kaustinen 2 test to block 13\r\n\r\n* client: remove stale kaustinen2 test data\r\n\r\n* vm: adjust rewardAccount new common arg ordering and make it optional\r\n\r\n* add block12 to the spec list\r\n\r\n* move invalid opcode check outside jump analysis\r\n\r\n* small cleanup in runtx\r\n\r\n* add preimages spec\r\n\r\n* build various block scenarios for preimages gen\r\n\r\n* client: revert vmexecution preimages test\r\n\r\n* client: remove unnecessary boolean explicit comparison\r\n\r\n* client: remove unused import\r\n\r\n* client: revert re-ordering\r\n\r\n* stateManager: support non keccak256 applied keys\r\n\r\n* debug and persist preimages on runWithoutSetHead as well\r\n\r\n* add preimages for coinbase,withdrawals to the test and fix the spec to validate them\r\n\r\n* client: fix preimage tests ts errors\r\n\r\n* client: minor adjustments to preimage test\r\n\r\n* client: save preimages helper\r\n\r\n* vm: save preimages at the block level, new applyBlockResult type\r\n\r\n* common: make getAppliedKey optional\r\n\r\n* evm/vm: handle optional getAppliedKey\r\n\r\n* client: add preimage doc\r\n\r\n* trie: export \"Path\" interface (#3292)\r\n\r\n* trie: export \"Path\" interface\r\n\r\n* Move over Path interface export to types for consistency\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\n\r\n* Snap sync: use zero-element proof for checking validity of final, empty range result (#3047)\r\n\r\n* Use no-elements proof for final check in account fetcher\r\n\r\n* Use no-elements proof for final check in storage fetcher\r\n\r\n* Check inputs after zero element proof code section\r\n\r\n* Cleanup\r\n\r\n* Reject peer if zero-element proof fails\r\n\r\n* Add tests for zero-element proof\r\n\r\n* Remove proofTrie usage\r\n\r\n* Use hashing function in static version of verifyRangeProof\r\n\r\n* Include useKeyHashing in call to fromProof so that hashing function is used in proof verification\r\n\r\n* Use appliedKey for hashing function instead of the function directly passed in TrieOpts\r\n\r\n* Pass in hashing function for use in static proof verification calls\r\n\r\n* Fix static range proof verification errors\r\n\r\n* Use custom hashing function from opts if available\r\n\r\n* Add test to check if zero element range proof verification fails with remaining elements to the right\r\n\r\n* Check if parameters are as expected for zero-element proof\r\n\r\n* Fix linting issues\r\n\r\n---------\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Indigo Alpha <indigoalpha@indigos-mbp.mynetworksettings.com>\r\n\r\n* Integrate `kzg-wasm` into monorepo (#3294)\r\n\r\n* Update to official trusted setup\r\n\r\n* Remove devnet6\r\n\r\n* Add kzg-wasm\r\n\r\n* Update block tests to use kzg-wasm\r\n\r\n* Update tests\r\n\r\n* Add more 4844 tests to browser run\r\n\r\n* Initial integration of kzg-wasm on git\r\n\r\n* Update kzg-wasm build\r\n\r\n* Fix linter weirdness\r\n\r\n* Move initKzg to `runTests`\r\n\r\n* Fix tests\r\n\r\n* More cleanup\r\n\r\n* Goodbye c-kzg\r\n\r\n* fix kzg references\r\n\r\n* Replace c-kzg with kzg-wasm in package.json\r\n\r\n* Update kzg wasm commit and vm tester config\r\n\r\n* Update initKzg to createKZG\r\n\r\n* fix copy pasta\r\n\r\n* Fix more copy pasta\r\n\r\n* update kzg-wasm to npm release\r\n\r\n* One last bit of copy pasta\r\n\r\n* Address feedback\r\n\r\n* client: remove try/catch blocks createKZG() and remove the initKZG stale comment\r\n\r\n---------\r\n\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\n\r\n* Make trustedSetupPath in Util kzg module optional (#3296)\r\n\r\n* client: add tx preimages to preimage test cases\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: harkamal <gajinder@g11.in>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>\r\nCo-authored-by: Indigo Alpha <indigoalpha@indigos-mbp.mynetworksettings.com>",
+          "timestamp": "2024-03-01T12:46:35+01:00",
+          "tree_id": "b7ccbb0c3d5731cae25f773b58d4f1a967e8b0f1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f01264cba33d8eb2c875b3e4e97e70ef4b02bf27"
+        },
+        "date": 1709293760331,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41309,
+            "range": "±1.83%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 38547,
+            "range": "±2.93%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40119,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39103,
+            "range": "±1.70%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38078,
+            "range": "±1.76%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
