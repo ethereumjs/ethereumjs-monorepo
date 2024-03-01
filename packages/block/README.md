@@ -165,15 +165,16 @@ To create blocks which include blob transactions you have to active EIP-4844 in 
 ```ts
 // ./examples/4844.ts
 
+import { createKZG } from 'kzg-wasm'
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address, initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
 import { randomBytes } from 'crypto'
 
 const main = async () => {
-  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  const kzg = await createKZG()
+  initKZG(kzg)
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.Cancun,
