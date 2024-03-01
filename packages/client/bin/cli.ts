@@ -7,6 +7,7 @@ import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
   BIGINT_2,
+  LevelDB,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -43,7 +44,6 @@ import { hideBin } from 'yargs/helpers'
 
 import { EthereumClient } from '../src/client'
 import { Config, DataDirectory, SyncMode } from '../src/config'
-import { LevelDB } from '../src/execution/level'
 import { getLogger } from '../src/logging'
 import { Event } from '../src/types'
 import { parseMultiaddrs } from '../src/util'

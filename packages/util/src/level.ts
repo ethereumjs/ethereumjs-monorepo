@@ -1,9 +1,10 @@
-import { KeyEncoding, ValueEncoding } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import type { BatchDBOp, DB, DBObject, EncodingOpts } from '@ethereumjs/util'
-import type { AbstractLevel } from 'abstract-level'
+import { bigIntToBytes, bytesToBigInt } from './bytes.js'
+import { KeyEncoding, ValueEncoding } from './db.js'
 
+import type { BatchDBOp, DB, DBObject, EncodingOpts } from './db.js'
+import type { AbstractLevel } from 'abstract-level'
 // Helper to infer the `valueEncoding` option for `putting` a value in a levelDB
 const getEncodings = (opts: EncodingOpts = {}) => {
   const encodings = { keyEncoding: '', valueEncoding: '' }
@@ -107,6 +108,88 @@ export class LevelDB<
 
     // TODO: Investigate why as any is necessary
     await this._leveldb.batch(levelOps as any)
+  }
+
+  /**
+   * Returns a readable stream for all
+   * kv pairs where key starts with `prefix`.
+   */
+  async keysByPrefix(prefix: Uint8Array, opts?: EncodingOpts): Promise<Uint8Array[]> {
+    const encodings = getEncodings(opts)
+    const ret: Uint8Array[] = []
+    try {
+      for await (const key of this._leveldb.keys({
+        gte: prefix,
+        lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
+        ...encodings,
+      })) {
+        // eslint-disable-next-line
+        ret.push(key)
+      }
+    } catch (error: any) {
+      // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
+        throw error
+      }
+    }
+    // eslint-disable-next-line
+    return ret
+  }
+
+  /**
+   * Returns a readable stream for all
+   * kv pairs where key starts with `prefix`.
+   */
+  async byPrefix(
+    prefix: Uint8Array,
+    opts?: EncodingOpts
+  ): Promise<[Uint8Array, TValue | undefined][]> {
+    const encodings = getEncodings(opts)
+
+    const ret: [Uint8Array, TValue][] = []
+    try {
+      for await (const [key, val] of this._leveldb.iterator({
+        gte: prefix,
+        lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
+        ...encodings,
+      })) {
+        const data = [
+          // eslint-disable-next-line
+          key instanceof Buffer ? Uint8Array.from(key) : key,
+          // eslint-disable-next-line
+          (val instanceof Buffer ? Uint8Array.from(val) : val) as TValue,
+        ]
+        ret.push(data as any)
+      }
+    } catch (error: any) {
+      // https://github.com/Level/abstract-level/blob/915ad1317694d0ce8c580b5ab85d81e1e78a3137/abstract-level.js#L309
+      // This should be `true` if the error came from LevelDB
+      // so we can check for `NOT true` to identify any non-404 errors
+      if (error.notFound !== true) {
+        throw error
+      }
+    }
+    // eslint-disable-next-line
+    return ret
+  }
+
+  /**
+   * Returns a readable stream for all
+   * kv pairs where key starts with `prefix`.
+   */
+  async delByPrefix(prefix: Uint8Array, opts?: EncodingOpts): Promise<void> {
+    const encodings = getEncodings(opts)
+    await this._leveldb.clear({
+      gte: prefix,
+      lt: bigIntToBytes(bytesToBigInt(prefix) + BigInt(1)),
+      ...encodings,
+    })
+  }
+
+  async clear() {
+    await this._leveldb.clear()
   }
 
   /**

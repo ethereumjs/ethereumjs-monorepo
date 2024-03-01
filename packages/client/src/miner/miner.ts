@@ -1,10 +1,9 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { BIGINT_0, BIGINT_1, BIGINT_2, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, BIGINT_2, LevelDB, bytesToHex, equalsBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { LevelDB } from '../execution/level'
 import { Event } from '../types'
 
 import type { Config } from '../config'
