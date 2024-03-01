@@ -49,7 +49,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.2.0",
+    "@ethereumjs/common": "^4.3.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/trie": "^6.1.1",
     "@ethereumjs/util": "^9.0.2",
@@ -60,7 +60,7 @@
     "lru-cache": "10.1.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^5.1.1",
+    "@ethereumjs/block": "^5.2.0",
     "@ethereumjs/genesis": "^0.2.1",
     "@types/debug": "^4.1.9",
     "rustbn-wasm": "^0.4.0"

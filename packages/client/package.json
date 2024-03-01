@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/client",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "EthereumJS Execution Layer (EL) Client Implementation",
   "keywords": [
     "ethereum",
@@ -56,9 +56,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "5.1.1",
-    "@ethereumjs/blockchain": "7.1.0",
-    "@ethereumjs/common": "4.2.0",
+    "@ethereumjs/block": "5.2.0",
+    "@ethereumjs/blockchain": "7.2.0",
+    "@ethereumjs/common": "4.3.0",
     "@ethereumjs/devp2p": "6.1.1",
     "@ethereumjs/ethash": "3.0.2",
     "@ethereumjs/evm": "2.2.1",

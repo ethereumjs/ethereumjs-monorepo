@@ -57,7 +57,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^4.2.0",
+    "@ethereumjs/common": "^4.3.0",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.0.2",
     "@scure/base": "1.1.1",
@@ -69,7 +69,7 @@
     "snappyjs": "^0.6.1"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^5.1.1",
+    "@ethereumjs/block": "^5.2.0",
     "@ethereumjs/tx": "^5.2.1",
     "@types/debug": "^4.1.9",
     "@types/k-bucket": "^5.0.0",
