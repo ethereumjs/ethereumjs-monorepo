@@ -150,9 +150,11 @@ export interface EVMInterface {
     putAccount(address: Address, account: Account): Promise<void>
     deleteAccount(address: Address): Promise<void>
     accessList?: Map<string, Set<string>>
+    preimages?: Map<string, Uint8Array>
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
     startReportingAccessList(): void
+    startReportingPreimages(): void
   }
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
