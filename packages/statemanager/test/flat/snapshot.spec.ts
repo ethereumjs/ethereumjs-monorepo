@@ -1,9 +1,10 @@
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import { Account, Address, KECCAK256_RLP, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { assert, describe, it } from 'vitest'
 
-import { /* FlatStateManager, */ Snapshot } from '../../src/index.js'
+import { FlatStateManager, Snapshot } from '../../src/index.js'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
 }
@@ -138,51 +139,59 @@ describe('snapshot merkleize', () => {
     )
   })
 
-  // it('should merkleize accounts with storage', async () => {
-  //   const snapshot = new Snapshot()
-  //   const addrs = [
-  //     hexToBytes('0x' + '3'.repeat(40)), // Hash starts with 0x5b
-  //     hexToBytes('0x' + '4'.repeat(40)), // Hash starts with 0xa8
-  //     hexToBytes('0x' + '5'.repeat(40)), // Hash starts with 0x42
-  //   ].map((e) => new Address(e))
+  it('should merkleize accounts with storage', async () => {
+    const addrs = [
+      hexToBytes('0x' + '3'.repeat(40)), // Hash starts with 0x5b
+      hexToBytes('0x' + '4'.repeat(40)), // Hash starts with 0xa8
+      hexToBytes('0x' + '5'.repeat(40)), // Hash starts with 0x42
+    ].map((e) => new Address(e))
+    const acc = new Account()
 
-  //   // Insert an empty account for all the addresses
-  //   const acc = new Account()
-  //   for (const addr of addrs) {
-  //     await snapshot.putAccount(addr, acc)
-  //   }
+    // Insert an empty account for all the addresses
+    const snapshot = new Snapshot()
+    for (const addr of addrs) {
+      await snapshot.putAccount(addr, acc)
+    }
 
-  //   const state = new FlatStateManager()
-  //   await state.checkpoint()
-  //   for (const addr of addrs) {
-  //     await state.putAccount(addr, new Account())
-  //   }
+    const state = new FlatStateManager()
+    await state.checkpoint()
+    for (const addr of addrs) {
+      await state.putAccount(addr, acc)
+    }
 
-  //   // Insert two of these slots for each account
-  //   const slots = [
-  //     [hexToBytes('0x' + '21'.repeat(32)), hexToBytes('0x' + '2222')],
-  //     [hexToBytes('0x' + '22'.repeat(32)), hexToBytes('0x' + '3333')],
-  //     [hexToBytes('0x' + '23'.repeat(32)), hexToBytes('0x' + '4444')],
-  //   ]
-  //   for (let i = 0; i < addrs.length; i++) {
-  //     const j1 = i
-  //     const j2 = (i + 1) % addrs.length
-  //     await snapshot.putStorageSlot(addrs[i], slots[j1][0], slots[j1][1])
-  //     await state.putContractStorage(addrs[i], slots[j1][0], slots[j1][1])
-  //     await snapshot.putStorageSlot(addrs[i], slots[j2][0], slots[j2][1])
-  //     await state.putContractStorage(addrs[i], slots[j2][0], slots[j2][1])
-  //   }
+    const defaultState = new FlatStateManager()
+    await defaultState.checkpoint()
+    for (const addr of addrs) {
+      await defaultState.putAccount(addr, acc)
+    }
 
-  //   await state.commit()
-  //   const expectedRoot = await state.getStateRoot()
+    // Insert two of these slots for each account
+    const slots = [
+      [hexToBytes('0x' + '21'.repeat(32)), hexToBytes('0x' + '2222')],
+      [hexToBytes('0x' + '22'.repeat(32)), hexToBytes('0x' + '3333')],
+      [hexToBytes('0x' + '23'.repeat(32)), hexToBytes('0x' + '4444')],
+    ]
+    for (let i = 0; i < addrs.length; i++) {
+      const j1 = i
+      const j2 = (i + 1) % addrs.length
+      await state.putContractStorage(addrs[i], slots[j1][0], slots[j1][1])
+      await state.putContractStorage(addrs[i], slots[j2][0], slots[j2][1])
 
-  //   const root = await snapshot.merkleize()
-  //   assert.equal(
-  //     bytesToHex(root),
-  //     bytesToHex(expectedRoot),
-  //     `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
-  //   )
-  // })
+      // Have to RLP encode slot values before directly putting them into a snapshot
+      await snapshot.putStorageSlot(addrs[i], slots[j1][0], RLP.encode(slots[j1][1]))
+      await snapshot.putStorageSlot(addrs[i], slots[j2][0], RLP.encode(slots[j2][1]))
+    }
+
+    await state.commit()
+
+    const expectedRoot = await state.getStateRoot()
+    const root = await snapshot.merkleize()
+    assert.equal(
+      bytesToHex(root),
+      bytesToHex(expectedRoot),
+      `Merkleized root ${bytesToHex(root)} should match expected ${bytesToHex(expectedRoot)}`
+    )
+  })
 })
 
 describe('snapshot checkpointing', () => {
