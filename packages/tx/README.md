@@ -23,42 +23,43 @@ npm install @ethereumjs/tx
 
 ### KZG Setup
 
-This library supports an experimental version of `EIP-4844` blob transactions (see usage instructions below) starting with `v4.1.0`.
+This library now fully supports `EIP-4844` blob transactions (see usage instructions below) starting with `v5.2.0`.
 
 For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
-#### Manual Installation
+Note: starting with the `v5.3` release of this library and associated releases of upstream EthereumJS libraries the old `c-kzg` centered recommended setup has been replaced by using our own WASM build of the `c-kzg` library which has been released as a separate package [kzg-wasm](https://github.com/ethereumjs/kzg-wasm) on npm.
 
-The following two manual installation steps for a KZG library and the trusted setup are needed.
-
-1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
+This new setup is now both browser compatible 🎉 and the official KZG setup file has been integrated by default and the new setup is now the default recommended setup to be used.
 
 #### KZG Initialization
 
-Initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
+As a first step add the `kzg-wasm` package as a dependency to your `package.json` file and install the library.
+
+Initialization can then be done like the following:
 
 ```ts
 // ./examples/initKzg.ts
 
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { initKZG } from '@ethereumjs/util'
 
-// Instantiate KZG
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const main = async () => {
+  const kzg = await createKZG()
+  initKZG(kzg)
 
-// Instantiate `common`
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Cancun,
-  customCrypto: { kzg },
-})
+  // Instantiate `common`
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
 
-console.log(common.customCrypto.kzg) // should output the KZG API as an object
+  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+}
 ```
 
-At the moment using the Node.js bindings for the `c-kzg` library is the only option to get KZG related functionality to work, note that this solution is not browser compatible. We are currently working on a WASM build of that respective library which can hopefully be released soon [TM].
+Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
 
 ## Usage
 
