@@ -44,6 +44,10 @@ Note that passing in the KZG setup file is not necessary anymore, since this is 
 
 Since this fits well also to be placed here relatively prominently for awareness: we had a relatively nasty bug in the `@ethereumjs/trie` library with a `Node.js` web stream import also affecting browser compatibility, see PR [#3280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3280). This bug has been fixed along with these releases and this library now references the updated trie library version.
 
+### Other Changes
+
+- Support for Preimage generation (verkle-related, experimental), new `reportPreimages` `VM.runTx()` option, PR [#3143](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3143)
+
 ## 7.2.1 - 2024-02-08
 
 - Hotfix release moving the `@ethereumjs/verkle` dependency for `@ethereumjs/statemanager` from a peer dependency to the main dependencis (note that this decision might be temporary)

@@ -47,6 +47,7 @@ Since this fits well also to be placed here relatively prominently for awareness
 ### Other Changes
 
 - Properly apply statemanager `opts` in `fromProof()`, PR [#3276](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3276)
+- New optional `getAppliedKey()` method for the interface (see interface definition in `@ethereumjs/common`), PR [#3143](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3143)
 - Add tests for verkle statemanager, PR [#3257](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3257)
 
 ## 2.2.2 - 2024-02-08
