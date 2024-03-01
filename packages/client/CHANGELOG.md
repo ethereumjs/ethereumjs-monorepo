@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.1 - 2024-03-05
+
+This is a maintenance release coming with a few internal changes and minor bug fixes.
+
+- The underlying EthereumJS libraries now use `kzg-wasm` instead of the `c-kzg` Node.js bindings for 4844 functionality, PR [#3294](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3294)
+- Ensure executed block does not get pruned if head=final FCU, PR [#3153](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3153)
+- Improved SNAP sync behavior in certain scenarios (SNAP feature still experimental), PR [#3200](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3200)
+- Refactor internal Engine API code structure, PR [#3291](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3291)
+- Remove `devnet6.txt` trusted setup file and all test usages in downstream libraries, PR [#3288](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3288)
+- Snap sync (experimental): use zero-element proof for checking validity of final, empty range result, PR [#3047](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3047)
+
 ## 0.10.0 - 2024-02-08
 
 This client release now comes with official Dencun hardfork support 🎉 and by default uses WASM for crypto primitives for faster block execution times.
