@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^5.2.0",
-    "@ethereumjs/genesis": "^0.2.1",
+    "@ethereumjs/genesis": "^0.2.2",
     "@types/debug": "^4.1.9",
     "rustbn-wasm": "^0.4.0"
   }
