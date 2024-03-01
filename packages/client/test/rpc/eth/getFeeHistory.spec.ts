@@ -1,5 +1,6 @@
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
-import { bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
+import { TransactionFactory } from '@ethereumjs/tx'
+import { Account, Address, bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
@@ -8,8 +9,23 @@ import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers'
 
 import type { Chain } from '../../../src/blockchain'
 import type { VMExecution } from '../../../src/execution'
+import type { VM } from '@ethereumjs/vm'
 
 const method = 'eth_feeHistory'
+
+const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+const pKeyAddress = Address.fromPrivateKey(privateKey)
+
+function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
+  return new Account(nonce, balance)
+}
+
+async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
+  const account = createAccount(BigInt(0), balance)
+  await vm.stateManager.checkpoint()
+  await vm.stateManager.putAccount(address, account)
+  await vm.stateManager.commit()
+}
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
@@ -32,6 +48,40 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
   const block = await blockBuilder.build()
   await chain.putBlocks([block], false)
   //await execution.run()
+}
+
+const produceBlockWithTx = async (execution: VMExecution, chain: Chain) => {
+  const { vm } = execution
+
+  await setBalance(vm, pKeyAddress, 0xffffffffffffffffffffffffffffn)
+  const parentBlock = await chain.getCanonicalHeadBlock()
+  const vmCopy = await vm.shallowCopy()
+  // Set block's gas used to max
+  const blockBuilder = await vmCopy.buildBlock({
+    parentBlock,
+    headerData: {
+      timestamp: parentBlock.header.timestamp + BigInt(1),
+    },
+    blockOpts: {
+      calcDifficultyFromHeader: parentBlock.header,
+      putBlockIntoBlockchain: false,
+    },
+  })
+  await blockBuilder.addTransaction(
+    TransactionFactory.fromTxData(
+      {
+        type: 2,
+        gasLimit: 0xfffff,
+        maxFeePerGas: 0xffffffff,
+        maxPriorityFeePerGas: 0xff,
+      },
+      { common: vmCopy.common }
+    ).sign(privateKey)
+  )
+
+  const block = await blockBuilder.build()
+  await chain.putBlocks([block], false)
+  await execution.run()
 }
 
 describe(method, () => {
@@ -166,5 +216,31 @@ describe(method, () => {
 
     const req = await rpc.request(method, ['0x401', 'latest', []])
     assert.ok(req.error !== undefined)
+  })
+
+  it(`${method}: should generate reward percentiles with 0s`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    await produceFakeGasUsedBlock(execution, chain, 1n)
+
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, ['0x1', 'latest', [50]])
+    assert.equal(
+      parseInt(res.result.reward[0][0]),
+      50,
+      'Should return 0 for empty block reward percentiles'
+    )
+    assert.equal(
+      res.result.reward[0][1],
+      '0x0',
+      'Should return 0 for empty block reward percentiles'
+    )
+  })
+  it(`${method}: should generate reward percentiles`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    await produceBlockWithTx(execution, chain)
+
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, ['0x1', 'latest', [50]])
+    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
   })
 })
