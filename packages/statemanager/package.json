@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/statemanager",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "An Ethereum statemanager implementation",
   "keywords": [
     "ethereum",
@@ -51,8 +51,8 @@
   "dependencies": {
     "@ethereumjs/common": "^4.3.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/trie": "^6.1.1",
-    "@ethereumjs/util": "^9.0.2",
+    "@ethereumjs/trie": "^6.2.0",
+    "@ethereumjs/util": "^9.0.3",
     "@ethereumjs/verkle": "^0.0.1",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.3",

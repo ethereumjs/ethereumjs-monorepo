@@ -59,12 +59,12 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^4.3.0",
-    "@ethereumjs/util": "^9.0.2"
+    "@ethereumjs/util": "^9.0.3"
   },
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
-    "@ethereumjs/trie": "^6.1.1"
+    "@ethereumjs/trie": "^6.2.0"
   }
 }

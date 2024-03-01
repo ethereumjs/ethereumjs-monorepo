@@ -47,7 +47,7 @@
   "dependencies": {
     "@ethereumjs/block": "^5.2.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.0.2",
+    "@ethereumjs/util": "^9.0.3",
     "bigint-crypto-utils": "^3.2.2",
     "ethereum-cryptography": "^2.1.3"
   },
