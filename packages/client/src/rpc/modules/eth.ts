@@ -223,21 +223,28 @@ const calculateRewards = async (
 
   if (receipts.length > 0) {
     txGasUsed.push(receipts[0].cumulativeBlockGasUsed)
+    for (let i = 1; i < receipts.length; i++) {
+      txGasUsed.push(receipts[i].cumulativeBlockGasUsed - receipts[i - 1].cumulativeBlockGasUsed)
+    }
   }
 
   const txs = block.transactions
   const txsWithGasUsed = txs.map((tx, i) => ({
-    cumulativeGasUsed: txGasUsed[i],
+    txGasUsed: txGasUsed[i],
     // Can assume baseFee exists, since if EIP1559/EIP4844 txs are included, this is a post-EIP-1559 block.
     effectivePriorityFee: tx.getEffectivePriorityFee(baseFee!),
   }))
+
+  // Sort array based upon the effectivePriorityFee
+  txsWithGasUsed.sort((a, b) => Number(a.effectivePriorityFee - b.effectivePriorityFee))
 
   let priorityFeeIndex = 0
   // Loop over all txs ...
   let targetCumulativeGasUsed =
     (block.header.gasUsed * BigInt(priorityFeePercentiles[0])) / BIGINT_100
+  let cumulativeGasUsed = BIGINT_0
   for (let txIndex = 0; txIndex < txsWithGasUsed.length; txIndex++) {
-    const cumulativeGasUsed = txsWithGasUsed[txIndex].cumulativeGasUsed
+    cumulativeGasUsed += txsWithGasUsed[txIndex].txGasUsed
     while (
       cumulativeGasUsed >= targetCumulativeGasUsed &&
       priorityFeeIndex < priorityFeePercentiles.length
@@ -249,6 +256,7 @@ const calculateRewards = async (
             The first tx takes 1 million gas with prio fee A, the second the remainder over 0.05M with prio fee B
             Then it is clear that the priority fees should be [A,A,A,B]
             -> So A should be added three times
+            Note: in this case A < B so the priority fees were "sorted" by default
           */
       blockRewards.push(txsWithGasUsed[txIndex].effectivePriorityFee)
       priorityFeeIndex++
