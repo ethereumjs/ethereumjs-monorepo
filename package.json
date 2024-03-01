@@ -7,6 +7,7 @@
   "scripts": {
     "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
+    "docs:build": "npm run docs:build --workspaces --if-present",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
