@@ -42,13 +42,20 @@ export function verifyUpdate(
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
 export function getStem(address: Address, treeIndex: number | bigint = 0): Uint8Array {
-  const actualAddress32 = setLengthLeft(address.toBytes(), 32)
+  // const actualAddress32 = setLengthLeft(address.toBytes(), 32)
+
+  // // override to match kaustinen4 geth bug to allow syncing further
+  // const address32 = setLengthLeft(
+  //   setLengthRight(bigIntToBytes(bytesToBigInt(actualAddress32)), 20),
+  //   32
+  // )
 
   // override to match kaustinen4 geth bug to allow syncing further
-  const address32 = setLengthLeft(
-    setLengthRight(bigIntToBytes(bytesToBigInt(actualAddress32)), 20),
-    32
-  )
+  // remove the following once the network is relaunched with fixes
+  const actualAddress32 = setLengthLeft(address.toBytes(), 32)
+  const unPaddedBytes = bigIntToBytes(bytesToBigInt(actualAddress32))
+  const modifiedAddress = setLengthRight(unPaddedBytes, 20)
+  const address32 = setLengthLeft(modifiedAddress, 32)
 
   let treeIndexBytes: Uint8Array
   if (typeof treeIndex === 'number') {
