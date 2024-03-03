@@ -1,6 +1,6 @@
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Account, Address, bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
+import { Address, BIGINT_0, bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it } from 'vitest'
 
@@ -9,23 +9,11 @@ import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers'
 
 import type { Chain } from '../../../src/blockchain'
 import type { VMExecution } from '../../../src/execution'
-import type { VM } from '@ethereumjs/vm'
 
 const method = 'eth_feeHistory'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const pKeyAddress = Address.fromPrivateKey(privateKey)
-
-function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
-  return new Account(nonce, balance)
-}
-
-async function setBalance(vm: VM, address: Address, balance = BigInt(100000000)) {
-  const account = createAccount(BigInt(0), balance)
-  await vm.stateManager.checkpoint()
-  await vm.stateManager.putAccount(address, account)
-  await vm.stateManager.commit()
-}
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
@@ -50,10 +38,15 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
   //await execution.run()
 }
 
-const produceBlockWithTx = async (execution: VMExecution, chain: Chain) => {
+const produceBlockWithTx = async (
+  execution: VMExecution,
+  chain: Chain,
+  maxPriorityFeesPerGas: bigint[] = [BigInt(0xff)],
+  gasLimits: bigint[] = [BigInt(0xfffff)]
+) => {
   const { vm } = execution
-
-  await setBalance(vm, pKeyAddress, 0xffffffffffffffffffffffffffffn)
+  const account = await vm.stateManager.getAccount(pKeyAddress)
+  let nonce = account?.nonce ?? BIGINT_0
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
   // Set block's gas used to max
@@ -67,17 +60,24 @@ const produceBlockWithTx = async (execution: VMExecution, chain: Chain) => {
       putBlockIntoBlockchain: false,
     },
   })
-  await blockBuilder.addTransaction(
-    TransactionFactory.fromTxData(
-      {
-        type: 2,
-        gasLimit: 0xfffff,
-        maxFeePerGas: 0xffffffff,
-        maxPriorityFeePerGas: 0xff,
-      },
-      { common: vmCopy.common }
-    ).sign(privateKey)
-  )
+  for (let i = 0; i < maxPriorityFeesPerGas.length; i++) {
+    const maxPriorityFeePerGas = maxPriorityFeesPerGas[i]
+    const gasLimit = gasLimits[i]
+    await blockBuilder.addTransaction(
+      TransactionFactory.fromTxData(
+        {
+          type: 2,
+          gasLimit,
+          maxFeePerGas: 0xffffffff,
+          maxPriorityFeePerGas,
+          nonce,
+          data: '0xFE',
+        },
+        { common: vmCopy.common }
+      ).sign(privateKey)
+    )
+    nonce++
+  }
 
   const block = await blockBuilder.build()
   await chain.putBlocks([block], false)
@@ -139,14 +139,14 @@ describe(method, () => {
 
     const res = await rpc.request(method, ['0x2', 'latest', []])
     const [, previousBaseFee, nextBaseFee] = res.result.baseFeePerGas as [string, string, string]
-    const increase =
+    const decrease =
       Number(
         (1000n *
           (bytesToBigInt(hexToBytes(nextBaseFee)) - bytesToBigInt(hexToBytes(previousBaseFee)))) /
           bytesToBigInt(hexToBytes(previousBaseFee))
       ) / 1000
 
-    assert.equal(increase, -0.125)
+    assert.equal(decrease, -0.125)
   })
 
   it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
@@ -242,5 +242,34 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+  })
+
+  it(`${method}: should generate reward percentiles`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    await produceBlockWithTx(execution, chain)
+
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, ['0x1', 'latest', [50]])
+    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+  })
+
+  it(`${method}: should generate reward percentiles`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const priorityFees = [BigInt(100), BigInt(200)]
+    const gasUsed = [BigInt(400000), BigInt(600000)]
+    await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
+
+    const rpc = getRpcClient(server)
+    const res = await rpc.request(method, ['0x1', 'latest', [40, 100]])
+    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    const expected = priorityFees.map((e) => bigIntToHex(e))
+    assert.deepEqual(res.result.reward[0], expected)
+
+    // If the txs order is swapped, the output should still be the same
+    await produceBlockWithTx(execution, chain, priorityFees.reverse(), gasUsed.reverse())
+
+    const res2 = await rpc.request(method, ['0x1', 'latest', [40, 100]])
+    assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
+    assert.deepEqual(res2.result.reward[0], expected)
   })
 })
