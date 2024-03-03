@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709298087442,
+  "lastUpdate": 1709436490486,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "869053512ebe0a7b30afd50c3f5c1ac2bd87ccac",
-          "message": "Embedme integration: Update StateManager and Trie examples (#3235)\n\n* Add embedme script to package file for trie\r\n\r\n* Add embedme script to package file for statemanager\r\n\r\n* Update statemanager README\r\n\r\n* Use shell as annotation\r\n\r\n* Update trie README\r\n\r\n* Add example files for trie\r\n\r\n* Update trie README\r\n\r\n* Add example files for statemanager\r\n\r\n* Update statemanager README\r\n\r\n* Catch and log errors in examples\r\n\r\n* Make static create function name consistent with current code\r\n\r\n* change js to ts\r\n\r\n* typo\r\n\r\n* Make review changes\r\n\r\n* Make review changes\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-01-24T10:54:50+01:00",
-          "tree_id": "fa0aff7e2b8f66f935a154336cf2be27e09c4af6",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/869053512ebe0a7b30afd50c3f5c1ac2bd87ccac"
-        },
-        "date": 1706090269308,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41255,
-            "range": "±2.09%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38754,
-            "range": "±3.20%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39419,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38456,
-            "range": "±2.22%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34402,
-            "range": "±5.61%",
-            "unit": "ops/sec",
-            "extra": "78 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.66%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "43524469+kyscott18@users.noreply.github.com",
+            "name": "kyscott18",
+            "username": "kyscott18"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f50249450a1dc3647b21b1c11bf1200c34b7811b",
+          "message": "Update README.md (#3300)",
+          "timestamp": "2024-03-02T22:25:24-05:00",
+          "tree_id": "619fbf094e57f17b2887151fe035e7f5554e8268",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f50249450a1dc3647b21b1c11bf1200c34b7811b"
+        },
+        "date": 1709436489844,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41482,
+            "range": "±2.08%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39870,
+            "range": "±2.86%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40341,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39550,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35436,
+            "range": "±6.61%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
