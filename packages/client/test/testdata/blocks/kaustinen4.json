@@ -1,5 +1,5 @@
 {
-  "block353":{
+  "353":{
     "parent":{
       "parent_hash": "0x8a84f5c1d79544fd589b2c77643ddd12ce0f3a88f16d2b5e7f8b3827160abff5",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
@@ -477,7 +477,7 @@
       }
     }    
   },
-  "block368":{
+  "368":{
     "parent":{
       "parent_hash": "0x9d1fd4d57f13a6c78dd20b0c0531327a64ebf6fc8680b7ae2f2d31379408cbc6",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
@@ -951,7 +951,7 @@
       }
     }         
   },
-  "block374":{
+  "374":{
     "parent":{
       "parent_hash": "0xc0cf14013fd322d4c3694db1827c4b052ae3fddfc2111508073849badf2ede1c",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
@@ -1446,7 +1446,7 @@
       }
     }    
   },
-  "block479":{
+  "479":{
     "parent":{
       "parent_hash": "0x4e8ac3c4b1d4198edc7aa4e9a0cb7cebab5653dff21f4904f32337619c0c9c80",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
