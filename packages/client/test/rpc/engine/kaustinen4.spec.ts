@@ -15,8 +15,8 @@ const genesisVerkleBlockHash = '0x8493ed97fd4314acb6ed519867b086dc698e25df37ebe8
 
 /**
  * One can run this test in two formats:
- *   1. On the saved blocks, comma separated which are limited (345,375,368,467)
- *      `TEST_SAVED_NUMBERS=345,375,368,467 npx vitest run test/rpc/engine/kaustinen4.spec.ts`
+ *   1. On the saved blocks, comma separated which are limited (353,368,374,467)
+ *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen4.spec.ts`
  *   2. Directly pull slots from a kaustinen beacon url
  *     `TEST_ONLINE_SLOTS=345,353..360 PEER_BEACON_URL=https://beacon.verkle-gen-devnet-4.ethpandaops.io npx vitest run test/rpc/engine/kaustinen4.spec.ts`
  */
@@ -91,7 +91,6 @@ describe(`valid verkle network setup`, async () => {
     let parent = await fetchExecutionPayload(process.env.PEER_BEACON_URL, startSlot - 1)
     for (let i = startSlot; i <= endSlot; i++) {
       const execute = await fetchExecutionPayload(process.env.PEER_BEACON_URL, startSlot)
-      console.log(execute.execution_witness)
       it(`run fetched block slot: ${i} number: ${execute.block_number}`, async () => {
         await runBlock({ common, chain, rpc }, { parent, execute })
         parent = execute
