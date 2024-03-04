@@ -38,6 +38,15 @@ const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gas
   //await execution.run()
 }
 
+/**
+ * This method builds a block on top of the current head block
+ * It allows two optional parameters which will determine the gas limit + maxPriorityFeesPerGas
+ * The txs will all completely revert, so all gas limit of the tx will be consumed
+ * @param execution
+ * @param chain
+ * @param maxPriorityFeesPerGas Optional array of the maxPriorityFeesPerGas per tx
+ * @param gasLimits Optional array of the gasLimit per tx. This array length should be equal to maxPriorityFeesPerGas length
+ */
 const produceBlockWithTx = async (
   execution: VMExecution,
   chain: Chain,
@@ -223,10 +232,10 @@ describe(method, () => {
     await produceFakeGasUsedBlock(execution, chain, 1n)
 
     const rpc = getRpcClient(server)
-    const res = await rpc.request(method, ['0x1', 'latest', [50]])
+    const res = await rpc.request(method, ['0x1', 'latest', [50, 60]])
     assert.equal(
       parseInt(res.result.reward[0][0]),
-      50,
+      0,
       'Should return 0 for empty block reward percentiles'
     )
     assert.equal(
@@ -253,7 +262,7 @@ describe(method, () => {
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
   })
 
-  it(`${method}: should generate reward percentiles`, async () => {
+  it(`${method}: should generate reward percentiles - sorted check`, async () => {
     const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
     const priorityFees = [BigInt(100), BigInt(200)]
     const gasUsed = [BigInt(400000), BigInt(600000)]
@@ -262,14 +271,35 @@ describe(method, () => {
     const rpc = getRpcClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [40, 100]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
-    const expected = priorityFees.map((e) => bigIntToHex(e))
+    const expected = priorityFees.map(bigIntToHex)
     assert.deepEqual(res.result.reward[0], expected)
 
     // If the txs order is swapped, the output should still be the same
+    // This tests that the txs are ordered in ascending order of `priorityFee`
     await produceBlockWithTx(execution, chain, priorityFees.reverse(), gasUsed.reverse())
 
     const res2 = await rpc.request(method, ['0x1', 'latest', [40, 100]])
     assert.ok(res.result.reward[0].length > 0, 'Produced at least one rewards percentile')
     assert.deepEqual(res2.result.reward[0], expected)
+  })
+
+  it(`${method} - reward percentiles - should return the correct reward percentiles`, async () => {
+    const { chain, server, execution } = await setupChain(gethGenesisStartLondon(pow), 'powLondon')
+    const priorityFees = [BigInt(100), BigInt(200)]
+    const gasUsed = [BigInt(500000), BigInt(500000)]
+    await produceBlockWithTx(execution, chain, priorityFees, gasUsed)
+
+    const rpc = getRpcClient(server)
+    /**
+     * In this test, both txs use 50% of the block gas used
+     * Request the reward percentiles [10, 20, 60, 100] so expect rewards of:
+     * [tx1, tx1, tx2, tx2]
+     */
+    const res = await rpc.request(method, ['0x1', 'latest', [10, 20, 60, 100]])
+
+    const expected = [priorityFees[0], priorityFees[0], priorityFees[1], priorityFees[1]].map(
+      bigIntToHex
+    )
+    assert.deepEqual(res.result.reward[0], expected)
   })
 })
