@@ -128,6 +128,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.journal.startReportingAccessList()
   }
 
+  if (opts.reportPreimages === true) {
+    this.evm.journal.startReportingPreimages!()
+  }
+
   await this.evm.journal.checkpoint()
   if (this.DEBUG) {
     debug('-'.repeat(100))
@@ -682,6 +686,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     console.timeEnd(accessListLabel)
     // eslint-disable-next-line no-console
     console.time(journalCacheCleanUpLabel)
+  }
+
+  if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
+    results.preimages = this.evm.journal.preimages
   }
 
   await this.evm.journal.cleanup()

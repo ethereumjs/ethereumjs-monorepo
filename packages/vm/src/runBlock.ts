@@ -29,10 +29,12 @@ import { Bloom } from './bloom/index.js'
 
 import type {
   AfterBlockEvent,
+  ApplyBlockResult,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
   RunBlockResult,
+  RunTxResult,
   TxReceipt,
 } from './types.js'
 import type { VM } from './vm.js'
@@ -159,7 +161,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     debug(`block checkpoint`)
   }
 
-  let result: Awaited<ReturnType<typeof applyBlock>>
+  let result: ApplyBlockResult
 
   try {
     result = await applyBlock.bind(this)(block, opts)
@@ -274,6 +276,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     stateRoot,
     gasUsed: result.gasUsed,
     receiptsRoot: result.receiptsRoot,
+    preimages: result.preimages,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -319,7 +322,7 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
+async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
@@ -373,8 +376,36 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts) {
     console.time(withdrawalsRewardsCommitLabel)
   }
 
+  // Add txResult preimages to the blockResults preimages
+  // Also add the coinbase preimage
+
+  if (opts.reportPreimages === true) {
+    if (this.evm.stateManager.getAppliedKey === undefined) {
+      throw new Error(
+        'applyBlock: evm.stateManager.getAppliedKey can not be undefined if reportPreimages is true'
+      )
+    }
+    blockResults.preimages.set(
+      bytesToHex(this.evm.stateManager.getAppliedKey(block.header.coinbase.toBytes())),
+      block.header.coinbase.toBytes()
+    )
+    for (const txResult of blockResults.results) {
+      if (txResult.preimages !== undefined) {
+        for (const [key, preimage] of txResult.preimages) {
+          blockResults.preimages.set(key, preimage)
+        }
+      }
+    }
+  }
+
   if (this.common.isActivatedEIP(4895)) {
+    if (opts.reportPreimages === true) this.evm.journal.startReportingPreimages!()
     await assignWithdrawals.bind(this)(block)
+    if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
+      for (const [key, preimage] of this.evm.journal.preimages) {
+        blockResults.preimages.set(key, preimage)
+      }
+    }
     await this.evm.journal.cleanup()
   }
   // Pay ommers and miners
@@ -485,8 +516,8 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     receiptTrie = new Trie({ common: this.common })
   }
 
-  const receipts = []
-  const txResults = []
+  const receipts: TxReceipt[] = []
+  const txResults: RunTxResult[] = []
 
   /*
    * Process transactions
@@ -507,7 +538,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Run the tx through the VM
-    const { skipBalance, skipNonce, skipHardForkValidation } = opts
+    const { skipBalance, skipNonce, skipHardForkValidation, reportPreimages } = opts
 
     const txRes = await this.runTx({
       tx,
@@ -516,6 +547,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
       skipNonce,
       skipHardForkValidation,
       blockGasUsed: gasUsed,
+      reportPreimages,
     })
     txResults.push(txRes)
     if (this.DEBUG) {
@@ -547,6 +579,7 @@ async function applyTransactions(this: VM, block: Block, opts: RunBlockOpts) {
   return {
     bloom,
     gasUsed,
+    preimages: new Map<string, Uint8Array>(),
     receiptsRoot,
     receipts,
     results: txResults,

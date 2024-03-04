@@ -53,6 +53,7 @@ type createClientArgs = {
   opened: boolean
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
+  savePreimages: boolean
 }
 export function startRPC(
   methods: any,
@@ -97,6 +98,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     txLookupLimit: clientOpts.txLookupLimit,
     accountCache: 10000,
     storageCache: 1000,
+    savePreimages: clientOpts.savePreimages,
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
