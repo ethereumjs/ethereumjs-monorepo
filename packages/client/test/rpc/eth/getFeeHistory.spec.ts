@@ -3,7 +3,6 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
-  BIGINT_1,
   BIGINT_256,
   bigIntToHex,
   blobsToCommitments,
