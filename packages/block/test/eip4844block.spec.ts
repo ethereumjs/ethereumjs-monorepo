@@ -148,6 +148,9 @@ describe('blob gas tests', () => {
     assert.equal(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
     assert.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
     assert.equal(highGasHeader.calcDataFee(6), 4718592n, 'compute data fee correctly')
+
+    const nextBlobGas = highGasHeader.calcNextBlobGasPrice()
+    assert.equal(nextBlobGas, BigInt(7)) // TODO verify that this is correct
   })
 })
 
