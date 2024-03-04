@@ -445,11 +445,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (tx.supports(Capability.EIP1559FeeMarket)) {
     // TODO make txs use the new getEffectivePriorityFee
     const baseFee = block.header.baseFeePerGas!
-    inclusionFeePerGas =
-      (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-      (tx as FeeMarketEIP1559Transaction).maxFeePerGas - baseFee
-        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-        : (tx as FeeMarketEIP1559Transaction).maxFeePerGas - baseFee
+    inclusionFeePerGas = tx.getEffectivePriorityFee(baseFee)
 
     gasPrice = inclusionFeePerGas + baseFee
   } else {
