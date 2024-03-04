@@ -25,7 +25,7 @@ Arbitrum One - mainnet for Arbitrum roll-up
 
 #### Defined in
 
-[enums.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L101)
+[enums.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L108)
 
 ___
 
@@ -39,7 +39,7 @@ Optimistic Ethereum - mainnet for Optimism roll-up
 
 #### Defined in
 
-[enums.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L122)
+[enums.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L129)
 
 ___
 
@@ -53,7 +53,7 @@ Optimistic Kovan - testnet for Optimism roll-up
 
 #### Defined in
 
-[enums.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L115)
+[enums.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L122)
 
 ___
 
@@ -67,7 +67,7 @@ Polygon (Matic) Mainnet
 
 #### Defined in
 
-[enums.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L87)
+[enums.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L94)
 
 ___
 
@@ -81,7 +81,7 @@ Polygon (Matic) Mumbai Testnet
 
 #### Defined in
 
-[enums.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L94)
+[enums.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L101)
 
 ___
 
@@ -95,4 +95,4 @@ xDai EVM sidechain with a native stable token
 
 #### Defined in
 
-[enums.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L108)
+[enums.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L115)

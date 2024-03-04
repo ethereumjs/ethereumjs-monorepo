@@ -15,7 +15,6 @@ import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain'
 import { Config } from '../../../src/config'
-import { LevelDB } from '../../../src/execution/level'
 import { SnapProtocol } from '../../../src/net/protocol'
 ;(BigInt.prototype as any).toJSON = function () {
   return this.toString()
@@ -189,18 +188,12 @@ describe('[SnapProtocol]', () => {
       resData
     )
 
-    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = accounts.map((acc: any) => acc.hash)
       const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
-      await trie.verifyRangeProof(
-        stateRoot,
-        keys[0],
-        keys[keys.length - 1],
-        keys,
-        values,
-        <any>proof
-      )
+      await Trie.verifyRangeProof(stateRoot, keys[0], keys[keys.length - 1], keys, values, proof, {
+        useKeyHashingFunction: keccak256,
+      })
     } catch (e) {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
@@ -328,17 +321,19 @@ describe('[SnapProtocol]', () => {
     // lastAccount
     const lastAccountSlots = slots[0]
     const lastAccountStorageRoot = (lastAccount.body as any)[2]
-    const trie = new Trie({ db: new LevelDB() })
     try {
       const keys = lastAccountSlots.map((acc: any) => acc.hash)
       const values = lastAccountSlots.map((acc: any) => acc.body)
-      await trie.verifyRangeProof(
+      await Trie.verifyRangeProof(
         lastAccountStorageRoot,
         keys[0],
         keys[keys.length - 1],
         keys,
         values,
-        <any>proof
+        proof,
+        {
+          useKeyHashingFunction: keccak256,
+        }
       )
     } catch (e) {
       assert.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)

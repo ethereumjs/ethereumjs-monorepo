@@ -20,7 +20,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
@@ -80,6 +80,7 @@ const setup = () => {
         shallowCopy: () => service.execution.vm,
         setStateRoot: () => {},
         blockchain: mockBlockchain({}),
+        common: new Common({ chain: 'mainnet' }),
       },
     },
   }
@@ -218,7 +219,7 @@ describe('[PendingBlock]', async () => {
 
     // set gas limit low so that can accomodate 2 txs
     const prevGasLimit = common['_chainParams'].genesis.gasLimit
-    common['_chainParams'].genesis.gasLimit = BigInt(50000)
+    common['_chainParams'].genesis.gasLimit = 50000
 
     const vm = await VM.create({ common })
     await setBalance(vm, A.address, BigInt(5000000000000000))
@@ -337,7 +338,9 @@ describe('[PendingBlock]', async () => {
   it('should throw when blockchain does not have getTotalDifficulty function', async () => {
     const { txPool } = setup()
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    const vm = (txPool as any).vm
+    const vm = txPool['service'].execution.vm
+    // override total difficulty function to trigger error case
+    vm.blockchain.getTotalDifficulty = undefined
     try {
       await pendingBlock.start(vm, new Block())
       assert.fail('should have thrown')
@@ -350,14 +353,16 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
+    const kzg = await createKZG()
+    initKZG(kzg)
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
@@ -428,15 +433,15 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    const kzg = await createKZG()
+
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')

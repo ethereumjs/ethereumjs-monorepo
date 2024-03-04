@@ -1,3 +1,4 @@
+import { Chain, Common } from '@ethereumjs/common'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
@@ -27,6 +28,11 @@ const { debug: createDebugLogger } = debugDefault
 export interface RPCStateManagerOpts {
   provider: string
   blockTag: bigint | 'earliest'
+
+  /**
+   * The common to use
+   */
+  common?: Common
 }
 
 export class RPCStateManager implements EVMStateManagerInterface {
@@ -38,6 +44,9 @@ export class RPCStateManager implements EVMStateManagerInterface {
   originalStorageCache: OriginalStorageCache
   protected _debug: Debugger
   protected DEBUG: boolean
+  private keccakFunction: Function
+  public readonly common: Common
+
   constructor(opts: RPCStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
@@ -58,6 +67,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
     this._accountCache = new AccountCache({ size: 100000, type: CacheType.ORDERED_MAP })
 
     this.originalStorageCache = new OriginalStorageCache(this.getContractStorage.bind(this))
+    this.common = opts.common ?? new Common({ chain: Chain.Mainnet })
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
   }
 
   /**
@@ -224,8 +235,9 @@ export class RPCStateManager implements EVMStateManagerInterface {
 
     const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
 
-    const trie = new Trie({ useKeyHashing: true })
-    const verified = await trie.verifyProof(keccak256(proofBuf[0]), address.bytes, proofBuf)
+    const verified = await Trie.verifyProof(address.bytes, proofBuf, {
+      useKeyHashing: true,
+    })
     // if not verified (i.e. verifyProof returns null), account does not exist
     return verified === null ? false : true
   }
@@ -353,6 +365,16 @@ export class RPCStateManager implements EVMStateManagerInterface {
     })
 
     return proof
+  }
+
+  /**
+   * Returns the applied key for a given address
+   * Used for saving preimages
+   * @param address - The address to return the applied key
+   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   */
+  getAppliedKey(address: Uint8Array): Uint8Array {
+    return this.keccakFunction(address)
   }
 
   /**

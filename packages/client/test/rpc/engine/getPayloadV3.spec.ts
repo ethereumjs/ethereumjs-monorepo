@@ -12,7 +12,7 @@ import {
   hexToBytes,
   initKZG,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -41,15 +41,11 @@ const validPayload = [
   },
 ]
 
-try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
 const method = 'engine_getPayloadV3'
 
 describe(method, () => {
   it('call with invalid payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, [1])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -57,7 +53,7 @@ describe(method, () => {
   })
 
   it('call with unknown payloadId', async () => {
-    const { rpc } = baseSetup({ engine: true, includeVM: true })
+    const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x123'])
     assert.equal(res.error.code, -32001, 'Unknown payload')
@@ -71,10 +67,16 @@ describe(method, () => {
     DefaultStateManager.prototype.shallowCopy = function () {
       return this
     }
+
+    const kzg = await createKZG()
+    initKZG(kzg)
+
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const rpc = getRpcClient(server)
     common.setHardfork(Hardfork.Cancun)
     const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
@@ -87,7 +89,6 @@ describe(method, () => {
     let res = await rpc.request('engine_forkchoiceUpdatedV3', validPayload)
     const payloadId = res.result.payloadId
     assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
-    ;(service.txPool as any).vm.common.setHardfork(Hardfork.Cancun)
 
     const txBlobs = getBlobs('hello world')
     const txCommitments = blobsToCommitments(txBlobs)
@@ -110,14 +111,13 @@ describe(method, () => {
       { common }
     ).sign(pkey)
 
-    service.txPool['vm'].common.setHardfork(Hardfork.Cancun)
     await service.txPool.add(tx, true)
     res = await rpc.request('engine_getPayloadV3', [payloadId])
 
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
       executionPayload.blockHash,
-      '0xe8175305416ee94c996164162044338b4f4d93a8dc458b574ecad4ce84323fb5',
+      '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
       'built expected block'
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')

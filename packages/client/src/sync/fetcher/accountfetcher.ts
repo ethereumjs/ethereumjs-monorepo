@@ -17,6 +17,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { Event } from '../../types'
 import { short } from '../../util'
@@ -318,11 +319,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       }
     }
 
-    const trie = new Trie()
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, <any>proof)
+    return Trie.verifyRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
+      common: this.config.chainCommon,
+      useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
+    })
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
@@ -374,6 +377,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
     if (this.highestKnownHash && compareBytes(limit, this.highestKnownHash) < 0) {
       // skip this job and don't rerequest it if it's limit is lower than the highest known key hash
+      this.debug(`skipping request with limit lower than highest known hash`)
       return Object.assign([], [{ skipped: true }], { completed: true })
     }
 
@@ -391,8 +395,26 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       rangeResult.accounts.length === 0 ||
       equalsBytes(limit, bigIntToBytes(BIGINT_2EXP256)) === true
     ) {
-      // TODO have to check proof of nonexistence -- as a shortcut for now, we can mark as completed if a proof is present
+      // check zero-element proof
       if (rangeResult.proof.length > 0) {
+        try {
+          const isMissingRightRange = await Trie.verifyRangeProof(
+            this.root,
+            origin,
+            null,
+            [],
+            [],
+            <any>rangeResult.proof,
+            { useKeyHashingFunction: keccak256 }
+          )
+          // if proof is false, reject corrupt peer
+          if (isMissingRightRange !== false) return undefined
+        } catch (e) {
+          this.debug(e)
+          // if proof is false, reject corrupt peer
+          return undefined
+        }
+
         this.debug(`Data for last range has been received`)
         // response contains empty object so that task can be terminated in store phase and not reenqueued
         return Object.assign([], [Object.create(null)], { completed: true })

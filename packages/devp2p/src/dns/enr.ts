@@ -1,14 +1,16 @@
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
 import { base32, base64url } from '@scure/base'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { protocols } from 'multiaddr'
-import { toString } from 'multiaddr/src/convert.js'
+import Convert from 'multiaddr/src/convert.js'
 import { sscanf } from 'scanf'
 
-import { keccak256, toNewUint8Array } from '../util.js'
+import { toNewUint8Array } from '../util.js'
 
 import type { PeerInfo } from '../types.js'
+import type { Common } from '@ethereumjs/common'
 
 type ProtocolCodes = {
   ipCode: number
@@ -47,7 +49,7 @@ export class ENR {
    * @param  {string}   enr
    * @return {PeerInfo}
    */
-  static parseAndVerifyRecord(enr: string): PeerInfo {
+  static parseAndVerifyRecord(enr: string, common?: Common): PeerInfo {
     if (!enr.startsWith(this.RECORD_PREFIX))
       throw new Error(`String encoded ENR must start with '${this.RECORD_PREFIX}'`)
 
@@ -73,7 +75,7 @@ export class ENR {
     // Validate sig
     const isVerified = ecdsaVerify(
       signature as Uint8Array,
-      keccak256(RLP.encode([seq, ...kvs])),
+      (common?.customCrypto.keccak256 ?? keccak256)(RLP.encode([seq, ...kvs])),
       obj.secp256k1
     )
 
@@ -82,9 +84,9 @@ export class ENR {
     const { ipCode, tcpCode, udpCode } = this._getIpProtocolConversionCodes(obj.id)
 
     const peerInfo: PeerInfo = {
-      address: toString(ipCode, obj.ip) as string,
-      tcpPort: Number(toString(tcpCode, toNewUint8Array(obj.tcp))),
-      udpPort: Number(toString(udpCode, toNewUint8Array(obj.udp))),
+      address: Convert.toString(ipCode, obj.ip) as string,
+      tcpPort: Number(Convert.toString(tcpCode, toNewUint8Array(obj.tcp))),
+      udpPort: Number(Convert.toString(udpCode, toNewUint8Array(obj.udp))),
     }
 
     return peerInfo
@@ -98,7 +100,7 @@ export class ENR {
    * @param  {string} root  (See EIP-1459 for encoding details)
    * @return {string} subdomain subdomain to retrieve branch records from.
    */
-  static parseAndVerifyRoot(root: string, publicKey: string): string {
+  static parseAndVerifyRoot(root: string, publicKey: string, common?: Common): string {
     if (!root.startsWith(this.ROOT_PREFIX))
       throw new Error(`ENR root entry must start with '${this.ROOT_PREFIX}'`)
 
@@ -129,7 +131,11 @@ export class ENR {
 
     const keyBytes = Uint8Array.from(decodedPublicKey)
 
-    const isVerified = ecdsaVerify(signatureBytes, keccak256(signedComponentBytes), keyBytes)
+    const isVerified = ecdsaVerify(
+      signatureBytes,
+      (common?.customCrypto.keccak256 ?? keccak256)(signedComponentBytes),
+      keyBytes
+    )
 
     if (!isVerified) throw new Error('Unable to verify ENR root signature')
 

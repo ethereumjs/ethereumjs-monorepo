@@ -17,6 +17,7 @@ export const saveReceiptsMethods = ['getLogs', 'getTransactionReceipt', 'getTran
 export class RPCManager {
   private _config: Config
   private _client: EthereumClient
+  private _modules: Record<string, any> = {}
 
   constructor(client: EthereumClient, config: Config) {
     this._config = config
@@ -26,6 +27,7 @@ export class RPCManager {
   /**
    * Returns bound methods for modules concat with underscore `_`
    * @param engine Pass true to return only `engine_` API endpoints (default: false)
+   * @param rpcDebug Pass true to include stack traces on errors (default: false)
    */
   getMethods(engine = false, rpcDebug = false) {
     const methods: { [key: string]: Function } = {}
@@ -34,6 +36,7 @@ export class RPCManager {
     )
     for (const modName of mods) {
       const mod = new (modules as any)[modName](this._client, rpcDebug)
+      this._modules[modName] = mod
       const rpcMethods = RPCManager.getMethodNames((modules as any)[modName])
       for (const methodName of rpcMethods) {
         if (!this._config.saveReceipts && saveReceiptsMethods.includes(methodName)) {

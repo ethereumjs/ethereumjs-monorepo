@@ -3,37 +3,40 @@ import { Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, TransactionType, TxData } from '@ethereumjs/tx'
 import {
   Address,
-  initKZG,
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
   bytesToHex,
   hexToBytes,
+  initKZG,
 } from '@ethereumjs/util'
 
-import * as kzg from 'c-kzg'
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
+import { createKZG } from 'kzg-wasm'
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
 const input = process.argv[3] // text to generate blob from
 const genesisJson = require(process.argv[4]) // Genesis parameters
 const pkey = hexToBytes('0x' + process.argv[5]) // private key of tx sender as unprefixed hex string (unprefixed in args)
-
-initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-
 const sender = Address.fromPrivateKey(pkey)
-const common = Common.fromGethGenesis(genesisJson, {
-  chain: genesisJson.ChainName ?? 'devnet',
-  hardfork: Hardfork.Cancun,
-})
+
 async function getNonce(client: Client, account: string) {
   const nonce = await client.request('eth_getTransactionCount', [account, 'latest'], 2.0)
   return nonce.result
 }
 
 async function run(data: any) {
+  const kzg = await createKZG()
+  initKZG(kzg)
+
+  const common = Common.fromGethGenesis(genesisJson, {
+    chain: genesisJson.ChainName ?? 'devnet',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+
   const client = Client.http({ port: clientPort })
 
   const blobs = getBlobs(data)

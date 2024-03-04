@@ -178,7 +178,7 @@ describe('callWithStackTrace', () => {
         throw new Error('This is not the block you are looking for')
       },
     }
-    const manager = createManager(createClient({ chain: mockChain }))
+    const manager = createManager(await createClient({ chain: mockChain }))
     const server = startRPC(manager.getMethods(false, true))
 
     const rpc = Client.http({
@@ -198,7 +198,7 @@ describe('callWithStackTrace', () => {
         throw new Error('This is not the block you are looking for')
       },
     }
-    const manager = createManager(createClient({ chain: mockChain }))
+    const manager = createManager(await createClient({ chain: mockChain }))
     const server = startRPC(manager.getMethods(false, false))
 
     const rpc = Client.http({

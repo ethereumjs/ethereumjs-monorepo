@@ -6,17 +6,34 @@ import { Chain, Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Address,
+  BIGINT_2,
   bytesToHex,
+  calculateSigRecovery,
+  concatBytes,
+  ecrecover,
+  ecsign,
   hexToBytes,
   initKZG,
   parseGethGenesisState,
   randomBytes,
+  setLengthLeft,
   short,
   toBytes,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import {
+  keccak256 as keccak256WASM,
+  secp256k1Expand,
+  secp256k1Recover,
+  secp256k1Sign,
+  waitReady as waitReadyPolkadotSha256,
+  sha256 as wasmSha256,
+} from '@polkadot/wasm-crypto'
+import { keccak256 } from 'ethereum-cryptography/keccak'
+import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
+import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
+import { createKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
@@ -38,6 +55,7 @@ import type { FullEthereumService } from '../src/service'
 import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
+import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
@@ -47,7 +65,8 @@ const networks = Object.entries(Common.getInitializedChains().names)
 
 let logger: Logger
 
-const args: ClientOpts = yargs(hideBin(process.argv))
+const args: ClientOpts = yargs
+  .default(hideBin(process.argv))
   .parserConfiguration({
     'dot-notation': false,
   })
@@ -401,6 +420,11 @@ const args: ClientOpts = yargs(hideBin(process.argv))
     describe:
       'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
     boolean: true,
+  })
+  .option('useJsCrypto', {
+    describe: 'Use pure Javascript cryptography functions',
+    boolean: true,
+    default: false,
   })
   .completion()
   // strict() ensures that yargs throws when an invalid arg is provided
@@ -779,10 +803,65 @@ async function run() {
 
   // TODO sharding: Just initialize kzg library now, in future it can be optimized to be
   // loaded and initialized on the sharding hardfork activation
-  initKZG(kzg, args.trustedSetup ?? __dirname + '/../src/trustedSetups/official.txt')
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
+  const cryptoFunctions: CustomCrypto = {}
+  const kzg = await createKZG()
+  initKZG(kzg)
 
+  // Initialize WASM crypto if JS crypto is not specified
+  if (args.useJsCrypto === false) {
+    await waitReadyPolkadotSha256()
+    cryptoFunctions.keccak256 = keccak256WASM
+    cryptoFunctions.ecrecover = (
+      msgHash: Uint8Array,
+      v: bigint,
+      r: Uint8Array,
+      s: Uint8Array,
+      chainID?: bigint
+    ) =>
+      secp256k1Expand(
+        secp256k1Recover(
+          msgHash,
+          concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32)),
+          Number(calculateSigRecovery(v, chainID))
+        )
+      ).slice(1)
+    cryptoFunctions.sha256 = wasmSha256
+    cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => {
+      if (msg.length < 32) {
+        // WASM errors with `unreachable` if we try to pass in less than 32 bytes in the message
+        throw new Error('message length must be 32 bytes or greater')
+      }
+      const buf = secp256k1Sign(msg, pk)
+      const r = buf.slice(0, 32)
+      const s = buf.slice(32, 64)
+      const v =
+        chainId === undefined
+          ? BigInt(buf[64] + 27)
+          : BigInt(buf[64] + 35) + BigInt(chainId) * BIGINT_2
+
+      return { r, s, v }
+    }
+    cryptoFunctions.ecdsaSign = (hash: Uint8Array, pk: Uint8Array) => {
+      const sig = secp256k1Sign(hash, pk)
+      return {
+        signature: sig.slice(0, 64),
+        recid: sig[64],
+      }
+    }
+    cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
+      return secp256k1Recover(hash, sig, recId)
+    }
+  } else {
+    cryptoFunctions.keccak256 = keccak256
+    cryptoFunctions.ecrecover = ecrecover
+    cryptoFunctions.sha256 = sha256
+    cryptoFunctions.ecsign = ecsign
+    cryptoFunctions.ecdsaSign = ecdsaSign
+    cryptoFunctions.ecdsaRecover = ecdsaRecover
+  }
+  cryptoFunctions.kzg = kzg
   // Configure accounts for mining and prefunding in a local devnet
   const accounts: Account[] = []
   if (typeof args.unlock === 'string') {
@@ -790,7 +869,7 @@ async function run() {
   }
 
   let customGenesisState: GenesisState | undefined
-  let common = new Common({ chain, hardfork: Hardfork.Chainstart })
+  let common = new Common({ chain, hardfork: Hardfork.Chainstart, customCrypto: cryptoFunctions })
 
   if (args.dev === true || typeof args.dev === 'string') {
     args.discDns = false
@@ -814,6 +893,7 @@ async function run() {
       common = new Common({
         chain: customChainParams.name,
         customChains: [customChainParams],
+        customCrypto: cryptoFunctions,
       })
     } catch (err: any) {
       console.error(`invalid chain parameters: ${err.message}`)
@@ -827,6 +907,8 @@ async function run() {
       chain: chainName,
       mergeForkIdPostMerge: args.mergeForkIdPostMerge,
     })
+    //@ts-ignore
+    common.customCrypto = cryptoFunctions
     customGenesisState = parseGethGenesisState(genesisFile)
   }
 

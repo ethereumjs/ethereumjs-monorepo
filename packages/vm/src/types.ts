@@ -274,12 +274,30 @@ export interface RunBlockOpts {
    * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
    */
   setHardfork?: boolean | BigIntLike
+
+  /**
+   * If true, adds a hashedKey -> preimages mapping of all touched accounts
+   * to the `RunTxResult` returned.
+   */
+  reportPreimages?: boolean
 }
 
 /**
- * Result of {@link runBlock}
+ * Result of {@link applyBlock}
  */
-export interface RunBlockResult {
+export interface ApplyBlockResult {
+  /**
+   * The Bloom filter
+   */
+  bloom: Bloom
+  /**
+   * The gas used after executing the block
+   */
+  gasUsed: bigint
+  /**
+   * The receipt root after executing the block
+   */
+  receiptsRoot: Uint8Array
   /**
    * Receipts generated for transactions in the block
    */
@@ -289,21 +307,23 @@ export interface RunBlockResult {
    */
   results: RunTxResult[]
   /**
+   * Preimages mapping of the touched accounts from the block (see reportPreimages option)
+   */
+  preimages?: Map<string, Uint8Array>
+}
+
+/**
+ * Result of {@link runBlock}
+ */
+export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
+  /**
    * The stateRoot after executing the block
    */
   stateRoot: Uint8Array
   /**
-   * The gas used after executing the block
-   */
-  gasUsed: bigint
-  /**
    * The bloom filter of the LOGs (events) after executing the block
    */
   logsBloom: Uint8Array
-  /**
-   * The receipt root after executing the block
-   */
-  receiptsRoot: Uint8Array
 }
 
 export interface AfterBlockEvent extends RunBlockResult {
@@ -328,6 +348,7 @@ export interface RunTxOpts {
    * If true, skips the nonce check
    */
   skipNonce?: boolean
+
   /**
    * Skip balance checks if true. Adds transaction cost to balance to ensure execution doesn't fail.
    */
@@ -356,6 +377,12 @@ export interface RunTxOpts {
    * {@link StateManager.generateAccessList} must be implemented.
    */
   reportAccessList?: boolean
+
+  /**
+   * If true, adds a hashedKey -> preimages mapping of all touched accounts
+   * to the `RunTxResult` returned.
+   */
+  reportPreimages?: boolean
 
   /**
    * To obtain an accurate tx receipt input the block gas used up until this tx.
@@ -398,6 +425,11 @@ export interface RunTxResult extends EVMResult {
    * EIP-2930 access list generated for the tx (see `reportAccessList` option)
    */
   accessList?: AccessList
+
+  /**
+   * Preimages mapping of the touched accounts from the tx (see `reportPreimages` option)
+   */
+  preimages?: Map<string, Uint8Array>
 
   /**
    * The value that accrues to the miner by this transaction

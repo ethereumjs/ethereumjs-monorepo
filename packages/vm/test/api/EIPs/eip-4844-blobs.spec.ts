@@ -14,30 +14,32 @@ import {
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
 import { VM } from '../../../src/vm'
 import { setBalance } from '../utils'
 
-// Hack to detect if running in browser or not
-const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
 const pk = hexToBytes('0x' + '20'.repeat(32))
 const sender = bytesToHex(privateToAddress(pk))
-if (isBrowser() === false) {
-  try {
-    initKZG(kzg, __dirname + '/../../../../client/src/trustedSetups/devnet6.txt')
-    // eslint-disable-next-line
-  } catch {}
-}
 
 describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
+    let kzg
+    {
+      try {
+        //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+        kzg = await createKZG()
+        initKZG(kzg)
+      } catch {
+        // no-op
+      }
+    }
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
     const genesisBlock = Block.fromBlockData(
       { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },

@@ -7,7 +7,7 @@ const method = 'eth_getBlockByHash'
 
 describe(method, () => {
   it('call with valid arguments', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const blockHash = '0x910abca1728c53e8d6df870dd7af5352e974357dc58205dea1676be17ba6becf'
     let includeTransactions = false
@@ -23,7 +23,7 @@ describe(method, () => {
   })
 
   it('call with false for second argument', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [
       '0xdc0818cf78f21a8e70579cb46a43643f78291264dda342ae31049421c82d21ae',
@@ -38,7 +38,7 @@ describe(method, () => {
   })
 
   it('call with invalid block hash without 0x', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -46,7 +46,7 @@ describe(method, () => {
   })
 
   it('call with invalid hex string as block hash', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, ['0xWRONG BLOCK NUMBER', true])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -54,7 +54,7 @@ describe(method, () => {
   })
 
   it('call without second parameter', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, ['0x0'])
     assert.equal(res.error.code, INVALID_PARAMS)
@@ -62,7 +62,7 @@ describe(method, () => {
   })
 
   it('call with invalid second parameter', async () => {
-    const { rpc } = baseSetup()
+    const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, ['0x0', 'INVALID PARAMETER'])
     assert.equal(res.error.code, INVALID_PARAMS)

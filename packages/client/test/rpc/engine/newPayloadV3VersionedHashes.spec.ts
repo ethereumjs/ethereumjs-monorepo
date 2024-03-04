@@ -1,3 +1,5 @@
+import { initKZG } from '@ethereumjs/util'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -13,7 +15,14 @@ const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const { server } = await setupChain(genesisJSON, 'post-merge', { engine: true })
+    const kzg = await createKZG()
+    initKZG(kzg)
+
+    const { server } = await setupChain(genesisJSON, 'post-merge', {
+      engine: true,
+      customCrypto: { kzg },
+    })
+
     const rpc = getRpcClient(server)
     const parentBeaconBlockRoot =
       '0x42942949c4ed512cd85c2cb54ca88591338cbb0564d3a2bea7961a639ef29d64'

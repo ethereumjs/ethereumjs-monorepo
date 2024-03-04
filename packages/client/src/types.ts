@@ -163,8 +163,10 @@ export interface ClientOpts {
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string
   pruneEngineCache?: boolean
+  savePreimages?: boolean
   verkleGenesisStateRoot?: Uint8Array
   statelessVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
+  useJsCrypto?: boolean
 }

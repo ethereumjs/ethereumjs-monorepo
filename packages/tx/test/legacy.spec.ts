@@ -134,6 +134,36 @@ describe('[Transaction]', () => {
     })
   })
 
+  it('addSignature() -> correctly adds correct signature values', () => {
+    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const tx = LegacyTransaction.fromTxData({})
+    const signedTx = tx.sign(privKey)
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+  })
+
+  it('addSignature() -> correctly adds correct signature values from ecrecover with ChainID protection enabled', () => {
+    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const tx = LegacyTransaction.fromTxData({}, { common: new Common({ chain: Chain.Sepolia }) })
+    const signedTx = tx.sign(privKey)
+    // `convertV` set to false, since we use the raw value from the signed tx
+    const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!, false)
+
+    assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+    assert.ok(addSignatureTx.v! > BigInt(28))
+  })
+
+  it('addSignature() -> throws when adding the wrong v value', () => {
+    const privKey = hexToBytes('0x' + txFixtures[0].privateKey)
+    const tx = LegacyTransaction.fromTxData({}, { common: new Common({ chain: Chain.Sepolia }) })
+    const signedTx = tx.sign(privKey)
+    // `convertV` set to true: this will apply EIP-155 replay transaction twice, so it should throw!
+    assert.throws(() => {
+      tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!, true)
+    })
+  })
+
   it('getValidationErrors() -> should validate', () => {
     for (const tx of transactions) {
       assert.equal(typeof tx.getValidationErrors()[0], 'string')

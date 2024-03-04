@@ -40,6 +40,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
   public readonly gasPrice: bigint
 
   public readonly common: Common
+  private keccakFunction: (msg: Uint8Array) => Uint8Array
 
   /**
    * Instantiate a transaction from a data dictionary.
@@ -113,7 +114,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     super({ ...txData, type: TransactionType.Legacy }, opts)
 
     this.common = this._validateTxV(this.v, opts.common)
-
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice === '' ? '0x' : txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
@@ -224,7 +225,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
    */
   getHashedMessageToSign() {
     const message = this.getMessageToSign()
-    return keccak256(RLP.encode(message))
+    return this.keccakFunction(RLP.encode(message))
   }
 
   /**
@@ -269,11 +270,15 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
     return Legacy.getSenderPublicKey(this)
   }
 
-  /**
-   * Process the v, r, s values from the `sign` method of the base transaction.
-   */
-  protected _processSignature(v: bigint, r: Uint8Array, s: Uint8Array) {
-    if (this.supports(Capability.EIP155ReplayProtection)) {
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV: boolean = false
+  ): LegacyTransaction {
+    r = toBytes(r)
+    s = toBytes(s)
+    if (convertV && this.supports(Capability.EIP155ReplayProtection)) {
       v += this.common.chainId() * BIGINT_2 + BIGINT_8
     }
 

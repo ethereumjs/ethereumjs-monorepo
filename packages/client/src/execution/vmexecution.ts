@@ -12,7 +12,15 @@ import {
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  Lock,
+  ValueEncoding,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -21,6 +29,7 @@ import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
+import { PreimagesManager } from './preimage'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -42,7 +51,7 @@ type ChainStatus = {
 export class VMExecution extends Execution {
   private _lock = new Lock()
 
-  public vm: VM
+  public vm!: VM
   public merkleVM: VM | undefined
   public verkleVM: VM | undefined
   public hardfork: string = ''
@@ -50,6 +59,7 @@ export class VMExecution extends Execution {
   public chainStatus: ChainStatus | null = null
 
   public receiptsManager?: ReceiptsManager
+  public preimagesManager?: PreimagesManager
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | null>
 
@@ -89,48 +99,50 @@ export class VMExecution extends Execution {
   constructor(options: ExecutionOptions) {
     super(options)
 
-    if (this.config.vm === undefined) {
-      if (this.config.chainCommon.gteHardfork(Hardfork.Prague)) {
-        this.setupVerkleVM()
-        this.vm = this.verkleVM!
-      } else {
-        this.setupMerkleVM()
-        this.vm = this.merkleVM!
-      }
-    } else {
+    if (this.config.vm !== undefined) {
       this.vm = this.config.vm
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
-    if (this.metaDB && this.config.saveReceipts) {
-      this.receiptsManager = new ReceiptsManager({
-        chain: this.chain,
-        config: this.config,
-        metaDB: this.metaDB,
-      })
-      this.pendingReceipts = new Map()
-      this.chain.blockchain.events.addListener(
-        'deletedCanonicalBlocks',
-        async (blocks, resolve) => {
-          // Once a block gets deleted from the chain, delete the receipts also
-          for (const block of blocks) {
-            await this.receiptsManager?.deleteReceipts(block)
+    if (this.metaDB) {
+      if (this.config.saveReceipts) {
+        this.receiptsManager = new ReceiptsManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+        this.pendingReceipts = new Map()
+        this.chain.blockchain.events.addListener(
+          'deletedCanonicalBlocks',
+          async (blocks, resolve) => {
+            // Once a block gets deleted from the chain, delete the receipts also
+            for (const block of blocks) {
+              await this.receiptsManager?.deleteReceipts(block)
+            }
+            if (resolve !== undefined) {
+              resolve()
+            }
           }
-          if (resolve !== undefined) {
-            resolve()
-          }
-        }
-      )
+        )
+      }
+      if (this.config.savePreimages) {
+        this.preimagesManager = new PreimagesManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+      }
     }
   }
 
-  setupMerkleVM() {
+  async setupMerkleVM() {
     if (this.merkleVM !== undefined) {
       return
     }
-    const trie = new Trie({
+    const trie = await Trie.create({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
+      common: this.config.chainCommon,
       cacheSize: this.config.trieCache,
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
@@ -159,23 +171,25 @@ export class VMExecution extends Execution {
         type: CacheType.LRU,
         size: this.config.codeCache,
       },
+      common: this.config.chainCommon,
     })
-    this.merkleVM = new (VM as any)({
+    this.merkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
       profilerOpts: this.config.vmProfilerOpts,
     })
+    this.vm = this.merkleVM
   }
 
-  setupVerkleVM() {
+  async setupVerkleVM() {
     if (this.verkleVM !== undefined) {
       return
     }
 
     this.config.logger.info(`Setting up verkleVM`)
     const stateManager = new StatelessVerkleStateManager()
-    this.verkleVM = new (VM as any)({
+    this.verkleVM = await VM.create({
       common: this.config.execCommon,
       blockchain: this.chain.blockchain,
       stateManager,
@@ -190,13 +204,13 @@ export class VMExecution extends Execution {
 
     return this.runWithLock<void>(async () => {
       if (this.merkleVM === undefined) {
-        this.setupMerkleVM()
+        await this.setupMerkleVM()
       }
       const merkleVM = this.merkleVM!
       const merkleStateManager = merkleVM.stateManager as DefaultStateManager
 
       if (this.verkleVM === undefined) {
-        this.setupVerkleVM()
+        await this.setupVerkleVM()
       }
       const verkleVM = this.verkleVM!
       const verkleStateManager = verkleVM.stateManager as StatelessVerkleStateManager
@@ -223,7 +237,21 @@ export class VMExecution extends Execution {
         return
       }
 
-      await this.vm.init()
+      if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
+        if (!this.config.statelessVerkle) {
+          throw Error(`Currently stateful verkle execution not supported`)
+        }
+        this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
+        await this.setupVerkleVM()
+        this.vm = this.verkleVM!
+      } else {
+        this.config.logger.info(
+          `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
+        )
+        await this.setupMerkleVM()
+        this.vm = this.merkleVM!
+      }
+
       if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
       }
@@ -235,6 +263,14 @@ export class VMExecution extends Execution {
         root: stateRoot,
         hash: headBlock.hash(),
       }
+      if (number === BIGINT_0) {
+        const genesisState =
+          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
+        if (!genesisState) {
+          throw new Error('genesisState not available')
+        }
+        await this.vm.stateManager.generateCanonicalGenesis(genesisState)
+      }
 
       if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
         throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
@@ -242,29 +278,6 @@ export class VMExecution extends Execution {
       const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
       this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
-
-      if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
-        if (!this.config.statelessVerkle) {
-          throw Error(`Currently stateful verkle execution not supported`)
-        }
-        this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
-        this.setupVerkleVM()
-        this.vm = this.verkleVM!
-      } else {
-        this.config.logger.info(
-          `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`
-        )
-        this.setupMerkleVM()
-        this.vm = this.merkleVM!
-        if (number === BIGINT_0) {
-          const genesisState =
-            this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
-          if (!genesisState) {
-            throw new Error('genesisState not available')
-          }
-          await this.vm.stateManager.generateCanonicalGenesis(genesisState)
-        }
-      }
 
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
@@ -305,11 +318,11 @@ export class VMExecution extends Execution {
     })
     if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
       // verkleVM should already exist but we can still do an allocation just to be safe
-      this.setupVerkleVM()
+      await this.setupVerkleVM()
       this.vm = this.verkleVM!
     } else {
       // its could be a rest to a pre-merkle when the chain was never initialized
-      this.setupMerkleVM()
+      await this.setupMerkleVM()
       this.vm = this.merkleVM!
     }
 
@@ -328,7 +341,7 @@ export class VMExecution extends Execution {
    * @returns if the block was executed or not, throws on block execution failure
    */
   async runWithoutSetHead(
-    opts: RunBlockOpts,
+    opts: RunBlockOpts & { parentBlock?: Block },
     receipts?: TxReceipt[],
     blocking: boolean = false,
     skipBlockchain: boolean = false
@@ -346,14 +359,24 @@ export class VMExecution extends Execution {
         this.running = true
         const { block, root } = opts
 
-        let vm = this.vm
         if (receipts === undefined) {
           // Check if we need to pass flag to clear statemanager cache or not
           const prevVMStateRoot = await this.vm.stateManager.getStateRoot()
           // If root is not provided its mean to be run on the same set state
           const parentState = root ?? prevVMStateRoot
           const clearCache = !equalsBytes(prevVMStateRoot, parentState)
-          const td = await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
+
+          // merge TTD might not give correct td, but its sufficient for purposes of determining HF and allows
+          // stateless execution where blockchain mightnot have all the blocks filling upto the block
+          let td
+          if (block.common.gteHardfork(Hardfork.Paris)) {
+            td = this.config.chainCommon.hardforkTTD(Hardfork.Paris)
+            if (td === null) {
+              throw Error(`Invalid null paris TTD for the chain`)
+            }
+          } else {
+            td = await this.chain.getTd(block.header.parentHash, block.header.number - BIGINT_1)
+          }
 
           const hardfork = this.config.execCommon.getHardforkBy({
             blockNumber: block.header.number,
@@ -361,12 +384,14 @@ export class VMExecution extends Execution {
             timestamp: block.header.timestamp,
           })
 
+          let vm = this.vm
           if (
             !this.config.execCommon.gteHardfork(Hardfork.Prague) &&
             this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Prague)
           ) {
             // see if this is a transition block
-            const parentBlock = await this.chain.getBlock(block.header.parentHash)
+            const parentBlock =
+              opts?.parentBlock ?? (await this.chain.getBlock(block.header.parentHash))
             const parentTd = td - parentBlock.header.difficulty
             const parentHf = this.config.execCommon.getHardforkBy({
               blockNumber: parentBlock.header.number,
@@ -383,7 +408,36 @@ export class VMExecution extends Execution {
             vm = this.verkleVM
           }
 
-          const result = await vm.runBlock({ clearCache, ...opts })
+          const needsStatelessExecution = vm.stateManager instanceof StatelessVerkleStateManager
+          if (needsStatelessExecution && block.executionWitness === undefined) {
+            throw Error(`Verkle blocks need executionWitness for stateless execution`)
+          } else {
+            const hasParentStateRoot = await vm.stateManager.hasStateRoot(parentState)
+            // we can also return false to say that the block wasn't executed but we should throw
+            // because we shouldn't have entered this function if this block wasn't executable
+            if (!hasParentStateRoot) {
+              throw Error(`Missing parent stateRoot for execution`)
+            }
+          }
+
+          const skipHeaderValidation =
+            needsStatelessExecution && this.chain.headers.height < block.header.number - BIGINT_1
+          // Also skip adding this block into blockchain for now
+          if (skipHeaderValidation) {
+            skipBlockchain = true
+          }
+          const reportPreimages = this.config.savePreimages
+
+          const result = await vm.runBlock({
+            clearCache,
+            ...opts,
+            skipHeaderValidation,
+            reportPreimages,
+          })
+
+          if (this.config.savePreimages && result.preimages !== undefined) {
+            await this.savePreimages(result.preimages)
+          }
           receipts = result.receipts
         }
         if (receipts !== undefined) {
@@ -411,6 +465,14 @@ export class VMExecution extends Execution {
       }
     })
     return true
+  }
+
+  async savePreimages(preimages: Map<string, Uint8Array>) {
+    if (this.preimagesManager !== undefined) {
+      for (const [key, preimage] of preimages) {
+        await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
+      }
+    }
   }
 
   /**
@@ -652,6 +714,7 @@ export class VMExecution extends Execution {
                     clearCache,
                     skipBlockValidation,
                     skipHeaderValidation: true,
+                    reportPreimages: this.config.savePreimages,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
@@ -666,6 +729,9 @@ export class VMExecution extends Execution {
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
+                  if (this.config.savePreimages && result.preimages !== undefined) {
+                    await this.savePreimages(result.preimages)
+                  }
 
                   txCounter += block.transactions.length
                   // set as new head block

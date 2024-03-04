@@ -62,4 +62,17 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     msg = 'should return null for unscheduled eip'
     assert.equal(c.eipBlock(0), null, msg)
   })
+
+  it('eipTimestamp', () => {
+    const c = new Common({ chain: Chain.Mainnet })
+
+    let msg = 'should return null for unscheduled eip by timestamp'
+    assert.ok(c.eipTimestamp(1559) === null, msg)
+
+    msg = 'should return null for unscheduled eip'
+    assert.equal(c.eipTimestamp(0), null, msg)
+
+    msg = 'should return correct value'
+    assert.equal(c.eipTimestamp(3651), BigInt(1681338455), msg)
+  })
 })

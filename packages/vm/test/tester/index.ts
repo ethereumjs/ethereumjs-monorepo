@@ -1,3 +1,5 @@
+import { initKZG } from '@ethereumjs/util'
+import { createKZG } from 'kzg-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
@@ -45,7 +47,8 @@ import type { Common } from '@ethereumjs/common'
  * --profile                              If this flag is passed, the state/blockchain tests will profile
  */
 
-const argv = minimist(process.argv.slice(2))
+//@ts-expect-error Typescript thinks there isn't a default export on minimist but there is
+const argv = minimist.default(process.argv.slice(2))
 
 async function runTests() {
   let name: 'GeneralStateTests' | 'BlockchainTests'
@@ -98,6 +101,8 @@ async function runTests() {
   /**
    * Run-time configuration
    */
+  const kzg = await createKZG()
+  initKZG(kzg)
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
@@ -113,7 +118,7 @@ async function runTests() {
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
-    common: getCommon(FORK_CONFIG_VM),
+    common: getCommon(FORK_CONFIG_VM, kzg),
     jsontrace: argv.jsontrace,
     dist: argv.dist,
     data: argv.data, // GeneralStateTests
@@ -191,6 +196,7 @@ async function runTests() {
 
   if (argv.customStateTest !== undefined) {
     const fileName: string = argv.customStateTest
+    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
     tape(name, (t) => {
       getTestFromSource(fileName, async (err: string | null, test: any) => {
         if (err !== null) {
@@ -202,7 +208,8 @@ async function runTests() {
       })
     })
   } else {
-    tape(name, async (t) => {
+    //@ts-ignore tsx/esbuild can't figure out this namespace import thing but it works fine :shrug:
+    tape.default(name, async (t) => {
       let testIdentifier: string
       const failingTests: Record<string, string[] | undefined> = {}
       ;(t as any).on('result', (o: any) => {

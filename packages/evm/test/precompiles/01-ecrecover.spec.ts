@@ -25,17 +25,24 @@ describe('Precompiles: ECRECOVER', () => {
 
     const prefixedMessage = bytesToUnprefixedHex(keccak256(hexToBytes(`0x${prefix}${_hash}`)))
     const data = hexToBytes(`0x${prefixedMessage}${_v}${_r}${_s}`)
-    const result = await ECRECOVER({
+    let result = await ECRECOVER({
       data,
       gasLimit: BigInt(0xffff),
       common,
       _EVM: evm,
     })
-
     assert.deepEqual(
       bytesToHex(result.returnValue.slice(-20)),
       address,
       'should recover expected address'
     )
+
+    result = await ECRECOVER({
+      data,
+      gasLimit: BigInt(0x1),
+      common,
+      _EVM: evm,
+    })
+    assert.equal(result.exceptionError!.error, 'out of gas', 'should error when not enough gas')
   })
 })

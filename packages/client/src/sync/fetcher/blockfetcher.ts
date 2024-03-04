@@ -86,7 +86,11 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
       }
       // Supply the common from the corresponding block header already set on correct fork
       const block = Block.fromValuesArray(values, { common: headers[i].common })
-      await block.validateData()
+      // Only validate the data integrity
+      // Upon putting blocks into blockchain (for BlockFetcher), `validateData` is called again
+      // In ReverseBlockFetcher we do not need to validate the entire block, since CL
+      // expects us to sync with the requested chain tip header
+      await block.validateData(false, false)
       blocks.push(block)
     }
     this.debug(
@@ -104,12 +108,14 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
   process(job: Job<JobTask, Block[], Block>, result: Block[]) {
     result = (job.partialResult ?? []).concat(result)
     job.partialResult = undefined
-    if (result.length === job.task.count) {
-      return result
-    } else if (result.length > 0 && result.length < job.task.count) {
-      // Save partial result to re-request missing items.
-      job.partialResult = result
-      this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
+    if (result !== undefined) {
+      if (result.length === job.task.count) {
+        return result
+      } else if (result.length > 0 && result.length < job.task.count) {
+        // Save partial result to re-request missing items.
+        job.partialResult = result
+        this.debug(`Partial result received=${result.length} expected=${job.task.count}`)
+      }
     }
     return
   }

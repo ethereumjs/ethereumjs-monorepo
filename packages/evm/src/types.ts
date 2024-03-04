@@ -8,6 +8,7 @@ import type { OpHandler } from './opcodes/index.js'
 import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
+import type { AccessWitness } from '@ethereumjs/statemanager'
 import type { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
@@ -122,6 +123,8 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    * Optionally pass in an already-built message.
    */
   message?: Message
+
+  accessWitness?: AccessWitness
 }
 
 interface NewContractEvent {
@@ -147,9 +150,11 @@ export interface EVMInterface {
     putAccount(address: Address, account: Account): Promise<void>
     deleteAccount(address: Address): Promise<void>
     accessList?: Map<string, Set<string>>
+    preimages?: Map<string, Uint8Array>
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
     startReportingAccessList(): void
+    startReportingPreimages?(): void
   }
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
@@ -195,7 +200,7 @@ export interface EVMOpts {
    * - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
    * - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
-   * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun) (`experimental`)
+   * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
    * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
    * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)

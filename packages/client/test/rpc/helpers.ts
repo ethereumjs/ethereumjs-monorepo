@@ -53,6 +53,7 @@ type createClientArgs = {
   opened: boolean
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
+  savePreimages: boolean
 }
 export function startRPC(
   methods: any,
@@ -84,7 +85,7 @@ export function createManager(client: EthereumClient) {
   return new Manager(client, client.config)
 }
 
-export function createClient(clientOpts: Partial<createClientArgs> = {}) {
+export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: ChainEnum.Mainnet })
   const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
   const config = new Config({
@@ -97,6 +98,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
     txLookupLimit: clientOpts.txLookupLimit,
     accountCache: 10000,
     storageCache: 1000,
+    savePreimages: clientOpts.savePreimages,
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
@@ -145,6 +147,7 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   if (!(clientOpts.includeVM === false)) {
     const metaDB: any = clientOpts.enableMetaDB === true ? new MemoryLevel() : undefined
     execution = new VMExecution({ config, chain, metaDB })
+    await execution.open()
   }
 
   let peers = [1, 2, 3]
@@ -192,8 +195,8 @@ export function createClient(clientOpts: Partial<createClientArgs> = {}) {
   return client as EthereumClient
 }
 
-export function baseSetup(clientOpts: any = {}) {
-  const client = createClient(clientOpts)
+export async function baseSetup(clientOpts: any = {}) {
+  const client = await createClient(clientOpts)
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
@@ -216,6 +219,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   const common = new Common({
     chain: chainName,
     customChains: [genesisParams],
+    customCrypto: clientOpts.customCrypto,
   })
   common.setHardforkBy({
     blockNumber: 0,
@@ -235,7 +239,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
 
   // for the client we can pass both genesisState and genesisStateRoot and let it s
-  const client = createClient({
+  const client = await createClient({
     ...clientOpts,
     commonChain: common,
     blockchain,
@@ -246,6 +250,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   })
   const manager = createManager(client)
   const engineMethods = clientOpts.engine === true ? manager.getMethods(true) : {}
+  const modules = manager['_modules']
   const server = startRPC({ ...manager.getMethods(), ...engineMethods })
   server.once('close', () => {
     client.config.events.emit(Event.CLIENT_SHUTDOWN)
@@ -259,7 +264,7 @@ export async function setupChain(genesisFile: any, chainName = 'dev', clientOpts
   await skeleton?.open()
   await execution?.open()
   await chain.update()
-  return { chain, common, execution: execution!, server, service, blockchain }
+  return { chain, common, execution: execution!, server, service, blockchain, modules }
 }
 
 /**

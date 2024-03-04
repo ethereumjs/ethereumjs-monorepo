@@ -14,6 +14,18 @@ export type EmbeddedNode = Uint8Array | Uint8Array[]
 
 export type Proof = Uint8Array[]
 
+export interface CommonInterface {
+  customCrypto: {
+    keccak256?: (msg: Uint8Array) => Uint8Array
+  }
+}
+
+export interface Path {
+  node: TrieNode | null
+  remaining: Nibbles
+  stack: TrieNode[]
+}
+
 export type FoundNodeFunction = (
   nodeRef: Uint8Array,
   node: TrieNode | null,
@@ -83,6 +95,11 @@ export interface TrieOpts {
    * Default: 0 (deactivated)
    */
   cacheSize?: number
+
+  /**
+   * @ethereumjs/common `Common` instance (an alternative to passing in a `customHashingFunction`)
+   */
+  common?: CommonInterface
 }
 
 export type TrieOptsWithDefaults = TrieOpts & {

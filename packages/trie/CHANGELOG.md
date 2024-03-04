@@ -6,6 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 6.1.1 - 2024-02-08
+
+- Hotfix release adding a missing `debug` dependency, PR [#3271](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3271)
+
+## 6.1.0 - 2024-02-08
+
+### Extended EIP-1186 Proof Functionality
+
+This release complements on [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) proof functionality, see PR [#2949](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2949) and [#3267](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3267).
+
+A new static `Trie.createFromProof()` constructor now allows for an easier instantiation of a trie given an EIP-1186 conformant proof, which can be created from an existing trie using the `trie.createProof()` method.
+
+There are also new static methods for the verification of proofs, namely `Trie.verifyProof()` to verify a proof for a single key as well as `Trie.verifyRangeProof()` for a range of keys.
+
+Additionally all proof related functionality is now better documented and there are README examples allowing for an easier entry to the topic.
+
+Also note that along with this release round there is additional higher level proof functionality available shipped within the `@ethereumjs/statemanager` package.
+
+### WASM Crypto Support
+
+With this release round there is a new way to replace the native JS crypto primitives used within the EthereumJS ecosystem by custom/other implementations in a controlled fashion, see PR [#3192](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3192).
+
+This can e.g. be used to replace time-consuming primitives like the commonly used `keccak256` hash function with a more performant WASM based implementation, see `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for some detailed guidance on how to use.
+
+### Self-Contained (and Working 🙂) README Examples
+
+All code examples in the `EthereumJS` monorepo library README files are now self-contained and can be executed "out of the box" by simply copying them over and running "as is", see tracking issue [#3234](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3234) for an overview. Additionally all examples can now be found in their respective library [examples](./examples/) folder (in fact the README examples are now auto-embedded from over there). As a nice side effect, all examples are now run in CI on new PRs and so do not risk getting outdated or broken over time.
+
+### Other Changes
+
+- More modern async trie iteration with web streams (see new `createAsyncReadStream()` method), PR [#3231](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3231)
+- Dependency Updates, PR [#3212](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3212)
+
 ## 6.0.1 - 2023-10-26
 
 ### Native Support for Uint8Array Values in DBs
@@ -50,7 +83,7 @@ Starting with this release there is a new API for walking and iterating a trie b
 
 The new walk functionality can be used like the following:
 
-```typescript
+```ts
 import { Trie } from '@ethereumjs/trie'
 
 const trie = await Trie.create()
@@ -105,14 +138,14 @@ Both builds have respective separate entrypoints in the distributed `package.jso
 
 A CommonJS import of our libraries can then be done like this:
 
-```typescript
+```ts
 const { Chain, Common } = require('@ethereumjs/common')
 const common = new Common({ chain: Chain.Mainnet })
 ```
 
 And this is how an ESM import looks like:
 
-```typescript
+```ts
 import { Chain, Common } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet })
 ```
@@ -131,7 +164,7 @@ We nevertheless think this is very much worth it and we tried to make transition
 
 For this library you should check if you use one of the following constructors, methods, constants or types and do a search and update input and/or output values or general usages and add conversion methods if necessary:
 
-```typescript
+```ts
 Trie.create() / new Trie() // root constructor option
 Trie.root(value?: Uint8Array | null): Uint8Array
 Trie.checkRoot(root: Uint8Array): Promise<boolean>
@@ -321,7 +354,7 @@ The trie library now comes with a new constructor option `useRootPersistence` (n
 
 To activate root hash persistance you can set the `useRootPersistence` option on instantiation:
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -423,7 +456,7 @@ The base trie implementation (`Trie`) as well as all subclass implementations (`
 
 The new `DB` interface can be used like this for LevelDB:
 
-```typescript
+```ts
 import { Trie, LevelDB } from '@ethereumjs/trie'
 import { Level } from 'level'
 
@@ -526,7 +559,7 @@ This release introduces a major API upgrade from callbacks to Promises.
 
 Example using async/await syntax:
 
-```typescript
+```ts
 import { BaseTrie as Trie } from 'merkle-patricia-tree'
 const trie = new Trie()
 async function test() {
