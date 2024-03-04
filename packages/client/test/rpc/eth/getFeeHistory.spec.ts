@@ -3,6 +3,7 @@ import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
+  BIGINT_1,
   BIGINT_256,
   bigIntToHex,
   blobsToCommitments,
@@ -177,7 +178,6 @@ const produceBlockWith4844Tx = async (
   }
 
   const block = await blockBuilder.build()
-  console.log(block.header.number)
   await chain.putBlocks([block], true)
   await execution.run()
 }
@@ -390,6 +390,10 @@ describe(method, () => {
       bigIntToHex
     )
     assert.deepEqual(res.result.reward[0], expected)
+
+    // Check that pre-4844 blocks have 0-filled arrays
+    assert.deepEqual(res.result.baseFeePerBlobGas, ['0x0', '0x0'])
+    assert.deepEqual(res.result.blobGasUsedRatio, [0])
   })
 
   /**
@@ -410,8 +414,7 @@ describe(method, () => {
 
       // Start cranking up the initial blob gas for some more "realistic" testing
 
-      // TODO add more blocks
-      for (let i = 0; i < 0; i++) {
+      for (let i = 0; i < 10; i++) {
         await produceBlockWith4844Tx(execution, chain, [6])
       }
 
@@ -422,9 +425,23 @@ describe(method, () => {
 
       const rpc = getRpcClient(server)
 
-      //const res = await rpc.request(method, ['0x3', 'latest', [10, 20, 60, 100]])
+      const res = await rpc.request(method, ['0x6', 'latest', []])
 
-      assert.ok(false, ' write test')
+      const head = await chain.getCanonicalHeadBlock()
+
+      const expBlobGas = []
+      const expRatio = [1, 5 / 6, 4 / 6, 3 / 6, 2 / 6, 1 / 6]
+
+      for (let i = 5; i >= 0; i--) {
+        const blockNumber = head.header.number - BigInt(i)
+        const block = await chain.getBlock(blockNumber)
+        expBlobGas.push(bigIntToHex(block.header.getBlobGasPrice()))
+      }
+
+      expBlobGas.push(bigIntToHex(head.header.calcNextBlobGasPrice()))
+
+      assert.deepEqual(res.result.baseFeePerBlobGas, expBlobGas)
+      assert.deepEqual(res.result.blobGasUsedRatio, expRatio)
     },
     {
       timeout: 60000,

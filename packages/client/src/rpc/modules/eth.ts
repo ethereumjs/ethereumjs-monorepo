@@ -1250,7 +1250,16 @@ export class Eth {
         : BIGINT_0
     baseFees.push(nextBaseFee)
 
-    // TODO also add next blob fee
+    if (this._chain.blockchain.common.isActivatedEIP(4844)) {
+      baseFeePerBlobGas.push(
+        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice()
+      )
+    } else {
+      // TODO (?): known bug
+      // If the next block is the first block where 4844 is returned, then
+      // BIGINT_1 should be pushed, not BIGINT_0
+      baseFeePerBlobGas.push(BIGINT_0)
+    }
 
     let rewards: bigint[][] = []
 
