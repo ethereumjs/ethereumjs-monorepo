@@ -1219,17 +1219,28 @@ export class Eth {
       requestedBlockNumbers.map((n) => getBlockByOption(n.toString(), this._chain))
     )
 
-    const [baseFees, gasUsedRatios] = requestedBlocks.reduce(
+    const [baseFees, gasUsedRatios, baseFeePerBlobGas, blobGasUsedRatio] = requestedBlocks.reduce(
       (v, b) => {
-        const [prevBaseFees, prevGasUsedRatios] = v
-        const { baseFeePerGas, gasUsed, gasLimit } = b.header
+        const [prevBaseFees, prevGasUsedRatios, prevBaseFeesPerBlobGas, prevBlobGasUsedRatio] = v
+        const { baseFeePerGas, gasUsed, gasLimit, blobGasUsed } = b.header
+
+        let baseFeePerBlobGas = BIGINT_0
+        let blobGasUsedRatio = 0
+        if (b.header.excessBlobGas !== undefined) {
+          baseFeePerBlobGas = b.header.getBlobGasPrice()
+          const max = b.common.param('gasConfig', 'maxblobGasPerBlock')
+          blobGasUsedRatio = Number(blobGasUsed) / Number(max)
+        }
 
         prevBaseFees.push(baseFeePerGas ?? BIGINT_0)
         prevGasUsedRatios.push(Number(gasUsed) / Number(gasLimit))
 
-        return [prevBaseFees, prevGasUsedRatios]
+        prevBaseFeesPerBlobGas.push(baseFeePerBlobGas)
+        prevBlobGasUsedRatio.push(blobGasUsedRatio)
+
+        return [prevBaseFees, prevGasUsedRatios, prevBaseFeesPerBlobGas, prevBlobGasUsedRatio]
       },
-      [[], []] as [(bigint | undefined)[], number[]]
+      [[], [], [], []] as [bigint[], number[], bigint[], number[]]
     )
 
     const londonHardforkBlockNumber = this._chain.blockchain.common.hardforkBlock(Hardfork.London)!
@@ -1238,6 +1249,8 @@ export class Eth {
         ? requestedBlocks[requestedBlocks.length - 1].header.calcNextBaseFee()
         : BIGINT_0
     baseFees.push(nextBaseFee)
+
+    // TODO also add next blob fee
 
     let rewards: bigint[][] = []
 
@@ -1250,8 +1263,10 @@ export class Eth {
     }
 
     return {
-      baseFeePerGas: baseFees.map((f) => (f !== undefined ? bigIntToHex(f) : '0x0')),
+      baseFeePerGas: baseFees.map(bigIntToHex),
       gasUsedRatio: gasUsedRatios,
+      baseFeePerBlobGas: baseFeePerBlobGas.map(bigIntToHex),
+      blobGasUsedRatio,
       oldestBlock: bigIntToHex(oldestBlockNumber),
       reward: rewards.map((r) => r.map((n) => bigIntToHex(n))),
     }

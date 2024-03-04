@@ -1,9 +1,21 @@
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { TransactionFactory } from '@ethereumjs/tx'
-import { Address, BIGINT_0, bigIntToHex, bytesToBigInt } from '@ethereumjs/util'
+import {
+  Address,
+  BIGINT_0,
+  BIGINT_256,
+  bigIntToHex,
+  blobsToCommitments,
+  bytesToBigInt,
+  commitmentsToVersionedHashes,
+  getBlobs,
+  initKZG,
+} from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
+import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
 import pow from '../../testdata/geth-genesis/pow.json'
 import { getRpcClient, gethGenesisStartLondon, setupChain } from '../helpers'
 
@@ -14,6 +26,11 @@ const method = 'eth_feeHistory'
 
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const pKeyAddress = Address.fromPrivateKey(privateKey)
+
+const privateKey4844 = hexToBytes(
+  '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'
+)
+const p4844Address = Address.fromPrivateKey(privateKey4844)
 
 const produceFakeGasUsedBlock = async (execution: VMExecution, chain: Chain, gasUsed: bigint) => {
   const { vm } = execution
@@ -90,6 +107,78 @@ const produceBlockWithTx = async (
 
   const block = await blockBuilder.build()
   await chain.putBlocks([block], false)
+  await execution.run()
+}
+
+/**
+ * This method builds a block on top of the current head block and will insert 4844 txs
+ * @param execution
+ * @param chain
+ * @param blobsCount Array of blob txs to produce. The amount of blobs in here is thus the amount of blobs per tx.
+ */
+const produceBlockWith4844Tx = async (
+  execution: VMExecution,
+  chain: Chain,
+  blobsCount: number[]
+) => {
+  const kzg = await createKZG()
+  initKZG(kzg)
+  // 4844 sample blob
+  const sampleBlob = getBlobs('hello world')
+  const commitment = blobsToCommitments(sampleBlob)
+  const blobVersionedHash = commitmentsToVersionedHashes(commitment)
+
+  const { vm } = execution
+  const account = await vm.stateManager.getAccount(p4844Address)
+  let nonce = account?.nonce ?? BIGINT_0
+  const parentBlock = await chain.getCanonicalHeadBlock()
+  const vmCopy = await vm.shallowCopy()
+  // Set block's gas used to max
+  const blockBuilder = await vmCopy.buildBlock({
+    parentBlock,
+    headerData: {
+      timestamp: parentBlock.header.timestamp + BigInt(1),
+    },
+    blockOpts: {
+      calcDifficultyFromHeader: parentBlock.header,
+      putBlockIntoBlockchain: false,
+    },
+  })
+  for (let i = 0; i < blobsCount.length; i++) {
+    const blobVersionedHashes = []
+    const blobs = []
+    const kzgCommitments = []
+    const to = Address.zero()
+    if (blobsCount[i] > 0) {
+      for (let blob = 0; blob < blobsCount[i]; blob++) {
+        blobVersionedHashes.push(...blobVersionedHash)
+        blobs.push(...sampleBlob)
+        kzgCommitments.push(...commitment)
+      }
+    }
+    await blockBuilder.addTransaction(
+      TransactionFactory.fromTxData(
+        {
+          type: 3,
+          gasLimit: 21000,
+          maxFeePerGas: 0xffffffff,
+          maxPriorityFeePerGas: BIGINT_256,
+          nonce,
+          to,
+          blobVersionedHashes,
+          blobs,
+          kzgCommitments,
+          maxFeePerBlobGas: BigInt(1000),
+        },
+        { common: vmCopy.common }
+      ).sign(privateKey4844)
+    )
+    nonce++
+  }
+
+  const block = await blockBuilder.build()
+  console.log(block.header.number)
+  await chain.putBlocks([block], true)
   await execution.run()
 }
 
@@ -302,4 +391,43 @@ describe(method, () => {
     )
     assert.deepEqual(res.result.reward[0], expected)
   })
+
+  /**
+   * 4844-related test
+   */
+  it(
+    `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
+    async () => {
+      const kzg = await createKZG()
+      initKZG(kzg)
+      const { chain, execution, server } = await setupChain(genesisJSON, 'post-merge', {
+        engine: true,
+        hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg,
+        },
+      })
+
+      // Start cranking up the initial blob gas for some more "realistic" testing
+
+      // TODO add more blocks
+      for (let i = 0; i < 0; i++) {
+        await produceBlockWith4844Tx(execution, chain, [6])
+      }
+
+      // Now for the actual test: create 6 blocks each with a decreasing amount of blobs
+      for (let i = 6; i > 0; i--) {
+        await produceBlockWith4844Tx(execution, chain, [i])
+      }
+
+      const rpc = getRpcClient(server)
+
+      //const res = await rpc.request(method, ['0x3', 'latest', [10, 20, 60, 100]])
+
+      assert.ok(false, ' write test')
+    },
+    {
+      timeout: 60000,
+    }
+  )
 })
