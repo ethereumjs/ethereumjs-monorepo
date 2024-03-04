@@ -357,7 +357,7 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
       debug(`accumulate parentBlockHash `)
     }
 
-    await accumulateParentBlockHash.bind(this)(block)
+    await accumulateParentBlockHash.bind(this)(block.header.number, block.header.parentHash)
   }
 
   if (enableProfiler) {
@@ -425,7 +425,14 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
  * @param this The VM to run on
  * @param block The current block to save the parent block hash of
  */
-export async function accumulateParentBlockHash(this: VM, block: Block) {
+export async function accumulateParentBlockHash(
+  this: VM,
+  currentBlockNumber: bigint,
+  parentHash: Uint8Array
+) {
+  if (!this.common.isActivatedEIP(2935)) {
+    throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
+  }
   const historyAddress = Address.fromString(
     bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
   )
@@ -438,14 +445,14 @@ export async function accumulateParentBlockHash(this: VM, block: Block) {
     const key = setLengthLeft(bigIntToBytes(number), 32)
     await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }
-  await putBlockHash(this, block.header.parentHash, block.header.number - BIGINT_1)
+  await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
 
   // Check if we are on the fork block
   const forkTime = this.common.eipTimestamp(2935)
   if (forkTime === null) {
     throw new Error('EIP 2935 should be activated by timestamp')
   }
-  const parentBlock = await this.blockchain.getBlock(block.header.parentHash)
+  const parentBlock = await this.blockchain.getBlock(parentHash)
 
   if (parentBlock.header.timestamp < forkTime) {
     let ancestor = parentBlock
@@ -466,6 +473,9 @@ export async function accumulateParentBeaconBlockRoot(
   root: Uint8Array,
   timestamp: bigint
 ) {
+  if (!this.common.isActivatedEIP(4788)) {
+    throw new Error('Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active')
+  }
   // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
   const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
   const timestampIndex = timestamp % historicalRootsLength
