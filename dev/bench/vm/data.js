@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709436490486,
+  "lastUpdate": 1709561021727,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "68c4fb9e65e389447b1e83f7b2590493c70b1042",
-          "message": "Update `devp2p` and `ethash` examples (#3256)\n\n* First devp2p examples, fix imports\r\n\r\n* revert test changes\r\n\r\n* More examples\r\n\r\n* Fix example file extensions\r\n\r\n* Update readme, remove browser stuff\r\n\r\n* Remove obsolete browser references\r\n\r\n* Fix examples imports and remove browser tests\r\n\r\n* remove console log\r\n\r\n* Update ethash examples\r\n\r\n* Address feedback\r\n\r\n* Adjust code lines of examples to include in devp2p README\r\n\r\n* address feedback\r\n\r\n* more feedback\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>",
-          "timestamp": "2024-01-25T20:41:57-07:00",
-          "tree_id": "befea1f40713c73825730bf09d3381c44bd17640",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/68c4fb9e65e389447b1e83f7b2590493c70b1042"
-        },
-        "date": 1706241028263,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40775,
-            "range": "±2.01%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38571,
-            "range": "±3.09%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38760,
-            "range": "±2.05%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38959,
-            "range": "±2.06%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37061,
-            "range": "±2.32%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.61%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "41a74688c4ba0c9bf195679e472cdbab0bc87246",
+          "message": "packages: pin lru-cache version to fix build problems (#3285)",
+          "timestamp": "2024-03-04T14:58:49+01:00",
+          "tree_id": "4a1bc2ed3a63425fdebe1a9cee6f576e38eb42e1",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/41a74688c4ba0c9bf195679e472cdbab0bc87246"
+        },
+        "date": 1709561020469,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41795,
+            "range": "±3.05%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41215,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40830,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37266,
+            "range": "±5.62%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39002,
+            "range": "±2.04%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
