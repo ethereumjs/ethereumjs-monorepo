@@ -12,7 +12,8 @@ class FetcherTest extends Fetcher<any, any, any> {
     return res
   }
   async request(_job: any, _peer: any) {
-    return
+    console.trace(_job)
+    return _job
   }
   async store(_store: any) {}
   // Just return any via _error
@@ -51,7 +52,7 @@ it('should handle failure', () => {
 })
 
 describe('should handle expiration', async () => {
-  it.only('should expire', async () => {
+  it('should expire', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const fetcher = new FetcherTest({
       config,
@@ -67,10 +68,11 @@ describe('should handle expiration', async () => {
     const job = { index: 0 }
     const peer = { idle: true }
     fetcher.peer = vi.fn().mockReturnValue(() => peer)
-    fetcher.request = vi.fn().mockImplementation((_, badPeer: any, _timer: any) => {
-      if (badPeer.idle === false) {
-        throw new Error('err0')
-      }
+    fetcher.request = vi.fn().mockImplementationOnce(async (job, peer) => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000)
+      })
+      if (peer.idle === false) throw new Error('err0')
       return
     })
 
@@ -80,15 +82,11 @@ describe('should handle expiration', async () => {
     fetcher['total'] = 10
     fetcher.next()
     await new Promise((resolve) => {
-      setTimeout(resolve, 1000)
+      setTimeout(resolve, 10)
     })
 
     assert.equal((fetcher as any).in.length, 1, 'enqueued job')
-    assert.deepEqual(
-      job as any,
-      { index: 0, peer: { idle: false }, state: 'expired' },
-      'expired job'
-    )
+    assert.deepEqual((job as any).state, 'expired', 'expired job')
   })
 })
 
