@@ -8,10 +8,12 @@ import {
   Account,
   Address,
   BIGINT_0,
+  BIGINT_1,
   BIGINT_8,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   bigIntToBytes,
+  bigIntToHex,
   bytesToHex,
   concatBytes,
   equalsBytes,
@@ -350,6 +352,13 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
       block.header.timestamp
     )
   }
+  if (this.common.isActivatedEIP(2935)) {
+    if (this.DEBUG) {
+      debug(`accumulate parentBlockHash `)
+    }
+
+    await accumulateParentBlockHash.bind(this)(block.header.number, block.header.parentHash)
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -407,11 +416,66 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
   return blockResults
 }
 
+/**
+ * This method runs the logic of EIP 2935 (save blockhashes to state)
+ * It will put the `parentHash` of the block to the storage slot of `block.number - 1` of the history storage contract.
+ * This contract is used to retrieve BLOCKHASHes in EVM if EIP 2935 is activated.
+ * In case that the previous block of `block` is pre-EIP-2935 (so we are on the EIP 2935 fork block), additionally
+ * also add the currently available past blockhashes which are available by BLOCKHASH (so, the past 256 block hashes)
+ * @param this The VM to run on
+ * @param block The current block to save the parent block hash of
+ */
+export async function accumulateParentBlockHash(
+  this: VM,
+  currentBlockNumber: bigint,
+  parentHash: Uint8Array
+) {
+  if (!this.common.isActivatedEIP(2935)) {
+    throw new Error('Cannot call `accumulateParentBlockHash`: EIP 2935 is not active')
+  }
+  const historyAddress = Address.fromString(
+    bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
+  )
+
+  if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
+    await this.evm.journal.putAccount(historyAddress, new Account())
+  }
+
+  async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
+    const key = setLengthLeft(bigIntToBytes(number), 32)
+    await vm.stateManager.putContractStorage(historyAddress, key, hash)
+  }
+  await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
+
+  // Check if we are on the fork block
+  const forkTime = this.common.eipTimestamp(2935)
+  if (forkTime === null) {
+    throw new Error('EIP 2935 should be activated by timestamp')
+  }
+  const parentBlock = await this.blockchain.getBlock(parentHash)
+
+  if (parentBlock.header.timestamp < forkTime) {
+    let ancestor = parentBlock
+    const range = this.common.param('vm', 'minHistoryServeWindow')
+    for (let i = 0; i < Number(range) - 1; i++) {
+      if (ancestor.header.number === BIGINT_0) {
+        break
+      }
+
+      ancestor = await this.blockchain.getBlock(ancestor.header.parentHash)
+      await putBlockHash(this, ancestor.hash(), ancestor.header.number)
+    }
+  }
+}
+
 export async function accumulateParentBeaconBlockRoot(
   this: VM,
   root: Uint8Array,
   timestamp: bigint
 ) {
+  if (!this.common.isActivatedEIP(4788)) {
+    throw new Error('Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active')
+  }
   // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
   const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
   const timestampIndex = timestamp % historicalRootsLength

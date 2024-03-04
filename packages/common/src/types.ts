@@ -34,6 +34,7 @@ export interface ChainConfig {
   url?: string
   genesis: GenesisBlockConfig
   hardforks: HardforkTransitionConfig[]
+  customHardforks?: HardforksDict
   bootstrapNodes: BootstrapNodeConfig[]
   dnsNetworks?: string[]
   consensus: ConsensusConfig
@@ -194,3 +195,7 @@ export type HardforkConfig = {
   eips?: number[]
   consensus?: ConsensusConfig
 } & EIPOrHFConfig
+
+export type HardforksDict = {
+  [key: string]: HardforkConfig
+}
