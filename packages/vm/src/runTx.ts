@@ -126,6 +126,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.journal.startReportingAccessList()
   }
 
+  if (opts.reportPreimages === true) {
+    this.evm.journal.startReportingPreimages!()
+  }
+
   await this.evm.journal.checkpoint()
   if (this.DEBUG) {
     debug('-'.repeat(100))
@@ -451,11 +455,11 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (this.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
   }
+  let executionTimerPrecise: number
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(balanceNonceLabel)
-    // eslint-disable-next-line no-console
-    console.time(executionLabel)
+    executionTimerPrecise = performance.now()
   }
 
   /*
@@ -491,7 +495,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
-    console.timeEnd(executionLabel)
+    console.log(`${executionLabel}: ${performance.now() - executionTimerPrecise!}ms`)
     // eslint-disable-next-line no-console
     console.log('[ For execution details see table output ]')
     // eslint-disable-next-line no-console
@@ -659,6 +663,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     console.timeEnd(accessListLabel)
     // eslint-disable-next-line no-console
     console.time(journalCacheCleanUpLabel)
+  }
+
+  if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
+    results.preimages = this.evm.journal.preimages
   }
 
   await this.evm.journal.cleanup()

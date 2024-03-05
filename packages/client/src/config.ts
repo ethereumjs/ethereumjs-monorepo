@@ -327,6 +327,14 @@ export interface ConfigOptions {
   snapAvailabilityDepth?: bigint
   snapTransitionSafeDepth?: bigint
 
+  /**
+   * Save account keys preimages in the meta db (default: false)
+   */
+  savePreimages?: boolean
+
+  /**
+   * Enables stateless verkle block execution (default: false)
+   */
   statelessVerkle?: boolean
   startExecution?: boolean
 }
@@ -432,6 +440,7 @@ export class Config {
   // Defaulting to false as experimental as of now
   public readonly enableSnapSync: boolean
   public readonly useStringValueTrieDB: boolean
+  public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
   public readonly startExecution: boolean
@@ -479,6 +488,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
+    this.savePreimages = options.savePreimages ?? false
 
     if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
       this.vmProfilerOpts = {

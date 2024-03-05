@@ -185,7 +185,7 @@ export class Common {
    */
   static fromGethGenesis(
     genesisJson: any,
-    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge }: GethConfigOpts
+    { chain, eips, genesisHash, hardfork, mergeForkIdPostMerge, customCrypto }: GethConfigOpts
   ): Common {
     const genesisParams = parseGethGenesis(genesisJson, chain, mergeForkIdPostMerge)
     const common = new Common({
@@ -193,6 +193,7 @@ export class Common {
       customChains: [genesisParams],
       eips,
       hardfork: hardfork ?? genesisParams.hardfork,
+      customCrypto,
     })
     if (genesisHash !== undefined) {
       common.setForkHashes(genesisHash)
@@ -242,7 +243,8 @@ export class Common {
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name as HardforkSpecKeys,
-      HARDFORK_SPECS[hf.name as HardforkSpecKeys],
+      HARDFORK_SPECS[hf.name] ??
+        (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork !== undefined) {
@@ -779,6 +781,24 @@ export class Common {
   }
 
   /**
+   * Returns the scheduled timestamp of the EIP (if scheduled and scheduled by timestamp)
+   * @param eip EIP number
+   * @returns Scheduled timestamp. If this EIP is unscheduled, or the EIP is scheduled by block number or ttd, then it returns `null`.
+   */
+  eipTimestamp(eip: number): bigint | null {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
+      const hf = hfChanges[1]
+      if ('eips' in hf) {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        if ((hf['eips'] as any).includes(eip)) {
+          return this.hardforkTimestamp(hfChanges[0])
+        }
+      }
+    }
+    return null
+  }
+
+  /**
    * Returns the hardfork change total difficulty (Merge HF) for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Total difficulty or null if no set
@@ -945,7 +965,11 @@ export class Common {
    * @returns {Array} Array with arrays of hardforks
    */
   hardforks(): HardforkTransitionConfig[] {
-    return this._chainParams.hardforks
+    const hfs = this._chainParams.hardforks
+    if (this._chainParams.customHardforks !== undefined) {
+      this._chainParams.customHardforks
+    }
+    return hfs
   }
 
   /**

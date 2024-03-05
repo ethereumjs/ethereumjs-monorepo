@@ -2,13 +2,19 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address, initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { randomBytes } from 'crypto'
 
 const main = async () => {
-  await initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
-
+  const kzg = await createKZG()
+  initKZG(kzg)
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: {
+      kzg,
+    },
+  })
   const blobTx = BlobEIP4844Transaction.fromTxData(
     { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
     { common }

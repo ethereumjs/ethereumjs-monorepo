@@ -66,6 +66,10 @@ try {
 }
 ```
 
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
 ### EIP-1559 Blocks
 
 This library supports the creation of [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible blocks starting with `v3.3.0`. For this to work a Block needs to be instantiated with a Hardfork greater or equal to London (`Hardfork.London`).
@@ -152,9 +156,7 @@ Validation of the withdrawals trie can be manually triggered with the newly intr
 
 ### EIP-4844 Shard Blob Transaction Blocks
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) as being specified in the [b9a5a11](https://github.com/ethereum/EIPs/commit/b9a5a117ab7e1dc18f937841d00598b527c306e7) EIP version from July 2023 deployed along [4844-devnet-7](https://github.com/ethpandaops/4844-testnet) (July 2023), see PR [#2349](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2349) and following.
-
-**Note:** 4844 support is not yet completely stable and there will still be (4844-)breaking changes along all types of library releases.
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
 
 #### Initialization
 
@@ -164,22 +166,47 @@ To create blocks which include blob transactions you have to active EIP-4844 in 
 // ./examples/4844.ts
 
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { BlockHeader } from '@ethereumjs/block'
+import { Block } from '@ethereumjs/block'
+import { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import { Address, initKZG } from '@ethereumjs/util'
+import * as kzg from 'c-kzg'
+import { randomBytes } from 'crypto'
 
-const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
+const main = async () => {
+  initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: {
+      kzg,
+    },
+  })
+  const blobTx = BlobEIP4844Transaction.fromTxData(
+    { blobsData: ['myFirstBlob'], to: Address.fromPrivateKey(randomBytes(32)) },
+    { common }
+  )
 
-// TODO: add a more meaningful example including at least one blob tx
-const header = BlockHeader.fromHeaderData(
-  {
-    excessBlobGas: 0n,
-  },
-  {
-    common,
-    skipConsensusFormatValidation: true,
-  }
-)
+  const block = Block.fromBlockData(
+    {
+      header: {
+        excessBlobGas: 0n,
+      },
+      transactions: [blobTx],
+    },
+    {
+      common,
+      skipConsensusFormatValidation: true,
+    }
+  )
 
-console.log(`4844 block header with excessBlobGas=${header.excessBlobGas} created`)
+  console.log(
+    `4844 block header with excessBlobGas=${block.header.excessBlobGas} created and ${
+      block.transactions.filter((tx) => tx.type === 3).length
+    } blob transactions`
+  )
+}
+
+main()
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.

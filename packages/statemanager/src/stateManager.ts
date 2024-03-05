@@ -757,9 +757,8 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    * Create a StateManager and initialize this with proof(s) gotten previously from getProof
    * This generates a (partial) StateManager where one can retrieve all items from the proof
    * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
-   * @param safe Wether or not to verify that the roots of the proof items match the reported roots
-   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
-   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+   * @param safe Whether or not to verify that the roots of the proof items match the reported roots
+   * @param opts a dictionary of StateManager opts
    * @returns A new DefaultStateManager with elements from the given proof included in its backing state trie
    */
   static async fromProof(
@@ -788,7 +787,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         return sm
       }
     } else {
-      return DefaultStateManager.fromProof([proof])
+      return DefaultStateManager.fromProof([proof], safe, opts)
     }
   }
 
@@ -906,7 +905,11 @@ export class DefaultStateManager implements EVMStateManagerInterface {
         32
       )
       if (!equalsBytes(reportedValue, storageValue)) {
-        throw new Error('Reported trie value does not match storage')
+        throw new Error(
+          `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
+            reportedValue
+          )}, actual: ${bytesToHex(storageValue)}`
+        )
       }
     }
     return true
@@ -967,14 +970,21 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
-    const storage: StorageDump = {}
-    const stream = trie.createAsyncReadStream()
 
-    for await (const chunk of stream) {
-      storage[bytesToHex(chunk.key)] = bytesToHex(chunk.value)
-    }
+    return new Promise((resolve, reject) => {
+      const storage: StorageDump = {}
+      const stream = trie.createReadStream()
 
-    return storage
+      stream.on('data', (val: any) => {
+        storage[bytesToHex(val.key)] = bytesToHex(val.value)
+      })
+      stream.on('end', () => {
+        resolve(storage)
+      })
+      stream.on('error', (e) => {
+        reject(e)
+      })
+    })
   }
 
   /**
@@ -997,35 +1007,44 @@ export class DefaultStateManager implements EVMStateManagerInterface {
       throw new Error(`Account does not exist.`)
     }
     const trie = this._getStorageTrie(address, account)
-    let inRange = false
-    let i = 0
 
-    /** Object conforming to {@link StorageRange.storage}. */
-    const storageMap: StorageRange['storage'] = {}
-    const stream = trie.createAsyncReadStream()
-    for await (const chunk of stream) {
-      if (!inRange) {
-        // Check if the key is already in the correct range.
-        if (bytesToBigInt(chunk.key) >= startKey) {
-          inRange = true
-        } else {
-          continue
+    return new Promise((resolve, reject) => {
+      let inRange = false
+      let i = 0
+
+      /** Object conforming to {@link StorageRange.storage}. */
+      const storageMap: StorageRange['storage'] = {}
+      const stream = trie.createReadStream()
+
+      stream.on('data', (val: any) => {
+        if (!inRange) {
+          // Check if the key is already in the correct range.
+          if (bytesToBigInt(val.key) >= startKey) {
+            inRange = true
+          } else {
+            return
+          }
         }
-      }
-      if (i < limit) {
-        storageMap[bytesToHex(chunk.key)] = { key: null, value: bytesToHex(chunk.value) }
-        i++
-      } else if (i === limit) {
-        return {
+
+        if (i < limit) {
+          storageMap[bytesToHex(val.key)] = { key: null, value: bytesToHex(val.value) }
+          i++
+        } else if (i === limit) {
+          resolve({
+            storage: storageMap,
+            nextKey: bytesToHex(val.key),
+          })
+        }
+      })
+
+      stream.on('end', () => {
+        resolve({
           storage: storageMap,
-          nextKey: bytesToHex(chunk.key),
-        }
-      }
-    }
-    return {
-      storage: storageMap,
-      nextKey: null,
-    }
+          nextKey: null,
+        })
+      })
+      stream.on('error', (e) => reject(e))
+    })
   }
 
   /**
@@ -1134,5 +1153,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._accountCache?.clear()
     this._storageCache?.clear()
     this._codeCache?.clear()
+  }
+
+  /**
+   * Returns the applied key for a given address
+   * Used for saving preimages
+   * @param address - The address to return the applied key
+   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   */
+  getAppliedKey(address: Uint8Array): Uint8Array {
+    return this._trie['appliedKey'](address)
   }
 }

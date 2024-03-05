@@ -2,18 +2,17 @@ import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
 import { Address, hexToBytes, initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
-try {
-  initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-  // eslint-disable-next-line
-} catch {}
+const kzg = await createKZG()
+initKZG(kzg)
 
-const common = Common.custom({ chainId: 1 })
+const common = Common.custom({ chainId: 1 }, { customCrypto: { kzg } })
+
 common.setHardfork('cancun')
 const mockedTx1 = LegacyTransaction.fromTxData({}).sign(dummy.privKey)
 const mockedTx2 = LegacyTransaction.fromTxData({ nonce: 1 }).sign(dummy.privKey)

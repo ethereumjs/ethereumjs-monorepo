@@ -7,6 +7,7 @@ type EIPsDict = {
 }
 
 enum Status {
+  Stagnant = 'stagnant',
   Draft = 'draft',
   Review = 'review',
   Final = 'final',
@@ -187,6 +188,23 @@ export const EIPs: EIPsDict = {
       accessListAddressCost: {
         v: 2400,
         d: 'Gas cost per storage key in an Access List transaction',
+      },
+    },
+  },
+  2935: {
+    comment: 'Save historical block hashes in state (Verkle related usage, UNSTABLE)',
+    url: 'https://github.com/ethereum/EIPs/pull/8166/commits/941d3beb084d638be258b8fded6171cf0705a5db',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+    vm: {
+      historyStorageAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The address where the historical blockhashes are stored',
+      },
+      minHistoryServeWindow: {
+        v: BigInt(256),
+        d: 'The minimum amount of blocks to be served by the historical blockhash contract',
       },
     },
   },

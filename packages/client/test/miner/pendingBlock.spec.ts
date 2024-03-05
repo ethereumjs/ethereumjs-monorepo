@@ -20,7 +20,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
@@ -353,14 +353,16 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
+    const kzg = await createKZG()
+    initKZG(kzg)
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
@@ -431,15 +433,15 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-      // eslint-disable-next-line
-    } catch {}
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    const kzg = await createKZG()
+
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
+      customCrypto: { kzg },
     })
+
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')

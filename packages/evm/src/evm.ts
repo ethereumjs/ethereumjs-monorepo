@@ -164,8 +164,8 @@ export class EVM implements EVMInterface {
 
     // Supported EIPs
     const supportedEIPs = [
-      1153, 1559, 2315, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
+      1153, 1559, 2315, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
+      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -344,17 +344,24 @@ export class EVM implements EVMInterface {
     let result: ExecResult
     if (message.isCompiled) {
       let timer: Timer
+      let callTimer: Timer | undefined
       let target: string
       if (this._optsCached.profiler?.enabled === true) {
         target = bytesToUnprefixedHex(message.codeAddress.bytes)
         // TODO: map target precompile not to address, but to a name
         target = getPrecompileName(target) ?? target.slice(20)
+        if (this.performanceLogger.hasTimer()) {
+          callTimer = this.performanceLogger.pauseTimer()
+        }
         timer = this.performanceLogger.startTimer(target)
       }
       result = await this.runPrecompile(message.code as PrecompileFunc, message.data, gasLimit)
 
       if (this._optsCached.profiler?.enabled === true) {
         this.performanceLogger.stopTimer(timer!, Number(result.executionGasUsed), 'precompiles')
+        if (callTimer !== undefined) {
+          this.performanceLogger.unpauseTimer(callTimer)
+        }
       }
       result.gasRefund = message.gasRefund
     } else {
@@ -797,6 +804,13 @@ export class EVM implements EVMInterface {
    * if an exception happens during the message execution.
    */
   async runCall(opts: EVMRunCallOpts): Promise<EVMResult> {
+    let timer: Timer | undefined
+    if (
+      (opts.depth === 0 || opts.message === undefined) &&
+      this._optsCached.profiler?.enabled === true
+    ) {
+      timer = this.performanceLogger.startTimer('Initialization')
+    }
     let message = opts.message
     let callerAccount
     if (!message) {
@@ -924,6 +938,10 @@ export class EVM implements EVMInterface {
       }
     }
     await this._emit('afterMessage', result)
+
+    if (message.depth === 0 && this._optsCached.profiler?.enabled === true) {
+      this.performanceLogger.stopTimer(timer!, 0)
+    }
 
     return result
   }

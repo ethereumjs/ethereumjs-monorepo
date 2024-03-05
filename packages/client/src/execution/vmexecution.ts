@@ -12,7 +12,15 @@ import {
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  Lock,
+  ValueEncoding,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
 
 import { Event } from '../types'
@@ -21,6 +29,7 @@ import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
+import { PreimagesManager } from './preimage'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -50,6 +59,7 @@ export class VMExecution extends Execution {
   public chainStatus: ChainStatus | null = null
 
   public receiptsManager?: ReceiptsManager
+  public preimagesManager?: PreimagesManager
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | null>
 
@@ -94,25 +104,34 @@ export class VMExecution extends Execution {
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
-    if (this.metaDB && this.config.saveReceipts) {
-      this.receiptsManager = new ReceiptsManager({
-        chain: this.chain,
-        config: this.config,
-        metaDB: this.metaDB,
-      })
-      this.pendingReceipts = new Map()
-      this.chain.blockchain.events.addListener(
-        'deletedCanonicalBlocks',
-        async (blocks, resolve) => {
-          // Once a block gets deleted from the chain, delete the receipts also
-          for (const block of blocks) {
-            await this.receiptsManager?.deleteReceipts(block)
+    if (this.metaDB) {
+      if (this.config.saveReceipts) {
+        this.receiptsManager = new ReceiptsManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+        this.pendingReceipts = new Map()
+        this.chain.blockchain.events.addListener(
+          'deletedCanonicalBlocks',
+          async (blocks, resolve) => {
+            // Once a block gets deleted from the chain, delete the receipts also
+            for (const block of blocks) {
+              await this.receiptsManager?.deleteReceipts(block)
+            }
+            if (resolve !== undefined) {
+              resolve()
+            }
           }
-          if (resolve !== undefined) {
-            resolve()
-          }
-        }
-      )
+        )
+      }
+      if (this.config.savePreimages) {
+        this.preimagesManager = new PreimagesManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+      }
     }
   }
 
@@ -413,8 +432,18 @@ export class VMExecution extends Execution {
           if (skipHeaderValidation) {
             skipBlockchain = true
           }
+          const reportPreimages = this.config.savePreimages
 
-          const result = await vm.runBlock({ clearCache, ...opts, skipHeaderValidation })
+          const result = await vm.runBlock({
+            clearCache,
+            ...opts,
+            skipHeaderValidation,
+            reportPreimages,
+          })
+
+          if (this.config.savePreimages && result.preimages !== undefined) {
+            await this.savePreimages(result.preimages)
+          }
           receipts = result.receipts
         }
         if (receipts !== undefined) {
@@ -442,6 +471,14 @@ export class VMExecution extends Execution {
       }
     })
     return true
+  }
+
+  async savePreimages(preimages: Map<string, Uint8Array>) {
+    if (this.preimagesManager !== undefined) {
+      for (const [key, preimage] of preimages) {
+        await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
+      }
+    }
   }
 
   /**
@@ -683,6 +720,7 @@ export class VMExecution extends Execution {
                     clearCache,
                     skipBlockValidation,
                     skipHeaderValidation: true,
+                    reportPreimages: this.config.savePreimages,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
@@ -697,6 +735,9 @@ export class VMExecution extends Execution {
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
+                  if (this.config.savePreimages && result.preimages !== undefined) {
+                    await this.savePreimages(result.preimages)
+                  }
 
                   txCounter += block.transactions.length
                   // set as new head block
