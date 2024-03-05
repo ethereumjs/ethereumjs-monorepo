@@ -128,6 +128,10 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
+    if (clearCache) {
+      ;(this._opts.stateManager as StatelessVerkleStateManager).clearCaches()
+    }
+
     ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
       block.header.number,
       block.executionWitness
