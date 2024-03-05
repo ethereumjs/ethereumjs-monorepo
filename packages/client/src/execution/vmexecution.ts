@@ -819,6 +819,8 @@ export class VMExecution extends Execution {
                 : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
               )
+
+              await this.chain.update(false)
             } else {
               this.config.logger.debug(
                 `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
@@ -871,7 +873,7 @@ export class VMExecution extends Execution {
       canonicalHead.header.number
     } hardfork=${this.config.execCommon.hardfork()} execution=${this.config.execution}`
     if (
-      !this.config.execCommon.gteHardfork(Hardfork.Paris) &&
+      (!this.config.execCommon.gteHardfork(Hardfork.Paris) || this.config.startExecution) &&
       this.config.execution &&
       vmHeadBlock.header.number < canonicalHead.header.number
     ) {

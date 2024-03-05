@@ -158,6 +158,8 @@ export interface ClientOpts {
   useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
+  startExecutionFrom?: number
+  startExecution?: boolean
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean

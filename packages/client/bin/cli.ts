@@ -382,6 +382,16 @@ const args: ClientOpts = yargs
       'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
     number: true,
   })
+  .option('startExecutionFrom', {
+    describe:
+      'Block number to start/restart execution from. For merkle based state, parent state should be present in the the db while in verkle stateless mode the chain should be synced till the block and witnesses available this block onwards',
+    number: true,
+  })
+  .option('startExecution', {
+    describe:
+      'Start execution of unexecuted blocks without waiting for the CL fcU, set to `true` if `startExecutionFrom` provided',
+    boolean: true,
+  })
   .option('isSingleNode', {
     describe:
       'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
@@ -526,6 +536,52 @@ async function startBlock(client: EthereumClient) {
   }
 }
 
+async function startExecutionFrom(client: EthereumClient) {
+  if (args.startExecutionFrom === undefined) return
+  const startExecutionFrom = BigInt(args.startExecutionFrom)
+
+  const height = client.chain.headers.height
+  if (height < startExecutionFrom) {
+    logger.error(`Cannot start merkle chain higher than current height ${height}`)
+    process.exit()
+  }
+
+  const startExecutionBlock = await client.chain.getBlock(startExecutionFrom)
+  const startExecutionParent = await client.chain.getBlock(startExecutionBlock.header.parentHash)
+  const startExecutionParentTd = await client.chain.getTd(
+    startExecutionParent.hash(),
+    startExecutionParent.header.number
+  )
+
+  const startExecutionHardfork = client.config.execCommon.getHardforkBy({
+    blockNumber: startExecutionBlock.header.number,
+    td: startExecutionParentTd,
+    timestamp: startExecutionBlock.header.timestamp,
+  })
+
+  if (
+    client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Prague) &&
+    client.config.statelessVerkle
+  ) {
+    // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
+    // to startExecutionParent's hash
+    try {
+      await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
+      await client.chain.update(false)
+      logger.info(
+        `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`
+      )
+    } catch (err: any) {
+      logger.error(`Error setting vmHead for starting stateless execution: ${err}`)
+      process.exit()
+    }
+  } else {
+    // we need parent state availability to set the vmHead to the parent
+    logger.error(`Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`)
+    process.exit()
+  }
+}
+
 /**
  * Starts and returns the {@link EthereumClient}
  */
@@ -599,6 +655,9 @@ async function startClient(
 
   if (typeof args.startBlock === 'number') {
     await startBlock(client)
+  }
+  if (typeof args.startExecutionFrom === 'number') {
+    await startExecutionFrom(client)
   }
 
   // update client's sync status and start txpool if synchronized
@@ -994,6 +1053,7 @@ async function run() {
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
     statelessVerkle: args.statelessVerkle,
+    startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
     engineNewpayloadMaxExecute: args.skipEngineExec === true ? 0 : args.engineNewpayloadMaxExecute,
   })
   config.events.setMaxListeners(50)

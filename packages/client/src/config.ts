@@ -328,6 +328,7 @@ export interface ConfigOptions {
   snapTransitionSafeDepth?: bigint
 
   statelessVerkle?: boolean
+  startExecution?: boolean
 }
 
 export class Config {
@@ -433,6 +434,7 @@ export class Config {
   public readonly useStringValueTrieDB: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly startExecution: boolean
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -519,6 +521,7 @@ export class Config {
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     this.statelessVerkle = options.statelessVerkle ?? true
+    this.startExecution = options.startExecution ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
