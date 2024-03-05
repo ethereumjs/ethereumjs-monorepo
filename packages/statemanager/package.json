@@ -63,6 +63,6 @@
     "@ethereumjs/block": "^5.1.1",
     "@ethereumjs/genesis": "^0.2.1",
     "@types/debug": "^4.1.9",
-    "rustbn-wasm": "^0.3.0"
+    "rustbn-wasm": "github:ethereumjs/rustbn-wasm#efde96987b59dd3895b1372da4c73a8ec476f6c3"
   }
 }

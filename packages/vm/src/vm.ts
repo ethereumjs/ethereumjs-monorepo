@@ -144,6 +144,7 @@ export class VM {
         profiler: {
           enabled: enableProfiler,
         },
+        bn128: opts.bn128,
       })
     }
 
