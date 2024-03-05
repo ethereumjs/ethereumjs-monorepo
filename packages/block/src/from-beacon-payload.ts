@@ -1,6 +1,6 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
-import type { ExecutionPayload, VerkleExecutionWitness } from './types.js'
+import type { ExecutionPayload, VerkleExecutionWitness, DepositV1 } from './types.js'
 
 type BeaconWithdrawal = {
   index: string
@@ -32,6 +32,7 @@ export type BeaconPayloadJson = {
   parent_beacon_block_root?: string
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
+  deposits?: DepositV1
 }
 
 /**

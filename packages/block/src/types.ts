@@ -134,6 +134,7 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
+  depositsRoot?: BytesLike
 }
 
 /**
@@ -151,6 +152,10 @@ export interface BlockData {
    * EIP-6800: Verkle Proof Data (experimental)
    */
   executionWitness?: VerkleExecutionWitness | null
+  /**
+   * EIP-6100: Deposits in EL (experimental)
+   */
+  deposits?: DepositV1[]
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
@@ -257,6 +262,14 @@ export type WithdrawalV1 = {
   validatorIndex: PrefixedHexString // Quantity, 8 bytes
   address: PrefixedHexString // DATA, 20 bytes
   amount: PrefixedHexString // Quantity, 32 bytes
+}
+
+export type DepositV1 = {
+  pubkey: Uint8Array
+  withdrawalCredentials: Uint8Array
+  amount: BigInt
+  signature: Uint8Array
+  index: BigInt
 }
 
 // Note: all these strings are 0x-prefixed
