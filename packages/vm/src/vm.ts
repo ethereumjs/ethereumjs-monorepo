@@ -3,6 +3,7 @@ import { Chain, Common } from '@ethereumjs/common'
 import { EVM, getActivePrecompiles } from '@ethereumjs/evm'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Account, Address, AsyncEventEmitter, unprefixedHexToBytes } from '@ethereumjs/util'
+import { initRustBN } from 'rustbn-wasm'
 
 import { buildBlock } from './buildBlock.js'
 import { runBlock } from './runBlock.js'
@@ -77,7 +78,9 @@ export class VM {
    * @param opts VM engine constructor options
    */
   static async create(opts: VMOpts = {}): Promise<VM> {
+    opts.bn128 = await initRustBN()
     const vm = new this(opts)
+
     const genesisStateOpts =
       opts.stateManager === undefined && opts.genesisState === undefined
         ? { genesisState: {} }
@@ -259,6 +262,7 @@ export class VM {
       common,
       blockchain,
       stateManager,
+      bn128: (this.evm as EVM)['bn128'],
     }
     const evmCopy = new EVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({

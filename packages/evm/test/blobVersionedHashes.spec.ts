@@ -1,5 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { Account, Address, bytesToHex, hexToBytes, unpadBytes } from '@ethereumjs/util'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/index.js'
@@ -15,6 +16,7 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
       hardfork: Hardfork.Cancun,
     })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
     })
 
@@ -45,6 +47,7 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
       hardfork: Hardfork.Cancun,
     })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
     })
 
@@ -96,6 +99,7 @@ describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () =>
       hardfork: Hardfork.Cancun,
     })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
     })
 

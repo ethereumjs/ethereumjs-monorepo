@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src/index.js'
@@ -84,6 +85,7 @@ describe('should test mcopy', () => {
       })
 
       const evm = new EVM({
+        bn128: await initRustBN(),
         common,
       })
 

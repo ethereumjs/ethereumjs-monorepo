@@ -1,5 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { hexToBytes } from '@ethereumjs/util'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -8,6 +9,7 @@ describe('Precompiles: ECPAIRING', () => {
   it('ECPAIRING', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
     })
     const addressStr = '0000000000000000000000000000000000000008'

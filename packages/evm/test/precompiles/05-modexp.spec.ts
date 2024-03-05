@@ -1,20 +1,29 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { initRustBN } from 'rustbn-wasm'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
 
 import fuzzer from './modexp-testdata.json'
 
+import type { PrecompileFunc } from '../../src/precompiles/types.js'
+
 const fuzzerTests = fuzzer.data
 describe('Precompiles: MODEXP', () => {
-  const common = new Common({ chain: Chain.Mainnet })
-  const evm = new EVM({
-    common,
+  let common: Common
+  let evm: EVM
+  let addressStr: string
+  let MODEXP: PrecompileFunc
+  beforeAll(async () => {
+    common = new Common({ chain: Chain.Mainnet })
+    evm = new EVM({
+      bn128: await initRustBN(),
+      common,
+    })
+    addressStr = '0000000000000000000000000000000000000005'
+    MODEXP = getActivePrecompiles(common).get(addressStr)!
   })
-  const addressStr = '0000000000000000000000000000000000000005'
-  const MODEXP = getActivePrecompiles(common).get(addressStr)!
-
   it('should run testdata', async () => {
     let n = 0
     for (const [input, expect] of fuzzerTests) {

@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { bytesToHex, bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -18,6 +19,7 @@ describe('Precompiles: ECRECOVER', () => {
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
     })
     const addressStr = '0000000000000000000000000000000000000001'

@@ -1,4 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -7,8 +8,10 @@ describe('Precompiles: ECADD', () => {
   it('ECADD', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
     })
+    console.log(evm['bn128'])
     const addressStr = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(addressStr)!
 

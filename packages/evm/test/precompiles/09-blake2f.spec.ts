@@ -1,8 +1,11 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { initRustBN } from 'rustbn-wasm'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
+
+import type { PrecompileFunc } from '../../src/precompiles/types.js'
 
 const validCases = [
   {
@@ -74,15 +77,22 @@ const malformedCases = [
 ]
 
 describe('Precompiles: BLAKE2F', () => {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-  // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
-  //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
+  let evm: EVM
+  let common: Common
+  let addressStr: string
+  let BLAKE2F: PrecompileFunc
+  beforeAll(async () => {
+    common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
+    //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
 
-  const evm = new EVM({
-    common,
+    evm = new EVM({
+      bn128: await initRustBN(),
+      common,
+    })
+    addressStr = '0000000000000000000000000000000000000009'
+    BLAKE2F = getActivePrecompiles(common).get(addressStr)!
   })
-  const addressStr = '0000000000000000000000000000000000000009'
-  const BLAKE2F = getActivePrecompiles(common).get(addressStr)!
 
   for (const t of validCases) {
     it(`BLAKE2F valid cases: ${t.name}`, async () => {

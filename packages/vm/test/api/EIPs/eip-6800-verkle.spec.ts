@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { initRustBN } from 'rustbn-wasm'
 import { describe, it } from 'vitest'
 
 import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinenBlock.json'
@@ -14,7 +15,7 @@ const block = Block.fromBlockData(verkleBlockJSON, { common })
 describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {
     const verkleStateManager = new StatelessVerkleStateManager({ common })
-    const evm = new EVM({ common, stateManager: verkleStateManager })
+    const evm = new EVM({ common, stateManager: verkleStateManager, bn128: await initRustBN() })
     const vm = await VM.create({
       common,
       evm,

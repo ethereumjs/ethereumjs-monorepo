@@ -137,9 +137,15 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  constructor(opts: EVMOpts = {}) {
-    this.events = new AsyncEventEmitter()
+  private bn128: {
+    ec_pairing: (input_str: string) => string
+    ec_add: (input_str: string) => string
+    ec_mul: (input_hex: string) => string
+  }
 
+  constructor(opts: EVMOpts) {
+    this.events = new AsyncEventEmitter()
+    this.bn128 = opts.bn128 // Required to instantiate the EVM
     this._optsCached = opts
 
     this.transientStorage = new TransientStorage()
@@ -1079,6 +1085,7 @@ export class EVM implements EVMInterface {
       ...this._optsCached,
       common,
       stateManager: this.stateManager.shallowCopy(),
+      bn128: this.bn128,
     }
     ;(opts.stateManager as any).common = common
     return new EVM(opts)

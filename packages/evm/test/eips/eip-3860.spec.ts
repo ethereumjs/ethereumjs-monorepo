@@ -1,6 +1,7 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Address, concatBytes, equalsBytes, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src/index.js'
@@ -16,6 +17,7 @@ describe('EIP 3860 tests', () => {
       eips: [3860],
     })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
       stateManager: new DefaultStateManager(),
     })
@@ -57,10 +59,12 @@ describe('EIP 3860 tests', () => {
     })
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     const evm = new EVM({
+      bn128: await initRustBN(),
       common: commonWith3860,
       stateManager: new DefaultStateManager(),
     })
     const evmWithout3860 = new EVM({
+      bn128: await initRustBN(),
       common: commonWithout3860,
       stateManager: new DefaultStateManager(),
     })
@@ -142,6 +146,7 @@ describe('EIP 3860 tests', () => {
       eips: [3860],
     })
     const evm = new EVM({
+      bn128: await initRustBN(),
       common,
       stateManager: new DefaultStateManager(),
 
@@ -178,12 +183,14 @@ describe('EIP 3860 tests', () => {
     const caller = Address.fromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
     for (const code of ['F0', 'F5']) {
       const evm = new EVM({
+        bn128: await initRustBN(),
         common: commonWith3860,
         stateManager: new DefaultStateManager(),
 
         allowUnlimitedInitCodeSize: true,
       })
       const evmDisabled = new EVM({
+        bn128: await initRustBN(),
         common: commonWith3860,
         stateManager: new DefaultStateManager(),
 

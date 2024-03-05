@@ -1,4 +1,5 @@
 import { Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/evm.js'
@@ -29,6 +30,7 @@ function customPrecompileNoInput(): ExecResult {
 describe('EVM -> custom precompiles', () => {
   it('should work on precompiles without input arguments', async () => {
     const EVMOverride = new EVM({
+      bn128: await initRustBN(),
       customPrecompiles: [
         {
           address: Address.zero(),
@@ -48,6 +50,7 @@ describe('EVM -> custom precompiles', () => {
   })
   it('should override existing precompiles', async () => {
     const EVMOverride = new EVM({
+      bn128: await initRustBN(),
       customPrecompiles: [
         {
           address: shaAddress,
@@ -68,6 +71,7 @@ describe('EVM -> custom precompiles', () => {
 
   it('should delete existing precompiles', async () => {
     const EVMOverride = new EVM({
+      bn128: await initRustBN(),
       customPrecompiles: [
         {
           address: shaAddress,
@@ -86,6 +90,7 @@ describe('EVM -> custom precompiles', () => {
 
   it('should add precompiles', async () => {
     const EVMOverride = new EVM({
+      bn128: await initRustBN(),
       customPrecompiles: [
         {
           address: newPrecompile,
@@ -104,7 +109,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should not persist changes to precompiles', async () => {
-    let EVMSha = new EVM()
+    let EVMSha = new EVM({ bn128: await initRustBN() })
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -112,6 +117,7 @@ describe('EVM -> custom precompiles', () => {
       caller: sender,
     })
     const EVMOverride = new EVM({
+      bn128: await initRustBN(),
       customPrecompiles: [
         {
           address: shaAddress,
@@ -128,7 +134,7 @@ describe('EVM -> custom precompiles', () => {
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = new EVM()
+    EVMSha = new EVM({ bn128: await initRustBN() })
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -148,6 +154,7 @@ describe('EVM -> custom precompiles', () => {
   })
   it('shold copy custom precompiles', async () => {
     const evm = new EVM({
+      bn128: await initRustBN(),
       customPrecompiles: [
         {
           address: shaAddress,
