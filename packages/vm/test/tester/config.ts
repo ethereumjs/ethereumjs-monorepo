@@ -81,10 +81,6 @@ export function getRequiredForkConfigAlias(forkConfig: string) {
   if (String(forkConfig).match(/^petersburg$/i)) {
     return 'ConstantinopleFix' + remainder
   }
-  // Paris is named Merge
-  if (String(forkConfig).match(/^paris/i)) {
-    return 'Merge' + remainder
-  }
   return forkConfig
 }
 
@@ -397,7 +393,7 @@ const expectedTestsFull: {
     MuirGlacier: 12271,
     Berlin: 13214,
     London: 19449,
-    Paris: 19598,
+    Paris: 19727,
     Shanghai: 19564,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
