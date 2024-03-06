@@ -144,8 +144,9 @@ export class EVM implements EVMInterface {
     ec_mul: (input_hex: string) => string
   }
 
-  static async create(opts: EVMOpts) {
-    if (opts.bn128 === undefined) {
+  static async create(createOpts?: EVMOpts) {
+    const opts = createOpts ?? ({} as EVMOpts)
+    if (opts?.bn128 === undefined) {
       opts.bn128 = await initRustBN()
     }
     return new EVM(opts)
