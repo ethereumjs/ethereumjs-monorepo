@@ -95,7 +95,7 @@
     "ethereum-cryptography": "^2.1.3"
   },
   "devDependencies": {
-    "kzg-wasm": "^0.1.0"
+    "kzg-wasm": "^0.2.0"
   },
   "engines": {
     "node": ">=18"
