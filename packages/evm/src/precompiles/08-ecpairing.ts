@@ -28,7 +28,6 @@ export function precompile08(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  console.log(opts._EVM)
   const returnData = hexToBytes(
     (opts._EVM as EVM)['bn128'].ec_pairing(bytesToUnprefixedHex(inputData))
   )
