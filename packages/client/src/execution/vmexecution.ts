@@ -760,11 +760,15 @@ export class VMExecution extends Execution {
             .catch(async (error) => {
               if (errorBlock !== undefined) {
                 // set the chainStatus to invalid
-                this.chainStatus = {
-                  height: errorBlock.header.number,
-                  root: errorBlock.header.stateRoot,
-                  hash: errorBlock.hash(),
-                  status: ExecStatus.INVALID,
+                if (this.config.ignoreStatelessInvalidExecs !== false) {
+                  this.chainStatus = {
+                    height: errorBlock.header.number,
+                    root: errorBlock.header.stateRoot,
+                    hash: errorBlock.hash(),
+                    status: ExecStatus.INVALID,
+                  }
+                } else if (typeof this.config.ignoreStatelessInvalidExecs === 'string') {
+                  // save all relevant data that can be used to execute in a test
                 }
 
                 const { number } = errorBlock.header

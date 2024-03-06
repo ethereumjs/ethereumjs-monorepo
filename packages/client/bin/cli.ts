@@ -431,6 +431,15 @@ const args: ClientOpts = yargs
       'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
     boolean: true,
   })
+  .option('ignoreStatelessInvalidExecs', {
+    describe:
+      'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution faliures may stall the CL client. Useful for debugging the verkle. If provided a valid filename as arg, the invalid blocks will be stored there which one may use later for debugging',
+    coerce: (arg: string | boolean) =>
+      typeof arg === 'string' && arg !== 'true' && arg !== 'false'
+        ? path.resolve(arg)
+        : arg === true || arg === 'true',
+    hidden: true,
+  })
   .option('useJsCrypto', {
     describe: 'Use pure Javascript cryptography functions',
     boolean: true,
@@ -1018,6 +1027,7 @@ async function run() {
   const multiaddrs = args.multiaddrs !== undefined ? parseMultiaddrs(args.multiaddrs) : undefined
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
+
   const config = new Config({
     accounts,
     bootnodes,
@@ -1056,9 +1066,12 @@ async function run() {
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
-    statelessVerkle: args.statelessVerkle,
+    statelessVerkle: args.ignoreStatelessInvalidExecs !== false ? true : args.statelessVerkle,
     startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
-    engineNewpayloadMaxExecute: args.skipEngineExec === true ? 0 : args.engineNewpayloadMaxExecute,
+    engineNewpayloadMaxExecute:
+      args.ignoreStatelessInvalidExecs !== false || args.skipEngineExec === true
+        ? 0
+        : args.engineNewpayloadMaxExecute,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
