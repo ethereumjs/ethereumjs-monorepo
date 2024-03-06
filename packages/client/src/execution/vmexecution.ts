@@ -39,6 +39,7 @@ import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 export enum ExecStatus {
   VALID = 'VALID',
   INVALID = 'INVALID',
+  IGNORE_INVALID = 'IGNORE_INVALID',
 }
 
 type ChainStatus = {
@@ -572,6 +573,16 @@ export class VMExecution extends Execution {
     })
   }
 
+  async jumpVmHead(jumpToHash: Uint8Array, jumpToNumber?: bigint): Promise<void> {
+    return this.runWithLock<void>(async () => {
+      // check if the block is canonical in chain
+      this.config.logger.warn(
+        `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`
+      )
+      await this.vm.blockchain.setIteratorHead('vm', jumpToHash)
+    })
+  }
+
   /**
    * Runs the VM execution
    * @param loop Whether to continue iterating until vm head equals chain head (default: true)
@@ -759,18 +770,6 @@ export class VMExecution extends Execution {
             // Ensure to catch and not throw as this would lead to unCaughtException with process exit
             .catch(async (error) => {
               if (errorBlock !== undefined) {
-                // set the chainStatus to invalid
-                if (this.config.ignoreStatelessInvalidExecs !== false) {
-                  this.chainStatus = {
-                    height: errorBlock.header.number,
-                    root: errorBlock.header.stateRoot,
-                    hash: errorBlock.hash(),
-                    status: ExecStatus.INVALID,
-                  }
-                } else if (typeof this.config.ignoreStatelessInvalidExecs === 'string') {
-                  // save all relevant data that can be used to execute in a test
-                }
-
                 const { number } = errorBlock.header
                 const hash = short(errorBlock.hash())
                 const errorMsg = `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed`
@@ -817,7 +816,22 @@ export class VMExecution extends Execution {
                     )
                   }
                 } else {
-                  this.config.logger.warn(`${errorMsg}:\n${error}`)
+                  this.chainStatus = {
+                    height: errorBlock.header.number,
+                    root: errorBlock.header.stateRoot,
+                    hash: errorBlock.hash(),
+                    status:
+                      this.config.ignoreStatelessInvalidExecs !== false
+                        ? ExecStatus.IGNORE_INVALID
+                        : ExecStatus.INVALID,
+                  }
+                  if (typeof this.config.ignoreStatelessInvalidExecs === 'string') {
+                    this.config.logger.warn(
+                      `${errorMsg}:\n${error} payload saved to=${this.config.ignoreStatelessInvalidExecs}`
+                    )
+                  } else {
+                    this.config.logger.warn(`${errorMsg}:\n${error}`)
+                  }
                 }
 
                 if (this.config.debugCode) {

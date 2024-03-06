@@ -1072,6 +1072,7 @@ async function run() {
       args.ignoreStatelessInvalidExecs !== false || args.skipEngineExec === true
         ? 0
         : args.engineNewpayloadMaxExecute,
+    ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
