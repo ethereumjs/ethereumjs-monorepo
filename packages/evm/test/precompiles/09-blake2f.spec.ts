@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { initRustBN } from 'rustbn-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -86,8 +85,7 @@ describe('Precompiles: BLAKE2F', () => {
     // Test references: https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/testdata/precompiles/blake2F.json
     //                  https://github.com/ethereum/go-ethereum/blob/e206d3f8975bd98cc86d14055dca40f996bacc60/core/vm/contracts_test.go#L73
 
-    evm = new EVM({
-      bn128: await initRustBN(),
+    evm = await EVM.create({
       common,
     })
     addressStr = '0000000000000000000000000000000000000009'

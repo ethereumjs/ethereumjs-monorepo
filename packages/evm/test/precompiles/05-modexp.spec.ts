@@ -1,6 +1,5 @@
 import { Chain, Common } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { initRustBN } from 'rustbn-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -17,8 +16,7 @@ describe('Precompiles: MODEXP', () => {
   let MODEXP: PrecompileFunc
   beforeAll(async () => {
     common = new Common({ chain: Chain.Mainnet })
-    evm = new EVM({
-      bn128: await initRustBN(),
+    evm = await EVM.create({
       common,
     })
     addressStr = '0000000000000000000000000000000000000005'

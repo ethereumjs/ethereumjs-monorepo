@@ -8,7 +8,6 @@ import {
   unpadBytes,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
-import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -32,8 +31,7 @@ describe('Precompiles: point evaluation', () => {
       customCrypto: { kzg },
     })
 
-    const evm = new EVM({
-      bn128: await initRustBN(),
+    const evm = await EVM.create({
       common,
     })
     const addressStr = '000000000000000000000000000000000000000a'

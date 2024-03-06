@@ -78,7 +78,7 @@ export class VM {
    * @param opts VM engine constructor options
    */
   static async create(opts: VMOpts = {}): Promise<VM> {
-    opts.bn128 = await initRustBN()
+    if (opts.bn128 === undefined) opts.bn128 = await initRustBN()
     const vm = new this(opts)
 
     const genesisStateOpts =
@@ -263,9 +263,8 @@ export class VM {
       common,
       blockchain,
       stateManager,
-      bn128: (this.evm as EVM)['bn128'],
     }
-    const evmCopy = new EVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
+    const evmCopy = await EVM.create(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
       stateManager,
       blockchain: this.blockchain,

@@ -175,7 +175,7 @@ export interface EVMOpts {
   /**
    * The BN128 curve package (`rustbn-wasm`)
    */
-  bn128: {
+  bn128?: {
     ec_pairing: (input_str: string) => string
     ec_add: (input_str: string) => string
     ec_mul: (input_hex: string) => string

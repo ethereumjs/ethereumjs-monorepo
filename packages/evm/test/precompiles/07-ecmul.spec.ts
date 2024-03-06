@@ -1,5 +1,4 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -7,8 +6,7 @@ import { EVM, getActivePrecompiles } from '../../src/index.js'
 describe('Precompiles: ECMUL', () => {
   it('ECMUL', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = new EVM({
-      bn128: await initRustBN(),
+    const evm = await EVM.create({
       common,
     })
     const ECMUL = getActivePrecompiles(common).get('0000000000000000000000000000000000000007')!

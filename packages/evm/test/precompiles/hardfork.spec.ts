@@ -1,6 +1,5 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
-import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM, getActivePrecompiles } from '../../src/index.js'
@@ -21,8 +20,7 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    let evm = new EVM({
-      bn128: await initRustBN(),
+    let evm = await EVM.create({
       common: commonByzantium,
     })
     let result = await evm.runCall({
@@ -43,8 +41,7 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING available in petersburg')
     }
 
-    evm = new EVM({
-      bn128: await initRustBN(),
+    evm = await EVM.create({
       common: commonPetersburg,
     })
     result = await evm.runCall({
@@ -66,8 +63,7 @@ describe('Precompiles: hardfork availability', () => {
       assert.ok(true, 'ECPAIRING not available in homestead')
     }
 
-    evm = new EVM({
-      bn128: await initRustBN(),
+    evm = await EVM.create({
       common: commonHomestead,
     })
 

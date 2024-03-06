@@ -7,7 +7,6 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { initRustBN } from 'rustbn-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../src/evm.js'
@@ -24,7 +23,7 @@ describe('custom crypto', () => {
     }
     const msg = Uint8Array.from([0, 1, 2, 3])
     const common = new Common({ chain: Chain.Mainnet, customCrypto })
-    const evm = new EVM({ bn128: await initRustBN(), common })
+    const evm = await EVM.create({ common })
     const addressStr = '0000000000000000000000000000000000000002'
     const SHA256 = getActivePrecompiles(common).get(addressStr)!
     const result = await SHA256({
@@ -47,7 +46,7 @@ describe('custom crypto', () => {
     }
     const msg = concatBytes(randomBytes(32), setLengthLeft(intToBytes(27), 32), randomBytes(32))
     const common = new Common({ chain: Chain.Mainnet, customCrypto })
-    const evm = new EVM({ bn128: await initRustBN(), common })
+    const evm = await EVM.create({ common })
     const addressStr = '0000000000000000000000000000000000000001'
     const ECRECOVER = getActivePrecompiles(common).get(addressStr)!
     const result = await ECRECOVER({
