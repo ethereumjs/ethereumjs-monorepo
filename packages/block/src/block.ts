@@ -800,6 +800,35 @@ export class Block {
     }
   }
 
+  toExecutionPayload(): ExecutionPayload {
+    const blockJson = this.toJSON()
+    const header = blockJson.header!
+    const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+    const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+
+    const executionPayload: ExecutionPayload = {
+      blockNumber: header.number!,
+      parentHash: header.parentHash!,
+      feeRecipient: header.coinbase!,
+      stateRoot: header.stateRoot!,
+      receiptsRoot: header.receiptTrie!,
+      logsBloom: header.logsBloom!,
+      gasLimit: header.gasLimit!,
+      gasUsed: header.gasUsed!,
+      timestamp: header.timestamp!,
+      extraData: header.extraData!,
+      baseFeePerGas: header.baseFeePerGas!,
+      blobGasUsed: header.blobGasUsed,
+      excessBlobGas: header.excessBlobGas,
+      blockHash: bytesToHex(this.hash()),
+      prevRandao: header.mixHash!,
+      transactions,
+      ...withdrawalsArr,
+    }
+
+    return executionPayload
+  }
+
   /**
    * Return a compact error string representation of the object
    */

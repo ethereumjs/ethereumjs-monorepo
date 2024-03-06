@@ -22,6 +22,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
+import { writeFileSync } from 'fs'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -825,7 +826,22 @@ export class VMExecution extends Execution {
                         ? ExecStatus.IGNORE_INVALID
                         : ExecStatus.INVALID,
                   }
-                  if (typeof this.config.ignoreStatelessInvalidExecs === 'string') {
+
+                  // headBlock should be parent of errorBlock and not undefined
+                  if (
+                    typeof this.config.ignoreStatelessInvalidExecs === 'string' &&
+                    headBlock !== undefined
+                  ) {
+                    // save the data in spec test compatible manner
+                    const blockNumStr = `${errorBlock.header.number}`
+                    const file = `${this.config.ignoreStatelessInvalidExecs}/${blockNumStr}.json`
+                    const jsonDump = {
+                      [blockNumStr]: {
+                        parent: headBlock.toExecutionPayload(),
+                        execute: errorBlock.toExecutionPayload(),
+                      },
+                    }
+                    writeFileSync(file, JSON.stringify(jsonDump, null, 2))
                     this.config.logger.warn(
                       `${errorMsg}:\n${error} payload saved to=${this.config.ignoreStatelessInvalidExecs}`
                     )
