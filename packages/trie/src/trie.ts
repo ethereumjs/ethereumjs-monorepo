@@ -687,6 +687,13 @@ export class Trie {
     const startingNode = partialPath.stack[partialPath.stack.length - 1]
     const start = startingNode !== undefined ? this.hash(startingNode?.serialize()) : this.root()
     try {
+      this.DEBUG &&
+        this.debug(
+          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
+            start as Uint8Array
+          )}`,
+          ['FIND_PATH']
+        )
       await this.walkTrie(start, onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
