@@ -684,10 +684,10 @@ export class Trie {
         walkController.allChildren(node, keyProgress)
       }
     }
-
+    const startingNode = partialPath.stack[partialPath.stack.length - 1]
+    const start = startingNode !== undefined ? this.hash(startingNode?.serialize()) : this.root()
     try {
-      this.DEBUG && this.debug(`Walking trie from root: ${bytesToHex(this.root())}`, ['FIND_PATH'])
-      await this.walkTrie(this.root(), onFound)
+      await this.walkTrie(start, onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
         throw error
