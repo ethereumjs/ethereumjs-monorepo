@@ -634,6 +634,19 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.rewardPercentiles([0], 0))) // Input not array
   })
 
+  it('integer', () => {
+    //valid
+    assert.ok(validatorResult(validators.integer([1], 0)))
+    assert.ok(validatorResult(validators.integer([-1], 0)))
+    assert.ok(validatorResult(validators.integer([0], 0)))
+
+    //invalid
+    assert.notOk(validatorResult(validators.integer(['a'], 0)))
+    assert.notOk(validatorResult(validators.integer([1.234], 0)))
+    assert.notOk(validatorResult(validators.integer([undefined], 0)))
+    assert.notOk(validatorResult(validators.integer([null], 0)))
+  })
+
   it('values', () => {
     // valid
     assert.ok(validatorResult(validators.values(['VALID', 'INVALID'])(['VALID'], 0)))

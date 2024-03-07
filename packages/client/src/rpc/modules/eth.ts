@@ -1277,7 +1277,7 @@ export class Eth {
       baseFeePerBlobGas: baseFeePerBlobGas.map(bigIntToHex),
       blobGasUsedRatio,
       oldestBlock: bigIntToHex(oldestBlockNumber),
-      reward: rewards.map((r) => r.map((n) => bigIntToHex(n))),
+      reward: rewards.map((r) => r.map(bigIntToHex)),
     }
   }
 }

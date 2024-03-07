@@ -308,12 +308,13 @@ export const validators = {
    * @param params parameters of method
    * @param index index of parameter
    */
+
   get integer() {
     return (params: any[], index: number) => {
-      if (typeof params[index] !== 'number') {
+      if (!Number.isInteger(params[index])) {
         return {
           code: INVALID_PARAMS,
-          message: `invalid argument ${index}: argument is not a number`,
+          message: `invalid argument ${index}: argument is not an integer`,
         }
       }
     }
