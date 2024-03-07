@@ -1,4 +1,3 @@
-import { RLP } from '@ethereumjs/rlp'
 import {
   Account,
   Address,
@@ -509,8 +508,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    */
   async putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (!this._storageCacheSettings.deactivate) {
-      const encodedValue = RLP.encode(value)
-      this._storageCache!.put(address, key, encodedValue)
+      this._storageCache!.put(address, key, value)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
       const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
