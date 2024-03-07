@@ -35,7 +35,7 @@ describe(method, async () => {
   it('call with valid arguments', async () => {
     const { rpc } = await setUp()
 
-    const mockBlockHash = '0x572856aae9a653012a7df7aeb56bfb7fe77f5bcb4b69fd971c04e989f6ccf9b1'
+    const mockBlockHash = '0x0d52ca94a881e32dfe40db79623745b29883f4fe2ae23c14d01889bce4c069c0'
     const mockTxHash = '0x13548b649129ad9beb57467a819d24b846fa0aa02a955f6e974541e1ebb8b02c'
     const mockTxIndex = '0x1'
 

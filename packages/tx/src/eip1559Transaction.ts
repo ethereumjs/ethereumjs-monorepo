@@ -207,6 +207,14 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
   }
 
   /**
+   * Returns the minimum of calculated priority fee (from maxFeePerGas and baseFee) and maxPriorityFeePerGas
+   * @param baseFee Base fee retrieved from block
+   */
+  getEffectivePriorityFee(baseFee: bigint): bigint {
+    return EIP1559.getEffectivePriorityFee(this, baseFee)
+  }
+
+  /**
    * The up front amount that an account must have for this transaction to be valid
    * @param baseFee The base fee of the block (will be set to 0 if not provided)
    */

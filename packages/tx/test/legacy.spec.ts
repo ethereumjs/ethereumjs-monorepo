@@ -213,6 +213,17 @@ describe('[Transaction]', () => {
     assert.equal(tx.getDataFee(), BigInt(240))
   })
 
+  it('getEffectivePriorityFee() -> should return correct values', () => {
+    const tx = LegacyTransaction.fromTxData({
+      gasPrice: BigInt(100),
+    })
+
+    assert.equal(tx.getEffectivePriorityFee(), BigInt(100))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(20)), BigInt(80))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(100)), BigInt(0))
+    assert.throws(() => tx.getEffectivePriorityFee(BigInt(101)))
+  })
+
   it('getUpfrontCost() -> should return upfront cost', () => {
     const tx = LegacyTransaction.fromTxData({
       gasPrice: 1000,
