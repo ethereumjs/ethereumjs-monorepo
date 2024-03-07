@@ -609,6 +609,10 @@ export class Trie {
     const keyLen = targetKey.length
     const stack: TrieNode[] = Array.from({ length: keyLen })
     let progress = 0
+    for (let i = 0; i < partialPath.stack.length - 1; i++) {
+      stack[i] = partialPath.stack[i]
+      progress += stack[i] instanceof BranchNode ? 1 : (<ExtensionNode>stack[i]).keyLength()
+    }
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
