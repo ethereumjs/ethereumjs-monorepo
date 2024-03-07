@@ -85,6 +85,23 @@ describe('[FeeMarketEIP1559Transaction]', () => {
     )
   })
 
+  it('getEffectivePriorityFee()', () => {
+    const tx = FeeMarketEIP1559Transaction.fromTxData(
+      {
+        maxFeePerGas: 10,
+        maxPriorityFeePerGas: 8,
+      },
+      { common }
+    )
+    assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
+    assert.equal(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
+    assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
+  })
+
   it('sign()', () => {
     for (let index = 0; index < testdata.length; index++) {
       const data = testdata[index]
