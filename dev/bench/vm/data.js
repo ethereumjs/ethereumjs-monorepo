@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709747775704,
+  "lastUpdate": 1709837456640,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5be55b2857366d7d5ed946023897d499725d3cc1",
-          "message": "Trie proof API refactor (#2949)\n\n* trie: fromProof as static method\r\n\r\n* trie: static verify proof method\r\n\r\n* trie: change old fromProof to 'updateFromProof'\r\n\r\n* update proof use in range.ts\r\n\r\n* update proof api use in statemanager\r\n\r\n* trie: update tests\r\n\r\n* trie: update tests\r\n\r\n* Revert breaking changes\r\n\r\n* change names back\r\n\r\n* Remove commented out imports\r\n\r\n* Remove unnecessary whitespace changes\r\n\r\n* Update function docs to reflect static counterparts\r\n\r\n* Make static version of verifyRangeProof\r\n\r\n* Simplify function names and group static functions\r\n\r\n* Put back necessary import\r\n\r\n* Fix linting issue\r\n\r\n* Remove proofTrie pattern\r\n\r\n* Fix customCrypto accessing error\r\n\r\n* Return proof as any to ignore @typescript-eslint/return-await error\r\n\r\n* Remove unused import\r\n\r\n* Make static fromProof implementation less redundant\r\n\r\n* Persist trie root in static fromProof\r\n\r\n* Add docs for createFromProof\r\n\r\n* Revert \"Remove proofTrie pattern\"\r\n\r\nThis reverts commit 480191201948211f2007a8beed1fd0a191a799c5.\r\n\r\n* Add leveldb import to snapprotocol tests\r\n\r\n* trie: update example\r\n\r\n---------\r\n\r\nCo-authored-by: Amir <indigophi@protonmail.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2024-01-30T09:00:14+01:00",
-          "tree_id": "90d5b37dad89cc4192507b6458ea65335f475cf4",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5be55b2857366d7d5ed946023897d499725d3cc1"
-        },
-        "date": 1706601781238,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42506,
-            "range": "±2.07%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40357,
-            "range": "±3.31%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40425,
-            "range": "±1.87%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39328,
-            "range": "±2.12%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38399,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±4.80%",
             "unit": "ops/sec",
             "extra": "83 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a35bf07bc8e4288a3f605977fb176f487ff6632e",
+          "message": "Implement eth_feeHistory (#3295)\n\n* implement effective priority fee retrieval\r\n\r\nimplement fee history rpc method\r\n\r\nrefactor and adjust return values\r\n\r\nadd integer validation\r\n\r\nadd test for maximum base fee increase\r\n\r\nfix backward compatibility\r\n\r\nadd remaining tests\r\n\r\nuse calcNextBaseFee from parent block header\r\n\r\nuse bigint array instead of number array for the optional param\r\n\r\nremove redundant bigIntMax\r\n\r\nretrieve initial base fee from common\r\n\r\n* client: fix build\r\n\r\n* client: partial fix tests\r\n\r\n* client: edit feeHistory tests\r\n\r\n* client/tx address some review\r\n\r\n* tx: make getEffectivePriorityFee redunt\r\n\r\n* tx: add getEffectivePriorityFee tests\r\n\r\n* vm: add todo\r\n\r\n* client: eth_feeHistory fixes + test additions\r\n\r\n* client/rpc: add rewardPrcentile check\r\n\r\n* client: add validation tests for the ratio\r\n\r\n* client: eth_feeHistory fix rewards?\r\n\r\n* Add partial tests for reward percentiles\r\n\r\n* client: feeHistory sort txs by prioFee\r\n\r\n* add more tests\r\n\r\n* client: add extra feeHistory rewards tests\r\n\r\n* vm: use getEffectivePriorityFee\r\n\r\n* client: update mock blockhash\r\n\r\n* add blob fee to feeHistory\r\n\r\n* block: add calcNextBlobGasPrice\r\n\r\n* client: fix feeHistory implementation and add test output\r\n\r\n* client: lint\r\n\r\n* separate validators for rewardPercentile and array\r\n\r\n* client: test rewardPercentile validator\r\n\r\n* Apply comments and add tests\r\n\r\n---------\r\n\r\nCo-authored-by: Marko <marko.ivankovic650@gmail.com>\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: ScottyPoi <scott.simpson@ethereum.org>\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>",
+          "timestamp": "2024-03-07T13:48:01-05:00",
+          "tree_id": "d9aaa60ec353cfc13f7c4b1f0ce459b3b7cd4436",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/a35bf07bc8e4288a3f605977fb176f487ff6632e"
+        },
+        "date": 1709837455749,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42115,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39565,
+            "range": "±2.84%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40875,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37024,
+            "range": "±5.43%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38911,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
