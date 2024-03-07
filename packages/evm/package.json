@@ -60,7 +60,7 @@
     "@types/debug": "^4.1.9",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.3",
-    "rustbn-wasm": "github:ethereumjs/rustbn-wasm#4dc92d4556b64bfd9775fe01e9865872f70995c7"
+    "rustbn-wasm": "github:ethereumjs/rustbn-wasm#cd29801"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
