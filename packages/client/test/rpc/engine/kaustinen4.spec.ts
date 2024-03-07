@@ -34,16 +34,19 @@ async function fetchExecutionPayload(
 
 async function runBlock(
   { chain, rpc, common }: { chain: Chain; rpc: HttpClient; common: Common },
-  { execute, parent }: { execute: any; parent: any }
+  { execute, parent }: { execute: any; parent: any },
+  isBeaconData: boolean
 ) {
   const blockCache = chain.blockCache
 
-  const parentPayload = executionPayloadFromBeaconPayload(parent as any)
+  const parentPayload =
+    isBeaconData === true ? executionPayloadFromBeaconPayload(parent as any) : parent
   const parentBlock = await Block.fromExecutionPayload(parentPayload, { common })
   blockCache.remoteBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
   blockCache.executedBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
 
-  const executePayload = executionPayloadFromBeaconPayload(execute as any)
+  const executePayload =
+    isBeaconData === true ? executionPayloadFromBeaconPayload(execute as any) : execute
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
   assert.equal(res.result.status, 'VALID', 'valid status should be received')
 }
@@ -71,16 +74,19 @@ describe(`valid verkle network setup`, async () => {
   for (const testCase of savedTestCases) {
     it(`run saved block ${testCase}`, async () => {
       let testData
+      let isBeaconData
       if (process.env.SAVED_DATA_DIR !== undefined) {
         const fileName = `${process.env.SAVED_DATA_DIR}/${testCase}.json`
-        testData = JSON.parse(readFileSync(fileName))
+        testData = JSON.parse(readFileSync(fileName))[testCase]
+        isBeaconData = false
       } else {
         testData = blocks[testCase]
+        isBeaconData = true
       }
       if (testData === undefined) {
         throw Error('unavailable data')
       }
-      await runBlock({ common, chain, rpc }, blocks[testCase])
+      await runBlock({ common, chain, rpc }, testData, isBeaconData)
     })
   }
 
@@ -97,9 +103,9 @@ describe(`valid verkle network setup`, async () => {
     const endSlot = parseInt(rangeSplit[1] ?? rangeSplit[0])
     let parent = await fetchExecutionPayload(process.env.PEER_BEACON_URL, startSlot - 1)
     for (let i = startSlot; i <= endSlot; i++) {
-      const execute = await fetchExecutionPayload(process.env.PEER_BEACON_URL, startSlot)
+      const execute = await fetchExecutionPayload(process.env.PEER_BEACON_URL, i)
       it(`run fetched block slot: ${i} number: ${execute.block_number}`, async () => {
-        await runBlock({ common, chain, rpc }, { parent, execute })
+        await runBlock({ common, chain, rpc }, { parent, execute }, true)
         parent = execute
       })
     }
