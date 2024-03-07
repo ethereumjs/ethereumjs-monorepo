@@ -1,4 +1,5 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
+import { readFileSync } from 'fs'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -69,7 +70,13 @@ describe(`valid verkle network setup`, async () => {
 
   for (const testCase of savedTestCases) {
     it(`run saved block ${testCase}`, async () => {
-      const testData = blocks[testCase]
+      let testData
+      if (process.env.SAVED_DATA_DIR !== undefined) {
+        const fileName = `${process.env.SAVED_DATA_DIR}/${testCase}.json`
+        testData = JSON.parse(readFileSync(fileName))
+      } else {
+        testData = blocks[testCase]
+      }
       if (testData === undefined) {
         throw Error('unavailable data')
       }
