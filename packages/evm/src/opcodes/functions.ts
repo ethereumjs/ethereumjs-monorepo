@@ -21,6 +21,7 @@ import {
   SECP256K1_ORDER_DIV_2,
   TWO_POW256,
   bigIntToBytes,
+  bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
@@ -593,19 +594,35 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x40: BLOCKHASH
   [
     0x40,
-    async function (runState) {
+    async function (runState, common) {
       const number = runState.stack.pop()
 
-      const diff = runState.interpreter.getBlockNumber() - number
-      // block lookups must be within the past 256 blocks
-      if (diff > BIGINT_256 || diff <= BIGINT_0) {
-        runState.stack.push(BIGINT_0)
-        return
+      if (common.isActivatedEIP(2935)) {
+        if (number >= runState.interpreter.getBlockNumber()) {
+          runState.stack.push(BIGINT_0)
+          return
+        }
+
+        const historyAddress = Address.fromString(
+          bigIntToHex(common.param('vm', 'historyStorageAddress'))
+        )
+        const key = setLengthLeft(bigIntToBytes(number), 32)
+
+        const storage = await runState.stateManager.getContractStorage(historyAddress, key)
+
+        runState.stack.push(bytesToBigInt(storage))
+      } else {
+        const diff = runState.interpreter.getBlockNumber() - number
+        // block lookups must be within the past 256 blocks
+        if (diff > BIGINT_256 || diff <= BIGINT_0) {
+          runState.stack.push(BIGINT_0)
+          return
+        }
+
+        const block = await runState.blockchain.getBlock(Number(number))
+
+        runState.stack.push(bytesToBigInt(block.hash()))
       }
-
-      const block = await runState.blockchain.getBlock(Number(number))
-
-      runState.stack.push(bytesToBigInt(block.hash()))
     },
   ],
   // 0x41: COINBASE
