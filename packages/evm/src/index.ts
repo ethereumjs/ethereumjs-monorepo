@@ -11,8 +11,10 @@ import {
   EVMRunCodeOpts,
   ExecResult,
   Log,
+  bn128,
 } from './types.js'
 export {
+  bn128,
   EOF,
   EVM,
   EvmError,
