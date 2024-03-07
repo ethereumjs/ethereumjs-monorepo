@@ -253,7 +253,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   ) {
     this._blockNum = blockNum
     if (executionWitness === null || executionWitness === undefined) {
-      throw Error(`Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`)
+      const errorMsg = `Invalid executionWitness=${executionWitness} for initVerkleExecutionWitness`
+      debug(errorMsg)
+      throw Error(errorMsg)
     }
 
     this._executionWitness = executionWitness
@@ -422,7 +424,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
       const codeChunk = this._state[chunkKey]
       if (codeChunk === null) {
-        throw Error(`Invalid access to a non existent code chunk with chunkKey=${chunkKey}`)
+        const errorMsg = `Invalid access to a non existent code chunk with chunkKey=${chunkKey}`
+        debug(errorMsg)
+        throw Error(errorMsg)
       }
 
       const codeOffset = chunkId * 31
@@ -451,7 +455,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
             ? Account.fromRlpSerializedPartialAccount(elem.accountRLP)
             : undefined
         if (account === undefined) {
-          throw Error(`account=${account} in cache`)
+          const errorMsg = `account=${account} in cache`
+          debug(errorMsg)
+          throw Error(errorMsg)
         }
         return account.codeSize
       }
@@ -460,7 +466,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // load the account basic fields and codeSize should be in it
     const account = await this.getAccount(address)
     if (account === undefined) {
-      throw Error(`address=${address} doesn't exist in pre-state`)
+      const errorMsg = `address=${address} doesn't exist in pre-state`
+      debug(errorMsg)
+      throw Error(errorMsg)
     }
     return account.codeSize
   }
@@ -556,9 +564,11 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         typeof nonceRaw === 'string' ||
         typeof codeHashRaw === 'string'
       ) {
-        throw Error(
-          `Invalid witness for a non existing address=${address} stem=${bytesToHex(stem)}`
-        )
+        const errorMsg = `Invalid witness for a non existing address=${address} stem=${bytesToHex(
+          stem
+        )}`
+        debug(errorMsg)
+        throw Error(errorMsg)
       } else {
         return undefined
       }
@@ -566,9 +576,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     // check if codehash is correct 32 bytes prefixed hex string
     if (codeHashRaw !== undefined && codeHashRaw !== null && codeHashRaw.length !== 66) {
-      throw Error(
-        `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${codeHashKey}`
-      )
+      const errorMsg = `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${codeHashKey}`
+      debug(errorMsg)
+      throw Error(errorMsg)
     }
 
     if (
@@ -578,7 +588,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       codeHashRaw === undefined &&
       codeSizeRaw === undefined
     ) {
-      throw Error(`No witness bundled for address=${address} stem=${bytesToHex(stem)}`)
+      const errorMsg = `No witness bundled for address=${address} stem=${bytesToHex(stem)}`
+      debug(errorMsg)
+      throw Error(errorMsg)
     }
 
     const account = Account.fromPartialAccountData({
@@ -831,7 +843,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
           const account = Account.fromRlpSerializedPartialAccount(encodedAccount)
           if (account.isContract()) {
-            throw Error(`Code cache not found for address=${address.toString()}`)
+            const errorMsg = `Code cache not found for address=${address.toString()}`
+            debug(errorMsg)
+            throw Error(errorMsg)
           } else {
             return null
           }
