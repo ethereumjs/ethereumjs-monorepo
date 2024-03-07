@@ -36,3 +36,35 @@ describe('TRIE > findPath', async () => {
     }
   }
 })
+describe('TRIE (secure) > findPath', async () => {
+  const keys = Array.from({ length: 1000 }, () => randomBytes(20))
+  const trie = new Trie({ useKeyHashing: true })
+  for (const [i, k] of keys.entries()) {
+    await trie.put(k, Uint8Array.from([i, i]))
+  }
+  const rootNode = await trie.lookupNode(trie.root())
+  for (const [idx, k] of keys.slice(0, 10).entries()) {
+    const val = await trie.get(k)
+    it('should find value for key', async () => {
+      assert.deepEqual(val, Uint8Array.from([idx, idx]))
+    })
+    const path = await trie.findPath(trie['hash'](k))
+    it('should find path for key', async () => {
+      assert.isNotNull(path.node)
+      assert.deepEqual(path.stack[0], rootNode)
+      assert.deepEqual(path.node?.value(), Uint8Array.from([idx, idx]))
+    })
+    for (let i = 2; i <= path.stack.length - 1; i++) {
+      const pathFromPartial = await trie.findPath(trie['hash'](k), false, {
+        stack: path.stack.slice(0, i),
+      })
+      it(`should find path for key from partial stack (${i}/${path.stack.length})`, async () => {
+        assert.deepEqual(path, pathFromPartial)
+        assert.isNotNull(pathFromPartial.node)
+        assert.deepEqual(pathFromPartial.stack[0], rootNode)
+        assert.deepEqual(pathFromPartial.node?.value(), Uint8Array.from([idx, idx]))
+        assert.equal(path.stack.length, pathFromPartial.stack.length)
+      })
+    }
+  }
+})
