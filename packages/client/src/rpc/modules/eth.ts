@@ -445,7 +445,7 @@ export class Eth {
       [
         [validators.either(validators.hex, validators.integer)],
         [validators.either(validators.hex, validators.blockOption)],
-        [validators.rewardPercentile],
+        [validators.rewardPercentiles],
       ]
     )
   }

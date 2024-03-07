@@ -481,9 +481,46 @@ export const validators = {
   },
 
   /**
-   * Verification of the rewardsPercentile
+   * Verification of rewardPercentile value
+   *
+   * description: Floating point value between 0 and 100.
+   * type: number
+   *
    */
   get rewardPercentile() {
+    return (params: any[], i: number) => {
+      const ratio = params[i]
+      if (typeof ratio !== 'number') {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is not a number`,
+        }
+      }
+      if (ratio < 0) {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is lower than 0`,
+        }
+      }
+      if (ratio > 100) {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is higher than 100`,
+        }
+      }
+      return ratio
+    }
+  },
+
+  /**
+   * Verification of rewardPercentiles array
+   *
+   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the coresponding effective tip for the percentile will be determined, accounting for gas consumed.
+   *  type: array
+   *    items: rewardPercentile value
+   *
+   */
+  get rewardPercentiles() {
     return (params: any[], index: number) => {
       const field = params[index]
       if (!Array.isArray(field)) {
@@ -494,23 +531,11 @@ export const validators = {
       }
       let low = -1
       for (let i = 0; i < field.length; i++) {
-        const ratio = field[i]
-        if (typeof ratio !== 'number') {
+        const ratio = this.rewardPercentile(field, i)
+        if (typeof ratio === 'object') {
           return {
             code: INVALID_PARAMS,
-            message: `invalid argument ${index}: entry at ${i} is not a number`,
-          }
-        }
-        if (ratio < 0) {
-          return {
-            code: INVALID_PARAMS,
-            message: `invalid argument ${index}: entry at ${i} is lower than 0`,
-          }
-        }
-        if (ratio > 100) {
-          return {
-            code: INVALID_PARAMS,
-            message: `invalid argument ${index}: entry at ${i} is higher than 100`,
+            message: `invalid argument ${index}: ${ratio.message}`,
           }
         }
         if (ratio <= low) {
