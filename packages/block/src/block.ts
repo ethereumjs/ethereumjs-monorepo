@@ -824,6 +824,8 @@ export class Block {
       prevRandao: header.mixHash!,
       transactions,
       ...withdrawalsArr,
+      parentBeaconBlockRoot: header.parentBeaconBlockRoot,
+      executionWitness: this.executionWitness,
     }
 
     return executionPayload
