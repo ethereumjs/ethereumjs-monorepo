@@ -13,7 +13,7 @@ import {
   short,
   toBytes,
 } from '@ethereumjs/util'
-import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
+import { getKey, getStem, setStemsLookahead, verifyUpdate } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { equalsBytes } from 'ethereum-cryptography/utils'
@@ -257,6 +257,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       throw Error(errorMsg)
     }
 
+    // allow getStem to peek into provided stems to see if modified stem is needed
+    setStemsLookahead(executionWitness.stateDiff.map((sDiff) => sDiff.stem))
     this._executionWitness = executionWitness
     this.accessWitness = accessWitness ?? new AccessWitness()
 
