@@ -315,7 +315,7 @@ describe('blockchain', () =>
     const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
-    const evm = new EVM({ blockchain, stateManager: state })
+    const evm = await EVM.create({ blockchain, stateManager: state })
     // Bytecode for returning the blockhash of the block previous to `blockTag`
     const code = '0x600143034060005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))

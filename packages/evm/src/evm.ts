@@ -17,6 +17,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { initRustBN } from 'rustbn-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
@@ -137,7 +138,24 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  constructor(opts: EVMOpts = {}) {
+  private bn128: {
+    ec_pairing: (input_str: string) => string
+    ec_add: (input_str: string) => string
+    ec_mul: (input_hex: string) => string
+  }
+
+  static async create(createOpts?: EVMOpts) {
+    const opts = createOpts ?? ({} as EVMOpts)
+    if (opts?.bn128 === undefined) {
+      opts.bn128 = await initRustBN()
+    }
+    return new EVM(opts)
+  }
+  constructor(opts: EVMOpts) {
+    if (opts.bn128 === undefined) {
+      throw new Error('rustbn not provided')
+    }
+    this.bn128 = opts.bn128 // Required to instantiate the EVM
     this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
@@ -1079,6 +1097,7 @@ export class EVM implements EVMInterface {
       ...this._optsCached,
       common,
       stateManager: this.stateManager.shallowCopy(),
+      bn128: this.bn128,
     }
     ;(opts.stateManager as any).common = common
     return new EVM(opts)

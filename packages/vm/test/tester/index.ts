@@ -3,6 +3,7 @@ import { createKZG } from 'kzg-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
 import * as process from 'process'
+import { initRustBN } from 'rustbn-wasm'
 import * as tape from 'tape'
 
 import {
@@ -19,6 +20,7 @@ import { runStateTest } from './runners/GeneralStateTestsRunner'
 import { getTestFromSource, getTestsFromArgs } from './testLoader'
 
 import type { Common } from '@ethereumjs/common'
+import type { bn128 } from '@ethereumjs/evm'
 
 /**
  * Test runner
@@ -103,6 +105,7 @@ async function runTests() {
    */
   const kzg = await createKZG()
   initKZG(kzg)
+  const bn128 = await initRustBN()
   const runnerArgs: {
     forkConfigVM: string
     forkConfigTestSuite: string
@@ -115,6 +118,7 @@ async function runTests() {
     debug?: boolean
     reps?: number
     profile: boolean
+    bn128: bn128
   } = {
     forkConfigVM: FORK_CONFIG_VM,
     forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -127,6 +131,7 @@ async function runTests() {
     debug: argv.debug, // BlockchainTests
     reps: argv.reps, // test repetitions
     profile: RUN_PROFILER,
+    bn128,
   }
 
   /**
