@@ -849,12 +849,11 @@ export class Engine {
     const eip6110Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
 
-    // TODO remove since fork support is checked in getPayload
     // check if fork is supported
     if (eip6110Timestamp === null || ts < eip6110Timestamp) {
       throw {
-        code: UNSUPPORTED_FORK,
-        message: `EIP-6110 configured to start at timestamp: ${eip6110Timestamp}`,
+        code: INVALID_PARAMS,
+        message: 'NewPayloadV{1|2} MUST be used before Prague/Electra is activated',
       }
     }
 
