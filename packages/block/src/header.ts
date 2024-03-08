@@ -597,9 +597,17 @@ export class BlockHeader {
     if (this.excessBlobGas === undefined) {
       throw new Error('header must have excessBlobGas field populated')
     }
+    return this._getBlobGasPrice(this.excessBlobGas)
+  }
+
+  /**
+   * Returns the blob gas price depending upon the `excessBlobGas` value
+   * @param excessBlobGas
+   */
+  private _getBlobGasPrice(excessBlobGas: bigint) {
     return fakeExponential(
       this.common.param('gasPrices', 'minBlobGasPrice'),
-      this.excessBlobGas,
+      excessBlobGas,
       this.common.param('gasConfig', 'blobGasPriceUpdateFraction')
     )
   }
@@ -631,6 +639,14 @@ export class BlockHeader {
     } else {
       return targetGasConsumed - targetBlobGasPerBlock
     }
+  }
+
+  /**
+   * Calculate the blob gas price of the block built on top of this one
+   * @returns The blob gas price
+   */
+  public calcNextBlobGasPrice(): bigint {
+    return this._getBlobGasPrice(this.calcNextExcessBlobGas())
   }
 
   /**

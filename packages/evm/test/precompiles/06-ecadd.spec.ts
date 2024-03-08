@@ -6,7 +6,7 @@ import { EVM, getActivePrecompiles } from '../../src/index.js'
 describe('Precompiles: ECADD', () => {
   it('ECADD', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = new EVM({
+    const evm = await EVM.create({
       common,
     })
     const addressStr = '0000000000000000000000000000000000000006'

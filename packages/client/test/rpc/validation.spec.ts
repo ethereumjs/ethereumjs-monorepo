@@ -592,6 +592,61 @@ describe(prefix, () => {
     assert.notOk(validatorResult(validators.array(validators.bool)([[true, 'true']], 0)))
   })
 
+  it('rewardPercentile', () => {
+    // valid
+    assert.equal(validators.rewardPercentile([0], 0), 0)
+    assert.equal(validators.rewardPercentile([0.1], 0), 0.1)
+    assert.equal(validators.rewardPercentile([10], 0), 10)
+    assert.equal(validators.rewardPercentile([100], 0), 100)
+
+    // invalid
+    assert.deepEqual(validators.rewardPercentile([-1], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is lower than 0`,
+    })
+    assert.deepEqual(validators.rewardPercentile([101], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is higher than 100`,
+    })
+    assert.deepEqual(validators.rewardPercentile([], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is not a number`,
+    })
+    assert.deepEqual(validators.rewardPercentile(['0'], 0), {
+      code: INVALID_PARAMS,
+      message: `entry at 0 is not a number`,
+    })
+  })
+
+  it('rewardPercentiles', () => {
+    // valid
+    assert.ok(validatorResult(validators.rewardPercentiles([[]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[0]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[100]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[0, 2, 5, 30, 100]], 0)))
+    assert.ok(validatorResult(validators.rewardPercentiles([[0, 2.1, 5.35, 30.999, 60, 100]], 0)))
+
+    // invalid
+    assert.notOk(validatorResult(validators.rewardPercentiles([[[]]], 0))) // Argument is not number
+    assert.notOk(validatorResult(validators.rewardPercentiles([[-1]], 0))) // Argument < 0
+    assert.notOk(validatorResult(validators.rewardPercentiles([[100.1]], 0))) // Argument > 100
+    assert.notOk(validatorResult(validators.rewardPercentiles([[1, 2, 3, 2.5]], 0))) // Not monotonically increasing
+    assert.notOk(validatorResult(validators.rewardPercentiles([0], 0))) // Input not array
+  })
+
+  it('integer', () => {
+    //valid
+    assert.ok(validatorResult(validators.integer([1], 0)))
+    assert.ok(validatorResult(validators.integer([-1], 0)))
+    assert.ok(validatorResult(validators.integer([0], 0)))
+
+    //invalid
+    assert.notOk(validatorResult(validators.integer(['a'], 0)))
+    assert.notOk(validatorResult(validators.integer([1.234], 0)))
+    assert.notOk(validatorResult(validators.integer([undefined], 0)))
+    assert.notOk(validatorResult(validators.integer([null], 0)))
+  })
+
   it('values', () => {
     // valid
     assert.ok(validatorResult(validators.values(['VALID', 'INVALID'])(['VALID'], 0)))
