@@ -597,7 +597,7 @@ export class Common {
    * @returns The value requested or `BigInt(0)` if not found
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
-    let value = null
+    let value: bigint | null = null
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
