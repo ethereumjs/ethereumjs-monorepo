@@ -60,6 +60,7 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
+  ExecutionPayloadV6110,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -840,6 +841,55 @@ export class Engine {
       newPayloadRes.latestValidHash = null
     }
     return newPayloadRes
+  }
+
+  async newPayloadV6110(
+    params: [ExecutionPayloadV2 | ExecutionPayloadV6110]
+  ): Promise<PayloadStatusV1> {
+    const eip6110Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+    const ts = parseInt(params[0].timestamp)
+
+    // TODO remove since fork support is checked in getPayload
+    // check if fork is supported
+    if (eip6110Timestamp === null || ts < eip6110Timestamp) {
+      throw {
+        code: UNSUPPORTED_FORK,
+        message: `EIP-6110 configured to start at timestamp: ${eip6110Timestamp}`,
+      }
+    }
+
+    // check if parameters are valid
+    const payloadAsV3 = params[0] as ExecutionPayloadV6110
+    const { excessBlobGas, blobGasUsed, parentBeaconBlockRoot, deposits } = payloadAsV3
+    if (blobGasUsed === null || excessBlobGas === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing blob gas fields',
+      }
+    }
+    if (blobGasUsed === null || excessBlobGas === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing blob gas fields',
+      }
+    }
+    if (parentBeaconBlockRoot === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing parent beacon block root field',
+      }
+    }
+    if (deposits === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing deposits field',
+      }
+    }
+
+    // TODO check if versionedHashes field exists in payload?
+
+    // might need to check status to make sure block is not invalid like newPayloadV1
+    return this.newPayload(params)
   }
 
   /**
