@@ -183,7 +183,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
+      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 5806, 6780, 6800, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -726,13 +726,15 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
-    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
+    const address = (message.delegatecall ? message.caller : message.to) ?? Address.zero()
+
+    let contract = await this.stateManager.getAccount(address)
     if (!contract) {
       contract = new Account()
     }
 
     const env = {
-      address: message.to ?? Address.zero(),
+      address,
       caller: message.caller ?? Address.zero(),
       callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BIGINT_0,
