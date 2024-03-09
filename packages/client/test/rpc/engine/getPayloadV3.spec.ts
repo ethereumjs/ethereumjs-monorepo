@@ -12,7 +12,7 @@ import {
   hexToBytes,
   initKZG,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -68,11 +68,9 @@ describe(method, () => {
       return this
     }
 
-    try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-    } catch {
-      //no-op
-    }
+    const kzg = await createKZG()
+    initKZG(kzg)
+
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Cancun,
@@ -119,7 +117,7 @@ describe(method, () => {
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
       executionPayload.blockHash,
-      '0xe8175305416ee94c996164162044338b4f4d93a8dc458b574ecad4ce84323fb5',
+      '0x8c71ad199a3dda94de6a1c31cc50a26b1f03a8a4924e9ea3fd7420c6411cac42',
       'built expected block'
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct execess blob gas')

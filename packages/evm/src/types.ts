@@ -150,9 +150,11 @@ export interface EVMInterface {
     putAccount(address: Address, account: Account): Promise<void>
     deleteAccount(address: Address): Promise<void>
     accessList?: Map<string, Set<string>>
+    preimages?: Map<string, Uint8Array>
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
     startReportingAccessList(): void
+    startReportingPreimages?(): void
   }
   stateManager: EVMStateManagerInterface
   precompiles: Map<string, PrecompileFunc>
@@ -170,6 +172,14 @@ export type EVMProfilerOpts = {
  * Options for instantiating a {@link EVM}.
  */
 export interface EVMOpts {
+  /**
+   * The BN128 curve package (`rustbn-wasm`)
+   */
+  bn128?: {
+    ec_pairing: (input_str: string) => string
+    ec_add: (input_str: string) => string
+    ec_mul: (input_hex: string) => string
+  }
   /**
    * Use a {@link Common} instance for EVM instantiation.
    *
@@ -377,4 +387,13 @@ export class DefaultBlockchain implements Blockchain {
   shallowCopy() {
     return this
   }
+}
+
+/**
+ * The BN128 curve package (`rustbn-wasm`)
+ */
+export interface bn128 {
+  ec_pairing: (input_str: string) => string
+  ec_add: (input_str: string) => string
+  ec_mul: (input_hex: string) => string
 }

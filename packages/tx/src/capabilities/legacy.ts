@@ -101,3 +101,15 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
     throw new Error(msg)
   }
 }
+
+export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | undefined): bigint {
+  if (baseFee !== undefined && baseFee > gasPrice) {
+    throw new Error('Tx cannot pay baseFee')
+  }
+
+  if (baseFee === undefined) {
+    return gasPrice
+  }
+
+  return gasPrice - baseFee
+}

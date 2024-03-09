@@ -17,6 +17,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { initRustBN } from 'rustbn-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
 import { ERROR, EvmError } from './exceptions.js'
@@ -137,7 +138,24 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  constructor(opts: EVMOpts = {}) {
+  private bn128: {
+    ec_pairing: (input_str: string) => string
+    ec_add: (input_str: string) => string
+    ec_mul: (input_hex: string) => string
+  }
+
+  static async create(createOpts?: EVMOpts) {
+    const opts = createOpts ?? ({} as EVMOpts)
+    if (opts?.bn128 === undefined) {
+      opts.bn128 = await initRustBN()
+    }
+    return new EVM(opts)
+  }
+  constructor(opts: EVMOpts) {
+    if (opts.bn128 === undefined) {
+      throw new Error('rustbn not provided')
+    }
+    this.bn128 = opts.bn128 // Required to instantiate the EVM
     this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
@@ -164,8 +182,8 @@ export class EVM implements EVMInterface {
 
     // Supported EIPs
     const supportedEIPs = [
-      1153, 1559, 2315, 2565, 2718, 2929, 2930, 3074, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
+      1153, 1559, 2315, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
+      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -1079,6 +1097,7 @@ export class EVM implements EVMInterface {
       ...this._optsCached,
       common,
       stateManager: this.stateManager.shallowCopy(),
+      bn128: this.bn128,
     }
     ;(opts.stateManager as any).common = common
     return new EVM(opts)

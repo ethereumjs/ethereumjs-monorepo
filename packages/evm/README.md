@@ -25,7 +25,7 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 
 ### Basic
 
-With the v2 release (Summer 2023) the EVM/VM packages have been further decoupled and it now possible to run the EVM package in isolation with reaonable defaults.
+With the v2 release (Summer 2023) the EVM/VM packages have been further decoupled and it now possible to run the EVM package in isolation with reasonable defaults.
 
 The following is the simplest example for an EVM instantiation:
 

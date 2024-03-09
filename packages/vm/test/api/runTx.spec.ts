@@ -13,11 +13,13 @@ import {
   Address,
   KECCAK256_NULL,
   MAX_INTEGER,
+  bytesToHex,
+  equalsBytes,
   hexToBytes,
   initKZG,
   zeros,
 } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -315,6 +317,24 @@ describe('runTx() -> API parameter usage/data errors', () => {
       `mainnet (PoW), istanbul HF, default SM - should run without errors (${TRANSACTION_TYPES[0].name})`
     )
     assert.deepEqual(res.accessList, [])
+  })
+
+  it('simple run (reportPreimages option)', async () => {
+    const vm = await VM.create({ common })
+
+    const tx = getTransaction(vm.common, 0, true)
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount()
+    await vm.stateManager.putAccount(caller, acc)
+
+    const res = await vm.runTx({ tx, reportPreimages: true })
+
+    const hashedCallerKey = vm.stateManager.getAppliedKey!(caller.bytes)
+
+    const retrievedPreimage = res.preimages?.get(bytesToHex(hashedCallerKey))
+
+    assert.ok(retrievedPreimage !== undefined && equalsBytes(retrievedPreimage, caller.bytes))
   })
 
   it('run without signature', async () => {
@@ -860,16 +880,8 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
 
 describe('EIP 4844 transaction tests', () => {
   it('should work', async () => {
-    // Hack to detect if running in browser or not
-    const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
-    if (isBrowser() === false) {
-      try {
-        initKZG(kzg, __dirname + '/../../../client/src/trustedSetups/devnet6.txt')
-      } catch {
-        // no-op
-      }
-    }
+    const kzg = await createKZG()
+    initKZG(kzg)
 
     const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {

@@ -242,9 +242,7 @@
       }
     ],
     "verkleProof": {
-      "otherStems": [
-        "0x9444524c2261a7086dd332bb05d79b1c63e74913a97b7b85c680368b19db0e"
-      ],
+      "otherStems": ["0x9444524c2261a7086dd332bb05d79b1c63e74913a97b7b85c680368b19db0e"],
       "depthExtensionPresent": "0x0a101209120808",
       "commitmentsByPath": [
         "0x1ba24c38c9aff43cf2793ed22a2fdd04282d558bcfad33589b5e4697c0662e45",

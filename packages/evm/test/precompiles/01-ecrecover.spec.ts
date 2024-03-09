@@ -17,7 +17,7 @@ describe('Precompiles: ECRECOVER', () => {
     // Test reference: https://github.com/ethereum/go-ethereum/issues/3731#issuecomment-293866868
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Petersburg })
-    const evm = new EVM({
+    const evm = await EVM.create({
       common,
     })
     const addressStr = '0000000000000000000000000000000000000001'

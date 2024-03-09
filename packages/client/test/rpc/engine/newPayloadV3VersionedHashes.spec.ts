@@ -1,5 +1,5 @@
 import { initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { createKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -15,11 +15,9 @@ const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../../src/trustedSetups/devnet6.txt')
-    } catch {
-      // no-op
-    }
+    const kzg = await createKZG()
+    initKZG(kzg)
+
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
       customCrypto: { kzg },
