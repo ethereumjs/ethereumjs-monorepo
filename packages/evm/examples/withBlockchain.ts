@@ -9,7 +9,7 @@ const main = async () => {
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
 
-  const evm = new EVM({
+  const evm = await EVM.create({
     common,
     stateManager,
     blockchain,
