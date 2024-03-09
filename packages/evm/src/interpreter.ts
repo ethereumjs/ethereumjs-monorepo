@@ -71,6 +71,7 @@ export interface Env {
   createdAddresses?: Set<string>
   accessWitness?: AccessWitness
   chargeCodeAccesses?: boolean
+  isEIP5806?: boolean
 }
 
 export interface RunState {

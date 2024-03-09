@@ -757,6 +757,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0x55,
     async function (runState) {
+      if (
+        runState.interpreter._env.isEIP5806 === true &&
+        runState.interpreter._env.origin.equals(runState.interpreter._env.address)
+      ) {
+        trap(ERROR.EIP5806_WRITE)
+      }
+
       const [key, val] = runState.stack.popN(2)
 
       const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
@@ -994,6 +1001,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf0,
     async function (runState, common) {
+      if (
+        runState.interpreter._env.isEIP5806 === true &&
+        runState.interpreter._env.origin.equals(runState.interpreter._env.address)
+      ) {
+        trap(ERROR.EIP5806_WRITE)
+      }
+
       const [value, offset, length] = runState.stack.popN(3)
 
       if (
@@ -1020,6 +1034,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf5,
     async function (runState, common) {
+      if (
+        runState.interpreter._env.isEIP5806 === true &&
+        runState.interpreter._env.origin.equals(runState.interpreter._env.address)
+      ) {
+        trap(ERROR.EIP5806_WRITE)
+      }
+
       if (runState.interpreter.isStatic()) {
         trap(ERROR.STATIC_STATE_CHANGE)
       }
@@ -1273,6 +1294,13 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xff,
     async function (runState) {
+      if (
+        runState.interpreter._env.isEIP5806 === true &&
+        runState.interpreter._env.origin.equals(runState.interpreter._env.address)
+      ) {
+        trap(ERROR.EIP5806_WRITE)
+      }
+
       const selfdestructToAddressBigInt = runState.stack.pop()
       const selfdestructToAddress = new Address(addresstoBytes(selfdestructToAddressBigInt))
       return runState.interpreter.selfDestruct(selfdestructToAddress)

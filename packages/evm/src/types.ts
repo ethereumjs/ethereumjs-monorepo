@@ -125,6 +125,10 @@ export interface EVMRunCallOpts extends EVMRunOpts {
   message?: Message
 
   accessWitness?: AccessWitness
+
+  codeAddress?: Address
+
+  isEIP5806?: boolean
 }
 
 interface NewContractEvent {

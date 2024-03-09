@@ -86,6 +86,7 @@ export class EVM implements EVMInterface {
   protected _tx?: {
     gasPrice: bigint
     origin: Address
+    isEIP5806: boolean
   }
   protected _block?: Block
 
@@ -726,15 +727,13 @@ export class EVM implements EVMInterface {
     message: Message,
     opts: InterpreterOpts = {}
   ): Promise<ExecResult> {
-    const address = (message.delegatecall ? message.caller : message.to) ?? Address.zero()
-
-    let contract = await this.stateManager.getAccount(address)
+    let contract = await this.stateManager.getAccount(message.to ?? Address.zero())
     if (!contract) {
       contract = new Account()
     }
 
     const env = {
-      address,
+      address: message.to ?? Address.zero(),
       caller: message.caller ?? Address.zero(),
       callData: message.data ?? Uint8Array.from([0]),
       callValue: message.value ?? BIGINT_0,
@@ -752,6 +751,7 @@ export class EVM implements EVMInterface {
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
       createdAddresses: message.createdAddresses,
+      isEIP5806: this._tx!.isEIP5806,
     }
 
     const interpreter = new Interpreter(
@@ -827,6 +827,7 @@ export class EVM implements EVMInterface {
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
         origin: opts.origin ?? opts.caller ?? Address.zero(),
+        isEIP5806: opts.isEIP5806 ?? false,
       }
       const caller = opts.caller ?? Address.zero()
 
@@ -850,6 +851,7 @@ export class EVM implements EVMInterface {
         value,
         data: opts.data,
         code: opts.code,
+        codeAddress: opts.codeAddress,
         depth: opts.depth,
         isCompiled: opts.isCompiled,
         isStatic: opts.isStatic,
@@ -965,6 +967,7 @@ export class EVM implements EVMInterface {
     this._tx = {
       gasPrice: opts.gasPrice ?? BIGINT_0,
       origin: opts.origin ?? opts.caller ?? Address.zero(),
+      isEIP5806: false,
     }
 
     const message = new Message({

@@ -504,7 +504,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Execute message
    */
   const { value, data, to } = tx
-  const delegatecall = isDelegateEIP5806Tx(tx)
+  const isEIP5806 = isDelegateEIP5806Tx(tx)
 
   if (this.DEBUG) {
     debug(
@@ -521,12 +521,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice,
     caller,
     gasLimit,
-    to,
+    to: isEIP5806 ? caller : to,
+    codeAddress: isEIP5806 ? to : undefined,
     value,
     data,
     blobVersionedHashes,
     accessWitness: txAccesses,
-    delegatecall,
+    isEIP5806,
   })) as RunTxResult
 
   if (this.common.isActivatedEIP(6800)) {

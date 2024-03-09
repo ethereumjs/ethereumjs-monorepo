@@ -9,6 +9,7 @@ export enum ERROR {
   OUT_OF_RANGE = 'value out of range',
   REVERT = 'revert',
   STATIC_STATE_CHANGE = 'static state change',
+  EIP5806_WRITE = 'write attempt in EIP-5806 transaction',
   INTERNAL_ERROR = 'internal error',
   CREATE_COLLISION = 'create collision',
   STOP = 'stop',
