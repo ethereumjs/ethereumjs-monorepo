@@ -122,3 +122,44 @@ export async function batchPut(
   trie['_lock'].release()
   return _stack
 }
+
+export async function _batch(
+  trie: Trie,
+  ops: BatchDBOp[],
+  skipKeyTransform?: boolean
+): Promise<void> {
+  const sortedOps = orderBatch(ops)
+  let stack: TrieNode[] = []
+  const stackPathCache: Map<string, TrieNode> = new Map()
+  for (const op of sortedOps) {
+    const nibbles = bytesToNibbles(op.key)
+    stack = []
+    let remaining = nibbles
+    for (let i = 0; i < nibbles.length; i++) {
+      const p: string = JSON.stringify(nibbles.slice(0, i) as number[])
+      if (stackPathCache.has(p)) {
+        const node = stackPathCache.get(p)!
+        stack.push(node)
+        remaining = nibbles.slice(i)
+      }
+    }
+    if (op.type === 'put') {
+      if (op.value === null || op.value === undefined) {
+        throw new Error('Invalid batch db operation')
+      }
+      stack = await batchPut(trie, op.key, op.value, skipKeyTransform, stack, remaining)
+      const path: number[] = []
+      for (const node of stack) {
+        stackPathCache.set(JSON.stringify([...path]), node)
+        if (node instanceof BranchNode) {
+          path.push(nibbles.shift()!)
+        } else {
+          path.push(...nibbles.splice(0, node.keyLength()))
+        }
+      }
+    } else if (op.type === 'del') {
+      await trie.del(op.key, skipKeyTransform)
+    }
+  }
+  await trie.persistRoot()
+}
