@@ -770,7 +770,7 @@ export class Trie {
    * Creates the initial node from an empty tree.
    * @private
    */
-  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
+  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<TrieNode> {
     const newNode = new LeafNode(bytesToNibbles(key), value)
 
     const encoded = newNode.serialize()
@@ -779,6 +779,7 @@ export class Trie {
     rootKey = this._opts.keyPrefix ? concatBytes(this._opts.keyPrefix, rootKey) : rootKey
     await this._db.put(rootKey, encoded)
     await this.persistRoot()
+    return newNode
   }
 
   /**
@@ -817,7 +818,7 @@ export class Trie {
     value: Uint8Array,
     keyRemainder: Nibbles,
     stack: TrieNode[]
-  ): Promise<void> {
+  ): Promise<TrieNode[]> {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
@@ -908,7 +909,9 @@ export class Trie {
       }
     }
 
+    const returnStack = [...stack]
     await this.saveStack(key, stack, toSave)
+    return returnStack
   }
 
   /**
