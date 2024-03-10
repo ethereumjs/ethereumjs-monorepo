@@ -23,3 +23,36 @@ export function orderBatch(ops: BatchDBOp[]): BatchDBOp[] {
   })
   return keyNibbles.map(([i, _]) => ops[i])
 }
+
+export async function _put(
+  trie: Trie,
+  key: Uint8Array,
+  value: Uint8Array,
+  skipKeyTransform: boolean = false,
+  path?: { stack: TrieNode[]; remaining: number[] }
+) {
+  const appliedKey = skipKeyTransform ? key : trie['appliedKey'](key)
+  const { remaining, stack } = path ?? (await trie.findPath(appliedKey))
+  let ops: BatchDBOp[] = []
+  if (trie['_opts'].useNodePruning) {
+    const val = await trie.get(appliedKey)
+    if (val === null || equalsBytes(val, value) === false) {
+      const deleteHashes = stack.map((e) => trie['hash'](e.serialize()))
+      ops = deleteHashes.map((e) => {
+        const key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, e) : e
+        return {
+          type: 'del',
+          key,
+          opts: {
+            keyEncoding: KeyEncoding.Bytes,
+          },
+        }
+      })
+    }
+  }
+  const returnStack = await trie['_updateNode'](appliedKey, value, remaining, stack)
+  if (trie['_opts'].useNodePruning) {
+    await trie['_db'].batch(ops)
+  }
+  return returnStack
+}
