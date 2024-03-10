@@ -89,3 +89,36 @@ export async function _del(
   trie['_lock'].release()
   return stack
 }
+export async function batchPut(
+  trie: Trie,
+  key: Uint8Array,
+  value: Uint8Array | null,
+  skipKeyTransform: boolean = false,
+  stack: TrieNode[] = [],
+  remaining: number[] = []
+): Promise<TrieNode[]> {
+  if (trie['_opts'].useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
+    throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
+  }
+  let _stack: TrieNode[]
+  const path =
+    stack.length > 0
+      ? {
+          stack,
+          remaining,
+        }
+      : undefined
+  if (value === null || value.length === 0) {
+    return _del(trie, key, skipKeyTransform)
+  }
+  await trie['_lock'].acquire()
+  const appliedKey = skipKeyTransform ? key : trie['appliedKey'](key)
+  if (equalsBytes(trie.root(), trie.EMPTY_TRIE_ROOT) === true) {
+    _stack = [await trie['_createInitialNode'](appliedKey, value)]
+  } else {
+    _stack = await _put(trie, appliedKey, value, skipKeyTransform, path)
+  }
+  await trie.persistRoot()
+  trie['_lock'].release()
+  return _stack
+}
