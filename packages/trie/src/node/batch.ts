@@ -56,3 +56,36 @@ export async function _put(
   }
   return returnStack
 }
+
+export async function _del(
+  trie: Trie,
+  key: Uint8Array,
+  skipKeyTransform: boolean = false
+): Promise<TrieNode[]> {
+  await trie['_lock'].acquire()
+  const appliedKey = skipKeyTransform ? key : trie['appliedKey'](key)
+  const { node, stack } = await trie.findPath(appliedKey)
+  let ops: BatchDBOp[] = []
+  if (trie['_opts'].useNodePruning && node !== null) {
+    const deleteHashes = stack.map((e) => trie['hash'](e.serialize()))
+    ops = deleteHashes.map((e) => {
+      const key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, e) : e
+      return {
+        type: 'del',
+        key,
+        opts: {
+          keyEncoding: KeyEncoding.Bytes,
+        },
+      }
+    })
+  }
+  if (node) {
+    await trie['_deleteNode'](appliedKey, stack)
+  }
+  if (trie['_opts'].useNodePruning) {
+    await trie['_db'].batch(ops)
+  }
+  await trie.persistRoot()
+  trie['_lock'].release()
+  return stack
+}
