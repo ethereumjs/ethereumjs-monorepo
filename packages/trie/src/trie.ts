@@ -18,6 +18,7 @@ import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
+import { _batch } from './node/batch.js'
 import {
   BranchNode,
   ExtensionNode,
@@ -1140,17 +1141,7 @@ export class Trie {
    * @param ops
    */
   async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
-    for (const op of ops) {
-      if (op.type === 'put') {
-        if (op.value === null || op.value === undefined) {
-          throw new Error('Invalid batch db operation')
-        }
-        await this.put(op.key, op.value, skipKeyTransform)
-      } else if (op.type === 'del') {
-        await this.del(op.key, skipKeyTransform)
-      }
-    }
-    await this.persistRoot()
+    await _batch(this, ops, skipKeyTransform)
   }
 
   // This method verifies if all keys in the trie (except the root) are reachable
