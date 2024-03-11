@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709888760621,
+  "lastUpdate": 1710152977626,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "102f0dadaf1c6f830608674cbb48b07f4013e61c",
-          "message": "Trie API documentation updates (#3267)\n\n* Rearrange proof functions\r\n\r\n* Update docs\r\n\r\n* Parameterize for createFromProof if root should be verified\r\n\r\n* Update docs to include more details about parameters\r\n\r\n* Remove deprecated function from non-deprecated one\r\n\r\n* Update docs to include more details about parameters\r\n\r\n* Remove deprecated function usage from non-deprecated function\r\n\r\n* Minor update\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-02-02T10:48:24+01:00",
-          "tree_id": "534a1537afc8f20b316989afeab6988b8bee1993",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/102f0dadaf1c6f830608674cbb48b07f4013e61c"
-        },
-        "date": 1706867474628,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41062,
-            "range": "±2.06%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38951,
-            "range": "±3.92%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39540,
-            "range": "±1.98%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38821,
-            "range": "±2.03%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37630,
-            "range": "±2.37%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1768,6 +1709,65 @@ window.BENCHMARK_DATA = {
             "name": "Block 9422910",
             "value": 36024,
             "range": "±5.96%",
+            "unit": "ops/sec",
+            "extra": "77 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "435606e693e4d5c0aea1b17b3fe441521bc585e9",
+          "message": "Common Type Fixes (#3307)\n\n* Common: Improve typing for getHardforkBy()\r\n\r\n* Common: Fixes type issue in paramByHardfork()",
+          "timestamp": "2024-03-11T11:22:54+01:00",
+          "tree_id": "0818741f5057060f67d7120856a06cd669162ba9",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/435606e693e4d5c0aea1b17b3fe441521bc585e9"
+        },
+        "date": 1710152976795,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 43747,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41316,
+            "range": "±2.89%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41171,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39804,
+            "range": "±1.98%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 34645,
+            "range": "±6.19%",
             "unit": "ops/sec",
             "extra": "77 samples"
           }
