@@ -47,6 +47,7 @@ import type {
   EVMRunCallOpts,
   EVMRunCodeOpts,
   ExecResult,
+  bn128,
 } from './types.js'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 const { debug: createDebugLogger } = debugDefault
@@ -138,24 +139,34 @@ export class EVM implements EVMInterface {
 
   protected readonly _emit: (topic: string, data: any) => Promise<void>
 
-  private bn128: {
-    ec_pairing: (input_str: string) => string
-    ec_add: (input_str: string) => string
-    ec_mul: (input_hex: string) => string
-  }
+  private _bn128: bn128
 
+  /**
+   * Use this async static constructor for the initialization
+   * of an EVM object
+   *
+   * @param createOpts The EVM options
+   * @returns A new EVM
+   */
   static async create(createOpts?: EVMOpts) {
     const opts = createOpts ?? ({} as EVMOpts)
-    if (opts?.bn128 === undefined) {
-      opts.bn128 = await initRustBN()
-    }
-    return new EVM(opts)
+    const bn128 = await initRustBN()
+    return new EVM(opts, bn128)
   }
-  constructor(opts: EVMOpts) {
-    if (opts.bn128 === undefined) {
-      throw new Error('rustbn not provided')
-    }
-    this.bn128 = opts.bn128 // Required to instantiate the EVM
+
+  /**
+   *
+   * Creates new EVM object
+   *
+   * @deprecated The direct usage of this constructor is replaced since
+   * non-finalized async initialization lead to side effects. Please
+   * use the async {@link EVM.create} constructor instead (same API).
+   *
+   * @param opts The EVM options
+   * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
+   */
+  constructor(opts: EVMOpts, bn128: bn128) {
+    this._bn128 = bn128
     this.events = new AsyncEventEmitter()
 
     this._optsCached = opts
@@ -1097,10 +1108,9 @@ export class EVM implements EVMInterface {
       ...this._optsCached,
       common,
       stateManager: this.stateManager.shallowCopy(),
-      bn128: this.bn128,
     }
     ;(opts.stateManager as any).common = common
-    return new EVM(opts)
+    return new EVM(opts, this._bn128)
   }
 
   public getPerformanceLogs() {
