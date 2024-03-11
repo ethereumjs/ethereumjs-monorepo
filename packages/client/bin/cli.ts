@@ -550,6 +550,8 @@ async function startClient(
       hardforkByHeadBlockNumber: true,
       validateConsensus,
       validateBlocks: true,
+      genesisState: genesisMeta.genesisState,
+      genesisStateRoot: genesisMeta.genesisStateRoot,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
