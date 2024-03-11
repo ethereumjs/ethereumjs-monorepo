@@ -94,7 +94,9 @@ export class VM {
     }
 
     const genesisState = opts.genesisState ?? {}
-    await opts.stateManager.generateCanonicalGenesis(genesisState)
+    if (opts.genesisState !== undefined) {
+      await opts.stateManager.generateCanonicalGenesis(genesisState)
+    }
     if (typeof (<any>opts.blockchain)._init === 'function') {
       await (opts.blockchain as any)._init({ genesisState })
     }
