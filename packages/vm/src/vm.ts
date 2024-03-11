@@ -77,10 +77,12 @@ export class VM {
    * @param opts VM engine constructor options
    */
   static async create(opts: VMOpts = {}): Promise<VM> {
+    // Save if a `StateManager` was passed (for activatePrecompiles)
+    const didPassStateManager = opts.stateManager !== undefined
+
     // Add common, SM, blockchain, EVM here
     if (opts.common === undefined) {
-      const DEFAULT_CHAIN = Chain.Mainnet
-      opts.common = new Common({ chain: DEFAULT_CHAIN })
+      opts.common = new Common({ chain: Chain.Mainnet })
     }
 
     if (opts.stateManager === undefined) {
@@ -93,7 +95,9 @@ export class VM {
 
     const genesisState = opts.genesisState ?? {}
     await opts.stateManager.generateCanonicalGenesis(genesisState)
-    await (opts.blockchain as any)._init({ genesisState })
+    if (typeof (<any>opts.blockchain)._init === 'function') {
+      await (opts.blockchain as any)._init({ genesisState })
+    }
 
     if (opts.profilerOpts !== undefined) {
       const profilerOpts = opts.profilerOpts
@@ -122,7 +126,7 @@ export class VM {
       })
     }
 
-    if (opts.activatePrecompiles === true && typeof opts.stateManager === 'undefined') {
+    if (opts.activatePrecompiles === true && !didPassStateManager) {
       await opts.evm.journal.checkpoint()
       // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
       for (const [addressStr] of getActivePrecompiles(opts.common)) {

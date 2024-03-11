@@ -56,6 +56,8 @@ const debug = createDebugLogger('evm:evm')
 const debugGas = createDebugLogger('evm:gas')
 const debugPrecompiles = createDebugLogger('evm:precompiles')
 
+let initializedRustBN: bn128 | undefined = undefined
+
 /**
  * EVM is responsible for executing an EVM message fully
  * (including any nested calls and creates), processing the results
@@ -150,11 +152,11 @@ export class EVM implements EVMInterface {
    */
   static async create(createOpts?: EVMOpts) {
     const opts = createOpts ?? ({} as EVMOpts)
-    const bn128 = await initRustBN()
+    const bn128 = initializedRustBN ?? (await initRustBN())
+    initializedRustBN = bn128
 
     if (opts.common === undefined) {
-      const DEFAULT_CHAIN = Chain.Mainnet
-      opts.common = new Common({ chain: DEFAULT_CHAIN })
+      opts.common = new Common({ chain: Chain.Mainnet })
     }
 
     if (opts.blockchain === undefined) {
