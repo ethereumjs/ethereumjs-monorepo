@@ -153,8 +153,6 @@ export interface VMOpts {
   evm?: EVMInterface
 
   profilerOpts?: VMProfilerOpts
-
-  bn128?: any
 }
 
 /**
