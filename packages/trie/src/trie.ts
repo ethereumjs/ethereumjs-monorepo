@@ -596,11 +596,23 @@ export class Trie {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
+  async findPath(
+    key: Uint8Array,
+    throwIfMissing = false,
+    partialPath: {
+      stack: TrieNode[]
+    } = {
+      stack: [],
+    }
+  ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
     const stack: TrieNode[] = Array.from({ length: keyLen })
     let progress = 0
+    for (let i = 0; i < partialPath.stack.length - 1; i++) {
+      stack[i] = partialPath.stack[i]
+      progress += stack[i] instanceof BranchNode ? 1 : (<ExtensionNode>stack[i]).keyLength()
+    }
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
@@ -672,10 +684,17 @@ export class Trie {
         walkController.allChildren(node, keyProgress)
       }
     }
-
+    const startingNode = partialPath.stack[partialPath.stack.length - 1]
+    const start = startingNode !== undefined ? this.hash(startingNode?.serialize()) : this.root()
     try {
-      this.DEBUG && this.debug(`Walking trie from root: ${bytesToHex(this.root())}`, ['FIND_PATH'])
-      await this.walkTrie(this.root(), onFound)
+      this.DEBUG &&
+        this.debug(
+          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
+            start as Uint8Array
+          )}`,
+          ['FIND_PATH']
+        )
+      await this.walkTrie(start, onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
         throw error
