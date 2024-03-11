@@ -54,7 +54,7 @@
     "@ethereumjs/rlp": "5.0.2",
     "@ethereumjs/util": "9.0.2",
     "lru-cache": "10.1.0",
-    "verkle-cryptography-wasm": "^0.2.0"
+    "verkle-cryptography-wasm": "^0.2.1"
   },
   "engines": {
     "node": ">=18"
