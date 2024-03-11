@@ -6,7 +6,9 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { VerkleFFI, getTreeKey, zeroCommitment } from 'verkle-cryptography-wasm'
+import { VerkleFFI, getTreeKey } from 'verkle-cryptography-wasm'
+// TODO: properly integrate into next verkle-cryptography-wasm release
+import { zeroCommitment } from 'verkle-cryptography-wasm/dist/cjs/verkleFFIBindings'
 
 const verkleFFI = new VerkleFFI()
 
