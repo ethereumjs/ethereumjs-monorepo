@@ -151,6 +151,20 @@ export class EVM implements EVMInterface {
   static async create(createOpts?: EVMOpts) {
     const opts = createOpts ?? ({} as EVMOpts)
     const bn128 = await initRustBN()
+
+    if (opts.common === undefined) {
+      const DEFAULT_CHAIN = Chain.Mainnet
+      opts.common = new Common({ chain: DEFAULT_CHAIN })
+    }
+
+    if (opts.blockchain === undefined) {
+      opts.blockchain = new DefaultBlockchain()
+    }
+
+    if (opts.stateManager === undefined) {
+      opts.stateManager = new DefaultStateManager()
+    }
+
     return new EVM(opts, bn128)
   }
 
@@ -166,30 +180,13 @@ export class EVM implements EVMInterface {
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
   constructor(opts: EVMOpts, bn128: bn128) {
+    this.common = opts.common!
+    this.blockchain = opts.blockchain!
+    this.stateManager = opts.stateManager!
+
     this._bn128 = bn128
     this.events = new AsyncEventEmitter()
-
     this._optsCached = opts
-
-    this.transientStorage = new TransientStorage()
-
-    if (opts.common) {
-      this.common = opts.common
-    } else {
-      const DEFAULT_CHAIN = Chain.Mainnet
-      this.common = new Common({ chain: DEFAULT_CHAIN })
-    }
-
-    let blockchain: Blockchain
-
-    if (opts.blockchain === undefined) {
-      blockchain = new DefaultBlockchain()
-    } else {
-      blockchain = opts.blockchain
-    }
-
-    this.blockchain = blockchain
-    this.stateManager = opts.stateManager ?? new DefaultStateManager()
 
     // Supported EIPs
     const supportedEIPs = [
@@ -215,6 +212,7 @@ export class EVM implements EVMInterface {
     this._customPrecompiles = opts.customPrecompiles
 
     this.journal = new Journal(this.stateManager, this.common)
+    this.transientStorage = new TransientStorage()
 
     this.common.events.on('hardforkChanged', () => {
       this.getActiveOpcodes()
