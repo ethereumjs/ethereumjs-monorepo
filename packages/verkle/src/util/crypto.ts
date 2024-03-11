@@ -1,37 +1,14 @@
 import {
   type Address,
   bigIntToBytes,
-  bytesToHex,
   concatBytes,
   int32ToBytes,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { pedersen_hash, verify_update } from 'rust-verkle-wasm'
+import { VerkleFFI, getTreeKey, zeroCommitment } from 'verkle-cryptography-wasm'
 
-import type { Point } from '../types.js'
-
-export function pedersenHash(input: Uint8Array): Uint8Array {
-  const pedersenHash = pedersen_hash(input)
-
-  if (pedersenHash === null) {
-    throw new Error(
-      `pedersenHash: Wrong pedersenHash input: ${bytesToHex(
-        input
-      )}. This might happen if length is not correct.`
-    )
-  }
-
-  return pedersenHash
-}
-
-export function verifyUpdate(
-  root: Uint8Array,
-  proof: Uint8Array,
-  keyValues: Map<any, any>
-): Uint8Array {
-  return verify_update(root, proof, keyValues)
-}
+const verkleFFI = new VerkleFFI()
 
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
@@ -50,8 +27,7 @@ export function getStem(address: Address, treeIndex: number | bigint = 0): Uint8
     treeIndexBytes = setLengthRight(bigIntToBytes(BigInt(treeIndex), true).slice(0, 32), 32)
   }
 
-  const input = concatBytes(address32, treeIndexBytes)
-  const treeStem = pedersenHash(input).slice(0, 31)
+  const treeStem = getTreeKey(verkleFFI, address32, treeIndexBytes, 0).slice(0, 31)
 
   return treeStem
 }
@@ -69,13 +45,4 @@ export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
   return treeKey
 }
 
-export function verifyProof(
-  root: Uint8Array,
-  proof: Uint8Array,
-  keyValues: Map<any, any>
-): Uint8Array {
-  return verify_update(root, proof, keyValues)
-}
-
-// TODO: Replace this by the actual value of Point().Identity() from the Go code.
-export const POINT_IDENTITY = new Uint8Array(32).fill(0) as unknown as Point
+export const POINT_IDENTITY = zeroCommitment()
