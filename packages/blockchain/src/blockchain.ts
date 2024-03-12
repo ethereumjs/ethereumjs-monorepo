@@ -38,7 +38,6 @@ import type {
   BlockchainInterface,
   BlockchainOptions,
   Consensus,
-  GenesisOptions,
   OnBlock,
 } from './types.js'
 import type { BlockData } from '@ethereumjs/block'
@@ -106,7 +105,6 @@ export class Blockchain implements BlockchainInterface {
    */
   private _heads: { [key: string]: Uint8Array }
 
-  protected _isInitialized = false
   private _lock: Lock
 
   public readonly common: Common
@@ -131,7 +129,75 @@ export class Blockchain implements BlockchainInterface {
   public static async create(opts: BlockchainOptions = {}) {
     const blockchain = new Blockchain(opts)
 
-    await blockchain._init(opts)
+    await blockchain.consensus.setup({ blockchain })
+
+    let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
+    if (stateRoot === undefined) {
+      if (blockchain._customGenesisState !== undefined) {
+        stateRoot = await genGenesisStateRoot(blockchain._customGenesisState, blockchain.common)
+      } else {
+        stateRoot = await getGenesisStateRoot(
+          Number(blockchain.common.chainId()) as Chain,
+          blockchain.common
+        )
+      }
+    }
+
+    const genesisBlock = opts.genesisBlock ?? blockchain.createGenesisBlock(stateRoot)
+
+    let genesisHash = await blockchain.dbManager.numberToHash(BIGINT_0)
+
+    const dbGenesisBlock =
+      genesisHash !== undefined ? await blockchain.dbManager.getBlock(genesisHash) : undefined
+
+    // If the DB has a genesis block, then verify that the genesis block in the
+    // DB is indeed the Genesis block generated or assigned.
+    if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
+      throw new Error(
+        'The genesis block in the DB has a different hash than the provided genesis block.'
+      )
+    }
+
+    genesisHash = genesisBlock.hash()
+
+    if (!dbGenesisBlock) {
+      // If there is no genesis block put the genesis block in the DB.
+      // For that TD, the BlockOrHeader, and the Lookups have to be saved.
+      const dbOps: DBOp[] = []
+      dbOps.push(DBSetTD(genesisBlock.header.difficulty, BIGINT_0, genesisHash))
+      DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
+      DBSaveLookups(genesisHash, BIGINT_0).map((op) => dbOps.push(op))
+      await blockchain.dbManager.batch(dbOps)
+      await blockchain.consensus.genesisInit(genesisBlock)
+    }
+
+    // At this point, we can safely set the genesis:
+    // it is either the one we put in the DB, or it is equal to the one
+    // which we read from the DB.
+    blockchain._genesisBlock = genesisBlock
+
+    // load verified iterator heads
+    const heads = await blockchain.dbManager.getHeads()
+    blockchain._heads = heads !== undefined ? heads : {}
+
+    // load headerchain head
+    let hash = await blockchain.dbManager.getHeadHeader()
+    blockchain._headHeaderHash = hash !== undefined ? hash : genesisHash
+
+    // load blockchain head
+    hash = await blockchain.dbManager.getHeadBlock()
+    blockchain._headBlockHash = hash !== undefined ? hash : genesisHash
+
+    if (blockchain._hardforkByHeadBlockNumber) {
+      const latestHeader = await blockchain._getHeader(blockchain._headHeaderHash)
+      const td = await blockchain.getParentTD(latestHeader)
+      await blockchain.checkAndTransitionHardForkByNumber(
+        latestHeader.number,
+        td,
+        latestHeader.timestamp
+      )
+    }
+
     return blockchain
   }
 
@@ -247,82 +313,6 @@ export class Blockchain implements BlockchainInterface {
     )
     copiedBlockchain.common = this.common.copy()
     return copiedBlockchain
-  }
-
-  /**
-   * This method is called in {@link Blockchain.create} and either sets up the DB or reads
-   * values from the DB and makes these available to the consumers of
-   * Blockchain.
-   *
-   * @param opts An options object to provide genesisBlock or ways to contruct it
-   *
-   * @hidden
-   */
-  private async _init(opts: GenesisOptions = {}): Promise<void> {
-    await this.consensus.setup({ blockchain: this })
-    if (this._isInitialized) return
-
-    let stateRoot = opts.genesisBlock?.header.stateRoot ?? opts.genesisStateRoot
-    if (stateRoot === undefined) {
-      if (this._customGenesisState !== undefined) {
-        stateRoot = await genGenesisStateRoot(this._customGenesisState, this.common)
-      } else {
-        stateRoot = await getGenesisStateRoot(Number(this.common.chainId()) as Chain, this.common)
-      }
-    }
-
-    const genesisBlock = opts.genesisBlock ?? this.createGenesisBlock(stateRoot)
-
-    let genesisHash = await this.dbManager.numberToHash(BIGINT_0)
-
-    const dbGenesisBlock =
-      genesisHash !== undefined ? await this.dbManager.getBlock(genesisHash) : undefined
-
-    // If the DB has a genesis block, then verify that the genesis block in the
-    // DB is indeed the Genesis block generated or assigned.
-    if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
-      throw new Error(
-        'The genesis block in the DB has a different hash than the provided genesis block.'
-      )
-    }
-
-    genesisHash = genesisBlock.hash()
-
-    if (!dbGenesisBlock) {
-      // If there is no genesis block put the genesis block in the DB.
-      // For that TD, the BlockOrHeader, and the Lookups have to be saved.
-      const dbOps: DBOp[] = []
-      dbOps.push(DBSetTD(genesisBlock.header.difficulty, BIGINT_0, genesisHash))
-      DBSetBlockOrHeader(genesisBlock).map((op) => dbOps.push(op))
-      DBSaveLookups(genesisHash, BIGINT_0).map((op) => dbOps.push(op))
-      await this.dbManager.batch(dbOps)
-      await this.consensus.genesisInit(genesisBlock)
-    }
-
-    // At this point, we can safely set the genesis:
-    // it is either the one we put in the DB, or it is equal to the one
-    // which we read from the DB.
-    this._genesisBlock = genesisBlock
-
-    // load verified iterator heads
-    const heads = await this.dbManager.getHeads()
-    this._heads = heads !== undefined ? heads : {}
-
-    // load headerchain head
-    let hash = await this.dbManager.getHeadHeader()
-    this._headHeaderHash = hash !== undefined ? hash : genesisHash
-
-    // load blockchain head
-    hash = await this.dbManager.getHeadBlock()
-    this._headBlockHash = hash !== undefined ? hash : genesisHash
-
-    if (this._hardforkByHeadBlockNumber) {
-      const latestHeader = await this._getHeader(this._headHeaderHash)
-      const td = await this.getParentTD(latestHeader)
-      await this.checkAndTransitionHardForkByNumber(latestHeader.number, td, latestHeader.timestamp)
-    }
-
-    this._isInitialized = true
   }
 
   /**

@@ -92,7 +92,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     profilerOpts: {
       reportAfterBlock: options.profile,
     },
-    bn128: options.bn128,
   })
 
   // set up pre-state
