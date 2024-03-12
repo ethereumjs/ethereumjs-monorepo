@@ -57,7 +57,6 @@ vi.mock('../../src/sync/beaconsync', () => {
   }
 })
 
-vi.mock('@ethereumjs/block')
 vi.mock('../../src/net/server')
 vi.mock('../../src/execution')
 const { FullEthereumService } = await import('../../src/service/fullethereumservice')
@@ -215,6 +214,7 @@ describe('should ban peer for sending NewBlock/NewBlockHashes after merge', asyn
   const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Paris })
   const config = new Config({ common, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
+  chain.config.chainCommon.setHardfork(Hardfork.Paris)
   const service = new FullEthereumService({ config, chain })
   service.pool.ban = () => {
     it('should ban peeer', () => {
