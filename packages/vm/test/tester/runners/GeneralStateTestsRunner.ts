@@ -84,7 +84,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     common,
     blockchain,
     profilerOpts: { reportAfterTx: options.profile },
-    bn128: options.bn128,
   })
 
   await setupPreConditions(vm.stateManager, testData)
