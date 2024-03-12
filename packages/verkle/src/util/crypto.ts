@@ -7,8 +7,6 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 import { VerkleFFI, getTreeKey } from 'verkle-cryptography-wasm'
-// TODO: properly integrate into next verkle-cryptography-wasm release
-import { zeroCommitment } from 'verkle-cryptography-wasm/dist/cjs/verkleFFIBindings'
 
 const verkleFFI = new VerkleFFI()
 
@@ -47,4 +45,4 @@ export function getKey(stem: Uint8Array, subIndex: Uint8Array): Uint8Array {
   return treeKey
 }
 
-export const POINT_IDENTITY = zeroCommitment()
+export const POINT_IDENTITY = new Uint8Array(0)
