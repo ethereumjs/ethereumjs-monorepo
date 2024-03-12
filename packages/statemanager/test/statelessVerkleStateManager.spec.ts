@@ -116,16 +116,16 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const account = await stateManager.getAccount(address)
 
     assert.equal(
-      account.balance,
-      bytesToBigInt(hexToBytes(balanceRaw), true),
+      account!.balance,
+      bytesToBigInt(hexToBytes(balanceRaw!), true),
       'should have correct balance'
     )
     assert.equal(
-      account.nonce,
-      bytesToBigInt(hexToBytes(nonceRaw), true),
+      account!.nonce,
+      bytesToBigInt(hexToBytes(nonceRaw!), true),
       'should have correct nonce'
     )
-    assert.equal(bytesToHex(account.codeHash), codeHash, 'should have correct codeHash')
+    assert.equal(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
   })
 
   it(`copy()`, async () => {
@@ -140,7 +140,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     })
     stateManager.initVerkleExecutionWitness(block.executionWitness)
 
-    const stateManagerCopy = stateManager.shallowCopy()
+    const stateManagerCopy = stateManager.shallowCopy() as StatelessVerkleStateManager
 
     assert.equal(
       stateManagerCopy['_accountCacheSettings'].type,
