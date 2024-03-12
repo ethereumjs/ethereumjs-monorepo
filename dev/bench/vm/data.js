@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1710163909579,
+  "lastUpdate": 1710259802454,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "66335769+ScottyPoi@users.noreply.github.com",
-            "name": "Scotty",
-            "username": "ScottyPoi"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "9e5798089cf5d15d991d1e9f44f444cea1c12d27",
-          "message": "Client: fix test nesting and other vitest issues (#3266)\n\n* client: fix rlpxserver.spec.ts nesting\r\n\r\n* client: fix event based test\r\n\r\n* client: fix test nesting / events in rlpxsender.spec.ts\r\n\r\n* client: fix test nesting in CLConnectionManager test\r\n\r\n* client: fix test nesting / event issues in integration/beaconsync.spec.ts\r\n\r\n* client: fix nesting / events issues in client.spec.ts\r\n\r\n* client: fix test nesting / events in fullethereumservice.spec.ts\r\n\r\n* client: fix test nesting / events in fullysync.spec.ts\r\n\r\n* client: fix test nesting / events in lightsync.spec.ts\r\n\r\n* client: fix merge.spec.ts\r\n\r\n* client: fix miner.spec.ts\r\n\r\n* client: fix peerpool.spec.ts\r\n\r\n* client: refactor and fix pow.spec.ts\r\n\r\n* client: fix for miner/miner.spec.ts\r\n\r\n* client: fix for peerpool.spec.ts\r\n\r\n* client: fix nexting in fullethereumservice.spec.ts\r\n\r\n* client: fix for lightethereumservice.spec.ts\r\n\r\n* client: fix for sim/beacsonsync.spec.ts\r\n\r\n* client: apply fixes to blockfetcher.spec.ts\r\n\r\n* client: apply fixes to fetcher.spec.ts\r\n\r\n* client: apply fixes to headerfetcher.spec.ts\r\n\r\n* client: apply fixes to reverseblockfetcher.spec.ts\r\n\r\n* client: apply fixes to lightsync.spec.ts\r\n\r\n* client: apply fixes to sync.spec.ts\r\n\r\n* fetcher.spec: remove as any declarations",
-          "timestamp": "2024-02-07T14:06:29+01:00",
-          "tree_id": "8de2dc57f73103ca44c17a4af0af53bc3f25146a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/9e5798089cf5d15d991d1e9f44f444cea1c12d27"
-        },
-        "date": 1707311494759,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40445,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39269,
-            "range": "±2.04%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39288,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36899,
-            "range": "±4.23%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37511,
-            "range": "±2.26%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.83%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jochembrouwer96@gmail.com",
+            "name": "Jochem Brouwer",
+            "username": "jochem-brouwer"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "20d088eb1583ef114d6039462c780cceba862d81",
+          "message": "Fix node versions (#3286)\n\n* client tests: fix fetcher test\r\n\r\n* Switch test from testdouble to vitest mocks\r\n\r\n* Sort of fix test\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-03-12T12:07:16-04:00",
+          "tree_id": "5d36b6fa23451a2f87e9bfb72560ee8fe88987a7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/20d088eb1583ef114d6039462c780cceba862d81"
+        },
+        "date": 1710259801749,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42719,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 42745,
+            "range": "±1.32%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 42236,
+            "range": "±1.47%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 38639,
+            "range": "±5.32%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 40266,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
           }
         ]
       }
