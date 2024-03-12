@@ -97,9 +97,6 @@ export class VM {
     if (opts.genesisState !== undefined) {
       await opts.stateManager.generateCanonicalGenesis(genesisState)
     }
-    if (typeof (<any>opts.blockchain)._init === 'function') {
-      await (opts.blockchain as any)._init({ genesisState })
-    }
 
     if (opts.profilerOpts !== undefined) {
       const profilerOpts = opts.profilerOpts
