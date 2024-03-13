@@ -53,21 +53,23 @@ export function getTransaction(
   sign = false,
   value = '0x00',
   createContract = false,
-  nonce = 0
+  nonce = 0,
+  data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+  to: string | undefined = '0x0000000000000000000000000000000000000000',
+  gasLimit: number = 90000,
+  gasPrice: number = 100
 ) {
-  let to: string | undefined = '0x0000000000000000000000000000000000000000'
-  let data = '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
-
   if (createContract) {
     to = undefined
     data =
+      data ||
       '0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723158204aed884a44fd1747efccba1447a2aa2d9a4b06dd6021c4a3bbb993021e0a909e64736f6c634300050f0032'
   }
 
   const txParams: any = {
     nonce,
-    gasPrice: 100,
-    gasLimit: 90000,
+    gasPrice,
+    gasLimit,
     to,
     value,
     data,

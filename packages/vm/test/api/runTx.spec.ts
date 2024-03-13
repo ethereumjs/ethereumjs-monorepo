@@ -80,6 +80,179 @@ describe('runTx() -> successful API parameter usage', async () => {
     await simpleRun(vm, 'goerli (PoA), london HF, default SM - should run without errors')
   })
 
+  it('simple run and revert', async () => {
+    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const vm = await VM.create({
+      common,
+      blockchain: await Blockchain.create({ validateConsensus: false, validateBlocks: false }),
+    })
+    /*
+    pragma solidity >=0.8.2 <0.9.0;
+    contract Storage {
+
+        uint256 public number;
+
+        function incr() public {
+            number++;
+        }
+    }
+    */
+    const bytecode =
+      '0x608060405234801561001057600080fd5b50610164806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063119fbbd41461003b5780638381f58a14610045575b600080fd5b610043610063565b005b61004d61007c565b60405161005a9190610091565b60405180910390f35b600080815480929190610075906100b6565b9190505550565b60005481565b61008b816100ac565b82525050565b60006020820190506100a66000830184610082565b92915050565b6000819050919050565b60006100c1826100ac565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8214156100f4576100f36100ff565b5b600182019050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212209406edd37c93969bf043c9479e8dd9d97cb54f94deb6c31567a70e62288f9df764736f6c63430008070033'
+    let tx = getTransaction(
+      vm.common,
+      TransactionType.FeeMarketEIP1559,
+      true,
+      '',
+      true,
+      0,
+      bytecode,
+      undefined,
+      200000,
+      1
+    )
+
+    const caller = tx.getSenderAddress()
+    const acc = createAccount(BigInt(0), BigInt(1000000000))
+    await vm.stateManager.putAccount(caller, acc)
+
+    let block = Block.fromBlockData(
+      {
+        header: {
+          number: 0,
+          gasLimit: 8000000,
+          baseFeePerGas: '0x1',
+        },
+        transactions: [tx],
+      },
+      { common }
+    )
+    // 1 - contract deployment
+    let resBlock = await vm.runBlock({
+      block,
+      generate: true,
+      skipNonce: true,
+      skipBlockValidation: true,
+      skipBalance: false,
+    })
+    let res = resBlock.results[0]
+    const contractAddress = res.createdAddress?.toString()
+
+    // 2 - checkpoint
+    // at time of checkpoint, "number" is 0
+    await vm.evm.journal.checkpoint()
+
+    // 3 - call to "incr"
+    // after this tx, number is 1
+    tx = getTransaction(
+      vm.common,
+      TransactionType.FeeMarketEIP1559,
+      true,
+      '',
+      false,
+      1,
+      '0x119fbbd4',
+      contractAddress
+    )
+    block = Block.fromBlockData(
+      {
+        header: {
+          number: 1,
+          gasLimit: 8000000,
+          baseFeePerGas: '0x1',
+        },
+        transactions: [tx],
+      },
+      { common }
+    )
+    resBlock = await vm.runBlock({
+      block,
+      generate: true,
+      skipNonce: true,
+      skipBlockValidation: true,
+      skipBalance: false,
+    })
+
+    // 4 - call to "number"
+    // this should return 1
+    tx = getTransaction(
+      vm.common,
+      TransactionType.FeeMarketEIP1559,
+      true,
+      '',
+      false,
+      1,
+      '0x8381f58a',
+      contractAddress
+    )
+    block = Block.fromBlockData(
+      {
+        header: {
+          number: 2,
+          gasLimit: 8000000,
+          baseFeePerGas: '0x1',
+        },
+        transactions: [tx],
+      },
+      { common }
+    )
+    resBlock = await vm.runBlock({
+      block,
+      generate: true,
+      skipNonce: true,
+      skipBlockValidation: true,
+      skipBalance: false,
+    })
+    res = resBlock.results[0]
+
+    // return value should be '0x0000000000000000000000000000000000000000000000000000000000000001', because incr has been called.
+    assert.equal(
+      bytesToHex(res.execResult.returnValue),
+      '0x0000000000000000000000000000000000000000000000000000000000000001'
+    )
+
+    // 5 -revert
+    await vm.evm.journal.revert()
+
+    // 6 - call to "number"
+    // this should return 1
+    tx = getTransaction(
+      vm.common,
+      TransactionType.FeeMarketEIP1559,
+      true,
+      '',
+      false,
+      1,
+      '0x8381f58a',
+      contractAddress
+    )
+    block = Block.fromBlockData(
+      {
+        header: {
+          number: 2,
+          gasLimit: 8000000,
+          baseFeePerGas: '0x1',
+        },
+        transactions: [tx],
+      },
+      { common }
+    )
+    resBlock = await vm.runBlock({
+      block,
+      generate: true,
+      skipNonce: true,
+      skipBlockValidation: true,
+      skipBalance: false,
+    })
+    res = resBlock.results[0]
+
+    // return value should be "0x0000000000000000000000000000000000000000000000000000000000000000" as the state is at this point reverted.
+    assert.equal(
+      bytesToHex(res.execResult.returnValue),
+      '0x0000000000000000000000000000000000000000000000000000000000000000'
+    )
+  })
+
   it('test successful hardfork matching', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
     const vm = await VM.create({
