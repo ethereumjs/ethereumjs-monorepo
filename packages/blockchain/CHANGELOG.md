@@ -44,6 +44,10 @@ Note that passing in the KZG setup file is not necessary anymore, since this is 
 
 Since this fits well also to be placed here relatively prominently for awareness: we had a relatively nasty bug in the `@ethereumjs/trie` library with a `Node.js` web stream import also affecting browser compatibility, see PR [#3280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3280). This bug has been fixed along with these releases and this library now references the updated trie library version.
 
+### Other Changes
+
+- Fix a type error related to the `lru-cache` dependency, PR [#3285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3285)
+
 ## 7.1.0 - 2024-02-08
 
 ### Dencun Hardfork Support

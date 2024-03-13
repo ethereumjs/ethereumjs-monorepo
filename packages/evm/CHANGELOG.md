@@ -46,7 +46,8 @@ Since this fits well also to be placed here relatively prominently for awareness
 
 ### Other Changes
 
-- Support for Preimage generation (verkle-related, experimental), new `startReportingPreimages()` method, PR [#3143](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3143)
+- Support for Preimage generation (verkle-related, experimental), new `startReportingPreimages()` method, PR [#3143](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3143) and [#3298](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3298)
+- Early support for [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - "Save historical block hashes in state" (Verkle related, likely subject to change), PR [#3268](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3268)
 
 ## 2.2.1 - 2024-02-08
 
