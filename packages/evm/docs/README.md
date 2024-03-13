@@ -22,6 +22,7 @@
 - [ExecResult](interfaces/ExecResult.md)
 - [InterpreterStep](interfaces/InterpreterStep.md)
 - [PrecompileInput](interfaces/PrecompileInput.md)
+- [bn128](interfaces/bn128.md)
 
 ### Type Aliases
 
@@ -45,7 +46,7 @@ Log that the contract emits.
 
 #### Defined in
 
-[types.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L336)
+[types.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L337)
 
 ## Variables
 

@@ -102,7 +102,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie.ts:719](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L719)
+[packages/trie/src/trie.ts:738](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L738)
 
 ## Methods
 
@@ -139,7 +139,7 @@ await trie.batch(ops)
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1120)
+[packages/trie/src/trie.ts:1139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1139)
 
 ___
 
@@ -178,7 +178,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1287)
+[packages/trie/src/trie.ts:1306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1306)
 
 ___
 
@@ -199,7 +199,7 @@ If not during a checkpoint phase
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1297)
+[packages/trie/src/trie.ts:1316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1316)
 
 ___
 
@@ -241,7 +241,7 @@ Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#str
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1192)
+[packages/trie/src/trie.ts:1211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1211)
 
 ___
 
@@ -294,7 +294,7 @@ ___
 
 ### findPath
 
-▸ **findPath**(`key`, `throwIfMissing?`): `Promise`<[`Path`](../interfaces/Path.md)\>
+▸ **findPath**(`key`, `throwIfMissing?`, `partialPath?`): `Promise`<[`Path`](../interfaces/Path.md)\>
 
 Tries to find a path to the node for the given key.
 It returns a `stack` of nodes to the closest node.
@@ -305,6 +305,8 @@ It returns a `stack` of nodes to the closest node.
 | :------ | :------ | :------ | :------ |
 | `key` | `Uint8Array` | `undefined` | the search key |
 | `throwIfMissing` | `boolean` | `false` | if true, throws if any nodes are missing. Used for verifying proofs. (default: false) |
+| `partialPath` | `Object` | `undefined` | - |
+| `partialPath.stack` | [`TrieNode`](../README.md#trienode)[] | `undefined` | - |
 
 #### Returns
 
@@ -328,7 +330,7 @@ Flushes all checkpoints, restoring the initial checkpoint state.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1329)
+[packages/trie/src/trie.ts:1348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1348)
 
 ___
 
@@ -397,7 +399,7 @@ Is the trie during a checkpoint phase?
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1279)
+[packages/trie/src/trie.ts:1298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1298)
 
 ___
 
@@ -419,7 +421,7 @@ Retrieves a node from db by hash.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:768](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L768)
+[packages/trie/src/trie.ts:787](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L787)
 
 ___
 
@@ -435,7 +437,7 @@ Persists the root hash in the underlying database
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1226)
+[packages/trie/src/trie.ts:1245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1245)
 
 ___
 
@@ -480,7 +482,7 @@ parent checkpoint as current.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1313)
+[packages/trie/src/trie.ts:1332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1332)
 
 ___
 
@@ -526,7 +528,7 @@ Saves a stack of nodes to the database.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1034](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1034)
+[packages/trie/src/trie.ts:1053](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1053)
 
 ___
 
@@ -557,7 +559,7 @@ explicitly setting `cacheSize` as an option on the method.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1209)
+[packages/trie/src/trie.ts:1228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1228)
 
 ___
 
@@ -629,7 +631,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/trie.ts:1138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1138)
+[packages/trie/src/trie.ts:1157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L1157)
 
 ___
 
@@ -685,7 +687,7 @@ Resolves when finished walking trie.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:726](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L726)
+[packages/trie/src/trie.ts:745](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L745)
 
 ___
 
@@ -709,7 +711,7 @@ Resolves when finished walking trie.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L737)
+[packages/trie/src/trie.ts:756](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L756)
 
 ___
 
@@ -734,7 +736,7 @@ Resolves when finished walking trie.
 
 #### Defined in
 
-[packages/trie/src/trie.ts:715](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L715)
+[packages/trie/src/trie.ts:734](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/trie.ts#L734)
 
 ___
 

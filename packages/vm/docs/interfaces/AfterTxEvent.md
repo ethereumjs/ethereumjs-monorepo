@@ -105,7 +105,7 @@ Address of created account during transaction, if any
 
 #### Defined in
 
-evm/dist/cjs/types.d.ts:247
+evm/dist/cjs/types.d.ts:248
 
 ___
 
@@ -121,7 +121,7 @@ Contains the results from running the code, if any, as described in runCode
 
 #### Defined in
 
-evm/dist/cjs/types.d.ts:251
+evm/dist/cjs/types.d.ts:252
 
 ___
 

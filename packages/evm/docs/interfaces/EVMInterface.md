@@ -48,7 +48,7 @@ ___
 | `putAccount` | (`address`: `Address`, `account`: `Account`) => `Promise`<`void`\> |
 | `revert` | () => `Promise`<`void`\> |
 | `startReportingAccessList` | () => `void` |
-| `startReportingPreimages` | () => `void` |
+| `startReportingPreimages?` | () => `void` |
 
 #### Defined in
 

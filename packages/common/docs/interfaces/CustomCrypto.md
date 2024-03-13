@@ -38,7 +38,7 @@
 
 #### Defined in
 
-[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L85)
+[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L86)
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 #### Defined in
 
-[types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L84)
+[types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L85)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L75)
+[types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 #### Defined in
 
-[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L83)
+[types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L84)
 
 ___
 
@@ -148,7 +148,7 @@ Interface for providing custom cryptographic primitives in place of `ethereum-cr
 
 #### Defined in
 
-[types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L74)
+[types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L75)
 
 ___
 
@@ -158,7 +158,7 @@ ___
 
 #### Defined in
 
-[types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L86)
+[types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L87)
 
 ___
 
@@ -182,4 +182,4 @@ ___
 
 #### Defined in
 
-[types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L82)
+[types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L83)

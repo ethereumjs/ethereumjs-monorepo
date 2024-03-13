@@ -33,6 +33,7 @@ can be created via the main constructor and the [customChains](../interfaces/Com
 - [copy](Common.md#copy)
 - [dnsNetworks](Common.md#dnsnetworks)
 - [eipBlock](Common.md#eipblock)
+- [eipTimestamp](Common.md#eiptimestamp)
 - [eips](Common.md#eips)
 - [forkHash](Common.md#forkhash)
 - [genesis](Common.md#genesis)
@@ -131,7 +132,7 @@ True if HF is active on block number
 
 #### Defined in
 
-[common.ts:706](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L706)
+[common.ts:703](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L703)
 
 ___
 
@@ -149,7 +150,7 @@ Dict with bootstrap nodes
 
 #### Defined in
 
-[common.ts:956](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L956)
+[common.ts:975](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L975)
 
 ___
 
@@ -167,7 +168,7 @@ chain Id
 
 #### Defined in
 
-[common.ts:980](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L980)
+[common.ts:999](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L999)
 
 ___
 
@@ -185,7 +186,7 @@ chain name (lower case)
 
 #### Defined in
 
-[common.ts:988](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L988)
+[common.ts:1007](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1007)
 
 ___
 
@@ -207,7 +208,7 @@ Note: This value can update along a Hardfork.
 
 #### Defined in
 
-[common.ts:1037](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1037)
+[common.ts:1056](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1056)
 
 ___
 
@@ -233,7 +234,7 @@ Note: This value can update along a Hardfork.
 
 #### Defined in
 
-[common.ts:1063](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1063)
+[common.ts:1082](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1082)
 
 ___
 
@@ -252,7 +253,7 @@ Note: This value can update along a Hardfork.
 
 #### Defined in
 
-[common.ts:1015](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1015)
+[common.ts:1034](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1034)
 
 ___
 
@@ -268,7 +269,7 @@ Returns a deep copy of this [Common](Common.md) instance.
 
 #### Defined in
 
-[common.ts:1084](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1084)
+[common.ts:1103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1103)
 
 ___
 
@@ -286,7 +287,7 @@ Array of DNS ENR urls
 
 #### Defined in
 
-[common.ts:964](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L964)
+[common.ts:983](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L983)
 
 ___
 
@@ -310,7 +311,31 @@ Block number or null if unscheduled
 
 #### Defined in
 
-[common.ts:769](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L769)
+[common.ts:766](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L766)
+
+___
+
+### eipTimestamp
+
+▸ **eipTimestamp**(`eip`): ``null`` \| `bigint`
+
+Returns the scheduled timestamp of the EIP (if scheduled and scheduled by timestamp)
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eip` | `number` | EIP number |
+
+#### Returns
+
+``null`` \| `bigint`
+
+Scheduled timestamp. If this EIP is unscheduled, or the EIP is scheduled by block number or ttd, then it returns `null`.
+
+#### Defined in
+
+[common.ts:784](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L784)
 
 ___
 
@@ -329,7 +354,7 @@ List of EIPs
 
 #### Defined in
 
-[common.ts:1005](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1005)
+[common.ts:1024](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1024)
 
 ___
 
@@ -352,7 +377,7 @@ Returns an eth/64 compliant fork hash (EIP-2124)
 
 #### Defined in
 
-[common.ts:890](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L890)
+[common.ts:905](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L905)
 
 ___
 
@@ -370,7 +395,7 @@ Genesis dictionary
 
 #### Defined in
 
-[common.ts:940](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L940)
+[common.ts:955](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L955)
 
 ___
 
@@ -399,7 +424,7 @@ The name of the HF
 
 #### Defined in
 
-[common.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L329)
+[common.ts:330](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L330)
 
 ___
 
@@ -423,7 +448,7 @@ True if hardfork set is greater than hardfork provided
 
 #### Defined in
 
-[common.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L737)
+[common.ts:734](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L734)
 
 ___
 
@@ -441,7 +466,7 @@ Hardfork name
 
 #### Defined in
 
-[common.ts:972](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L972)
+[common.ts:991](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L991)
 
 ___
 
@@ -465,7 +490,7 @@ Block number or null if unscheduled
 
 #### Defined in
 
-[common.ts:746](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L746)
+[common.ts:743](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L743)
 
 ___
 
@@ -487,7 +512,7 @@ Array with hardfork data (name, block, forkHash)
 
 #### Defined in
 
-[common.ts:912](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L912)
+[common.ts:927](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L927)
 
 ___
 
@@ -512,7 +537,7 @@ True if HF1 gte HF2
 
 #### Defined in
 
-[common.ts:717](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L717)
+[common.ts:714](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L714)
 
 ___
 
@@ -537,7 +562,7 @@ True if HF is active on block number
 
 #### Defined in
 
-[common.ts:691](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L691)
+[common.ts:688](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L688)
 
 ___
 
@@ -561,7 +586,7 @@ Total difficulty or null if no set
 
 #### Defined in
 
-[common.ts:787](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L787)
+[common.ts:802](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L802)
 
 ___
 
@@ -581,7 +606,7 @@ ___
 
 #### Defined in
 
-[common.ts:755](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L755)
+[common.ts:752](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L752)
 
 ___
 
@@ -599,7 +624,7 @@ Array with arrays of hardforks
 
 #### Defined in
 
-[common.ts:948](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L948)
+[common.ts:963](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L963)
 
 ___
 
@@ -626,7 +651,7 @@ by the [eips](../interfaces/CommonOpts.md#eips) constructor option
 
 #### Defined in
 
-[common.ts:678](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L678)
+[common.ts:675](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L675)
 
 ___
 
@@ -644,7 +669,7 @@ network Id
 
 #### Defined in
 
-[common.ts:996](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L996)
+[common.ts:1015](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1015)
 
 ___
 
@@ -668,7 +693,7 @@ Block timestamp, number or null if not available
 
 #### Defined in
 
-[common.ts:801](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L801)
+[common.ts:816](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L816)
 
 ___
 
@@ -697,7 +722,7 @@ The value requested or `BigInt(0)` if not found
 
 #### Defined in
 
-[common.ts:582](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L582)
+[common.ts:579](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L579)
 
 ___
 
@@ -726,7 +751,7 @@ The value requested or `BigInt(0)` if not found
 
 #### Defined in
 
-[common.ts:658](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L658)
+[common.ts:655](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L655)
 
 ___
 
@@ -752,7 +777,7 @@ The value requested or `undefined` if not found
 
 #### Defined in
 
-[common.ts:633](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L633)
+[common.ts:630](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L630)
 
 ___
 
@@ -778,7 +803,7 @@ The value requested or `BigInt(0)` if not found
 
 #### Defined in
 
-[common.ts:602](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L602)
+[common.ts:599](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L599)
 
 ___
 
@@ -802,7 +827,7 @@ The dictionary with parameters set as chain
 
 #### Defined in
 
-[common.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L269)
+[common.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L270)
 
 ___
 
@@ -824,7 +849,7 @@ Sets the active EIPs
 
 #### Defined in
 
-[common.ts:472](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L472)
+[common.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L469)
 
 ___
 
@@ -846,7 +871,7 @@ Sets any missing forkHashes on the passed-in [Common](Common.md) instance
 
 #### Defined in
 
-[common.ts:924](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L924)
+[common.ts:939](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L939)
 
 ___
 
@@ -868,7 +893,7 @@ Sets the hardfork to get params for
 
 #### Defined in
 
-[common.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L300)
+[common.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L301)
 
 ___
 
@@ -897,7 +922,7 @@ The name of the HF set
 
 #### Defined in
 
-[common.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L449)
+[common.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L446)
 
 ___
 
@@ -983,7 +1008,7 @@ ___
 
 #### Defined in
 
-[common.ts:1090](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1090)
+[common.ts:1109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/common.ts#L1109)
 
 ___
 

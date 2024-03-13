@@ -90,7 +90,7 @@ EVMResult.createdAddress
 
 #### Defined in
 
-evm/dist/cjs/types.d.ts:247
+evm/dist/cjs/types.d.ts:248
 
 ___
 
@@ -106,7 +106,7 @@ EVMResult.execResult
 
 #### Defined in
 
-evm/dist/cjs/types.d.ts:251
+evm/dist/cjs/types.d.ts:252
 
 ___
 
