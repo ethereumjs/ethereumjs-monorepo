@@ -46,6 +46,7 @@ Since this fits well also to be placed here relatively prominently for awareness
 
 ### Other Changes
 
+- Remove internal `_init()` method along EVM/VM constructor refactoring, PRs [#3304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3304/) and [#3315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3315)
 - Fix a type error related to the `lru-cache` dependency, PR [#3285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3285)
 
 ## 7.1.0 - 2024-02-08

@@ -8,6 +8,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 8.0.0 - 2024-03-05
 
+### New EVM.create() Async Static Constructor / Mandatory VM.create() Constructor
+
+This is an in-between breaking release on both the EVM and VM packages due to a problematic top level await() discovery in the underlying `rustbn-wasm` library (see issue [#10](https://github.com/ethereumjs/rustbn-wasm/issues/10)) generally affecting the compatiblity of our libraries.
+
+The `EVM` direct constructor initialization with `new EVM()` now has been deprecated and replaced by an async static `create()` constructor, as it is already done in various other libraries in the EthereumJS monorepo, see PRs [#3304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3304/) and [#3315](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3315). If you pass in a custom `EVM` along your `VM` initialization you **need to update your EVM initialization**.
+
+An EVM is now initialized like the following:
+
+```ts
+import { hexToBytes } from '@ethereumjs/util'
+import { EVM } from '@ethereumjs/evm'
+
+const evm = await EVM.create()
+const res = await evm.runCode({ code: hexToBytes('0x6001') })
+```
+
+For the `VM` there has been an async `create()` constructor before already and the main constructor was labelled as `deprecated`. While this main constructor was still working before, along with these releases **the main VM constructor is now "fully out of order" and VM initialization solely work with the async `create()` constructor**.
+
+Beyond solving this specific problem this generally allows for a cleaner and async-complete initialization of underlying libraries and is more future proof towards eventual upcoming async initialization additions.
+
 ### Full 4844 Browser Readiness
 
 #### WASM KZG
