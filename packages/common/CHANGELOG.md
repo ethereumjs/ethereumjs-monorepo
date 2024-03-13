@@ -46,6 +46,7 @@ Since this fits well also to be placed here relatively prominently for awareness
 
 ### Other Changes
 
+- TypeScript type fixes leading to build problems with certain tools (Vercel), PR [#3306](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3306)
 - Early support for [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - "Save historical block hashes in state" (Verkle related, likely subject to change), PR [#3268](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3268)
 
 ## 4.2.0 - 2024-02-08

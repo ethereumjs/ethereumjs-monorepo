@@ -14,6 +14,7 @@ So functionality has been removed in PR [#3280](https://github.com/ethereumjs/et
 
 ### Other Changes
 
+- Add optional `partialPath` parameter to `trie.findPath()`, PR [#3305](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3305)
 - Add export for `Path` interface for better TypeScript integration when using the `findPath()` method, PR [#3292](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3292)
 - Improved zero-element proof behavior in `verifyProof()` method, PR [#3047](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3047)
 - Fix a type error related to the `lru-cache` dependency, PR [#3285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3285)
