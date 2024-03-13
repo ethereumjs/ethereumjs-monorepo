@@ -155,7 +155,7 @@ export interface BlockData {
   /**
    * EIP-6100: Deposits in EL (experimental)
    */
-  deposits?: DepositV1[]
+  deposits?: Array<DepositV1>
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
