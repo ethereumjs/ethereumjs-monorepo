@@ -13,9 +13,15 @@ import { BranchNode } from './branch.js'
 
 import type { Trie } from '../trie.js'
 
-export function orderBatch(ops: BatchDBOp[]): BatchDBOp[] {
+export function orderBatch(
+  ops: BatchDBOp[],
+  keyTransform: (msg: Uint8Array) => Uint8Array = (msg: Uint8Array) => {
+    return msg
+  }
+): BatchDBOp[] {
   const keyNibbles: [number, number[]][] = ops.map((o, i) => {
-    const nibbles: number[] = bytesToNibbles(o.key)
+    const appliedKey = keyTransform(o.key)
+    const nibbles: number[] = bytesToNibbles(appliedKey)
     return [i, nibbles]
   })
   keyNibbles.sort(([_, a], [__, b]) => {
@@ -116,7 +122,7 @@ export async function batchPut(
   if (equalsBytes(trie.root(), trie.EMPTY_TRIE_ROOT) === true) {
     _stack = [await trie['_createInitialNode'](appliedKey, value)]
   } else {
-    _stack = await _put(trie, appliedKey, value, skipKeyTransform, path)
+    _stack = await _put(trie, key, value, skipKeyTransform, path)
   }
   await trie.persistRoot()
   trie['_lock'].release()
@@ -128,11 +134,18 @@ export async function _batch(
   ops: BatchDBOp[],
   skipKeyTransform?: boolean
 ): Promise<void> {
-  const sortedOps = orderBatch(ops)
+  const keyTransform =
+    skipKeyTransform === true
+      ? undefined
+      : (msg: Uint8Array) => {
+          return trie['appliedKey'](msg)
+        }
+  const sortedOps = orderBatch(ops, keyTransform)
   let stack: TrieNode[] = []
   const stackPathCache: Map<string, TrieNode> = new Map()
   for (const op of sortedOps) {
-    const nibbles = bytesToNibbles(op.key)
+    const appliedKey = skipKeyTransform === true ? op.key : trie['appliedKey'](op.key)
+    const nibbles = bytesToNibbles(appliedKey)
     stack = []
     let remaining = nibbles
     for (let i = 0; i < nibbles.length; i++) {
@@ -144,9 +157,6 @@ export async function _batch(
       }
     }
     if (op.type === 'put') {
-      if (op.value === null || op.value === undefined) {
-        throw new Error('Invalid batch db operation')
-      }
       stack = await batchPut(trie, op.key, op.value, skipKeyTransform, stack, remaining)
       const path: number[] = []
       for (const node of stack) {
