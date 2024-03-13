@@ -1,6 +1,6 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
-import type { ExecutionPayload, VerkleExecutionWitness, DepositV1 } from './types.js'
+import type { DepositV1, ExecutionPayload, VerkleExecutionWitness } from './types.js'
 
 type BeaconWithdrawal = {
   index: string
