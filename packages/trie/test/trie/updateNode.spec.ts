@@ -183,7 +183,7 @@ describe('Large Batch Test', async () => {
     assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
   })
 })
-describe.only('Large Batch Test (secure)', async () => {
+describe('Large Batch Test (secure)', async () => {
   const keys = Array.from({ length: 1 }, () => randomBytes(20))
   const batchOP: BatchDBOp[] = keys.map((k) => {
     return {
