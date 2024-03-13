@@ -887,8 +887,12 @@ export class Engine {
 
     // TODO check if versionedHashes field exists in payload?
 
-    // might need to check status to make sure block is not invalid like newPayloadV1
-    return this.newPayload(params)
+    const newPayloadRes = await this.newPayload(params)
+    if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
+      newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
+    }
+    return newPayloadRes
   }
 
   /**
@@ -1442,6 +1446,11 @@ export class Engine {
    */
   async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params, 3)
+  }
+
+  async getPayloadV6110(params: [Bytes8]) {
+    const { executionPayload, blockValue } = await this.getPayload(params, 2)
+    return { executionPayload, blockValue }
   }
   /**
    * Compare transition configuration parameters.
