@@ -149,10 +149,21 @@ describe('Large Batch Test', async () => {
     const deleteKeys: Uint8Array[] = Array.from({ length: 100 }, () => {
       return batchOP[Math.floor(Math.random() * batchOP.length)].key
     })
+    const putNull: Uint8Array[] = Array.from({ length: 10 }, () => {
+      return batchOP[Math.floor(Math.random() * batchOP.length)].key
+    })
+
     const deleteBatch: BatchDBOp[] = deleteKeys.map((k) => {
       return {
         type: 'del',
         key: k,
+      }
+    })
+    const putNullBatch: BatchDBOp[] = putNull.map((k) => {
+      return {
+        type: 'put',
+        key: k,
+        value: Uint8Array.from([]),
       }
     })
     for (const k of deleteKeys) {
@@ -160,6 +171,226 @@ describe('Large Batch Test', async () => {
     }
     await trie_1.batch(deleteBatch)
     await _batch(trie_2, deleteBatch)
+    assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
+    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
+
+    for (const k of putNull) {
+      await trie_0.put(k, null)
+    }
+    await trie_1.batch(putNullBatch)
+    await _batch(trie_2, putNullBatch)
+    assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
+    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
+  })
+})
+describe.only('Large Batch Test (secure)', async () => {
+  const keys = Array.from({ length: 1 }, () => randomBytes(20))
+  const batchOP: BatchDBOp[] = keys.map((k) => {
+    return {
+      type: 'put',
+      key: k,
+      value: randomBytes(32),
+    }
+  })
+  const trie_0 = new Trie({ useKeyHashing: true })
+  const trie_1 = new Trie({ useKeyHashing: true })
+  const trie_2 = new Trie({ useKeyHashing: true })
+  const trie_3 = new Trie({})
+
+  const toHash = Uint8Array.from([1, 2, 3, 4])
+  const hash0 = trie_0['hash'](toHash)
+  const hash1 = trie_1['hash'](toHash)
+  const hash2 = trie_2['hash'](toHash)
+  const hash3 = trie_3['hash'](toHash)
+  it('should have same hash', async () => {
+    assert.deepEqual(hash0, hash1, 'hashes should match')
+  })
+  it('should have same hash', async () => {
+    assert.deepEqual(hash0, hash2, 'hashes should match')
+  })
+  it('should not have same hash', async () => {
+    assert.deepEqual(hash0, hash3, 'hashes should not match')
+  })
+  it('tries should start empty', async () => {
+    assert.equal(
+      bytesToHex(trie_1.root()),
+      bytesToHex(trie_2.root()),
+      'trie roots should match (v1)'
+    )
+  })
+  it('tries should start empty', async () => {
+    assert.deepEqual(
+      bytesToHex(trie_0.root()),
+      bytesToHex(trie_3.root()),
+      'trie roots should  match'
+    )
+  })
+
+  it('tries should start empty', async () => {
+    assert.equal(
+      bytesToHex(trie_1.root()),
+      bytesToHex(trie_0.root()),
+      'trie roots should match (v1)'
+    )
+  })
+  it('batch should work', async () => {
+    for (const op of batchOP) {
+      if (op.type === 'put') {
+        await trie_0.put(op.key, op.value)
+        await trie_3.put(op.key, op.value)
+      }
+    }
+    const value = (batchOP[0] as any).value
+    const key = batchOP[0].key
+    const found = await trie_0.get(key)
+    assert.deepEqual(found, value, 'value should be found in trie')
+    const found3 = await trie_3.get(key)
+    assert.deepEqual(found3, value, 'value should be found in trie')
+    await trie_1.batch(batchOP)
+    await _batch(trie_2, batchOP)
+
+    const root0 = await trie_0.lookupNode(trie_0.root())
+    assert.deepEqual(root0.value(), value, 'rootnode should be only node')
+
+    const found1 = await trie_1.get(key)
+    assert.deepEqual(found1, value, 'value should be found in trie')
+    const found2 = await trie_2.get(key)
+    assert.deepEqual(found2, value, 'value should be found in trie')
+
+    assert.notEqual(
+      bytesToHex(trie_0.root()),
+      bytesToHex(trie_0.EMPTY_TRIE_ROOT),
+      'trie is not empty'
+    )
+    assert.notEqual(
+      bytesToHex(trie_1.root()),
+      bytesToHex(trie_1.EMPTY_TRIE_ROOT),
+      'trie is not empty'
+    )
+    assert.notEqual(
+      bytesToHex(trie_2.root()),
+      bytesToHex(trie_2.EMPTY_TRIE_ROOT),
+      'trie is not empty'
+    )
+    assert.notEqual(
+      bytesToHex(trie_3.root()),
+      bytesToHex(trie_3.EMPTY_TRIE_ROOT),
+      'trie is not empty'
+    )
+    assert.equal(
+      bytesToHex(trie_1.root()),
+      bytesToHex(trie_2.root()),
+      'trie roots should match (v3)'
+    )
+    assert.notDeepEqual(
+      bytesToHex(trie_0.root()),
+      bytesToHex(trie_3.root()),
+      'trie roots should match (v1)'
+    )
+  })
+
+  it('should remain same', async () => {
+    const deleteKeys: Uint8Array[] = Array.from({ length: 100 }, () => {
+      return batchOP[Math.floor(Math.random() * batchOP.length)].key
+    })
+    const putNull: Uint8Array[] = Array.from({ length: 10 }, () => {
+      return batchOP[Math.floor(Math.random() * batchOP.length)].key
+    })
+
+    const deleteBatch: BatchDBOp[] = deleteKeys.map((k) => {
+      return {
+        type: 'del',
+        key: k,
+      }
+    })
+    const putNullBatch: BatchDBOp[] = putNull.map((k) => {
+      return {
+        type: 'put',
+        key: k,
+        value: Uint8Array.from([]),
+      }
+    })
+    for (const k of deleteKeys) {
+      await trie_0.del(k)
+    }
+    await trie_1.batch(deleteBatch)
+    await _batch(trie_2, deleteBatch)
+    assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
+    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
+
+    for (const k of putNull) {
+      await trie_0.put(k, null)
+    }
+    await trie_1.batch(putNullBatch)
+    await _batch(trie_2, putNullBatch)
+    // assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
+    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
+  })
+})
+describe('Large Batch Test (use node pruning)', async () => {
+  const keys = Array.from({ length: 1000 }, () => randomBytes(20))
+  const batchOP: BatchDBOp[] = keys.map((k) => {
+    return {
+      type: 'put',
+      key: k,
+      value: randomBytes(32),
+    }
+  })
+  const trie_0 = new Trie({ useNodePruning: true })
+  const trie_1 = new Trie({ useNodePruning: true })
+  const trie_2 = new Trie({ useNodePruning: true })
+
+  for (const op of batchOP) {
+    if (op.type === 'put') {
+      await trie_0.put(op.key, op.value)
+    }
+  }
+
+  await trie_1.batch(batchOP)
+
+  await _batch(trie_2, batchOP)
+
+  it('batch should work', () => {
+    assert.notDeepEqual(trie_0.root(), trie_0.EMPTY_TRIE_ROOT, 'trie is not empty')
+    assert.deepEqual(trie_0.root(), trie_1.root(), 'trie roots should match (v1)')
+    assert.deepEqual(trie_0.root(), trie_2.root(), 'trie roots should match (v2)')
+    assert.deepEqual(trie_1.root(), trie_2.root(), 'trie roots should match (v3)')
+  })
+
+  it('should remain same', async () => {
+    const deleteKeys: Uint8Array[] = Array.from({ length: 100 }, () => {
+      return batchOP[Math.floor(Math.random() * batchOP.length)].key
+    })
+    const putNull: Uint8Array[] = Array.from({ length: 10 }, () => {
+      return batchOP[Math.floor(Math.random() * batchOP.length)].key
+    })
+
+    const deleteBatch: BatchDBOp[] = deleteKeys.map((k) => {
+      return {
+        type: 'del',
+        key: k,
+      }
+    })
+    const putNullBatch: BatchDBOp[] = putNull.map((k) => {
+      return {
+        type: 'put',
+        key: k,
+        value: Uint8Array.from([]),
+      }
+    })
+    for (const k of deleteKeys) {
+      await trie_0.del(k)
+    }
+    await trie_1.batch(deleteBatch)
+    await _batch(trie_2, deleteBatch)
+    assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
+    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
+
+    for (const k of putNull) {
+      await trie_0.put(k, null)
+    }
+    await trie_1.batch(putNullBatch)
+    await _batch(trie_2, putNullBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
     assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
   })
