@@ -50,7 +50,7 @@ describe(`valid verkle network setup`, async () => {
     assert.equal(block0.stateRoot, genesisVerkleStateRoot)
   })
 
-  // currently it seems the the blocks can't be played one after another as it seems
+  // currently it seems the blocks can't be played one after another as it seems
   // to not do clean init of the statemanager. this isn't a problem in sequential
   // execution, but need to be fixed up in the stateless random execution
   const testCases = [

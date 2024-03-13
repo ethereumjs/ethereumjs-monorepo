@@ -131,7 +131,7 @@ const ZEROVALUE = '0x00000000000000000000000000000000000000000000000000000000000
  * This State Manager enables stateless block execution by building a
  * temporary (1-block) state from the verkle block witness.
  * The Stateless Verkle State Manager then uses that populated state
- * to fetch data requested by the the VM.
+ * to fetch data requested by the VM.
  *
  */
 export class StatelessVerkleStateManager implements EVMStateManagerInterface {

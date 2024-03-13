@@ -121,7 +121,7 @@ Provider Engine is
 and support has been removed along `v1.0.0` release, see
 issue [#115](https://github.com/ethereumjs/ethereumjs-wallet/issues/115) for context.
 
-You can use the the old `src/provider-engine.ts` code (see associated PR) as some boilerplate
+You can use the old `src/provider-engine.ts` code (see associated PR) as some boilerplate
 for your own integration if needed.
 
 ## Remarks about `toV3`

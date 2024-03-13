@@ -619,7 +619,7 @@ npm i @ethereumjs/evm
 
 The new EVM package extracts the bytecode execution logic and leaves the handling of the outer environment like setting up some pre-state, processing txs and blocks, generating receipts and paying miners (on a PoW chain) to the outer package.
 
-This makes for a cleaner separation of concerns and generally brings the the new packages a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before. This will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing used in the outer VM package.
+This makes for a cleaner separation of concerns and generally brings the new packages a lot closer to being a pure bytecode execution Ethereum Virtual Machine (EVM) implementation than before. This will allow for new ways of both customizing and adopting the inner EVM as well as providing an alternative environmental context and customize on the outer processing used in the outer VM package.
 
 ### EVM, EEI and State
 
