@@ -40,7 +40,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type { BatchDBOp, EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -84,9 +84,14 @@ export class Block {
    */
   public static async genTransactionsTrieRoot(txs: TypedTransaction[], emptyTrie?: Trie) {
     const trie = emptyTrie ?? new Trie()
-    for (const [i, tx] of txs.entries()) {
-      await trie.put(RLP.encode(i), tx.serialize())
-    }
+    const batchOp: BatchDBOp[] = txs.map((tx, i) => {
+      return {
+        type: 'put',
+        key: RLP.encode(i),
+        value: tx.serialize(),
+      }
+    })
+    await trie.batch(batchOp)
     return trie.root()
   }
 
