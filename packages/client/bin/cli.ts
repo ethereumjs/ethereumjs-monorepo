@@ -656,6 +656,9 @@ async function setupDevnet(prefundAddress: Address) {
       istanbulBlock: 0,
       berlinBlock: 0,
       londonBlock: 0,
+      mergeForkBlock: 0,
+      shanghaiTime: 0,
+      cancunTime: 0,
       ...consensusConfig,
     },
     nonce: '0x0',
@@ -676,7 +679,7 @@ async function setupDevnet(prefundAddress: Address) {
     extraData,
     alloc: { [addr]: { balance: '0x10000000000000000000' } },
   }
-  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.London })
+  const common = Common.fromGethGenesis(chainData, { chain: 'devnet', hardfork: Hardfork.Cancun })
   const customGenesisState = parseGethGenesisState(chainData)
   return { common, customGenesisState }
 }
