@@ -60,7 +60,9 @@ const main = async () => {
 main()
 ```
 
-Note that there is an additional API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
+Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
+
+Note: with the switch from v7 to v8 the old direct `new VM()` constructor usage has been fully deprecated and a `VM` can now solely be instantiated with the async static `VM.create()` constructor. This also goes for the underlying `EVM` if you use a custom `EVM`.
 
 ### Building a Block
 

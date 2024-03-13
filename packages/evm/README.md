@@ -35,14 +35,16 @@ The following is the simplest example for an EVM instantiation:
 import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
-const evm = new EVM()
 const main = async () => {
+  const evm = await EVM.create()
   const res = await evm.runCode({ code: hexToBytes('0x6001') }) // PUSH1 01 -- simple bytecode to push 1 onto the stack
   console.log(res.executionGasUsed) // 3n
 }
 
 main()
 ```
+
+Note: with the switch from v2 to v3 the old direct `new EVM()` constructor usage has been deprecated and an `EVM` now has to be instantiated with the async static `EVM.create()` constructor.
 
 ### Blockchain, State and Events
 
@@ -62,7 +64,7 @@ const main = async () => {
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
 
-  const evm = new EVM({
+  const evm = await EVM.create({
     common,
     stateManager,
     blockchain,
@@ -203,9 +205,13 @@ If you want to activate an EIP not currently active on the hardfork your `common
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
-const evm = new EVM({ common })
-console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
+  const evm = await EVM.create({ common })
+  console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
+}
+
+main()
 ```
 
 Currently supported EIPs:
