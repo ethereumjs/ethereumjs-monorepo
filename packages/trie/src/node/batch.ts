@@ -168,7 +168,16 @@ export async function _batch(
         }
       }
     } else if (op.type === 'del') {
-      await trie.del(op.key, skipKeyTransform)
+      stack = await batchPut(trie, op.key, null, skipKeyTransform, stack, remaining)
+      const path: number[] = []
+      for (const node of stack) {
+        stackPathCache.set(JSON.stringify([...path]), node)
+        if (node instanceof BranchNode) {
+          path.push(nibbles.shift()!)
+        } else {
+          path.push(...nibbles.splice(0, node.keyLength()))
+        }
+      }
     }
   }
   await trie.persistRoot()
