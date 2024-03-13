@@ -323,7 +323,7 @@ describe.only('Large Batch Test (secure)', async () => {
     }
     await trie_1.batch(putNullBatch)
     await _batch(trie_2, putNullBatch)
-    // assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
+    assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
     assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
   })
 })
@@ -336,9 +336,9 @@ describe('Large Batch Test (use node pruning)', async () => {
       value: randomBytes(32),
     }
   })
-  const trie_0 = new Trie({ useNodePruning: true })
-  const trie_1 = new Trie({ useNodePruning: true })
-  const trie_2 = new Trie({ useNodePruning: true })
+  const trie_0 = new Trie({ useNodePruning: true, useRootPersistence: true })
+  const trie_1 = new Trie({ useNodePruning: true, useRootPersistence: true })
+  const trie_2 = new Trie({ useNodePruning: true, useRootPersistence: true })
 
   for (const op of batchOP) {
     if (op.type === 'put') {
