@@ -3,8 +3,8 @@ import { EVM } from './evm.js'
 import { ERROR as EVMErrorMessage, EvmError } from './exceptions.js'
 import { InterpreterStep } from './interpreter.js'
 import { Message } from './message.js'
-import { PrecompileInput, getActivePrecompiles } from './precompiles/index.js'
 import { getOpcodesForHF } from './opcodes/index.js'
+import { PrecompileInput, getActivePrecompiles } from './precompiles/index.js'
 import {
   EVMInterface,
   EVMResult,
@@ -26,9 +26,9 @@ export {
   EVMRunCodeOpts,
   ExecResult,
   getActivePrecompiles,
+  getOpcodesForHF,
   InterpreterStep,
   Log,
   Message,
   PrecompileInput,
-  getOpcodesForHF
 }
