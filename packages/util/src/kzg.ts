@@ -32,6 +32,9 @@ export let kzg: Kzg = {
 }
 
 /**
+ * @deprecated This initialization method is deprecated since trusted setup loading is done directly in the reference KZG library
+ * initialization or should othewise be assured independently before KZG libary usage.
+ *
  * @param kzgLib a KZG implementation (defaults to c-kzg)
  * @param trustedSetupPath the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file
  */

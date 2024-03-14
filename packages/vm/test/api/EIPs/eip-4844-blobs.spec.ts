@@ -10,7 +10,6 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
-  initKZG,
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
@@ -29,7 +28,7 @@ describe('EIP4844 tests', () => {
     let kzg
     {
       try {
-        //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+        //createKZG(__dirname + '/../../client/src/trustedSetups/official.txt')
         kzg = await createKZG()
       } catch {
         // no-op

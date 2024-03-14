@@ -13,7 +13,6 @@ import {
   ecrecover,
   ecsign,
   hexToBytes,
-  initKZG,
   parseGethGenesisState,
   randomBytes,
   setLengthLeft,

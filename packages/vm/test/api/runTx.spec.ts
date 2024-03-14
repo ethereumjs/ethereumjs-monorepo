@@ -16,7 +16,6 @@ import {
   bytesToHex,
   equalsBytes,
   hexToBytes,
-  initKZG,
   zeros,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'

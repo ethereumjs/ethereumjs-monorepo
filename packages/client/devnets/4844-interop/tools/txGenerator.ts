@@ -8,7 +8,6 @@ import {
   getBlobs,
   bytesToHex,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
 
 import { randomBytes } from '@ethereumjs/util'

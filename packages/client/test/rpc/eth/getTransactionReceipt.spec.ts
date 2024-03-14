@@ -9,7 +9,6 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'

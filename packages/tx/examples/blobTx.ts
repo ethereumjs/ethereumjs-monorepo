@@ -1,6 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bytesToHex, initKZG } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
 
 const main = async () => {

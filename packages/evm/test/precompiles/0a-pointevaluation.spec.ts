@@ -4,7 +4,6 @@ import {
   computeVersionedHash,
   concatBytes,
   hexToBytes,
-  initKZG,
   unpadBytes,
 } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'

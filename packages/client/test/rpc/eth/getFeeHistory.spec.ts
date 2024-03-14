@@ -9,7 +9,6 @@ import {
   bytesToBigInt,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
 } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 import { createKZG } from 'kzg-wasm'

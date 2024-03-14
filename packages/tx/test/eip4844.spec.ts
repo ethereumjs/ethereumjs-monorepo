@@ -10,7 +10,6 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
 import { createKZG } from 'kzg-wasm'
@@ -546,7 +545,6 @@ describe('hash() and signature verification', () => {
 
 it('getEffectivePriorityFee()', async () => {
   const kzg = await createKZG()
-  initKZG(kzg, '')
   const common = Common.fromGethGenesis(gethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
