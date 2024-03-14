@@ -41,7 +41,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { EthersProvider, WithdrawalBytes, DepositBytes } from '@ethereumjs/util'
+import type { DepositBytes, EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.

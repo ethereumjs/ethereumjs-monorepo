@@ -5,14 +5,14 @@ import type {
   AddressLike,
   BigIntLike,
   BytesLike,
+  DepositBytes,
+  DepositData,
+  JsonRpcDeposit,
   JsonRpcWithdrawal,
   PrefixedHexString,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
-import { JsonRpcDeposit } from '@ethereumjs/util'
-import { DepositData } from '@ethereumjs/util'
-import { DepositBytes } from '@ethereumjs/util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
