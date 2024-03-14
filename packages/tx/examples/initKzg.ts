@@ -4,7 +4,6 @@ import { initKZG } from '@ethereumjs/util'
 
 const main = async () => {
   const kzg = await createKZG()
-  initKZG(kzg)
 
   // Instantiate `common`
   const common = new Common({

@@ -104,7 +104,6 @@ async function runTests() {
    * Run-time configuration
    */
   const kzg = await createKZG()
-  initKZG(kzg)
   const bn128 = await initRustBN()
   const runnerArgs: {
     forkConfigVM: string

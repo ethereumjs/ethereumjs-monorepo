@@ -122,7 +122,6 @@ const produceBlockWith4844Tx = async (
   blobsCount: number[]
 ) => {
   const kzg = await createKZG()
-  initKZG(kzg)
   // 4844 sample blob
   const sampleBlob = getBlobs('hello world')
   const commitment = blobsToCommitments(sampleBlob)
@@ -402,7 +401,6 @@ describe(method, () => {
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
       const kzg = await createKZG()
-      initKZG(kzg)
       const { chain, execution, server } = await setupChain(genesisJSON, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,

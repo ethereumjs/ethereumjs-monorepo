@@ -16,7 +16,6 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
   let common: Common
   beforeAll(async () => {
     kzg = await createKZG()
-    initKZG(kzg)
     const commonJson = { ...shardingJson }
     commonJson.config = { ...commonJson.config, chainId: 4844001005 }
     const network = 'sharding'
@@ -80,7 +79,6 @@ describe('[fromExecutionPayloadJson]: kaustinen', () => {
   let kzg
   beforeAll(async () => {
     kzg = await createKZG()
-    initKZG(kzg)
   })
   const network = 'kaustinen'
 

@@ -9,7 +9,6 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
 const kzg = await createKZG()
-initKZG(kzg)
 
 const common = Common.custom({ chainId: 1 }, { customCrypto: { kzg } })
 

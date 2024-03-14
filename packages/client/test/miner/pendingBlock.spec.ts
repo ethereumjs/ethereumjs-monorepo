@@ -354,7 +354,6 @@ describe('[PendingBlock]', async () => {
 
   it('construct blob bundles', async () => {
     const kzg = await createKZG()
-    initKZG(kzg)
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
