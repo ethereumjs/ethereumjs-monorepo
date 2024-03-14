@@ -60,6 +60,7 @@ export class BlockHeader {
   public readonly nonce: Uint8Array
   public readonly baseFeePerGas?: bigint
   public readonly withdrawalsRoot?: Uint8Array
+  public readonly depositsRoot?: Uint8Array
   public readonly blobGasUsed?: bigint
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
@@ -219,6 +220,7 @@ export class BlockHeader {
           : BIGINT_7
         : undefined,
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      depositsRoot: this.common.isActivatedEIP(6110) ? KECCAK256_RLP : undefined,
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? zeros(32) : undefined,
@@ -228,6 +230,8 @@ export class BlockHeader {
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
     const withdrawalsRoot =
       toType(headerData.withdrawalsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.withdrawalsRoot
+    const depositsRoot =
+      toType(headerData.depositsRoot, TypeOutput.Uint8Array) ?? hardforkDefaults.depositsRoot
     const blobGasUsed =
       toType(headerData.blobGasUsed, TypeOutput.BigInt) ?? hardforkDefaults.blobGasUsed
     const excessBlobGas =
@@ -243,6 +247,12 @@ export class BlockHeader {
     if (!this.common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
       throw new Error(
         'A withdrawalsRoot for a header can only be provided with EIP4895 being activated'
+      )
+    }
+
+    if (!this.common.isActivatedEIP(6110) && depositsRoot !== undefined) {
+      throw new Error(
+        'A depositsRoot for a header can only be provided with EIP6110 being activated'
       )
     }
 
@@ -279,6 +289,7 @@ export class BlockHeader {
     this.nonce = nonce
     this.baseFeePerGas = baseFeePerGas
     this.withdrawalsRoot = withdrawalsRoot
+    this.depositsRoot = depositsRoot
     this.blobGasUsed = blobGasUsed
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
@@ -388,6 +399,19 @@ export class BlockHeader {
       if (this.withdrawalsRoot?.length !== 32) {
         const msg = this._errorMsg(
           `withdrawalsRoot must be 32 bytes, received ${this.withdrawalsRoot!.length} bytes`
+        )
+        throw new Error(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(6110) === true) {
+      if (this.depositsRoot === undefined) {
+        const msg = this._errorMsg('EIP4895 block has no depositsRoot field')
+        throw new Error(msg)
+      }
+      if (this.depositsRoot?.length !== 32) {
+        const msg = this._errorMsg(
+          `depositsRoot must be 32 bytes, received ${this.depositsRoot!.length} bytes`
         )
         throw new Error(msg)
       }
@@ -679,6 +703,10 @@ export class BlockHeader {
       rawItems.push(this.withdrawalsRoot!)
     }
 
+    if (this.common.isActivatedEIP(6110) === true) {
+      rawItems.push(this.depositsRoot!)
+    }
+
     // in kaunstinen 2 verkle is scheduled after withdrawals, will eventually be post deneb hopefully
     if (this.common.isActivatedEIP(6800) === true) {
       // execution witness is not mandatory part of the the block so nothing to push here
@@ -932,6 +960,7 @@ export class BlockHeader {
     const withdrawalAttr = this.withdrawalsRoot
       ? { withdrawalsRoot: bytesToHex(this.withdrawalsRoot) }
       : {}
+    const depositAttr = this.depositsRoot ? { depositsRoot: bytesToHex(this.depositsRoot) } : {}
     const jsonDict: JsonHeader = {
       parentHash: bytesToHex(this.parentHash),
       uncleHash: bytesToHex(this.uncleHash),
@@ -939,6 +968,7 @@ export class BlockHeader {
       stateRoot: bytesToHex(this.stateRoot),
       transactionsTrie: bytesToHex(this.transactionsTrie),
       ...withdrawalAttr,
+      ...depositAttr,
       receiptTrie: bytesToHex(this.receiptTrie),
       logsBloom: bytesToHex(this.logsBloom),
       difficulty: bigIntToHex(this.difficulty),

@@ -10,6 +10,9 @@ import type {
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
+import { JsonRpcDeposit } from '@ethereumjs/util'
+import { DepositData } from '@ethereumjs/util'
+import { DepositBytes } from '@ethereumjs/util'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
@@ -131,10 +134,10 @@ export interface HeaderData {
   nonce?: BytesLike
   baseFeePerGas?: BigIntLike
   withdrawalsRoot?: BytesLike
+  depositsRoot?: BytesLike
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
-  depositsRoot?: BytesLike
 }
 
 /**
@@ -155,10 +158,11 @@ export interface BlockData {
   /**
    * EIP-6100: Deposits in EL (experimental)
    */
-  deposits?: Array<DepositV1>
+  deposits?: Array<DepositData>
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
+export type DepositsBytes = DepositBytes[]
 export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
@@ -171,12 +175,26 @@ export type BlockBytes =
       WithdrawalsBytes,
       ExecutionWitnessBytes
     ]
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes, DepositsBytes]
+  | [
+      BlockHeaderBytes,
+      TransactionsBytes,
+      UncleHeadersBytes,
+      WithdrawalsBytes,
+      DepositsBytes,
+      ExecutionWitnessBytes
+    ]
 
 /**
  * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
  */
 export type BlockHeaderBytes = Uint8Array[]
-export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
+export type BlockBodyBytes = [
+  TransactionsBytes,
+  UncleHeadersBytes,
+  WithdrawalsBytes?,
+  DepositsBytes?
+]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
  */
@@ -194,6 +212,7 @@ export interface JsonBlock {
   transactions?: JsonTx[]
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
+  deposits?: JsonRpcDeposit[]
   executionWitness?: VerkleExecutionWitness | null
 }
 
@@ -218,6 +237,7 @@ export interface JsonHeader {
   nonce?: string
   baseFeePerGas?: string
   withdrawalsRoot?: string
+  depositsRoot?: string
   blobGasUsed?: string
   excessBlobGas?: string
   parentBeaconBlockRoot?: string
@@ -250,6 +270,8 @@ export interface JsonRpcBlock {
   baseFeePerGas?: string // If EIP-1559 is enabled for this block, returns the base fee per gas
   withdrawals?: Array<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
+  deposits?: Array<JsonRpcDeposit> // If EIP-6110 is enabled for this block, array of deposits
+  depositsRoot?: string // If EIP-6110 is enabled for this block, the root of the deposit trie of the block.
   blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
@@ -265,11 +287,11 @@ export type WithdrawalV1 = {
 }
 
 export type DepositV1 = {
-  pubkey: Uint8Array
-  withdrawalCredentials: Uint8Array
-  amount: BigInt
-  signature: Uint8Array
-  index: BigInt
+  pubkey: PrefixedHexString // DATA - 48 bytes
+  withdrawalCredentials: PrefixedHexString // DATA - 32 bytes
+  amount: PrefixedHexString // QUANTITY, 64 bytes
+  signature: PrefixedHexString // DATA - 96 bytes
+  index: PrefixedHexString // QUANTITY - 64 bytes
 }
 
 // Note: all these strings are 0x-prefixed
@@ -289,6 +311,7 @@ export type ExecutionPayload = {
   blockHash: PrefixedHexString // DATA, 32 Bytes
   transactions: PrefixedHexString[] // Array of DATA - Array of transaction rlp strings,
   withdrawals?: WithdrawalV1[] // Array of withdrawal objects
+  deposits?: DepositV1[] // Array of deposit objects
   blobGasUsed?: PrefixedHexString // QUANTITY, 64 Bits
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits

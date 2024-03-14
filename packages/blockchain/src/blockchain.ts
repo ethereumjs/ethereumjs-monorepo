@@ -496,7 +496,15 @@ export class Blockchain implements BlockchainInterface {
       try {
         const block =
           item instanceof BlockHeader
-            ? new Block(item, undefined, undefined, undefined, { common: item.common }, undefined)
+            ? new Block(
+                item,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                { common: item.common },
+                undefined
+              )
             : item
         const isGenesis = block.isGenesis()
 
@@ -1423,6 +1431,7 @@ export class Blockchain implements BlockchainInterface {
       number: 0,
       stateRoot,
       withdrawalsRoot: common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
+      depositsRoot: common.isActivatedEIP(6110) ? KECCAK256_RLP : undefined,
     }
     if (common.consensusType() === 'poa') {
       if (common.genesis().extraData) {
@@ -1434,7 +1443,11 @@ export class Blockchain implements BlockchainInterface {
       }
     }
     return Block.fromBlockData(
-      { header, withdrawals: common.isActivatedEIP(4895) ? [] : undefined },
+      {
+        header,
+        withdrawals: common.isActivatedEIP(4895) ? [] : undefined,
+        deposits: common.isActivatedEIP(6110) ? [] : undefined,
+      },
       { common }
     )
   }

@@ -12,7 +12,7 @@ export type DepositData = {
   index: BigIntLike
 }
 
-export interface JsonRpcWithdrawal {
+export interface JsonRpcDeposit {
   pubkey: string // DATA - 48 bytes
   withdrawalCredentials: string // DATA - 32 bytes
   amount: string // QUANTITY, 64 bytes
@@ -34,7 +34,7 @@ export class Deposit {
     public readonly index: bigint
   ) {}
 
-  public static fromDepositArray(depositData: DepositData) {
+  public static fromDepositData(depositData: DepositData) {
     const {
       pubkey: pubkeyData,
       withdrawalCredentials: withdrawalCredentialsData,
@@ -56,7 +56,7 @@ export class Deposit {
       throw Error(`Invalid depositArray length expected=5 actual=${depositArray.length}`)
     }
     const [pubkey, withdrawalCredentials, amount, signature, index] = depositArray
-    return Deposit.fromDepositArray({ pubkey, withdrawalCredentials, amount, signature, index })
+    return Deposit.fromDepositData({ pubkey, withdrawalCredentials, amount, signature, index })
   }
 
   /**

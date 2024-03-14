@@ -4,6 +4,7 @@ import { Trie } from '@ethereumjs/trie'
 import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  Deposit,
   KECCAK256_RLP,
   Withdrawal,
   bigIntToHex,
@@ -40,7 +41,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type { EthersProvider, WithdrawalBytes, DepositBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -50,6 +51,7 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
+  public readonly deposits?: Deposit[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
@@ -63,6 +65,14 @@ export class Block {
   protected cache: {
     txTrieRoot?: Uint8Array
   } = {}
+
+  public static async genDepositsTrieRoot(deposits: Deposit[], emptyTrie?: Trie) {
+    const trie = emptyTrie ?? new Trie()
+    for (const [i, deposit] of deposits.entries()) {
+      await trie.put(RLP.encode(i), RLP.encode(deposit.raw()))
+    }
+    return trie.root()
+  }
 
   /**
    * Returns the withdrawals trie root for array of Withdrawal.
@@ -103,6 +113,7 @@ export class Block {
       uncleHeaders: uhsData,
       withdrawals: withdrawalsData,
       executionWitness: executionWitnessData,
+      deposits: depositData,
     } = blockData
 
     const header = BlockHeader.fromHeaderData(headerData, opts)
@@ -141,7 +152,17 @@ export class Block {
     // stub till that time
     const executionWitness = executionWitnessData
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
+    const deposits = depositData?.map(Deposit.fromDepositData)
+
+    return new Block(
+      header,
+      transactions,
+      uncleHeaders,
+      withdrawals,
+      deposits,
+      opts,
+      executionWitness
+    )
   }
 
   /**
@@ -175,7 +196,8 @@ export class Block {
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes, executionWitnessBytes] = values
+    const [headerData, txsData, uhsData, withdrawalBytes, depositBytes, executionWitnessBytes] =
+      values
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
@@ -184,6 +206,15 @@ export class Block {
     ) {
       throw new Error(
         'Invalid serialized block input: EIP-4895 is active, and no withdrawals were provided as array'
+      )
+    }
+
+    if (
+      header.common.isActivatedEIP(6110) &&
+      (depositBytes === undefined || !Array.isArray(depositBytes))
+    ) {
+      throw new Error(
+        'Invalid serialized block input: EIP-6110 is active, and no deposits were provided as array'
       )
     }
 
@@ -225,6 +256,16 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
+    const deposits = (depositBytes as DepositBytes[])
+      ?.map(([pubkey, withdrawalCredentials, amount, signature, index]) => ({
+        pubkey,
+        withdrawalCredentials,
+        amount,
+        signature,
+        index,
+      }))
+      ?.map(Deposit.fromDepositData)
+
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
     let executionWitness
@@ -236,7 +277,15 @@ export class Block {
       executionWitness = null
     }
 
-    return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
+    return new Block(
+      header,
+      transactions,
+      uncleHeaders,
+      withdrawals,
+      deposits,
+      opts,
+      executionWitness
+    )
   }
 
   /**
@@ -407,6 +456,7 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
+    deposits?: Deposit[],
     opts: BlockOptions = {},
     executionWitness?: VerkleExecutionWitness | null
   ) {
@@ -416,6 +466,7 @@ export class Block {
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
+    this.deposits = deposits ?? (this.common.isActivatedEIP(6110) ? [] : undefined)
     this.executionWitness = executionWitness
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
@@ -457,6 +508,10 @@ export class Block {
       throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
+    if (!this.common.isActivatedEIP(6110) && deposits !== undefined) {
+      throw new Error('Cannot have a deposits field if EIP 6110 is not active')
+    }
+
     if (
       !this.common.isActivatedEIP(6800) &&
       executionWitness !== undefined &&
@@ -485,6 +540,10 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
+    }
+    const depositsRaw = this.deposits?.map((deposit) => deposit.raw())
+    if (depositsRaw) {
+      bytesArray.push(depositsRaw)
     }
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
       const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
@@ -736,6 +795,17 @@ export class Block {
     return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
   }
 
+  async depositsTrieIsValid(): Promise<boolean> {
+    if (!this.common.isActivatedEIP(6110)) {
+      throw new Error('EIP 6110 is not activated')
+    }
+    const depositsRoot = await Block.genDepositsTrieRoot(
+      this.deposits!,
+      new Trie({ common: this.common })
+    )
+    return equalsBytes(depositsRoot, this.header.depositsRoot!)
+  }
+
   /**
    * Consistency checks for uncles included in the block, if any.
    *
@@ -792,11 +862,17 @@ export class Block {
           withdrawals: this.withdrawals.map((wt) => wt.toJSON()),
         }
       : {}
+    const depositsAttr = this.deposits
+      ? {
+          deposits: this.deposits.map((deposit) => deposit.toJSON()),
+        }
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
+      ...depositsAttr,
     }
   }
 
