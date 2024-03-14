@@ -6,7 +6,7 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { initKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
@@ -21,7 +21,7 @@ describe('EIP4844 header tests', () => {
   let common: Common
 
   beforeAll(async () => {
-    const kzg = await createKZG()
+    const kzg = await initKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -99,7 +99,7 @@ describe('blob gas tests', () => {
   let common: Common
   let blobGasPerBlob: bigint
   beforeAll(async () => {
-    const kzg = await createKZG()
+    const kzg = await initKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -155,7 +155,7 @@ describe('transaction validation tests', () => {
   let common: Common
   let blobGasPerBlob: bigint
   beforeAll(async () => {
-    const kzg = await createKZG()
+    const kzg = await initKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

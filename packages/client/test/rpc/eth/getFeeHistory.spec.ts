@@ -11,7 +11,7 @@ import {
   getBlobs,
 } from '@ethereumjs/util'
 import { hexToBytes } from 'ethereum-cryptography/utils'
-import { createKZG } from 'kzg-wasm'
+import { initKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import genesisJSON from '../../testdata/geth-genesis/eip4844.json'
@@ -120,7 +120,7 @@ const produceBlockWith4844Tx = async (
   chain: Chain,
   blobsCount: number[]
 ) => {
-  const kzg = await createKZG()
+  const kzg = await initKZG()
   // 4844 sample blob
   const sampleBlob = getBlobs('hello world')
   const commitment = blobsToCommitments(sampleBlob)
@@ -399,7 +399,7 @@ describe(method, () => {
   it(
     `${method} - Should correctly return the right blob base fees and ratios for a chain with 4844 active`,
     async () => {
-      const kzg = await createKZG()
+      const kzg = await initKZG()
       const { chain, execution, server } = await setupChain(genesisJSON, 'post-merge', {
         engine: true,
         hardfork: Hardfork.Cancun,

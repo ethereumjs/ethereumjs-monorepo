@@ -1,8 +1,8 @@
-import { createKZG } from 'kzg-wasm'
+import { initKZG } from 'kzg-wasm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 
 const main = async () => {
-  const kzg = await createKZG()
+  const kzg = await initKZG()
 
   // Instantiate `common`
   const common = new Common({

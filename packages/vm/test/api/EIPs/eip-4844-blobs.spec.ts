@@ -13,7 +13,7 @@ import {
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { initKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
@@ -28,8 +28,8 @@ describe('EIP4844 tests', () => {
     let kzg
     {
       try {
-        //createKZG(__dirname + '/../../client/src/trustedSetups/official.txt')
-        kzg = await createKZG()
+        //initKZG(__dirname + '/../../client/src/trustedSetups/official.txt')
+        kzg = await initKZG()
       } catch {
         // no-op
       }

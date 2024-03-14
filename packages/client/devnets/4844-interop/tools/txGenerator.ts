@@ -12,7 +12,7 @@ import {
 
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { createKZG } from 'kzg-wasm'
+import { initKZG } from 'kzg-wasm'
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
@@ -27,7 +27,7 @@ async function getNonce(client: Client, account: string) {
 }
 
 async function run(data: any) {
-  const kzg = await createKZG()
+  const kzg = await initKZG()
 
   const common = Common.fromGethGenesis(genesisJson, {
     chain: genesisJson.ChainName ?? 'devnet',
