@@ -40,7 +40,15 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     const header = BlockHeader.fromHeaderData({}, { common })
     validateMergeHeader(header)
 
-    const block = new Block(undefined, undefined, undefined, undefined, { common }, undefined)
+    const block = new Block(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { common },
+      undefined
+    )
     validateMergeHeader(block.header)
   })
 
