@@ -486,7 +486,7 @@ export const EIPs: EIPsDict = {
     comment: 'Supply validator deposits on chain',
     url: 'https://eips.ethereum.org/EIPS/eip-6110',
     status: Status.Draft,
-    minimumHardfork: Hardfork.Prague,
+    minimumHardfork: Hardfork.Shanghai,
     requiredEIPs: [],
   },
   6780: {
