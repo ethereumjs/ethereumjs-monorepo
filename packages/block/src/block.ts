@@ -256,15 +256,17 @@ export class Block {
       }))
       ?.map(Withdrawal.fromWithdrawalData)
 
-    const deposits = (depositBytes as DepositBytes[])
-      ?.map(([pubkey, withdrawalCredentials, amount, signature, index]) => ({
-        pubkey,
-        withdrawalCredentials,
-        amount,
-        signature,
-        index,
-      }))
-      ?.map(Deposit.fromDepositData)
+    const deposits = header.common.isActivatedEIP(6110)
+      ? (depositBytes as DepositBytes[])
+          ?.map(([pubkey, withdrawalCredentials, amount, signature, index]) => ({
+            pubkey,
+            withdrawalCredentials,
+            amount,
+            signature,
+            index,
+          }))
+          ?.map(Deposit.fromDepositData)
+      : undefined
 
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
