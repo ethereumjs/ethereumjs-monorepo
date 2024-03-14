@@ -1,4 +1,3 @@
-import { initKZG } from '@ethereumjs/util'
 import { createKZG } from 'kzg-wasm'
 import * as minimist from 'minimist'
 import * as path from 'path'
