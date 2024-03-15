@@ -126,6 +126,17 @@ export class DBManager {
         }
         if (body.length <= 3) body.push([])
       }
+      // If this block had empty deposits push an empty array in body
+      if (header.depositsRoot !== undefined) {
+        // Do extra validations for deposit before assuming empty deposits
+        if (
+          !equalsBytes(header.depositsRoot, KECCAK256_RLP) &&
+          (body.length < 4 || body[3]?.length === 0)
+        ) {
+          throw new Error('deposits root shoot be equal to hash of null when no deposits')
+        }
+        if (body.length <= 4) body.push([])
+      }
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
