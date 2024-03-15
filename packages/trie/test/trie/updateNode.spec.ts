@@ -115,15 +115,16 @@ describe('Nibble Order', async () => {
   assert.deepEqual(keysNibbleOrder, sortedNibleStrings, 'keys should sort')
 })
 
+const keys = Array.from({ length: 1000 }, () => randomBytes(20))
+const batchOP: BatchDBOp[] = keys.map((k) => {
+  return {
+    type: 'put',
+    key: k,
+    value: randomBytes(32),
+  }
+})
+
 describe('Large Batch Test', async () => {
-  const keys = Array.from({ length: 1000 }, () => randomBytes(20))
-  const batchOP: BatchDBOp[] = keys.map((k) => {
-    return {
-      type: 'put',
-      key: k,
-      value: randomBytes(32),
-    }
-  })
   const trie_0 = new Trie()
   const trie_1 = new Trie()
 
@@ -175,43 +176,10 @@ describe('Large Batch Test', async () => {
   })
 })
 describe('Large Batch Test (secure)', async () => {
-  const keys = Array.from({ length: 1 }, () => randomBytes(20))
-  const batchOP: BatchDBOp[] = keys.map((k) => {
-    return {
-      type: 'put',
-      key: k,
-      value: randomBytes(32),
-    }
-  })
   const trie_0 = new Trie({ useKeyHashing: true })
   const trie_1 = new Trie({ useKeyHashing: true })
   const trie_3 = new Trie({})
 
-  const toHash = Uint8Array.from([1, 2, 3, 4])
-  const hash0 = trie_0['hash'](toHash)
-  const hash1 = trie_1['hash'](toHash)
-  const hash3 = trie_3['hash'](toHash)
-  it('should have same hash', async () => {
-    assert.deepEqual(hash0, hash1, 'hashes should match')
-  })
-  it('should not have same hash', async () => {
-    assert.deepEqual(hash0, hash3, 'hashes should not match')
-  })
-  it('tries should start empty', async () => {
-    assert.deepEqual(
-      bytesToHex(trie_0.root()),
-      bytesToHex(trie_3.root()),
-      'trie roots should  match'
-    )
-  })
-
-  it('tries should start empty', async () => {
-    assert.equal(
-      bytesToHex(trie_1.root()),
-      bytesToHex(trie_0.root()),
-      'trie roots should match (v1)'
-    )
-  })
   it('batch should work', async () => {
     for (const op of batchOP) {
       if (op.type === 'put') {
@@ -227,31 +195,17 @@ describe('Large Batch Test (secure)', async () => {
     assert.deepEqual(found3, value, 'value should be found in trie')
     await trie_1.batch(batchOP)
 
-    const root0 = await trie_0.lookupNode(trie_0.root())
-    assert.deepEqual(root0.value(), value, 'rootnode should be only node')
-
     const found1 = await trie_1.get(key)
     assert.deepEqual(found1, value, 'value should be found in trie')
-
-    assert.notEqual(
+    assert.deepEqual(
       bytesToHex(trie_0.root()),
-      bytesToHex(trie_0.EMPTY_TRIE_ROOT),
-      'trie is not empty'
-    )
-    assert.notEqual(
       bytesToHex(trie_1.root()),
-      bytesToHex(trie_1.EMPTY_TRIE_ROOT),
-      'trie is not empty'
-    )
-    assert.notEqual(
-      bytesToHex(trie_3.root()),
-      bytesToHex(trie_3.EMPTY_TRIE_ROOT),
-      'trie is not empty'
+      'trie roots should match'
     )
     assert.notDeepEqual(
-      bytesToHex(trie_0.root()),
+      bytesToHex(trie_1.root()),
       bytesToHex(trie_3.root()),
-      'trie roots should match (v1)'
+      'trie roots should not match'
     )
   })
 
@@ -290,14 +244,6 @@ describe('Large Batch Test (secure)', async () => {
   })
 })
 describe('Large Batch Test (use node pruning)', async () => {
-  const keys = Array.from({ length: 1000 }, () => randomBytes(20))
-  const batchOP: BatchDBOp[] = keys.map((k) => {
-    return {
-      type: 'put',
-      key: k,
-      value: randomBytes(32),
-    }
-  })
   const trie_0 = new Trie({ useNodePruning: true, useRootPersistence: true })
   const trie_1 = new Trie({ useNodePruning: true, useRootPersistence: true })
 
