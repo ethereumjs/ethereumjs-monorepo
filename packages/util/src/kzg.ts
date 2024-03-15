@@ -23,19 +23,6 @@ export interface Kzg {
   ): boolean
 }
 
-function kzgNotLoaded(): never {
-  throw Error('kzg library not loaded')
-}
-
-// eslint-disable-next-line import/no-mutable-exports
-export let kzg: Kzg = {
-  loadTrustedSetup: kzgNotLoaded,
-  blobToKzgCommitment: kzgNotLoaded,
-  computeBlobKzgProof: kzgNotLoaded,
-  verifyKzgProof: kzgNotLoaded,
-  verifyBlobKzgProofBatch: kzgNotLoaded,
-}
-
 /**
  * @deprecated This initialization method is deprecated since trusted setup loading is done directly in the reference KZG library
  * initialization or should othewise be assured independently before KZG libary usage.
@@ -43,7 +30,6 @@ export let kzg: Kzg = {
  * @param kzgLib a KZG implementation (defaults to c-kzg)
  * @param a dictionary of trusted setup options
  */
-export function loadKZG(kzgLib: Kzg, _trustedSetupPath?: string) {
-  kzg = kzgLib
+export function initKZG(kzg: Kzg, _trustedSetupPath?: string) {
   kzg.loadTrustedSetup()
 }
