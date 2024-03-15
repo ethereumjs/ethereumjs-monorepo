@@ -496,14 +496,15 @@ export class Trie {
   async put(
     key: Uint8Array,
     value: Uint8Array | null,
-    skipKeyTransform: boolean = false
-  ): Promise<void> {
+    skipKeyTransform: boolean = false,
+    path?: { stack: TrieNode[]; remaining: number[] }
+  ): Promise<TrieNode[]> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['PUT'])
     this.DEBUG && this.debug(`Value: ${value === null ? 'null' : bytesToHex(key)}`, ['PUT'])
     if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
       throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
     }
-
+    let returnStack: TrieNode[] = []
     // If value is empty, delete
     if (value === null || value.length === 0) {
       return this.del(key)
@@ -513,10 +514,10 @@ export class Trie {
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT) === true) {
       // If no root, initialize this trie
-      await this._createInitialNode(appliedKey, value)
+      returnStack = [await this._createInitialNode(appliedKey, value)]
     } else {
       // First try to find the given key or its nearest node
-      const { remaining, stack } = await this.findPath(appliedKey)
+      const { remaining, stack } = path ?? (await this.findPath(appliedKey))
       let ops: BatchDBOp[] = []
       if (this._opts.useNodePruning) {
         const val = await this.get(key)
@@ -541,7 +542,7 @@ export class Trie {
         }
       }
       // then update
-      await this._updateNode(appliedKey, value, remaining, stack)
+      returnStack = await this._updateNode(appliedKey, value, remaining, stack)
       if (this._opts.useNodePruning) {
         // Only after updating the node we can delete the keyhashes
         await this._db.batch(ops)
@@ -549,6 +550,7 @@ export class Trie {
     }
     await this.persistRoot()
     this._lock.release()
+    return returnStack
   }
 
   /**
