@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1710262354486,
+  "lastUpdate": 1710465765048,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b8e9d140ea21b04e0d5efaa7befd4a6f99ee571a",
-          "message": "Add kzg to `common.customCrypto` (#3262)\n\n* Switch kzg to common custom crypto property\r\n\r\n* various test fixes\r\n\r\n* Remove console log\r\n\r\n* Fix test\r\n\r\n* Add kzg initializer to common\r\n\r\n* Fix tests\r\n\r\n* lint\r\n\r\n* Revert common.initializeKzg\r\n\r\n* Fix example\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-02-07T21:42:20+01:00",
-          "tree_id": "ef1a20a80f00d7273822242cf4cf6fd0bd2f4d07",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b8e9d140ea21b04e0d5efaa7befd4a6f99ee571a"
-        },
-        "date": 1707338703187,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40279,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39189,
-            "range": "±1.72%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39411,
-            "range": "±1.88%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36193,
-            "range": "±5.61%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37092,
-            "range": "±2.21%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.58%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "yann.levreau@gmail.com",
+            "name": "yann300",
+            "username": "yann300"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "906b36257645bab19999c3559efde9817266bb70",
+          "message": "export getOpcodesForHF (#3322)\n\n* Update index.ts\r\n\r\nThis simply export `getOpcodesForHF`.\r\n\r\n* linting",
+          "timestamp": "2024-03-14T21:17:32-04:00",
+          "tree_id": "d2a4412279853e2e83fbd91a70658f318c3003e7",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/906b36257645bab19999c3559efde9817266bb70"
+        },
+        "date": 1710465763614,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 44040,
+            "range": "±1.74%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41881,
+            "range": "±2.99%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 42728,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 41423,
+            "range": "±1.55%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 40280,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
