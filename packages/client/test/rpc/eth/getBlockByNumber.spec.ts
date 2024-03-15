@@ -1,15 +1,14 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
 import { BlobEIP4844Transaction, LegacyTransaction } from '@ethereumjs/tx'
-import { Address, hexToBytes, initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { Address, hexToBytes } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, dummy, getRpcClient, startRPC } from '../helpers.js'
 
-const kzg = await createKZG()
-initKZG(kzg)
+const kzg = await loadKZG()
 
 const common = Common.custom({ chainId: 1 }, { customCrypto: { kzg } })
 

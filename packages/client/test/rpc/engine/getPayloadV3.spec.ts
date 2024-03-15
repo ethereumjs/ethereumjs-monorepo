@@ -10,9 +10,8 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -68,8 +67,7 @@ describe(method, () => {
       return this
     }
 
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
 
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
@@ -91,9 +89,9 @@ describe(method, () => {
     assert.ok(payloadId !== undefined && payloadId !== null, 'valid payloadId should be received')
 
     const txBlobs = getBlobs('hello world')
-    const txCommitments = blobsToCommitments(txBlobs)
+    const txCommitments = blobsToCommitments(kzg, txBlobs)
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
-    const txProofs = blobsToProofs(txBlobs, txCommitments)
+    const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
     const tx = TransactionFactory.fromTxData(
       {
