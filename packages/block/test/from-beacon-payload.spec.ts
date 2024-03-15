@@ -75,10 +75,6 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
 })
 
 describe('[fromExecutionPayloadJson]: kaustinen', () => {
-  let kzg
-  beforeAll(async () => {
-    const kzg = await loadKZG()
-  })
   const network = 'kaustinen'
 
   // safely change chainId without modifying undelying json

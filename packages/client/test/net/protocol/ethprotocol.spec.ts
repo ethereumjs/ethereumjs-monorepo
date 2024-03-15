@@ -2,6 +2,7 @@ import { Block } from '@ethereumjs/block'
 import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain'
@@ -202,11 +203,15 @@ describe('[EthProtocol]', () => {
   })
 
   it('verify that Transactions handler encodes/decodes correctly', async () => {
+    const kzg = await loadKZG()
     const config = new Config({
       common: new Common({
         chain: CommonChain.Holesky,
         hardfork: Hardfork.Paris,
         eips: [4895, 4844],
+        customCrypto: {
+          kzg,
+        },
       }),
       accountCache: 10000,
       storageCache: 1000,
