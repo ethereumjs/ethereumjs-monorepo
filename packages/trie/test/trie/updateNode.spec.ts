@@ -8,7 +8,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../../src/index.js'
-import { _batch, orderBatch } from '../../src/node/batch.js'
+import { orderBatch } from '../../src/node/batch.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
@@ -126,7 +126,6 @@ describe('Large Batch Test', async () => {
   })
   const trie_0 = new Trie()
   const trie_1 = new Trie()
-  const trie_2 = new Trie()
 
   for (const op of batchOP) {
     if (op.type === 'put') {
@@ -136,13 +135,9 @@ describe('Large Batch Test', async () => {
 
   await trie_1.batch(batchOP)
 
-  await _batch(trie_2, batchOP)
-
   it('batch should work', () => {
     assert.notDeepEqual(trie_0.root(), trie_0.EMPTY_TRIE_ROOT, 'trie is not empty')
     assert.deepEqual(trie_0.root(), trie_1.root(), 'trie roots should match (v1)')
-    assert.deepEqual(trie_0.root(), trie_2.root(), 'trie roots should match (v2)')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'trie roots should match (v3)')
   })
 
   it('should remain same', async () => {
@@ -170,17 +165,13 @@ describe('Large Batch Test', async () => {
       await trie_0.del(k)
     }
     await trie_1.batch(deleteBatch)
-    await _batch(trie_2, deleteBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
 
     for (const k of putNull) {
       await trie_0.put(k, null)
     }
     await trie_1.batch(putNullBatch)
-    await _batch(trie_2, putNullBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
   })
 })
 describe('Large Batch Test (secure)', async () => {
@@ -194,29 +185,17 @@ describe('Large Batch Test (secure)', async () => {
   })
   const trie_0 = new Trie({ useKeyHashing: true })
   const trie_1 = new Trie({ useKeyHashing: true })
-  const trie_2 = new Trie({ useKeyHashing: true })
   const trie_3 = new Trie({})
 
   const toHash = Uint8Array.from([1, 2, 3, 4])
   const hash0 = trie_0['hash'](toHash)
   const hash1 = trie_1['hash'](toHash)
-  const hash2 = trie_2['hash'](toHash)
   const hash3 = trie_3['hash'](toHash)
   it('should have same hash', async () => {
     assert.deepEqual(hash0, hash1, 'hashes should match')
   })
-  it('should have same hash', async () => {
-    assert.deepEqual(hash0, hash2, 'hashes should match')
-  })
   it('should not have same hash', async () => {
     assert.deepEqual(hash0, hash3, 'hashes should not match')
-  })
-  it('tries should start empty', async () => {
-    assert.equal(
-      bytesToHex(trie_1.root()),
-      bytesToHex(trie_2.root()),
-      'trie roots should match (v1)'
-    )
   })
   it('tries should start empty', async () => {
     assert.deepEqual(
@@ -247,15 +226,12 @@ describe('Large Batch Test (secure)', async () => {
     const found3 = await trie_3.get(key)
     assert.deepEqual(found3, value, 'value should be found in trie')
     await trie_1.batch(batchOP)
-    await _batch(trie_2, batchOP)
 
     const root0 = await trie_0.lookupNode(trie_0.root())
     assert.deepEqual(root0.value(), value, 'rootnode should be only node')
 
     const found1 = await trie_1.get(key)
     assert.deepEqual(found1, value, 'value should be found in trie')
-    const found2 = await trie_2.get(key)
-    assert.deepEqual(found2, value, 'value should be found in trie')
 
     assert.notEqual(
       bytesToHex(trie_0.root()),
@@ -268,19 +244,9 @@ describe('Large Batch Test (secure)', async () => {
       'trie is not empty'
     )
     assert.notEqual(
-      bytesToHex(trie_2.root()),
-      bytesToHex(trie_2.EMPTY_TRIE_ROOT),
-      'trie is not empty'
-    )
-    assert.notEqual(
       bytesToHex(trie_3.root()),
       bytesToHex(trie_3.EMPTY_TRIE_ROOT),
       'trie is not empty'
-    )
-    assert.equal(
-      bytesToHex(trie_1.root()),
-      bytesToHex(trie_2.root()),
-      'trie roots should match (v3)'
     )
     assert.notDeepEqual(
       bytesToHex(trie_0.root()),
@@ -314,17 +280,13 @@ describe('Large Batch Test (secure)', async () => {
       await trie_0.del(k)
     }
     await trie_1.batch(deleteBatch)
-    await _batch(trie_2, deleteBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
 
     for (const k of putNull) {
       await trie_0.put(k, null)
     }
     await trie_1.batch(putNullBatch)
-    await _batch(trie_2, putNullBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
   })
 })
 describe('Large Batch Test (use node pruning)', async () => {
@@ -338,7 +300,6 @@ describe('Large Batch Test (use node pruning)', async () => {
   })
   const trie_0 = new Trie({ useNodePruning: true, useRootPersistence: true })
   const trie_1 = new Trie({ useNodePruning: true, useRootPersistence: true })
-  const trie_2 = new Trie({ useNodePruning: true, useRootPersistence: true })
 
   for (const op of batchOP) {
     if (op.type === 'put') {
@@ -348,13 +309,9 @@ describe('Large Batch Test (use node pruning)', async () => {
 
   await trie_1.batch(batchOP)
 
-  await _batch(trie_2, batchOP)
-
   it('batch should work', () => {
     assert.notDeepEqual(trie_0.root(), trie_0.EMPTY_TRIE_ROOT, 'trie is not empty')
     assert.deepEqual(trie_0.root(), trie_1.root(), 'trie roots should match (v1)')
-    assert.deepEqual(trie_0.root(), trie_2.root(), 'trie roots should match (v2)')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'trie roots should match (v3)')
   })
 
   it('should remain same', async () => {
@@ -382,16 +339,12 @@ describe('Large Batch Test (use node pruning)', async () => {
       await trie_0.del(k)
     }
     await trie_1.batch(deleteBatch)
-    await _batch(trie_2, deleteBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
 
     for (const k of putNull) {
       await trie_0.put(k, null)
     }
     await trie_1.batch(putNullBatch)
-    await _batch(trie_2, putNullBatch)
     assert.deepEqual(trie_0.root(), trie_1.root(), 'roots should match')
-    assert.deepEqual(trie_1.root(), trie_2.root(), 'roots should match')
   })
 })
