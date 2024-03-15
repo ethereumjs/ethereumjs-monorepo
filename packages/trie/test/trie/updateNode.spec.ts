@@ -8,7 +8,7 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { Trie } from '../../src/index.js'
-import { orderBatch } from '../../src/node/batch.js'
+import { orderBatch } from '../../src/util/nibbles.js'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
