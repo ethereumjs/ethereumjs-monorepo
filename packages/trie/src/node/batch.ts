@@ -156,8 +156,15 @@ export async function _batch(
         remaining = nibbles.slice(i)
       }
     }
+    const _path =
+      stack.length > 0
+        ? {
+            stack,
+            remaining,
+          }
+        : undefined
     if (op.type === 'put') {
-      stack = await batchPut(trie, op.key, op.value, skipKeyTransform, stack, remaining)
+      stack = await trie.put(op.key, op.value, skipKeyTransform, _path)
       const path: number[] = []
       for (const node of stack) {
         stackPathCache.set(JSON.stringify([...path]), node)
@@ -168,7 +175,7 @@ export async function _batch(
         }
       }
     } else if (op.type === 'del') {
-      stack = await batchPut(trie, op.key, null, skipKeyTransform, stack, remaining)
+      stack = await trie.put(op.key, null, skipKeyTransform, _path)
       const path: number[] = []
       for (const node of stack) {
         stackPathCache.set(JSON.stringify([...path]), node)
@@ -180,5 +187,4 @@ export async function _batch(
       }
     }
   }
-  await trie.persistRoot()
 }
