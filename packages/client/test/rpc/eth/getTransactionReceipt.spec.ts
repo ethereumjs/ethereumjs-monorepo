@@ -104,7 +104,7 @@ describe(method, () => {
       const rpc = getRpcClient(server)
 
       const blobs = getBlobs('hello world')
-      const commitments = blobsToCommitments(blobs)
+      const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
       const tx = BlobEIP4844Transaction.fromTxData(

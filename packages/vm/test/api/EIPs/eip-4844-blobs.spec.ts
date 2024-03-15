@@ -62,9 +62,9 @@ describe('EIP4844 tests', () => {
 
     // Set up tx
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         blobVersionedHashes,

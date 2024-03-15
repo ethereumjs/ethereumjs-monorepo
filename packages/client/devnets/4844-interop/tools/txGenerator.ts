@@ -38,7 +38,7 @@ async function run(data: any) {
   const client = Client.http({ port: clientPort })
 
   const blobs = getBlobs(data)
-  const commitments = blobsToCommitments(blobs)
+  const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = Address.fromPrivateKey(randomBytes(32))

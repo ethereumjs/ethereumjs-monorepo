@@ -20,6 +20,8 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
 
+import type { Kzg } from '@ethereumjs/util'
+
 const pk = randomBytes(32)
 describe('EIP4844 addSignature tests', () => {
   let common: Common
@@ -251,9 +253,10 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
+  let kzg: Kzg
   let common: Common
   beforeAll(async () => {
-    const kzg = await loadKZG()
+    kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -262,9 +265,9 @@ describe('Network wrapper tests', () => {
   })
   it('should work', async () => {
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         blobVersionedHashes,
@@ -569,9 +572,10 @@ it('getEffectivePriorityFee()', async () => {
 })
 
 describe('Network wrapper deserialization test', () => {
+  let kzg: Kzg
   let common: Common
   beforeAll(async () => {
-    const kzg = await loadKZG()
+    kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -610,8 +614,8 @@ describe('Network wrapper deserialization test', () => {
 
     const blobs = getBlobs('hello world')
 
-    const commitments = blobsToCommitments(blobs)
-    const proofs = blobsToProofs(blobs, commitments)
+    const commitments = blobsToCommitments(kzg, blobs)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
     const wrapper = hexToBytes(blobTx.tx)

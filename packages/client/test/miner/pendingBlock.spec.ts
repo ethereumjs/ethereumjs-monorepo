@@ -364,9 +364,9 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
@@ -443,9 +443,9 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
     const missingBlobTx = BlobEIP4844Transaction.fromTxData(

@@ -123,7 +123,7 @@ const produceBlockWith4844Tx = async (
   const kzg = await loadKZG()
   // 4844 sample blob
   const sampleBlob = getBlobs('hello world')
-  const commitment = blobsToCommitments(sampleBlob)
+  const commitment = blobsToCommitments(kzg, sampleBlob)
   const blobVersionedHash = commitmentsToVersionedHashes(commitment)
 
   const { vm } = execution

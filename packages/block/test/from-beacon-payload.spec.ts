@@ -11,10 +11,9 @@ import * as payload87475 from './testdata/payload-slot-87475.json'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 
 describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
-  let kzg
   let common: Common
   beforeAll(async () => {
-    kzg = await loadKZG()
+    const kzg = await loadKZG()
 
     const commonJson = { ...shardingJson }
     commonJson.config = { ...commonJson.config, chainId: 4844001005 }
@@ -78,7 +77,7 @@ describe('[fromExecutionPayloadJson]: 4844 devnet 5', () => {
 describe('[fromExecutionPayloadJson]: kaustinen', () => {
   let kzg
   beforeAll(async () => {
-    kzg = await loadKZG()
+    const kzg = await loadKZG()
   })
   const network = 'kaustinen'
 

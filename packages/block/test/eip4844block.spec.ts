@@ -16,6 +16,7 @@ import { Block } from '../src/index.js'
 import gethGenesis from './testdata/4844-hardfork.json'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Kzg } from '@ethereumjs/util'
 
 describe('EIP4844 header tests', () => {
   let common: Common
@@ -153,10 +154,11 @@ describe('blob gas tests', () => {
 })
 
 describe('transaction validation tests', () => {
+  let kzg: Kzg
   let common: Common
   let blobGasPerBlob: bigint
   beforeAll(async () => {
-    const kzg = await loadKZG()
+    kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -166,7 +168,7 @@ describe('transaction validation tests', () => {
   })
   it('should work', () => {
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
     const tx1 = BlobEIP4844Transaction.fromTxData(
