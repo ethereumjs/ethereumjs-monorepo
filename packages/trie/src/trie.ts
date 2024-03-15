@@ -18,7 +18,7 @@ import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
-import { _batch } from './node/batch.js'
+import { orderBatch } from './node/batch.js'
 import {
   BranchNode,
   ExtensionNode,
@@ -1149,7 +1149,59 @@ export class Trie {
    * @param ops
    */
   async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
-    await _batch(this, ops, skipKeyTransform)
+    const keyTransform =
+      skipKeyTransform === true
+        ? undefined
+        : (msg: Uint8Array) => {
+            return this.appliedKey(msg)
+          }
+    const sortedOps = orderBatch(ops, keyTransform)
+    let stack: TrieNode[] = []
+    const stackPathCache: Map<string, TrieNode> = new Map()
+    for (const op of sortedOps) {
+      const appliedKey = skipKeyTransform === true ? op.key : this.appliedKey(op.key)
+      const nibbles = bytesToNibbles(appliedKey)
+      stack = []
+      let remaining = nibbles
+      for (let i = 0; i < nibbles.length; i++) {
+        const p: string = JSON.stringify(nibbles.slice(0, i) as number[])
+        if (stackPathCache.has(p)) {
+          const node = stackPathCache.get(p)!
+          stack.push(node)
+          remaining = nibbles.slice(i)
+        }
+      }
+      const _path =
+        stack.length > 0
+          ? {
+              stack,
+              remaining,
+            }
+          : undefined
+      if (op.type === 'put') {
+        stack = await this.put(op.key, op.value, skipKeyTransform, _path)
+        const path: number[] = []
+        for (const node of stack) {
+          stackPathCache.set(JSON.stringify([...path]), node)
+          if (node instanceof BranchNode) {
+            path.push(nibbles.shift()!)
+          } else {
+            path.push(...nibbles.splice(0, node.keyLength()))
+          }
+        }
+      } else if (op.type === 'del') {
+        stack = await this.put(op.key, null, skipKeyTransform, _path)
+        const path: number[] = []
+        for (const node of stack) {
+          stackPathCache.set(JSON.stringify([...path]), node)
+          if (node instanceof BranchNode) {
+            path.push(nibbles.shift()!)
+          } else {
+            path.push(...nibbles.splice(0, node.keyLength()))
+          }
+        }
+      }
+    }
   }
 
   // This method verifies if all keys in the trie (except the root) are reachable
