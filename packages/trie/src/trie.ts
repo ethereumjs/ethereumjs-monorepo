@@ -18,7 +18,6 @@ import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { CheckpointDB } from './db/index.js'
-import { orderBatch } from './node/batch.js'
 import {
   BranchNode,
   ExtensionNode,
@@ -30,7 +29,7 @@ import {
 import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
-import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
+import { bytesToNibbles, matchingNibbleLength, orderBatch } from './util/nibbles.js'
 import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
