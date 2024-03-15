@@ -101,9 +101,9 @@ export function getTransaction(
     txParams['maxPriorityFeePerGas'] = BigInt(10)
     txParams['maxFeePerBlobGas'] = BigInt(100)
     txParams['blobs'] = getBlobs('hello world')
-    txParams['kzgCommitments'] = blobsToCommitments(txParams['blobs'])
+    txParams['kzgCommitments'] = blobsToCommitments(common.customCrypto!.kzg!, txParams['blobs'])
     txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
-      common.customCrypto?.kzg?.computeBlobKzgProof(
+      common.customCrypto!.kzg!.computeBlobKzgProof(
         blob,
         txParams['kzgCommitments'][ctx] as Uint8Array
       )
