@@ -559,11 +559,16 @@ export class Trie {
    * @param key
    * @returns A Promise that resolves once value is deleted.
    */
-  async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+  async del(
+    key: Uint8Array,
+    skipKeyTransform: boolean = false,
+    path?: { stack: TrieNode[]; remaining: number[] }
+  ): Promise<TrieNode[]> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['DEL'])
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    const { node, stack } = await this.findPath(appliedKey)
+    const partialPath = path && { stack: path.stack }
+    const { node, stack } = await this.findPath(appliedKey, false, partialPath)
 
     let ops: BatchDBOp[] = []
     // Only delete if the `key` currently has any value
@@ -591,6 +596,7 @@ export class Trie {
     }
     await this.persistRoot()
     this._lock.release()
+    return stack
   }
 
   /**
