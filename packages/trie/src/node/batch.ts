@@ -1,12 +1,6 @@
-import {
-  type BatchDBOp,
-  KeyEncoding,
-  bytesToUtf8,
-  concatBytes,
-  equalsBytes,
-} from '@ethereumjs/util'
+import { type BatchDBOp } from '@ethereumjs/util'
 
-import { ROOT_DB_KEY, type TrieNode } from '../types.js'
+import { type TrieNode } from '../types.js'
 import { bytesToNibbles, nibblesCompare } from '../util/nibbles.js'
 
 import { BranchNode } from './branch.js'
@@ -28,105 +22,6 @@ export function orderBatch(
     return nibblesCompare(a, b)
   })
   return keyNibbles.map(([i, _]) => ops[i])
-}
-
-export async function _put(
-  trie: Trie,
-  key: Uint8Array,
-  value: Uint8Array,
-  skipKeyTransform: boolean = false,
-  path?: { stack: TrieNode[]; remaining: number[] }
-) {
-  const appliedKey = skipKeyTransform ? key : trie['appliedKey'](key)
-  const { remaining, stack } = path ?? (await trie.findPath(appliedKey))
-  let ops: BatchDBOp[] = []
-  if (trie['_opts'].useNodePruning) {
-    const val = await trie.get(appliedKey)
-    if (val === null || equalsBytes(val, value) === false) {
-      const deleteHashes = stack.map((e) => trie['hash'](e.serialize()))
-      ops = deleteHashes.map((e) => {
-        const key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, e) : e
-        return {
-          type: 'del',
-          key,
-          opts: {
-            keyEncoding: KeyEncoding.Bytes,
-          },
-        }
-      })
-    }
-  }
-  const returnStack = await trie['_updateNode'](appliedKey, value, remaining, stack)
-  if (trie['_opts'].useNodePruning) {
-    await trie['_db'].batch(ops)
-  }
-  return returnStack
-}
-
-export async function _del(
-  trie: Trie,
-  key: Uint8Array,
-  skipKeyTransform: boolean = false
-): Promise<TrieNode[]> {
-  await trie['_lock'].acquire()
-  const appliedKey = skipKeyTransform ? key : trie['appliedKey'](key)
-  const { node, stack } = await trie.findPath(appliedKey)
-  let ops: BatchDBOp[] = []
-  if (trie['_opts'].useNodePruning && node !== null) {
-    const deleteHashes = stack.map((e) => trie['hash'](e.serialize()))
-    ops = deleteHashes.map((e) => {
-      const key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, e) : e
-      return {
-        type: 'del',
-        key,
-        opts: {
-          keyEncoding: KeyEncoding.Bytes,
-        },
-      }
-    })
-  }
-  if (node) {
-    await trie['_deleteNode'](appliedKey, stack)
-  }
-  if (trie['_opts'].useNodePruning) {
-    await trie['_db'].batch(ops)
-  }
-  await trie.persistRoot()
-  trie['_lock'].release()
-  return stack
-}
-export async function batchPut(
-  trie: Trie,
-  key: Uint8Array,
-  value: Uint8Array | null,
-  skipKeyTransform: boolean = false,
-  stack: TrieNode[] = [],
-  remaining: number[] = []
-): Promise<TrieNode[]> {
-  if (trie['_opts'].useRootPersistence && equalsBytes(key, ROOT_DB_KEY) === true) {
-    throw new Error(`Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`)
-  }
-  let _stack: TrieNode[]
-  const path =
-    stack.length > 0
-      ? {
-          stack,
-          remaining,
-        }
-      : undefined
-  if (value === null || value.length === 0) {
-    return _del(trie, key, skipKeyTransform)
-  }
-  await trie['_lock'].acquire()
-  const appliedKey = skipKeyTransform ? key : trie['appliedKey'](key)
-  if (equalsBytes(trie.root(), trie.EMPTY_TRIE_ROOT) === true) {
-    _stack = [await trie['_createInitialNode'](appliedKey, value)]
-  } else {
-    _stack = await _put(trie, key, value, skipKeyTransform, path)
-  }
-  await trie.persistRoot()
-  trie['_lock'].release()
-  return _stack
 }
 
 export async function _batch(
