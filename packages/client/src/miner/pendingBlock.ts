@@ -20,7 +20,7 @@ import type { Config } from '../config'
 import type { TxPool } from '../service/txpool'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
+import type { DepositData, WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
 
 interface PendingBlockOpts {
@@ -98,7 +98,8 @@ export class PendingBlock {
     vm: VM,
     parentBlock: Block,
     headerData: Partial<HeaderData> = {},
-    withdrawals?: WithdrawalData[]
+    withdrawals?: WithdrawalData[],
+    deposits?: DepositData[]
   ) {
     const number = parentBlock.header.number + BIGINT_1
     const { timestamp, mixHash, parentBeaconBlockRoot, coinbase } = headerData
@@ -147,6 +148,24 @@ export class PendingBlock {
       withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
     }
 
+    let depositsBuf = zeros(0)
+
+    if (deposits !== undefined && deposits !== null) {
+      const depositsBufTemp: Uint8Array[] = []
+      for (const deposit of deposits) {
+        const pubkey = toType(deposit.pubkey, TypeOutput.Uint8Array)
+        const withdrawalCredentials = toType(deposit.withdrawalCredentials, TypeOutput.Uint8Array)
+        const amount = bigIntToUnpaddedBytes(toType(deposit.amount ?? 0, TypeOutput.BigInt))
+        const signature = toType(deposit.signature, TypeOutput.Uint8Array)
+        const indexBuf = bigIntToUnpaddedBytes(toType(deposit.index ?? 0, TypeOutput.BigInt))
+
+        depositsBufTemp.push(
+          concatBytes(pubkey, withdrawalCredentials, amount, signature, indexBuf)
+        )
+      }
+      depositsBuf = concatBytes(...depositsBufTemp)
+    }
+
     const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
     const payloadIdBytes = toBytes(
@@ -158,7 +177,8 @@ export class PendingBlock {
           gasLimitBuf,
           parentBeaconBlockRootBuf,
           coinbaseBuf,
-          withdrawalsBuf
+          withdrawalsBuf,
+          depositsBuf
         )
       ).subarray(0, 8)
     )
@@ -187,6 +207,7 @@ export class PendingBlock {
         baseFeePerGas,
       },
       withdrawals,
+      deposits,
       blockOpts: {
         putBlockIntoBlockchain: false,
         setHardfork: td,
