@@ -1,4 +1,4 @@
-import { initKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -14,7 +14,7 @@ const [blockData] = blocks
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const kzg = await initKZG()
+    const kzg = await loadKZG()
 
     const { server } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,

@@ -15,7 +15,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { initKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
@@ -219,7 +219,7 @@ describe(method, () => {
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
     const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
 
-    const kzg = await initKZG()
+    const kzg = await loadKZG()
 
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',

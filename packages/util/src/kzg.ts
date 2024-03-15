@@ -2,7 +2,12 @@
  * Interface for an externally provided kzg library used when creating blob transactions
  */
 export interface Kzg {
-  loadTrustedSetup(filePath?: string): void
+  loadTrustedSetup(trustedSetup?: {
+    g1: string // unprefixed hex string
+    g2: string // unprefixed hex string
+    n1: number // bytes per element
+    n2: number // 65
+  }): void
   blobToKzgCommitment(blob: Uint8Array): Uint8Array
   computeBlobKzgProof(blob: Uint8Array, commitment: Uint8Array): Uint8Array
   verifyKzgProof(
@@ -36,9 +41,9 @@ export let kzg: Kzg = {
  * initialization or should othewise be assured independently before KZG libary usage.
  *
  * @param kzgLib a KZG implementation (defaults to c-kzg)
- * @param trustedSetupPath the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file
+ * @param a dictionary of trusted setup options
  */
-export function initKZG(kzgLib: Kzg, trustedSetupPath?: string) {
+export function loadKZG(kzgLib: Kzg, _trustedSetupPath?: string) {
   kzg = kzgLib
-  kzg.loadTrustedSetup(trustedSetupPath)
+  kzg.loadTrustedSetup()
 }

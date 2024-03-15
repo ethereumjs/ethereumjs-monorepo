@@ -13,7 +13,7 @@ import {
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
-import { initKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
@@ -25,15 +25,8 @@ const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
-    let kzg
-    {
-      try {
-        //initKZG(__dirname + '/../../client/src/trustedSetups/official.txt')
-        kzg = await initKZG()
-      } catch {
-        // no-op
-      }
-    }
+    const kzg = await loadKZG()
+
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,

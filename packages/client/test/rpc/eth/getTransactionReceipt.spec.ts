@@ -11,7 +11,7 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { initKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
@@ -88,7 +88,7 @@ describe(method, () => {
     } else {
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
 
-      const kzg = await initKZG()
+      const kzg = await loadKZG()
 
       const common = Common.fromGethGenesis(gethGenesis, {
         chain: 'customChain',

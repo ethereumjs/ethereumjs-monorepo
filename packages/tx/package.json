@@ -65,7 +65,7 @@
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/node-dir": "^0.0.34",
-    "kzg-wasm": "git://github.com/ethereumjs/kzg-wasm.git#c0f05e56f4728f46bf322514f421997d96f63387",
+    "kzg-wasm": "github:ethereumjs/kzg-wasm#6d82761ec36bba94f06c8638c7a9e5983310c504",
     "minimist": "^1.2.0",
     "node-dir": "^0.1.16"
   },

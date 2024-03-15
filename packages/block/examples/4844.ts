@@ -2,11 +2,12 @@ import { Common, Chain, Hardfork } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { Address } from '@ethereumjs/util'
-import { initKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { randomBytes } from 'crypto'
 
 const main = async () => {
-  const kzg = await initKZG()
+  const kzg = await loadKZG()
+
   const common = new Common({
     chain: Chain.Mainnet,
     hardfork: Hardfork.Cancun,

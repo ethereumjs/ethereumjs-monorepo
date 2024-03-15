@@ -11,7 +11,7 @@ import {
   getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
-import { initKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
@@ -67,7 +67,7 @@ describe(method, () => {
       return this
     }
 
-    const kzg = await initKZG()
+    const kzg = await loadKZG()
 
     const { service, server, common } = await setupChain(genesisJSON, 'post-merge', {
       engine: true,
