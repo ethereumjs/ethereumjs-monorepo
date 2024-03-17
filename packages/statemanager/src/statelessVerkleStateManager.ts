@@ -13,7 +13,7 @@ import {
   short,
   toBytes,
 } from '@ethereumjs/util'
-import { getKey, getStem, setStemsLookahead, verifyUpdate } from '@ethereumjs/verkle'
+import { getKey, getStem, verifyUpdate } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { equalsBytes } from 'ethereum-cryptography/utils'
@@ -257,8 +257,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       throw Error(errorMsg)
     }
 
-    // allow getStem to peek into provided stems to see if modified stem is needed
-    setStemsLookahead(executionWitness.stateDiff.map((sDiff) => sDiff.stem))
     this._executionWitness = executionWitness
     this.accessWitness = accessWitness ?? new AccessWitness()
 
@@ -709,7 +707,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // in access while comparising against the provided poststate in the execution witness
     const accessedChunks = new Map<string, boolean>()
     // switch to false if postVerify fails
-    let postVerified = true
+    let postFailures = 0
 
     // ignore the BLOCKHASH witness as its not implemented right now also there is an issue with it
     // on k3 network
@@ -732,21 +730,21 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      let computedValue = this.getComputedValue(accessedState)
+      const computedValue = this.getComputedValue(accessedState)
       let canonicalValue: string | null | undefined = this._postState[chunkKey]
 
       if (canonicalValue === undefined) {
         debug(
           `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
         )
-        postVerified = false
+        postFailures++
         continue
       }
 
       // if the access type is code, then we can't match the first byte because since the computed value
       // doesn't has the first byte for push data since previous chunk code itself might not be available
       if (accessedState.type === AccessedStateType.Code) {
-        computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
+        // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
       }
 
@@ -768,7 +766,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         )
         debug(`expected=${displayCanonicalValue}`)
         debug(`computed=${displayComputedValue}`)
-        postVerified = false
+        postFailures++
       }
     }
 
@@ -780,7 +778,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
           !blockHashKnownStems.includes(canChunkKey.slice(0, 64))
         ) {
           debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
-          postVerified = false
+          postFailures++
         } else {
           debug(
             `Ignoring the missing chunk access for BLOCKHASH witness canChunkKey=${canChunkKey}`
@@ -789,8 +787,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    debug(`verifyPostState=${postVerified}`)
-    return postVerified
+    const verifyPassed = postFailures === 0
+    debug(`verifyPostState verifyPassed=${verifyPassed} postFailures=${postFailures}`)
+
+    return verifyPassed
   }
 
   getComputedValue(accessedState: AccessedStateWithAddress): PrefixedHexString | null {
@@ -865,7 +865,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
         // be very tricky and impossible in certain scenarios like when the previous code chunk
         // was not accessed and hence not even provided in the witness
         const chunkSize = 31
-        return bytesToHex(code.slice(codeOffset, codeOffset + chunkSize))
+        return bytesToHex(setLengthRight(code.slice(codeOffset, codeOffset + chunkSize), chunkSize))
       }
 
       case AccessedStateType.Storage: {
