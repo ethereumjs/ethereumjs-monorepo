@@ -22,6 +22,7 @@ import {
   setLengthLeft,
   short,
   unprefixedHexToBytes,
+  zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
@@ -344,9 +345,30 @@ async function applyBlock(this: VM, block: Block, opts: RunBlockOpts): Promise<A
     }
   }
   if (this.common.isActivatedEIP(4788)) {
-    if (this.DEBUG) {
-      debug(`accumulate parentBeaconBlockRoot`)
+    if (
+      block.header.number === BIGINT_1 &&
+      (await this.stateManager.getContractCode(parentBeaconBlockRootAddress)).length > 0
+    ) {
+      // TODO DELETE THIS LOGIC
+      // HotFix for ethereum/tests
+      const parent = await this.blockchain.getBlock(0)
+      const timestamp = parent.header.timestamp
+      const historicalRootsLength = BigInt(this.common.param('vm', 'historicalRootsLength'))
+      const timestampIndex = timestamp % historicalRootsLength
+      const timestampExtended = timestampIndex + historicalRootsLength
+
+      await this.stateManager.putContractStorage(
+        parentBeaconBlockRootAddress,
+        setLengthLeft(bigIntToBytes(timestampIndex), 32),
+        zeros(32)
+      )
+      await this.stateManager.putContractStorage(
+        parentBeaconBlockRootAddress,
+        setLengthLeft(bigIntToBytes(timestampExtended), 32),
+        zeros(32)
+      )
     }
+
     await accumulateParentBeaconBlockRoot.bind(this)(
       block.header.parentBeaconBlockRoot!,
       block.header.timestamp
