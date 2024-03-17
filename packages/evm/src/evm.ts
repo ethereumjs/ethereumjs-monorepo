@@ -551,7 +551,7 @@ export class EVM implements EVMInterface {
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
-    if (!result.exceptionError) {
+    if (!result.exceptionError && this.common.isActivatedEIP(6800) === false) {
       returnFee =
         BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
@@ -672,7 +672,7 @@ export class EVM implements EVMInterface {
           message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
             message.to,
             0,
-            message.code!.length - 1
+            result.returnValue.length - 1
           )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {

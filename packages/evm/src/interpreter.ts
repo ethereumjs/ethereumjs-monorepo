@@ -1072,6 +1072,7 @@ export class Interpreter {
       selfdestruct,
       gasRefund: this._runState.gasRefund,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     let createdAddresses: Set<string>
