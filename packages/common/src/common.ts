@@ -157,8 +157,7 @@ export class Common {
             chainId: 69,
             networkId: 69,
           },
-          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: Hardfork.Berlin, ...opts }
+          { hardfork: Hardfork.Cancun, ...opts }
         )
       }
 
