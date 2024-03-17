@@ -6,6 +6,7 @@ import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionFactory } from '@ethereumjs/tx'
 import {
+  Address,
   MapDB,
   bytesToBigInt,
   bytesToHex,
@@ -16,11 +17,16 @@ import {
 } from '@ethereumjs/util'
 
 import { VM } from '../../../dist/cjs'
+import { accumulateParentBeaconBlockRoot } from '../../../src/runBlock'
 import { setupPreConditions, verifyPostConditions } from '../../util'
 
 import type { EthashConsensus } from '@ethereumjs/blockchain'
 import type { Common } from '@ethereumjs/common'
 import type * as tape from 'tape'
+
+const parentBeaconBlockRootAddress = Address.fromString(
+  '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02'
+)
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -96,6 +102,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
+
+  if (vm.common.isActivatedEIP(4788)) {
+    if ((await vm.stateManager.getContractCode(parentBeaconBlockRootAddress)).length > 0) {
+      // Fix pre state root, have to add timestamp + block root for the genesis block in the
+      const root = hexToBytes(testData.genesisBlockHeader.parentBeaconBlockRoot)
+      const timestamp = bytesToBigInt(hexToBytes(testData.genesisBlockHeader.timestamp))
+      await accumulateParentBeaconBlockRoot.bind(<any>vm)(root, timestamp)
+    }
+  }
 
   t.deepEquals(
     await vm.stateManager.getStateRoot(),
