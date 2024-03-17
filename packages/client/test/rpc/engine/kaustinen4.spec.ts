@@ -1,4 +1,5 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
+import { hexToBytes } from '@ethereumjs/util'
 import { readFileSync } from 'fs'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
@@ -20,6 +21,8 @@ const genesisVerkleBlockHash = '0x8493ed97fd4314acb6ed519867b086dc698e25df37ebe8
  *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen4.spec.ts`
  *   2. Directly pull slots from a kaustinen beacon url
  *     `TEST_ONLINE_SLOTS=345,353..360 PEER_BEACON_URL=https://beacon.verkle-gen-devnet-4.ethpandaops.io npx vitest run test/rpc/engine/kaustinen4.spec.ts`
+ *   3. Geth produced testvectors
+ *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen4.spec.ts`
  */
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
@@ -111,9 +114,93 @@ describe(`valid verkle network setup`, async () => {
     }
   }
 
+  if (process.env.TEST_GETH_VEC_DIR !== undefined) {
+    const gethVecs = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
+    let parent = gethVecs[0]
+    for (let i = 1; i < gethVecs.length; i++) {
+      const execute = gethVecs[i]
+      it(`run geth vector: ${execute.blockNumber}`, async () => {
+        await runBlock({ common, chain, rpc }, { parent, execute }, false)
+        parent = execute
+      })
+    }
+  }
+
   it(`reset TD`, () => {
     server.close()
     BlockHeader.prototype['_consensusFormatValidation'] = originalValidate
     td.reset()
   })
 })
+
+async function loadGethVectors(vectorsDirPath: string, opts: { common: Common }) {
+  // set chain id to 1 for geth vectors
+  opts.common._chainParams.chainId = BigInt(1)
+  const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`))
+  const executionWitness0 = {
+    stateDiff: [],
+    verkleProof: {
+      commitmentsByPath: [],
+      d: '0x',
+      depthExtensionPresent: '0x',
+      ipaProof: {
+        cl: [],
+        cr: [],
+        finalEvaluation: '0x',
+      },
+      otherStems: [],
+    },
+  }
+
+  const executionWitness1 = {
+    stateDiff: stateDiffVec[0],
+    verkleProof: {
+      commitmentsByPath: [],
+      d: '0x',
+      depthExtensionPresent: '0x',
+      ipaProof: {
+        cl: [],
+        cr: [],
+        finalEvaluation: '0x',
+      },
+      otherStems: [],
+    },
+  }
+
+  const executionWitness2 = {
+    stateDiff: stateDiffVec[1],
+    verkleProof: {
+      commitmentsByPath: [],
+      d: '0x',
+      depthExtensionPresent: '0x',
+      ipaProof: {
+        cl: [],
+        cr: [],
+        finalEvaluation: '0x',
+      },
+      otherStems: [],
+    },
+  }
+  const block0RlpHex = readFileSync(`${vectorsDirPath}/block0.rlp.hex`, 'utf8').trim()
+  const block0 = Block.fromRLPSerializedBlock(hexToBytes(`0x${block0RlpHex}`), {
+    ...opts,
+    executionWitness: executionWitness0,
+  })
+  const _block0Payload = block0.toExecutionPayload()
+
+  const block1RlpHex = readFileSync(`${vectorsDirPath}/block1.rlp.hex`, 'utf8').trim()
+  const block1 = Block.fromRLPSerializedBlock(hexToBytes(`0x${block1RlpHex}`), {
+    ...opts,
+    executionWitness: executionWitness1,
+  })
+  const block1Payload = block1.toExecutionPayload()
+
+  const block2RlpHex = readFileSync(`${vectorsDirPath}/block2.rlp.hex`, 'utf8').trim()
+  const block2 = Block.fromRLPSerializedBlock(hexToBytes(`0x${block2RlpHex}`), {
+    ...opts,
+    executionWitness: executionWitness2,
+  })
+  const block2Payload = block2.toExecutionPayload()
+
+  return [block1Payload, block2Payload]
+}
