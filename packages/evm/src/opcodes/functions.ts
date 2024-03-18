@@ -2,7 +2,6 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  BIGINT_128,
   BIGINT_160,
   BIGINT_2,
   BIGINT_224,
@@ -1137,19 +1136,19 @@ export const handlers: Map<number, OpHandler> = new Map([
       // eslint-disable-next-line prefer-const
       let [authority, memOffset, memLength] = runState.stack.popN(3)
 
-      if (memLength > BIGINT_128) {
-        memLength = BIGINT_128
+      if (memLength > BigInt(97)) {
+        memLength = BigInt(97)
       }
 
       let mem = runState.memory.read(Number(memOffset), Number(memLength))
-      if (mem.length < 128) {
-        mem = setLengthRight(mem, 128)
+      if (mem.length < 97) {
+        mem = setLengthRight(mem, 97)
       }
 
-      const yParity = BigInt(mem[31])
-      const r = mem.subarray(32, 64)
-      const s = mem.subarray(64, 96)
-      const commit = mem.subarray(96, 128)
+      const yParity = BigInt(mem[0])
+      const r = mem.subarray(1, 33)
+      const s = mem.subarray(33, 65)
+      const commit = mem.subarray(65, 97)
 
       if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
         trap(ERROR.AUTH_INVALID_S)
