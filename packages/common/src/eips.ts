@@ -495,6 +495,12 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
+    gasPrices: {
+      create: {
+        v: 1000,
+        d: 'Base fee of the CREATE opcode',
+      },
+    },
   },
   7516: {
     comment: 'BLOBBASEFEE opcode',
