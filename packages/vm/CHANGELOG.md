@@ -41,12 +41,10 @@ This WASM KZG library can now be used for KZG initialization (replacing the old 
 Note that `kzg-wasm` needs to be added manually to your own dependencies and the KZG initialization code needs to be adopted like the following (which you will likely want to do in most cases, so if you deal with post Dencun EVM bytecode and/or 4844 blob txs in any way):
 
 ```typescript
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
 
-const kzg = await createKZG()
-initKZG(kzg)
+const kzg = await loadKZG()
 
 // Instantiate `common`
 const common = new Common({

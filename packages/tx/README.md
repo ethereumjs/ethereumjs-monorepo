@@ -40,13 +40,11 @@ Initialization can then be done like the following:
 ```ts
 // ./examples/initKzg.ts
 
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
 
 const main = async () => {
-  const kzg = await createKZG()
-  initKZG(kzg)
+  const kzg = await loadKZG()
 
   // Instantiate `common`
   const common = new Common({
@@ -57,6 +55,8 @@ const main = async () => {
 
   console.log(common.customCrypto.kzg) // should output the KZG API as an object
 }
+
+main()
 ```
 
 Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
@@ -125,12 +125,11 @@ See the following code snipped for an example on how to instantiate (using the `
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bytesToHex, initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { bytesToHex } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 
 const main = async () => {
-  const kzg = await createKZG()
-  initKZG(kzg)
+  const kzg = await loadKZG()
 
   const common = new Common({
     chain: Chain.Mainnet,
