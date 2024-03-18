@@ -5,6 +5,8 @@ import { LegacyTransaction } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  BIGINT_0,
+  BIGINT_1,
   bigIntToBytes,
   bytesToBigInt,
   concatBytes,
@@ -65,11 +67,23 @@ const STORECALLER = hexToBytes('0x5A60015533600055600035600255366000600037366000
  * @param privateKey - The private key of the account to sign
  * @returns The signed message
  */
-function signMessage(commitUnpadded: Uint8Array, address: Address, privateKey: Uint8Array) {
+function signMessage(
+  commitUnpadded: Uint8Array,
+  address: Address,
+  privateKey: Uint8Array,
+  nonce: bigint = BIGINT_0
+) {
   const commit = setLengthLeft(commitUnpadded, 32)
   const paddedInvokerAddress = setLengthLeft(address.bytes, 32)
   const chainId = setLengthLeft(bigIntToBytes(common.chainId()), 32)
-  const message = concatBytes(hexToBytes('0x03'), chainId, paddedInvokerAddress, commit)
+  const noncePadded = setLengthLeft(bigIntToBytes(nonce), 32)
+  const message = concatBytes(
+    hexToBytes('0x04'),
+    chainId,
+    noncePadded,
+    paddedInvokerAddress,
+    commit
+  )
   const msgHash = keccak256(message)
   return ecsign(msgHash, privateKey)
 }
@@ -90,20 +104,28 @@ function getAuthCode(
   const commit = setLengthLeft(commitUnpadded, 32)
   let v: Uint8Array
   if (signature.v === BigInt(27)) {
-    v = setLengthLeft(hexToBytes('0x00'), 32)
+    v = hexToBytes('0x00')
   } else if (signature.v === BigInt(28)) {
-    v = setLengthLeft(hexToBytes('0x01'), 32)
+    v = hexToBytes('0x01')
   } else {
-    v = setLengthLeft(toBytes(signature.v), 32)
+    v = toBytes(signature.v)
+    if (v.length > 1) {
+      throw new Error('v too long')
+    }
+    if (v.length === 0) {
+      v = hexToBytes('0x00')
+    }
   }
 
   const PUSH32 = hexToBytes('0x7F')
+  const PUSH1 = hexToBytes('0x60')
   const AUTH = hexToBytes('0xF6')
   const MSTORE = hexToBytes('0x52')
+  const MSTORE8 = hexToBytes('0x53')
   const mslot0 = zeros(32)
-  const mslot1 = concatBytes(zeros(31), hexToBytes('0x20'))
-  const mslot2 = concatBytes(zeros(31), hexToBytes('0x40'))
-  const mslot3 = concatBytes(zeros(31), hexToBytes('0x60'))
+  const mslot1 = concatBytes(zeros(31), hexToBytes('0x01'))
+  const mslot2 = concatBytes(zeros(31), hexToBytes('0x21'))
+  const mslot3 = concatBytes(zeros(31), hexToBytes('0x41'))
   const addressBuffer = setLengthLeft(address.bytes, 32)
   // This bytecode setups the stack to be used for AUTH
   return concatBytes(
@@ -117,11 +139,11 @@ function getAuthCode(
     PUSH32,
     mslot1,
     MSTORE,
-    PUSH32,
+    PUSH1,
     v,
     PUSH32,
     mslot0,
-    MSTORE,
+    MSTORE8,
     PUSH32,
     commit,
     PUSH32,
@@ -316,7 +338,8 @@ describe('EIP-3074 AUTH', () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
-    const signature2 = signMessage(message, contractAddress, callerPrivateKey)
+    // This test also tests that the nonce is being read from the account
+    const signature2 = signMessage(message, contractAddress, callerPrivateKey, BIGINT_1)
     const code = concatBytes(
       getAuthCode(message, signature, authAddress),
       getAuthCode(message, signature2, callerAddress),
