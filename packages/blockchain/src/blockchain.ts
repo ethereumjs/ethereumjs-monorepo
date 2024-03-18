@@ -561,7 +561,10 @@ export class Blockchain implements BlockchainInterface {
           td > currentTd.header ||
           block.common.consensusType() === ConsensusType.ProofOfStake
         ) {
-          const foundCommon = await this.findCommonAncestor(header)
+          const foundCommon = await this.findCommonAncestor(header).catch(e => {
+            console.error(e)
+            throw new Error('Unable to traverse chain and find common ancestor. Are there missing blocks?', {cause: e})
+          })
           commonAncestor = foundCommon.commonAncestor
           ancestorHeaders = foundCommon.ancestorHeaders
 
