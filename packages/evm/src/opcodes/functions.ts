@@ -51,7 +51,7 @@ import {
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = hexToBytes('0x03')
+const EIP3074MAGIC = hexToBytes('0x04')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
