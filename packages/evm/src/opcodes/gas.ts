@@ -586,7 +586,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* AUTH */
       0xf6,
       async function (runState, gas, common): Promise<bigint> {
-        const [_address, memOffset, memLength] = runState.stack.peek(3)
+        const [address, memOffset, memLength] = runState.stack.peek(3)
+        // Note: 2929 is always active if AUTH can be reached,
+        // since it needs London as minimum hardfork
+        gas += accessAddressEIP2929(runState, bigIntToBytes(address), common)
         gas += subMemUsage(runState, memOffset, memLength, common)
         return gas
       },
