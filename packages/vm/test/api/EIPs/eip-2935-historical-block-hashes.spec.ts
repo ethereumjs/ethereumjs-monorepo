@@ -112,7 +112,11 @@ describe('EIP 2935: historical block hashes', () => {
     const blocksActivation = 256 // This ensures that block 0 - 255 all get stored into the hash contract
     // More than blocks activation to build, so we can ensure that we can also retrieve block 0 or block 1 hash at block 300
     const blocksToBuild = 300
+    const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0)
+    commonGetHistoryServeWindow.setEIPs([2935])
     const common = eip2935ActiveAtCommon(blocksActivation)
+    const historyServeWindow = commonGetHistoryServeWindow.param('vm', 'historyServeWindow')
+
     const blockchain = await Blockchain.create({
       common,
       validateBlocks: false,
@@ -146,7 +150,7 @@ describe('EIP 2935: historical block hashes', () => {
       const block = await vm.blockchain.getBlock(i)
       const storage = await vm.stateManager.getContractStorage(
         historyAddress,
-        setLengthLeft(bigIntToBytes(BigInt(i)), 32)
+        setLengthLeft(bigIntToBytes(BigInt(i) % historyServeWindow), 32)
       )
       const ret = await vm.evm.runCall({
         // Code: RETURN the BLOCKHASH of block i
@@ -155,11 +159,10 @@ describe('EIP 2935: historical block hashes', () => {
         data: hexToBytes('0x61' + i.toString(16).padStart(4, '0') + '4060205260406000F3'),
         block: parentBlock,
       })
-      if (i <= blocksToBuild - 1) {
+      if (i <= blocksToBuild - 1 && i >= blocksToBuild - Number(historyServeWindow)) {
         assert.ok(equalsBytes(setLengthLeft(storage, 32), block.hash()))
         assert.ok(equalsBytes(ret.execResult.returnValue, setLengthLeft(block.hash(), 64)))
       } else {
-        assert.ok(equalsBytes(setLengthLeft(storage, 32), zeros(32)))
         assert.ok(equalsBytes(ret.execResult.returnValue, zeros(64)))
       }
     }
