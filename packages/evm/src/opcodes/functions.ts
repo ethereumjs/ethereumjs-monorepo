@@ -1,4 +1,5 @@
 import {
+  Account,
   Address,
   BIGINT_0,
   BIGINT_1,
@@ -1154,9 +1155,15 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(ERROR.AUTH_INVALID_S)
       }
 
-      const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
+      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
+      const accountNonce = (
+        (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
+      ).nonce
+
+      const invokedAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
+      const nonce = setLengthLeft(bigIntToBytes(accountNonce), 32)
+      const message = concatBytes(EIP3074MAGIC, chainId, nonce, invokedAddress, commit)
 
       const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
       const msgHash = keccakFunction(message)
@@ -1175,8 +1182,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       const addressBuffer = publicToAddress(recover)
       const address = new Address(addressBuffer)
       runState.auth = address
-
-      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20))
 
       if (!expectedAddress.equals(address)) {
         // expected address does not equal the recovered address, clear auth variable
