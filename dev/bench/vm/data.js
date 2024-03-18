@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1710501592696,
+  "lastUpdate": 1710756725937,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "gajinder@g11.in",
-            "name": "g11tech",
-            "username": "g11tech"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "45d03366b29d6e36a16d2fa945f8194a74ba83eb",
-          "message": "common: schedule cancun for mainnet (#3270)",
-          "timestamp": "2024-02-08T16:05:26+01:00",
-          "tree_id": "9b5535b2820576324a27decb926d0c73cac563d0",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/45d03366b29d6e36a16d2fa945f8194a74ba83eb"
-        },
-        "date": 1707405024292,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40838,
-            "range": "±2.13%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38367,
-            "range": "±3.26%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39095,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 37578,
-            "range": "±2.34%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36936,
-            "range": "±2.48%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.76%",
             "unit": "ops/sec",
             "extra": "82 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e38a521e76963434c508371db46f3f4a6c7dd150",
+          "message": "Fix RPCStateManager Inconsistincy (#3323)\n\n* Check if rlp is empty account instead of null\r\n\r\n* Add test to make sure RPCSM and DSM behave similarly when getting an account that does not exist",
+          "timestamp": "2024-03-18T11:09:01+01:00",
+          "tree_id": "84851421a9606b0ea3e105bf944e921b33eedb36",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e38a521e76963434c508371db46f3f4a6c7dd150"
+        },
+        "date": 1710756725298,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42885,
+            "range": "±2.70%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41351,
+            "range": "±2.20%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41896,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40649,
+            "range": "±1.64%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36334,
+            "range": "±5.97%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
