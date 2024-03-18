@@ -181,7 +181,7 @@ export class EVM implements EVMInterface {
    * @param opts The EVM options
    * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
-  constructor(opts: EVMOpts, bn128: bn128) {
+  protected constructor(opts: EVMOpts, bn128: bn128) {
     this.common = opts.common!
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!

@@ -104,7 +104,7 @@ describe('EVM -> custom precompiles', () => {
   })
 
   it('should not persist changes to precompiles', async () => {
-    let EVMSha = await EVM.create({})
+    let EVMSha = await EVM.create()
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
@@ -128,7 +128,7 @@ describe('EVM -> custom precompiles', () => {
     // sanity: check we have overridden
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.ok(result.execResult.executionGasUsed === expectedGas, 'gas used is correct')
-    EVMSha = await EVM.create({})
+    EVMSha = await EVM.create()
     const shaResult2 = await EVMSha.runCall({
       to: shaAddress,
       gasLimit: BigInt(30000),
