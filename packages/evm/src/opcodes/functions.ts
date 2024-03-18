@@ -603,10 +603,18 @@ export const handlers: Map<number, OpHandler> = new Map([
           return
         }
 
+        const diff = runState.interpreter.getBlockNumber() - number
+        const historyServeWindow = common.param('vm', 'historyServeWindow')
+        // block lookups must be within the `historyServeWindow`
+        if (diff > historyServeWindow || diff <= BIGINT_0) {
+          runState.stack.push(BIGINT_0)
+          return
+        }
+
         const historyAddress = Address.fromString(
           bigIntToHex(common.param('vm', 'historyStorageAddress'))
         )
-        const key = setLengthLeft(bigIntToBytes(number), 32)
+        const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
         const storage = await runState.stateManager.getContractStorage(historyAddress, key)
 

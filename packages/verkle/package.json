@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/verkle",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Implementation of verkle trees as used in Ethereum.",
   "keywords": [
     "verkle",
@@ -51,9 +51,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "5.0.2",
-    "@ethereumjs/util": "9.0.2",
-    "lru-cache": "10.1.0",
+    "@ethereumjs/rlp": "^5.0.2",
+    "@ethereumjs/util": "^9.0.3",
+    "lru-cache": "^10.0.0",
     "rust-verkle-wasm": "^0.0.1"
   },
   "engines": {

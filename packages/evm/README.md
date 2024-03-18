@@ -19,7 +19,7 @@ npm install @ethereumjs/evm
 
 This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6` release.
 
-**Note:** If you want to work with `EIP-4844` related functionality, you will have additional manual installation steps for the **KZG setup**, see related section below.
+**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality will become an integrated part of the EVM functionality with the activation of the point evaluation precompile. It is therefore strongly recommended to _always_ run the EVM with a KZG library installed and initialized, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ## Usage
 
@@ -35,14 +35,16 @@ The following is the simplest example for an EVM instantiation:
 import { hexToBytes } from '@ethereumjs/util'
 import { EVM } from '@ethereumjs/evm'
 
-const evm = new EVM()
 const main = async () => {
+  const evm = await EVM.create()
   const res = await evm.runCode({ code: hexToBytes('0x6001') }) // PUSH1 01 -- simple bytecode to push 1 onto the stack
   console.log(res.executionGasUsed) // 3n
 }
 
 main()
 ```
+
+Note: with the switch from v2 to v3 the old direct `new EVM()` constructor usage has been deprecated and an `EVM` now has to be instantiated with the async static `EVM.create()` constructor.
 
 ### Blockchain, State and Events
 
@@ -62,7 +64,7 @@ const main = async () => {
   const stateManager = new DefaultStateManager()
   const blockchain = await Blockchain.create()
 
-  const evm = new EVM({
+  const evm = await EVM.create({
     common,
     stateManager,
     blockchain,
@@ -203,9 +205,13 @@ If you want to activate an EIP not currently active on the hardfork your `common
 import { Chain, Common } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
 
-const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
-const evm = new EVM({ common })
-console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
+const main = async () => {
+  const common = new Common({ chain: Chain.Mainnet, eips: [3074] })
+  const evm = await EVM.create({ common })
+  console.log(`EIP 3074 is active - ${evm.common.isActivatedEIP(3074)}`)
+}
+
+main()
 ```
 
 Currently supported EIPs:
@@ -216,6 +222,7 @@ Currently supported EIPs:
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes

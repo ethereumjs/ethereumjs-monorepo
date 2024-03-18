@@ -193,7 +193,7 @@ export const EIPs: EIPsDict = {
   },
   2935: {
     comment: 'Save historical block hashes in state (Verkle related usage, UNSTABLE)',
-    url: 'https://github.com/ethereum/EIPs/pull/8166/commits/941d3beb084d638be258b8fded6171cf0705a5db',
+    url: 'https://github.com/gballet/EIPs/pull/3/commits/2e9ac09a142b0d9fb4db0b8d4609f92e5d9990c5',
     status: Status.Draft,
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
@@ -202,9 +202,9 @@ export const EIPs: EIPsDict = {
         v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
         d: 'The address where the historical blockhashes are stored',
       },
-      minHistoryServeWindow: {
+      historyServeWindow: {
         v: BigInt(256),
-        d: 'The minimum amount of blocks to be served by the historical blockhash contract',
+        d: 'The amount of blocks to be served by the historical blockhash contract',
       },
     },
   },
