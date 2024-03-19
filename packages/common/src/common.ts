@@ -157,7 +157,7 @@ export class Common {
             chainId: 69,
             networkId: 69,
           },
-          { hardfork: Hardfork.Cancun, ...opts }
+          opts
         )
       }
 
