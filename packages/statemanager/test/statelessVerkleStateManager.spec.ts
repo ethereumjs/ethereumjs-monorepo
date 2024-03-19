@@ -61,7 +61,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     try {
       await stateManager.getAccount(address)
       assert.fail('should throw on getting account that is not found in witness')
-    } catch (e) {
+    } catch (e: any) {
       assert.equal(
         e.message.slice(0, 25),
         'Missing execution witness',
@@ -116,16 +116,16 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const account = await stateManager.getAccount(address)
 
     assert.equal(
-      account.balance,
-      bytesToBigInt(hexToBytes(balanceRaw), true),
+      account!.balance,
+      bytesToBigInt(hexToBytes(balanceRaw!), true),
       'should have correct balance'
     )
     assert.equal(
-      account.nonce,
-      bytesToBigInt(hexToBytes(nonceRaw), true),
+      account!.nonce,
+      bytesToBigInt(hexToBytes(nonceRaw!), true),
       'should have correct nonce'
     )
-    assert.equal(bytesToHex(account.codeHash), codeHash, 'should have correct codeHash')
+    assert.equal(bytesToHex(account!.codeHash), codeHash, 'should have correct codeHash')
   })
 
   it(`copy()`, async () => {
@@ -143,12 +143,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManagerCopy = stateManager.shallowCopy()
 
     assert.equal(
-      stateManagerCopy['_accountCacheSettings'].type,
+      (stateManagerCopy as any)['_accountCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()'
     )
     assert.equal(
-      stateManagerCopy['_storageCacheSettings'].type,
+      (stateManagerCopy as any)['_storageCacheSettings'].type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()'
     )

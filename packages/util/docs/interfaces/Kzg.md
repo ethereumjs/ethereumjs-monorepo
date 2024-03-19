@@ -59,13 +59,13 @@ ___
 
 ### loadTrustedSetup
 
-▸ **loadTrustedSetup**(`filePath`): `void`
+▸ **loadTrustedSetup**(`filePath?`): `void`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `filePath` | `string` |
+| `filePath?` | `string` |
 
 #### Returns
 

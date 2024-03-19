@@ -30,6 +30,7 @@
 - [flush](RPCStateManager.md#flush)
 - [generateCanonicalGenesis](RPCStateManager.md#generatecanonicalgenesis)
 - [getAccount](RPCStateManager.md#getaccount)
+- [getAppliedKey](RPCStateManager.md#getappliedkey)
 - [getContractCode](RPCStateManager.md#getcontractcode)
 - [getContractStorage](RPCStateManager.md#getcontractstorage)
 - [getProof](RPCStateManager.md#getproof)
@@ -128,7 +129,7 @@ EVMStateManagerInterface.checkpoint
 
 #### Defined in
 
-[rpcStateManager.ts:377](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L377)
+[rpcStateManager.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L387)
 
 ___
 
@@ -194,7 +195,7 @@ EVMStateManagerInterface.commit
 
 #### Defined in
 
-[rpcStateManager.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L388)
+[rpcStateManager.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L398)
 
 ___
 
@@ -290,7 +291,7 @@ ___
 
 #### Defined in
 
-[rpcStateManager.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L405)
+[rpcStateManager.ts:415](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L415)
 
 ___
 
@@ -314,7 +315,7 @@ EVMStateManagerInterface.generateCanonicalGenesis
 
 #### Defined in
 
-[rpcStateManager.ts:428](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L428)
+[rpcStateManager.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L438)
 
 ___
 
@@ -344,6 +345,35 @@ EVMStateManagerInterface.getAccount
 #### Defined in
 
 [rpcStateManager.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L251)
+
+___
+
+### getAppliedKey
+
+▸ **getAppliedKey**(`address`): `Uint8Array`
+
+Returns the applied key for a given address
+Used for saving preimages
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `address` | `Uint8Array` | The address to return the applied key |
+
+#### Returns
+
+`Uint8Array`
+
+- The applied key (e.g. hashed address)
+
+#### Implementation of
+
+EVMStateManagerInterface.getAppliedKey
+
+#### Defined in
+
+[rpcStateManager.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L376)
 
 ___
 
@@ -455,7 +485,7 @@ EVMStateManagerInterface.getStateRoot
 
 #### Defined in
 
-[rpcStateManager.ts:412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L412)
+[rpcStateManager.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L422)
 
 ___
 
@@ -477,7 +507,7 @@ EVMStateManagerInterface.hasStateRoot
 
 #### Defined in
 
-[rpcStateManager.ts:424](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L424)
+[rpcStateManager.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L434)
 
 ___
 
@@ -613,7 +643,7 @@ EVMStateManagerInterface.revert
 
 #### Defined in
 
-[rpcStateManager.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L399)
+[rpcStateManager.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L409)
 
 ___
 
@@ -664,7 +694,7 @@ EVMStateManagerInterface.setStateRoot
 
 #### Defined in
 
-[rpcStateManager.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L419)
+[rpcStateManager.ts:429](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L429)
 
 ___
 
