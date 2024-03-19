@@ -7,7 +7,7 @@
  * https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/async-eventemitter
  */
 
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 type AsyncListener<T, R> =
   | ((data: T, callback?: (result?: R) => void) => Promise<R>)
   | ((data: T, callback?: (result?: R) => void) => void)
@@ -174,14 +174,6 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
     return super.addListener(event, listener)
   }
 
-  prependListener<E extends keyof T>(event: E & string, listener: T[E]): this {
-    return super.prependListener(event, listener)
-  }
-
-  prependOnceListener<E extends keyof T>(event: E & string, listener: T[E]): this {
-    return super.prependOnceListener(event, listener)
-  }
-
   removeAllListeners(event?: keyof T & string): this {
     return super.removeAllListeners(event)
   }
@@ -200,13 +192,5 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
 
   listenerCount(event: keyof T & string): number {
     return super.listenerCount(event)
-  }
-
-  getMaxListeners(): number {
-    return super.getMaxListeners()
-  }
-
-  setMaxListeners(maxListeners: number): this {
-    return super.setMaxListeners(maxListeners)
   }
 }
