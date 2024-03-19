@@ -15,4 +15,3 @@ Here are some projects that use our libraries in browser to give you some inspir
 Some of our libraries use Javascript APIs where the NodeJS and browser versions are not 100% equivalent. In these cases, these APIs need to be polyfilled when building for the browser. Below are known potential browser incompatibilities and polyfills that are known to work in browser. Please refer to your particular bundler/framework on guidance for how to leverage these polyfills in your application.
 
 - `events` - [`eventemitter3`](https://www.npmjs.com/package/eventemitter3) - Our usage of the native NodeJS `eventemitter` class apparently onflicts with the typing of the browser equivalent `eventemitter` and polyfilling with `eventemitter3` is known to resolve this
-- `node:stream/web` - [`web-streams-polyfill`](https://www.npmjs.com/package/web-streams-polyfill) - The `trie` library uses a `ReadableStream` that requires this polyfill to work in browser
