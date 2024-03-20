@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1710764841885,
+  "lastUpdate": 1710938361330,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "11f3a9cd156f94f5390c46ef58c9cce066eb869f",
-          "message": "Verkle Dependency-related Hotfix Releases (#3272)\n\n* Add verkle dependency to state manager, bump version, add CHANGELOG entrry, update upstream dependency versions\r\n\r\n* Bump version, add CHANGELOG entry, update upstream dependency versions (EVM v2.2.1)\r\n\r\n* Bump version, add CHANGELOG entry, update upstream dependency versions (VM v7.2.1)\r\n\r\n* Rebuild package-lock.json",
-          "timestamp": "2024-02-08T20:06:38+01:00",
-          "tree_id": "b48612ca45b258864c2a3e92a6cc080458078048",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/11f3a9cd156f94f5390c46ef58c9cce066eb869f"
-        },
-        "date": 1707419390531,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41083,
-            "range": "±2.13%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38237,
-            "range": "±3.50%",
-            "unit": "ops/sec",
-            "extra": "79 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 38874,
-            "range": "±2.22%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38677,
-            "range": "±2.12%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38022,
-            "range": "±2.20%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1767,6 +1708,65 @@ window.BENCHMARK_DATA = {
           {
             "name": "Block 9422910",
             "value": 39548,
+            "range": "±1.83%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "willcory10@gmail.com",
+            "name": "Will Cory",
+            "username": "roninjin10"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "30667e8424be5b8ff974c1011662ea0bcd0d2602",
+          "message": "chore(common): Update Optimism hardfork (#3325)\n\n* chore(common): Update Optimism hardfork\r\n\r\n* Update packages/common/src/common.ts\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-03-20T13:36:21+01:00",
+          "tree_id": "7a46828c802aa0f3efc611068b7cb78a5104b9e4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/30667e8424be5b8ff974c1011662ea0bcd0d2602"
+        },
+        "date": 1710938360559,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 43471,
+            "range": "±2.38%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41070,
+            "range": "±2.88%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41683,
+            "range": "±1.54%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40534,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39843,
             "range": "±1.83%",
             "unit": "ops/sec",
             "extra": "89 samples"
