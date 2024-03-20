@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 /**
  * Base class for transport specific message sender/receiver. Subclasses should

@@ -1,7 +1,7 @@
 import { bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import * as dgram from 'dgram'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'

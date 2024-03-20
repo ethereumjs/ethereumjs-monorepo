@@ -12,7 +12,7 @@ type AsyncListener<T, R> =
   | ((data: T, callback?: (result?: R) => void) => Promise<R>)
   | ((data: T, callback?: (result?: R) => void) => void)
 export interface EventMap {
-  [event: string]: AsyncListener<any, any>
+  [event: string | symbol]: AsyncListener<any, any>
 }
 
 async function runInSeries(
