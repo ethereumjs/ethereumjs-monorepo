@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -447,6 +447,14 @@ export async function accumulateParentBlockHash(
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
+    // generate access witness
+    if (vm.common.isActivatedEIP(6800) === true) {
+      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+      // just create access witnesses without charging for the gas
+      ;(
+        vm.stateManager as StatelessVerkleStateManager
+      ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
+    }
     const key = setLengthLeft(bigIntToBytes(number), 32)
     await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }

@@ -1,6 +1,5 @@
 import {
   Account,
-  Address,
   KECCAK256_NULL,
   KECCAK256_NULL_S,
   bigIntToBytes,
@@ -44,7 +43,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -122,7 +121,6 @@ const PUSH1 = PUSH_OFFSET + 1
 const PUSH32 = PUSH_OFFSET + 32
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
-const BLOCKHASH_ADDRESS = Address.fromString('0xfffffffffffffffffffffffffffffffffffffffe')
 
 /**
  * Stateless Verkle StateManager implementation for the VM.
@@ -709,16 +707,6 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // switch to false if postVerify fails
     let postFailures = 0
 
-    // ignore the BLOCKHASH witness as its not implemented right now also there is an issue with it
-    // on k3 network
-    const blockHashChunkKey = bytesToHex(
-      this.getTreeKeyForStorageSlot(BLOCKHASH_ADDRESS, this._blockNum - BigInt(1))
-    )
-    const blockHashKnownStems = [
-      '0x97f2911f5efe08b74c28727d004e36d260225e73525fe2a300c8f58c7ffd76',
-      '0x117b67dd491b9e11d9cde84ef3c02f11ddee9e18284969dc7d496d43c300e5',
-    ]
-
     for (const accessedState of this.accessWitness!.accesses()) {
       const { address, type } = accessedState
       let extraMeta = ''
@@ -772,18 +760,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     for (const canChunkKey of Object.keys(this._postState)) {
       if (accessedChunks.get(canChunkKey) === undefined) {
-        // ignore the blockhash chunk ket
-        if (
-          canChunkKey !== blockHashChunkKey &&
-          !blockHashKnownStems.includes(canChunkKey.slice(0, 64))
-        ) {
-          debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
-          postFailures++
-        } else {
-          debug(
-            `Ignoring the missing chunk access for BLOCKHASH witness canChunkKey=${canChunkKey}`
-          )
-        }
+        debug(`Missing chunk access for canChunkKey=${canChunkKey}`)
+        postFailures++
       }
     }
 
