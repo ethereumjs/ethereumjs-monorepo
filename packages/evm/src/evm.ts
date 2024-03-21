@@ -445,7 +445,8 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const sendsValue = message.value !== BIGINT_0
+      // no extra charge if it sends value
+      const sendsValue = false;// message.value !== BIGINT_0
       const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
         message.to,
         { sendsValue }
@@ -684,7 +685,7 @@ export class EVM implements EVMInterface {
           result = { ...result, ...OOGResult(message.gasLimit) }
         } else {
           debug(
-            `ContractCreateComplete access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`
+            `byteCodeWrite access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`
           )
           result.executionGasUsed += byteCodeWriteAccessfee
         }
