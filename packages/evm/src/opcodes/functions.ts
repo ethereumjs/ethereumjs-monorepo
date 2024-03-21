@@ -919,7 +919,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x60: PUSH
   [
     0x60,
-    function (runState, common) {
+    async function (runState, common) {
       const numToPush = runState.opCode - 0x5f
       if (
         runState.programCounter + numToPush > runState.code.length &&
@@ -932,11 +932,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         const contract = runState.interpreter.getAddress()
         const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
         const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)
-        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
-          contract,
-          startOffset,
-          endOffset
-        )
+        const statelessGas =
+          await runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            contract,
+            startOffset,
+            endOffset
+          )
         runState.interpreter.useGas(statelessGas, `PUSH`)
       }
 

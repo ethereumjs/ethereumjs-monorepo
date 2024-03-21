@@ -319,9 +319,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     return getKey(stem, CODE_SIZE_LEAF_KEY)
   }
 
-  getTreeKeyForCodeChunk(address: Address, chunkId: number) {
+  async getTreeKeyForCodeChunk(address: Address, chunkId: number) {
     const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-    return getKey(getStem(address, treeIndex), toBytes(subIndex))
+    return getKey(await getStem(address, treeIndex), toBytes(subIndex))
   }
 
   chunkifyCode(code: Uint8Array) {
@@ -334,15 +334,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     throw new Error('Not implemented')
   }
 
-  getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
+  async getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
     const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
-    return getKey(getStem(address, treeIndex), toBytes(subIndex))
+    return getKey(await getStem(address, treeIndex), toBytes(subIndex))
   }
 
-  checkChunkWitnessPresent(address: Address, codeOffset: number) {
+  async checkChunkWitnessPresent(address: Address, codeOffset: number) {
     const chunkId = codeOffset / 31
-    const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
+    const chunkKey = bytesToHex(await this.getTreeKeyForCodeChunk(address, chunkId))
     return this._state[chunkKey] !== undefined
   }
 
@@ -408,7 +408,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     // Get the contract code size
-    const codeSizeKey = this.getTreeKeyForCodeSize(getStem(address, 0))
+    const codeSizeKey = this.getTreeKeyForCodeSize(await getStem(address, 0))
     const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
     const codeSize = bytesToInt32(codeSizeLE, true)
     // allocate the code and copy onto it from the available witness chunks
@@ -416,7 +416,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const chunks = Math.floor(bytesToInt32(codeSizeLE, true) / 31)
     for (let chunkId = 0; chunkId <= chunks; chunkId++) {
-      const chunkKey = bytesToHex(this.getTreeKeyForCodeChunk(address, chunkId))
+      const chunkKey = bytesToHex(await this.getTreeKeyForCodeChunk(address, chunkId))
       const codeChunk = this._state[chunkKey]
       if (codeChunk === undefined) {
         throw Error(`Invalid access to a missing code chunk with chunkKey=${chunkKey}`)
@@ -459,7 +459,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
+    const storageKey = await this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
     const storageValue = toBytes(this._state[bytesToHex(storageKey)])
 
     if (!this._storageCacheSettings.deactivate) {
@@ -482,7 +482,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       this._storageCache!.put(address, key, encodedValue)
     } else {
       // TODO: Consider refactoring this in a writeContractStorage function? Like in stateManager.ts
-      const storageKey = this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
+      const storageKey = await this.getTreeKeyForStorageSlot(address, BigInt(bytesToHex(key)))
       this._state[bytesToHex(storageKey)] = bytesToHex(setLengthRight(value, 32))
     }
   }
@@ -492,7 +492,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const stem = getStem(address, 0)
+    const stem = await getStem(address, 0)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
@@ -511,7 +511,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const stem = getStem(address, 0)
+    const stem = await getStem(address, 0)
     const versionKey = this.getTreeKeyForVersion(stem)
     const versionChunk = this._state[bytesToHex(versionKey)]
     if (versionChunk === undefined) {
@@ -567,7 +567,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     if (this._accountCacheSettings.deactivate) {
-      const stem = getStem(address, 0)
+      const stem = await getStem(address, 0)
       const balanceKey = this.getTreeKeyForBalance(stem)
       const nonceKey = this.getTreeKeyForNonce(stem)
       const codeHashKey = this.getTreeKeyForCodeHash(stem)

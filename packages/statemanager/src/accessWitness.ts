@@ -85,137 +85,148 @@ export class AccessWitness {
     this.chunks = opts.chunks ?? new Map<PrefixedHexString, ChunkAccessEvent>()
   }
 
-  touchAndChargeProofOfAbsence(address: Address): bigint {
+  async touchAndChargeProofOfAbsence(address: Address): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, BALANCE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, NONCE_LEAF_KEY)
 
     return gas
   }
 
-  touchAndChargeMessageCall(address: Address): bigint {
+  async touchAndChargeMessageCall(address: Address): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, VERSION_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
 
     return gas
   }
 
-  touchAndChargeValueTransfer(caller: Address, target: Address): bigint {
+  async touchAndChargeValueTransfer(caller: Address, target: Address): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(caller, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(caller, 0, BALANCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
 
     return gas
   }
 
-  touchAndChargeContractCreateInit(
+  async touchAndChargeContractCreateInit(
     address: Address,
     { sendsValue }: { sendsValue?: boolean } = {}
-  ): bigint {
+  ): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
     if (sendsValue === true) {
-      gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
+      gas += await this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
     }
 
     return gas
   }
 
-  touchAndChargeContractCreateCompleted(address: Address): bigint {
+  async touchAndChargeContractCreateCompleted(address: Address): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, CODE_SIZE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
 
     return gas
   }
 
-  touchTxOriginAndComputeGas(origin: Address): bigint {
+  async touchTxOriginAndComputeGas(origin: Address): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(origin, 0, CODE_KECCAK_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(origin, 0, VERSION_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(origin, 0, CODE_SIZE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(origin, 0, CODE_KECCAK_LEAF_KEY)
 
-    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, NONCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(origin, 0, BALANCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(origin, 0, NONCE_LEAF_KEY)
+    gas += await this.touchAddressOnWriteAndComputeGas(origin, 0, BALANCE_LEAF_KEY)
 
     return gas
   }
 
-  touchTxExistingAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
+  async touchTxExistingAndComputeGas(
+    target: Address,
+    { sendsValue }: { sendsValue?: boolean } = {}
+  ): Promise<bigint> {
     let gas = BIGINT_0
 
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_SIZE_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, CODE_KECCAK_LEAF_KEY)
-    gas += this.touchAddressOnReadAndComputeGas(target, 0, NONCE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(target, 0, CODE_SIZE_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(target, 0, CODE_KECCAK_LEAF_KEY)
+    gas += await this.touchAddressOnReadAndComputeGas(target, 0, NONCE_LEAF_KEY)
 
     if (sendsValue === true) {
-      gas += this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+      gas += await this.touchAddressOnWriteAndComputeGas(target, 0, BALANCE_LEAF_KEY)
     } else {
-      gas += this.touchAddressOnReadAndComputeGas(target, 0, BALANCE_LEAF_KEY)
+      gas += await this.touchAddressOnReadAndComputeGas(target, 0, BALANCE_LEAF_KEY)
     }
 
     return gas
   }
 
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number) {
+  async touchCodeChunksRangeOnReadAndChargeGas(
+    contact: Address,
+    startPc: number,
+    endPc: number
+  ): Promise<bigint> {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
-      gas += this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
+      gas += await this.touchAddressOnReadAndComputeGas(contact, treeIndex, subIndex)
     }
     return gas
   }
 
-  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number) {
+  async touchCodeChunksRangeOnWriteAndChargeGas(
+    contact: Address,
+    startPc: number,
+    endPc: number
+  ): Promise<bigint> {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
-      gas += this.touchAddressOnWriteAndComputeGas(contact, treeIndex, subIndex)
+      gas += await this.touchAddressOnWriteAndComputeGas(contact, treeIndex, subIndex)
     }
     return gas
   }
 
-  touchAddressOnWriteAndComputeGas(
+  async touchAddressOnWriteAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array
-  ): bigint {
+  ): Promise<bigint> {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: true })
   }
 
-  touchAddressOnReadAndComputeGas(
+  async touchAddressOnReadAndComputeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array
-  ): bigint {
+  ): Promise<bigint> {
     return this.touchAddressAndChargeGas(address, treeIndex, subIndex, { isWrite: false })
   }
 
-  touchAddressAndChargeGas(
+  async touchAddressAndChargeGas(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean }
-  ): bigint {
+  ): Promise<bigint> {
     let gas = BIGINT_0
 
-    const { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill } = this.touchAddress(
+    const { stemRead, stemWrite, chunkRead, chunkWrite, chunkFill } = await this.touchAddress(
       address,
       treeIndex,
       subIndex,
@@ -246,12 +257,12 @@ export class AccessWitness {
     return gas
   }
 
-  touchAddress(
+  async touchAddress(
     address: Address,
     treeIndex: number | bigint,
     subIndex: number | Uint8Array,
     { isWrite }: { isWrite?: boolean } = {}
-  ): AccessEventFlags {
+  ): Promise<AccessEventFlags> {
     let stemRead = false,
       stemWrite = false,
       chunkRead = false,
@@ -260,7 +271,7 @@ export class AccessWitness {
     // i.e. no fill cost is charged right now
     const chunkFill = false
 
-    const accessedStemKey = getStem(address, treeIndex)
+    const accessedStemKey = await getStem(address, treeIndex)
     const accessedStemHex = bytesToHex(accessedStemKey)
     let accessedStem = this.stems.get(accessedStemHex)
     if (accessedStem === undefined) {

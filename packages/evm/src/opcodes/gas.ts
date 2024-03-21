@@ -120,7 +120,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
               codeEnd = codeSize
             }
 
-            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            gas += await runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
               contract,
               Number(_codeOffset),
               Number(codeEnd)
@@ -141,7 +141,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(6800) === true) {
           const address = new Address(addresstoBytes(runState.stack.peek()[0]))
-          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          gas += await runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,
             CODE_SIZE_LEAF_KEY
@@ -174,7 +174,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
               codeEnd = codeSize
             }
 
-            gas += runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+            gas += await runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
               contract,
               Number(_codeOffset),
               Number(codeEnd)
@@ -254,7 +254,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(6800) === true) {
           const address = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
-          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          gas += await runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
             subIndex
@@ -318,7 +318,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(6800) === true) {
           const contract = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
-          gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
+          gas += await runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
             subIndex
@@ -435,10 +435,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(6800)) {
           // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          gas += await runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
           if (value !== BIGINT_0) {
             const contractAddress = runState.interpreter.getAddress()
-            gas += runState.env.accessWitness!.touchAndChargeValueTransfer(
+            gas += await runState.env.accessWitness!.touchAndChargeValueTransfer(
               contractAddress,
               toAddress
             )
@@ -486,7 +486,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(6800)) {
           const toAddress = new Address(addresstoBytes(toAddr))
           // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          gas += await runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
         const gasLimit = maxCallGas(
@@ -531,7 +531,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(6800)) {
           const toAddress = new Address(addresstoBytes(toAddr))
           // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          gas += await runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
         const gasLimit = maxCallGas(
@@ -665,7 +665,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(6800)) {
           const toAddress = new Address(addresstoBytes(toAddr))
           // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          gas += await runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
         const gasLimit = maxCallGas(

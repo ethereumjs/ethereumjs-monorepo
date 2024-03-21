@@ -274,10 +274,9 @@ export class Interpreter {
       ) {
         const contract = this._runState.interpreter.getAddress()
         if (
-          !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
-            contract,
-            programCounter
-          )
+          !(await (
+            this._runState.stateManager as StatelessVerkleStateManager
+          ).checkChunkWitnessPresent(contract, programCounter))
         ) {
           throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
         }
@@ -350,7 +349,7 @@ export class Interpreter {
             this._runState.programCounter,
             this._runState.programCounter
           )
-        gas += statelessGas
+        gas += await statelessGas
         debugGas(`codechunk accessed statelessGas=${statelessGas} (-> ${gas})`)
       }
 
