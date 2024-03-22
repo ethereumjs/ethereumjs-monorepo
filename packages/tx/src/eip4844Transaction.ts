@@ -190,6 +190,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
   }
 
   public static fromTxData(txData: TxData, opts?: TxOptions) {
+    if (opts?.common?.customCrypto?.kzg === undefined) {
+      throw new Error(
+        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      )
+    }
+    const kzg = opts!.common!.customCrypto!.kzg!
     if (txData.blobsData !== undefined) {
       if (txData.blobs !== undefined) {
         throw new Error('cannot have both raw blobs data and encoded blobs in constructor')
@@ -204,11 +210,12 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
         throw new Error('cannot have both raw blobs data and KZG proofs in constructor')
       }
       txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur))
-      txData.kzgCommitments = blobsToCommitments(txData.blobs as Uint8Array[])
+      txData.kzgCommitments = blobsToCommitments(kzg, txData.blobs as Uint8Array[])
       txData.blobVersionedHashes = commitmentsToVersionedHashes(
         txData.kzgCommitments as Uint8Array[]
       )
       txData.kzgProofs = blobsToProofs(
+        kzg,
         txData.blobs as Uint8Array[],
         txData.kzgCommitments as Uint8Array[]
       )
@@ -237,7 +244,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     opts?: TxOptions
   ): BlobEIP4844Transaction {
     if (opts?.common?.customCrypto?.kzg === undefined) {
-      throw new Error('kzg instance required to instantiate blob tx')
+      throw new Error(
+        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      )
     }
 
     const tx = BlobEIP4844Transaction.fromTxData(
@@ -258,7 +267,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {}) {
     if (opts.common?.customCrypto?.kzg === undefined) {
-      throw new Error('kzg instance required to instantiate blob tx')
+      throw new Error(
+        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      )
     }
 
     if (
@@ -288,7 +299,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
    */
   public static fromValuesArray(values: TxValuesArray, opts: TxOptions = {}) {
     if (opts.common?.customCrypto?.kzg === undefined) {
-      throw new Error('kzg instance required to instantiate blob tx')
+      throw new Error(
+        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      )
     }
 
     if (values.length !== 11 && values.length !== 14) {
@@ -364,7 +377,9 @@ export class BlobEIP4844Transaction extends BaseTransaction<TransactionType.Blob
     }
 
     if (opts.common?.customCrypto?.kzg === undefined) {
-      throw new Error('kzg instance required to instantiate blob tx')
+      throw new Error(
+        'A common object with customCrypto.kzg initialized required to instantiate a 4844 blob tx'
+      )
     }
 
     if (

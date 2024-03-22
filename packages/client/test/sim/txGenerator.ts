@@ -9,6 +9,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
+import { loadKZG } from 'kzg-wasm'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 
@@ -24,6 +25,8 @@ const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = Address.fromPrivateKey(pkey)
+
+const kzg = await loadKZG()
 
 function get_padded(data: any, blobs_len: number) {
   const pdata = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
@@ -94,7 +97,7 @@ async function run(data: any) {
   }
 
   const blobs = get_blobs(data)
-  const commitments = blobsToCommitments(blobs)
+  const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = Address.fromPrivateKey(randomBytes(32))

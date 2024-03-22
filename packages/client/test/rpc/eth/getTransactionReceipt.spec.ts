@@ -9,10 +9,9 @@ import {
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import pow from '../../testdata/geth-genesis/pow.json'
@@ -89,8 +88,7 @@ describe(method, () => {
     } else {
       const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
 
-      const kzg = await createKZG()
-      initKZG(kzg)
+      const kzg = await loadKZG()
 
       const common = Common.fromGethGenesis(gethGenesis, {
         chain: 'customChain',
@@ -106,7 +104,7 @@ describe(method, () => {
       const rpc = getRpcClient(server)
 
       const blobs = getBlobs('hello world')
-      const commitments = blobsToCommitments(blobs)
+      const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
       const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
       const tx = BlobEIP4844Transaction.fromTxData(

@@ -30,7 +30,7 @@ a standard chain used to base the custom chain params on.
 
 #### Defined in
 
-[types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L145)
+[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L147)
 
 ___
 
@@ -53,7 +53,7 @@ BaseOpts.customCrypto
 
 #### Defined in
 
-[types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L110)
+[types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
 
 ___
 
@@ -70,7 +70,7 @@ BaseOpts.eips
 
 #### Defined in
 
-[types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L99)
+[types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L101)
 
 ___
 
@@ -88,4 +88,4 @@ BaseOpts.hardfork
 
 #### Defined in
 
-[types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L94)
+[types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)

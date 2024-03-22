@@ -20,7 +20,7 @@ Cache size (default: 0)
 
 #### Defined in
 
-[packages/trie/src/types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L126)
+[packages/trie/src/types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L132)
 
 ___
 
@@ -32,7 +32,7 @@ A database instance.
 
 #### Defined in
 
-[packages/trie/src/types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L116)
+[packages/trie/src/types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L122)
 
 ___
 
@@ -44,4 +44,4 @@ ValueEncoding of the database (the values which are `put`/`get` in the db are of
 
 #### Defined in
 
-[packages/trie/src/types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L121)
+[packages/trie/src/types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L127)

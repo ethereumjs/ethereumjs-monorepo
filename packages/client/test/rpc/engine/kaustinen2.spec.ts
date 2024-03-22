@@ -1,6 +1,5 @@
 import { Block, BlockHeader, executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
@@ -33,8 +32,7 @@ async function runBlock(
 }
 
 describe(`valid verkle network setup`, async () => {
-  const kzg = await createKZG()
-  initKZG(kzg)
+  const kzg = await loadKZG()
 
   const { server, chain, common } = await setupChain(genesisJSON, 'post-merge', {
     engine: true,
