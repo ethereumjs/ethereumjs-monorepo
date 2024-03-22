@@ -580,6 +580,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
   updateStateRoot(stateRoot: Uint8Array) {
     this.root = stateRoot
+
+    this.storageFetcher.updateStateRoot(stateRoot)
+
+    // TODO trieNodeFetcher needs to be constantly healing while other fetchers work
+    this.trieNodeFetcher.updateStateRoot(stateRoot)
   }
 
   nextTasks(): void {
