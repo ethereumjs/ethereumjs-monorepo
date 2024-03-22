@@ -239,15 +239,22 @@ export class SnapSynchronizer extends Synchronizer {
             : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
         }`
       )
-      this.fetcher = new AccountFetcher({
-        config: this.config,
-        pool: this.pool,
-        stateManager: this.execution.vm.stateManager as DefaultStateManager,
-        root: stateRoot,
-        // This needs to be determined from the current state of the MPT dump
-        first: BigInt(0),
-        fetcherDoneFlags: this.fetcherDoneFlags,
-      })
+
+      if (this.fetcher === undefined) {
+        this.fetcher = new AccountFetcher({
+          config: this.config,
+          pool: this.pool,
+          stateManager: this.execution.vm.stateManager as DefaultStateManager,
+          root: stateRoot,
+          // This needs to be determined from the current state of the MPT dump
+          first: BigInt(0),
+          fetcherDoneFlags: this.fetcherDoneFlags,
+        })
+      } else {
+        // update root
+        this.config.logger.info(`UPDATING ROOTS`)
+        this.fetcher?.updateStateRoot(stateRoot)
+      }
     } else {
       return false
     }
