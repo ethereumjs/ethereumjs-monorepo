@@ -425,6 +425,50 @@ export const validators = {
     }
   },
 
+  get deposit() {
+    return (
+      requiredFields: string[] = ['pubkey', 'withdrawalCredentials', 'amount', 'signature', 'index']
+    ) => {
+      return (params: any[], index: number) => {
+        if (typeof params[index] !== 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: argument must be an object`,
+          }
+        }
+
+        const wt = params[index]
+
+        for (const field of requiredFields) {
+          if (wt[field] === undefined) {
+            return {
+              code: INVALID_PARAMS,
+              message: `invalid argument ${index}: required field ${field}`,
+            }
+          }
+        }
+
+        const validate = (field: any, validator: Function) => {
+          if (field === undefined) return
+          const v = validator([field], 0)
+          if (v !== undefined) return v
+        }
+
+        // validate bytes
+        for (const field of [wt.pubkey, wt.withdrawalCredentials, wt.signature]) {
+          const v = validate(field, this.bytes8)
+          if (v !== undefined) return v
+        }
+
+        // validate hex
+        for (const field of [wt.index, wt.amount]) {
+          const v = validate(field, this.hex)
+          if (v !== undefined) return v
+        }
+      }
+    }
+  },
+
   /**
    * object validator to check if type is object with
    * required keys and expected validation of values

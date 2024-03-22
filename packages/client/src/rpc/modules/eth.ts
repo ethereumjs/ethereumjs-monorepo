@@ -112,6 +112,13 @@ const jsonRpcBlock = async (
           withdrawals: json.withdrawals,
         }
       : {}
+  const depositsAttr =
+    header.depositsRoot !== undefined
+      ? {
+          depositsRoot: header.depositsRoot!,
+          deposits: json.deposits,
+        }
+      : {}
   const td = await chain.getTd(block.hash(), block.header.number)
   return {
     number: header.number!,
@@ -136,6 +143,7 @@ const jsonRpcBlock = async (
     uncles: block.uncleHeaders.map((uh) => bytesToHex(uh.hash())),
     baseFeePerGas: header.baseFeePerGas,
     ...withdrawalsAttr,
+    ...depositsAttr,
     blobGasUsed: header.blobGasUsed,
     excessBlobGas: header.excessBlobGas,
     parentBeaconBlockRoot: header.parentBeaconBlockRoot,

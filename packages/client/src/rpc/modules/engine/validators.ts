@@ -25,6 +25,10 @@ export const executionPayloadV3FieldValidators = {
   blobGasUsed: validators.uint64,
   excessBlobGas: validators.uint64,
 }
+export const executionPayloadV6110FieldValidators = {
+  ...executionPayloadV2FieldValidators,
+  deposits: validators.array(validators.deposit()),
+}
 
 export const forkchoiceFieldValidators = {
   headBlockHash: validators.blockHash,
@@ -46,4 +50,8 @@ export const payloadAttributesFieldValidatorsV3 = {
   ...payloadAttributesFieldValidatorsV1,
   withdrawals: validators.array(validators.withdrawal()),
   parentBeaconBlockRoot: validators.bytes32,
+}
+export const payloadAttributesFieldValidatorsV6110 = {
+  ...payloadAttributesFieldValidatorsV2,
+  deposits: validators.optional(validators.array(validators.deposit())),
 }
