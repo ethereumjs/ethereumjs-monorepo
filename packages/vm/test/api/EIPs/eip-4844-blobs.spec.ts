@@ -10,11 +10,10 @@ import {
   commitmentsToVersionedHashes,
   getBlobs,
   hexToBytes,
-  initKZG,
   privateToAddress,
   zeros,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4844.json'
@@ -26,16 +25,8 @@ const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {
   it('should build a block correctly with blobs', async () => {
-    let kzg
-    {
-      try {
-        //initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-        kzg = await createKZG()
-        initKZG(kzg)
-      } catch {
-        // no-op
-      }
-    }
+    const kzg = await loadKZG()
+
     const common = Common.fromGethGenesis(genesisJSON, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
@@ -71,9 +62,9 @@ describe('EIP4844 tests', () => {
 
     // Set up tx
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         blobVersionedHashes,

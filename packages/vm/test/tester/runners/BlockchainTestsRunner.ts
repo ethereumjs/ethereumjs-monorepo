@@ -221,8 +221,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         throw e
       }
 
-      //  await cacheDB._leveldb.close()
-
       if (expectException !== false) {
         t.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
@@ -242,7 +240,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
-  // await cacheDB._leveldb.close()
 
   // @ts-ignore Explicitly delete objects for memory optimization (early GC)
   common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line

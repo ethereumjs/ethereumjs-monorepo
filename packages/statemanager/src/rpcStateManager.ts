@@ -1,9 +1,11 @@
 import { Chain, Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
   bytesToHex,
+  equalsBytes,
   fetchFromProvider,
   hexToBytes,
   intToHex,
@@ -34,6 +36,8 @@ export interface RPCStateManagerOpts {
    */
   common?: Common
 }
+
+const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
 export class RPCStateManager implements EVMStateManagerInterface {
   protected _provider: string
@@ -262,8 +266,12 @@ export class RPCStateManager implements EVMStateManagerInterface {
     }
 
     const rlp = (await this.getAccountFromProvider(address)).serialize()
-    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    const account =
+      equalsBytes(rlp, KECCAK256_RLP_EMPTY_ACCOUNT) === false
+        ? Account.fromRlpSerializedAccount(rlp)
+        : undefined
     this._accountCache?.put(address, account)
+
     return account
   }
 

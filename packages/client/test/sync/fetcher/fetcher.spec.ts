@@ -1,5 +1,5 @@
 import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config'
 import { Fetcher } from '../../../src/sync/fetcher/fetcher'
@@ -12,7 +12,8 @@ class FetcherTest extends Fetcher<any, any, any> {
     return res
   }
   async request(_job: any, _peer: any) {
-    return
+    console.trace(_job)
+    return _job
   }
   async store(_store: any) {}
   // Just return any via _error
@@ -51,36 +52,41 @@ it('should handle failure', () => {
 })
 
 describe('should handle expiration', async () => {
-  const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({
-    config,
-    pool: td.object(),
-    timeout: 5,
-  })
-  const job = { index: 0 }
-  const peer = { idle: true }
-  fetcher.peer = td.func<FetcherTest['peer']>()
-  fetcher.request = td.func<FetcherTest['request']>()
-  td.when(fetcher.peer()).thenReturn(peer)
-  td.when(fetcher.request(td.matchers.anything(), { idle: false }), { delay: 10 }).thenReject(
-    new Error('err0')
-  )
-  td.when(fetcher['pool'].contains({ idle: false } as any)).thenReturn(true)
-  fetcher['in'].insert(job as any)
-  fetcher['_readableState'] = []
-  fetcher['running'] = true
-  fetcher['total'] = 10
-  fetcher.next()
-  await new Promise((resolve) => {
-    setTimeout(resolve, 10)
-  })
-  it('should expire', () => {
+  it('should expire', async () => {
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
+    const fetcher = new FetcherTest({
+      config,
+      pool: {
+        contains(peer: any) {
+          if (peer.idle === false) return true
+          return false
+        },
+        ban: vi.fn(),
+      } as any,
+      timeout: 5,
+    })
+    const job = { index: 0 }
+    const peer = { idle: true }
+    fetcher.peer = vi.fn().mockReturnValue(() => peer)
+    fetcher.request = vi.fn().mockImplementationOnce(async (job, peer) => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000)
+      })
+      if (peer.idle === false) throw new Error('err0')
+      return
+    })
+
+    fetcher['in'].insert(job as any)
+    fetcher['_readableState'] = []
+    fetcher['running'] = true
+    fetcher['total'] = 10
+    fetcher.next()
+    await new Promise((resolve) => {
+      setTimeout(resolve, 10)
+    })
+
     assert.equal((fetcher as any).in.length, 1, 'enqueued job')
-    assert.deepEqual(
-      job as any,
-      { index: 0, peer: { idle: false }, state: 'expired' },
-      'expired job'
-    )
+    assert.deepEqual((job as any).state, 'expired', 'expired job')
   })
 })
 

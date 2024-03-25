@@ -126,17 +126,20 @@ to initalize (assuming you are using the `c-kzg` package as your KZG cryptograph
 ```ts
 // ./examples/initKzg.ts
 
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
 
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Cancun,
-  customCrypto: { kzg: kzg },
-})
-console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+const main = async () => {
+  const kzg = await loadKZG()
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+  console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+}
+
+main()
 ```
 
 ## Browser
@@ -406,6 +409,7 @@ The following EIPs are currently supported:
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes

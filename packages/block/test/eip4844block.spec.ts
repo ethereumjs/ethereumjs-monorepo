@@ -4,10 +4,9 @@ import {
   blobsToCommitments,
   commitmentsToVersionedHashes,
   getBlobs,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { BlockHeader } from '../src/header.js'
@@ -17,13 +16,14 @@ import { Block } from '../src/index.js'
 import gethGenesis from './testdata/4844-hardfork.json'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Kzg } from '@ethereumjs/util'
 
 describe('EIP4844 header tests', () => {
   let common: Common
 
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
+
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -101,8 +101,7 @@ describe('blob gas tests', () => {
   let common: Common
   let blobGasPerBlob: bigint
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -148,15 +147,18 @@ describe('blob gas tests', () => {
     assert.equal(lowGasHeader.calcDataFee(1), 131072n, 'compute data fee correctly')
     assert.equal(highGasHeader.calcDataFee(4), 3145728n, 'compute data fee correctly')
     assert.equal(highGasHeader.calcDataFee(6), 4718592n, 'compute data fee correctly')
+
+    const nextBlobGas = highGasHeader.calcNextBlobGasPrice()
+    assert.equal(nextBlobGas, BigInt(7)) // TODO verify that this is correct
   })
 })
 
 describe('transaction validation tests', () => {
+  let kzg: Kzg
   let common: Common
   let blobGasPerBlob: bigint
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -166,7 +168,7 @@ describe('transaction validation tests', () => {
   })
   it('should work', () => {
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
 
     const tx1 = BlobEIP4844Transaction.fromTxData(

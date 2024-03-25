@@ -10,10 +10,9 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
 import { randomBytes } from 'crypto'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import gethGenesis from '../../block/test/testdata/4844-hardfork.json'
@@ -21,12 +20,13 @@ import { BlobEIP4844Transaction, TransactionFactory } from '../src/index.js'
 
 import blobTx from './json/serialized4844tx.json'
 
+import type { Kzg } from '@ethereumjs/util'
+
 const pk = randomBytes(32)
 describe('EIP4844 addSignature tests', () => {
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -90,8 +90,7 @@ describe('EIP4844 addSignature tests', () => {
 describe('EIP4844 constructor tests - valid scenarios', () => {
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -129,8 +128,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
 describe('fromTxData using from a json', () => {
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -201,8 +199,7 @@ describe('fromTxData using from a json', () => {
 describe('EIP4844 constructor tests - invalid scenarios', () => {
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -256,10 +253,10 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
+  let kzg: Kzg
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -268,9 +265,9 @@ describe('Network wrapper tests', () => {
   })
   it('should work', async () => {
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
     const unsignedTx = BlobEIP4844Transaction.fromTxData(
       {
         blobVersionedHashes,
@@ -502,8 +499,7 @@ describe('Network wrapper tests', () => {
 describe('hash() and signature verification', () => {
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -550,11 +546,36 @@ describe('hash() and signature verification', () => {
   })
 })
 
+it('getEffectivePriorityFee()', async () => {
+  const kzg = await loadKZG()
+  const common = Common.fromGethGenesis(gethGenesis, {
+    chain: 'customChain',
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+  const tx = BlobEIP4844Transaction.fromTxData(
+    {
+      maxFeePerGas: 10,
+      maxPriorityFeePerGas: 8,
+      to: Address.zero(),
+      blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+    },
+    { common }
+  )
+  assert.equal(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
+  assert.equal(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
+  assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
+})
+
 describe('Network wrapper deserialization test', () => {
+  let kzg: Kzg
   let common: Common
   beforeAll(async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    kzg = await loadKZG()
     common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -593,8 +614,8 @@ describe('Network wrapper deserialization test', () => {
 
     const blobs = getBlobs('hello world')
 
-    const commitments = blobsToCommitments(blobs)
-    const proofs = blobsToProofs(blobs, commitments)
+    const commitments = blobsToCommitments(kzg, blobs)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     /* eslint-disable @typescript-eslint/no-use-before-define */
     const wrapper = hexToBytes(blobTx.tx)

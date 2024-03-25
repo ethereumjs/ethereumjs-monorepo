@@ -13,7 +13,6 @@ import {
   ecrecover,
   ecsign,
   hexToBytes,
-  initKZG,
   parseGethGenesisState,
   randomBytes,
   setLengthLeft,
@@ -33,7 +32,7 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
@@ -615,6 +614,8 @@ async function startClient(
       hardforkByHeadBlockNumber: true,
       validateConsensus,
       validateBlocks: true,
+      genesisState: genesisMeta.genesisState,
+      genesisStateRoot: genesisMeta.genesisStateRoot,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -874,8 +875,7 @@ async function run() {
   // Give network id precedence over network name
   const chain = args.networkId ?? args.network ?? Chain.Mainnet
   const cryptoFunctions: CustomCrypto = {}
-  const kzg = await createKZG()
-  initKZG(kzg)
+  const kzg = await loadKZG()
 
   // Initialize WASM crypto if JS crypto is not specified
   if (args.useJsCrypto === false) {
