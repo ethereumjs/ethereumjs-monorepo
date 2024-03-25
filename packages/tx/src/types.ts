@@ -158,7 +158,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   serialize(): Uint8Array
   getMessageToSign(): Uint8Array | Uint8Array[]
   getHashedMessageToSign(): Uint8Array
-  hash(): Uint8Array
+  hash(): Bytes32
   getMessageToVerifySignature(): Uint8Array
   getValidationErrors(): string[]
   isSigned(): boolean
