@@ -7,6 +7,7 @@ import { getOpcodesForHF } from './opcodes/index.js'
 import { PrecompileInput, getActivePrecompiles } from './precompiles/index.js'
 import {
   EVMInterface,
+  EVMOpts,
   EVMResult,
   EVMRunCallOpts,
   EVMRunCodeOpts,
@@ -21,6 +22,7 @@ export {
   EvmError,
   EVMErrorMessage,
   EVMInterface,
+  EVMOpts,
   EVMResult,
   EVMRunCallOpts,
   EVMRunCodeOpts,

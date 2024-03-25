@@ -36,7 +36,7 @@ import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
-import readline from 'readline'
+import * as readline from 'readline'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
