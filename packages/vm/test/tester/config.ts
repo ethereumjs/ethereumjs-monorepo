@@ -393,7 +393,7 @@ const expectedTestsFull: {
     MuirGlacier: 12271,
     Berlin: 13214,
     London: 19449,
-    Paris: 19727,
+    Paris: 19718,
     Shanghai: 19564,
     ByzantiumToConstantinopleFixAt5: 0,
     EIP158ToByzantiumAt5: 0,
