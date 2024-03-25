@@ -157,7 +157,7 @@ export class Account {
       balance !== undefined && balance !== null ? bytesToBigInt(toBytes(balance)) : balance,
       storageRoot !== undefined && storageRoot !== null ? toBytes(storageRoot) : storageRoot,
       codeHash !== undefined && codeHash !== null ? toBytes(codeHash) : codeHash,
-      codeSize !== undefined && codeSize !== null ? bytesToInt(toBytes(nonce)) : codeSize,
+      codeSize !== undefined && codeSize !== null ? bytesToInt(toBytes(codeSize)) : codeSize,
       version !== undefined && version !== null ? bytesToInt(toBytes(version)) : version
     )
   }

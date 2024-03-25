@@ -40,11 +40,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
     assert.equal(account!.balance, 99765345920194942688594n, 'should have correct balance')
     assert.equal(account!.nonce, 3963257n, 'should have correct nonce')
-    assert.equal(
-      bytesToHex(account!.storageRoot),
-      '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
-      'should have correct storageRoot'
-    )
+    assert.equal(account!._storageRoot, null, 'stateroot should have not been set')
     assert.equal(
       bytesToHex(account!.codeHash),
       '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
@@ -54,7 +50,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it('put/delete/modify account', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = new Address(randomBytes(20))
 
@@ -64,7 +60,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     } catch (e: any) {
       assert.equal(
         e.message.slice(0, 25),
-        'Missing execution witness',
+        'No witness bundled for ad',
         'should throw on getting account that does not exist in cache and witness'
       )
     }
