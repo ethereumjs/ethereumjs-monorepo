@@ -16,6 +16,7 @@
 ### Interfaces
 
 - [EVMInterface](interfaces/EVMInterface.md)
+- [EVMOpts](interfaces/EVMOpts.md)
 - [EVMResult](interfaces/EVMResult.md)
 - [EVMRunCallOpts](interfaces/EVMRunCallOpts.md)
 - [EVMRunCodeOpts](interfaces/EVMRunCodeOpts.md)
@@ -35,6 +36,7 @@
 ### Functions
 
 - [getActivePrecompiles](README.md#getactiveprecompiles)
+- [getOpcodesForHF](README.md#getopcodesforhf)
 
 ## Type Aliases
 
@@ -88,3 +90,28 @@ Log that the contract emits.
 #### Defined in
 
 [precompiles/index.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L167)
+
+___
+
+### getOpcodesForHF
+
+▸ **getOpcodesForHF**(`common`, `customOpcodes?`): `OpcodeContext`
+
+Get suitable opcodes for the required hardfork.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `common` | `Common` | {Common} Ethereumjs Common metadata object. |
+| `customOpcodes?` | `CustomOpcode`[] | List with custom opcodes (see EVM `customOpcodes` option description). |
+
+#### Returns
+
+`OpcodeContext`
+
+Opcodes dictionary object.
+
+#### Defined in
+
+[opcodes/codes.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L368)
