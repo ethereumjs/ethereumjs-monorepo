@@ -612,6 +612,10 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     return tasks
   }
 
+  updateStateRoot(stateRoot: Uint8Array) {
+    this.root = stateRoot
+  }
+
   nextTasks(): void {
     this.debug(
       `Entering nextTasks with primary queue length of ${this.storageRequests.length} and secondary queue length of ${this.fragmentedRequests.length}`

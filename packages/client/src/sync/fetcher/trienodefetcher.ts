@@ -428,6 +428,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     return tasks
   }
 
+  updateStateRoot(stateRoot: Uint8Array) {
+    this.root = stateRoot
+  }
+
   nextTasks(): void {
     try {
       if (this.in.length === 0) {
