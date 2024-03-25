@@ -1,5 +1,5 @@
 import debugDefault from 'debug'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import { DISCONNECT_REASON, ProtocolType } from '../types.js'
 import { devp2pDebug } from '../util.js'

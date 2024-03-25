@@ -10,7 +10,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import * as snappy from 'snappyjs'
 
 import { DISCONNECT_REASON } from '../types.js'

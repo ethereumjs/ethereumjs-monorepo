@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { assert, describe, it } from 'vitest'
 
 import { AsyncEventEmitter } from '../src/index.js'
@@ -44,30 +43,6 @@ describe('AsyncEventEmitter', () => {
     assert.deepStrictEqual(emitter.listeners(event), [listener])
   })
 
-  it('should prepend listener using prependListener()', () => {
-    const emitter = new AsyncEventEmitter<EventMap>()
-    const listener1 = () => {}
-    const listener2 = () => {}
-    const event = 'event1'
-
-    emitter.prependListener(event, listener1)
-    emitter.prependListener(event, listener2)
-
-    assert.deepStrictEqual(emitter.listeners(event), [listener2, listener1])
-  })
-
-  it('should prepend once listener using prependOnceListener()', () => {
-    const emitter = new AsyncEventEmitter<EventMap>()
-    const listener1 = () => {}
-    const listener2 = () => {}
-    const event = 'event1'
-
-    emitter.prependOnceListener(event, listener1)
-    emitter.prependOnceListener(event, listener2)
-
-    assert.deepStrictEqual(emitter.listeners(event), [listener2, listener1])
-  })
-
   it('should return event names when using eventNames()', () => {
     const emitter = new AsyncEventEmitter<EventMap>()
     const event1 = 'event1'
@@ -89,24 +64,5 @@ describe('AsyncEventEmitter', () => {
     emitter.addListener(event, listener2)
 
     assert.deepStrictEqual(emitter.listeners(event), [listener1, listener2])
-  })
-
-  it('should return the maximum number of listeners when using getMaxListeners()', () => {
-    const emitter = new AsyncEventEmitter<EventMap>()
-
-    const maxListeners = emitter.getMaxListeners()
-
-    assert.strictEqual(maxListeners, EventEmitter.defaultMaxListeners)
-  })
-
-  it('should set the maximum number of listeners when using setMaxListeners()', () => {
-    const emitter = new AsyncEventEmitter<EventMap>()
-
-    const newMaxListeners = 10
-    emitter.setMaxListeners(newMaxListeners)
-
-    const maxListeners = emitter.getMaxListeners()
-
-    assert.strictEqual(maxListeners, newMaxListeners)
   })
 })

@@ -33,7 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 // (please nevertheless include the original license reference))
 
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
 import type { Contact, KBucketOptions, PeerInfo } from '../types.js'
 

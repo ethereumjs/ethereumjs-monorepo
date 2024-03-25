@@ -7,12 +7,12 @@
  * https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/async-eventemitter
  */
 
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 type AsyncListener<T, R> =
   | ((data: T, callback?: (result?: R) => void) => Promise<R>)
   | ((data: T, callback?: (result?: R) => void) => void)
 export interface EventMap {
-  [event: string]: AsyncListener<any, any>
+  [event: string | symbol]: AsyncListener<any, any>
 }
 
 async function runInSeries(
@@ -28,8 +28,8 @@ async function runInSeries(
         task.call(context, data)
       } else {
         await new Promise<void>((resolve, reject) => {
-          task.call(context, data, (error) => {
-            if (error) {
+          task.fn.call(context, data, (error: any) => {
+            if (error !== undefined) {
               reject(error)
             } else {
               resolve()
@@ -50,9 +50,9 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
   emit<E extends keyof T>(event: E & string, ...args: Parameters<T[E]>) {
     let [data, callback] = args
     const self = this
-
+    console.log('emitted something', event, args)
     let listeners = (self as any)._events[event] ?? []
-
+    console.log('our listeners', listeners)
     // Optional data argument
     if (callback === undefined && typeof data === 'function') {
       callback = data
@@ -87,10 +87,12 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
     // Hack to support set arity
     if (listener.length >= 2) {
       g = function (e: E, next: any) {
+        console.log('called g')
         self.removeListener(event, g as T[E])
         void listener(e, next)
       }
     } else {
+      console.trace('single event')
       g = function (e: E) {
         self.removeListener(event, g as T[E])
         void listener(e, g)
@@ -174,14 +176,6 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
     return super.addListener(event, listener)
   }
 
-  prependListener<E extends keyof T>(event: E & string, listener: T[E]): this {
-    return super.prependListener(event, listener)
-  }
-
-  prependOnceListener<E extends keyof T>(event: E & string, listener: T[E]): this {
-    return super.prependOnceListener(event, listener)
-  }
-
   removeAllListeners(event?: keyof T & string): this {
     return super.removeAllListeners(event)
   }
@@ -200,13 +194,5 @@ export class AsyncEventEmitter<T extends EventMap> extends EventEmitter {
 
   listenerCount(event: keyof T & string): number {
     return super.listenerCount(event)
-  }
-
-  getMaxListeners(): number {
-    return super.getMaxListeners()
-  }
-
-  setMaxListeners(maxListeners: number): this {
-    return super.setMaxListeners(maxListeners)
   }
 }

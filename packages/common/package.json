@@ -56,7 +56,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.0.3"
+    "@ethereumjs/util": "^9.0.3",
+    "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
     "@polkadot/util": "^12.6.2",
