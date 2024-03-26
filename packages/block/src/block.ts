@@ -159,9 +159,9 @@ export class Block {
       transactions,
       uncleHeaders,
       withdrawals,
-      deposits,
       opts,
-      executionWitness
+      executionWitness,
+      deposits
     )
   }
 
@@ -284,9 +284,9 @@ export class Block {
       transactions,
       uncleHeaders,
       withdrawals,
-      deposits,
       opts,
-      executionWitness
+      executionWitness,
+      deposits
     )
   }
 
@@ -458,9 +458,9 @@ export class Block {
     transactions: TypedTransaction[] = [],
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
-    deposits?: Deposit[],
     opts: BlockOptions = {},
-    executionWitness?: VerkleExecutionWitness | null
+    executionWitness?: VerkleExecutionWitness | null,
+    deposits?: Deposit[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common

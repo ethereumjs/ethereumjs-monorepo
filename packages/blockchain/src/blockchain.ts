@@ -501,8 +501,8 @@ export class Blockchain implements BlockchainInterface {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
                 { common: item.common },
+                undefined,
                 undefined
               )
             : item
