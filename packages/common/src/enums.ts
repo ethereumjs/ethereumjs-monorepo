@@ -5,7 +5,7 @@ export enum Chain {
   Goerli = 5,
   Sepolia = 11155111,
   Holesky = 17000,
-  Kaustinen = 69420,
+  Kaustinen4 = 69420,
 }
 
 /**
@@ -44,10 +44,10 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0x69d8c9d72f6fa4ad42d4702b433707212f90db395eb54dc20bc85de253788783'),
   },
-  [Chain.Kaustinen]: {
-    name: 'kaustinen',
+  [Chain.Kaustinen4]: {
+    name: 'kaustinen4',
     blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x5e8519756841faf0b2c28951c451b61a4b407b70a5ce5b57992f4bec973173ff'),
+    stateRoot: hexToBytes('0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'),
   },
 }
 
