@@ -572,7 +572,9 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     // check if codehash is correct 32 bytes prefixed hex string
     if (codeHashRaw !== undefined && codeHashRaw !== null && codeHashRaw.length !== 66) {
-      const errorMsg = `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${codeHashKey}`
+      const errorMsg = `Invalid codeHashRaw=${codeHashRaw} for address=${address} chunkKey=${bytesToHex(
+        codeHashKey
+      )}`
       debug(errorMsg)
       throw Error(errorMsg)
     }
@@ -666,10 +668,10 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       account = new Account()
     }
 
-    account.nonce = accountFields.nonce ?? account.nonce
-    account.balance = accountFields.balance ?? account.balance
-    account.storageRoot = accountFields.storageRoot ?? account.storageRoot
-    account.codeHash = accountFields.codeHash ?? account.codeHash
+    account._nonce = accountFields.nonce ?? account._nonce
+    account._balance = accountFields.balance ?? account._balance
+    account._storageRoot = accountFields.storageRoot ?? account._storageRoot
+    account._codeHash = accountFields.codeHash ?? account._codeHash
     await this.putAccount(address, account)
   }
 
