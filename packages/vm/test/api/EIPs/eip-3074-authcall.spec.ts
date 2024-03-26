@@ -163,7 +163,6 @@ type AuthcallData = {
   gasLimit?: bigint
   address: Address
   value?: bigint
-  valueExt?: bigint
   argsOffset?: bigint
   argsLength?: bigint
   retOffset?: bigint
@@ -194,7 +193,6 @@ function getAuthCallCode(data: AuthcallData) {
   const gasLimitBuffer = setLengthLeft(bigIntToBytes(data.gasLimit ?? BigInt(0)), 32)
   const addressBuffer = setLengthLeft(data.address.bytes, 32)
   const valueBuffer = setLengthLeft(bigIntToBytes(data.value ?? BigInt(0)), 32)
-  const valueExtBuffer = setLengthLeft(bigIntToBytes(data.valueExt ?? BigInt(0)), 32)
   const argsOffsetBuffer = setLengthLeft(bigIntToBytes(data.argsOffset ?? BigInt(0)), 32)
   const argsLengthBuffer = setLengthLeft(bigIntToBytes(data.argsLength ?? BigInt(0)), 32)
   const retOffsetBuffer = setLengthLeft(bigIntToBytes(data.retOffset ?? BigInt(0)), 32)
@@ -206,7 +204,6 @@ function getAuthCallCode(data: AuthcallData) {
     retOffsetBuffer,
     argsLengthBuffer,
     argsOffsetBuffer,
-    valueExtBuffer,
     valueBuffer,
     addressBuffer,
     gasLimitBuffer,
@@ -327,11 +324,8 @@ describe('EIP-3074 AUTH', () => {
     await vm.stateManager.putAccount(callerAddress, account!)
 
     const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    assert.equal(
-      result.execResult.exceptionError?.error,
-      EVMErrorMessage.AUTH_INVALID_S,
-      'threw correct error'
-    )
+    const buf = result.execResult.returnValue
+    assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
 
   it('Should be able to call AUTH multiple times', async () => {
@@ -574,6 +568,8 @@ describe('EIP-3074 AUTHCALL', () => {
       RETURNTOP
     )
     const vm = await setupVM(code)
+    const account = new Account(BIGINT_0, BIGINT_1)
+    await vm.stateManager.putAccount(authAddress, account)
 
     let gas: bigint
     let gasAfterCall: bigint
@@ -617,6 +613,8 @@ describe('EIP-3074 AUTHCALL', () => {
       RETURNTOP
     )
     const vm = await setupVM(code)
+    const authAccount = new Account(BIGINT_0, BIGINT_1)
+    await vm.stateManager.putAccount(authAddress, authAccount)
 
     let gas: bigint
     vm.evm.events!.on('step', (e: InterpreterStep) => {
@@ -659,7 +657,7 @@ describe('EIP-3074 AUTHCALL', () => {
     assert.equal(contractAccount!.balance, 2n, 'contract balance ok')
 
     const contractStorageAccount = await vm.stateManager.getAccount(contractStorageAddress)
-    assert.equal(contractStorageAccount!.balance, 1n, 'storage balance ok')
+    assert.equal(contractStorageAccount!.balance, 2n, 'storage balance ok')
   })
 
   it('Should throw if AUTH not set', async () => {
@@ -746,34 +744,6 @@ describe('EIP-3074 AUTHCALL', () => {
     assert.equal(
       result.execResult.exceptionError?.error,
       EVMErrorMessage.OUT_OF_GAS,
-      'correct error type'
-    )
-  })
-
-  it('Should throw if valueExt is nonzero', async () => {
-    const message = hexToBytes('0x01')
-    const signature = signMessage(message, contractAddress, privateKey)
-    const code = concatBytes(
-      getAuthCode(message, signature, authAddress),
-      getAuthCallCode({
-        address: contractStorageAddress,
-        valueExt: 1n,
-      }),
-      RETURNTOP
-    )
-    const vm = await setupVM(code)
-
-    const tx = LegacyTransaction.fromTxData({
-      to: contractAddress,
-      gasLimit: 1000000,
-      gasPrice: 10,
-    }).sign(callerPrivateKey)
-
-    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
-    assert.equal(result.amountSpent, tx.gasLimit * tx.gasPrice, 'spent all gas')
-    assert.equal(
-      result.execResult.exceptionError?.error,
-      EVMErrorMessage.AUTHCALL_NONZERO_VALUEEXT,
       'correct error type'
     )
   })
