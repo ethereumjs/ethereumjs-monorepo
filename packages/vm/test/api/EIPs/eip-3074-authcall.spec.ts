@@ -305,10 +305,34 @@ describe('EIP-3074 AUTH', () => {
     assert.deepEqual(buf, zeros(32), 'auth puts 0')
   })
 
-  it('Should throw if signature s > N_DIV_2', async () => {
+  it('Should set AUTH to unauthorized if signature s > N_DIV_2', async () => {
     const vm = await VM.create({ common })
     const message = hexToBytes('0x01')
     const signature = flipSignature(signMessage(message, contractAddress, privateKey))
+    const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
+
+    await vm.stateManager.putContractCode(contractAddress, code)
+    const tx = LegacyTransaction.fromTxData({
+      to: contractAddress,
+      gasLimit: 1000000,
+      gasPrice: 10,
+    }).sign(callerPrivateKey)
+
+    await vm.stateManager.putAccount(callerAddress, new Account())
+    const account = await vm.stateManager.getAccount(callerAddress)
+    account!.balance = BigInt(10000000)
+    await vm.stateManager.putAccount(callerAddress, account!)
+
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+    const buf = result.execResult.returnValue
+    assert.deepEqual(buf, zeros(32), 'auth puts 0')
+  })
+
+  it('Should set AUTH to unautorized if signatature y > 1', async () => {
+    const vm = await VM.create({ common })
+    const message = hexToBytes('0x01')
+    const signature = flipSignature(signMessage(message, contractAddress, privateKey))
+    signature.v = 2
     const code = concatBytes(getAuthCode(message, signature, authAddress), RETURNTOP)
 
     await vm.stateManager.putContractCode(contractAddress, code)
@@ -658,6 +682,34 @@ describe('EIP-3074 AUTHCALL', () => {
 
     const contractStorageAccount = await vm.stateManager.getAccount(contractStorageAddress)
     assert.equal(contractStorageAccount!.balance, 2n, 'storage balance ok')
+  })
+
+  it('Should throw is authorized account does not have enough balance', async () => {
+    const message = hexToBytes('0x01')
+    const signature = signMessage(message, contractAddress, privateKey)
+    const code = concatBytes(
+      getAuthCode(message, signature, authAddress),
+      getAuthCallCode({
+        address: contractStorageAddress,
+        value: 1n,
+      }),
+      RETURNTOP
+    )
+    const vm = await setupVM(code)
+
+    const value = 3n
+    const gasPrice = 10n
+
+    const tx = LegacyTransaction.fromTxData({
+      to: contractAddress,
+      gasLimit: PREBALANCE / gasPrice - value * gasPrice,
+      gasPrice,
+      value,
+    }).sign(callerPrivateKey)
+
+    const result = await vm.runTx({ tx, block, skipHardForkValidation: true })
+
+    assert.ok(result.execResult.exceptionError?.error === EVMErrorMessage.OUT_OF_GAS)
   })
 
   it('Should throw if AUTH not set', async () => {
