@@ -210,7 +210,7 @@ export const EIPs: EIPsDict = {
   },
   3074: {
     comment: 'AUTH and AUTHCALL opcodes',
-    url: 'https://github.com/ethereum/EIPs/commit/3c470e45eb794e2f995898741ec6624251455abc',
+    url: 'https://github.com/ethereum/EIPs/commit/eca4416ff3c025fcb6ec8cd4eac481e74e108481',
     status: Status.Review,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],

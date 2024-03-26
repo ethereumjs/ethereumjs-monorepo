@@ -1,6 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { CODE_SIZE_LEAF_KEY, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
+  Account,
   Address,
   BIGINT_0,
   BIGINT_1,
@@ -602,20 +603,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(ERROR.AUTHCALL_UNSET)
         }
 
-        const [
-          currentGasLimit,
-          addr,
-          value,
-          valueExt,
-          argsOffset,
-          argsLength,
-          retOffset,
-          retLength,
-        ] = runState.stack.peek(8)
-
-        if (valueExt !== BIGINT_0) {
-          trap(ERROR.AUTHCALL_NONZERO_VALUEEXT)
-        }
+        const [currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
+          runState.stack.peek(7)
 
         const toAddress = new Address(addresstoBytes(addr))
 
@@ -648,6 +637,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         runState.messageGasLimit = gasLimit
+
+        if (value > BIGINT_0) {
+          const account = (await runState.stateManager.getAccount(runState.auth!)) ?? new Account()
+          if (account.balance < value) {
+            trap(ERROR.OUT_OF_GAS)
+          }
+          account.balance -= value
+
+          const toAddr = new Address(addresstoBytes(addr))
+          const target = (await runState.stateManager.getAccount(toAddr)) ?? new Account()
+          target.balance += value
+
+          await runState.stateManager.putAccount(toAddr, target)
+        }
+
         return gas
       },
     ],

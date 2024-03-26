@@ -1160,7 +1160,14 @@ export const handlers: Map<number, OpHandler> = new Map([
       const commit = mem.subarray(65, 97)
 
       if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
-        trap(ERROR.AUTH_INVALID_S)
+        runState.stack.push(BIGINT_0)
+        runState.auth = undefined
+        return
+      }
+      if (yParity > BIGINT_1) {
+        runState.stack.push(BIGINT_0)
+        runState.auth = undefined
+        return
       }
 
       const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
@@ -1206,16 +1213,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf7,
     async function (runState) {
-      const [
-        _currentGasLimit,
-        addr,
-        value,
-        _valueExt,
-        argsOffset,
-        argsLength,
-        retOffset,
-        retLength,
-      ] = runState.stack.popN(8)
+      const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
+        runState.stack.popN(7)
 
       const toAddress = new Address(addresstoBytes(addr))
 
