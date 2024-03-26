@@ -30,6 +30,9 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
+import { Deposit } from '@ethereumjs/util'
+import { equalsBytes } from 'ethereum-cryptography/utils.js'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -40,6 +43,8 @@ export enum BuildStatus {
 type BlockStatus =
   | { status: BuildStatus.Pending | BuildStatus.Reverted }
   | { status: BuildStatus.Build; block: Block }
+
+const DEPOSIT_CONTRACT_ADDRESS = '0x00000000219ab540356cbb839cbe05303d7705fa'
 
 export class BlockBuilder {
   /**
@@ -62,6 +67,7 @@ export class BlockBuilder {
   private transactions: TypedTransaction[] = []
   private transactionResults: RunTxResult[] = []
   private withdrawals?: Withdrawal[]
+  private deposits?: Deposit[]
   private checkpointed = false
   private blockStatus: BlockStatus = { status: BuildStatus.Pending }
 
@@ -85,6 +91,7 @@ export class BlockBuilder {
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
     }
     this.withdrawals = opts.withdrawals?.map(Withdrawal.fromWithdrawalData)
+    this.deposits = opts.deposits?.map(Deposit.fromDepositData)
 
     if (
       this.vm.common.isActivatedEIP(1559) === true &&
@@ -305,6 +312,27 @@ export class BlockBuilder {
     const withdrawalsRoot = this.withdrawals
       ? await Block.genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
       : undefined
+
+    const expectedDeposits = []
+    for (const [i, txResult] of this.transactionResults.entries()) {
+      for (let i = 0; i < txResult.receipt.logs.length; i++) {
+        const log = txResult.receipt.logs[i]
+        if (bytesToHex(log[0]) === DEPOSIT_CONTRACT_ADDRESS) {
+          expectedDeposits.push(Deposit.fromValuesArray(log[2]))
+        }
+      }
+    }
+    const expectedDepositsRoot = await Block.genDepositsTrieRoot(
+      expectedDeposits,
+      new Trie({ common: this.vm.common })
+    )
+    const actualDepositsRoot = this.deposits
+      ? await Block.genDepositsTrieRoot(this.deposits, new Trie({ common: this.vm.common }))
+      : undefined
+    if (!equalsBytes(actualDepositsRoot, expectedDepositsRoot)) {
+      throw Error('Actual and expected deposits roots do not match')
+    }
+
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
     const gasUsed = this.gasUsed
@@ -321,6 +349,7 @@ export class BlockBuilder {
       stateRoot,
       transactionsTrie,
       withdrawalsRoot,
+      actualDepositsRoot,
       receiptTrie,
       logsBloom,
       gasUsed,
@@ -338,6 +367,7 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
+      deposits: this.deposits,
     }
     const block = Block.fromBlockData(blockData, blockOpts)
 
