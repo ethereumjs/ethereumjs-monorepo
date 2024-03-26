@@ -96,7 +96,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   it('getTreeKeyFor* functions', async () => {
     const stateManager = new StatelessVerkleStateManager({ common })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
     const stem = getStem(address, 0)
@@ -134,7 +134,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       },
       common,
     })
-    stateManager.initVerkleExecutionWitness(block.executionWitness)
+    stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const stateManagerCopy = stateManager.shallowCopy()
 
