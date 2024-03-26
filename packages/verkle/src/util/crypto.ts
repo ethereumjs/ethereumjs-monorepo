@@ -1,7 +1,6 @@
 import {
   type Address,
   bigIntToBytes,
-  bytesToBigInt,
   bytesToHex,
   concatBytes,
   int32ToBytes,
