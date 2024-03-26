@@ -1,3 +1,4 @@
+import { getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -518,10 +519,21 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3b,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const size = BigInt(
-        (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
-          .length
-      )
+
+      let size
+      if (typeof runState.stateManager.getContractCodeSize === 'function') {
+        size = BigInt(
+          await runState.stateManager.getContractCodeSize(
+            new Address(addresstoBytes(addressBigInt))
+          )
+        )
+      } else {
+        size = BigInt(
+          (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
+            .length
+        )
+      }
+
       runState.stack.push(size)
     },
   ],
@@ -616,6 +628,15 @@ export const handlers: Map<number, OpHandler> = new Map([
         )
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
+        if (common.isActivatedEIP(6800) === true) {
+          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+          // just create access witnesses without charging for the gas
+          runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            historyAddress,
+            treeIndex,
+            subIndex
+          )
+        }
         const storage = await runState.stateManager.getContractStorage(historyAddress, key)
 
         runState.stack.push(bytesToBigInt(storage))
