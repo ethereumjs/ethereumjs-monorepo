@@ -45,8 +45,8 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
       { common },
+      undefined,
       undefined
     )
     validateMergeHeader(block.header)
