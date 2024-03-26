@@ -107,6 +107,11 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
   chain.opened = true
 
+  // if blockchain has not been bundled with chain, add the mock blockchain
+  if (chain.blockchain === undefined) {
+    chain.blockchain = blockchain
+  }
+
   const defaultClientConfig = {
     opened: true,
     ethProtocolVersions: [65],

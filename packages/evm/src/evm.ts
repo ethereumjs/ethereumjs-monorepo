@@ -254,10 +254,13 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
 
     if (this.common.isActivatedEIP(6800)) {
+      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
+        message.authcallOrigin ?? message.caller
+      )
+
       if (message.depth === 0) {
-        const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
-          message.authcallOrigin ?? message.caller
-        )
+        debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
+      } else {
         gasLimit -= originAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -287,11 +290,14 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
+      const sendsValue = message.value !== BIGINT_0
+      const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
+        sendsValue,
+      })
+
       if (message.depth === 0) {
-        const sendsValue = message.value !== BIGINT_0
-        const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
-          sendsValue,
-        })
+        debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
+      } else {
         gasLimit -= destAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -410,15 +416,20 @@ export class EVM implements EVMInterface {
 
     if (this.common.isActivatedEIP(6800)) {
       const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(message.caller)
-      gasLimit -= originAccessGas
-      if (gasLimit < BIGINT_0) {
-        if (this.DEBUG) {
-          debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
-        }
-        return { execResult: OOGResult(message.gasLimit) }
+
+      if (message.depth === 0) {
+        debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
       } else {
-        if (this.DEBUG) {
-          debugGas(`Origin access used (${originAccessGas} gas (-> ${gasLimit}))`)
+        gasLimit -= originAccessGas
+        if (gasLimit < BIGINT_0) {
+          if (this.DEBUG) {
+            debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
+          }
+          return { execResult: OOGResult(message.gasLimit) }
+        } else {
+          if (this.DEBUG) {
+            debugGas(`Origin access used (${originAccessGas} gas (-> ${gasLimit}))`)
+          }
         }
       }
     }
@@ -463,7 +474,8 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const sendsValue = message.value !== BIGINT_0
+      // no extra charge if it sends value
+      const sendsValue = false // message.value !== BIGINT_0
       const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
         message.to,
         { sendsValue }
@@ -569,7 +581,7 @@ export class EVM implements EVMInterface {
     // fee for size of the return value
     let totalGas = result.executionGasUsed
     let returnFee = BIGINT_0
-    if (!result.exceptionError) {
+    if (!result.exceptionError && this.common.isActivatedEIP(6800) === false) {
       returnFee =
         BigInt(result.returnValue.length) * BigInt(this.common.param('gasPrices', 'createData'))
       totalGas = totalGas + returnFee
@@ -690,7 +702,7 @@ export class EVM implements EVMInterface {
           message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
             message.to,
             0,
-            message.code!.length - 1
+            result.returnValue.length - 1
           )
         gasLimit -= byteCodeWriteAccessfee
         if (gasLimit < BIGINT_0) {
@@ -701,9 +713,7 @@ export class EVM implements EVMInterface {
           }
           result = { ...result, ...OOGResult(message.gasLimit) }
         } else {
-          debug(
-            `ContractCreateComplete access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`
-          )
+          debug(`byteCodeWrite access used (${byteCodeWriteAccessfee}) gas (-> ${gasLimit})`)
           result.executionGasUsed += byteCodeWriteAccessfee
         }
       }

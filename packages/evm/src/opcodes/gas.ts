@@ -112,7 +112,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (dataLength !== BIGINT_0) {
           gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
 
-          if (common.isActivatedEIP(6800)) {
+          if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
             const contract = runState.interpreter.getAddress()
             let codeEnd = _codeOffset + dataLength
             const codeSize = runState.interpreter.getCodeSize()
@@ -314,7 +314,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // if we deduct extra gas first.
           gas += accessStorageEIP2929(runState, keyBytes, true, common)
         }
-
         if (common.isActivatedEIP(6800) === true) {
           const contract = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
@@ -410,7 +409,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, toAddress.bytes, common)
         }
 
-        if (value !== BIGINT_0) {
+        if (value !== BIGINT_0 && common.isActivatedEIP(6800) === false) {
           gas += common.param('gasPrices', 'callValueTransfer')
         }
 

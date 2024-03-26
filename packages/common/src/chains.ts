@@ -570,8 +570,8 @@ export const chains: ChainsDict = {
       'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.holesky.ethdisco.net',
     ],
   },
-  kaustinen: {
-    name: 'kaustinen',
+  kaustinen4: {
+    name: 'kaustinen4',
     chainId: 69420,
     networkId: 69420,
     defaultHardfork: 'prague',
@@ -579,14 +579,14 @@ export const chains: ChainsDict = {
       type: 'pos',
       algorithm: 'casper',
     },
-    comment: 'Verkle kaustinen testnet 2 (likely temporary, do not hard-wire into production code)',
+    comment: 'Verkle kaustinen testnet 3 (likely temporary, do not hard-wire into production code)',
     url: 'https://github.com/eth-clients/kaustinen/',
     genesis: {
       difficulty: '0x01',
       extraData: '0x',
       gasLimit: '0x17D7840',
       nonce: '0x0000000000001234',
-      timestamp: '0x65608a64',
+      timestamp: '0x65c20a28',
     },
     hardforks: [
       {
@@ -646,7 +646,7 @@ export const chains: ChainsDict = {
       {
         name: 'prague',
         block: null,
-        timestamp: '1700825700',
+        timestamp: '1707215340',
       },
     ],
     bootstrapNodes: [],

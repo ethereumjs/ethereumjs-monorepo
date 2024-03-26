@@ -20,7 +20,7 @@ describe('EIP 6800 tests', () => {
       evm,
       stateManager: verkleStateManager,
     })
-    verkleStateManager.initVerkleExecutionWitness(block.executionWitness)
+    verkleStateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     //await vm.runBlock({ block })
 

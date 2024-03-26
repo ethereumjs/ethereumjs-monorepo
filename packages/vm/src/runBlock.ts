@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -132,7 +132,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
+    if (clearCache) {
+      ;(this._opts.stateManager as StatelessVerkleStateManager).clearCaches()
+    }
+
     ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+      block.header.number,
       block.executionWitness
     )
   } else {
@@ -449,6 +454,14 @@ export async function accumulateParentBlockHash(
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
+    // generate access witness
+    if (vm.common.isActivatedEIP(6800) === true) {
+      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+      // just create access witnesses without charging for the gas
+      ;(
+        vm.stateManager as StatelessVerkleStateManager
+      ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
+    }
     // ringKey is the key the hash is actually put in (it is a ring buffer)
     const ringKey = number % historyServeWindow
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
