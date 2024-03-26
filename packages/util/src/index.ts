@@ -32,6 +32,10 @@ export * from './withdrawal.js'
  * Deposit type
  */
 export * from './deposits.js'
+/*
+ * Exit type
+ */
+export * from './exit.js'
 
 /**
  * ECDSA signature

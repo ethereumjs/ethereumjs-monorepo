@@ -5,6 +5,7 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   BIGINT_0,
   Deposit,
+  Exit,
   KECCAK256_RLP,
   Withdrawal,
   bigIntToHex,
@@ -41,7 +42,7 @@ import type {
   TxOptions,
   TypedTransaction,
 } from '@ethereumjs/tx'
-import type { DepositBytes, EthersProvider, WithdrawalBytes } from '@ethereumjs/util'
+import type { DepositBytes, EthersProvider, ExitBytes, WithdrawalBytes } from '@ethereumjs/util'
 
 /**
  * An object that represents the block.
@@ -52,6 +53,7 @@ export class Block {
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
   public readonly deposits?: Deposit[]
+  public readonly exits?: Exit[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
 
@@ -112,6 +114,7 @@ export class Block {
       transactions: txsData,
       uncleHeaders: uhsData,
       withdrawals: withdrawalsData,
+      exits: exitData,
       executionWitness: executionWitnessData,
       deposits: depositData,
     } = blockData
@@ -151,6 +154,7 @@ export class Block {
     // The witness data is planned to come in rlp serialized bytes so leave this
     // stub till that time
     const executionWitness = executionWitnessData
+    const exits = exitData?.map(Exit.fromExitData)
 
     const deposits = depositData?.map(Deposit.fromDepositData)
 
@@ -161,7 +165,8 @@ export class Block {
       withdrawals,
       opts,
       executionWitness,
-      deposits
+      deposits,
+      exits
     )
   }
 
@@ -196,8 +201,15 @@ export class Block {
 
     // First try to load header so that we can use its common (in case of setHardfork being activated)
     // to correctly make checks on the hardforks
-    const [headerData, txsData, uhsData, withdrawalBytes, depositBytes, executionWitnessBytes] =
-      values
+    const [
+      headerData,
+      txsData,
+      uhsData,
+      withdrawalBytes,
+      depositBytes,
+      exitBytes,
+      executionWitnessBytes,
+    ] = values
     const header = BlockHeader.fromValuesArray(headerData, opts)
 
     if (
@@ -215,6 +227,14 @@ export class Block {
     ) {
       throw new Error(
         'Invalid serialized block input: EIP-6110 is active, and no deposits were provided as array'
+      )
+    }
+    if (
+      header.common.isActivatedEIP(7002) &&
+      (exitBytes === undefined || !Array.isArray(exitBytes))
+    ) {
+      throw new Error(
+        'Invalid serialized block input: EIP-7002 is active, and no exits were provided as array'
       )
     }
 
@@ -267,6 +287,16 @@ export class Block {
           }))
           ?.map(Deposit.fromDepositData)
       : undefined
+    // TODO fix my type, also figure out why we cannot parse this the same as WithdrawalBytes
+    // @ts-ignore
+    const exits = header.common.isActivatedEIP(7002)
+      ? (exitBytes as ExitBytes[])
+          ?.map(([address, validatorPubkey]) => ({
+            address,
+            validatorPubkey,
+          }))
+          ?.map(Exit.fromExitData)
+      : undefined
 
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
@@ -290,7 +320,8 @@ export class Block {
       withdrawals,
       opts,
       executionWitness,
-      deposits
+      deposits,
+      exits
     )
   }
 
@@ -464,7 +495,8 @@ export class Block {
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
     executionWitness?: VerkleExecutionWitness | null,
-    deposits?: Deposit[]
+    deposits?: Deposit[],
+    exits?: Exit[]
   ) {
     this.header = header ?? BlockHeader.fromHeaderData({}, opts)
     this.common = this.header.common
@@ -473,6 +505,7 @@ export class Block {
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.deposits = deposits ?? (this.common.isActivatedEIP(6110) ? [] : undefined)
+    this.exits = exits ?? (this.common.isActivatedEIP(7002) ? [] : undefined)
     this.executionWitness = executionWitness
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
@@ -526,6 +559,10 @@ export class Block {
       throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
     }
 
+    if (!this.common.isActivatedEIP(7002) && exits !== undefined && exits !== null) {
+      throw new Error(`Cannot have exits field if EIP 7002 is not active`)
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -550,6 +587,10 @@ export class Block {
     const depositsRaw = this.deposits?.map((deposit) => deposit.raw())
     if (depositsRaw) {
       bytesArray.push(depositsRaw)
+    }
+    const exitsRaw = this.exits?.map((ex) => ex.raw())
+    if (exitsRaw) {
+      bytesArray.push(exitsRaw)
     }
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
       const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
@@ -724,6 +765,12 @@ export class Block {
         throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
       }
     }
+
+    if (this.common.isActivatedEIP(7002)) {
+      if (this.exits === undefined || this.exits === null) {
+        throw new Error('Invalid block: missing exits')
+      }
+    }
   }
 
   /**
@@ -873,12 +920,18 @@ export class Block {
           deposits: this.deposits.map((deposit) => deposit.toJSON()),
         }
       : {}
+    const exitsAttr = this.exits
+      ? {
+          exits: this.exits.map((exit) => exit.toJSON()),
+        }
+      : {}
     return {
       header: this.header.toJSON(),
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
       ...depositsAttr,
+      ...exitsAttr,
     }
   }
 

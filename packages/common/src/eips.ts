@@ -517,6 +517,19 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  7002: {
+    comment: 'Execution layer triggerable exits (experimental)',
+    url: 'https://github.com/ethereum/EIPs/commit/35589d35c40576d932923542b31a4d8f7812c3e7',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [],
+    gasPrices: {
+      validatorExcessAddress: {
+        v: BigInt('0x0f1ee3e66777F27a7703400644C6fCE41527E017'),
+        d: 'Address of the validator excess address',
+      },
+    },
+  },
   7516: {
     comment: 'BLOBBASEFEE opcode',
     url: 'https://eips.ethereum.org/EIPS/eip-7516',
