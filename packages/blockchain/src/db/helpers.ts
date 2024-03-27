@@ -48,6 +48,7 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
     (blockBody instanceof Block &&
       (blockBody.transactions.length ||
         (blockBody.withdrawals?.length ?? 0) ||
+        (blockBody.deposits?.length ?? 0) ||
         blockBody.uncleHeaders.length ||
         (blockBody.executionWitness !== null && blockBody.executionWitness !== undefined)))
   ) {

@@ -60,6 +60,7 @@ import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
   ExecutionPayloadV3,
+  ExecutionPayloadV6110,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
   PayloadAttributes,
@@ -842,6 +843,58 @@ export class Engine {
     return newPayloadRes
   }
 
+  async newPayloadV6110(
+    params: [ExecutionPayloadV2 | ExecutionPayloadV6110]
+  ): Promise<PayloadStatusV1> {
+    const eip6110Timestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
+    const ts = parseInt(params[0].timestamp)
+
+    // check if fork is supported
+    if (eip6110Timestamp === null || ts < eip6110Timestamp) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'NewPayloadV{1|2} MUST be used before Prague/Electra is activated',
+      }
+    }
+
+    // check if parameters are valid
+    const payloadAsV3 = params[0] as ExecutionPayloadV6110
+    const { excessBlobGas, blobGasUsed, parentBeaconBlockRoot, deposits } = payloadAsV3
+    if (blobGasUsed === null || excessBlobGas === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing blob gas fields',
+      }
+    }
+    if (blobGasUsed === null || excessBlobGas === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing blob gas fields',
+      }
+    }
+    if (parentBeaconBlockRoot === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing parent beacon block root field',
+      }
+    }
+    if (deposits === null) {
+      throw {
+        code: INVALID_PARAMS,
+        message: 'Missing deposits field',
+      }
+    }
+
+    // TODO check if versionedHashes field exists in payload?
+
+    const newPayloadRes = await this.newPayload(params)
+    if (newPayloadRes.status === Status.INVALID_BLOCK_HASH) {
+      newPayloadRes.status = Status.INVALID
+      newPayloadRes.latestValidHash = null
+    }
+    return newPayloadRes
+  }
+
   /**
    * Propagates the change in the fork choice to the execution client.
    *
@@ -1408,6 +1461,11 @@ export class Engine {
    */
   async getPayloadV3(params: [Bytes8]) {
     return this.getPayload(params, 3)
+  }
+
+  async getPayloadV6110(params: [Bytes8]) {
+    const { executionPayload, blockValue } = await this.getPayload(params, 2)
+    return { executionPayload, blockValue }
   }
   /**
    * Compare transition configuration parameters.

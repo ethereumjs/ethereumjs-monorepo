@@ -21,12 +21,14 @@ export type Uint64 = string
 export type Uint256 = string
 
 type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
+type DepositV1 = Exclude<ExecutionPayload['deposits'], undefined>[number]
 
 // ExecutionPayload has higher version fields as optionals to make it easy for typescript
 export type ExecutionPayloadV1 = ExecutionPayload
 export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
 // parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
 export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; blobGasUsed: Uint64 }
+export type ExecutionPayloadV6110 = ExecutionPayloadV2 & { deposits: DepositV1[] }
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -41,12 +43,14 @@ export type PayloadAttributes = {
   suggestedFeeRecipient: Bytes20
   // add higher version fields as optionals to make it easy for typescript
   withdrawals?: WithdrawalV1[]
+  deposits?: DepositV1[]
   parentBeaconBlockRoot?: Bytes32
 }
 
 export type PayloadAttributesV1 = Omit<PayloadAttributes, 'withdrawals' | 'parentBeaconBlockRoot'>
 export type PayloadAttributesV2 = PayloadAttributesV1 & { withdrawals: WithdrawalV1[] }
 export type PayloadAttributesV3 = PayloadAttributesV2 & { parentBeaconBlockRoot: Bytes32 }
+export type PayloadAttributesV6110 = PayloadAttributesV2 & { deposits: DepositV1[] }
 
 export type PayloadStatusV1 = {
   status: Status
@@ -74,6 +78,7 @@ export type BlobsBundleV1 = {
 export type ExecutionPayloadBodyV1 = {
   transactions: string[]
   withdrawals: WithdrawalV1[] | null
+  deposits: DepositV1[] | null
 }
 
 export type ChainCache = {

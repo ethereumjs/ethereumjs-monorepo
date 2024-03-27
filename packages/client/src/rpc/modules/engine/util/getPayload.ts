@@ -12,6 +12,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
   const header = blockJson.header!
   const transactions = block.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
   const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+  const depositsArr = blockJson.deposits ? { deposits: blockJson.deposits } : {}
   const blobsBundle: BlobsBundleV1 | undefined = bundle
     ? {
         commitments: bundle.commitments.map(bytesToHex),
@@ -38,6 +39,7 @@ export const blockToExecutionPayload = (block: Block, value: bigint, bundle?: Bl
     prevRandao: header.mixHash!,
     transactions,
     ...withdrawalsArr,
+    ...depositsArr,
   }
 
   // ethereumjs doesnot provide any transaction censoring detection (yet) to suggest

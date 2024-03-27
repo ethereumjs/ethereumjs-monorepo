@@ -7,6 +7,7 @@ import type { Config } from '../../../config'
 import type {
   ExecutionPayloadV1,
   ExecutionPayloadV2,
+  ExecutionPayloadV6110,
   ExecutionPayloadV3,
   ForkchoiceResponseV1,
   ForkchoiceStateV1,
@@ -176,6 +177,9 @@ export class CLConnectionManager {
 
     if ('withdrawals' in payload.payload && payload.payload.withdrawals !== null) {
       msg += ` withdrawals=${(payload.payload as ExecutionPayloadV2).withdrawals.length}`
+    }
+    if ('deposits' in payload.payload && payload.payload.deposits !== null) {
+      msg += ` deposits=${(payload.payload as ExecutionPayloadV6110).deposits.length}`
     }
     if ('excessBlobGas' in payload.payload && payload.payload.excessBlobGas !== null) {
       msg += ` blobGasUsed=${(payload.payload as ExecutionPayloadV3).blobGasUsed} excessBlobGas=${

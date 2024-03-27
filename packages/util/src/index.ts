@@ -29,6 +29,11 @@ export * from './db.js'
 export * from './withdrawal.js'
 
 /**
+ * Deposit type
+ */
+export * from './deposits.js'
+
+/**
  * ECDSA signature
  */
 export * from './signature.js'

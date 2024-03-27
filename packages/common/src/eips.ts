@@ -482,6 +482,13 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  6110: {
+    comment: 'Supply validator deposits on chain',
+    url: 'https://eips.ethereum.org/EIPS/eip-6110',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Prague,
+    requiredEIPs: [],
+  },
   6780: {
     comment: 'SELFDESTRUCT only in same transaction',
     url: 'https://eips.ethereum.org/EIPS/eip-6780',
