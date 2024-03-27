@@ -684,7 +684,7 @@ describe('EIP-3074 AUTHCALL', () => {
     assert.equal(contractStorageAccount!.balance, 2n, 'storage balance ok')
   })
 
-  it('Should throw is authorized account does not have enough balance', async () => {
+  it('Should throw if authorized account does not have enough balance', async () => {
     const message = hexToBytes('0x01')
     const signature = signMessage(message, contractAddress, privateKey)
     const code = concatBytes(
