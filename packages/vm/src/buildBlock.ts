@@ -8,14 +8,16 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  Deposit,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
   Withdrawal,
+  bytesToHex,
+  equalsBytes,
   toBytes,
   toType,
   zeros,
-  DepositBytes,
 } from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
@@ -31,9 +33,7 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.js'
 import type { HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-import { Deposit } from '@ethereumjs/util'
-import { equalsBytes } from 'ethereum-cryptography/utils.js'
+import type { DepositBytes } from '@ethereumjs/util'
 
 export enum BuildStatus {
   Reverted = 'reverted',
@@ -315,7 +315,7 @@ export class BlockBuilder {
       : undefined
 
     const expectedDeposits = []
-    for (const [i, txResult] of this.transactionResults.entries()) {
+    for (const [_, txResult] of this.transactionResults.entries()) {
       for (let i = 0; i < txResult.receipt.logs.length; i++) {
         const log = txResult.receipt.logs[i]
         if (bytesToHex(log[0]) === DEPOSIT_CONTRACT_ADDRESS) {
