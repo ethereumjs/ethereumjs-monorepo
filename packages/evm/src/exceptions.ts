@@ -24,8 +24,6 @@ export enum ERROR {
   INVALID_INPUT_LENGTH = 'invalid input length',
 
   AUTHCALL_UNSET = 'attempting to AUTHCALL without AUTH set',
-  AUTHCALL_NONZERO_VALUEEXT = 'attempting to execute AUTHCALL with nonzero external value',
-  AUTH_INVALID_S = 'invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
 
   // BLS errors
   BLS_12_381_INVALID_INPUT_LENGTH = 'invalid input length',
