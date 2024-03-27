@@ -330,10 +330,7 @@ export class BlockBuilder {
     const actualDepositsRoot = this.deposits
       ? await Block.genDepositsTrieRoot(this.deposits, new Trie({ common: this.vm.common }))
       : undefined
-    if (
-      actualDepositsRoot === undefined ||
-      !equalsBytes(actualDepositsRoot, expectedDepositsRoot)
-    ) {
+    if (!equalsBytes(actualDepositsRoot ?? KECCAK256_RLP, expectedDepositsRoot)) {
       throw Error('Actual and expected deposits roots do not match')
     }
 
