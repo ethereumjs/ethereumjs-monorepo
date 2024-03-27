@@ -15,6 +15,7 @@ import {
   toBytes,
   toType,
   zeros,
+  DepositBytes,
 } from '@ethereumjs/util'
 
 import { Bloom } from './bloom/index.js'
@@ -318,7 +319,7 @@ export class BlockBuilder {
       for (let i = 0; i < txResult.receipt.logs.length; i++) {
         const log = txResult.receipt.logs[i]
         if (bytesToHex(log[0]) === DEPOSIT_CONTRACT_ADDRESS) {
-          expectedDeposits.push(Deposit.fromValuesArray(log[2]))
+          expectedDeposits.push(Deposit.fromValuesArray(RLP.decode(log[2]) as DepositBytes))
         }
       }
     }
@@ -329,7 +330,10 @@ export class BlockBuilder {
     const actualDepositsRoot = this.deposits
       ? await Block.genDepositsTrieRoot(this.deposits, new Trie({ common: this.vm.common }))
       : undefined
-    if (!equalsBytes(actualDepositsRoot, expectedDepositsRoot)) {
+    if (
+      actualDepositsRoot === undefined ||
+      !equalsBytes(actualDepositsRoot, expectedDepositsRoot)
+    ) {
       throw Error('Actual and expected deposits roots do not match')
     }
 
