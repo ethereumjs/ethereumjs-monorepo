@@ -393,7 +393,7 @@ const args: ClientOpts = yargs
   })
   .option('isSingleNode', {
     describe:
-      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automically activated in the "dev" mode',
+      'To run client in single node configuration without need to discover the sync height from peer. Particularly useful in test configurations. This flag is automatically activated in the "dev" mode',
     boolean: true,
   })
   .option('vmProfileBlocks', {

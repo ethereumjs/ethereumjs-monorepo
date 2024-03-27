@@ -93,7 +93,7 @@ export const hardforks: HardforksDict = {
       },
       callValueTransfer: {
         v: 9000,
-        d: 'Paid for CALL when the value transfor is non-zero',
+        d: 'Paid for CALL when the value transfer is non-zero',
       },
       callNewAccount: {
         v: 25000,

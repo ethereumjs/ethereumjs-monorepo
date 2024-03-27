@@ -320,7 +320,7 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
   ;(vm.blockchain as any)._validateConsensus = false
 
   chain.putBlocks = (blocks: Block[]) => {
-    it('sholud be properly orded by gasPrice and nonce', () => {
+    it('should be properly orded by gasPrice and nonce', () => {
       const msg = 'txs in block should be properly ordered by gasPrice and nonce'
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
