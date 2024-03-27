@@ -1026,6 +1026,21 @@ export class Engine {
         }
       }
 
+      // if the execution is stalled because it hit an invalid block which we need to hop over
+      if (
+        this.execution.chainStatus?.status === ExecStatus.IGNORE_INVALID &&
+        this.config.ignoreStatelessInvalidExecs !== false
+      ) {
+        // jump the vm head to failing block so that next block can be executed
+        this.config.logger.debug(
+          `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`
+        )
+        await this.execution.jumpVmHead(
+          this.execution.chainStatus.hash,
+          this.execution.chainStatus.height
+        )
+      }
+
       // Trigger the statebuild here since we have finalized and safeblock available
       void this.service.buildHeadState()
 

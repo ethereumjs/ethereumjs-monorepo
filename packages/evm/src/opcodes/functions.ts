@@ -1,8 +1,9 @@
+import { getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
+  Account,
   Address,
   BIGINT_0,
   BIGINT_1,
-  BIGINT_128,
   BIGINT_160,
   BIGINT_2,
   BIGINT_224,
@@ -52,7 +53,7 @@ import {
 import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 
-const EIP3074MAGIC = hexToBytes('0x03')
+const EIP3074MAGIC = hexToBytes('0x04')
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -518,10 +519,21 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3b,
     async function (runState) {
       const addressBigInt = runState.stack.pop()
-      const size = BigInt(
-        (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
-          .length
-      )
+
+      let size
+      if (typeof runState.stateManager.getContractCodeSize === 'function') {
+        size = BigInt(
+          await runState.stateManager.getContractCodeSize(
+            new Address(addresstoBytes(addressBigInt))
+          )
+        )
+      } else {
+        size = BigInt(
+          (await runState.stateManager.getContractCode(new Address(addresstoBytes(addressBigInt))))
+            .length
+        )
+      }
+
       runState.stack.push(size)
     },
   ],
@@ -616,6 +628,15 @@ export const handlers: Map<number, OpHandler> = new Map([
         )
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
+        if (common.isActivatedEIP(6800) === true) {
+          const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+          // just create access witnesses without charging for the gas
+          runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            historyAddress,
+            treeIndex,
+            subIndex
+          )
+        }
         const storage = await runState.stateManager.getContractStorage(historyAddress, key)
 
         runState.stack.push(bytesToBigInt(storage))
@@ -1145,27 +1166,40 @@ export const handlers: Map<number, OpHandler> = new Map([
       // eslint-disable-next-line prefer-const
       let [authority, memOffset, memLength] = runState.stack.popN(3)
 
-      if (memLength > BIGINT_128) {
-        memLength = BIGINT_128
+      if (memLength > BigInt(97)) {
+        memLength = BigInt(97)
       }
 
       let mem = runState.memory.read(Number(memOffset), Number(memLength))
-      if (mem.length < 128) {
-        mem = setLengthRight(mem, 128)
+      if (mem.length < 97) {
+        mem = setLengthRight(mem, 97)
       }
 
-      const yParity = BigInt(mem[31])
-      const r = mem.subarray(32, 64)
-      const s = mem.subarray(64, 96)
-      const commit = mem.subarray(96, 128)
+      const yParity = BigInt(mem[0])
+      const r = mem.subarray(1, 33)
+      const s = mem.subarray(33, 65)
+      const commit = mem.subarray(65, 97)
 
       if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
-        trap(ERROR.AUTH_INVALID_S)
+        runState.stack.push(BIGINT_0)
+        runState.auth = undefined
+        return
+      }
+      if (yParity > BIGINT_1) {
+        runState.stack.push(BIGINT_0)
+        runState.auth = undefined
+        return
       }
 
-      const paddedInvokerAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
+      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20).slice(-20))
+      const accountNonce = (
+        (await runState.stateManager.getAccount(expectedAddress)) ?? new Account()
+      ).nonce
+
+      const invokedAddress = setLengthLeft(runState.interpreter._env.address.bytes, 32)
       const chainId = setLengthLeft(bigIntToBytes(runState.interpreter.getChainId()), 32)
-      const message = concatBytes(EIP3074MAGIC, chainId, paddedInvokerAddress, commit)
+      const nonce = setLengthLeft(bigIntToBytes(accountNonce), 32)
+      const message = concatBytes(EIP3074MAGIC, chainId, nonce, invokedAddress, commit)
 
       const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
       const msgHash = keccakFunction(message)
@@ -1185,8 +1219,6 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = new Address(addressBuffer)
       runState.auth = address
 
-      const expectedAddress = new Address(setLengthLeft(bigIntToBytes(authority), 20))
-
       if (!expectedAddress.equals(address)) {
         // expected address does not equal the recovered address, clear auth variable
         runState.stack.push(BIGINT_0)
@@ -1202,16 +1234,8 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xf7,
     async function (runState) {
-      const [
-        _currentGasLimit,
-        addr,
-        value,
-        _valueExt,
-        argsOffset,
-        argsLength,
-        retOffset,
-        retLength,
-      ] = runState.stack.popN(8)
+      const [_currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
+        runState.stack.popN(7)
 
       const toAddress = new Address(addresstoBytes(addr))
 

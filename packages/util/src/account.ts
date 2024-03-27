@@ -6,9 +6,11 @@ import {
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
+  bytesToInt,
   concatBytes,
   equalsBytes,
   hexToBytes,
+  intToUnpaddedBytes,
   toBytes,
   utf8ToBytes,
   zeros,
@@ -26,22 +28,137 @@ export interface AccountData {
   codeHash?: BytesLike
 }
 
+export interface PartialAccountData {
+  nonce?: BigIntLike | null
+  balance?: BigIntLike | null
+  storageRoot?: BytesLike | null
+  codeHash?: BytesLike | null
+  codeSize?: BigIntLike | null
+  version?: BigIntLike | null
+}
+
 export type AccountBodyBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
 
+/**
+ * Account class to load and maintain the  basic account objects.
+ * Supports partial loading and access required for verkle with null
+ * as the placeholder.
+ *
+ * Note: passing undefined in constructor is different from null
+ * While undefined leads to default assignment, null is retained
+ * to track the information not available/loaded because of partial
+ * witness access
+ */
 export class Account {
-  nonce: bigint
-  balance: bigint
-  storageRoot: Uint8Array
-  codeHash: Uint8Array
+  _nonce: bigint | null = null
+  _balance: bigint | null = null
+  _storageRoot: Uint8Array | null = null
+  _codeHash: Uint8Array | null = null
+  // codeSize and version is separately stored in VKT
+  _codeSize: number | null = null
+  _version: number | null = null
+
+  get version() {
+    if (this._version !== null) {
+      return this._version
+    } else {
+      throw Error(`version=${this._version} not loaded`)
+    }
+  }
+  set version(_version: number) {
+    this._version = _version
+  }
+
+  get nonce() {
+    if (this._nonce !== null) {
+      return this._nonce
+    } else {
+      throw Error(`nonce=${this._nonce} not loaded`)
+    }
+  }
+  set nonce(_nonce: bigint) {
+    this._nonce = _nonce
+  }
+
+  get balance() {
+    if (this._balance !== null) {
+      return this._balance
+    } else {
+      throw Error(`bonce=${this._balance} not loaded`)
+    }
+  }
+  set balance(_balance: bigint) {
+    this._balance = _balance
+  }
+
+  get storageRoot() {
+    if (this._storageRoot !== null) {
+      return this._storageRoot
+    } else {
+      throw Error(`storageRoot=${this._storageRoot} not loaded`)
+    }
+  }
+  set storageRoot(_storageRoot: Uint8Array) {
+    this._storageRoot = _storageRoot
+  }
+
+  get codeHash() {
+    if (this._codeHash !== null) {
+      return this._codeHash
+    } else {
+      throw Error(`codeHash=${this._codeHash} not loaded`)
+    }
+  }
+  set codeHash(_codeHash: Uint8Array) {
+    this._codeHash = _codeHash
+  }
+
+  get codeSize() {
+    if (this._codeSize !== null) {
+      return this._codeSize
+    } else {
+      throw Error(`codeHash=${this._codeSize} not loaded`)
+    }
+  }
+  set codeSize(_codeSize: number) {
+    this._codeSize = _codeSize
+  }
 
   static fromAccountData(accountData: AccountData) {
     const { nonce, balance, storageRoot, codeHash } = accountData
+    if (nonce === null || balance === null || storageRoot === null || codeHash === null) {
+      throw Error(`Partial fields not supported in fromAccountData`)
+    }
 
     return new Account(
       nonce !== undefined ? bytesToBigInt(toBytes(nonce)) : undefined,
       balance !== undefined ? bytesToBigInt(toBytes(balance)) : undefined,
       storageRoot !== undefined ? toBytes(storageRoot) : undefined,
       codeHash !== undefined ? toBytes(codeHash) : undefined
+    )
+  }
+
+  static fromPartialAccountData(partialAccountData: PartialAccountData) {
+    const { nonce, balance, storageRoot, codeHash, codeSize, version } = partialAccountData
+
+    if (
+      nonce === null &&
+      balance === null &&
+      storageRoot === null &&
+      codeHash === null &&
+      codeSize === null &&
+      version === null
+    ) {
+      throw Error(`All partial fields null`)
+    }
+
+    return new Account(
+      nonce !== undefined && nonce !== null ? bytesToBigInt(toBytes(nonce)) : nonce,
+      balance !== undefined && balance !== null ? bytesToBigInt(toBytes(balance)) : balance,
+      storageRoot !== undefined && storageRoot !== null ? toBytes(storageRoot) : storageRoot,
+      codeHash !== undefined && codeHash !== null ? toBytes(codeHash) : codeHash,
+      codeSize !== undefined && codeSize !== null ? bytesToInt(toBytes(codeSize)) : codeSize,
+      version !== undefined && version !== null ? bytesToInt(toBytes(version)) : version
     )
   }
 
@@ -55,6 +172,94 @@ export class Account {
     return this.fromValuesArray(values)
   }
 
+  public static fromRlpSerializedPartialAccount(serialized: Uint8Array) {
+    const values = RLP.decode(serialized) as Uint8Array[][]
+
+    if (!Array.isArray(values)) {
+      throw new Error('Invalid serialized account input. Must be array')
+    }
+
+    let nonce = null
+    if (!Array.isArray(values[0])) {
+      throw new Error('Invalid partial nonce encoding. Must be array')
+    } else {
+      const isNotNullIndicator = bytesToInt(values[0][0])
+      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for nonce`)
+      }
+      if (isNotNullIndicator === 1) {
+        nonce = bytesToBigInt(values[0][1])
+      }
+    }
+
+    let balance = null
+    if (!Array.isArray(values[1])) {
+      throw new Error('Invalid partial balance encoding. Must be array')
+    } else {
+      const isNotNullIndicator = bytesToInt(values[1][0])
+      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for balance`)
+      }
+      if (isNotNullIndicator === 1) {
+        balance = bytesToBigInt(values[1][1])
+      }
+    }
+
+    let storageRoot = null
+    if (!Array.isArray(values[2])) {
+      throw new Error('Invalid partial storageRoot encoding. Must be array')
+    } else {
+      const isNotNullIndicator = bytesToInt(values[2][0])
+      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for storageRoot`)
+      }
+      if (isNotNullIndicator === 1) {
+        storageRoot = values[2][1]
+      }
+    }
+
+    let codeHash = null
+    if (!Array.isArray(values[3])) {
+      throw new Error('Invalid partial codeHash encoding. Must be array')
+    } else {
+      const isNotNullIndicator = bytesToInt(values[3][0])
+      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for codeHash`)
+      }
+      if (isNotNullIndicator === 1) {
+        codeHash = values[3][1]
+      }
+    }
+
+    let codeSize = null
+    if (!Array.isArray(values[4])) {
+      throw new Error('Invalid partial codeSize encoding. Must be array')
+    } else {
+      const isNotNullIndicator = bytesToInt(values[4][0])
+      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for codeSize`)
+      }
+      if (isNotNullIndicator === 1) {
+        codeSize = bytesToInt(values[4][1])
+      }
+    }
+
+    let version = null
+    if (!Array.isArray(values[5])) {
+      throw new Error('Invalid partial version encoding. Must be array')
+    } else {
+      const isNotNullIndicator = bytesToInt(values[5][0])
+      if (isNotNullIndicator !== 0 && isNotNullIndicator !== 1) {
+        throw new Error(`Invalid isNullIndicator=${isNotNullIndicator} for version`)
+      }
+      if (isNotNullIndicator === 1) {
+        version = bytesToInt(values[5][1])
+      }
+    }
+
+    return this.fromPartialAccountData({ balance, nonce, storageRoot, codeHash, codeSize, version })
+  }
+
   public static fromValuesArray(values: Uint8Array[]) {
     const [nonce, balance, storageRoot, codeHash] = values
 
@@ -64,33 +269,45 @@ export class Account {
   /**
    * This constructor assigns and validates the values.
    * Use the static factory methods to assist in creating an Account from varying data types.
+   * undefined get assigned with the defaults present, but null args are retained as is
    */
   constructor(
-    nonce = BIGINT_0,
-    balance = BIGINT_0,
-    storageRoot = KECCAK256_RLP,
-    codeHash = KECCAK256_NULL
+    nonce: bigint | null = BIGINT_0,
+    balance: bigint | null = BIGINT_0,
+    storageRoot: Uint8Array | null = KECCAK256_RLP,
+    codeHash: Uint8Array | null = KECCAK256_NULL,
+    codeSize: number | null = null,
+    version: number | null = 0
   ) {
-    this.nonce = nonce
-    this.balance = balance
-    this.storageRoot = storageRoot
-    this.codeHash = codeHash
+    this._nonce = nonce
+    this._balance = balance
+    this._storageRoot = storageRoot
+    this._codeHash = codeHash
+
+    if (codeSize === null && codeHash !== null && !this.isContract()) {
+      codeSize = 0
+    }
+    this._codeSize = codeSize
+    this._version = version
 
     this._validate()
   }
 
   private _validate() {
-    if (this.nonce < BIGINT_0) {
+    if (this._nonce !== null && this._nonce < BIGINT_0) {
       throw new Error('nonce must be greater than zero')
     }
-    if (this.balance < BIGINT_0) {
+    if (this._balance !== null && this._balance < BIGINT_0) {
       throw new Error('balance must be greater than zero')
     }
-    if (this.storageRoot.length !== 32) {
+    if (this._storageRoot !== null && this._storageRoot.length !== 32) {
       throw new Error('storageRoot must have a length of 32')
     }
-    if (this.codeHash.length !== 32) {
+    if (this._codeHash !== null && this._codeHash.length !== 32) {
       throw new Error('codeHash must have a length of 32')
+    }
+    if (this._codeSize !== null && this._codeSize < BIGINT_0) {
+      throw new Error('codeSize must be greater than zero')
     }
   }
 
@@ -111,6 +328,50 @@ export class Account {
    */
   serialize(): Uint8Array {
     return RLP.encode(this.raw())
+  }
+
+  serializeWithPartialInfo(): Uint8Array {
+    const partialData = []
+    const zeroEncoded = intToUnpaddedBytes(0)
+    const oneEncoded = intToUnpaddedBytes(1)
+
+    if (this._nonce !== null) {
+      partialData.push([oneEncoded, bigIntToUnpaddedBytes(this._nonce)])
+    } else {
+      partialData.push([zeroEncoded])
+    }
+
+    if (this._balance !== null) {
+      partialData.push([oneEncoded, bigIntToUnpaddedBytes(this._balance)])
+    } else {
+      partialData.push([zeroEncoded])
+    }
+
+    if (this._storageRoot !== null) {
+      partialData.push([oneEncoded, this._storageRoot])
+    } else {
+      partialData.push([zeroEncoded])
+    }
+
+    if (this._codeHash !== null) {
+      partialData.push([oneEncoded, this._codeHash])
+    } else {
+      partialData.push([zeroEncoded])
+    }
+
+    if (this._codeSize !== null) {
+      partialData.push([oneEncoded, intToUnpaddedBytes(this._codeSize)])
+    } else {
+      partialData.push([zeroEncoded])
+    }
+
+    if (this._version !== null) {
+      partialData.push([oneEncoded, intToUnpaddedBytes(this._version)])
+    } else {
+      partialData.push([zeroEncoded])
+    }
+
+    return RLP.encode(partialData)
   }
 
   /**

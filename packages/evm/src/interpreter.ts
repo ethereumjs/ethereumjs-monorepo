@@ -1,5 +1,4 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
   BIGINT_0,
@@ -25,7 +24,7 @@ import type { Journal } from './journal.js'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.js'
 import type { Block, Blockchain, EVMProfilerOpts, EVMResult, Log } from './types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { AccessWitness } from '@ethereumjs/statemanager'
+import type { AccessWitness, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
 const { debug: createDebugLogger } = debugDefault
 
@@ -270,7 +269,8 @@ export class Interpreter {
       if (
         opCode === 0xfe &&
         this.common.isActivatedEIP(6800) &&
-        this._runState.stateManager instanceof StatelessVerkleStateManager
+        // is this a code loaded from state using witnesses
+        this._runState.env.chargeCodeAccesses === true
       ) {
         const contract = this._runState.interpreter.getAddress()
         if (
@@ -1072,6 +1072,7 @@ export class Interpreter {
       selfdestruct,
       gasRefund: this._runState.gasRefund,
       blobVersionedHashes: this._env.blobVersionedHashes,
+      accessWitness: this._env.accessWitness,
     })
 
     let createdAddresses: Set<string>
