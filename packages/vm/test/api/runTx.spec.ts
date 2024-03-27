@@ -16,10 +16,9 @@ import {
   bytesToHex,
   equalsBytes,
   hexToBytes,
-  initKZG,
   zeros,
 } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../src/vm'
@@ -880,8 +879,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
 
 describe('EIP 4844 transaction tests', () => {
   it('should work', async () => {
-    const kzg = await createKZG()
-    initKZG(kzg)
+    const kzg = await loadKZG()
 
     const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {

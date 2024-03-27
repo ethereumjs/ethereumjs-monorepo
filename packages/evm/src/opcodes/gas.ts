@@ -1,6 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { CODE_SIZE_LEAF_KEY, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import {
+  Account,
   Address,
   BIGINT_0,
   BIGINT_1,
@@ -112,7 +113,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (dataLength !== BIGINT_0) {
           gas += common.param('gasPrices', 'copy') * divCeil(dataLength, BIGINT_32)
 
-          if (common.isActivatedEIP(6800)) {
+          if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
             const contract = runState.interpreter.getAddress()
             let codeEnd = _codeOffset + dataLength
             const codeSize = runState.interpreter.getCodeSize()
@@ -314,7 +315,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // if we deduct extra gas first.
           gas += accessStorageEIP2929(runState, keyBytes, true, common)
         }
-
         if (common.isActivatedEIP(6800) === true) {
           const contract = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
@@ -410,7 +410,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, toAddress.bytes, common)
         }
 
-        if (value !== BIGINT_0) {
+        if (value !== BIGINT_0 && common.isActivatedEIP(6800) === false) {
           gas += common.param('gasPrices', 'callValueTransfer')
         }
 
@@ -586,7 +586,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* AUTH */
       0xf6,
       async function (runState, gas, common): Promise<bigint> {
-        const [_address, memOffset, memLength] = runState.stack.peek(3)
+        const [address, memOffset, memLength] = runState.stack.peek(3)
+        // Note: 2929 is always active if AUTH can be reached,
+        // since it needs London as minimum hardfork
+        gas += accessAddressEIP2929(runState, bigIntToBytes(address), common)
         gas += subMemUsage(runState, memOffset, memLength, common)
         return gas
       },
@@ -599,20 +602,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(ERROR.AUTHCALL_UNSET)
         }
 
-        const [
-          currentGasLimit,
-          addr,
-          value,
-          valueExt,
-          argsOffset,
-          argsLength,
-          retOffset,
-          retLength,
-        ] = runState.stack.peek(8)
-
-        if (valueExt !== BIGINT_0) {
-          trap(ERROR.AUTHCALL_NONZERO_VALUEEXT)
-        }
+        const [currentGasLimit, addr, value, argsOffset, argsLength, retOffset, retLength] =
+          runState.stack.peek(7)
 
         const toAddress = new Address(addresstoBytes(addr))
 
@@ -645,6 +636,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         runState.messageGasLimit = gasLimit
+
+        if (value > BIGINT_0) {
+          const account = (await runState.stateManager.getAccount(runState.auth!)) ?? new Account()
+          if (account.balance < value) {
+            trap(ERROR.OUT_OF_GAS)
+          }
+          account.balance -= value
+
+          const toAddr = new Address(addresstoBytes(addr))
+          const target = (await runState.stateManager.getAccount(toAddr)) ?? new Account()
+          target.balance += value
+
+          await runState.stateManager.putAccount(toAddr, target)
+        }
+
         return gas
       },
     ],

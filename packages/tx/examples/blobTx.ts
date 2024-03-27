@@ -1,11 +1,10 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bytesToHex, initKZG } from '@ethereumjs/util'
-import { createKZG } from 'kzg-wasm'
+import { bytesToHex } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 
 const main = async () => {
-  const kzg = await createKZG()
-  initKZG(kzg)
+  const kzg = await loadKZG()
 
   const common = new Common({
     chain: Chain.Mainnet,

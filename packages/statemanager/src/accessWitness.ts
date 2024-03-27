@@ -19,9 +19,7 @@ export const CODE_SIZE_LEAF_KEY = toBytes(4)
 export const HEADER_STORAGE_OFFSET = 64
 export const CODE_OFFSET = 128
 export const VERKLE_NODE_WIDTH = 256
-// export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
-// incorrect value to match with kaustinen2 offset
-export const MAIN_STORAGE_OFFSET = BigInt(256) * BigInt(2) ** BigInt(31)
+export const MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(31)
 
 const WitnessBranchReadCost = BigInt(1900)
 const WitnessChunkReadCost = BigInt(200)
@@ -31,7 +29,7 @@ const WitnessChunkFillCost = BigInt(6200)
 
 // read is a default access event if stem or chunk is present
 type StemAccessEvent = { write?: boolean }
-// chunk fill access event is not being charged right now in kaustinen2 but will be rectified
+// chunk fill access event is not being charged right now in kaustinen but will be rectified
 // in upcoming iterations
 type ChunkAccessEvent = StemAccessEvent & { fill?: boolean }
 

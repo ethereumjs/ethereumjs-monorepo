@@ -1,7 +1,8 @@
 import { Block } from '@ethereumjs/block'
-import { Common, Hardfork } from '@ethereumjs/common'
+import { Common, Chain as CommonChain, Hardfork } from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, TransactionFactory, TransactionType } from '@ethereumjs/tx'
 import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/chain'
@@ -114,12 +115,13 @@ describe('[EthProtocol]', () => {
 
   it('verify that PooledTransactions handler encodes correctly', async () => {
     const config = new Config({
-      common: new Common({ chain: Config.CHAIN_DEFAULT, hardfork: Hardfork.London }),
       accountCache: 10000,
       storageCache: 1000,
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
+
+    chain.config.chainCommon.setHardfork(Hardfork.London)
     const tx = FeeMarketEIP1559Transaction.fromTxData(
       {
         maxFeePerGas: 10,
@@ -201,11 +203,15 @@ describe('[EthProtocol]', () => {
   })
 
   it('verify that Transactions handler encodes/decodes correctly', async () => {
+    const kzg = await loadKZG()
     const config = new Config({
       common: new Common({
-        chain: Config.CHAIN_DEFAULT,
+        chain: CommonChain.Holesky,
         hardfork: Hardfork.Paris,
         eips: [4895, 4844],
+        customCrypto: {
+          kzg,
+        },
       }),
       accountCache: 10000,
       storageCache: 1000,
@@ -214,9 +220,9 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
-    const legacyTx = TransactionFactory.fromTxData({ type: 0 })
-    const eip2929Tx = TransactionFactory.fromTxData({ type: 1 })
-    const eip1559Tx = TransactionFactory.fromTxData({ type: 2 })
+    const legacyTx = TransactionFactory.fromTxData({ type: 0 }, { common: config.chainCommon })
+    const eip2929Tx = TransactionFactory.fromTxData({ type: 1 }, { common: config.chainCommon })
+    const eip1559Tx = TransactionFactory.fromTxData({ type: 2 }, { common: config.chainCommon })
     const blobTx = TransactionFactory.fromTxData(
       { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes('0x01' + '00'.repeat(31))] },
       { common: config.chainCommon }

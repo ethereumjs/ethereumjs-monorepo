@@ -67,7 +67,7 @@ describe('VM: custom opcodes', () => {
     })
     assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
-    const evmDefault = await EVM.create({})
+    const evmDefault = await EVM.create()
 
     // PUSH 04
     // PUSH 01

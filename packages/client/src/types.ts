@@ -158,6 +158,8 @@ export interface ClientOpts {
   useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
+  startExecutionFrom?: number
+  startExecution?: boolean
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
@@ -168,5 +170,6 @@ export interface ClientOpts {
   statelessVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
+  ignoreStatelessInvalidExecs?: string | boolean
   useJsCrypto?: boolean
 }

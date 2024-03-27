@@ -18,7 +18,7 @@
 
 #### Defined in
 
-[vm/src/buildBlock.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L35)
+[vm/src/buildBlock.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L36)
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 #### Defined in
 
-[vm/src/buildBlock.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L36)
+[vm/src/buildBlock.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L37)
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 #### Defined in
 
-[vm/src/buildBlock.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L34)
+[vm/src/buildBlock.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L35)

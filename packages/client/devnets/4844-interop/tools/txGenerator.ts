@@ -8,12 +8,11 @@ import {
   getBlobs,
   bytesToHex,
   hexToBytes,
-  initKZG,
 } from '@ethereumjs/util'
 
 import { randomBytes } from '@ethereumjs/util'
 import { Client } from 'jayson/promise'
-import { createKZG } from 'kzg-wasm'
+import { loadKZG } from 'kzg-wasm'
 
 // CLI Args
 const clientPort = parseInt(process.argv[2]) // EL client port number
@@ -28,8 +27,7 @@ async function getNonce(client: Client, account: string) {
 }
 
 async function run(data: any) {
-  const kzg = await createKZG()
-  initKZG(kzg)
+  const kzg = await loadKZG()
 
   const common = Common.fromGethGenesis(genesisJson, {
     chain: genesisJson.ChainName ?? 'devnet',
@@ -40,7 +38,7 @@ async function run(data: any) {
   const client = Client.http({ port: clientPort })
 
   const blobs = getBlobs(data)
-  const commitments = blobsToCommitments(blobs)
+  const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = Address.fromPrivateKey(randomBytes(32))

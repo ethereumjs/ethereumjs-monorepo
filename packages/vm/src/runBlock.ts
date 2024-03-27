@@ -1,7 +1,7 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
+import { StatelessVerkleStateManager, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import { TransactionType } from '@ethereumjs/tx'
 import {
@@ -132,7 +132,12 @@ export async function runBlock(this: VM, opts: RunBlockOpts): Promise<RunBlockRe
     if (this.DEBUG) {
       debug(`Initializing StatelessVerkleStateManager executionWitness`)
     }
+    if (clearCache) {
+      ;(this._opts.stateManager as StatelessVerkleStateManager).clearCaches()
+    }
+
     ;(this._opts.stateManager as StatelessVerkleStateManager).initVerkleExecutionWitness(
+      block.header.number,
       block.executionWitness
     )
   } else {
@@ -436,28 +441,40 @@ export async function accumulateParentBlockHash(
   const historyAddress = Address.fromString(
     bigIntToHex(this.common.param('vm', 'historyStorageAddress'))
   )
+  const historyServeWindow = this.common.param('vm', 'historyServeWindow')
+
+  // Is this the fork block?
+  const forkTime = this.common.eipTimestamp(2935)
+  if (forkTime === null) {
+    throw new Error('EIP 2935 should be activated by timestamp')
+  }
 
   if ((await this.stateManager.getAccount(historyAddress)) === undefined) {
     await this.evm.journal.putAccount(historyAddress, new Account())
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
-    const key = setLengthLeft(bigIntToBytes(number), 32)
+    // generate access witness
+    if (vm.common.isActivatedEIP(6800) === true) {
+      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+      // just create access witnesses without charging for the gas
+      ;(
+        vm.stateManager as StatelessVerkleStateManager
+      ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
+    }
+    // ringKey is the key the hash is actually put in (it is a ring buffer)
+    const ringKey = number % historyServeWindow
+    const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }
   await putBlockHash(this, parentHash, currentBlockNumber - BIGINT_1)
 
-  // Check if we are on the fork block
-  const forkTime = this.common.eipTimestamp(2935)
-  if (forkTime === null) {
-    throw new Error('EIP 2935 should be activated by timestamp')
-  }
   const parentBlock = await this.blockchain.getBlock(parentHash)
 
+  // If on the fork block, store the old block hashes as well
   if (parentBlock.header.timestamp < forkTime) {
     let ancestor = parentBlock
-    const range = this.common.param('vm', 'minHistoryServeWindow')
-    for (let i = 0; i < Number(range) - 1; i++) {
+    for (let i = 0; i < Number(historyServeWindow) - 1; i++) {
       if (ancestor.header.number === BIGINT_0) {
         break
       }

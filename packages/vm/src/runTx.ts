@@ -7,11 +7,9 @@ import {
   Address,
   BIGINT_0,
   KECCAK256_NULL,
-  bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
-  generateAddress,
   hexToBytes,
   short,
 } from '@ethereumjs/util'
@@ -221,7 +219,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
   }
-  let txAccesses = stateAccesses?.shallowCopy()
+  const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -347,7 +345,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Check balance against upfront tx cost
-  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas) + upfrontAwGas
+  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
   if (balance < upFrontCost) {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
