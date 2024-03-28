@@ -458,7 +458,7 @@ export async function accumulateParentBlockHash(
     if (vm.common.isActivatedEIP(6800) === true) {
       const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
       // just create access witnesses without charging for the gas
-      ;(
+      await (
         vm.stateManager as StatelessVerkleStateManager
       ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
     }
@@ -681,7 +681,7 @@ export async function rewardAccount(
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     if (common?.isActivatedEIP(6800) === true) {
-      ;(
+      await (
         evm.stateManager as StatelessVerkleStateManager
       ).accessWitness!.touchAndChargeProofOfAbsence(address)
     }
@@ -692,10 +692,9 @@ export async function rewardAccount(
 
   if (common?.isActivatedEIP(6800) === true) {
     // use this utility to build access but the computed gas is not charged and hence free
-    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
-      address,
-      { sendsValue: true }
-    )
+    await (
+      evm.stateManager as StatelessVerkleStateManager
+    ).accessWitness!.touchTxExistingAndComputeGas(address, { sendsValue: true })
   }
   return account
 }

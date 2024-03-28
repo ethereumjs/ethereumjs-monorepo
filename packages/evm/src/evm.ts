@@ -254,10 +254,6 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
 
     if (this.common.isActivatedEIP(6800)) {
-      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(
-        message.authcallOrigin ?? message.caller
-      )
-
       if (message.depth === 0) {
         const originAccessGas = await message.accessWitness!.touchTxOriginAndComputeGas(
           message.authcallOrigin ?? message.caller
@@ -291,11 +287,6 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      const sendsValue = message.value !== BIGINT_0
-      const destAccessGas = message.accessWitness!.touchTxExistingAndComputeGas(message.to, {
-        sendsValue,
-      })
-
       if (message.depth === 0) {
         const sendsValue = message.value !== BIGINT_0
         const destAccessGas = await message.accessWitness!.touchTxExistingAndComputeGas(
