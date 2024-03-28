@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "lru-cache": "10.1.0",
-    "verkle-cryptography-wasm": "^0.2.1",
+    "verkle-cryptography-wasm": "github:ethereumjs/verkle-cryptography-wasm#5e4ca7122dd6f4673aeb955ab9da6e58ecf31bd8",
     "@ethereumjs/rlp": "^5.0.2",
     "@ethereumjs/util": "^9.0.3"
   },

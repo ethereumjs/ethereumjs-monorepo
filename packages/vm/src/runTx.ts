@@ -7,9 +7,11 @@ import {
   Address,
   BIGINT_0,
   KECCAK256_NULL,
+  bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
+  generateAddress,
   hexToBytes,
   short,
 } from '@ethereumjs/util'
@@ -219,7 +221,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
   }
-  const txAccesses = stateAccesses?.shallowCopy()
+  let txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 

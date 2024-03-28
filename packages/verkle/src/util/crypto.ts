@@ -6,7 +6,8 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { Context, getTreeKey, initVerkleWasm } from 'verkle-cryptography-wasm'
+
+import type { VerkleCrypto } from 'verkle-cryptography-wasm'
 
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
@@ -16,6 +17,7 @@ import { Context, getTreeKey, initVerkleWasm } from 'verkle-cryptography-wasm'
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
 export async function getStem(
+  ffi: VerkleCrypto,
   address: Address,
   treeIndex: number | bigint = 0
 ): Promise<Uint8Array> {
@@ -28,10 +30,7 @@ export async function getStem(
     treeIndexBytes = setLengthRight(bigIntToBytes(BigInt(treeIndex), true).slice(0, 32), 32)
   }
 
-  await initVerkleWasm()
-  const verkleFFI = new Context()
-
-  const treeStem = getTreeKey(verkleFFI, address32, treeIndexBytes, 0).slice(0, 31)
+  const treeStem = ffi.getTreeKey(address32, treeIndexBytes, 0).slice(0, 31)
 
   return treeStem
 }

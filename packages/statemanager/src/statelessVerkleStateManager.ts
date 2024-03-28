@@ -43,6 +43,7 @@ import type {
   StorageRange,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleCrypto } from '@ethereumjs/verkle'
 
 const { debug: createDebugLogger } = debugDefault
 
@@ -111,6 +112,7 @@ export interface StatelessVerkleStateManagerOpts {
   storageCacheOpts?: CacheOptions
   codeCacheOpts?: CacheOptions
   accesses?: AccessWitness
+  verkleCrypto?: VerkleCrypto
 }
 
 const PUSH_OFFSET = 95
@@ -139,6 +141,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   originalStorageCache: OriginalStorageCache
 
+  verkleCrypto: VerkleCrypto
   protected readonly _accountCacheSettings: CacheSettings
   protected readonly _storageCacheSettings: CacheSettings
   protected readonly _codeCacheSettings: CacheSettings
@@ -219,23 +222,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
 
+    if (opts.verkleCrypto === undefined) {
+      throw new Error('verkle crypto required')
+    }
+    this.verkleCrypto = opts.verkleCrypto
+
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-
-    /*
-     * For a custom StateManager implementation adopt these
-     * callbacks passed to the `Cache` instantiated to perform
-     * the `get`, `put` and `delete` operations with the
-     * desired backend.
-     */
-    // const getCb: get = async (address) => {
-    //   return undefined
-    // }
-    // const putCb: put = async (keyBuf, accountRlp) => {}
-    // const deleteCb = async (keyBuf: Uint8Array) => {}
-    // this._cache = new Cache({ get, putCb, deleteCb })
   }
 
   async getTransitionStateRoot(_: DefaultStateManager, __: Uint8Array): Promise<Uint8Array> {
@@ -255,7 +250,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     this._executionWitness = executionWitness
-    this.accessWitness = accessWitness ?? new AccessWitness()
+    this.accessWitness = accessWitness ?? new AccessWitness({ verkleCrypto: this.verkleCrypto })
 
     this._proof = executionWitness.verkleProof as unknown as Uint8Array
 
@@ -325,7 +320,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   async getTreeKeyForCodeChunk(address: Address, chunkId: number) {
     const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-    return getKey(await getStem(address, treeIndex), toBytes(subIndex))
+    return getKey(await getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
   }
 
   chunkifyCode(code: Uint8Array) {
@@ -341,7 +336,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
     const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
-    return getKey(await getStem(address, treeIndex), toBytes(subIndex))
+    return getKey(await getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
   }
 
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
@@ -356,7 +351,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * checkpoints were reverted.
    */
   shallowCopy(): EVMStateManagerInterface {
-    const stateManager = new StatelessVerkleStateManager()
+    const stateManager = new StatelessVerkleStateManager({ verkleCrypto: this.verkleCrypto })
     stateManager.initVerkleExecutionWitness(this._blockNum, this._executionWitness!)
     return stateManager
   }
@@ -412,11 +407,13 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     // Get the contract code size
-    const codeSizeKey = this.getTreeKeyForCodeSize(await getStem(address, 0))
+    const codeSizeKey = this.getTreeKeyForCodeSize(await getStem(this.verkleCrypto, address, 0))
     const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
     const codeSize = bytesToInt32(codeSizeLE, true)
     // allocate the code and copy onto it from the available witness chunks
-    const codeSize = account.codeSize
+
+    // TODO: do we need this second declaration of codesize?
+    //const codeSize = account.codeSize
     const accessedCode = new Uint8Array(codeSize)
 
     const chunks = Math.floor(bytesToInt32(codeSizeLE, true) / 31)
@@ -522,7 +519,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const stem = await getStem(address, 0)
+    const stem = await getStem(this.verkleCrypto, address, 0)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
@@ -541,7 +538,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const stem = await getStem(address, 0)
+    const stem = await getStem(this.verkleCrypto, address, 0)
     const versionKey = this.getTreeKeyForVersion(stem)
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
@@ -628,7 +625,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     if (this._accountCacheSettings.deactivate) {
-      const stem = await getStem(address, 0)
+      const stem = await getStem(this.verkleCrypto, address, 0)
       const balanceKey = this.getTreeKeyForBalance(stem)
       const nonceKey = this.getTreeKeyForNonce(stem)
       const codeHashKey = this.getTreeKeyForCodeHash(stem)

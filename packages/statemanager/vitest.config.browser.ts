@@ -8,7 +8,7 @@ export default defineConfig({
     exclude: [
       ...configDefaults.exclude,
       // Importing pedersenHash through wasm failed.
-      'test/statelessVerkleStateManager.spec.ts',
+      //     'test/statelessVerkleStateManager.spec.ts',
       // Importing a module script failed.
       'test/rpcStateManager.spec.ts',
     ],
