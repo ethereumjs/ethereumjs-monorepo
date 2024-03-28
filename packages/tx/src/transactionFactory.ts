@@ -3,14 +3,16 @@ import { fetchFromProvider, getProvider } from '@ethereumjs/util'
 import { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 import { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import { BlobEIP4844Transaction } from './eip4844Transaction.js'
+import { DelegateEIP5806Transaction } from './eip5806Transaction.js'
 import { normalizeTxParams } from './fromRpc.js'
 import { LegacyTransaction } from './legacyTransaction.js'
 import {
   TransactionType,
-  isAccessListEIP2930TxData,
-  isBlobEIP4844TxData,
-  isFeeMarketEIP1559TxData,
   isLegacyTxData,
+  isAccessListEIP2930TxData,
+  isFeeMarketEIP1559TxData,
+  isBlobEIP4844TxData,
+  isDelegateEIP5806TxData,
 } from './types.js'
 
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.js'
@@ -42,6 +44,8 @@ export class TransactionFactory {
         return FeeMarketEIP1559Transaction.fromTxData(txData, txOptions) as Transaction[T]
       } else if (isBlobEIP4844TxData(txData)) {
         return BlobEIP4844Transaction.fromTxData(txData, txOptions) as Transaction[T]
+      } else if (isDelegateEIP5806TxData(txData)) {
+        return DelegateEIP5806Transaction.fromTxData(txData, txOptions) as Transaction[T]
       } else {
         throw new Error(`Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`)
       }
@@ -67,6 +71,8 @@ export class TransactionFactory {
           return FeeMarketEIP1559Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         case TransactionType.BlobEIP4844:
           return BlobEIP4844Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
+        case TransactionType.DelegateEIP5806:
+          return DelegateEIP5806Transaction.fromSerializedTx(data, txOptions) as Transaction[T]
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }

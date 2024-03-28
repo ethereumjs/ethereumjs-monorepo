@@ -89,6 +89,7 @@ export class EVM implements EVMInterface {
   protected _tx?: {
     gasPrice: bigint
     origin: Address
+    isEIP5806: boolean
   }
   protected _block?: Block
 
@@ -193,7 +194,7 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       1153, 1559, 2315, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
-      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
+      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 5806, 6780, 6800, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -771,6 +772,7 @@ export class EVM implements EVMInterface {
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
       createdAddresses: message.createdAddresses,
+      isEIP5806: this._tx!.isEIP5806,
     }
 
     const interpreter = new Interpreter(
@@ -846,6 +848,7 @@ export class EVM implements EVMInterface {
       this._tx = {
         gasPrice: opts.gasPrice ?? BIGINT_0,
         origin: opts.origin ?? opts.caller ?? Address.zero(),
+        isEIP5806: opts.isEIP5806 ?? false,
       }
       const caller = opts.caller ?? Address.zero()
 
@@ -869,6 +872,7 @@ export class EVM implements EVMInterface {
         value,
         data: opts.data,
         code: opts.code,
+        codeAddress: opts.codeAddress,
         depth: opts.depth,
         isCompiled: opts.isCompiled,
         isStatic: opts.isStatic,
@@ -984,6 +988,7 @@ export class EVM implements EVMInterface {
     this._tx = {
       gasPrice: opts.gasPrice ?? BIGINT_0,
       origin: opts.origin ?? opts.caller ?? Address.zero(),
+      isEIP5806: false,
     }
 
     const message = new Message({

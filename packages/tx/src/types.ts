@@ -3,6 +3,7 @@ import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 import type { FeeMarketEIP1559Transaction } from './eip1559Transaction.js'
 import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
+import type { DelegateEIP5806Transaction } from './eip5806Transaction.js'
 import type { LegacyTransaction } from './legacyTransaction.js'
 import type { AccessList, AccessListBytes, Common, Hardfork } from '@ethereumjs/common'
 import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
@@ -41,6 +42,12 @@ export enum Capability {
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
   EIP2930AccessLists = 2930,
+
+  /**
+   * Tx supprts ERIP-5806 delegate-call logic
+   * See: [5806](https://eips.ethereum.org/EIPS/eip-5806) Delegate transaction EIP
+   */
+  EIP5806Delegate = 5806,
 }
 
 /**
@@ -110,13 +117,15 @@ export enum TransactionType {
   AccessListEIP2930 = 1,
   FeeMarketEIP1559 = 2,
   BlobEIP4844 = 3,
+  DelegateEIP5806 = 4,
 }
 
 export interface Transaction {
   [TransactionType.Legacy]: LegacyTransaction
-  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559Transaction
   [TransactionType.AccessListEIP2930]: AccessListEIP2930Transaction
+  [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559Transaction
   [TransactionType.BlobEIP4844]: BlobEIP4844Transaction
+  [TransactionType.DelegateEIP5806]: DelegateEIP5806Transaction
 }
 
 export type TypedTransaction = Transaction[TransactionType]
@@ -135,6 +144,10 @@ export function isFeeMarketEIP1559Tx(tx: TypedTransaction): tx is FeeMarketEIP15
 
 export function isBlobEIP4844Tx(tx: TypedTransaction): tx is BlobEIP4844Transaction {
   return tx.type === TransactionType.BlobEIP4844
+}
+
+export function isDelegateEIP5806Tx(tx: TypedTransaction): tx is DelegateEIP5806Transaction {
+  return tx.type === TransactionType.DelegateEIP5806
 }
 
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
@@ -203,11 +216,17 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
   numBlobs(): number
 }
 
+export interface EIP5806CompatibleTx<T extends TransactionType = TransactionType>
+  extends EIP1559CompatibleTx<T> {
+  readonly value: 0n
+}
+
 export interface TxData {
   [TransactionType.Legacy]: LegacyTxData
   [TransactionType.AccessListEIP2930]: AccessListEIP2930TxData
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxData
   [TransactionType.BlobEIP4844]: BlobEIP4844TxData
+  [TransactionType.DelegateEIP5806]: DelegateEIP5806TxData
 }
 
 export type TypedTxData = TxData[TransactionType]
@@ -230,6 +249,11 @@ export function isFeeMarketEIP1559TxData(txData: TypedTxData): txData is FeeMark
 export function isBlobEIP4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.BlobEIP4844
+}
+
+export function isDelegateEIP5806TxData(txData: TypedTxData): txData is DelegateEIP5806TxData {
+  const txType = Number(bytesToBigInt(toBytes(txData.type)))
+  return txType === TransactionType.DelegateEIP5806
 }
 
 /**
@@ -352,11 +376,22 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   blobsData?: string[]
 }
 
+/**
+ * {@link DelegateEIP5806Transaction} data.
+ */
+export interface DelegateEIP5806TxData extends FeeMarketEIP1559TxData {
+  /**
+   * EIP-5806 Delegate transaction don't support value
+   */
+  value: 0n
+}
+
 export interface TxValuesArray {
   [TransactionType.Legacy]: LegacyTxValuesArray
   [TransactionType.AccessListEIP2930]: AccessListEIP2930TxValuesArray
   [TransactionType.FeeMarketEIP1559]: FeeMarketEIP1559TxValuesArray
   [TransactionType.BlobEIP4844]: BlobEIP4844TxValuesArray
+  [TransactionType.DelegateEIP5806]: DelegateEIP5806TxValuesArray
 }
 
 /**
@@ -424,6 +459,23 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
   Uint8Array[],
   Uint8Array[]
+]
+
+/**
+ * Bytes values array for a {@link DelegateEIP5806Transaction}
+ */
+type DelegateEIP5806TxValuesArray = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  AccessListBytes,
+  Uint8Array?,
+  Uint8Array?,
+  Uint8Array?
 ]
 
 type JsonAccessListItem = { address: string; storageKeys: string[] }

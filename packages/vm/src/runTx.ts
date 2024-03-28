@@ -1,7 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { BlobEIP4844Transaction, Capability, isBlobEIP4844Tx } from '@ethereumjs/tx'
+import {
+  BlobEIP4844Transaction,
+  Capability,
+  isBlobEIP4844Tx,
+  isDelegateEIP5806Tx,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -145,7 +150,7 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (this.common.isActivatedEIP(2930) === false) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
-        'Cannot run transaction: EIP 2930 is not activated.',
+        'Cannot run transaction: EIP-2930 is not activated.',
         this,
         opts.block,
         opts.tx
@@ -158,7 +163,20 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     ) {
       await this.evm.journal.revert()
       const msg = _errorMsg(
-        'Cannot run transaction: EIP 1559 is not activated.',
+        'Cannot run transaction: EIP-1559 is not activated.',
+        this,
+        opts.block,
+        opts.tx
+      )
+      throw new Error(msg)
+    }
+    if (
+      opts.tx.supports(Capability.EIP5806Delegate) &&
+      this.common.isActivatedEIP(5806) === false
+    ) {
+      await this.evm.journal.revert()
+      const msg = _errorMsg(
+        'Cannot run transaction: EIP-5806 is not activated.',
         this,
         opts.block,
         opts.tx
@@ -463,6 +481,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
    * Execute message
    */
   const { value, data, to } = tx
+  const isEIP5806 = isDelegateEIP5806Tx(tx)
 
   if (this.DEBUG) {
     debug(
@@ -479,11 +498,13 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice,
     caller,
     gasLimit,
-    to,
+    to: isEIP5806 ? caller : to,
+    codeAddress: isEIP5806 ? to : undefined,
     value,
     data,
     blobVersionedHashes,
     accessWitness: txAccesses,
+    isEIP5806,
   })) as RunTxResult
 
   if (this.common.isActivatedEIP(6800)) {
