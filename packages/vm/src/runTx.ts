@@ -7,9 +7,11 @@ import {
   Address,
   BIGINT_0,
   KECCAK256_NULL,
+  bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
+  generateAddress,
   hexToBytes,
   short,
 } from '@ethereumjs/util'
@@ -219,7 +221,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
   }
-  const txAccesses = stateAccesses?.shallowCopy()
+  let txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -321,6 +323,27 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   ) {
     const msg = _errorMsg('invalid sender address, address is not EOA (EIP-3607)', this, block, tx)
     throw new Error(msg)
+  }
+
+  let upfrontAwGas = BIGINT_0
+  if (this.common.isActivatedEIP(6800)) {
+    upfrontAwGas += await txAccesses!.touchTxOriginAndComputeGas(caller)
+    const sendsValue = tx.value !== BIGINT_0
+    if (tx.to !== undefined) {
+      upfrontAwGas += await txAccesses!.touchTxExistingAndComputeGas(tx.to, { sendsValue })
+      debug(`Sender upfront awGas requirement for non contract creation tx is ${upfrontAwGas}`)
+    } else {
+      const contractTo = new Address(generateAddress(caller.bytes, bigIntToBytes(nonce)))
+      upfrontAwGas += await txAccesses!.touchAndChargeContractCreateInit(contractTo, { sendsValue })
+      debug(
+        `Sender upfront awGas requirement is contract creation at=${short(
+          contractTo.bytes
+        )} is ${upfrontAwGas}`
+      )
+    }
+
+    // reset txAccesses to remove the caches so that access gas can be correctly consumed inside the evm run
+    txAccesses = stateAccesses?.shallowCopy()
   }
 
   // Check balance against upfront tx cost
@@ -577,7 +600,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (this.common.isActivatedEIP(6800)) {
-      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
+      await (state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(
+        miner
+      )
     }
     minerAccount = new Account()
   }
@@ -590,9 +615,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this.common.isActivatedEIP(6800)) {
     // use this utility to build access but the computed gas is not charged and hence free
-    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(miner, {
-      sendsValue: true,
-    })
+    await (state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
+      miner,
+      {
+        sendsValue: true,
+      }
+    )
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that

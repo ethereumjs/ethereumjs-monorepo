@@ -259,8 +259,9 @@ export class EVM implements EVMInterface {
       )
 
       if (message.depth === 0) {
-        debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
-      } else {
+        const originAccessGas = await message.accessWitness!.touchTxOriginAndComputeGas(
+          message.authcallOrigin ?? message.caller
+        )
         gasLimit -= originAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -296,8 +297,13 @@ export class EVM implements EVMInterface {
       })
 
       if (message.depth === 0) {
-        debugGas(`destAccessGas=${destAccessGas} waived off for target at depth=0`)
-      } else {
+        const sendsValue = message.value !== BIGINT_0
+        const destAccessGas = await message.accessWitness!.touchTxExistingAndComputeGas(
+          message.to,
+          {
+            sendsValue,
+          }
+        )
         gasLimit -= destAccessGas
         if (gasLimit < BIGINT_0) {
           if (this.DEBUG) {
@@ -316,7 +322,7 @@ export class EVM implements EVMInterface {
     let toAccount = await this.stateManager.getAccount(message.to)
     if (!toAccount) {
       if (this.common.isActivatedEIP(6800)) {
-        const absenceProofAccessGas = message.accessWitness!.touchAndChargeProofOfAbsence(
+        const absenceProofAccessGas = await message.accessWitness!.touchAndChargeProofOfAbsence(
           message.to
         )
         gasLimit -= absenceProofAccessGas
@@ -415,10 +421,15 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
 
     if (this.common.isActivatedEIP(6800)) {
-      const originAccessGas = message.accessWitness!.touchTxOriginAndComputeGas(message.caller)
-
-      if (message.depth === 0) {
-        debugGas(`originAccessGas=${originAccessGas} waived off for origin at depth=0`)
+      const originAccessGas = await message.accessWitness!.touchTxOriginAndComputeGas(
+        message.caller
+      )
+      gasLimit -= originAccessGas
+      if (gasLimit < BIGINT_0) {
+        if (this.DEBUG) {
+          debugGas(`Origin access charged(${originAccessGas}) caused OOG (-> ${gasLimit})`)
+        }
+        return { execResult: OOGResult(message.gasLimit) }
       } else {
         gasLimit -= originAccessGas
         if (gasLimit < BIGINT_0) {
@@ -474,9 +485,8 @@ export class EVM implements EVMInterface {
     }
 
     if (this.common.isActivatedEIP(6800)) {
-      // no extra charge if it sends value
-      const sendsValue = false // message.value !== BIGINT_0
-      const contractCreateAccessGas = message.accessWitness!.touchAndChargeContractCreateInit(
+      const sendsValue = message.value !== BIGINT_0
+      const contractCreateAccessGas = await message.accessWitness!.touchAndChargeContractCreateInit(
         message.to,
         { sendsValue }
       )
@@ -671,9 +681,8 @@ export class EVM implements EVMInterface {
     // get the fresh gas limit for the rest of the ops
     gasLimit = message.gasLimit - result.executionGasUsed
     if (!result.exceptionError && this.common.isActivatedEIP(6800)) {
-      const createCompleteAccessGas = message.accessWitness!.touchAndChargeContractCreateCompleted(
-        message.to
-      )
+      const createCompleteAccessGas =
+        await message.accessWitness!.touchAndChargeContractCreateCompleted(message.to)
       gasLimit -= createCompleteAccessGas
       if (gasLimit < BIGINT_0) {
         if (this.DEBUG) {
@@ -699,7 +708,7 @@ export class EVM implements EVMInterface {
       // Add access charges for writing this code to the state
       if (this.common.isActivatedEIP(6800)) {
         const byteCodeWriteAccessfee =
-          message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
+          await message.accessWitness!.touchCodeChunksRangeOnWriteAndChargeGas(
             message.to,
             0,
             result.returnValue.length - 1

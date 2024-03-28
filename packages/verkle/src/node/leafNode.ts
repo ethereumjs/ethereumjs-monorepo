@@ -38,14 +38,14 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
 
     const stem = rawNode[1]
     // TODO: Convert the rawNode commitments to points
-    const commitment = rawNode[2] as unknown as Point
+    const commitment = rawNode[2]
     const c1 = rawNode[3] as unknown as Point
     const c2 = rawNode[4] as unknown as Point
     const values = rawNode.slice(5, rawNode.length)
 
     return new LeafNode({ depth, stem, values, c1, c2, commitment })
   }
-  commit(): Point {
+  commit(): Uint8Array {
     throw new Error('Not implemented')
   }
 
@@ -72,7 +72,7 @@ export class LeafNode extends BaseVerkleNode<VerkleNodeType.Leaf> {
     return [
       new Uint8Array([VerkleNodeType.Leaf]),
       this.stem,
-      this.commitment.bytes(),
+      this.commitment,
       this.c1.bytes(),
       this.c2.bytes(),
       ...this.values,
