@@ -631,7 +631,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (common.isActivatedEIP(6800) === true) {
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
           // just create access witnesses without charging for the gas
-          runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          await runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
             treeIndex,
             subIndex
