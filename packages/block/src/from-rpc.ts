@@ -55,7 +55,14 @@ export function blockFromRpc(
   const uncleHeaders = uncles.map((uh) => blockHeaderFromRpc(uh, options))
 
   return Block.fromBlockData(
-    { header, transactions, uncleHeaders, withdrawals: blockParams.withdrawals },
+    {
+      header,
+      transactions,
+      uncleHeaders,
+      withdrawals: blockParams.withdrawals,
+      deposits: blockParams.deposits,
+      exits: blockParams.exits,
+    },
     options
   )
 }

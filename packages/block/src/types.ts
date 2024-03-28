@@ -7,7 +7,10 @@ import type {
   BytesLike,
   DepositBytes,
   DepositData,
+  ExitBytes,
+  ExitData,
   JsonRpcDeposit,
+  JsonRpcExit,
   JsonRpcWithdrawal,
   PrefixedHexString,
   WithdrawalBytes,
@@ -140,6 +143,7 @@ export interface HeaderData {
   blobGasUsed?: BigIntLike
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
+  exitsRoot?: BytesLike
 }
 
 /**
@@ -161,10 +165,15 @@ export interface BlockData {
    * EIP-6100: Deposits in EL (experimental)
    */
   deposits?: Array<DepositData>
+  /**
+   * EIP-7002: Exits in EL (experimental)
+   */
+  exits?: Array<ExitData>
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
 export type DepositsBytes = DepositBytes[]
+export type ExitsBytes = ExitBytes[]
 export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
@@ -175,7 +184,18 @@ export type BlockBytes =
       TransactionsBytes,
       UncleHeadersBytes,
       WithdrawalsBytes,
-      ExecutionWitnessBytes
+      DepositsBytes,
+      ExitsBytes
+      // The type here is the BlockBytes without 6800, but with 6110 + 7002
+    ]
+  | [
+      BlockHeaderBytes,
+      TransactionsBytes,
+      UncleHeadersBytes,
+      WithdrawalsBytes,
+      DepositsBytes,
+      ExitBytes,
+      ExecutionWitnessBytes // This includes 6800 with 6110 + 7002
     ]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes, DepositsBytes]
   | [
@@ -183,8 +203,7 @@ export type BlockBytes =
       TransactionsBytes,
       UncleHeadersBytes,
       WithdrawalsBytes,
-      DepositsBytes,
-      ExecutionWitnessBytes
+      ExecutionWitnessBytes // This only includes 6800 sso without 6110 + 7002
     ]
 
 /**
@@ -215,6 +234,7 @@ export interface JsonBlock {
   uncleHeaders?: JsonHeader[]
   withdrawals?: JsonRpcWithdrawal[]
   deposits?: JsonRpcDeposit[]
+  exits?: JsonRpcExit[]
   executionWitness?: VerkleExecutionWitness | null
 }
 
@@ -243,6 +263,7 @@ export interface JsonHeader {
   blobGasUsed?: string
   excessBlobGas?: string
   parentBeaconBlockRoot?: string
+  exitsRoot?: string
 }
 
 /*
@@ -274,6 +295,8 @@ export interface JsonRpcBlock {
   withdrawalsRoot?: string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
   deposits?: Array<JsonRpcDeposit> // If EIP-6110 is enabled for this block, array of deposits
   depositsRoot?: string // If EIP-6110 is enabled for this block, the root of the deposit trie of the block.
+  exits?: Array<JsonRpcExit> // If EIP-7002 is enabled for this block, array of exits
+  exitsRoot?: string // If EIP-7002 is enabled for this block, the root of the exits trie of the block.
   blobGasUsed?: string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: string // If EIP-4788 is enabled for this block, returns parent beacon block root
