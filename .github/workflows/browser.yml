@@ -34,9 +34,6 @@ jobs:
       - run: npm ci
       - run: npm run install-browser-deps
 
-      #     Install playwright dependencies
-      - run: npx playwright install-deps
-
       - run: npm run test:browser -w=@ethereumjs/rlp
       - run: npm run test:browser -w=@ethereumjs/util
       - run: npm run test:browser -w=@ethereumjs/common
