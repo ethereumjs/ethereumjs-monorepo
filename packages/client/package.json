@@ -89,7 +89,6 @@
     "memory-level": "^1.0.0",
     "multiaddr": "^10.0.1",
     "qheap": "^1.4.0",
-    "verkle-cryptography-wasm": "0.3.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
     "yargs": "^17.7.1"
