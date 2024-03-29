@@ -31,14 +31,14 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   const block = Block.fromBlockData(verkleBlockJSON, { common })
 
   it('initPreState()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ verkleCrypto })
+    const stateManager = await StatelessVerkleStateManager.create({ verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     assert.ok(Object.keys(stateManager['_state']).length !== 0, 'should initialize with state')
   })
 
   it('getAccount()', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
@@ -56,7 +56,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('put/delete/modify account', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = new Address(randomBytes(20))
@@ -102,11 +102,11 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
 
   it('getTreeKeyFor* functions', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
-    const stem = await getStem(verkleCrypto, address, 0)
+    const stem = await getStem(stateManager.verkleCrypto, address, 0)
 
     const balanceKey = stateManager.getTreeKeyForBalance(stem)
     const nonceKey = stateManager.getTreeKeyForNonce(stem)
@@ -160,7 +160,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
 
   // TODO contract storage functions not yet completely implemented
   test.skip('get/put/clear contract storage', async () => {
-    const stateManager = new StatelessVerkleStateManager({ common, verkleCrypto })
+    const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const contractAddress = Address.fromString('0x4242424242424242424242424242424242424242')

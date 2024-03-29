@@ -15,6 +15,7 @@ import {
 import { getKey, getStem } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import {
   AccessWitness,
@@ -174,6 +175,17 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   private keccakFunction: Function
 
+  /**
+   * Async static constructor for StatelessVerkleStateManager
+   * @param opts `StatelessVerkleStateManagerOpts`
+   * @returns a StatelessVerkleStateManager with initialized Verkle Crypto
+   */
+  static create = async (opts: StatelessVerkleStateManagerOpts = {}) => {
+    if (opts.verkleCrypto === undefined) {
+      opts.verkleCrypto = await loadVerkleCrypto()
+    }
+    return new StatelessVerkleStateManager(opts)
+  }
   /**
    * Instantiate the StateManager interface.
    */
