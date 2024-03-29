@@ -43,6 +43,7 @@ to fetch data requested by the the VM.
 - [flush](StatelessVerkleStateManager.md#flush)
 - [generateCanonicalGenesis](StatelessVerkleStateManager.md#generatecanonicalgenesis)
 - [getAccount](StatelessVerkleStateManager.md#getaccount)
+- [getAppliedKey](StatelessVerkleStateManager.md#getappliedkey)
 - [getComputedValue](StatelessVerkleStateManager.md#getcomputedvalue)
 - [getContractCode](StatelessVerkleStateManager.md#getcontractcode)
 - [getContractStorage](StatelessVerkleStateManager.md#getcontractstorage)
@@ -411,6 +412,30 @@ EVMStateManagerInterface.getAccount
 #### Defined in
 
 [statelessVerkleStateManager.ts:505](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L505)
+
+___
+
+### getAppliedKey
+
+▸ **getAppliedKey**(`_`): `Uint8Array`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `_` | `Uint8Array` |
+
+#### Returns
+
+`Uint8Array`
+
+#### Implementation of
+
+EVMStateManagerInterface.getAppliedKey
+
+#### Defined in
+
+[statelessVerkleStateManager.ts:891](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statelessVerkleStateManager.ts#L891)
 
 ___
 

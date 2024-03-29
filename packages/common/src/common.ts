@@ -157,8 +157,7 @@ export class Common {
             chainId: 69,
             networkId: 69,
           },
-          // Optimism has not implemented the London hardfork yet (targeting Q1.22)
-          { hardfork: Hardfork.Berlin, ...opts }
+          opts
         )
       }
 
@@ -243,7 +242,8 @@ export class Common {
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name as HardforkSpecKeys,
-      HARDFORK_SPECS[hf.name as HardforkSpecKeys],
+      HARDFORK_SPECS[hf.name] ??
+        (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
     ])
     this._hardfork = this.DEFAULT_HARDFORK
     if (opts.hardfork !== undefined) {
@@ -327,11 +327,9 @@ export class Common {
    * @returns The name of the HF
    */
   getHardforkBy(opts: HardforkByOpts): string {
-    let { blockNumber, timestamp, td } = opts
-
-    blockNumber = toType(blockNumber, TypeOutput.BigInt)
-    td = toType(td, TypeOutput.BigInt)
-    timestamp = toType(timestamp, TypeOutput.BigInt)
+    const blockNumber: bigint | undefined = toType(opts.blockNumber, TypeOutput.BigInt)
+    const td: bigint | undefined = toType(opts.td, TypeOutput.BigInt)
+    const timestamp: bigint | undefined = toType(opts.timestamp, TypeOutput.BigInt)
 
     // Filter out hardforks with no block number, no ttd or no timestamp (i.e. unapplied hardforks)
     const hfs = this.hardforks().filter(
@@ -352,10 +350,8 @@ export class Common {
     // discovering/checking number hardforks.
     let hfIndex = hfs.findIndex(
       (hf) =>
-        (blockNumber !== undefined &&
-          hf.block !== null &&
-          BigInt(hf.block) > (blockNumber as bigint)) ||
-        (timestamp !== undefined && hf.timestamp !== undefined && hf.timestamp > timestamp)
+        (blockNumber !== undefined && hf.block !== null && BigInt(hf.block) > blockNumber) ||
+        (timestamp !== undefined && hf.timestamp !== undefined && BigInt(hf.timestamp) > timestamp)
     )
 
     if (hfIndex === -1) {
@@ -600,7 +596,7 @@ export class Common {
    * @returns The value requested or `BigInt(0)` if not found
    */
   paramByHardfork(topic: string, name: string, hardfork: string | Hardfork): bigint {
-    let value = null
+    let value: bigint | null = null
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
@@ -780,6 +776,24 @@ export class Common {
   }
 
   /**
+   * Returns the scheduled timestamp of the EIP (if scheduled and scheduled by timestamp)
+   * @param eip EIP number
+   * @returns Scheduled timestamp. If this EIP is unscheduled, or the EIP is scheduled by block number or ttd, then it returns `null`.
+   */
+  eipTimestamp(eip: number): bigint | null {
+    for (const hfChanges of this.HARDFORK_CHANGES) {
+      const hf = hfChanges[1]
+      if ('eips' in hf) {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        if ((hf['eips'] as any).includes(eip)) {
+          return this.hardforkTimestamp(hfChanges[0])
+        }
+      }
+    }
+    return null
+  }
+
+  /**
    * Returns the hardfork change total difficulty (Merge HF) for hardfork provided or set
    * @param hardfork Hardfork name, optional if HF set
    * @returns Total difficulty or null if no set
@@ -946,7 +960,11 @@ export class Common {
    * @returns {Array} Array with arrays of hardforks
    */
   hardforks(): HardforkTransitionConfig[] {
-    return this._chainParams.hardforks
+    const hfs = this._chainParams.hardforks
+    if (this._chainParams.customHardforks !== undefined) {
+      this._chainParams.customHardforks
+    }
+    return hfs
   }
 
   /**

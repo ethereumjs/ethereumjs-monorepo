@@ -403,6 +403,18 @@ export const bigIntToHex = (num: bigint): PrefixedHexString => {
 }
 
 /**
+ * Calculates max bigint from an array of bigints
+ * @param args array of bigints
+ */
+export const bigIntMax = (...args: bigint[]) => args.reduce((m, e) => (e > m ? e : m))
+
+/**
+ * Calculates min BigInt from an array of BigInts
+ * @param args array of bigints
+ */
+export const bigIntMin = (...args: bigint[]) => args.reduce((m, e) => (e < m ? e : m))
+
+/**
  * Convert value from bigint to an unpadded Uint8Array
  * (useful for RLP transport)
  * @param {bigint} value the bigint to convert

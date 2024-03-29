@@ -17,6 +17,7 @@ import { VM } from '@ethereumjs/vm'
 import { assert, describe, expect, it, vi } from 'vitest'
 
 import { RPCBlockChain, RPCStateManager } from '../src/rpcStateManager.js'
+import { DefaultStateManager } from '../src/stateManager.js'
 
 import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
@@ -315,7 +316,7 @@ describe('blockchain', () =>
     const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
-    const evm = new EVM({ blockchain, stateManager: state })
+    const evm = await EVM.create({ blockchain, stateManager: state })
     // Bytecode for returning the blockhash of the block previous to `blockTag`
     const code = '0x600143034060005260206000F3'
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
@@ -338,3 +339,18 @@ describe('blockchain', () =>
       '0xd5ba853bc7151fc044b9d273a57e3f9ed35e66e0248ab4a571445650cc4fcaa6'
     )
   }))
+
+describe('Should return same value as DefaultStateManager when account does not exist', () => {
+  it('should work', async () => {
+    const rpcState = new RPCStateManager({ provider, blockTag: 1n })
+    const defaultState = new DefaultStateManager()
+
+    const account0 = await rpcState.getAccount(new Address(hexToBytes('0x' + '01'.repeat(20))))
+    const account1 = await defaultState.getAccount(new Address(hexToBytes('0x' + '01'.repeat(20))))
+    assert.equal(
+      account0,
+      account1,
+      'Should return same value as DefaultStateManager when account does not exist'
+    )
+  })
+})

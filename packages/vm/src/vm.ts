@@ -22,7 +22,7 @@ import type { BlockchainInterface } from '@ethereumjs/blockchain'
 import type { EVMStateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface } from '@ethereumjs/evm'
 import type { EVMPerformanceLogOutput } from '@ethereumjs/evm/dist/cjs/logger.js'
-import type { BigIntLike, GenesisState } from '@ethereumjs/util'
+import type { BigIntLike } from '@ethereumjs/util'
 
 /**
  * Execution engine which can be used to run a blockchain, individual
@@ -77,13 +77,75 @@ export class VM {
    * @param opts VM engine constructor options
    */
   static async create(opts: VMOpts = {}): Promise<VM> {
-    const vm = new this(opts)
-    const genesisStateOpts =
-      opts.stateManager === undefined && opts.genesisState === undefined
-        ? { genesisState: {} }
-        : undefined
-    await vm.init({ ...genesisStateOpts, ...opts })
-    return vm
+    // Save if a `StateManager` was passed (for activatePrecompiles)
+    const didPassStateManager = opts.stateManager !== undefined
+
+    // Add common, SM, blockchain, EVM here
+    if (opts.common === undefined) {
+      opts.common = new Common({ chain: Chain.Mainnet })
+    }
+
+    if (opts.stateManager === undefined) {
+      opts.stateManager = new DefaultStateManager({ common: opts.common })
+    }
+
+    if (opts.blockchain === undefined) {
+      opts.blockchain = await Blockchain.create({ common: opts.common })
+    }
+
+    const genesisState = opts.genesisState ?? {}
+    if (opts.genesisState !== undefined) {
+      await opts.stateManager.generateCanonicalGenesis(genesisState)
+    }
+
+    if (opts.profilerOpts !== undefined) {
+      const profilerOpts = opts.profilerOpts
+      if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
+        throw new Error(
+          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
+        )
+      }
+    }
+
+    if (opts.evm === undefined) {
+      let enableProfiler = false
+      if (
+        opts.profilerOpts?.reportAfterBlock === true ||
+        opts.profilerOpts?.reportAfterTx === true
+      ) {
+        enableProfiler = true
+      }
+      opts.evm = await EVM.create({
+        common: opts.common,
+        stateManager: opts.stateManager,
+        blockchain: opts.blockchain,
+        profiler: {
+          enabled: enableProfiler,
+        },
+      })
+    }
+
+    if (opts.activatePrecompiles === true && !didPassStateManager) {
+      await opts.evm.journal.checkpoint()
+      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
+      for (const [addressStr] of getActivePrecompiles(opts.common)) {
+        const address = new Address(unprefixedHexToBytes(addressStr))
+        let account = await opts.evm.stateManager.getAccount(address)
+        // Only do this if it is not overridden in genesis
+        // Note: in the case that custom genesis has storage fields, this is preserved
+        if (account === undefined) {
+          account = new Account()
+          const newAccount = Account.fromAccountData({
+            balance: 1,
+            storageRoot: account.storageRoot,
+          })
+          await opts.evm.stateManager.putAccount(address, newAccount)
+        }
+      }
+      await opts.evm.journal.commit()
+    }
+
+    return new VM(opts)
   }
 
   /**
@@ -95,54 +157,14 @@ export class VM {
    * @param opts
    */
   protected constructor(opts: VMOpts = {}) {
+    this.common = opts.common!
+    this.stateManager = opts.stateManager!
+    this.blockchain = opts.blockchain!
+    this.evm = opts.evm!
+
     this.events = new AsyncEventEmitter<VMEvents>()
 
     this._opts = opts
-
-    if (opts.common) {
-      this.common = opts.common
-    } else {
-      const DEFAULT_CHAIN = Chain.Mainnet
-      this.common = new Common({ chain: DEFAULT_CHAIN })
-    }
-
-    if (opts.stateManager) {
-      this.stateManager = opts.stateManager
-    } else {
-      this.stateManager = new DefaultStateManager({ common: this.common })
-    }
-
-    this.blockchain = opts.blockchain ?? new (Blockchain as any)({ common: this.common })
-
-    if (this._opts.profilerOpts !== undefined) {
-      const profilerOpts = this._opts.profilerOpts
-      if (profilerOpts.reportAfterBlock === true && profilerOpts.reportAfterTx === true) {
-        throw new Error(
-          'Cannot have `reportProfilerAfterBlock` and `reportProfilerAfterTx` set to `true` at the same time'
-        )
-      }
-    }
-
-    // TODO tests
-    if (opts.evm) {
-      this.evm = opts.evm
-    } else {
-      let enableProfiler = false
-      if (
-        this._opts.profilerOpts?.reportAfterBlock === true ||
-        this._opts.profilerOpts?.reportAfterTx === true
-      ) {
-        enableProfiler = true
-      }
-      this.evm = new EVM({
-        common: this.common,
-        stateManager: this.stateManager,
-        blockchain: this.blockchain,
-        profiler: {
-          enabled: enableProfiler,
-        },
-      })
-    }
 
     this._setHardfork = opts.setHardfork ?? false
 
@@ -154,41 +176,6 @@ export class VM {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-  }
-
-  async init({ genesisState }: { genesisState?: GenesisState } = {}): Promise<void> {
-    if (this._isInitialized) return
-
-    if (genesisState !== undefined) {
-      await this.stateManager.generateCanonicalGenesis(genesisState)
-    } else if (this._opts.stateManager === undefined) {
-      throw Error('genesisState state required to set genesis for stateManager')
-    }
-
-    if (typeof (<any>this.blockchain)._init === 'function') {
-      await (this.blockchain as any)._init({ genesisState })
-    }
-
-    if (this._opts.activatePrecompiles === true && typeof this._opts.stateManager === 'undefined') {
-      await this.evm.journal.checkpoint()
-      // put 1 wei in each of the precompiles in order to make the accounts non-empty and thus not have them deduct `callNewAccount` gas.
-      for (const [addressStr] of getActivePrecompiles(this.common)) {
-        const address = new Address(unprefixedHexToBytes(addressStr))
-        let account = await this.stateManager.getAccount(address)
-        // Only do this if it is not overridden in genesis
-        // Note: in the case that custom genesis has storage fields, this is preserved
-        if (account === undefined) {
-          account = new Account()
-          const newAccount = Account.fromAccountData({
-            balance: 1,
-            storageRoot: account.storageRoot,
-          })
-          await this.stateManager.putAccount(address, newAccount)
-        }
-      }
-      await this.evm.journal.commit()
-    }
-    this._isInitialized = true
   }
 
   /**
@@ -260,7 +247,7 @@ export class VM {
       blockchain,
       stateManager,
     }
-    const evmCopy = new EVM(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
+    const evmCopy = await EVM.create(evmOpts) // TODO fixme (should copy the EVMInterface, not default EVM)
     return VM.create({
       stateManager,
       blockchain: this.blockchain,

@@ -12,8 +12,17 @@ import {
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
-import { BIGINT_0, BIGINT_1, Lock, ValueEncoding, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  BIGINT_1,
+  Lock,
+  ValueEncoding,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
+import { writeFileSync } from 'fs'
 
 import { Event } from '../types'
 import { short } from '../util'
@@ -21,6 +30,7 @@ import { debugCodeReplayBlock } from '../util/debug'
 
 import { Execution } from './execution'
 import { LevelDB } from './level'
+import { PreimagesManager } from './preimage'
 import { ReceiptsManager } from './receipt'
 
 import type { ExecutionOptions } from './execution'
@@ -30,6 +40,7 @@ import type { RunBlockOpts, TxReceipt } from '@ethereumjs/vm'
 export enum ExecStatus {
   VALID = 'VALID',
   INVALID = 'INVALID',
+  IGNORE_INVALID = 'IGNORE_INVALID',
 }
 
 type ChainStatus = {
@@ -50,6 +61,7 @@ export class VMExecution extends Execution {
   public chainStatus: ChainStatus | null = null
 
   public receiptsManager?: ReceiptsManager
+  public preimagesManager?: PreimagesManager
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | null>
 
@@ -94,25 +106,34 @@ export class VMExecution extends Execution {
       ;(this.vm as any).blockchain = this.chain.blockchain
     }
 
-    if (this.metaDB && this.config.saveReceipts) {
-      this.receiptsManager = new ReceiptsManager({
-        chain: this.chain,
-        config: this.config,
-        metaDB: this.metaDB,
-      })
-      this.pendingReceipts = new Map()
-      this.chain.blockchain.events.addListener(
-        'deletedCanonicalBlocks',
-        async (blocks, resolve) => {
-          // Once a block gets deleted from the chain, delete the receipts also
-          for (const block of blocks) {
-            await this.receiptsManager?.deleteReceipts(block)
+    if (this.metaDB) {
+      if (this.config.saveReceipts) {
+        this.receiptsManager = new ReceiptsManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+        this.pendingReceipts = new Map()
+        this.chain.blockchain.events.addListener(
+          'deletedCanonicalBlocks',
+          async (blocks, resolve) => {
+            // Once a block gets deleted from the chain, delete the receipts also
+            for (const block of blocks) {
+              await this.receiptsManager?.deleteReceipts(block)
+            }
+            if (resolve !== undefined) {
+              resolve()
+            }
           }
-          if (resolve !== undefined) {
-            resolve()
-          }
-        }
-      )
+        )
+      }
+      if (this.config.savePreimages) {
+        this.preimagesManager = new PreimagesManager({
+          chain: this.chain,
+          config: this.config,
+          metaDB: this.metaDB,
+        })
+      }
     }
   }
 
@@ -218,6 +239,26 @@ export class VMExecution extends Execution {
         return
       }
 
+      const blockchain = this.chain.blockchain
+      if (typeof blockchain.getIteratorHead !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+      }
+      const headBlock = await blockchain.getIteratorHead()
+      const { number, timestamp, stateRoot } = headBlock.header
+      this.chainStatus = {
+        height: number,
+        status: ExecStatus.VALID,
+        root: stateRoot,
+        hash: headBlock.hash(),
+      }
+
+      if (typeof blockchain.getTotalDifficulty !== 'function') {
+        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+      }
+      const td = await blockchain.getTotalDifficulty(headBlock.header.hash())
+      this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
+      this.hardfork = this.config.execCommon.hardfork()
+
       if (this.config.execCommon.gteHardfork(Hardfork.Prague)) {
         if (!this.config.statelessVerkle) {
           throw Error(`Currently stateful verkle execution not supported`)
@@ -233,32 +274,18 @@ export class VMExecution extends Execution {
         this.vm = this.merkleVM!
       }
 
-      if (typeof this.vm.blockchain.getIteratorHead !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
-      }
-      const headBlock = await this.vm.blockchain.getIteratorHead()
-      const { number, timestamp, stateRoot } = headBlock.header
-      this.chainStatus = {
-        height: number,
-        status: ExecStatus.VALID,
-        root: stateRoot,
-        hash: headBlock.hash(),
-      }
       if (number === BIGINT_0) {
         const genesisState =
-          this.chain['_customGenesisState'] ?? getGenesis(Number(this.vm.common.chainId()))
-        if (!genesisState) {
+          this.chain['_customGenesisState'] ?? getGenesis(Number(blockchain.common.chainId()))
+        if (
+          !genesisState &&
+          (this.vm instanceof DefaultStateManager || !this.config.statelessVerkle)
+        ) {
           throw new Error('genesisState not available')
+        } else {
+          await this.vm.stateManager.generateCanonicalGenesis(genesisState)
         }
-        await this.vm.stateManager.generateCanonicalGenesis(genesisState)
       }
-
-      if (typeof this.vm.blockchain.getTotalDifficulty !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
-      }
-      const td = await this.vm.blockchain.getTotalDifficulty(headBlock.header.hash())
-      this.config.execCommon.setHardforkBy({ blockNumber: number, td, timestamp })
-      this.hardfork = this.config.execCommon.hardfork()
 
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
@@ -407,8 +434,18 @@ export class VMExecution extends Execution {
           if (skipHeaderValidation) {
             skipBlockchain = true
           }
+          const reportPreimages = this.config.savePreimages
 
-          const result = await vm.runBlock({ clearCache, ...opts, skipHeaderValidation })
+          const result = await vm.runBlock({
+            clearCache,
+            ...opts,
+            skipHeaderValidation,
+            reportPreimages,
+          })
+
+          if (this.config.savePreimages && result.preimages !== undefined) {
+            await this.savePreimages(result.preimages)
+          }
           receipts = result.receipts
         }
         if (receipts !== undefined) {
@@ -436,6 +473,14 @@ export class VMExecution extends Execution {
       }
     })
     return true
+  }
+
+  async savePreimages(preimages: Map<string, Uint8Array>) {
+    if (this.preimagesManager !== undefined) {
+      for (const [key, preimage] of preimages) {
+        await this.preimagesManager.savePreimage(hexToBytes(key), preimage)
+      }
+    }
   }
 
   /**
@@ -526,6 +571,16 @@ export class VMExecution extends Execution {
       }
       await this.chain.update(true)
       return true
+    })
+  }
+
+  async jumpVmHead(jumpToHash: Uint8Array, jumpToNumber?: bigint): Promise<void> {
+    return this.runWithLock<void>(async () => {
+      // check if the block is canonical in chain
+      this.config.logger.warn(
+        `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`
+      )
+      await this.vm.blockchain.setIteratorHead('vm', jumpToHash)
     })
   }
 
@@ -677,6 +732,7 @@ export class VMExecution extends Execution {
                     clearCache,
                     skipBlockValidation,
                     skipHeaderValidation: true,
+                    reportPreimages: this.config.savePreimages,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
@@ -691,6 +747,9 @@ export class VMExecution extends Execution {
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
+                  if (this.config.savePreimages && result.preimages !== undefined) {
+                    await this.savePreimages(result.preimages)
+                  }
 
                   txCounter += block.transactions.length
                   // set as new head block
@@ -712,14 +771,6 @@ export class VMExecution extends Execution {
             // Ensure to catch and not throw as this would lead to unCaughtException with process exit
             .catch(async (error) => {
               if (errorBlock !== undefined) {
-                // set the chainStatus to invalid
-                this.chainStatus = {
-                  height: errorBlock.header.number,
-                  root: errorBlock.header.stateRoot,
-                  hash: errorBlock.hash(),
-                  status: ExecStatus.INVALID,
-                }
-
                 const { number } = errorBlock.header
                 const hash = short(errorBlock.hash())
                 const errorMsg = `Execution of block number=${number} hash=${hash} hardfork=${this.hardfork} failed`
@@ -766,7 +817,37 @@ export class VMExecution extends Execution {
                     )
                   }
                 } else {
-                  this.config.logger.warn(`${errorMsg}:\n${error}`)
+                  this.chainStatus = {
+                    height: errorBlock.header.number,
+                    root: errorBlock.header.stateRoot,
+                    hash: errorBlock.hash(),
+                    status:
+                      this.config.ignoreStatelessInvalidExecs !== false
+                        ? ExecStatus.IGNORE_INVALID
+                        : ExecStatus.INVALID,
+                  }
+
+                  // headBlock should be parent of errorBlock and not undefined
+                  if (
+                    typeof this.config.ignoreStatelessInvalidExecs === 'string' &&
+                    headBlock !== undefined
+                  ) {
+                    // save the data in spec test compatible manner
+                    const blockNumStr = `${errorBlock.header.number}`
+                    const file = `${this.config.ignoreStatelessInvalidExecs}/${blockNumStr}.json`
+                    const jsonDump = {
+                      [blockNumStr]: {
+                        parent: headBlock.toExecutionPayload(),
+                        execute: errorBlock.toExecutionPayload(),
+                      },
+                    }
+                    writeFileSync(file, JSON.stringify(jsonDump, null, 2))
+                    this.config.logger.warn(
+                      `${errorMsg}:\n${error} payload saved to=${this.config.ignoreStatelessInvalidExecs}`
+                    )
+                  } else {
+                    this.config.logger.warn(`${errorMsg}:\n${error}`)
+                  }
                 }
 
                 if (this.config.debugCode) {
@@ -813,6 +894,8 @@ export class VMExecution extends Execution {
                 : this.config.logger.info)(
                 `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
               )
+
+              await this.chain.update(false)
             } else {
               this.config.logger.debug(
                 `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
@@ -865,7 +948,7 @@ export class VMExecution extends Execution {
       canonicalHead.header.number
     } hardfork=${this.config.execCommon.hardfork()} execution=${this.config.execution}`
     if (
-      !this.config.execCommon.gteHardfork(Hardfork.Paris) &&
+      (!this.config.execCommon.gteHardfork(Hardfork.Paris) || this.config.startExecution) &&
       this.config.execution &&
       vmHeadBlock.header.number < canonicalHead.header.number
     ) {

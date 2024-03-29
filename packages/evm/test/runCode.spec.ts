@@ -21,7 +21,7 @@ const testCases = [
 
 describe('VM.runCode: initial program counter', () => {
   it('should work', async () => {
-    const evm = new EVM()
+    const evm = await EVM.create()
 
     for (const [i, testData] of testCases.entries()) {
       const runCodeArgs = {
@@ -57,7 +57,7 @@ describe('VM.runCode: initial program counter', () => {
 
 describe('VM.runCode: interpreter', () => {
   it('should return a EvmError as an exceptionError on the result', async () => {
-    const evm = new EVM()
+    const evm = await EVM.create()
 
     const INVALID_opcode = 'fe'
     const runCodeArgs = {
@@ -76,7 +76,7 @@ describe('VM.runCode: interpreter', () => {
   })
 
   it('should throw on non-EvmError', async () => {
-    const evm = new EVM()
+    const evm = await EVM.create()
     // NOTE: due to now throwing on `getContractStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
     // does not exist, then if SSTORE/SLOAD is used, the runCode will immediately fail because StateManager now throws
@@ -105,7 +105,7 @@ describe('VM.runCode: interpreter', () => {
 
 describe('VM.runCode: RunCodeOptions', () => {
   it('should throw on negative value args', async () => {
-    const evm = new EVM()
+    const evm = await EVM.create()
 
     const runCodeArgs = {
       value: BigInt(-10),

@@ -7,11 +7,9 @@ import {
   Address,
   BIGINT_0,
   KECCAK256_NULL,
-  bigIntToBytes,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
-  generateAddress,
   hexToBytes,
   short,
 } from '@ethereumjs/util'
@@ -128,6 +126,10 @@ export async function runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     this.evm.journal.startReportingAccessList()
   }
 
+  if (opts.reportPreimages === true) {
+    this.evm.journal.startReportingPreimages!()
+  }
+
   await this.evm.journal.checkpoint()
   if (this.DEBUG) {
     debug('-'.repeat(100))
@@ -217,7 +219,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     }
     stateAccesses = (this.stateManager as StatelessVerkleStateManager).accessWitness
   }
-  let txAccesses = stateAccesses?.shallowCopy()
+  const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -321,29 +323,8 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     throw new Error(msg)
   }
 
-  let upfrontAwGas = BIGINT_0
-  if (this.common.isActivatedEIP(6800)) {
-    upfrontAwGas += txAccesses!.touchTxOriginAndComputeGas(caller)
-    const sendsValue = tx.value !== BIGINT_0
-    if (tx.to !== undefined) {
-      upfrontAwGas += txAccesses!.touchTxExistingAndComputeGas(tx.to, { sendsValue })
-      debug(`Sender upfront awGas requirement for non contract creation tx is ${upfrontAwGas}`)
-    } else {
-      const contractTo = new Address(generateAddress(caller.bytes, bigIntToBytes(nonce)))
-      upfrontAwGas += txAccesses!.touchAndChargeContractCreateInit(contractTo, { sendsValue })
-      debug(
-        `Sender upfront awGas requirement is contract creation at=${short(
-          contractTo.bytes
-        )} is ${upfrontAwGas}`
-      )
-    }
-
-    // reset txAccesses to remove the caches so that access gas can be correctly consumed inside the evm run
-    txAccesses = stateAccesses?.shallowCopy()
-  }
-
   // Check balance against upfront tx cost
-  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas) + upfrontAwGas
+  const upFrontCost = tx.getUpfrontCost(block.header.baseFeePerGas)
   if (balance < upFrontCost) {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
@@ -439,12 +420,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let inclusionFeePerGas: bigint
   // EIP-1559 tx
   if (tx.supports(Capability.EIP1559FeeMarket)) {
+    // TODO make txs use the new getEffectivePriorityFee
     const baseFee = block.header.baseFeePerGas!
-    inclusionFeePerGas =
-      (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas <
-      (tx as FeeMarketEIP1559Transaction).maxFeePerGas - baseFee
-        ? (tx as FeeMarketEIP1559Transaction).maxPriorityFeePerGas
-        : (tx as FeeMarketEIP1559Transaction).maxFeePerGas - baseFee
+    inclusionFeePerGas = tx.getEffectivePriorityFee(baseFee)
 
     gasPrice = inclusionFeePerGas + baseFee
   } else {
@@ -682,6 +660,10 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     console.timeEnd(accessListLabel)
     // eslint-disable-next-line no-console
     console.time(journalCacheCleanUpLabel)
+  }
+
+  if (opts.reportPreimages === true && this.evm.journal.preimages !== undefined) {
+    results.preimages = this.evm.journal.preimages
   }
 
   await this.evm.journal.cleanup()

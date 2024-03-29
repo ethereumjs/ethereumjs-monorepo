@@ -30,6 +30,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
     withdrawalsRoot,
     blobGasUsed,
     excessBlobGas,
+    parentBeaconBlockRoot,
   } = blockParams
 
   const blockHeader = BlockHeader.fromHeaderData(
@@ -53,6 +54,7 @@ export function blockHeaderFromRpc(blockParams: JsonRpcBlock, options?: BlockOpt
       withdrawalsRoot,
       blobGasUsed,
       excessBlobGas,
+      parentBeaconBlockRoot,
     },
     options
   )

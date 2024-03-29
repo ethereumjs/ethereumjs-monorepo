@@ -29,7 +29,7 @@ Default: 0 (deactivated)
 
 #### Defined in
 
-[packages/trie/src/types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L91)
+[packages/trie/src/types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L97)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L96)
+[packages/trie/src/types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L102)
 
 ___
 
@@ -53,7 +53,7 @@ A database instance.
 
 #### Defined in
 
-[packages/trie/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L36)
+[packages/trie/src/types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L42)
 
 ___
 
@@ -68,7 +68,7 @@ e.g. all storage tries being stored in the outer account state DB)
 
 #### Defined in
 
-[packages/trie/src/types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L68)
+[packages/trie/src/types.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L74)
 
 ___
 
@@ -80,7 +80,7 @@ A `Uint8Array` for the root of a previously stored trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L41)
+[packages/trie/src/types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L47)
 
 ___
 
@@ -101,7 +101,7 @@ instantiation with `useKeyHashing` set to `true`.
 
 #### Defined in
 
-[packages/trie/src/types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L55)
+[packages/trie/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L61)
 
 ___
 
@@ -113,7 +113,7 @@ Hash function used for hashing trie node and securing key.
 
 #### Defined in
 
-[packages/trie/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L60)
+[packages/trie/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L66)
 
 ___
 
@@ -126,7 +126,7 @@ unreachable nodes will be pruned (deleted) from the trie
 
 #### Defined in
 
-[packages/trie/src/types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L84)
+[packages/trie/src/types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L90)
 
 ___
 
@@ -138,7 +138,7 @@ Store the root inside the database after every `write` operation
 
 #### Defined in
 
-[packages/trie/src/types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L78)
+[packages/trie/src/types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L84)
 
 ___
 
@@ -150,4 +150,4 @@ ValueEncoding of the database (the values which are `put`/`get` in the db are of
 
 #### Defined in
 
-[packages/trie/src/types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L73)
+[packages/trie/src/types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L79)

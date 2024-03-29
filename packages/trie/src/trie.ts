@@ -30,16 +30,14 @@ import { verifyRangeProof } from './proof/range.js'
 import { ROOT_DB_KEY } from './types.js'
 import { _walkTrie } from './util/asyncWalk.js'
 import { bytesToNibbles, matchingNibbleLength } from './util/nibbles.js'
-import {
-  TrieReadStream as ReadStream,
-  asyncTrieReadStream as asyncReadStream,
-} from './util/readStream.js'
+import { TrieReadStream as ReadStream } from './util/readStream.js'
 import { WalkController } from './util/walkController.js'
 
 import type {
   EmbeddedNode,
   FoundNodeFunction,
   Nibbles,
+  Path,
   Proof,
   TrieNode,
   TrieOpts,
@@ -49,18 +47,6 @@ import type {
 import type { OnFound } from './util/asyncWalk.js'
 import type { BatchDBOp, DB, PutBatch } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
-// Since ReadableStream is from a Web API, the following type import
-// is not needed in and should be ignored by the browser, so an exeption
-// is made here to deviate from our policy to not add Node.js specific
-// package imports. -- 16/01/24
-// eslint-disable-next-line implicit-dependencies/no-implicit
-import type { ReadableStream } from 'node:stream/web'
-
-interface Path {
-  node: TrieNode | null
-  remaining: Nibbles
-  stack: TrieNode[]
-}
 
 /**
  * The basic trie interface, use with `import { Trie } from '@ethereumjs/trie'`.
@@ -221,10 +207,7 @@ export class Trie {
       keys.map((k) => k).map(bytesToNibbles),
       values,
       proof,
-      opts?.useKeyHashingFunction ??
-        ((msg) => {
-          return msg
-        })
+      opts?.useKeyHashingFunction ?? keccak256
     )
   }
 
@@ -613,11 +596,23 @@ export class Trie {
    * @param key - the search key
    * @param throwIfMissing - if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
    */
-  async findPath(key: Uint8Array, throwIfMissing = false): Promise<Path> {
+  async findPath(
+    key: Uint8Array,
+    throwIfMissing = false,
+    partialPath: {
+      stack: TrieNode[]
+    } = {
+      stack: [],
+    }
+  ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
     const stack: TrieNode[] = Array.from({ length: keyLen })
     let progress = 0
+    for (let i = 0; i < partialPath.stack.length - 1; i++) {
+      stack[i] = partialPath.stack[i]
+      progress += stack[i] instanceof BranchNode ? 1 : (<ExtensionNode>stack[i]).keyLength()
+    }
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['FIND_PATH'])
     let result: Path | null = null
 
@@ -689,10 +684,17 @@ export class Trie {
         walkController.allChildren(node, keyProgress)
       }
     }
-
+    const startingNode = partialPath.stack[partialPath.stack.length - 1]
+    const start = startingNode !== undefined ? this.hash(startingNode?.serialize()) : this.root()
     try {
-      this.DEBUG && this.debug(`Walking trie from root: ${bytesToHex(this.root())}`, ['FIND_PATH'])
-      await this.walkTrie(this.root(), onFound)
+      this.DEBUG &&
+        this.debug(
+          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(
+            start as Uint8Array
+          )}`,
+          ['FIND_PATH']
+        )
+      await this.walkTrie(start, onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
         throw error
@@ -1204,19 +1206,10 @@ export class Trie {
 
   /**
    * The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
-   * @deprecated Use `createAsyncReadStream`
    * @return Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_class_stream_readable) of the contents of the `trie`
    */
   createReadStream(): ReadStream {
     return new ReadStream(this)
-  }
-
-  /**
-   * Use asynchronous iteration over the chunks in a web stream using the for await...of syntax.
-   * @return Returns a [web stream](https://nodejs.org/api/webstreams.html#example-readablestream) of the contents of the `trie`
-   */
-  createAsyncReadStream(): ReadableStream {
-    return asyncReadStream(this)
   }
 
   /**

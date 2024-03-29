@@ -1,14 +1,17 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { getActivePrecompiles } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
 describe('Istanbul: EIP-1108 tests', () => {
+  let vm: VM
+  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+  beforeAll(async () => {
+    vm = await VM.create({ common })
+  })
   it('ECADD', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000006'
     const ECADD = getActivePrecompiles(common).get(address)!
 
@@ -23,8 +26,6 @@ describe('Istanbul: EIP-1108 tests', () => {
   })
 
   it('ECMUL', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000007'
     const ECMUL = getActivePrecompiles(common).get(address)!
 
@@ -39,8 +40,6 @@ describe('Istanbul: EIP-1108 tests', () => {
   })
 
   it('ECPAIRING', async () => {
-    const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const vm = await VM.create({ common })
     const address = '0000000000000000000000000000000000000008'
     const ECPAIRING = getActivePrecompiles(common).get(address)!
 

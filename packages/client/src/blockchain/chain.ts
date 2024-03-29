@@ -162,13 +162,15 @@ export class Chain {
 
     options.blockchain =
       options.blockchain ??
-      new (Blockchain as any)({
+      (await Blockchain.create({
         db: new LevelDB(options.chainDB),
         common: options.config.chainCommon,
         hardforkByHeadBlockNumber: true,
         validateBlocks: true,
         validateConsensus,
-      })
+        genesisState: options.genesisState,
+        genesisStateRoot: options.genesisStateRoot,
+      }))
 
     return new this(options)
   }
@@ -253,10 +255,6 @@ export class Chain {
   async open(): Promise<boolean | void> {
     if (this.opened) return false
     await this.blockchain.db.open()
-    await (this.blockchain as any)._init({
-      genesisState: this._customGenesisState,
-      genesisStateRoot: this._customGenesisStateRoot,
-    })
     this.opened = true
     await this.update(false)
 

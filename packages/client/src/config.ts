@@ -327,7 +327,17 @@ export interface ConfigOptions {
   snapAvailabilityDepth?: bigint
   snapTransitionSafeDepth?: bigint
 
+  /**
+   * Save account keys preimages in the meta db (default: false)
+   */
+  savePreimages?: boolean
+
+  /**
+   * Enables stateless verkle block execution (default: false)
+   */
   statelessVerkle?: boolean
+  startExecution?: boolean
+  ignoreStatelessInvalidExecs?: boolean | string
 }
 
 export class Config {
@@ -431,8 +441,11 @@ export class Config {
   // Defaulting to false as experimental as of now
   public readonly enableSnapSync: boolean
   public readonly useStringValueTrieDB: boolean
+  public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly startExecution: boolean
+  public readonly ignoreStatelessInvalidExecs: boolean | string
 
   public synchronized: boolean
   public lastsyncronized?: boolean
@@ -477,6 +490,7 @@ export class Config {
     this.debugCode = options.debugCode ?? Config.DEBUGCODE_DEFAULT
     this.mine = options.mine ?? false
     this.isSingleNode = options.isSingleNode ?? false
+    this.savePreimages = options.savePreimages ?? false
 
     if (options.vmProfileBlocks !== undefined || options.vmProfileTxs !== undefined) {
       this.vmProfilerOpts = {
@@ -519,6 +533,8 @@ export class Config {
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
     this.statelessVerkle = options.statelessVerkle ?? true
+    this.startExecution = options.startExecution ?? false
+    this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine

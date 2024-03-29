@@ -16,11 +16,10 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
-  initKZG,
   randomBytes,
 } from '@ethereumjs/util'
 import { VM } from '@ethereumjs/vm'
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it, vi } from 'vitest'
 
 import gethGenesis from '../../../block/test/testdata/4844-hardfork.json'
@@ -353,11 +352,7 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-    } catch {
-      // no-op
-    }
+    const kzg = await loadKZG()
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -369,9 +364,9 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
     for (let x = 0; x <= 2; x++) {
@@ -437,11 +432,8 @@ describe('[PendingBlock]', async () => {
 
   it('should exclude missingBlobTx', async () => {
     const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
-    try {
-      initKZG(kzg, __dirname + '/../../src/trustedSetups/devnet6.txt')
-    } catch {
-      //no-op
-    }
+    const kzg = await loadKZG()
+
     const common = Common.fromGethGenesis(gethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -451,9 +443,9 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
 
     const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(blobs)
+    const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(blobs, commitments)
+    const proofs = blobsToProofs(kzg, blobs, commitments)
 
     // create a tx with missing blob data which should be excluded from the build
     const missingBlobTx = BlobEIP4844Transaction.fromTxData(

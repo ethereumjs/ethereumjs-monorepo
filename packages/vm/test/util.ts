@@ -284,6 +284,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     previousHash,
     currentCoinbase,
     currentDifficulty,
+    currentExcessBlobGas,
     currentNumber,
     currentBaseFee,
     currentRandom,
@@ -316,6 +317,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
   if (opts?.common && opts.common.gteHardfork('paris')) {
     headerData['mixHash'] = currentRandom
     headerData['difficulty'] = 0
+  }
+  if (opts?.common && opts.common.gteHardfork('cancun')) {
+    headerData['excessBlobGas'] = currentExcessBlobGas
   }
   return BlockHeader.fromHeaderData(headerData, opts)
 }

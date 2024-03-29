@@ -53,6 +53,7 @@ type createClientArgs = {
   opened: boolean
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
+  savePreimages: boolean
 }
 export function startRPC(
   methods: any,
@@ -97,6 +98,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     txLookupLimit: clientOpts.txLookupLimit,
     accountCache: 10000,
     storageCache: 1000,
+    savePreimages: clientOpts.savePreimages,
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 
@@ -104,6 +106,11 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     // @ts-ignore TODO Move to async Chain.create() initialization
     clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
   chain.opened = true
+
+  // if blockchain has not been bundled with chain, add the mock blockchain
+  if (chain.blockchain === undefined) {
+    chain.blockchain = blockchain
+  }
 
   const defaultClientConfig = {
     opened: true,

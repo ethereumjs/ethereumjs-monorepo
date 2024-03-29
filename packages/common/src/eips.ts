@@ -7,6 +7,7 @@ type EIPsDict = {
 }
 
 enum Status {
+  Stagnant = 'stagnant',
   Draft = 'draft',
   Review = 'review',
   Final = 'final',
@@ -190,9 +191,26 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  2935: {
+    comment: 'Save historical block hashes in state (Verkle related usage, UNSTABLE)',
+    url: 'https://github.com/gballet/EIPs/pull/3/commits/2e9ac09a142b0d9fb4db0b8d4609f92e5d9990c5',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+    vm: {
+      historyStorageAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The address where the historical blockhashes are stored',
+      },
+      historyServeWindow: {
+        v: BigInt(256),
+        d: 'The amount of blocks to be served by the historical blockhash contract',
+      },
+    },
+  },
   3074: {
     comment: 'AUTH and AUTHCALL opcodes',
-    url: 'https://eips.ethereum.org/EIPS/eip-3074',
+    url: 'https://github.com/ethereum/EIPs/commit/eca4416ff3c025fcb6ec8cd4eac481e74e108481',
     status: Status.Review,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
@@ -477,6 +495,20 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
+    gasPrices: {
+      create: {
+        v: 1000,
+        d: 'Base fee of the CREATE opcode',
+      },
+      coldsload: {
+        v: 0,
+        d: 'Gas cost of the first read of storage from a given location (per transaction)',
+      },
+      sstoreInitGasEIP2200: {
+        v: 0,
+        d: 'Once per SSTORE operation from clean zero to non-zero',
+      },
+    },
   },
   7516: {
     comment: 'BLOBBASEFEE opcode',

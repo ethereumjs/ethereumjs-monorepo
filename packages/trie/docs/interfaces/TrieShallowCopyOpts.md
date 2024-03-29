@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[packages/trie/src/types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L109)
+[packages/trie/src/types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L115)
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 #### Defined in
 
-[packages/trie/src/types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L108)
+[packages/trie/src/types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/trie/src/types.ts#L114)

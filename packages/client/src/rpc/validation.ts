@@ -304,6 +304,23 @@ export const validators = {
   },
 
   /**
+   * number validator to check if type is integer
+   * @param params parameters of method
+   * @param index index of parameter
+   */
+
+  get integer() {
+    return (params: any[], index: number) => {
+      if (!Number.isInteger(params[index])) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not an integer`,
+        }
+      }
+    }
+  },
+
+  /**
    * validator to ensure required transaction fields are present, and checks for valid address and hex values.
    * @param requiredFields array of required fields
    * @returns validator function with params:
@@ -460,6 +477,75 @@ export const validators = {
           const result = validator([value], 0)
           if (result !== undefined) return result
         }
+      }
+    }
+  },
+
+  /**
+   * Verification of rewardPercentile value
+   *
+   * description: Floating point value between 0 and 100.
+   * type: number
+   *
+   */
+  get rewardPercentile() {
+    return (params: any[], i: number) => {
+      const ratio = params[i]
+      if (typeof ratio !== 'number') {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is not a number`,
+        }
+      }
+      if (ratio < 0) {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is lower than 0`,
+        }
+      }
+      if (ratio > 100) {
+        return {
+          code: INVALID_PARAMS,
+          message: `entry at ${i} is higher than 100`,
+        }
+      }
+      return ratio
+    }
+  },
+
+  /**
+   * Verification of rewardPercentiles array
+   *
+   *  description: A monotonically increasing list of percentile values. For each block in the requested range, the transactions will be sorted in ascending order by effective tip per gas and the coresponding effective tip for the percentile will be determined, accounting for gas consumed.
+   *  type: array
+   *    items: rewardPercentile value
+   *
+   */
+  get rewardPercentiles() {
+    return (params: any[], index: number) => {
+      const field = params[index]
+      if (!Array.isArray(field)) {
+        return {
+          code: INVALID_PARAMS,
+          message: `invalid argument ${index}: argument is not array`,
+        }
+      }
+      let low = -1
+      for (let i = 0; i < field.length; i++) {
+        const ratio = this.rewardPercentile(field, i)
+        if (typeof ratio === 'object') {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: ${ratio.message}`,
+          }
+        }
+        if (ratio <= low) {
+          return {
+            code: INVALID_PARAMS,
+            message: `invalid argument ${index}: array is not monotonically increasing`,
+          }
+        }
+        low = ratio
       }
     }
   },
