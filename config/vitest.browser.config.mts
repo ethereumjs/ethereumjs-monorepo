@@ -19,7 +19,7 @@ const config = defineConfig({
   plugins: [
     wasm(),
     nodePolyfills({
-      include: ['util', 'fs', 'buffer'],
+      include: ['util', 'fs', 'buffer', 'path'],
     }),
     dynamicImport()
   ],
