@@ -13,6 +13,7 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../src/vm'
 import { getDAOCommon, setupPreConditions } from '../util'
 
+import * as testData from './testdata/blockchain.json'
 import * as testnet from './testdata/testnet.json'
 import { createAccount, setBalance, setupVM } from './utils'
 
@@ -24,7 +25,6 @@ import type {
 } from '../../src/types'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
-const testData = require('./testdata/blockchain.json')
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
@@ -61,9 +61,8 @@ describe('runBlock() -> successful API parameter usage', async () => {
   }
 
   async function uncleRun(vm: VM) {
-    const testData = require('./testdata/uncleData.json')
+    const testData = await import('./testdata/uncleData.json')
 
-    //@ts-ignore
     await setupPreConditions(vm.stateManager, testData)
 
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
