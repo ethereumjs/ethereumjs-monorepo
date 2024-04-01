@@ -10,6 +10,9 @@ const config = defineConfig({
       name: 'chrome',
       headless: true,
     },
+    deps: {
+      inline: true
+    }
   },
   resolve: {
     alias: {
