@@ -631,7 +631,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (common.isActivatedEIP(6800) === true) {
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
           // just create access witnesses without charging for the gas
-          await runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
             treeIndex,
             subIndex
@@ -948,7 +948,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x60: PUSH
   [
     0x60,
-    async function (runState, common) {
+    function (runState, common) {
       const numToPush = runState.opCode - 0x5f
       if (
         runState.programCounter + numToPush > runState.code.length &&
@@ -961,12 +961,11 @@ export const handlers: Map<number, OpHandler> = new Map([
         const contract = runState.interpreter.getAddress()
         const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
         const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)
-        const statelessGas =
-          await runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
-            contract,
-            startOffset,
-            endOffset
-          )
+        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+          contract,
+          startOffset,
+          endOffset
+        )
         runState.interpreter.useGas(statelessGas, `PUSH`)
       }
 

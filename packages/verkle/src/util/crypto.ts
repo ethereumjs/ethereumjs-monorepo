@@ -16,11 +16,11 @@ import type { VerkleCrypto } from 'verkle-cryptography-wasm'
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
  */
-export async function getStem(
+export function getStem(
   ffi: VerkleCrypto,
   address: Address,
   treeIndex: number | bigint = 0
-): Promise<Uint8Array> {
+): Uint8Array {
   const address32 = setLengthLeft(address.toBytes(), 32)
 
   let treeIndexBytes: Uint8Array
