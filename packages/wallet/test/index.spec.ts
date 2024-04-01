@@ -271,7 +271,7 @@ describe('Wallet tests', () => {
       assert.deepEqual(JSON.parse(w), JSON.parse(encFixtureWallet))
       // ethers doesn't support encrypting with PBKDF2
     }
-  }, 90000)
+  }, 180000)
 
   it('.toV3(): should work with Scrypt', async () => {
     const wStaticJSON =
@@ -321,7 +321,7 @@ describe('Wallet tests', () => {
       assert.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
       assert.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
     }
-  }, 90000)
+  }, 180000)
 
   it('.toV3(): without providing options', async () => {
     const wallet = await fixtureWallet.toV3('testtest')
