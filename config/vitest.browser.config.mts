@@ -10,8 +10,8 @@ const config = defineConfig({
       name: 'chrome',
       headless: true,
     },
-    deps: {
-      inline: true
+    sequence: {
+      concurrent: false
     }
   },
   resolve: {
