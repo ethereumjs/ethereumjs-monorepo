@@ -9,10 +9,9 @@ const config = defineConfig({
       enabled: true,
       name: 'chrome',
       headless: true,
+      fileParallelism: true,
+      isolate: false
     },
-    sequence: {
-      concurrent: false
-    }
   },
   resolve: {
     alias: {
