@@ -9,7 +9,7 @@ const config = defineConfig({
       enabled: true,
       name: 'chrome',
       headless: true,
-      fileParallelism: true,
+      fileParallelism: false,
       isolate: false
     },
   },
