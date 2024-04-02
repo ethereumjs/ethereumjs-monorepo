@@ -6,6 +6,7 @@ import {
   TransactionFactory,
   isAccessListEIP2930Tx,
   isBlobEIP4844Tx,
+  isDelegateEIP5806Tx,
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
@@ -262,7 +263,11 @@ export class EthProtocol extends Protocol {
           // serialize txs as per type
           if (isBlobEIP4844Tx(tx)) {
             serializedTxs.push(tx.serializeNetworkWrapper())
-          } else if (isFeeMarketEIP1559Tx(tx) || isAccessListEIP2930Tx(tx)) {
+          } else if (
+            isAccessListEIP2930Tx(tx) ||
+            isFeeMarketEIP1559Tx(tx) ||
+            isDelegateEIP5806Tx(tx)
+          ) {
             serializedTxs.push(tx.serialize())
           } else if (isLegacyTx(tx)) {
             serializedTxs.push(tx.raw())

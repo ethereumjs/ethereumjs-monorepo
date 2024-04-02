@@ -3,6 +3,7 @@ import {
   Capability,
   isAccessListEIP2930Tx,
   isBlobEIP4844Tx,
+  isDelegateEIP5806Tx,
   isFeeMarketEIP1559Tx,
   isLegacyTx,
 } from '@ethereumjs/tx'
@@ -710,7 +711,7 @@ export class TxPool {
       }
     }
 
-    if (isFeeMarketEIP1559Tx(tx) || isBlobEIP4844Tx(tx)) {
+    if (isFeeMarketEIP1559Tx(tx) || isBlobEIP4844Tx(tx) || isDelegateEIP5806Tx(tx)) {
       return {
         maxFee: tx.maxFeePerGas,
         tip: tx.maxPriorityFeePerGas,

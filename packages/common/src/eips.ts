@@ -482,6 +482,13 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  5806: {
+    comment: 'Deleate transaction',
+    url: 'https://eips.ethereum.org/EIPS/eip-5806',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Cancun, // TODO: Hardfork.Prague
+    requiredEIPs: [2718, 2930],
+  },
   6780: {
     comment: 'SELFDESTRUCT only in same transaction',
     url: 'https://eips.ethereum.org/EIPS/eip-6780',
