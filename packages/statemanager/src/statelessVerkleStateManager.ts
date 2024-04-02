@@ -332,7 +332,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
   async getTreeKeyForCodeChunk(address: Address, chunkId: number) {
     const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkId)
-    return getKey(await getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
+    return getKey(getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
   }
 
   chunkifyCode(code: Uint8Array) {
@@ -348,7 +348,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   async getTreeKeyForStorageSlot(address: Address, storageKey: bigint) {
     const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(storageKey)
 
-    return getKey(await getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
+    return getKey(getStem(this.verkleCrypto, address, treeIndex), toBytes(subIndex))
   }
 
   async checkChunkWitnessPresent(address: Address, codeOffset: number) {
@@ -419,7 +419,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     // Get the contract code size
-    const codeSizeKey = this.getTreeKeyForCodeSize(await getStem(this.verkleCrypto, address, 0))
+    const codeSizeKey = this.getTreeKeyForCodeSize(getStem(this.verkleCrypto, address, 0))
     const codeSizeLE = hexToBytes(this._state[bytesToHex(codeSizeKey)] ?? '0x')
     const codeSize = bytesToInt32(codeSizeLE, true)
     // allocate the code and copy onto it from the available witness chunks
@@ -531,7 +531,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
    * @param address -  Address to clear the storage of
    */
   async clearContractStorage(address: Address): Promise<void> {
-    const stem = await getStem(this.verkleCrypto, address, 0)
+    const stem = getStem(this.verkleCrypto, address, 0)
     const codeHashKey = this.getTreeKeyForCodeHash(stem)
     this._storageCache?.clearContractStorage(address)
     // Update codeHash to `c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470`
@@ -550,7 +550,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       }
     }
 
-    const stem = await getStem(this.verkleCrypto, address, 0)
+    const stem = getStem(this.verkleCrypto, address, 0)
     const versionKey = this.getTreeKeyForVersion(stem)
     const balanceKey = this.getTreeKeyForBalance(stem)
     const nonceKey = this.getTreeKeyForNonce(stem)
@@ -637,7 +637,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     if (this._accountCacheSettings.deactivate) {
-      const stem = await getStem(this.verkleCrypto, address, 0)
+      const stem = getStem(this.verkleCrypto, address, 0)
       const balanceKey = this.getTreeKeyForBalance(stem)
       const nonceKey = this.getTreeKeyForNonce(stem)
       const codeHashKey = this.getTreeKeyForCodeHash(stem)

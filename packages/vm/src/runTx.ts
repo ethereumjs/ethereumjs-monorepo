@@ -327,14 +327,14 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   let upfrontAwGas = BIGINT_0
   if (this.common.isActivatedEIP(6800)) {
-    upfrontAwGas += await txAccesses!.touchTxOriginAndComputeGas(caller)
+    upfrontAwGas += txAccesses!.touchTxOriginAndComputeGas(caller)
     const sendsValue = tx.value !== BIGINT_0
     if (tx.to !== undefined) {
-      upfrontAwGas += await txAccesses!.touchTxExistingAndComputeGas(tx.to, { sendsValue })
+      upfrontAwGas += txAccesses!.touchTxExistingAndComputeGas(tx.to, { sendsValue })
       debug(`Sender upfront awGas requirement for non contract creation tx is ${upfrontAwGas}`)
     } else {
       const contractTo = new Address(generateAddress(caller.bytes, bigIntToBytes(nonce)))
-      upfrontAwGas += await txAccesses!.touchAndChargeContractCreateInit(contractTo, { sendsValue })
+      upfrontAwGas += txAccesses!.touchAndChargeContractCreateInit(contractTo, { sendsValue })
       debug(
         `Sender upfront awGas requirement is contract creation at=${short(
           contractTo.bytes
@@ -600,9 +600,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let minerAccount = await state.getAccount(miner)
   if (minerAccount === undefined) {
     if (this.common.isActivatedEIP(6800)) {
-      await (state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(
-        miner
-      )
+      ;(state as StatelessVerkleStateManager).accessWitness!.touchAndChargeProofOfAbsence(miner)
     }
     minerAccount = new Account()
   }
@@ -615,12 +613,9 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this.common.isActivatedEIP(6800)) {
     // use this utility to build access but the computed gas is not charged and hence free
-    await (state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
-      miner,
-      {
-        sendsValue: true,
-      }
-    )
+    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(miner, {
+      sendsValue: true,
+    })
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that

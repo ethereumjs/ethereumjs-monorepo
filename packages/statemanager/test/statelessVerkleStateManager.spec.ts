@@ -106,7 +106,7 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const address = Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
-    const stem = await getStem(stateManager.verkleCrypto, address, 0)
+    const stem = getStem(stateManager.verkleCrypto, address, 0)
 
     const balanceKey = stateManager.getTreeKeyForBalance(stem)
     const nonceKey = stateManager.getTreeKeyForNonce(stem)

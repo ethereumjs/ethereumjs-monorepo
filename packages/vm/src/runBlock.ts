@@ -458,7 +458,8 @@ export async function accumulateParentBlockHash(
     if (vm.common.isActivatedEIP(6800) === true) {
       const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
       // just create access witnesses without charging for the gas
-      await (
+
+      ;(
         vm.stateManager as StatelessVerkleStateManager
       ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
     }
