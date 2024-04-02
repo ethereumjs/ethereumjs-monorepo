@@ -43,7 +43,6 @@ import {
   fromTwos,
   getDataSlice,
   jumpIsValid,
-  jumpSubIsValid,
   mod,
   toTwos,
   trap,
@@ -861,81 +860,46 @@ export const handlers: Map<number, OpHandler> = new Map([
   ],
   // 0x5b: JUMPDEST
   [0x5b, function () {}],
-  // 0x5c: BEGINSUB (EIP 2315) / TLOAD (EIP 1153)
+  // 0x5c: TLOAD (EIP 1153)
   [
     0x5c,
-    function (runState, common) {
-      if (common.isActivatedEIP(2315)) {
-        // BEGINSUB
-        trap(ERROR.INVALID_BEGINSUB + ' at ' + describeLocation(runState))
-      } else if (common.isActivatedEIP(1153)) {
-        // TLOAD
-        const key = runState.stack.pop()
-        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-        const value = runState.interpreter.transientStorageLoad(keyBuf)
-        const valueBN = value.length ? bytesToBigInt(value) : BIGINT_0
-        runState.stack.push(valueBN)
-      }
+    function (runState) {
+      const key = runState.stack.pop()
+      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+      const value = runState.interpreter.transientStorageLoad(keyBuf)
+      const valueBN = value.length ? bytesToBigInt(value) : BIGINT_0
+      runState.stack.push(valueBN)
     },
   ],
-  // 0x5d: RETURNSUB (EIP 2315) / TSTORE (EIP 1153)
+  // 0x5d: TSTORE (EIP 1153)
   [
     0x5d,
-    function (runState, common) {
-      if (common.isActivatedEIP(2315)) {
-        // RETURNSUB
-        if (runState.returnStack.length < 1) {
-          trap(ERROR.INVALID_RETURNSUB)
-        }
-
-        const dest = runState.returnStack.pop()
-        runState.programCounter = Number(dest)
-      } else if (common.isActivatedEIP(1153)) {
-        // TSTORE
-        if (runState.interpreter.isStatic()) {
-          trap(ERROR.STATIC_STATE_CHANGE)
-        }
-        const [key, val] = runState.stack.popN(2)
-
-        const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-        // NOTE: this should be the shortest representation
-        let value
-        if (val === BIGINT_0) {
-          value = Uint8Array.from([])
-        } else {
-          value = bigIntToBytes(val)
-        }
-
-        runState.interpreter.transientStorageStore(keyBuf, value)
+    function (runState) {
+      // TSTORE
+      if (runState.interpreter.isStatic()) {
+        trap(ERROR.STATIC_STATE_CHANGE)
       }
+      const [key, val] = runState.stack.popN(2)
+
+      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
+      // NOTE: this should be the shortest representation
+      let value
+      if (val === BIGINT_0) {
+        value = Uint8Array.from([])
+      } else {
+        value = bigIntToBytes(val)
+      }
+
+      runState.interpreter.transientStorageStore(keyBuf, value)
     },
   ],
-  // 0x5e: JUMPSUB (2315) / MCOPY (5656)
+  // 0x5e: MCOPY (5656)
   [
     0x5e,
-    function (runState, common) {
-      if (common.isActivatedEIP(2315)) {
-        // JUMPSUB
-        const dest = runState.stack.pop()
-
-        if (dest > runState.interpreter.getCodeSize()) {
-          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
-        }
-
-        const destNum = Number(dest)
-
-        if (!jumpSubIsValid(runState, destNum)) {
-          trap(ERROR.INVALID_JUMPSUB + ' at ' + describeLocation(runState))
-        }
-
-        runState.returnStack.push(BigInt(runState.programCounter))
-        runState.programCounter = destNum + 1
-      } else if (common.isActivatedEIP(5656)) {
-        // MCOPY
-        const [dst, src, length] = runState.stack.popN(3)
-        const data = runState.memory.read(Number(src), Number(length), true)
-        runState.memory.write(Number(dst), Number(length), data)
-      }
+    function (runState) {
+      const [dst, src, length] = runState.stack.popN(3)
+      const data = runState.memory.read(Number(src), Number(length), true)
+      runState.memory.write(Number(dst), Number(length), data)
     },
   ],
   // 0x5f: PUSH0
