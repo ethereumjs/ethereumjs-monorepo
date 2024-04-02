@@ -392,17 +392,14 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
     assert.ok(receipt, 'receipt should be saved')
   })
   it('should save receipt', async () => {
-    const receipt = await receiptsManager!.getReceipts(txA01.hash())
+    let receipt = await receiptsManager!.getReceipts(txA01.hash())
     assert.ok(receipt, 'receipt should be saved')
-    it('should save receipt', async () => {})
-    it('should save receipt', async () => {
-      const receipt = await receiptsManager!.getReceipts(txA02.hash())
-      assert.ok(receipt, 'receipt should be saved')
-    })
-    it('should save receipt', async () => {
-      const receipt = await receiptsManager!.getReceipts(txA03.hash())
-      assert.ok(receipt, 'receipt should be saved')
-    })
+    receipt = await receiptsManager!.getReceipts(txA02.hash())
+    assert.ok(receipt, 'receipt should be saved')
+
+    receipt = await receiptsManager!.getReceipts(txA03.hash())
+    assert.ok(receipt, 'receipt should be saved')
+
     await wait(500)
   })
 })

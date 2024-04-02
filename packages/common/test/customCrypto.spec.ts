@@ -1,5 +1,4 @@
-import { concatBytes } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
+import { concatBytes, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Chain, Common } from '../src/index.js'
