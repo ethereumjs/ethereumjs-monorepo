@@ -682,7 +682,7 @@ export async function rewardAccount(
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
     if (common?.isActivatedEIP(6800) === true) {
-      await (
+      ;(
         evm.stateManager as StatelessVerkleStateManager
       ).accessWitness!.touchAndChargeProofOfAbsence(address)
     }
@@ -693,9 +693,10 @@ export async function rewardAccount(
 
   if (common?.isActivatedEIP(6800) === true) {
     // use this utility to build access but the computed gas is not charged and hence free
-    await (
-      evm.stateManager as StatelessVerkleStateManager
-    ).accessWitness!.touchTxExistingAndComputeGas(address, { sendsValue: true })
+    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
+      address,
+      { sendsValue: true }
+    )
   }
   return account
 }
