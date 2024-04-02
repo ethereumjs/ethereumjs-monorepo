@@ -46,6 +46,5 @@ jobs:
       - run: npm run test:browser -w=@ethereumjs/wallet
       - run: npm run test:browser -w=@ethereumjs/statemanager
       - run: npm run test:browser -w=@ethereumjs/evm
-#     VM: several tests not passing yet
-#     - run: npm run test:browser -w=@ethereumjs/vm
+      - run: npm run test:browser -w=@ethereumjs/vm
 
