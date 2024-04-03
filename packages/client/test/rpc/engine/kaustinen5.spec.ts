@@ -5,7 +5,7 @@ import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
 import blocks from '../../testdata/blocks/kaustinen4.json'
-import genesisJSON from '../../testdata/geth-genesis/kaustinen4.json'
+import genesisJSON from '../../testdata/geth-genesis/kaustinen5.json'
 import { getRpcClient, setupChain } from '../helpers.js'
 
 import type { Chain } from '../../../src/blockchain'
@@ -13,16 +13,16 @@ import type { BeaconPayloadJson } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'
 const genesisVerkleStateRoot = '0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'
-const genesisVerkleBlockHash = '0x8493ed97fd4314acb6ed519867b086dc698e25df37ebe8f2bc77313537710744'
+const genesisVerkleBlockHash = '0x086326f2922364dba375e7c9bed375d622845615c0974ffd1d3be0e34edbfbc3'
 
 /**
  * One can run this test in two formats:
  *   1. On the saved blocks, comma separated which are limited (353,368,374,467)
- *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen4.spec.ts`
+ *      `TEST_SAVED_NUMBERS=353,368,374,467 npx vitest run test/rpc/engine/kaustinen5.spec.ts`
  *   2. Directly pull slots from a kaustinen beacon url
- *     `TEST_ONLINE_SLOTS=345,353..360 PEER_BEACON_URL=https://beacon.verkle-gen-devnet-4.ethpandaops.io npx vitest run test/rpc/engine/kaustinen4.spec.ts`
+ *     `TEST_ONLINE_SLOTS=15 PEER_BEACON_URL=https://beacon.verkle-gen-devnet-5.ethpandaops.io DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen5.spec.ts`
  *   3. Geth produced testvectors
- *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen4.spec.ts`
+ *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen5.spec.ts`
  */
 
 const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation

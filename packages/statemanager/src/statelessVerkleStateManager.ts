@@ -8,6 +8,7 @@ import {
   bytesToInt32,
   hexToBytes,
   padToEven,
+  setLengthLeft,
   setLengthRight,
   short,
   toBytes,
@@ -850,11 +851,13 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       case AccessedStateType.Storage: {
         const { slot } = accessedState
-        const storage = this._storageCache?.get(address, bigIntToBytes(slot))
+        const key = setLengthLeft(bigIntToBytes(slot), 32)
+
+        const storage = this._storageCache?.get(address, key)
         if (storage === undefined) {
           return null
         }
-        return bytesToHex(storage)
+        return bytesToHex(setLengthLeft(storage, 32))
       }
     }
   }

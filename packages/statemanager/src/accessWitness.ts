@@ -121,7 +121,6 @@ export class AccessWitness {
 
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
-    gas += this.touchAddressOnWriteAndComputeGas(address, 0, CODE_KECCAK_LEAF_KEY)
     if (sendsValue === true) {
       gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
     }
