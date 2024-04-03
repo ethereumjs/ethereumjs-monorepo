@@ -489,9 +489,6 @@ export class Interpreter {
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
-        } else if (opcode === 0x5c) {
-          // Define a BEGINSUB as a 2 in the valid jumps array
-          jumps[i] = 2
         }
       }
     }
