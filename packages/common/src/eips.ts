@@ -52,27 +52,6 @@ export const EIPs: EIPsDict = {
       },
     },
   },
-  2315: {
-    comment: 'Simple subroutines for the EVM',
-    url: 'https://eips.ethereum.org/EIPS/eip-2315',
-    status: Status.Draft,
-    minimumHardfork: Hardfork.Istanbul,
-    requiredEIPs: [],
-    gasPrices: {
-      beginsub: {
-        v: 2,
-        d: 'Base fee of the BEGINSUB opcode',
-      },
-      returnsub: {
-        v: 5,
-        d: 'Base fee of the RETURNSUB opcode',
-      },
-      jumpsub: {
-        v: 10,
-        d: 'Base fee of the JUMPSUB opcode',
-      },
-    },
-  },
   2565: {
     comment: 'ModExp gas cost',
     url: 'https://eips.ethereum.org/EIPS/eip-2565',
