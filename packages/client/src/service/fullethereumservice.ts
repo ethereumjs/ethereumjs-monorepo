@@ -243,7 +243,11 @@ export class FullEthereumService extends Service {
    * vm execution
    */
   async buildHeadState(): Promise<void> {
-    if (this.building) return
+    // If during building FCU identifies a new root/height to sync to, evalueate new height with sync
+    // strategy and initiate state healing and fetcher root updates for snap sync
+    if (this.building) {
+      this.snapsync?.sync()
+    }
     this.building = true
 
     try {

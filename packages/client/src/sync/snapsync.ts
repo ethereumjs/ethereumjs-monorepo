@@ -220,10 +220,7 @@ export class SnapSynchronizer extends Synchronizer {
       this.config.logger.info(`New sync target height=${height} hash=${bytesToHex(latest.hash())}`)
     }
 
-    if (
-      (this.fetcher === null || this.fetcher.syncErrored !== undefined) &&
-      this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth
-    ) {
+    if (this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth) {
       if ((this.fetcherDoneFlags.snapTargetHeight ?? BIGINT_0) < latest.number) {
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
@@ -240,7 +237,7 @@ export class SnapSynchronizer extends Synchronizer {
         }`
       )
 
-      if (this.fetcher === undefined) {
+      if (this.fetcher === null || this.fetcher.syncErrored !== undefined) {
         this.fetcher = new AccountFetcher({
           config: this.config,
           pool: this.pool,
