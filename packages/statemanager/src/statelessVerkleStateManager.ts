@@ -737,6 +737,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       if (accessedState.type === AccessedStateType.Code) {
         // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
+      } else if (
+        accessedState.type === AccessedStateType.Storage &&
+        canonicalValue === null &&
+        computedValue === ZEROVALUE
+      ) {
+        canonicalValue = ZEROVALUE
       }
 
       if (computedValue !== canonicalValue) {

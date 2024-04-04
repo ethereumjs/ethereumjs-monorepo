@@ -297,14 +297,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             common
           )
         } else if (common.gteHardfork(Hardfork.Istanbul)) {
-          gas += updateSstoreGasEIP2200(
-            runState,
-            currentStorage,
-            originalStorage,
-            setLengthLeftStorage(value),
-            keyBytes,
-            common
-          )
+          if (common.isActivatedEIP(6800) === false) {
+            gas += updateSstoreGasEIP2200(
+              runState,
+              currentStorage,
+              originalStorage,
+              setLengthLeftStorage(value),
+              keyBytes,
+              common
+            )
+          }
         } else {
           gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
         }
@@ -318,12 +320,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         if (common.isActivatedEIP(6800) === true) {
           const contract = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
-          gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
+          const accessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
             subIndex
           )
+          gas += accessGas
         }
+
         return gas
       },
     ],
