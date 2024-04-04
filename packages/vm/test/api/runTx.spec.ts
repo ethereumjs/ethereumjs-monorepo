@@ -881,7 +881,7 @@ describe('EIP 4844 transaction tests', () => {
   it('should work', async () => {
     const kzg = await loadKZG()
 
-    const genesisJson = require('../../../block/test/testdata/4844-hardfork.json')
+    const genesisJson = await import('../../../block/test/testdata/4844-hardfork.json')
     const common = Common.fromGethGenesis(genesisJson, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,

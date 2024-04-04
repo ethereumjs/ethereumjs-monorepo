@@ -137,13 +137,6 @@ export function jumpIsValid(runState: RunState, dest: number): boolean {
 }
 
 /**
- * Checks if a jumpsub is valid given a destination (defined as a 2 in the validJumps array)
- */
-export function jumpSubIsValid(runState: RunState, dest: number): boolean {
-  return runState.validJumps[dest] === 2
-}
-
-/**
  * Returns an overflow-safe slice of an array. It right-pads
  * the data with zeros to `length`.
  * @param gasLimit requested gas Limit
