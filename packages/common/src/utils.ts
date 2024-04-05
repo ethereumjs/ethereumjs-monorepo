@@ -213,10 +213,14 @@ export function parseGethGenesis(json: any, name?: string, mergeForkIdPostMerge?
       const missingField = required.filter((field) => !(field in json))
       throw new Error(`Invalid format, expected geth genesis field "${missingField}" missing`)
     }
+
+    // We copy the JSON object here because it's frozen in browser and properties can't be modified
+    const finalJson = { ...json }
+
     if (name !== undefined) {
-      json.name = name
+      finalJson.name = name
     }
-    return parseGethParams(json, mergeForkIdPostMerge)
+    return parseGethParams(finalJson, mergeForkIdPostMerge)
   } catch (e: any) {
     throw new Error(`Error parsing parameters file: ${e.message}`)
   }

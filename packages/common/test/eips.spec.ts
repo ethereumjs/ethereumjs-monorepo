@@ -43,16 +43,6 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     */
   })
 
-  it('isActivatedEIP()', () => {
-    let c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    assert.equal(c.isActivatedEIP(2315), false, 'istanbul, eips: [] -> false (EIP-2315)')
-    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul, eips: [2315] })
-    assert.equal(c.isActivatedEIP(2315), true, 'istanbul, eips: [2315] -> true (EIP-2315)')
-    c = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Berlin })
-    assert.equal(c.isActivatedEIP(2929), true, 'berlin, eips: [] -> true (EIP-2929)')
-    assert.equal(c.isActivatedEIP(2315), false, 'berlin, eips: [] -> true (EIP-2315)')
-  })
-
   it('eipBlock', () => {
     const c = new Common({ chain: Chain.Mainnet })
 

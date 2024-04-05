@@ -92,6 +92,7 @@ describe('should test mcopy', () => {
       evm.events.on('step', (e) => {
         if (e.opcode.name === 'STOP') {
           currentMem = bytesToHex(e.memory)
+          assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
         }
       })
 
@@ -99,8 +100,6 @@ describe('should test mcopy', () => {
         data: hexToBytes(bytecode),
         gasLimit: BigInt(0xffffff),
       })
-
-      assert.equal(currentMem, '0x' + situation.post, 'post-memory correct')
     })
   }
 })

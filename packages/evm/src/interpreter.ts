@@ -79,7 +79,6 @@ export interface RunState {
   memoryWordCount: bigint
   highestMemCost: bigint
   stack: Stack
-  returnStack: Stack
   code: Uint8Array
   shouldDoJumpAnalysis: boolean
   validJumps: Uint8Array // array of values where validJumps[index] has value 0 (default), 1 (jumpdest), 2 (beginsub)
@@ -105,7 +104,6 @@ export interface InterpreterStep {
   gasRefund: bigint
   stateManager: EVMStateManagerInterface
   stack: bigint[]
-  returnStack: bigint[]
   pc: number
   depth: number
   opcode: {
@@ -164,7 +162,6 @@ export class Interpreter {
       memoryWordCount: BIGINT_0,
       highestMemCost: BIGINT_0,
       stack: new Stack(),
-      returnStack: new Stack(1023), // 1023 return stack height limit per EIP 2315 spec
       code: new Uint8Array(0),
       validJumps: Uint8Array.from([]),
       cachedPushes: {},
@@ -413,7 +410,6 @@ export class Interpreter {
         isAsync: opcode.isAsync,
       },
       stack: this._runState.stack.getStack(),
-      returnStack: this._runState.returnStack.getStack(),
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
@@ -493,9 +489,6 @@ export class Interpreter {
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
-        } else if (opcode === 0x5c) {
-          // Define a BEGINSUB as a 2 in the valid jumps array
-          jumps[i] = 2
         }
       }
     }

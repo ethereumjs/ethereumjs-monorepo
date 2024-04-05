@@ -1,6 +1,6 @@
 {
-  "353":{
-    "parent":{
+  "353": {
+    "parent": {
       "parent_hash": "0x8a84f5c1d79544fd589b2c77643ddd12ce0f3a88f16d2b5e7f8b3827160abff5",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x0934f2a29e91581002a8a44685830b15aedb2561b207fdfc523ff818bf9c9f54",
@@ -153,9 +153,7 @@
           }
         ],
         "verkleProof": {
-          "otherStems": [
-            "0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"
-          ],
+          "otherStems": ["0x8d1ed2380e53baf4d77bdb0adaeec334d72569de8e12d371ab2e4d6b131a37"],
           "depthExtensionPresent": "0x08120a0910",
           "commitmentsByPath": [
             "0x311ffc868fa6132c6bdaf545b74303cf1256780a8cf0bb64ad6a85fce9a2a789",
@@ -193,7 +191,7 @@
         }
       }
     },
-    "execute":{
+    "execute": {
       "parent_hash": "0x0a531f8887cc2a64635edd86a2ba83a1db738b9cb66d825554c3da4dcf723a5a",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x55b040f22b201ebdd5eea670b54234459735ac7453949970c0f241736d5df7e6",
@@ -475,10 +473,10 @@
           }
         }
       }
-    }    
+    }
   },
-  "368":{
-    "parent":{
+  "368": {
+    "parent": {
       "parent_hash": "0x9d1fd4d57f13a6c78dd20b0c0531327a64ebf6fc8680b7ae2f2d31379408cbc6",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x5aac591364a85ed58957d79b8624f1c50e73581da0af573172bec672e818f608",
@@ -675,7 +673,7 @@
         }
       }
     },
-    "execute":{
+    "execute": {
       "parent_hash": "0x2ed51d728b4b3bb7d3111a14dc80ad349f1bc02f56a1b198bcfd7da3a59ad078",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x368f9c82e3827dc5c6b474eb45aac6928a6b25c58c2a3de451723861714393f8",
@@ -949,10 +947,10 @@
           }
         }
       }
-    }         
+    }
   },
-  "374":{
-    "parent":{
+  "374": {
+    "parent": {
       "parent_hash": "0xc0cf14013fd322d4c3694db1827c4b052ae3fddfc2111508073849badf2ede1c",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x506d115a30bf1f15e138e68e68a8f64d880fa140a53977ca6dba955cacb021e1",
@@ -1149,7 +1147,7 @@
         }
       }
     },
-    "execute":{
+    "execute": {
       "parent_hash": "0x89649c2c518339138db54d4cccfa1d7378fac84d5661c7e76572f9e9e1e8b94f",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x5d2204b6d6e672c0c16c0dfbc430f52d81837beaf9c348f54cd08ab1ebd55a21",
@@ -1444,10 +1442,10 @@
           }
         }
       }
-    }    
+    }
   },
-  "479":{
-    "parent":{
+  "479": {
+    "parent": {
       "parent_hash": "0x4e8ac3c4b1d4198edc7aa4e9a0cb7cebab5653dff21f4904f32337619c0c9c80",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x7196c42cb6cdd1d5939234b64568525e3c62a22825180fc2af0589ad161bfb44",
@@ -1644,7 +1642,7 @@
         }
       }
     },
-    "execute":{
+    "execute": {
       "parent_hash": "0x8088c77ef982d5ae3de724661c6f2b9e7558f128768435d1c0efba06752c9a60",
       "fee_recipient": "0xf97e180c050e5ab072211ad2c213eb5aee4df134",
       "state_root": "0x2bd1afbcb845a40cd0c0f373c2c6b83b05eb30d87492fa91f0ed6913e884ad89",
@@ -1929,6 +1927,6 @@
           }
         }
       }
-    }    
+    }
   }
 }

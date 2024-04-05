@@ -62,27 +62,28 @@ describe('hardfork MergeForkBlock', () => {
   })
 })
 describe('postmerge hardfork', () => {
-  ;(genesisJSON.config as any).mergeForkBlock = 10
-  const params = parseGethGenesis(genesisJSON, 'post-merge', false)
+  it('starts on mergeBlock', async () => {
+    ;(genesisJSON.config as any).mergeForkBlock = 10
+    const params = parseGethGenesis(genesisJSON, 'post-merge', false)
 
-  const common = new Common({
-    chain: params.name,
-    customChains: [params],
-  })
-  common.setHardforkBy({ blockNumber: 11 })
-  const config = new Config({ common })
-  const manager = new CLConnectionManager({ config })
+    const common = new Common({
+      chain: params.name,
+      customChains: [params],
+    })
+    common.setHardforkBy({ blockNumber: 11 })
+    const config = new Config({ common })
+    const manager = new CLConnectionManager({ config })
 
-  config.events.on(Event.CHAIN_UPDATED, () => {
-    it('starts on mergeBlock', () => {
+    config.events.on(Event.CHAIN_UPDATED, () => {
       assert.ok(manager.running, 'connection manager started on chain update on mergeBlock')
       config.events.emit(Event.CLIENT_SHUTDOWN)
     })
-  })
-  config.events.emit(Event.CHAIN_UPDATED)
-  config.events.on(Event.CLIENT_SHUTDOWN, () => {
-    it('stops on client shutdown', () => {
-      assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+
+    config.events.emit(Event.CHAIN_UPDATED)
+    config.events.on(Event.CLIENT_SHUTDOWN, () => {
+      it('stops on client shutdown', () => {
+        assert.notOk(manager.running, 'connection manager stopped on client shutdown')
+      })
     })
   })
 })
@@ -105,26 +106,26 @@ describe('Status updates', async () => {
   manager.lastForkchoiceUpdate(update)
   manager.lastNewPayload(payload)
 })
-describe('updates stats when a new block is processed', async () => {
-  const config = new Config()
-  const manager = new CLConnectionManager({ config })
-  manager.lastForkchoiceUpdate(update)
-  manager.lastNewPayload(payload)
-  const block = Block.fromBlockData({
-    header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
-  })
-  config.logger.on('data', (chunk) => {
-    it('received message', () => {
+describe('updates stats when a new block is processed', () => {
+  it('received message', async () => {
+    const config = new Config()
+    const manager = new CLConnectionManager({ config })
+    manager.lastForkchoiceUpdate(update)
+    manager.lastNewPayload(payload)
+    const block = Block.fromBlockData({
+      header: { parentHash: payload.payload.blockHash, number: payload.payload.blockNumber },
+    })
+    config.logger.on('data', (chunk) => {
       if ((chunk.message as string).includes('Payload stats blocks count=1')) {
         assert.ok(true, 'received last payload stats message')
         manager.stop()
         config.logger.removeAllListeners()
       }
     })
-  })
 
-  manager.updatePayloadStats(block)
-  manager['lastPayloadLog']()
+    manager.updatePayloadStats(block)
+    manager['lastPayloadLog']()
+  })
 })
 describe('updates status correctly', async () => {
   const config = new Config()

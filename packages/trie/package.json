@@ -48,7 +48,7 @@
     "prepublishOnly": "../../config/cli/prepublish.sh",
     "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=./vitest.config.browser.ts --browser.name=chrome --browser.headless",
+    "test:browser": "npx vitest run --config=../../config/vitest.browser.config.mts",
     "test:node": "npx vitest run",
     "tsc": "../../config/cli/ts-compile.sh"
   },

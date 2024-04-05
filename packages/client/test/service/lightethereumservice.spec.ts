@@ -80,7 +80,7 @@ describe('should open', async () => {
   await service.close()
 })
 
-it('should start/stop', async () => {
+describe('should start/stop', async () => {
   const server = new RlpxServer({} as any)
   const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
