@@ -546,7 +546,26 @@ export class EVM implements EVMInterface {
         debug(`Exit early on value transfer overflowed (CREATE)`)
       }
     }
+
     if (exit) {
+      if (this.common.isActivatedEIP(6800)) {
+        const createCompleteAccessGas =
+          message.accessWitness!.touchAndChargeContractCreateCompleted(message.to)
+        gasLimit -= createCompleteAccessGas
+        if (gasLimit < BIGINT_0) {
+          if (this.DEBUG) {
+            debug(
+              `ContractCreateComplete access gas (${createCompleteAccessGas}) caused OOG (-> ${gasLimit})`
+            )
+          }
+          return { execResult: OOGResult(message.gasLimit) }
+        } else {
+          debug(
+            `ContractCreateComplete access used (${createCompleteAccessGas}) gas (-> ${gasLimit})`
+          )
+        }
+      }
+
       return {
         createdAddress: message.to,
         execResult: {
