@@ -49,7 +49,6 @@
     "typedoc": "0.23.10",
     "typedoc-plugin-markdown": "3.13.4",
     "typescript": "4.7.4",
-    "vite-plugin-dynamic-import": "^1.5.0",
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0",
@@ -57,7 +56,6 @@
   },
   "peerDependencies": {
     "@vitest/browser": "^1.4.0",
-    "playwright": "^1.42.1",
     "webdriverio": "^8.35.1"
   },
   "peerDependenciesMeta": {
@@ -77,8 +75,5 @@
   "engines": {
     "node": ">=18",
     "npm": ">=7"
-  },
-  "dependencies": {
-    "web-streams-polyfill": "^4.0.0"
   }
 }
