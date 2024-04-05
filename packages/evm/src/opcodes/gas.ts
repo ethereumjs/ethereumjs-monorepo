@@ -1,5 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
-import { CODE_SIZE_LEAF_KEY, getTreeIndexesForStorageSlot } from '@ethereumjs/statemanager'
+import {
+  CODE_SIZE_LEAF_KEY,
+  VERSION_LEAF_KEY,
+  getTreeIndexesForStorageSlot,
+} from '@ethereumjs/statemanager'
 import {
   Account,
   Address,
@@ -142,6 +146,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(6800) === true) {
           const address = new Address(addresstoBytes(runState.stack.peek()[0]))
+          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            address,
+            0,
+            VERSION_LEAF_KEY
+          )
           gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             0,

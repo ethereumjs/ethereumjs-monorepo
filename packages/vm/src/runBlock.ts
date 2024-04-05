@@ -706,7 +706,7 @@ export async function rewardAccount(
 
   if (common?.isActivatedEIP(6800) === true) {
     // use this utility to build access but the computed gas is not charged and hence free
-    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(
+    ;(evm.stateManager as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(
       address,
       { sendsValue: true }
     )

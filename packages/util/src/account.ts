@@ -378,7 +378,10 @@ export class Account {
    * Returns a `Boolean` determining if the account is a contract.
    */
   isContract(): boolean {
-    return !equalsBytes(this.codeHash, KECCAK256_NULL)
+    if(this._codeHash === null && this._codeSize === null){
+      throw Error(`Insufficient data as codeHash=null and codeSize=null`)
+    }
+    return this._codeHash!==null && !equalsBytes(this._codeHash, KECCAK256_NULL) || this._codeSize!==null && this._codeSize !== 0
   }
 
   /**

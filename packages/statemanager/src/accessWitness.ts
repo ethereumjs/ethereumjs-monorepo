@@ -113,17 +113,11 @@ export class AccessWitness {
     return gas
   }
 
-  touchAndChargeContractCreateInit(
-    address: Address,
-    { sendsValue }: { sendsValue?: boolean } = {}
-  ): bigint {
+  touchAndChargeContractCreateInit(address: Address): bigint {
     let gas = BIGINT_0
 
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, VERSION_LEAF_KEY)
     gas += this.touchAddressOnWriteAndComputeGas(address, 0, NONCE_LEAF_KEY)
-    if (sendsValue === true) {
-      gas += this.touchAddressOnWriteAndComputeGas(address, 0, BALANCE_LEAF_KEY)
-    }
 
     return gas
   }
@@ -153,7 +147,7 @@ export class AccessWitness {
     return gas
   }
 
-  touchTxExistingAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
+  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean } = {}) {
     let gas = BIGINT_0
 
     gas += this.touchAddressOnReadAndComputeGas(target, 0, VERSION_LEAF_KEY)

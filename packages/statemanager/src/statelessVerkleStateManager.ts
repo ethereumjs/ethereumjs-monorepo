@@ -464,9 +464,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // load the account basic fields and codeSize should be in it
     const account = await this.getAccount(address)
     if (account === undefined) {
-      const errorMsg = `address=${address} doesn't exist in pre-state`
-      debug(errorMsg)
-      throw Error(errorMsg)
+      return 0
     }
     return account.codeSize
   }
