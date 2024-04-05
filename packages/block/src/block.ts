@@ -5,6 +5,7 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   BIGINT_0,
   KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
   Withdrawal,
   bigIntToHex,
   bytesToHex,
@@ -62,6 +63,7 @@ export class Block {
 
   protected cache: {
     txTrieRoot?: Uint8Array
+    withdrawalsTrieRoot?: Uint8Array
   } = {}
 
   /**
@@ -720,6 +722,9 @@ export class Block {
    * @returns true if the uncle's hash is valid, false otherwise.
    */
   uncleHashIsValid(): boolean {
+    if (this.uncleHeaders.length === 0) {
+      return equalsBytes(KECCAK256_RLP_ARRAY, this.header.uncleHash)
+    }
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
     return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
@@ -733,11 +738,21 @@ export class Block {
     if (!this.common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(
-      this.withdrawals!,
-      new Trie({ common: this.common })
-    )
-    return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
+
+    let result
+    if (this.withdrawals!.length === 0) {
+      result = equalsBytes(this.header.withdrawalsRoot!, KECCAK256_RLP)
+      return result
+    }
+
+    if (this.cache.withdrawalsTrieRoot === undefined) {
+      this.cache.withdrawalsTrieRoot = await Block.genWithdrawalsTrieRoot(
+        this.withdrawals!,
+        new Trie({ common: this.common })
+      )
+    }
+    result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
+    return result
   }
 
   /**
