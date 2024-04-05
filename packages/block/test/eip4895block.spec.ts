@@ -4,7 +4,6 @@ import {
   Address,
   KECCAK256_RLP,
   Withdrawal,
-  equalsBytes,
   hexToBytes,
   randomBytes,
   zeros,
