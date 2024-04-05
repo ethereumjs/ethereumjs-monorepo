@@ -1,5 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
+  BALANCE_LEAF_KEY,
+  CODE_KECCAK_LEAF_KEY,
   CODE_SIZE_LEAF_KEY,
   VERSION_LEAF_KEY,
   getTreeIndexesForStorageSlot,
@@ -87,9 +89,19 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* BALANCE */
       0x31,
       async function (runState, gas, common): Promise<bigint> {
+        const address = addresstoBytes(runState.stack.peek()[0])
+
         if (common.isActivatedEIP(2929) === true) {
-          const address = runState.stack.peek()[0]
-          gas += accessAddressEIP2929(runState, addresstoBytes(address), common)
+          gas += accessAddressEIP2929(runState, address, common)
+        }
+
+        if (common.isActivatedEIP(6800) === true) {
+          const balanceAddress = new Address(address)
+          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            balanceAddress,
+            0,
+            BALANCE_LEAF_KEY
+          )
         }
         return gas
       },
@@ -216,9 +228,17 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* EXTCODEHASH */
       0x3f,
       async function (runState, gas, common): Promise<bigint> {
+        const address = addresstoBytes(runState.stack.peek()[0])
         if (common.isActivatedEIP(2929) === true) {
-          const address = runState.stack.peek()[0]
-          gas += accessAddressEIP2929(runState, addresstoBytes(address), common)
+          gas += accessAddressEIP2929(runState, address, common)
+        }
+        if (common.isActivatedEIP(6800) === true) {
+          const codeAddress = new Address(address)
+          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+            codeAddress,
+            0,
+            CODE_KECCAK_LEAF_KEY
+          )
         }
         return gas
       },
