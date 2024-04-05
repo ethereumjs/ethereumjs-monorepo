@@ -61,7 +61,7 @@ export function accessStorageEIP2929(
   if (slotIsCold) {
     runState.interpreter.journal.addWarmedStorage(address, key)
     return common.param('gasPrices', 'coldsload')
-  } else if (!isSstore) {
+  } else if (!isSstore || common.isActivatedEIP(6800) === true) {
     return common.param('gasPrices', 'warmstorageread')
   }
   return BIGINT_0
