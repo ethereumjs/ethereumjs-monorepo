@@ -5,6 +5,7 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   BIGINT_0,
   KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
   Withdrawal,
   bigIntToHex,
   bytesToHex,
@@ -722,7 +723,7 @@ export class Block {
    */
   uncleHashIsValid(): boolean {
     if (this.uncleHeaders.length === 0) {
-      return equalsBytes(KECCAK256_RLP, this.header.uncleHash)
+      return equalsBytes(KECCAK256_RLP_ARRAY, this.header.uncleHash)
     }
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
