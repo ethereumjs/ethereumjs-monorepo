@@ -19,6 +19,7 @@ type rpcParams = {
  *   params: ['latest', false],
  * }
  *  const block = await fetchFromProvider(provider, params)
+ * ```
  */
 export const fetchFromProvider = async (url: string, params: rpcParams) => {
   const data = JSON.stringify({
