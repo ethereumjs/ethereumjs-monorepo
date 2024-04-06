@@ -252,10 +252,8 @@ export class RPCStateManager implements EVMStateManagerInterface {
   }
 
   /**
-   * Gets the code corresponding to the provided `address`.
-   * @param address - Address to get the `account` for
-   * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
-   * Returns an empty `Uint8Array` if the account has no associated code.
+   * Gets the account associated with `address` or `undefined` if account does not exist
+   * @param address - Address of the `account` to get
    */
   async getAccount(address: Address): Promise<Account | undefined> {
     const elem = this._accountCache?.get(address)
@@ -265,11 +263,14 @@ export class RPCStateManager implements EVMStateManagerInterface {
         : undefined
     }
 
-    const rlp = (await this.getAccountFromProvider(address)).serialize()
-    const account =
-      equalsBytes(rlp, KECCAK256_RLP_EMPTY_ACCOUNT) === false
-        ? Account.fromRlpSerializedAccount(rlp)
-        : undefined
+    let account = await this.getAccountFromProvider(address)
+
+    if (account.codeHash.every((e:any)=> e === 0) || equalsBytes(account.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)) {
+      account = undefined
+  } else {
+      account = Account.fromRlpSerializedAccount(account.serialize())
+  }
+
     this._accountCache?.put(address, account)
 
     return account
