@@ -462,16 +462,17 @@ export async function accumulateParentBlockHash(
   }
 
   async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
+    // ringKey is the key the hash is actually put in (it is a ring buffer)
+    const ringKey = number % historyServeWindow
+
     // generate access witness
     if (vm.common.isActivatedEIP(6800) === true) {
-      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
+      const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(ringKey)
       // just create access witnesses without charging for the gas
       ;(
         vm.stateManager as StatelessVerkleStateManager
       ).accessWitness!.touchAddressOnWriteAndComputeGas(historyAddress, treeIndex, subIndex)
     }
-    // ringKey is the key the hash is actually put in (it is a ring buffer)
-    const ringKey = number % historyServeWindow
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     await vm.stateManager.putContractStorage(historyAddress, key, hash)
   }
