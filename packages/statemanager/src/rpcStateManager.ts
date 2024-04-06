@@ -263,13 +263,13 @@ export class RPCStateManager implements EVMStateManagerInterface {
         : undefined
     }
 
-    let account = await this.getAccountFromProvider(address)
+    const accountFromProvider = await this.getAccountFromProvider(address)
 
-    if (account.codeHash.every((e:any)=> e === 0) || equalsBytes(account.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)) {
-      account = undefined
-  } else {
-      account = Account.fromRlpSerializedAccount(account.serialize())
-  }
+    const account =
+      accountFromProvider.codeHash.every((e: any) => e === 0) ||
+      equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
+        ? undefined
+        : Account.fromRlpSerializedAccount(accountFromProvider.serialize())
 
     this._accountCache?.put(address, account)
 
