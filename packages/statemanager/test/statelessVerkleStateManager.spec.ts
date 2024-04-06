@@ -1,5 +1,6 @@
 import { Block } from '@ethereumjs/block'
 import { Common } from '@ethereumjs/common'
+import { TransactionFactory } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -26,9 +27,12 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
   })
   const common = Common.fromGethGenesis(testnetVerkleKaustinen, {
     chain: 'customChain',
-    eips: [6800],
+    eips: [4895, 6800],
   })
-  const block = Block.fromBlockData(verkleBlockJSON, { common })
+  const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
+    TransactionFactory.fromSerializedData(hexToBytes(tx))
+  )
+  const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs }, { common })
 
   it('initPreState()', async () => {
     const stateManager = await StatelessVerkleStateManager.create({ verkleCrypto })
@@ -42,11 +46,11 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     const account = await stateManager.getAccount(
-      Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
+      Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     )
 
-    assert.equal(account!.balance, 99765345920194942688594n, 'should have correct balance')
-    assert.equal(account!.nonce, 3963257n, 'should have correct nonce')
+    assert.equal(account!.balance, 241791330767054707n, 'should have correct balance')
+    assert.equal(account!.nonce, 200n, 'should have correct nonce')
     assert.equal(account!._storageRoot, null, 'stateroot should have not been set')
     assert.equal(
       bytesToHex(account!.codeHash),
@@ -105,8 +109,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     const stateManager = await StatelessVerkleStateManager.create({ common, verkleCrypto })
     stateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
-    const address = Address.fromString('0x9791ded6e5d3d5dafca71bb7bb2a14187d17e32e')
-    const stem = getStem(stateManager.verkleCrypto, address, 0)
+    const address = Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
+    const stem = getStem(stateManager.verkleCrypto, address, 0n)
 
     const balanceKey = stateManager.getTreeKeyForBalance(stem)
     const nonceKey = stateManager.getTreeKeyForNonce(stem)
