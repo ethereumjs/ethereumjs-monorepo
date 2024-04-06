@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1712157550838,
+  "lastUpdate": 1712420816675,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6e9cc95fdb3d2e4b58a2e2bbb92a91134479f7c3",
-          "message": "client: Snap Sync Debugging (#3200)\n\n* Initialize vm before openning snap sync\r\n\r\n* Use a field to track multiacconut requests\r\n\r\n* Fix store phase bug in storageFetcher\r\n\r\n* Cleanup\r\n\r\n* Check if rangeResult is undefined before accessing properties\r\n\r\n* Fix tests\r\n\r\n* Fix conditional\r\n\r\n* Remove redundant cast\r\n\r\n* Add comment to explain try block\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-02-20T12:07:11+01:00",
-          "tree_id": "52edc0d0ca8340a57ce9b9aa1d446998c246ee12",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/6e9cc95fdb3d2e4b58a2e2bbb92a91134479f7c3"
-        },
-        "date": 1708427534403,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40642,
-            "range": "±2.11%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38981,
-            "range": "±2.78%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39154,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38175,
-            "range": "±2.12%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 34749,
-            "range": "±5.79%",
-            "unit": "ops/sec",
-            "extra": "80 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.70%",
             "unit": "ops/sec",
             "extra": "87 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4be68d23c6390cca46b3235948f127707436f6fc",
+          "message": "fix: run npm audit fix (#3346)",
+          "timestamp": "2024-04-06T12:24:08-04:00",
+          "tree_id": "c4b9d3b4558d7ad1131bf02d7e4bc9d8cf9c89aa",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/4be68d23c6390cca46b3235948f127707436f6fc"
+        },
+        "date": 1712420816032,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41446,
+            "range": "±2.27%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 39983,
+            "range": "±2.85%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 39989,
+            "range": "±1.52%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39391,
+            "range": "±1.65%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 39051,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
           }
         ]
       }
