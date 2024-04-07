@@ -40,7 +40,7 @@ import type {
   Consensus,
   OnBlock,
 } from './types.js'
-import type { BlockData } from '@ethereumjs/block'
+import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject, GenesisState } from '@ethereumjs/util'
 
@@ -1418,7 +1418,7 @@ export class Blockchain implements BlockchainInterface {
       timestamp: common.genesis().timestamp,
     })
 
-    const header: BlockData['header'] = {
+    const header: HeaderData = {
       ...common.genesis(),
       number: 0,
       stateRoot,

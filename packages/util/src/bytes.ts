@@ -57,13 +57,13 @@ export const unprefixedHexToBytes = (inp: string) => {
 // Caching this info costs about ~1000 bytes and speeds up toHexString() by x6
 const hexByByte = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
 
-export const bytesToHex = (bytes: Uint8Array): string => {
-  let hex = '0x'
-  if (bytes === undefined || bytes.length === 0) return hex
+export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
+  let hex: string = ''
+  if (bytes === undefined || bytes.length === 0) return `0x`
   for (const byte of bytes) {
     hex += hexByByte[byte]
   }
-  return hex
+  return `0x${hex}`
 }
 
 // BigInt cache for the numbers 0 - 256*256-1 (two-byte bytes)

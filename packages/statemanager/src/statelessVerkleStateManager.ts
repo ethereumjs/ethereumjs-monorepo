@@ -281,7 +281,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
-        const key = `${stem}${padToEven(Number(suffix).toString(16))}`
+        const key = `${stem}${padToEven(Number(suffix).toString(16))}` as PrefixedHexString
         // A postState value of null means there was no change from the preState.
         // In this implementation, we therefore replace null with the preState.
         const value = newValue ?? this._state[key]

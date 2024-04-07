@@ -1,5 +1,12 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Account, isHexPrefixed, toBytes, unpadBytes, unprefixedHexToBytes } from '@ethereumjs/util'
+import {
+  Account,
+  hexToBytes,
+  isHexPrefixed,
+  toBytes,
+  unpadBytes,
+  unprefixedHexToBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Trie } from '../trie.js'
@@ -12,7 +19,7 @@ import type { AccountState, GenesisState } from '@ethereumjs/util'
 export async function genesisStateRoot(genesisState: GenesisState) {
   const trie = new Trie({ useKeyHashing: true })
   for (const [key, value] of Object.entries(genesisState)) {
-    const address = isHexPrefixed(key) ? toBytes(key) : unprefixedHexToBytes(key)
+    const address = isHexPrefixed(key) ? hexToBytes(key) : unprefixedHexToBytes(key)
     const account = new Account()
     if (typeof value === 'string') {
       account.balance = BigInt(value)

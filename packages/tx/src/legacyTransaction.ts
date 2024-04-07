@@ -115,7 +115,7 @@ export class LegacyTransaction extends BaseTransaction<TransactionType.Legacy> {
 
     this.common = this._validateTxV(this.v, opts.common)
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
-    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice === '' ? '0x' : txData.gasPrice))
+    this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = this._errorMsg('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')

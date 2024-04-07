@@ -541,9 +541,9 @@ export class Eth {
     if (transaction.gasPrice === undefined && transaction.maxFeePerGas === undefined) {
       // If no gas price or maxFeePerGas provided, use current block base fee for gas estimates
       if (transaction.type !== undefined && parseInt(transaction.type) === 2) {
-        transaction.maxFeePerGas = '0x' + block.header.baseFeePerGas?.toString(16)
+        transaction.maxFeePerGas = `0x${block.header.baseFeePerGas?.toString(16)}`
       } else if (block.header.baseFeePerGas !== undefined) {
-        transaction.gasPrice = '0x' + block.header.baseFeePerGas?.toString(16)
+        transaction.gasPrice = `0x${block.header.baseFeePerGas?.toString(16)}`
       }
     }
 

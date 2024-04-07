@@ -2,6 +2,7 @@ import { UNKNOWN_PAYLOAD } from '../../error-code'
 
 import type { Skeleton } from '../../../service'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 export enum Status {
   ACCEPTED = 'ACCEPTED',
@@ -11,14 +12,14 @@ export enum Status {
   VALID = 'VALID',
 }
 
-export type Bytes8 = string
-export type Bytes20 = string
-export type Bytes32 = string
+export type Bytes8 = PrefixedHexString
+export type Bytes20 = PrefixedHexString
+export type Bytes32 = PrefixedHexString
 // type Root = Bytes32
 export type Blob = Bytes32
-export type Bytes48 = string
-export type Uint64 = string
-export type Uint256 = string
+export type Bytes48 = PrefixedHexString
+export type Uint64 = PrefixedHexString
+export type Uint256 = PrefixedHexString
 
 type WithdrawalV1 = Exclude<ExecutionPayload['withdrawals'], undefined>[number]
 

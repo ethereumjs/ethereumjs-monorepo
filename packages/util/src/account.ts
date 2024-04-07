@@ -19,7 +19,7 @@ import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.js'
 import { assertIsBytes, assertIsHexString, assertIsString } from './helpers.js'
 import { stripHexPrefix } from './internal.js'
 
-import type { BigIntLike, BytesLike } from './types.js'
+import type { BigIntLike, BytesLike, PrefixedHexString } from './types.js'
 
 export interface AccountData {
   nonce?: BigIntLike
@@ -398,7 +398,7 @@ export class Account {
 /**
  * Checks if the address is a valid. Accepts checksummed addresses too.
  */
-export const isValidAddress = function (hexAddress: string): boolean {
+export const isValidAddress = function (hexAddress: string): hexAddress is PrefixedHexString {
   try {
     assertIsString(hexAddress)
   } catch (e: any) {
@@ -423,7 +423,7 @@ export const isValidAddress = function (hexAddress: string): boolean {
 export const toChecksumAddress = function (
   hexAddress: string,
   eip1191ChainId?: BigIntLike
-): string {
+): PrefixedHexString {
   assertIsHexString(hexAddress)
   const address = stripHexPrefix(hexAddress).toLowerCase()
 
@@ -435,7 +435,7 @@ export const toChecksumAddress = function (
 
   const bytes = utf8ToBytes(prefix + address)
   const hash = bytesToHex(keccak256(bytes)).slice(2)
-  let ret = '0x'
+  let ret = ''
 
   for (let i = 0; i < address.length; i++) {
     if (parseInt(hash[i], 16) >= 8) {
@@ -445,7 +445,7 @@ export const toChecksumAddress = function (
     }
   }
 
-  return ret
+  return `0x${ret}`
 }
 
 /**

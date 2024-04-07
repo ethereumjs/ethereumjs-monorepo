@@ -7,6 +7,7 @@ import { type ChainCache } from '../types'
 
 import type { Chain } from '../../../../blockchain'
 import type { Common } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Recursively finds parent blocks starting from the parentHash.
@@ -77,7 +78,7 @@ export const validHash = async (
   hash: Uint8Array,
   chain: Chain,
   chainCache: ChainCache
-): Promise<string | null> => {
+): Promise<PrefixedHexString | null> => {
   const { remoteBlocks, executedBlocks, invalidBlocks, skeleton } = chainCache
   const maxDepth = chain.config.engineParentLookupMaxDepth
 
