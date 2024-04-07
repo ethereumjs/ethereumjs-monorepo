@@ -1,7 +1,12 @@
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../../src/config'
-import { Peer } from '../../../src/net/peer'
+import { Peer as AbstractPeer } from '../../../src/net/peer'
+
+// Mock peer class (can't directly use the imported Peer class  as it's abstract)
+class Peer extends AbstractPeer {
+  async connect() {}
+}
 
 describe('[Peer]', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })

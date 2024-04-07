@@ -1,5 +1,4 @@
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
@@ -13,7 +12,6 @@ import { _accountRangeRLP } from './accountfetcher.spec'
 
 const _byteCodesRLP =
   '0xf89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
-const useKeyHashing = true
 
 describe('[ByteCodeFetcher]', async () => {
   class PeerPool {
@@ -31,7 +29,6 @@ describe('[ByteCodeFetcher]', async () => {
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
-      trie: new Trie({ useKeyHashing }),
       hashes: [hexToBytes('0x2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc')],
     })
     fetcher.next = () => false
@@ -60,7 +57,6 @@ describe('[ByteCodeFetcher]', async () => {
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
-      trie: new Trie({ useKeyHashing }),
       hashes: [],
     })
 
@@ -88,7 +84,6 @@ describe('[ByteCodeFetcher]', async () => {
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
-      trie: new Trie({ useKeyHashing }),
       hashes: [],
     })
     const ByteCodeResponse: any = [utf8ToBytes(''), utf8ToBytes('')]
@@ -117,7 +112,6 @@ describe('[ByteCodeFetcher]', async () => {
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
-      trie: new Trie({ useKeyHashing }),
       hashes: [],
     })
 
@@ -169,7 +163,6 @@ describe('[ByteCodeFetcher]', async () => {
     const fetcher = new ByteCodeFetcher({
       config,
       pool,
-      trie: new Trie({ useKeyHashing }),
       hashes: [utf8ToBytes('')],
     })
     assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
