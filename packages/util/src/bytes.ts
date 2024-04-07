@@ -155,7 +155,7 @@ export const intToBytes = (i: number): Uint8Array => {
  */
 export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  const bytes = toBytes('0x' + padToEven(num.toString(16)))
+  const bytes = toBytes(`0x${padToEven(num.toString(16))}`)
 
   return littleEndian ? bytes.reverse() : bytes
 }
@@ -216,13 +216,11 @@ export const setLengthRight = (msg: Uint8Array, length: number): Uint8Array => {
 }
 
 /**
- * Trims leading zeros from a `Uint8Array`, `number[]` or PrefixedHexString`.
- * @param {Uint8Array|number[]|PrefixedHexString} a
- * @return {Uint8Array|number[]|PrefixedHexString}
+ * Trims leading zeros from a `Uint8Array`, `number[]` or `string`.
+ * @param {Uint8Array|number[]|string} a
+ * @return {Uint8Array|number[]|string}
  */
-const stripZeros = <
-  T extends Uint8Array | number[] | PrefixedHexString = Uint8Array | number[] | PrefixedHexString
->(
+const stripZeros = <T extends Uint8Array | number[] | string = Uint8Array | number[] | string>(
   a: T
 ): T => {
   let first = a[0]
@@ -258,10 +256,9 @@ export const unpadArray = (a: number[]): number[] => {
  * @param {PrefixedHexString} a
  * @return {PrefixedHexString}
  */
-export const unpadHex = (a: string): PrefixedHexString => {
+export const unpadHex = (a: PrefixedHexString): PrefixedHexString => {
   assertIsHexString(a)
-  a = stripHexPrefix(a)
-  return '0x' + stripZeros(a)
+  return `0x${stripZeros(stripHexPrefix(a))}`
 }
 
 export type ToBytesInputTypes =
@@ -349,7 +346,7 @@ export const addHexPrefix = (str: string): PrefixedHexString => {
     return str
   }
 
-  return isHexPrefixed(str) ? str : '0x' + str
+  return isHexPrefixed(str) ? (str as PrefixedHexString) : `0x${str}`
 }
 
 /**
@@ -399,7 +396,7 @@ export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | un
  * @returns {PrefixedHexString}
  */
 export const bigIntToHex = (num: bigint): PrefixedHexString => {
-  return '0x' + num.toString(16)
+  return `0x${num.toString(16)}`
 }
 
 /**
