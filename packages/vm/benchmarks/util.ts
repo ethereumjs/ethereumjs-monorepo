@@ -1,4 +1,12 @@
-import { Account, Address, BIGINT_0, equalsBytes, toBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  BIGINT_0,
+  PrefixedHexString,
+  equalsBytes,
+  hexToBytes,
+  toBytes,
+} from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -14,22 +22,22 @@ export interface BenchmarksType {
 }
 
 interface StateTestPreAccount {
-  balance: string
-  code: string
-  nonce: string
-  storage: { [k: string]: string }
+  balance: PrefixedHexString
+  code: PrefixedHexString
+  nonce: PrefixedHexString
+  storage: { [k: PrefixedHexString]: PrefixedHexString }
 }
 
 export async function getPreState(
   pre: {
-    [k: string]: StateTestPreAccount
+    [k: PrefixedHexString]: StateTestPreAccount
   },
   common: Common
 ): Promise<DefaultStateManager> {
   const state = new DefaultStateManager()
   await state.checkpoint()
   for (const k in pre) {
-    const address = new Address(toBytes(k))
+    const address = new Address(hexToBytes(k as PrefixedHexString))
     const { nonce, balance, code, storage } = pre[k]
     const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
@@ -40,7 +48,7 @@ export async function getPreState(
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
       const zeroBytesEquivalent = new Uint8Array(valueBytes.length)
       if (!equalsBytes(zeroBytesEquivalent, valueBytes)) {
-        await state.putContractStorage(address, toBytes(sk), toBytes(sv))
+        await state.putContractStorage(address, hexToBytes(sk as PrefixedHexString), toBytes(sv))
       }
     }
   }
