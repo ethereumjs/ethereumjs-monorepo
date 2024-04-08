@@ -5,7 +5,7 @@ import { ERROR, EvmError } from '../exceptions.js'
 
 import { BLS12_381_FromG1Point, BLS12_381_ToFpPoint } from './util/bls12_381.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile13(opts: PrecompileInput): Promise<ExecResult> {

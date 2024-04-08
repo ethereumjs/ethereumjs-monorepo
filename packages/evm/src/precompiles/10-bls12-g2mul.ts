@@ -9,7 +9,7 @@ import {
   BLS12_381_ToG2Point,
 } from './util/bls12_381.js'
 
-import type { ExecResult } from '../evm.js'
+import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
 export async function precompile10(opts: PrecompileInput): Promise<ExecResult> {
