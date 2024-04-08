@@ -124,8 +124,8 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
     f = function () {
       c.paramByEIP('notExistingTopic', 'Bls12381G1AddGas', 2537)
     }
-    msg = 'Should throw for using paramByEIP() with a not existing topic'
-    assert.throws(f, /not defined$/, undefined, msg)
+    msg = 'Should return undefined for paramByEIP() with a not existing topic'
+    assert.equal(f(), undefined, msg)
 
     msg = 'Should return Bls12381G1AddGas gas price for EIP2537'
     assert.equal(c.paramByEIP('gasPrices', 'Bls12381G1AddGas', 2537), BigInt(600), msg)
