@@ -18,7 +18,8 @@ type rpcParams = {
  *   method: 'eth_getBlockByNumber',
  *   params: ['latest', false],
  * }
- *  const block = await fetchFromProvider(provider, params)
+ * const block = await fetchFromProvider(provider, params)
+ * ```
  */
 export const fetchFromProvider = async (url: string, params: rpcParams) => {
   const data = JSON.stringify({
