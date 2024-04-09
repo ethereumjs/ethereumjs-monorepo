@@ -60,6 +60,7 @@ type FetchedNodeData = {
 }
 
 type NodeRequestData = {
+  requested: boolean
   nodeHash: string
   nodeParentHash: string
   parentAccountHash?: string // for leaf account nodes that contain a storage component
@@ -116,6 +117,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
+      requested: false,
       nodeHash: bytesToHex(this.root),
       nodeParentHash: '', // root node does not have a parent
     } as NodeRequestData)
@@ -256,6 +258,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
                 storagePath,
               ].join('/')
               this.pathToNodeRequestData.setElement(syncPath, {
+                requested: false,
                 nodeHash: bytesToHex(storageRoot),
                 nodeParentHash: nodeHash,
                 parentAccountHash: nodeHash,
@@ -292,6 +295,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
               pathString
             ) as NodeRequestData
             this.pathToNodeRequestData.setElement(childNode.path, {
+              requested: false,
               nodeHash: bytesToHex(childNode.nodeHash as Uint8Array),
               nodeParentHash: nodeHash, // TODO root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively
               parentAccountHash,
@@ -404,17 +408,25 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       if (this.pathToNodeRequestData.size() > 0) {
         let { pathStrings } = this.getSortedPathStrings() // TODO pass in number of paths to return
         while (tasks.length < maxTasks && pathStrings.length > 0) {
-          const requestedPathStrings = pathStrings.slice(0, max)
+          const pendingPathStrings = pathStrings.slice(0, max)
           pathStrings = pathStrings.slice(max + 1)
-          for (const pathString of requestedPathStrings) {
-            const nodeHash = this.pathToNodeRequestData.getElementByKey(pathString)?.nodeHash // TODO return node set too from sorted function and avoid lookups here
-            if (nodeHash === undefined) throw Error('Path should exist')
-            this.requestedNodeToPath.set(nodeHash as unknown as string, pathString)
+          const neededPathStrings = []
+          for (const pathString of pendingPathStrings) {
+            const requestData = this.pathToNodeRequestData.getElementByKey(pathString) // TODO return node set too from sorted function and avoid lookups here
+            if (requestData === undefined) throw Error('Path should exist')
+            if (requestData.requested === false) {
+              this.requestedNodeToPath.set(requestData.nodeHash as unknown as string, pathString)
+              this.pathToNodeRequestData.setElement(pathString, {
+                ...requestData,
+                requested: true,
+              })
+              neededPathStrings.push(pathString)
+            }
           }
           this.debug('At start of mergeAndFormatPaths')
-          const paths = mergeAndFormatKeyPaths(requestedPathStrings) as unknown as Uint8Array[][]
+          const paths = mergeAndFormatKeyPaths(neededPathStrings) as unknown as Uint8Array[][]
           tasks.push({
-            pathStrings: requestedPathStrings,
+            pathStrings: neededPathStrings,
             paths,
           })
           this.debug(`Created new tasks num=${tasks.length}`)
