@@ -1,6 +1,13 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { Address, KECCAK256_RLP, Withdrawal, hexToBytes, zeros } from '@ethereumjs/util'
+import {
+  Address,
+  KECCAK256_RLP,
+  Withdrawal,
+  hexToBytes,
+  randomBytes,
+  zeros,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Block } from '../src/block.js'
@@ -222,6 +229,16 @@ describe('EIP4895 tests', () => {
       undefined,
       undefined,
       'should provide withdrawals array when 4895 is active'
+    )
+  })
+
+  it('should return early when withdrawals root equals KECCAK256_RLP', async () => {
+    const block = Block.fromBlockData({}, { common })
+    // Set invalid withdrawalsRoot in cache
+    block['cache'].withdrawalsTrieRoot = randomBytes(32)
+    assert.ok(
+      await block.withdrawalsTrieIsValid(),
+      'correctly executed code path where withdrawals length is 0'
     )
   })
 })
