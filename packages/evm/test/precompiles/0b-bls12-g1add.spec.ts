@@ -85,7 +85,7 @@ describe('Precompiles: BLS12-G1-ADD', () => {
     const evm = await EVM.create({
       common,
     })
-    const BLS12G1ADD = getActivePrecompiles(common).get('000000000000000000000000000000000000000c')!
+    const BLS12G1ADD = getActivePrecompiles(common).get('000000000000000000000000000000000000000b')!
 
     for (const testVector of testData) {
       const result = await BLS12G1ADD({

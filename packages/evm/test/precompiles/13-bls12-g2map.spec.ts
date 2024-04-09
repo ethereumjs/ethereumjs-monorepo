@@ -59,7 +59,7 @@ describe('Precompiles: BLS12-FP2-TO-G2', () => {
       common,
     })
     const BLS12FP2TOG2 = getActivePrecompiles(common).get(
-      '0000000000000000000000000000000000000014'
+      '0000000000000000000000000000000000000013'
     )!
 
     for (const testVector of testData) {

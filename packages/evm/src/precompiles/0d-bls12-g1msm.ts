@@ -13,14 +13,14 @@ import {
 import type { ExecResult } from '../types.js'
 import type { PrecompileInput } from './types.js'
 
-export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
+export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   const mcl = (<any>opts._EVM)._mcl!
 
   const inputData = opts.data
 
   if (inputData.length === 0) {
     if (opts._debug !== undefined) {
-      opts._debug(`BLS12G1MSM (0x0c) failed: Empty input`)
+      opts._debug(`BLS12G1MSM (0x0d) failed: Empty input`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INPUT_EMPTY), opts.gasLimit) // follow Geths implementation
   }
@@ -46,7 +46,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
 
   if (opts._debug !== undefined) {
     opts._debug(
-      `Run BLS12G1MSM (0x0c) precompile data=${short(opts.data)} length=${
+      `Run BLS12G1MSM (0x0d) precompile data=${short(opts.data)} length=${
         opts.data.length
       } gasLimit=${opts.gasLimit} gasUsed=${gasUsed}`
     )
@@ -54,14 +54,14 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
 
   if (opts.gasLimit < gasUsed) {
     if (opts._debug !== undefined) {
-      opts._debug(`BLS12G1MSM (0x0c) failed: OOG`)
+      opts._debug(`BLS12G1MSM (0x0d) failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (inputData.length % 160 !== 0) {
     if (opts._debug !== undefined) {
-      opts._debug(`BLS12G1MSM (0x0c) failed: Invalid input length length=${inputData.length}`)
+      opts._debug(`BLS12G1MSM (0x0d) failed: Invalid input length length=${inputData.length}`)
     }
     return EvmErrorResult(new EvmError(ERROR.BLS_12_381_INVALID_INPUT_LENGTH), opts.gasLimit)
   }
@@ -87,7 +87,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
       )
       if (!(equalsBytes(slicedBuffer, zeroBytes16) === true)) {
         if (opts._debug !== undefined) {
-          opts._debug(`BLS12G1MSM (0x0c) failed: Point not on curve`)
+          opts._debug(`BLS12G1MSM (0x0d) failed: Point not on curve`)
         }
         return EvmErrorResult(new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE), opts.gasLimit)
       }
@@ -97,7 +97,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
       G1 = BLS12_381_ToG1Point(opts.data.subarray(pairStart, pairStart + 128), mcl)
     } catch (e: any) {
       if (opts._debug !== undefined) {
-        opts._debug(`BLS12G1MSM (0x0c) failed: ${e.message}`)
+        opts._debug(`BLS12G1MSM (0x0d) failed: ${e.message}`)
       }
       return EvmErrorResult(e, opts.gasLimit)
     }
@@ -112,7 +112,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   const returnValue = BLS12_381_FromG1Point(result)
 
   if (opts._debug !== undefined) {
-    opts._debug(`BLS12G1MSM (0x0c) return value=${bytesToHex(returnValue)}`)
+    opts._debug(`BLS12G1MSM (0x0d) return value=${bytesToHex(returnValue)}`)
   }
 
   return {

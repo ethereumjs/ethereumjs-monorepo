@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 import { EVM } from '../../src/evm.js'
 import { getActivePrecompiles } from '../../src/index.js'
 
-const precompileAddressStart = 0x0c
-const precompileAddressEnd = 0x14
+const precompileAddressStart = 0x0b
+const precompileAddressEnd = 0x13
 
 const precompiles: string[] = []
 
@@ -46,7 +46,7 @@ describe('EIP-2537 BLS tests', () => {
   it('BLS precompiles should throw on empty inputs', async () => {
     const common = new Common({
       chain: Chain.Mainnet,
-      hardfork: Hardfork.Byzantium,
+      hardfork: Hardfork.Berlin,
       eips: [2537],
     })
     const evm = await EVM.create({
@@ -88,7 +88,7 @@ describe('EIP-2537 BLS tests', () => {
       common,
     })
     const BLS12G2MultiExp = getActivePrecompiles(common).get(
-      '0000000000000000000000000000000000000011'
+      '0000000000000000000000000000000000000010'
     )!
 
     const testVector =
