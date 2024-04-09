@@ -6,8 +6,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { createHash } from 'crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY, Trie } from '../../src/index.js'
@@ -203,7 +203,7 @@ describe('SecureTrie.copy', () => {
     const trie = new Trie({
       db: new MapDB(),
       useKeyHashing: true,
-      useKeyHashingFunction: (value) => createHash('sha256').update(value).digest(),
+      useKeyHashingFunction: sha256,
     })
 
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))

@@ -131,47 +131,48 @@ describe('sync errors', async () => {
   })
   await sync.sync()
 })
-describe('import headers', async () => {
-  td.reset()
-  HeaderFetcher.prototype.fetch = td.func<any>()
-  HeaderFetcher.prototype.clear = td.func<any>()
-  HeaderFetcher.prototype.destroy = td.func<any>()
-  vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
-  const { LightSynchronizer } = await import('../../src/sync/lightsync')
-  const config = new Config({
-    accountCache: 10000,
-    storageCache: 1000,
-    safeReorgDistance: 0,
-  })
-  const pool = new PeerPool() as any
-  const chain = await Chain.create({ config })
-  const sync = new LightSynchronizer({
-    config,
-    interval: 1,
-    pool,
-    chain,
-  })
-  sync.best = td.func<typeof sync['best']>()
-  sync.latest = td.func<typeof sync['latest']>()
-  td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
-  td.when(sync.latest(td.matchers.anything())).thenResolve({
-    number: BigInt(2),
-    hash: () => new Uint8Array(0),
-  })
-  td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
-  td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
-    config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})])
-  )
-  config.logger.on('data', async (data) => {
-    if ((data.message as string).includes('Imported headers count=1')) {
-      it('should import header', async () => {
+describe('import headers', () => {
+  it('should import header', async () => {
+    td.reset()
+    HeaderFetcher.prototype.fetch = td.func<any>()
+    HeaderFetcher.prototype.clear = td.func<any>()
+    HeaderFetcher.prototype.destroy = td.func<any>()
+    vi.mock('../../src/sync/fetcher/headerfetcher', () => td.object())
+    const { LightSynchronizer } = await import('../../src/sync/lightsync')
+    const config = new Config({
+      accountCache: 10000,
+      storageCache: 1000,
+      safeReorgDistance: 0,
+    })
+    const pool = new PeerPool() as any
+    const chain = await Chain.create({ config })
+    const sync = new LightSynchronizer({
+      config,
+      interval: 1,
+      pool,
+      chain,
+    })
+    sync.best = td.func<typeof sync['best']>()
+    sync.latest = td.func<typeof sync['latest']>()
+    td.when(sync.best()).thenResolve({ les: { status: { headNum: BigInt(2) } } } as any)
+    td.when(sync.latest(td.matchers.anything())).thenResolve({
+      number: BigInt(2),
+      hash: () => new Uint8Array(0),
+    })
+    td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
+    td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
+      config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})])
+    )
+    config.logger.on('data', async (data) => {
+      if ((data.message as string).includes('Imported headers count=1')) {
         assert.ok(true, 'successfully imported new header')
         config.logger.removeAllListeners()
         await sync.stop()
         await sync.close()
         vi.unmock('../../src/sync/fetcher/headerfetcher')
-      })
-    }
+      }
+    })
+
+    await sync.sync()
   })
-  await sync.sync()
 })

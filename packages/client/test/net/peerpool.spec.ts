@@ -68,7 +68,7 @@ describe('should check contains', () => {
   })
 })
 
-it('should get idle peers', () => {
+describe('should get idle peers', () => {
   // @ts-ignore
   const peers = [new Peer(1), new Peer(2), new Peer(3)]
   const config = new Config({ accountCache: 10000, storageCache: 1000 })

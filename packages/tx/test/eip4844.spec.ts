@@ -10,8 +10,8 @@ import {
   equalsBytes,
   getBlobs,
   hexToBytes,
+  randomBytes,
 } from '@ethereumjs/util'
-import { randomBytes } from 'crypto'
 import { loadKZG } from 'kzg-wasm'
 import { assert, beforeAll, describe, it } from 'vitest'
 
