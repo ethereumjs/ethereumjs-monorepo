@@ -131,14 +131,12 @@ export class EVM implements EVMInterface {
     return this._opcodes
   }
 
-  protected _isInitialized: boolean = false
-
   /**
    * Pointer to the mcl package, not for public usage
    * set to public due to implementation internals
    * @hidden
    */
-  public readonly _mcl: any //
+  protected readonly _mcl: any //
 
   /**
    * EVM is run in DEBUG mode (default: false)
@@ -165,6 +163,13 @@ export class EVM implements EVMInterface {
     const opts = createOpts ?? ({} as EVMOpts)
     const bn128 = initializedRustBN ?? (await initRustBN())
     initializedRustBN = bn128
+
+    if (createOpts?.common && createOpts.common.isActivatedEIP(2537)) {
+      await mclInitPromise // ensure that mcl is initialized.
+      mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
+      mcl.verifyOrderG1(true) // subgroup checks for G1
+      mcl.verifyOrderG2(true) // subgroup checks for G2
+    }
 
     if (opts.common === undefined) {
       opts.common = new Common({ chain: Chain.Mainnet })
@@ -250,22 +255,6 @@ export class EVM implements EVMInterface {
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
       typeof window === 'undefined' ? process?.env?.DEBUG?.includes('ethjs') ?? false : false
-  }
-
-  protected async init(): Promise<void> {
-    if (this._isInitialized) {
-      return
-    }
-
-    if (this.common.isActivatedEIP(2537)) {
-      const mcl = this._mcl
-      await mclInitPromise // ensure that mcl is initialized.
-      mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
-      mcl.verifyOrderG1(1) // subgroup checks for G1
-      mcl.verifyOrderG2(1) // subgroup checks for G2
-    }
-
-    this._isInitialized = true
   }
 
   /**
