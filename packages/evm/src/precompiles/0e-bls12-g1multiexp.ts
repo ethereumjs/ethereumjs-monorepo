@@ -7,6 +7,7 @@ import {
   BLS12_381_FromG1Point,
   BLS12_381_ToFrPoint,
   BLS12_381_ToG1Point,
+  gasDiscountPairs,
 } from './util/bls12_381.js'
 
 import type { ExecResult } from '../types.js'
@@ -27,11 +28,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   const numPairs = Math.floor(inputData.length / 160)
 
   const gasUsedPerPair = opts.common.paramByEIP('gasPrices', 'Bls12381G1MulGas', 2537) ?? BigInt(0)
-  const gasDiscountArray = opts.common.paramByEIP(
-    'gasPrices',
-    'Bls12381MultiExpGasDiscount',
-    2537
-  ) as any
+  const gasDiscountArray = gasDiscountPairs
   const gasDiscountMax = gasDiscountArray[gasDiscountArray.length - 1][1]
   let gasDiscountMultiplier
 
