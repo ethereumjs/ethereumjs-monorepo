@@ -136,6 +136,11 @@ export class RPCStateManager implements EVMStateManagerInterface {
     return codeBytes
   }
 
+  async getContractCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getContractCode(address)
+    return contractCode.length
+  }
+
   /**
    * Adds `value` to the state trie as code, and sets `codeHash` on the account
    * corresponding to `address` to reference this.

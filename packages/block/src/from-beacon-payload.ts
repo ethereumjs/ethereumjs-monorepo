@@ -1,6 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
 import type { ExecutionPayload, VerkleExecutionWitness } from './types.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 type BeaconWithdrawal = {
   index: string
@@ -32,6 +33,59 @@ export type BeaconPayloadJson = {
   parent_beacon_block_root?: string
   // the casing of VerkleExecutionWitness remains same camel case for now
   execution_witness?: VerkleExecutionWitness
+}
+
+type VerkleProofSnakeJson = {
+  commitments_by_path: PrefixedHexString[]
+  d: PrefixedHexString
+  depth_extension_present: PrefixedHexString
+  ipa_proof: {
+    cl: PrefixedHexString[]
+    cr: PrefixedHexString[]
+    final_evaluation: PrefixedHexString
+  }
+  other_stems: PrefixedHexString[]
+}
+
+type VerkleStateDiffSnakeJson = {
+  stem: PrefixedHexString
+  suffix_diffs: {
+    current_value: PrefixedHexString | null
+    new_value: PrefixedHexString | null
+    suffix: number | string
+  }[]
+}
+
+type VerkleExecutionWitnessSnakeJson = {
+  state_diff: VerkleStateDiffSnakeJson[]
+  verkle_proof: VerkleProofSnakeJson
+}
+
+function parseExecutionWitnessFromSnakeJson({
+  state_diff,
+  verkle_proof,
+}: VerkleExecutionWitnessSnakeJson): VerkleExecutionWitness {
+  return {
+    stateDiff: state_diff.map(({ stem, suffix_diffs }) => ({
+      stem,
+      suffixDiffs: suffix_diffs.map(({ current_value, new_value, suffix }) => ({
+        currentValue: current_value,
+        newValue: new_value,
+        suffix,
+      })),
+    })),
+    verkleProof: {
+      commitmentsByPath: verkle_proof.commitments_by_path,
+      d: verkle_proof.d,
+      depthExtensionPresent: verkle_proof.depth_extension_present,
+      ipaProof: {
+        cl: verkle_proof.ipa_proof.cl,
+        cr: verkle_proof.ipa_proof.cr,
+        finalEvaluation: verkle_proof.ipa_proof.final_evaluation,
+      },
+      otherStems: verkle_proof.other_stems,
+    },
+  }
 }
 
 /**
@@ -75,9 +129,13 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJson): E
     executionPayload.parentBeaconBlockRoot = payload.parent_beacon_block_root
   }
   if (payload.execution_witness !== undefined && payload.execution_witness !== null) {
-    // the casing structure in payload is already camel case, might be updated in
-    // kaustinen relaunch
-    executionPayload.executionWitness = payload.execution_witness
+    // the casing structure in payload could be camel case or snake depending upon the CL
+    executionPayload.executionWitness =
+      payload.execution_witness.verkleProof !== undefined
+        ? payload.execution_witness
+        : parseExecutionWitnessFromSnakeJson(
+            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJson
+          )
   }
 
   return executionPayload

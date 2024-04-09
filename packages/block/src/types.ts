@@ -72,6 +72,8 @@ export interface BlockOptions {
    *  Skip consensus format validation checks on header if set. Defaults to false.
    */
   skipConsensusFormatValidation?: boolean
+
+  executionWitness?: VerkleExecutionWitness
 }
 
 export interface VerkleProof {
