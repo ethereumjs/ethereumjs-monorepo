@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1712590814681,
+  "lastUpdate": 1712651619891,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e1221c98f3be0ba4224416f10d91ed4aa50130d8",
-          "message": "Client: Refactor Engine API (#3291)\n\n* Move engine.ts to dedicated engine API code folder\r\n\r\n* Move types to dedicated types.ts file\r\n\r\n* Move validators to a dedicated validators.ts file\r\n\r\n* Add dedicated util.ts file, move first two methods\r\n\r\n* Move next two methods to util.ts\r\n\r\n* Move last remaining methods to util.ts\r\n\r\n* Move CLConnectionManager from generic util folder to engine API RPC folder\r\n\r\n* Adjust test paths\r\n\r\n* Move validator initialization in Engine API constructor to dedicated private method\r\n\r\n* Some additional initValidators() structuring and documentation\r\n\r\n* Move util.ts to dedicated util folder, rename to generic.ts\r\n\r\n* Adjust paths\r\n\r\n* Add call-specific util files\r\n\r\n* Delete accidentally re-checked in util.ts file\r\n\r\n* Move first two methods to dedicated per-call util files\r\n\r\n* Move remaining per-call methods to dedicated util files\r\n\r\n* Add new validate4844BlobVersionedHashes helper\r\n\r\n* Better newPayload documentation\r\n\r\n* Better forkchoiceUpdate documentation, additional structuring\r\n\r\n* Additional documentation and Engine API doc references for remaining API calls",
-          "timestamp": "2024-02-21T17:20:39+01:00",
-          "tree_id": "2f185f505b3e1552a09a7176af9ce2138f93b0d5",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/e1221c98f3be0ba4224416f10d91ed4aa50130d8"
-        },
-        "date": 1708532609062,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40688,
-            "range": "±2.13%",
-            "unit": "ops/sec",
-            "extra": "81 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39059,
-            "range": "±2.97%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39235,
-            "range": "±1.93%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36553,
-            "range": "±5.23%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36752,
-            "range": "±3.55%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.82%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "44bbdd577fc889c25a8ab1faba5befbbac34d9a0",
+          "message": "devp2p: increase timeout for test that sometimes fails in ci (#3351)",
+          "timestamp": "2024-04-09T10:30:51+02:00",
+          "tree_id": "db4765db042239f409dd5295c8c2b4ef96808642",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/44bbdd577fc889c25a8ab1faba5befbbac34d9a0"
+        },
+        "date": 1712651619030,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42056,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40263,
+            "range": "±2.52%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40758,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39454,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35217,
+            "range": "±6.37%",
+            "unit": "ops/sec",
+            "extra": "78 samples"
           }
         ]
       }
