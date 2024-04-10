@@ -118,7 +118,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
     if (isBrowser() === false) {
-      const common = new Common({ chain: Chain.Mainnet })
+      const common = new Common({ chain: Chain.Mainnet, eips: [2537] })
       try {
         await VM.create({ common })
         assert.ok(true, 'did not throw')
