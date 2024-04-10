@@ -212,6 +212,7 @@ describe('[TrieNodeFetcher]', async () => {
 
     fetcher.pathToNodeRequestData = new OrderedMap<string, any>()
     fetcher.pathToNodeRequestData.setElement('', {
+      requested: false,
       nodeHash: bytesToHex(new Uint8Array(0)),
       nodeParentHash: '',
     })
