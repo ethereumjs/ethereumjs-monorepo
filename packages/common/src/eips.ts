@@ -90,11 +90,11 @@ export const EIPs: EIPsDict = {
         d: 'Gas cost of a single BLS12-381 G2 multiplication precompile-call',
       },
       Bls12381PairingBaseGas: {
-        v: 115000,
+        v: 65000,
         d: 'Base gas cost of BLS12-381 pairing check',
       },
       Bls12381PairingPerPairGas: {
-        v: 23000,
+        v: 43000,
         d: 'Per-pair gas cost of BLS12-381 pairing check',
       },
       Bls12381MapG1Gas: {

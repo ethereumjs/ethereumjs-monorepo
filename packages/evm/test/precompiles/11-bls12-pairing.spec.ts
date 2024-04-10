@@ -831,8 +831,7 @@ describe('Precompiles: BLS12-PAIRING', () => {
         hexToBytes('0x' + testVector.Expected),
         'return value should match testVectorResult'
       )
-      // TODO: turn this check back on once the specs are updated and gas calculations are determined
-      //  assert.equal(result.executionGasUsed, BigInt(testVector.Gas))
+      assert.equal(result.executionGasUsed, BigInt(testVector.Gas))
     }
   })
 })
