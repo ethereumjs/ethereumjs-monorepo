@@ -17,6 +17,7 @@ import {
   zeros,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
 
 import { EOF, getEOFCode } from './eof.js'
@@ -57,6 +58,7 @@ const debugGas = createDebugLogger('evm:gas')
 const debugPrecompiles = createDebugLogger('evm:precompiles')
 
 let initializedRustBN: bn128 | undefined = undefined
+const mclInitPromise = mcl.init(mcl.BLS12_381)
 
 /**
  * EVM is responsible for executing an EVM message fully
@@ -130,6 +132,13 @@ export class EVM implements EVMInterface {
   }
 
   /**
+   * Pointer to the mcl package, not for public usage
+   * set to public due to implementation internals
+   * @hidden
+   */
+  protected readonly _mcl: any //
+
+  /**
    * EVM is run in DEBUG mode (default: false)
    * Taken from DEBUG environment variable
    *
@@ -154,6 +163,13 @@ export class EVM implements EVMInterface {
     const opts = createOpts ?? ({} as EVMOpts)
     const bn128 = initializedRustBN ?? (await initRustBN())
     initializedRustBN = bn128
+
+    if (createOpts?.common && createOpts.common.isActivatedEIP(2537)) {
+      await mclInitPromise // ensure that mcl is initialized.
+      mcl.setMapToMode(mcl.IRTF) // set the right map mode; otherwise mapToG2 will return wrong values.
+      mcl.verifyOrderG1(true) // subgroup checks for G1
+      mcl.verifyOrderG2(true) // subgroup checks for G2
+    }
 
     if (opts.common === undefined) {
       opts.common = new Common({ chain: Chain.Mainnet })
@@ -192,8 +208,8 @@ export class EVM implements EVMInterface {
 
     // Supported EIPs
     const supportedEIPs = [
-      1153, 1559, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
+      1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3074, 3198, 3529, 3540, 3541, 3607, 3651,
+      3670, 3855, 3860, 4399, 4895, 4788, 4844, 5133, 5656, 6780, 6800, 7516,
     ]
 
     for (const eip of this.common.eips()) {
@@ -224,6 +240,10 @@ export class EVM implements EVMInterface {
     // Initialize the opcode data
     this.getActiveOpcodes()
     this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
+
+    if (this.common.isActivatedEIP(2537)) {
+      this._mcl = mcl
+    }
 
     this._emit = async (topic: string, data: any): Promise<void> => {
       return new Promise((resolve) => this.events.emit(topic as keyof EVMEvents, data, resolve))
