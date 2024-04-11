@@ -1,9 +1,11 @@
 import { Chain, Common } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import { Trie } from '@ethereumjs/trie'
 import {
   Account,
   bigIntToHex,
   bytesToHex,
+  equalsBytes,
   fetchFromProvider,
   hexToBytes,
   intToHex,
@@ -34,6 +36,8 @@ export interface RPCStateManagerOpts {
    */
   common?: Common
 }
+
+const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
 export class RPCStateManager implements EVMStateManagerInterface {
   protected _provider: string
@@ -130,6 +134,11 @@ export class RPCStateManager implements EVMStateManagerInterface {
     codeBytes = toBytes(code)
     this._contractCache.set(address.toString(), codeBytes)
     return codeBytes
+  }
+
+  async getContractCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getContractCode(address)
+    return contractCode.length
   }
 
   /**
@@ -257,8 +266,12 @@ export class RPCStateManager implements EVMStateManagerInterface {
     }
 
     const rlp = (await this.getAccountFromProvider(address)).serialize()
-    const account = rlp !== null ? Account.fromRlpSerializedAccount(rlp) : undefined
+    const account =
+      equalsBytes(rlp, KECCAK256_RLP_EMPTY_ACCOUNT) === false
+        ? Account.fromRlpSerializedAccount(rlp)
+        : undefined
     this._accountCache?.put(address, account)
+
     return account
   }
 
@@ -365,6 +378,16 @@ export class RPCStateManager implements EVMStateManagerInterface {
     })
 
     return proof
+  }
+
+  /**
+   * Returns the applied key for a given address
+   * Used for saving preimages
+   * @param address - The address to return the applied key
+   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   */
+  getAppliedKey(address: Uint8Array): Uint8Array {
+    return this.keccakFunction(address)
   }
 
   /**

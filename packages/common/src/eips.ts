@@ -7,6 +7,7 @@ type EIPsDict = {
 }
 
 enum Status {
+  Stagnant = 'stagnant',
   Draft = 'draft',
   Review = 'review',
   Final = 'final',
@@ -51,27 +52,6 @@ export const EIPs: EIPsDict = {
       },
     },
   },
-  2315: {
-    comment: 'Simple subroutines for the EVM',
-    url: 'https://eips.ethereum.org/EIPS/eip-2315',
-    status: Status.Draft,
-    minimumHardfork: Hardfork.Istanbul,
-    requiredEIPs: [],
-    gasPrices: {
-      beginsub: {
-        v: 2,
-        d: 'Base fee of the BEGINSUB opcode',
-      },
-      returnsub: {
-        v: 5,
-        d: 'Base fee of the RETURNSUB opcode',
-      },
-      jumpsub: {
-        v: 10,
-        d: 'Base fee of the JUMPSUB opcode',
-      },
-    },
-  },
   2565: {
     comment: 'ModExp gas cost',
     url: 'https://eips.ethereum.org/EIPS/eip-2565',
@@ -84,6 +64,50 @@ export const EIPs: EIPsDict = {
         d: 'Gquaddivisor from modexp precompile for gas calculation',
       },
     },
+  },
+  2537: {
+    comment: 'BLS12-381 precompiles',
+    url: 'https://eips.ethereum.org/EIPS/eip-2537',
+    status: 'Draft',
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+    gasConfig: {},
+    gasPrices: {
+      Bls12381G1AddGas: {
+        v: 600,
+        d: 'Gas cost of a single BLS12-381 G1 addition precompile-call',
+      },
+      Bls12381G1MulGas: {
+        v: 12000,
+        d: 'Gas cost of a single BLS12-381 G1 multiplication precompile-call',
+      },
+      Bls12381G2AddGas: {
+        v: 4500,
+        d: 'Gas cost of a single BLS12-381 G2 addition precompile-call',
+      },
+      Bls12381G2MulGas: {
+        v: 55000,
+        d: 'Gas cost of a single BLS12-381 G2 multiplication precompile-call',
+      },
+      Bls12381PairingBaseGas: {
+        v: 65000,
+        d: 'Base gas cost of BLS12-381 pairing check',
+      },
+      Bls12381PairingPerPairGas: {
+        v: 43000,
+        d: 'Per-pair gas cost of BLS12-381 pairing check',
+      },
+      Bls12381MapG1Gas: {
+        v: 5500,
+        d: 'Gas cost of BLS12-381 map field element to G1',
+      },
+      Bls12381MapG2Gas: {
+        v: 110000,
+        d: 'Gas cost of BLS12-381 map field element to G2',
+      },
+    },
+    vm: {},
+    pow: {},
   },
   2718: {
     comment: 'Typed Transaction Envelope',
@@ -190,9 +214,26 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  2935: {
+    comment: 'Save historical block hashes in state (Verkle related usage, UNSTABLE)',
+    url: 'https://github.com/gballet/EIPs/pull/3/commits/2e9ac09a142b0d9fb4db0b8d4609f92e5d9990c5',
+    status: Status.Draft,
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+    vm: {
+      historyStorageAddress: {
+        v: BigInt('0xfffffffffffffffffffffffffffffffffffffffe'),
+        d: 'The address where the historical blockhashes are stored',
+      },
+      historyServeWindow: {
+        v: BigInt(256),
+        d: 'The amount of blocks to be served by the historical blockhash contract',
+      },
+    },
+  },
   3074: {
     comment: 'AUTH and AUTHCALL opcodes',
-    url: 'https://eips.ethereum.org/EIPS/eip-3074',
+    url: 'https://github.com/ethereum/EIPs/commit/eca4416ff3c025fcb6ec8cd4eac481e74e108481',
     status: Status.Review,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
@@ -477,6 +518,20 @@ export const EIPs: EIPsDict = {
     status: Status.Draft,
     minimumHardfork: Hardfork.London,
     requiredEIPs: [],
+    gasPrices: {
+      create: {
+        v: 1000,
+        d: 'Base fee of the CREATE opcode',
+      },
+      coldsload: {
+        v: 0,
+        d: 'Gas cost of the first read of storage from a given location (per transaction)',
+      },
+      sstoreInitGasEIP2200: {
+        v: 0,
+        d: 'Once per SSTORE operation from clean zero to non-zero',
+      },
+    },
   },
   7516: {
     comment: 'BLOBBASEFEE opcode',

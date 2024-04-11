@@ -23,42 +23,43 @@ npm install @ethereumjs/tx
 
 ### KZG Setup
 
-This library supports an experimental version of `EIP-4844` blob transactions (see usage instructions below) starting with `v4.1.0`.
+This library now fully supports `EIP-4844` blob transactions (see usage instructions below) starting with `v5.2.0`.
 
 For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
-#### Manual Installation
+Note: starting with the `v5.3` release of this library and associated releases of upstream EthereumJS libraries the old `c-kzg` centered recommended setup has been replaced by using our own WASM build of the `c-kzg` library which has been released as a separate package [kzg-wasm](https://github.com/ethereumjs/kzg-wasm) on npm.
 
-The following two manual installation steps for a KZG library and the trusted setup are needed.
-
-1. Install an additional dependency that supports the `kzg` interface defined in [the kzg interface](./src/kzg/kzg.ts). You can install the default option [c-kzg](https://github.com/ethereum/c-kzg-4844) by simply running `npm install c-kzg`.
-2. Download the trusted setup required for the KZG module. It can be found [here](../client/src/trustedSetups/trusted_setup.txt) within the client package.
+This new setup is now both browser compatible 🎉 and the official KZG setup file has been integrated by default and the new setup is now the default recommended setup to be used.
 
 #### KZG Initialization
 
-Initialization can then be done like this (using the `c-kzg` module for our KZG dependency):
+As a first step add the `kzg-wasm` package as a dependency to your `package.json` file and install the library.
+
+Initialization can then be done like the following:
 
 ```ts
 // ./examples/initKzg.ts
 
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
 
-// Instantiate KZG
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
+const main = async () => {
+  const kzg = await loadKZG()
 
-// Instantiate `common`
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Cancun,
-  customCrypto: { kzg },
-})
+  // Instantiate `common`
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
 
-console.log(common.customCrypto.kzg) // should output the KZG API as an object
+  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+}
+
+main()
 ```
 
-At the moment using the Node.js bindings for the `c-kzg` library is the only option to get KZG related functionality to work, note that this solution is not browser compatible. We are currently working on a WASM build of that respective library which can hopefully be released soon [TM].
+Note: Manual addition is necessary because we did not want to bundle our libraries with WASM code by default, since some projects are then prevented from using our libraries.
 
 ## Usage
 
@@ -124,39 +125,43 @@ See the following code snipped for an example on how to instantiate (using the `
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
-import { bytesToHex, initKZG } from '@ethereumjs/util'
-import * as kzg from 'c-kzg'
+import { bytesToHex } from '@ethereumjs/util'
+import { loadKZG } from 'kzg-wasm'
 
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/devnet6.txt')
+const main = async () => {
+  const kzg = await loadKZG()
 
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Shanghai,
-  eips: [4844],
-  customCrypto: { kzg },
-})
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Shanghai,
+    eips: [4844],
+    customCrypto: { kzg },
+  })
 
-const txData = {
-  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  gasLimit: '0x02625a00',
-  maxPriorityFeePerGas: '0x01',
-  maxFeePerGas: '0xff',
-  maxFeePerDataGas: '0xfff',
-  nonce: '0x00',
-  to: '0xcccccccccccccccccccccccccccccccccccccccc',
-  value: '0x0186a0',
-  v: '0x01',
-  r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-  s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-  chainId: '0x01',
-  accessList: [],
-  type: '0x05',
-  blobsData: ['abcd'],
+  const txData = {
+    data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    gasLimit: '0x02625a00',
+    maxPriorityFeePerGas: '0x01',
+    maxFeePerGas: '0xff',
+    maxFeePerDataGas: '0xfff',
+    nonce: '0x00',
+    to: '0xcccccccccccccccccccccccccccccccccccccccc',
+    value: '0x0186a0',
+    v: '0x01',
+    r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+    s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+    chainId: '0x01',
+    accessList: [],
+    type: '0x05',
+    blobsData: ['abcd'],
+  }
+
+  const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
+
+  console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 }
 
-const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
-
-console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
+main()
 ```
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.

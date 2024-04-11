@@ -5,6 +5,7 @@ import { BlobEIP4844Transaction, Capability, TransactionFactory } from '@ethereu
 import {
   BIGINT_0,
   KECCAK256_RLP,
+  KECCAK256_RLP_ARRAY,
   Withdrawal,
   bigIntToHex,
   bytesToHex,
@@ -62,6 +63,7 @@ export class Block {
 
   protected cache: {
     txTrieRoot?: Uint8Array
+    withdrawalsTrieRoot?: Uint8Array
   } = {}
 
   /**
@@ -228,12 +230,16 @@ export class Block {
     // executionWitness are not part of the EL fetched blocks via eth_ bodies method
     // they are currently only available via the engine api constructed blocks
     let executionWitness
-    if (header.common.isActivatedEIP(6800) && executionWitnessBytes !== undefined) {
-      executionWitness = JSON.parse(bytesToUtf8(RLP.decode(executionWitnessBytes) as Uint8Array))
-    } else {
-      // don't assign default witness if eip 6800 is implemented as it leads to incorrect
-      // assumptions while executing the block. if not present in input implies its unavailable
-      executionWitness = null
+    if (header.common.isActivatedEIP(6800)) {
+      if (executionWitnessBytes !== undefined) {
+        executionWitness = JSON.parse(bytesToUtf8(RLP.decode(executionWitnessBytes) as Uint8Array))
+      } else if (opts?.executionWitness !== undefined) {
+        executionWitness = opts.executionWitness
+      } else {
+        // don't assign default witness if eip 6800 is implemented as it leads to incorrect
+        // assumptions while executing the block. if not present in input implies its unavailable
+        executionWitness = null
+      }
     }
 
     return new Block(header, transactions, uncleHeaders, withdrawals, opts, executionWitness)
@@ -716,6 +722,9 @@ export class Block {
    * @returns true if the uncle's hash is valid, false otherwise.
    */
   uncleHashIsValid(): boolean {
+    if (this.uncleHeaders.length === 0) {
+      return equalsBytes(KECCAK256_RLP_ARRAY, this.header.uncleHash)
+    }
     const uncles = this.uncleHeaders.map((uh) => uh.raw())
     const raw = RLP.encode(uncles)
     return equalsBytes(this.keccakFunction(raw), this.header.uncleHash)
@@ -729,11 +738,21 @@ export class Block {
     if (!this.common.isActivatedEIP(4895)) {
       throw new Error('EIP 4895 is not activated')
     }
-    const withdrawalsRoot = await Block.genWithdrawalsTrieRoot(
-      this.withdrawals!,
-      new Trie({ common: this.common })
-    )
-    return equalsBytes(withdrawalsRoot, this.header.withdrawalsRoot!)
+
+    let result
+    if (this.withdrawals!.length === 0) {
+      result = equalsBytes(this.header.withdrawalsRoot!, KECCAK256_RLP)
+      return result
+    }
+
+    if (this.cache.withdrawalsTrieRoot === undefined) {
+      this.cache.withdrawalsTrieRoot = await Block.genWithdrawalsTrieRoot(
+        this.withdrawals!,
+        new Trie({ common: this.common })
+      )
+    }
+    result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
+    return result
   }
 
   /**
@@ -798,6 +817,37 @@ export class Block {
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
     }
+  }
+
+  toExecutionPayload(): ExecutionPayload {
+    const blockJson = this.toJSON()
+    const header = blockJson.header!
+    const transactions = this.transactions.map((tx) => bytesToHex(tx.serialize())) ?? []
+    const withdrawalsArr = blockJson.withdrawals ? { withdrawals: blockJson.withdrawals } : {}
+
+    const executionPayload: ExecutionPayload = {
+      blockNumber: header.number!,
+      parentHash: header.parentHash!,
+      feeRecipient: header.coinbase!,
+      stateRoot: header.stateRoot!,
+      receiptsRoot: header.receiptTrie!,
+      logsBloom: header.logsBloom!,
+      gasLimit: header.gasLimit!,
+      gasUsed: header.gasUsed!,
+      timestamp: header.timestamp!,
+      extraData: header.extraData!,
+      baseFeePerGas: header.baseFeePerGas!,
+      blobGasUsed: header.blobGasUsed,
+      excessBlobGas: header.excessBlobGas,
+      blockHash: bytesToHex(this.hash()),
+      prevRandao: header.mixHash!,
+      transactions,
+      ...withdrawalsArr,
+      parentBeaconBlockRoot: header.parentBeaconBlockRoot,
+      executionWitness: this.executionWitness,
+    }
+
+    return executionPayload
   }
 
   /**

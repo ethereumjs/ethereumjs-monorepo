@@ -102,6 +102,8 @@
 - [addHexPrefix](README.md#addhexprefix)
 - [arrayContainsArray](README.md#arraycontainsarray)
 - [bigInt64ToBytes](README.md#bigint64tobytes)
+- [bigIntMax](README.md#bigintmax)
+- [bigIntMin](README.md#bigintmin)
 - [bigIntToBytes](README.md#biginttobytes)
 - [bigIntToHex](README.md#biginttohex)
 - [bigIntToUnpaddedBytes](README.md#biginttounpaddedbytes)
@@ -933,7 +935,51 @@ A Uint8Array of length 8 containing the bigint.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:517](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L517)
+[packages/util/src/bytes.ts:529](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L529)
+
+___
+
+### bigIntMax
+
+▸ **bigIntMax**(...`args`): `bigint`
+
+Calculates max bigint from an array of bigints
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `...args` | `bigint`[] | array of bigints |
+
+#### Returns
+
+`bigint`
+
+#### Defined in
+
+[packages/util/src/bytes.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L409)
+
+___
+
+### bigIntMin
+
+▸ **bigIntMin**(...`args`): `bigint`
+
+Calculates min BigInt from an array of BigInts
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `...args` | `bigint`[] | array of bigints |
+
+#### Returns
+
+`bigint`
+
+#### Defined in
+
+[packages/util/src/bytes.ts:415](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L415)
 
 ___
 
@@ -1002,7 +1048,7 @@ Convert value from bigint to an unpadded Uint8Array
 
 #### Defined in
 
-[packages/util/src/bytes.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L411)
+[packages/util/src/bytes.ts:423](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L423)
 
 ___
 
@@ -1093,7 +1139,7 @@ The 64-bit bigint read from the input Uint8Array.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L490)
+[packages/util/src/bytes.ts:502](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L502)
 
 ___
 
@@ -1166,7 +1212,7 @@ The 32-bit integer read from the input Uint8Array.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L476)
+[packages/util/src/bytes.ts:488](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L488)
 
 ___
 
@@ -1285,7 +1331,7 @@ A positive number if value1 is larger than value2,
 
 #### Defined in
 
-[packages/util/src/bytes.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L434)
+[packages/util/src/bytes.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L446)
 
 ___
 
@@ -1339,7 +1385,7 @@ works like `Buffer.concat`
 
 #### Defined in
 
-[packages/util/src/bytes.ts:458](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L458)
+[packages/util/src/bytes.ts:470](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L470)
 
 ___
 
@@ -1792,14 +1838,14 @@ ___
 
 ### initKZG
 
-▸ **initKZG**(`kzgLib`, `trustedSetupPath`): `void`
+▸ **initKZG**(`kzgLib`, `trustedSetupPath?`): `void`
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `kzgLib` | [`Kzg`](interfaces/Kzg.md) | a KZG implementation (defaults to c-kzg) |
-| `trustedSetupPath` | `string` | the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file |
+| `trustedSetupPath?` | `string` | the full path (e.g. "/home/linux/devnet4.txt") to a kzg trusted setup text file |
 
 #### Returns
 
@@ -1834,7 +1880,7 @@ A Uint8Array of length 4 containing the integer.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:504](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L504)
+[packages/util/src/bytes.ts:516](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L516)
 
 ___
 
@@ -1901,7 +1947,7 @@ Convert value from number to an unpadded Uint8Array
 
 #### Defined in
 
-[packages/util/src/bytes.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L421)
+[packages/util/src/bytes.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L433)
 
 ___
 
@@ -2258,7 +2304,7 @@ A Uint8Array of random bytes of specified length.
 
 #### Defined in
 
-[packages/util/src/bytes.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L446)
+[packages/util/src/bytes.ts:458](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L458)
 
 ___
 

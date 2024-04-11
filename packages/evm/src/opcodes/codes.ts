@@ -275,14 +275,6 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    eip: 2315,
-    opcodes: {
-      0x5c: { name: 'BEGINSUB', isAsync: false, dynamicGas: false },
-      0x5d: { name: 'RETURNSUB', isAsync: false, dynamicGas: false },
-      0x5e: { name: 'JUMPSUB', isAsync: false, dynamicGas: false },
-    },
-  },
-  {
     eip: 3198,
     opcodes: {
       0x48: { name: 'BASEFEE', isAsync: false, dynamicGas: false },

@@ -322,7 +322,10 @@ async function verifyProof(
   proof: Uint8Array[],
   useKeyHashingFunction: HashKeysFunction
 ): Promise<{ value: Uint8Array | null; trie: Trie }> {
-  const proofTrie = await Trie.fromProof(proof, { root: rootHash, useKeyHashingFunction })
+  const proofTrie = await Trie.fromProof(proof, {
+    root: rootHash,
+    useKeyHashingFunction,
+  })
   try {
     const value = await proofTrie.get(key, true)
     return {
@@ -443,26 +446,28 @@ export async function verifyRangeProof(
     return false
   }
 
+  if (proof !== null && firstKey !== null && lastKey === null) {
+    // Zero element proof
+    if (keys.length === 0) {
+      const { trie, value } = await verifyProof(
+        rootHash,
+        nibblestoBytes(firstKey),
+        proof,
+        useKeyHashingFunction
+      )
+
+      if (value !== null || (await hasRightElement(trie, firstKey))) {
+        throw new Error('invalid zero element proof: value mismatch')
+      }
+
+      return false
+    }
+  }
+
   if (proof === null || firstKey === null || lastKey === null) {
     throw new Error(
       'invalid all elements proof: proof, firstKey, lastKey must be null at the same time'
     )
-  }
-
-  // Zero element proof
-  if (keys.length === 0) {
-    const { trie, value } = await verifyProof(
-      rootHash,
-      nibblestoBytes(firstKey),
-      proof,
-      useKeyHashingFunction
-    )
-
-    if (value !== null || (await hasRightElement(trie, firstKey))) {
-      throw new Error('invalid zero element proof: value mismatch')
-    }
-
-    return false
   }
 
   // One element proof

@@ -14,13 +14,13 @@ const block = Block.fromBlockData(verkleBlockJSON, { common })
 describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {
     const verkleStateManager = new StatelessVerkleStateManager({ common })
-    const evm = new EVM({ common, stateManager: verkleStateManager })
+    const evm = await EVM.create({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
       common,
       evm,
       stateManager: verkleStateManager,
     })
-    verkleStateManager.initVerkleExecutionWitness(block.executionWitness)
+    verkleStateManager.initVerkleExecutionWitness(block.header.number, block.executionWitness)
 
     //await vm.runBlock({ block })
 

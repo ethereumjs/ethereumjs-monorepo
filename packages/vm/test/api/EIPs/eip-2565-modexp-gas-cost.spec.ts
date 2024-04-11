@@ -2,10 +2,11 @@ import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Address, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { VM } from '../../../src/vm'
+// eslint-disable-next-line import/order
+import { VM } from '../../../src/vm.js'
 
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
-const testData = require('../testdata/eip-2565.json')
+import testData from '../testdata/eip-2565.json'
 
 describe('EIP-2565 ModExp gas cost tests', () => {
   it('Test return data, gas cost and execution status against testdata', async () => {

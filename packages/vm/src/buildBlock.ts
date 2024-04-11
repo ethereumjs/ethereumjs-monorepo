@@ -20,6 +20,7 @@ import {
 import { Bloom } from './bloom/index.js'
 import {
   accumulateParentBeaconBlockRoot,
+  accumulateParentBlockHash,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
@@ -367,6 +368,19 @@ export class BlockBuilder {
         toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
 
       await accumulateParentBeaconBlockRoot.bind(this.vm)(parentBeaconBlockRootBuf, timestampBigInt)
+    }
+    if (this.vm.common.isActivatedEIP(2935)) {
+      if (!this.checkpointed) {
+        await this.vm.evm.journal.checkpoint()
+        this.checkpointed = true
+      }
+
+      const { parentHash, number } = this.headerData
+      // timestamp should already be set in constructor
+      const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
+      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? zeros(32)
+
+      await accumulateParentBlockHash.bind(this.vm)(numberBigInt, parentHashSanitized)
     }
   }
 }

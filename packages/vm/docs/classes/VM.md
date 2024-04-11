@@ -21,7 +21,6 @@ This class is an AsyncEventEmitter, please consult the README to learn how to us
 
 - [buildBlock](VM.md#buildblock)
 - [errorStr](VM.md#errorstr)
-- [init](VM.md#init)
 - [runBlock](VM.md#runblock)
 - [runTx](VM.md#runtx)
 - [shallowCopy](VM.md#shallowcopy)
@@ -113,7 +112,7 @@ An instance of [BlockBuilder](BlockBuilder.md) with methods:
 
 #### Defined in
 
-[vm/src/vm.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L235)
+[vm/src/vm.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L222)
 
 ___
 
@@ -129,28 +128,7 @@ Return a compact error string representation of the object
 
 #### Defined in
 
-[vm/src/vm.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L277)
-
-___
-
-### init
-
-▸ **init**(`__namedParameters?`): `Promise`<`void`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `__namedParameters` | `Object` |
-| `__namedParameters.genesisState?` | `GenesisState` |
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Defined in
-
-[vm/src/vm.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L159)
+[vm/src/vm.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L264)
 
 ___
 
@@ -176,7 +154,7 @@ invalid. If an error is thrown from an event handler, the state may or may not b
 
 #### Defined in
 
-[vm/src/vm.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L204)
+[vm/src/vm.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L191)
 
 ___
 
@@ -202,7 +180,7 @@ reverted.
 
 #### Defined in
 
-[vm/src/vm.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L217)
+[vm/src/vm.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L204)
 
 ___
 
@@ -232,7 +210,7 @@ the `downlevelCaches` option to `false`.
 
 #### Defined in
 
-[vm/src/vm.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L252)
+[vm/src/vm.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L239)
 
 ___
 

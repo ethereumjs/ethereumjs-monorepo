@@ -7,7 +7,7 @@ const main = async () => {
   const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
   const blockchain = await Blockchain.create()
 
-  const evm = new EVM({
+  const evm = await EVM.create({
     common,
     blockchain,
   })

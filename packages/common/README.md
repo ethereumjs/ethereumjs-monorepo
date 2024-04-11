@@ -79,14 +79,14 @@ console.log(`EIP 4844 is active -- ${c.isActivatedEIP(4844)}`)
 
 ### Custom Cryptography Primitives (WASM)
 
-All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. 
-These primitves, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native 
-Javascript and therefore have the potential downside of being less performant than alternative cryptography modules 
-written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of 
-the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in 
-place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper 
+All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default.
+These primitves, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native
+Javascript and therefore have the potential downside of being less performant than alternative cryptography modules
+written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of
+the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in
+place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper
 methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
-See the implementation of this in the [`@etheruemjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto` 
+See the implementation of this in the [`@etheruemjs/client`](../client/bin/cli.ts#L810) using `@polkadot/wasm-crypto`
 for an example of how this is done for each available cryptographic primitive.
 
 Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
@@ -119,24 +119,27 @@ main()
 
 ### Example 2: KZG
 
-The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property 
-and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how 
+The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property
+and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how
 to initalize (assuming you are using the `c-kzg` package as your KZG cryptography library).
 
 ```ts
 // ./examples/initKzg.ts
 
-import * as kzg from 'c-kzg'
+import { loadKZG } from 'kzg-wasm'
 import { Common, Chain, Hardfork } from '@ethereumjs/common'
-import { initKZG } from '@ethereumjs/util'
 
-initKZG(kzg, __dirname + '/../../client/src/trustedSetups/official.txt')
-const common = new Common({
-  chain: Chain.Mainnet,
-  hardfork: Hardfork.Cancun,
-  customCrypto: { kzg: kzg },
-})
-console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+const main = async () => {
+  const kzg = await loadKZG()
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+  console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+}
+
+main()
 ```
 
 ## Browser
@@ -406,6 +409,7 @@ The following EIPs are currently supported:
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Save historical block hashes in state (`experimental`)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes

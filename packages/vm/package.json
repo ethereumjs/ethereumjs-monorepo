@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "7.2.1",
+  "version": "8.0.0",
   "description": "An Ethereum VM implementation",
   "keywords": [
     "ethereum",
@@ -50,7 +50,7 @@
     "profiling": "0x ./benchmarks/run.js profiling",
     "test": "echo \"[INFO] Generic test cmd not used. See package.json for more specific test run cmds.\"",
     "test:API": "npx vitest run ./test/api/",
-    "test:browser": "npx vitest run ./test/api/**/*.spec.ts --browser.name=webkit --browser.provider=playwright --browser.headless",
+    "test:browser": "npx vitest run --config=./vitest.browser.config.mts",
     "test:blockchain": "npm run tester -- --blockchain",
     "test:blockchain:allForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
     "test:blockchain:transitionForks": "echo 'ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1 npm run tester -- --blockchain --fork=v1 --verify-test-amount-alltests",
@@ -63,17 +63,18 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^5.1.1",
-    "@ethereumjs/blockchain": "^7.1.0",
-    "@ethereumjs/common": "^4.2.0",
-    "@ethereumjs/evm": "^2.2.1",
+    "@ethereumjs/block": "^5.2.0",
+    "@ethereumjs/blockchain": "^7.2.0",
+    "@ethereumjs/common": "^4.3.0",
+    "@ethereumjs/evm": "^3.0.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/statemanager": "^2.2.2",
-    "@ethereumjs/trie": "^6.1.1",
-    "@ethereumjs/tx": "^5.2.1",
-    "@ethereumjs/util": "^9.0.2",
+    "@ethereumjs/statemanager": "^2.3.0",
+    "@ethereumjs/trie": "^6.2.0",
+    "@ethereumjs/tx": "^5.3.0",
+    "@ethereumjs/util": "^9.0.3",
     "debug": "^4.3.3",
-    "ethereum-cryptography": "^2.1.3"
+    "ethereum-cryptography": "^2.1.3",
+    "mcl-wasm": "^1.4.0"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.0.12",
@@ -82,7 +83,6 @@
     "@types/minimist": "^1.2.2",
     "@types/node-dir": "^0.0.34",
     "benchmark": "^2.1.4",
-    "c-kzg": "^2.1.2",
     "minimist": "^1.2.5",
     "node-dir": "^0.1.17",
     "nyc": "^15.1.0",

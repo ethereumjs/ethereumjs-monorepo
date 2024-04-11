@@ -25,9 +25,7 @@ describe('VM: custom opcodes', () => {
   }
 
   it('should add custom opcodes to the EVM', async () => {
-    const evm = new EVM({
-      customOpcodes: [testOpcode],
-    })
+    const evm = await EVM.create({ customOpcodes: [testOpcode] })
     const gas = 123456
     let correctOpcodeName = false
     evm.events.on('step', (e: InterpreterStep) => {
@@ -45,7 +43,7 @@ describe('VM: custom opcodes', () => {
   })
 
   it('should delete opcodes from the EVM', async () => {
-    const evm = new EVM({
+    const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
     const gas = BigInt(123456)
@@ -59,7 +57,7 @@ describe('VM: custom opcodes', () => {
   it('should not override default opcodes', async () => {
     // This test ensures that always the original opcode map is used
     // Thus, each time you recreate a EVM, it is in a clean state
-    const evm = new EVM({
+    const evm = await EVM.create({
       customOpcodes: [{ opcode: 0x01 }], // deletes ADD opcode
     })
     const gas = BigInt(123456)
@@ -69,7 +67,7 @@ describe('VM: custom opcodes', () => {
     })
     assert.ok(res.executionGasUsed === gas, 'successfully deleted opcode')
 
-    const evmDefault = new EVM({})
+    const evmDefault = await EVM.create()
 
     // PUSH 04
     // PUSH 01
@@ -88,9 +86,7 @@ describe('VM: custom opcodes', () => {
 
   it('should override opcodes in the EVM', async () => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
-    const evm = new EVM({
-      customOpcodes: [testOpcode],
-    })
+    const evm = await EVM.create({ customOpcodes: [testOpcode] })
     const gas = 123456
     const res = await evm.runCode({
       code: hexToBytes('0x20'),
@@ -113,9 +109,7 @@ describe('VM: custom opcodes', () => {
       },
     }
 
-    const evm = new EVM({
-      customOpcodes: [testOpcode],
-    })
+    const evm = await EVM.create({ customOpcodes: [testOpcode] })
     evm.events.on('beforeMessage', () => {})
     evm.events.on('beforeMessage', () => {})
     const evmCopy = evm.shallowCopy()

@@ -401,6 +401,10 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     return code
   }
 
+  async getContractCodeSize(address: Address): Promise<number> {
+    const contractCode = await this.getContractCode(address)
+    return contractCode.length
+  }
   /**
    * Gets the storage trie for an account from the storage
    * cache or does a lookup.
@@ -1149,5 +1153,15 @@ export class DefaultStateManager implements EVMStateManagerInterface {
     this._accountCache?.clear()
     this._storageCache?.clear()
     this._codeCache?.clear()
+  }
+
+  /**
+   * Returns the applied key for a given address
+   * Used for saving preimages
+   * @param address - The address to return the applied key
+   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   */
+  getAppliedKey(address: Uint8Array): Uint8Array {
+    return this._trie['appliedKey'](address)
   }
 }

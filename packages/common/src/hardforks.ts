@@ -1,10 +1,6 @@
-import type { HardforkConfig } from './types.js'
+import type { HardforksDict } from './types.js'
 
-type HardforksDict = {
-  [key: string]: HardforkConfig
-}
-
-enum Status {
+export enum Status {
   Draft = 'draft',
   Review = 'review',
   Final = 'final',

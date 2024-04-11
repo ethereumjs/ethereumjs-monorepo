@@ -72,6 +72,7 @@ export interface StateManagerInterface {
   modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void>
   putContractCode(address: Address, value: Uint8Array): Promise<void>
   getContractCode(address: Address): Promise<Uint8Array>
+  getContractCodeSize?(address: Address): Promise<number>
   getContractStorage(address: Address, key: Uint8Array): Promise<Uint8Array>
   putContractStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void>
   clearContractStorage(address: Address): Promise<void>
@@ -83,6 +84,7 @@ export interface StateManagerInterface {
   getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   hasStateRoot(root: Uint8Array): Promise<boolean> // only used in client
   shallowCopy(downlevelCaches?: boolean): StateManagerInterface
+  getAppliedKey?(address: Uint8Array): Uint8Array
 }
 
 export interface EVMStateManagerInterface extends StateManagerInterface {
