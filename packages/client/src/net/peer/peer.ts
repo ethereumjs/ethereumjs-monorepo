@@ -49,6 +49,8 @@ export abstract class Peer extends EventEmitter {
   public snap?: BoundSnapProtocol
   public les?: BoundLesProtocol
 
+  public lastEthStatusUpdate?: number
+
   /*
     If the peer is in the PeerPool.
     If true, messages are handled immediately.
@@ -108,28 +110,26 @@ export abstract class Peer extends EventEmitter {
 
     if (protocol.name === 'eth') {
       bound = new BoundEthProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+      this.lastEthStatusUpdate = Date.now()
+
+      this.eth = <BoundEthProtocol>bound
     } else if (protocol.name === 'les') {
       bound = new BoundLesProtocol(boundOpts)
+
+      await bound!.handshake(sender)
+
+      this.les = <BoundLesProtocol>bound
     } else if (protocol.name === 'snap') {
       bound = new BoundSnapProtocol(boundOpts)
+      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
+
+      this.snap = <BoundSnapProtocol>bound
     } else {
       throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
     }
 
-    // Handshake only when snap, else
-    if (protocol.name !== 'snap') {
-      await bound!.handshake(sender)
-    } else {
-      if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
-    }
-
-    if (protocol.name === 'eth') {
-      this.eth = <BoundEthProtocol>bound
-    } else if (protocol.name === 'snap') {
-      this.snap = <BoundSnapProtocol>bound
-    } else if (protocol.name === 'les') {
-      this.les = <BoundLesProtocol>bound
-    }
     this.boundProtocols.push(bound)
   }
 
