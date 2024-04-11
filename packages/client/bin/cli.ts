@@ -58,9 +58,9 @@ import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
-const promClient = require('prom-client')
-const http = require('http')
-const url = require('url')
+import * as promClient from 'prom-client'
+import * as http from 'http'
+import * as url from 'url'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -643,9 +643,16 @@ async function startClient(
     register.registerMetric(txGauge)
     // @ts-ignore
     const server = http.createServer(async (req, res) => {
-      const route = url.parse(req.url).pathname
+      if (req.url === undefined) {
+        res.statusCode = 400
+        res.end('Bad Request: URL is missing')
+        return
+      }
+      const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
+      const route = reqUrl.pathname
+
       if (route === '/metrics') {
-        // Return all metrics the Prometheus exposition format
+        // Return all metrics in the Prometheus exposition format
         res.setHeader('Content-Type', register.contentType)
         res.end(await register.metrics())
       }
