@@ -108,8 +108,11 @@ describe(`valid verkle network setup`, async () => {
     for (let i = startSlot; i <= endSlot; i++) {
       const execute = await fetchExecutionPayload(process.env.PEER_BEACON_URL, i)
       it(`run fetched block slot: ${i} number: ${execute.block_number}`, async () => {
-        await runBlock({ common, chain, rpc }, { parent, execute }, true)
-        parent = execute
+        try {
+          await runBlock({ common, chain, rpc }, { parent, execute }, true)
+        } finally {
+          parent = execute
+        }
       })
     }
   }

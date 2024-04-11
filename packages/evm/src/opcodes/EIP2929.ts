@@ -28,7 +28,8 @@ export function accessAddressEIP2929(
 
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
-    if (chargeGas) {
+    // if verkle not activated
+    if (chargeGas && common.isActivatedEIP(6800) === false) {
       return common.param('gasPrices', 'coldaccountaccess')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
