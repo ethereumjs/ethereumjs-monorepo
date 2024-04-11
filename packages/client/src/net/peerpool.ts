@@ -1,9 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 
+import { type Peer, RlpxPeer } from './peer'
+import { RlpxSender } from './protocol'
+
 import type { Config } from '../config'
-import type { Peer } from './peer'
 
 export interface PeerPoolOptions {
   /* Config */
@@ -31,7 +34,13 @@ export class PeerPool {
    */
   private DEFAULT_STATUS_CHECK_INTERVAL = 20000
 
+  /**
+   * Default status check interval (in ms)
+   */
+  private DEFAULT_PEER_ETH_STATUS_CHECK_INTERVAL = 5000
+
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
+  private _peerEthStatusCheckInterval: NodeJS.Timeout | undefined
   private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
@@ -87,6 +96,12 @@ export class PeerPool {
       this.DEFAULT_STATUS_CHECK_INTERVAL
     )
 
+    this._peerEthStatusCheckInterval = setInterval(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await this._peerEthStatusCheck.bind(this),
+      this.DEFAULT_PEER_ETH_STATUS_CHECK_INTERVAL
+    )
+
     this.running = true
     return true
   }
@@ -99,6 +114,7 @@ export class PeerPool {
       await this.close()
     }
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
+    clearInterval(this._peerEthStatusCheckInterval as NodeJS.Timeout)
     clearTimeout(this._reconnectTimeout as NodeJS.Timeout)
     this.running = false
     return true
@@ -252,6 +268,23 @@ export class PeerPool {
       }
     } else {
       this.noPeerPeriods = 0
+    }
+  }
+
+  /**
+   * Periodically check pooled peers for the last ETH status exchange
+   * and trigger new status msg exchanges if too old
+   */
+  async _peerEthStatusCheck() {
+    for (const p of this.peers) {
+      if (!p.idle && p.eth !== undefined && p.ethSender !== undefined && p instanceof RlpxPeer) {
+        p.idle = true
+        console.log('here!')
+        console.log(bytesToUnprefixedHex(p.eth.status.bestHash))
+        await p.eth.handshake(p.ethSender!)
+        console.log(bytesToUnprefixedHex(p.eth.status.bestHash))
+        p.idle = false
+      }
     }
   }
 }

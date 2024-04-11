@@ -33,7 +33,7 @@ export class RlpxSender extends Sender {
    */
   sendStatus(status: any) {
     try {
-      this.sender.sendStatus(status)
+      this.sender.sendStatus(status, true)
     } catch (err: any) {
       this.emit('error', err)
     }
