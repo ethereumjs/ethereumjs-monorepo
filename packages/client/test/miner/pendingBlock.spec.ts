@@ -83,7 +83,10 @@ const setup = () => {
       },
     },
   }
-  const txPool = new TxPool({ config, service })
+  const txGauge: any = {
+    inc: () => {},
+  }
+  const txPool = new TxPool({ config, txGauge, service })
   return { txPool }
 }
 
