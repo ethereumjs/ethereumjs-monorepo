@@ -232,6 +232,11 @@ const args: ClientOpts = yargs
     number: true,
     default: 5,
   })
+  .option('prometheus', {
+    describe: 'Enable the Prometheus metrics server with HTTP endpoint',
+    boolean: true,
+    default: false,
+  })
   .option('rpcDebug', {
     describe:
       'Additionally log truncated RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods). Truncated by default, add verbosity using "rpcDebugVerbose"',
@@ -624,11 +629,10 @@ async function startClient(
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
-  let txGauge
-  if (true) {
-    // later configure this with a prometheus cli option
-
+  let client
+  if (args.prometheus === true) {
     // Create custom metrics
+    let txGauge
     txGauge = new promClient.Gauge({
       name: 'tx_pool_size',
       help: 'Size of the client transaction pool',
@@ -659,11 +663,18 @@ async function startClient(
     })
     // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
     server.listen(8080)
+
+    client = await EthereumClient.create({
+      config,
+      txGauge,
+      blockchain,
+      ...genesisMeta,
+      ...dbs,
+    })
   }
 
-  const client = await EthereumClient.create({
+  client = await EthereumClient.create({
     config,
-    txGauge,
     blockchain,
     ...genesisMeta,
     ...dbs,

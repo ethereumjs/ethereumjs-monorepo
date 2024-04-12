@@ -370,7 +370,9 @@ export class TxPool {
       this.handled.set(hash, { address, added })
 
       this.txsInPool++
-      this.txGauge.inc()
+      if (this.txGauge) {
+        this.txGauge.inc()
+      }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
@@ -409,7 +411,10 @@ export class TxPool {
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
 
     this.txsInPool--
-    this.txGauge.dec()
+
+    if (this.txGauge) {
+      this.txGauge.dec()
+    }
 
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
@@ -853,7 +858,10 @@ export class TxPool {
     this.handled.clear()
 
     this.txsInPool = 0
-    this.txGauge.set(0)
+
+    if (this.txGauge) {
+      this.txGauge.set(0)
+    }
 
     this.opened = false
   }

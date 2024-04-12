@@ -24,7 +24,7 @@ import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
   lightserv?: boolean
-  txGauge: any
+  txGauge?: any
 }
 
 /**
@@ -46,7 +46,7 @@ export class FullEthereumService extends Service {
   /** building head state via snapsync or vmexecution */
   private building = false
 
-  private txGauge: any
+  private txGauge?: any
 
   /**
    * Create new ETH service

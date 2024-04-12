@@ -60,7 +60,7 @@ export interface EthereumClientOptions {
   /* if client can be run stateless post verkle, defaults to true for now */
   statelessVerkle?: boolean
 
-  txGauge: any
+  txGauge?: any
 }
 
 /**
