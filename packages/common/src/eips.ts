@@ -527,10 +527,6 @@ export const EIPs: EIPsDict = {
         v: 0,
         d: 'Gas cost of the first read of storage from a given location (per transaction)',
       },
-      sstoreInitGasEIP2200: {
-        v: 0,
-        d: 'Once per SSTORE operation from clean zero to non-zero',
-      },
     },
   },
   7516: {
