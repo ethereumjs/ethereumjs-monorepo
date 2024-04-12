@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1712833933161,
+  "lastUpdate": 1712943826862,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "indigophi@protonmail.com",
-            "name": "Scorbajio",
-            "username": "scorbajio"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d89a96382716b028b5bcc04014e701cfa98eeda8",
-          "message": "Snap sync: use zero-element proof for checking validity of final, empty range result (#3047)\n\n* Use no-elements proof for final check in account fetcher\r\n\r\n* Use no-elements proof for final check in storage fetcher\r\n\r\n* Check inputs after zero element proof code section\r\n\r\n* Cleanup\r\n\r\n* Reject peer if zero-element proof fails\r\n\r\n* Add tests for zero-element proof\r\n\r\n* Remove proofTrie usage\r\n\r\n* Use hashing function in static version of verifyRangeProof\r\n\r\n* Include useKeyHashing in call to fromProof so that hashing function is used in proof verification\r\n\r\n* Use appliedKey for hashing function instead of the function directly passed in TrieOpts\r\n\r\n* Pass in hashing function for use in static proof verification calls\r\n\r\n* Fix static range proof verification errors\r\n\r\n* Use custom hashing function from opts if available\r\n\r\n* Add test to check if zero element range proof verification fails with remaining elements to the right\r\n\r\n* Check if parameters are as expected for zero-element proof\r\n\r\n* Fix linting issues\r\n\r\n---------\r\n\r\nCo-authored-by: Scotty <66335769+ScottyPoi@users.noreply.github.com>\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>\r\nCo-authored-by: Indigo Alpha <indigoalpha@indigos-mbp.mynetworksettings.com>",
-          "timestamp": "2024-02-26T14:16:18+01:00",
-          "tree_id": "867a4a436729954bc31b6e44307f99884856b6eb",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d89a96382716b028b5bcc04014e701cfa98eeda8"
-        },
-        "date": 1708953544030,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40811,
-            "range": "±2.03%",
-            "unit": "ops/sec",
-            "extra": "82 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38747,
-            "range": "±3.15%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39528,
-            "range": "±1.84%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38393,
-            "range": "±2.04%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36926,
-            "range": "±2.17%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±2.12%",
             "unit": "ops/sec",
             "extra": "86 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "rodrigoheitie@hotmail.com",
+            "name": "Rodrigo Herrera",
+            "username": "rodrigoherrerai"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7d960df99d3fbc0113fa3b8d1ff8af518d235624",
+          "message": "modify rpcStataManager getAccount (#3345)\n\n* modify rpcStataManager getAccount\r\n\r\n* fix type error\r\n\r\n* Update mock provider response for getProof on non-existent account to mirror infura\r\n\r\n* Update nonexistent account check to compare bytes\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-04-12T13:40:52-04:00",
+          "tree_id": "7b7ecde89eddc5ed22f27e431ec4b77b223c328d",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/7d960df99d3fbc0113fa3b8d1ff8af518d235624"
+        },
+        "date": 1712943826196,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42424,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40202,
+            "range": "±2.66%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40756,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39681,
+            "range": "±1.68%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38530,
+            "range": "±1.80%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
           }
         ]
       }
