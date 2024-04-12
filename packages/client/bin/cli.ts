@@ -32,11 +32,14 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
+import * as http from 'http'
 import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
 import * as path from 'path'
+import * as promClient from 'prom-client'
 import * as readline from 'readline'
+import * as url from 'url'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
@@ -57,10 +60,6 @@ import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
-
-import * as promClient from 'prom-client'
-import * as http from 'http'
-import * as url from 'url'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -632,8 +631,7 @@ async function startClient(
   let client
   if (args.prometheus === true) {
     // Create custom metrics
-    let txGauge
-    txGauge = new promClient.Gauge({
+    const txGauge: promClient.Gauge<string> = new promClient.Gauge({
       name: 'tx_pool_size',
       help: 'Size of the client transaction pool',
     })

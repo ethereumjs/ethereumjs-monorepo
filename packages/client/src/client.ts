@@ -10,6 +10,7 @@ import type { MultiaddrLike } from './types'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+import type * as promClient from 'prom-client'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -60,7 +61,7 @@ export interface EthereumClientOptions {
   /* if client can be run stateless post verkle, defaults to true for now */
   statelessVerkle?: boolean
 
-  txGauge?: any
+  txGauge?: promClient.Gauge<string> | undefined
 }
 
 /**

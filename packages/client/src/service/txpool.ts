@@ -28,6 +28,7 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
+import type * as promClient from 'prom-client'
 import type QHeap from 'qheap'
 
 const Heap = require('qheap')
@@ -46,7 +47,7 @@ export interface TxPoolOptions {
   /* FullEthereumService */
   service: FullEthereumService
 
-  txGauge: any
+  txGauge?: promClient.Gauge<string> | undefined
 }
 
 type TxPoolObject = {
@@ -164,7 +165,7 @@ export class TxPool {
    */
   private LOG_STATISTICS_INTERVAL = 100000 // ms
 
-  private txGauge: any
+  private txGauge: promClient.Gauge<string> | undefined
 
   /**
    * Create new tx pool
@@ -370,7 +371,7 @@ export class TxPool {
       this.handled.set(hash, { address, added })
 
       this.txsInPool++
-      if (this.txGauge) {
+      if (this.txGauge !== undefined) {
         this.txGauge.inc()
       }
     } catch (e) {
@@ -412,7 +413,7 @@ export class TxPool {
 
     this.txsInPool--
 
-    if (this.txGauge) {
+    if (this.txGauge !== undefined) {
       this.txGauge.dec()
     }
 
@@ -859,7 +860,7 @@ export class TxPool {
 
     this.txsInPool = 0
 
-    if (this.txGauge) {
+    if (this.txGauge !== undefined) {
       this.txGauge.set(0)
     }
 

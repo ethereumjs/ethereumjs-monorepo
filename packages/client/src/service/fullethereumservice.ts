@@ -20,11 +20,12 @@ import type { Peer } from '../net/peer/peer'
 import type { Protocol } from '../net/protocol'
 import type { Block } from '@ethereumjs/block'
 import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
+import type * as promClient from 'prom-client'
 
 interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
   lightserv?: boolean
-  txGauge?: any
+  txGauge?: promClient.Gauge<string>
 }
 
 /**
@@ -46,7 +47,7 @@ export class FullEthereumService extends Service {
   /** building head state via snapsync or vmexecution */
   private building = false
 
-  private txGauge?: any
+  private txGauge?: promClient.Gauge<string> | undefined
 
   /**
    * Create new ETH service
