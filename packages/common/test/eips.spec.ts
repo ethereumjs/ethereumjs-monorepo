@@ -4,7 +4,7 @@ import { Chain, Common, Hardfork } from '../src/index.js'
 
 describe('[Common/EIPs]: Initialization / Chain params', () => {
   it('Correct initialization', () => {
-    let eips = [1559, 2929]
+    let eips = [2537, 2929]
     const c = new Common({ chain: Chain.Mainnet, eips })
     assert.equal(c.eips(), eips, 'should initialize with supported EIP')
 
@@ -35,6 +35,8 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     /*
     // Manual test since no test triggering EIP config available
     // TODO: recheck on addition of new EIP configs
+    // To run manually change minimumHardfork in EIP2537 config to petersburg
+    eips = [ 2537, ]
     msg = 'should throw on not meeting minimum hardfork requirements'
     f = () => {
       new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Byzantium, eips })
