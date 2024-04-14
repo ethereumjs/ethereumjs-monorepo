@@ -10,7 +10,7 @@ describe('genesis test', () => {
     const chainIds = Object.keys(ChainGenesis)
     for (const chainId of chainIds) {
       // Kaustinen can have an empty genesis state since verkle blocks contain their pre-state
-      if (Number(chainId) === Chain.Kaustinen4) continue
+      if (Number(chainId) === Chain.Kaustinen5) continue
 
       const { name, stateRoot: expectedRoot } = ChainGenesis[chainId as unknown as Chain]
 
