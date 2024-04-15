@@ -139,17 +139,6 @@ export class FullSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
-  }
-
-  /**
    * Checks if tx pool should be started
    */
   checkTxPoolState() {

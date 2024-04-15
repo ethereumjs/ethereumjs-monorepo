@@ -100,20 +100,6 @@ export class SnapSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    // TODO: refine the way to query latest to fetch for the peer
-    const blockHash = peer.eth!.status.bestHash
-    // const blockHash = this.skeleton?.headHash() ?? peer.eth!.status.bestHash
-    const result = await peer.eth?.getBlockHeaders({
-      block: blockHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
-  }
-
-  /**
    * Start synchronizer.
    */
   async start(): Promise<void> {

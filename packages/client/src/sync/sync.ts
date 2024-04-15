@@ -10,6 +10,7 @@ import type { Config } from '../config'
 import type { Peer } from '../net/peer/peer'
 import type { PeerPool } from '../net/peerpool'
 import type { AccountFetcher, BlockFetcher, HeaderFetcher, ReverseBlockFetcher } from './fetcher'
+import type { BlockHeader } from '@ethereumjs/block'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -161,6 +162,17 @@ export abstract class Synchronizer {
       this.clearFetcher()
       throw error
     }
+  }
+
+  /**
+   * Get latest header of peer
+   */
+  async latest(peer: Peer): Promise<BlockHeader | undefined> {
+    const result = await peer.eth?.getBlockHeaders({
+      block: peer.eth!.status.bestHash,
+      max: 1,
+    })
+    return result ? result[1][0] : undefined
   }
 
   /**

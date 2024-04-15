@@ -116,7 +116,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
       const latest = await this.latest(peer)
-      if (latest) {
+      if (latest !== undefined) {
         const { number } = latest
         if (!best || best[1] < number) {
           best = [peer, number]
@@ -124,17 +124,6 @@ export class BeaconSynchronizer extends Synchronizer {
       }
     }
     return best ? best[0] : undefined
-  }
-
-  /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.eth?.getBlockHeaders({
-      block: peer.eth!.status.bestHash,
-      max: 1,
-    })
-    return result ? result[1][0] : undefined
   }
 
   /**
