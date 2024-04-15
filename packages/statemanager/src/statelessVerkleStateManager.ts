@@ -8,6 +8,7 @@ import {
   bytesToInt32,
   hexToBytes,
   padToEven,
+  setLengthLeft,
   setLengthRight,
   short,
   toBytes,
@@ -463,9 +464,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     // load the account basic fields and codeSize should be in it
     const account = await this.getAccount(address)
     if (account === undefined) {
-      const errorMsg = `address=${address} doesn't exist in pre-state`
-      debug(errorMsg)
-      throw Error(errorMsg)
+      return 0
     }
     return account.codeSize
   }
@@ -736,6 +735,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
       if (accessedState.type === AccessedStateType.Code) {
         // computedValue = computedValue !== null ? `0x${computedValue.slice(4)}` : null
         canonicalValue = canonicalValue !== null ? `0x${canonicalValue.slice(4)}` : null
+      } else if (
+        accessedState.type === AccessedStateType.Storage &&
+        canonicalValue === null &&
+        computedValue === ZEROVALUE
+      ) {
+        canonicalValue = ZEROVALUE
       }
 
       if (computedValue !== canonicalValue) {
@@ -850,11 +855,13 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       case AccessedStateType.Storage: {
         const { slot } = accessedState
-        const storage = this._storageCache?.get(address, bigIntToBytes(slot))
+        const key = setLengthLeft(bigIntToBytes(slot), 32)
+
+        const storage = this._storageCache?.get(address, key)
         if (storage === undefined) {
           return null
         }
-        return bytesToHex(storage)
+        return bytesToHex(setLengthLeft(storage, 32))
       }
     }
   }
