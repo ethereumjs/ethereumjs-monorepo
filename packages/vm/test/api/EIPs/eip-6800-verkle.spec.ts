@@ -18,7 +18,7 @@ const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs
 
 describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {
-    const verkleStateManager = new StatelessVerkleStateManager({ common })
+    const verkleStateManager = await StatelessVerkleStateManager.create({ common })
     const evm = await EVM.create({ common, stateManager: verkleStateManager })
     const vm = await VM.create({
       common,
