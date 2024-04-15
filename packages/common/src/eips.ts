@@ -226,7 +226,7 @@ export const EIPs: EIPsDict = {
         d: 'The address where the historical blockhashes are stored',
       },
       historyServeWindow: {
-        v: BigInt(256),
+        v: BigInt(8192),
         d: 'The amount of blocks to be served by the historical blockhash contract',
       },
     },
@@ -414,7 +414,7 @@ export const EIPs: EIPsDict = {
     gasPrices: {},
     vm: {
       historicalRootsLength: {
-        v: 8192,
+        v: 8191,
         d: 'The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile',
       },
     },
