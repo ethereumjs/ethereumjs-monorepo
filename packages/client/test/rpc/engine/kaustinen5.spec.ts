@@ -13,7 +13,7 @@ import type { BeaconPayloadJson } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
 import type { HttpClient } from 'jayson/promise'
 const genesisVerkleStateRoot = '0x382960711d9ccf58b9db20122e2253eb9bfa99d513f8c9d4e85b55971721f4de'
-const genesisVerkleBlockHash = '0x086326f2922364dba375e7c9bed375d622845615c0974ffd1d3be0e34edbfbc3'
+const genesisVerkleBlockHash = '0x2d4f1927f519051a71d6d9b1bf7066ded483b13c0f4a7bb9e5b388cdf0d496fd'
 
 /**
  * One can run this test in two formats:

@@ -51,10 +51,10 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "lru-cache": "10.1.0",
+    "verkle-cryptography-wasm": "^0.4.0",
     "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.0.3",
-    "lru-cache": "^10.0.0",
-    "rust-verkle-wasm": "^0.0.1"
+    "@ethereumjs/util": "^9.0.3"
   },
   "engines": {
     "node": ">=18"
