@@ -271,8 +271,8 @@ export class ETH extends Protocol {
     return sStr
   }
 
-  sendStatus(status: ETH.StatusOpts, force = false) {
-    if (this._status !== null && !force) return
+  sendStatus(status: ETH.StatusOpts) {
+    if (this._status !== null) return
     this._status = [
       intToBytes(this._version),
       bigIntToBytes(this._peer.common.chainId()),

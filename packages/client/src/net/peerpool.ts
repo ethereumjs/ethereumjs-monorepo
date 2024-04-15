@@ -38,7 +38,7 @@ export class PeerPool {
   private DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL = 5000
 
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
-  private _peerEthStatusCheckInterval: NodeJS.Timeout | undefined
+  private _peerBestHeaderUpdateInterval: NodeJS.Timeout | undefined
   private _reconnectTimeout: NodeJS.Timeout | undefined
 
   /**
@@ -94,7 +94,7 @@ export class PeerPool {
       this.DEFAULT_STATUS_CHECK_INTERVAL
     )
 
-    this._peerEthStatusCheckInterval = setInterval(
+    this._peerBestHeaderUpdateInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
       await this._peerBestHeaderUpdate.bind(this),
       this.DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL
@@ -112,7 +112,7 @@ export class PeerPool {
       await this.close()
     }
     clearInterval(this._statusCheckInterval as NodeJS.Timeout)
-    clearInterval(this._peerEthStatusCheckInterval as NodeJS.Timeout)
+    clearInterval(this._peerBestHeaderUpdateInterval as NodeJS.Timeout)
     clearTimeout(this._reconnectTimeout as NodeJS.Timeout)
     this.running = false
     return true
@@ -160,9 +160,7 @@ export class PeerPool {
    * @param filterFn filter function to apply before finding idle peers
    */
   idle(filterFn = (_peer: Peer) => true): Peer | undefined {
-    const idle = this.peers.filter((p) => {
-      return p.idle && filterFn(p) ? true : false
-    })
+    const idle = this.peers.filter((p) => p.idle && filterFn(p))
     if (idle.length > 0) {
       const index = Math.floor(Math.random() * idle.length)
       return idle[index]

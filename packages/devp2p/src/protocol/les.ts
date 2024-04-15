@@ -182,8 +182,8 @@ export class LES extends Protocol {
     return sStr
   }
 
-  sendStatus(status: LES.Status, force = false) {
-    if (this._status !== null && !force) return
+  sendStatus(status: LES.Status) {
+    if (this._status !== null) return
 
     if (status.announceType === undefined) {
       status['announceType'] = intToBytes(DEFAULT_ANNOUNCE_TYPE)
