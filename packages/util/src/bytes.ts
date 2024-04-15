@@ -346,7 +346,7 @@ export const addHexPrefix = (str: string): PrefixedHexString => {
     return str
   }
 
-  return isHexPrefixed(str) ? (str as PrefixedHexString) : `0x${str}`
+  return isHexPrefixed(str) ? str : `0x${str}`
 }
 
 /**

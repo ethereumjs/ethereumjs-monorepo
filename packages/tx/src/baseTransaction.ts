@@ -82,7 +82,7 @@ export abstract class BaseTransaction<T extends TransactionType>
 
     this.txOptions = opts
 
-    const toB = toBytes(to)
+    const toB = toBytes(to === '' ? '0x' : to)
     const vB = toBytes(v)
     const rB = toBytes(r)
     const sB = toBytes(s)

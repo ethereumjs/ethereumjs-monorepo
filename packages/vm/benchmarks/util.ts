@@ -5,6 +5,7 @@ import {
   PrefixedHexString,
   equalsBytes,
   hexToBytes,
+  isHexPrefixed,
   toBytes,
 } from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
@@ -37,7 +38,7 @@ export async function getPreState(
   const state = new DefaultStateManager()
   await state.checkpoint()
   for (const k in pre) {
-    const address = new Address(hexToBytes(k as PrefixedHexString))
+    const address = new Address(hexToBytes(isHexPrefixed(k) ? k : `0x${k}`))
     const { nonce, balance, code, storage } = pre[k]
     const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
