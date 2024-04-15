@@ -84,8 +84,8 @@ export class SnapSynchronizer extends Synchronizer {
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
     for (const peer of peers) {
-      const latest = await this.latest(peer)
-      if (latest) {
+      const latest = await peer.latest()
+      if (latest !== undefined) {
         const { number } = latest
         if (
           (!best &&
@@ -192,7 +192,7 @@ export class SnapSynchronizer extends Synchronizer {
       return false
     }
 
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) {
       return false
     }

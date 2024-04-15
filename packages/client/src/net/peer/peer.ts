@@ -5,6 +5,7 @@ import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protoc
 import type { Config } from '../../config'
 import type { BoundProtocol, Protocol, Sender } from '../protocol'
 import type { Server } from '../server'
+import type { BlockHeader } from '@ethereumjs/block'
 
 export interface PeerOptions {
   /* Config */
@@ -46,8 +47,6 @@ export abstract class Peer extends EventEmitter {
 
   // TODO check if this should be moved into RlpxPeer
   public eth?: BoundEthProtocol
-  public lastEthStatusUpdate?: number
-
   public snap?: BoundSnapProtocol
   public les?: BoundLesProtocol
 
@@ -93,6 +92,22 @@ export abstract class Peer extends EventEmitter {
   abstract connect(): Promise<void>
 
   /**
+   * Get latest header of peer
+   */
+  async latest(): Promise<BlockHeader | undefined> {
+    const result = await this.eth?.getBlockHeaders({
+      block: this.eth!.status.bestHash,
+      max: 1,
+    })
+    if (result !== undefined) {
+      const header = result[1][0]
+      this.eth!.updatedBestHeader = header
+      return header
+    }
+    return
+  }
+
+  /**
    * Handle unhandled messages along handshake
    */
   handleMessageQueue() {
@@ -112,7 +127,6 @@ export abstract class Peer extends EventEmitter {
       bound = new BoundEthProtocol(boundOpts)
 
       await bound!.handshake(sender)
-      this.lastEthStatusUpdate = Date.now()
 
       this.eth = <BoundEthProtocol>bound
     } else if (protocol.name === 'les') {

@@ -90,7 +90,7 @@ export class LightSynchronizer extends Synchronizer {
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = peer!.les!.status.headNum
