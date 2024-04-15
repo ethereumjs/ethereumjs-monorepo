@@ -421,7 +421,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     // allocate the code and copy onto it from the available witness chunks
     const codeSize = account.codeSize
-    const accessedCode = new Uint8Array(codeSize)
+    // allocate enough to fit the last chunk
+    const accessedCode = new Uint8Array(codeSize + 31)
 
     const chunks = Math.floor(codeSize / 31) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
@@ -447,7 +448,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     // Return accessedCode where only accessed code has been copied
-    return accessedCode
+    const contactCode = accessedCode.slice(0, codeSize)
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache?.put(address, contactCode)
+    }
+
+    return contactCode
   }
 
   async getContractCodeSize(address: Address): Promise<number> {
