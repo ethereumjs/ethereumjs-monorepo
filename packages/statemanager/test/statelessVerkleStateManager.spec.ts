@@ -29,7 +29,9 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     chain: 'customChain',
     eips: [4895, 6800],
   })
-  const decodedTxs = verkleBlockJSON.transactions.map((tx) => TransactionFactory.fromTxData(tx))
+  const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
+    TransactionFactory.fromSerializedData(hexToBytes(tx))
+  )
   const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs }, { common })
 
   it('initPreState()', async () => {
