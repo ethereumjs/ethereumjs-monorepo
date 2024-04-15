@@ -169,6 +169,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   // Post-state provided from the executionWitness.
   // Should not update. Used for comparing our computed post-state with the canonical one.
   private _postState: VerkleState = {}
+  private _preState: VerkleState = {}
 
   // Checkpointing
   private _checkpoints: VerkleState[] = []
@@ -285,6 +286,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }, {})
 
     this._state = preState
+
+    // also maintain a separate preState unaffected by any changes in _state
+    this._preState = preStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
@@ -734,7 +741,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      const computedValue = this.getComputedValue(accessedState)
+      const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
+      if (computedValue === undefined) {
+        debug(
+          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+        )
+        postFailures++
+        continue
+      }
+
       let canonicalValue: string | null | undefined = this._postState[chunkKey]
 
       if (canonicalValue === undefined) {
