@@ -1,5 +1,4 @@
 import { Hardfork } from '@ethereumjs/common'
-import { bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { Event } from '../types'
 
@@ -34,9 +33,9 @@ export class PeerPool {
   private DEFAULT_STATUS_CHECK_INTERVAL = 20000
 
   /**
-   * Default status check interval (in ms)
+   * Default peer best header update interval (in ms)
    */
-  private DEFAULT_PEER_ETH_STATUS_CHECK_INTERVAL = 5000
+  private DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL = 5000
 
   private _statusCheckInterval: NodeJS.Timeout | undefined /* global NodeJS */
   private _peerEthStatusCheckInterval: NodeJS.Timeout | undefined
@@ -97,8 +96,8 @@ export class PeerPool {
 
     this._peerEthStatusCheckInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
-      await this._peerBestBlockUpdate.bind(this),
-      this.DEFAULT_PEER_ETH_STATUS_CHECK_INTERVAL
+      await this._peerBestHeaderUpdate.bind(this),
+      this.DEFAULT_PEER_BEST_HEADER_UPDATE_INTERVAL
     )
 
     this.running = true
@@ -271,18 +270,14 @@ export class PeerPool {
   }
 
   /**
-   * Periodically check for for the latest best block known by a
-   * peer to allow for a more accurate best peer choice
+   * Periodically update the latest best known header for peers
    */
-  async _peerBestBlockUpdate() {
+  async _peerBestHeaderUpdate() {
     for (const p of this.peers) {
-      if (!p.idle && p.eth !== undefined && p instanceof RlpxPeer) {
-        p.idle = true
-        console.log(this.config.syncTargetHeight)
-        //const block = await p.eth.getBlockHeaders()
-        //console.log(block)
-        console.log(bytesToUnprefixedHex(p.eth.status.bestHash))
+      if (p.idle && p.eth !== undefined && p instanceof RlpxPeer) {
         p.idle = false
+        await p.latest()
+        p.idle = true
       }
     }
   }

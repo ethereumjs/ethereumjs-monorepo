@@ -1,5 +1,7 @@
+import { BIGINT_0 } from '@ethereumjs/util'
 import { EventEmitter } from 'events'
 
+import { short } from '../../util'
 import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol'
 
 import type { Config } from '../../config'
@@ -92,19 +94,60 @@ export abstract class Peer extends EventEmitter {
   abstract connect(): Promise<void>
 
   /**
-   * Get latest header of peer
+   * Eventually updates and returns the latest header of peer
    */
   async latest(): Promise<BlockHeader | undefined> {
-    const result = await this.eth?.getBlockHeaders({
-      block: this.eth!.status.bestHash,
+    if (!this.eth) {
+      return
+    }
+    let block: bigint | Uint8Array
+    if (!this.eth!.updatedBestHeader) {
+      // If there is no updated best header stored yet, start with the status hash
+      block = this.eth!.status.bestHash
+    } else {
+      block = this.getPotentialBestHeaderNum()
+    }
+    const result = await this.eth!.getBlockHeaders({
+      block,
       max: 1,
     })
     if (result !== undefined) {
-      const header = result[1][0]
-      this.eth!.updatedBestHeader = header
-      return header
+      const latest = result[1][0]
+      this.eth!.updatedBestHeader = latest
+      if (latest !== undefined) {
+        const height = latest.number
+        if (
+          this.config.syncTargetHeight === undefined ||
+          this.config.syncTargetHeight === BIGINT_0 ||
+          this.config.syncTargetHeight < latest.number
+        ) {
+          this.config.syncTargetHeight = height
+          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+        }
+      }
     }
-    return
+    return this.eth!.updatedBestHeader
+  }
+
+  /**
+   * Returns a potential best block header number for the peer
+   * (not necessarily verified by block request) derived from
+   * either the client-wide sync target height or the last best
+   * header timestamp "forward-calculated" by block/slot times (12s).
+   */
+  getPotentialBestHeaderNum(): bigint {
+    let forwardCalculatedNum = BIGINT_0
+    const bestSyncTargetNum = this.config.syncTargetHeight ?? BIGINT_0
+    if (this.eth?.updatedBestHeader !== undefined) {
+      const bestHeaderNum = this.eth!.updatedBestHeader.number
+      const nowSec = Math.floor(Date.now() / 1000)
+      const diffSec = nowSec - Number(this.eth!.updatedBestHeader.timestamp)
+      const SLOT_TIME = 12
+      const diffBlocks = BigInt(Math.floor(diffSec / SLOT_TIME))
+      forwardCalculatedNum = bestHeaderNum + diffBlocks
+    }
+    const best = forwardCalculatedNum > bestSyncTargetNum ? forwardCalculatedNum : bestSyncTargetNum
+    return best
   }
 
   /**
