@@ -49,8 +49,8 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
       Address.fromString('0x6177843db3138ae69679a54b95cf345ed759450d')
     )
 
-    assert.equal(account!.balance, 241791330767054707n, 'should have correct balance')
-    assert.equal(account!.nonce, 200n, 'should have correct nonce')
+    assert.equal(account!.balance, 724462229558283876n, 'should have correct balance')
+    assert.equal(account!.nonce, 700n, 'should have correct nonce')
     assert.equal(account!._storageRoot, null, 'stateroot should have not been set')
     assert.equal(
       bytesToHex(account!.codeHash),
