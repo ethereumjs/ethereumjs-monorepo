@@ -26,7 +26,7 @@ interface StateTestPreAccount {
   balance: PrefixedHexString
   code: PrefixedHexString
   nonce: PrefixedHexString
-  storage: { [k: string]: PrefixedHexString }
+  storage: { [k: string]: string }
 }
 
 export async function getPreState(
