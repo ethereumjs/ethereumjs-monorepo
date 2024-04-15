@@ -414,7 +414,7 @@ export const EIPs: EIPsDict = {
     gasPrices: {},
     vm: {
       historicalRootsLength: {
-        v: 8191,
+        v: 8192,
         d: 'The modulo parameter of the beaconroot ring buffer in the beaconroot statefull precompile',
       },
     },
