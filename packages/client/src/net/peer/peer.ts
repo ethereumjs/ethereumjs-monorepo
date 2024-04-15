@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol'
 
 import type { Config } from '../../config'
-import type { BoundProtocol, Protocol, RlpxSender, Sender } from '../protocol'
+import type { BoundProtocol, Protocol, Sender } from '../protocol'
 import type { Server } from '../server'
 
 export interface PeerOptions {
@@ -47,7 +47,6 @@ export abstract class Peer extends EventEmitter {
   // TODO check if this should be moved into RlpxPeer
   public eth?: BoundEthProtocol
   public lastEthStatusUpdate?: number
-  public ethSender?: RlpxSender
 
   public snap?: BoundSnapProtocol
   public les?: BoundLesProtocol

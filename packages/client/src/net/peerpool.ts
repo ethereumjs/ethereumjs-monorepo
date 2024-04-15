@@ -4,7 +4,6 @@ import { bytesToUnprefixedHex } from '@ethereumjs/util'
 import { Event } from '../types'
 
 import { type Peer, RlpxPeer } from './peer'
-import { RlpxSender } from './protocol'
 
 import type { Config } from '../config'
 
@@ -98,7 +97,7 @@ export class PeerPool {
 
     this._peerEthStatusCheckInterval = setInterval(
       // eslint-disable-next-line @typescript-eslint/await-thenable
-      await this._peerEthStatusCheck.bind(this),
+      await this._peerBestBlockUpdate.bind(this),
       this.DEFAULT_PEER_ETH_STATUS_CHECK_INTERVAL
     )
 
@@ -272,16 +271,16 @@ export class PeerPool {
   }
 
   /**
-   * Periodically check pooled peers for the last ETH status exchange
-   * and trigger new status msg exchanges if too old
+   * Periodically check for for the latest best block known by a
+   * peer to allow for a more accurate best peer choice
    */
-  async _peerEthStatusCheck() {
+  async _peerBestBlockUpdate() {
     for (const p of this.peers) {
-      if (!p.idle && p.eth !== undefined && p.ethSender !== undefined && p instanceof RlpxPeer) {
+      if (!p.idle && p.eth !== undefined && p instanceof RlpxPeer) {
         p.idle = true
-        console.log('here!')
-        console.log(bytesToUnprefixedHex(p.eth.status.bestHash))
-        await p.eth.handshake(p.ethSender!)
+        console.log(this.config.syncTargetHeight)
+        //const block = await p.eth.getBlockHeaders()
+        //console.log(block)
         console.log(bytesToUnprefixedHex(p.eth.status.bestHash))
         p.idle = false
       }

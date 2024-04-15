@@ -168,7 +168,6 @@ export class RlpxPeer extends Peer {
         // handshake, and can just use the eth handshake
         if (protocol && name !== 'snap') {
           const sender = new RlpxSender(rlpxProtocol as Devp2pETH | Devp2pLES | Devp2pSNAP)
-          this.ethSender = sender
           return this.addProtocol(sender, protocol).then(() => {
             if (name === 'eth') {
               const snapRlpxProtocol = rlpxPeer
