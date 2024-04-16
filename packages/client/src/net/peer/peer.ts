@@ -117,9 +117,10 @@ export abstract class Peer extends EventEmitter {
       if (latest !== undefined) {
         const height = latest.number
         if (
-          this.config.syncTargetHeight === undefined ||
-          this.config.syncTargetHeight === BIGINT_0 ||
-          this.config.syncTargetHeight < latest.number
+          height > BIGINT_0 &&
+          (this.config.syncTargetHeight === undefined ||
+            this.config.syncTargetHeight === BIGINT_0 ||
+            this.config.syncTargetHeight < latest.number)
         ) {
           this.config.syncTargetHeight = height
           this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)

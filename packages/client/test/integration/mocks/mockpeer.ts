@@ -11,6 +11,7 @@ import { createStream } from './network'
 import type { PeerOptions } from '../../../src/net/peer'
 import type { MockServer } from './mockserver'
 import type { RemoteStream } from './network'
+import type { BlockHeader } from '@ethereumjs/block'
 
 // TypeScript doesn't have support yet for ReturnType
 // with generic types, so this wrapper is used as a helper.
@@ -38,6 +39,13 @@ export class MockPeer extends Peer {
     }
     await this.createStream(this.location)
     this.config.events.emit(Event.PEER_CONNECTED, this)
+  }
+
+  async latest(): Promise<BlockHeader | undefined> {
+    if (this.eth !== undefined) {
+      this.eth.updatedBestHeader = undefined
+    }
+    return super.latest()
   }
 
   async accept(server: MockServer) {
