@@ -855,11 +855,7 @@ export class TxPool {
     this.handled.clear()
 
     this.txsInPool = 0
-
-    if (this.txGauge !== undefined) {
-      this.txGauge.set(0)
-    }
-
+    this.txGauge?.set(0)
     this.opened = false
   }
 
