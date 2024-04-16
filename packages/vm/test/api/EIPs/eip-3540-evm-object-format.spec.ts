@@ -8,7 +8,7 @@ import { VM } from '../../../src/vm'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
