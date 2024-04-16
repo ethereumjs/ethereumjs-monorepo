@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713229734722,
+  "lastUpdate": 1713262073673,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "Holger.Drewes@gmail.com",
-            "name": "Holger Drewes",
-            "username": "holgerd77"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b8f5b6df2a5e454f315d9b30b4f04e89fd92fdf8",
-          "message": "Make trustedSetupPath in Util kzg module optional (#3296)",
-          "timestamp": "2024-02-29T07:07:30-05:00",
-          "tree_id": "4db1634662531c78ce25a026bc59e8564b28d4a9",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b8f5b6df2a5e454f315d9b30b4f04e89fd92fdf8"
-        },
-        "date": 1709208610754,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 40686,
-            "range": "±2.64%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40104,
-            "range": "±1.49%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39760,
-            "range": "±1.51%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 36399,
-            "range": "±5.55%",
-            "unit": "ops/sec",
-            "extra": "84 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 37930,
-            "range": "±1.81%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±6.32%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d210d7cc98de5c59c1a46ff641526069399045a8",
+          "message": "util: update prefixedHexString to use literal string template (#3348)\n\n* util: update prefixedHexString using literal string template\n\n* util: fix type issues related to prefixed hex strigs\n\n* monorepo: implement PrefixedHexString related fixes\n\n* tx: more type fixes\n\n* vm: more type fixes\n\n* tx: more type fixes\n\n* vm: fix to empty string handling\n\n* vm: fix storage key typings\n\n* vm: fix storage vlue typings\n\n---------\n\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-04-16T06:05:02-04:00",
+          "tree_id": "202d9ec95c1699d783b64a53bda60f9e34f49faf",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d210d7cc98de5c59c1a46ff641526069399045a8"
+        },
+        "date": 1713262073053,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41545,
+            "range": "±2.99%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41061,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40200,
+            "range": "±1.63%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 37142,
+            "range": "±6.26%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38601,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
