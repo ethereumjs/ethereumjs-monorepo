@@ -142,7 +142,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       done = false
       let block2
       while (!done) {
-        const nextBlockNumber = `0x${(Number(block1.result.number) + 1).toString('16')}`
+        const nextBlockNumber = `0x${(Number(block1.result.number) + 1).toString(16)}`
         block2 = await client.request('eth_getBlockByNumber', [nextBlockNumber, false], 2.0)
         if (block2.result !== null && block2.result !== undefined) {
           done = true

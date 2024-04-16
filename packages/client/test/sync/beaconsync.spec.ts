@@ -117,7 +117,7 @@ describe('[BeaconSynchronizer]', async () => {
       number: BigInt(2),
       hash: () => new Uint8Array(0),
     })
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(undefined)
+    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(false)
     ;(skeleton as any).status.progress.subchains = [
       { head: BigInt(10), tail: BigInt(6) },
       { head: BigInt(4), tail: BigInt(2) },
@@ -168,7 +168,7 @@ describe('[BeaconSynchronizer]', async () => {
       number: BigInt(2),
       hash: () => new Uint8Array(0),
     })
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(undefined)
+    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(false)
     ;(skeleton as any).status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     ;(sync as any).chain = {
       // Make height > tail so that skeletonSubchainMergeMinimum is triggered

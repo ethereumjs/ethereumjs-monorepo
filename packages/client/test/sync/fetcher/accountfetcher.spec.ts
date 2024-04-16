@@ -249,7 +249,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should verify zero-element proof correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -280,7 +280,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should reject zero-element proof if elements still remain to right of requested range', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
 
     // calculate new root with a key all the way to the right of the trie
