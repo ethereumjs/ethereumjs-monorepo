@@ -9,7 +9,7 @@ import type { CustomPrecompile } from './precompiles/index.js'
 import type { PrecompileFunc } from './precompiles/types.js'
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { AccessWitness } from '@ethereumjs/statemanager'
-import type { Account, Address, AsyncEventEmitter } from '@ethereumjs/util'
+import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
 
 export type DeleteOpcode = {
   opcode: number
@@ -385,7 +385,7 @@ export class DefaultBlockchain implements Blockchain {
  * The BN128 curve package (`rustbn-wasm`)
  */
 export interface bn128 {
-  ec_pairing: (input_str: string) => string
-  ec_add: (input_str: string) => string
-  ec_mul: (input_hex: string) => string
+  ec_pairing: (input_str: string) => PrefixedHexString
+  ec_add: (input_str: string) => PrefixedHexString
+  ec_mul: (input_hex: string) => PrefixedHexString
 }

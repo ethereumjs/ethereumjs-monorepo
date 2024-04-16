@@ -5,7 +5,13 @@ import type { AccessListEIP2930Transaction } from './eip2930Transaction.js'
 import type { BlobEIP4844Transaction } from './eip4844Transaction.js'
 import type { LegacyTransaction } from './legacyTransaction.js'
 import type { AccessList, AccessListBytes, Common, Hardfork } from '@ethereumjs/common'
-import type { Address, AddressLike, BigIntLike, BytesLike } from '@ethereumjs/util'
+import type {
+  Address,
+  AddressLike,
+  BigIntLike,
+  BytesLike,
+  PrefixedHexString,
+} from '@ethereumjs/util'
 export type {
   AccessList,
   AccessListBytes,
@@ -437,22 +443,22 @@ type JsonAccessListItem = { address: string; storageKeys: string[] }
  * (an EIP1559 tx e.g. lacks a `gasPrice`).
  */
 export interface JsonTx {
-  nonce?: string
-  gasPrice?: string
-  gasLimit?: string
-  to?: string
-  data?: string
-  v?: string
-  r?: string
-  s?: string
-  value?: string
-  chainId?: string
+  nonce?: PrefixedHexString
+  gasPrice?: PrefixedHexString
+  gasLimit?: PrefixedHexString
+  to?: PrefixedHexString
+  data?: PrefixedHexString
+  v?: PrefixedHexString
+  r?: PrefixedHexString
+  s?: PrefixedHexString
+  value?: PrefixedHexString
+  chainId?: PrefixedHexString
   accessList?: JsonAccessListItem[]
-  type?: string
-  maxPriorityFeePerGas?: string
-  maxFeePerGas?: string
-  maxFeePerBlobGas?: string
-  blobVersionedHashes?: string[]
+  type?: PrefixedHexString
+  maxPriorityFeePerGas?: PrefixedHexString
+  maxFeePerGas?: PrefixedHexString
+  maxFeePerBlobGas?: PrefixedHexString
+  blobVersionedHashes?: PrefixedHexString[]
 }
 
 /*

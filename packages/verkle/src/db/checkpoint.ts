@@ -1,4 +1,4 @@
-import { KeyEncoding, ValueEncoding, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { KeyEncoding, ValueEncoding, bytesToHex, hexToBytes, isHexPrefixed } from '@ethereumjs/util'
 import { LRUCache } from 'lru-cache'
 
 import type { Checkpoint, CheckpointDBOpts } from '../types.js'
@@ -96,7 +96,7 @@ export class CheckpointDB implements DB {
         if (value === undefined) {
           batchOp.push({
             type: 'del',
-            key: hexToBytes(key),
+            key: hexToBytes(isHexPrefixed(key) ? key : `0x${key}`),
             opts: {
               keyEncoding: KeyEncoding.Bytes,
             },
@@ -104,7 +104,7 @@ export class CheckpointDB implements DB {
         } else {
           batchOp.push({
             type: 'put',
-            key: hexToBytes(key),
+            key: hexToBytes(isHexPrefixed(key) ? key : `0x${key}`),
             value,
             opts: { keyEncoding: KeyEncoding.Bytes, valueEncoding: ValueEncoding.Bytes },
           })
