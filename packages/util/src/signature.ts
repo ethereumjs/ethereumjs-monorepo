@@ -20,6 +20,8 @@ import {
 } from './constants.js'
 import { assertIsBytes } from './helpers.js'
 
+import type { PrefixedHexString } from './types.js'
+
 export interface ECDSASignature {
   v: bigint
   r: Uint8Array
@@ -139,7 +141,7 @@ export const toCompactSig = function (
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
-export const fromRpcSig = function (sig: string): ECDSASignature {
+export const fromRpcSig = function (sig: PrefixedHexString): ECDSASignature {
   const bytes: Uint8Array = toBytes(sig)
 
   let r: Uint8Array

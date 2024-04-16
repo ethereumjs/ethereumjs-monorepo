@@ -1,4 +1,4 @@
-import { bytesToHex, toBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { getClientVersion } from '../../util'
@@ -8,6 +8,7 @@ import { middleware, validators } from '../validation'
 import type { EthereumClient } from '../..'
 import type { Chain } from '../../blockchain'
 import type { Service } from '../../service'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * web3_* RPC module
@@ -43,8 +44,8 @@ export class Web3 {
    * Returns Keccak-256 (not the standardized SHA3-256) of the given data
    * @param params The data to convert into a SHA3 hash
    */
-  sha3(params: string[]) {
-    const hexEncodedDigest = bytesToHex(keccak256(toBytes(params[0])))
+  sha3(params: PrefixedHexString[]): PrefixedHexString {
+    const hexEncodedDigest = bytesToHex(keccak256(toBytes(hexToBytes(params[0]))))
     return hexEncodedDigest
   }
 }

@@ -24,13 +24,15 @@ THE SOFTWARE
 
 import { bytesToUnprefixedHex, utf8ToBytes } from './bytes.js'
 
+import type { PrefixedHexString } from './types.js'
+
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
  * @param str the string input value
  * @return a boolean if it is or is not hex prefixed
  * @throws if the str input is not a string
  */
-export function isHexPrefixed(str: string): boolean {
+export function isHexPrefixed(str: string): str is PrefixedHexString {
   if (typeof str !== 'string') {
     throw new Error(`[isHexPrefixed] input must be type 'string', received type ${typeof str}`)
   }
@@ -201,9 +203,9 @@ export function getKeys(params: Record<string, string>[], key: string, allowEmpt
  *
  * @param  value
  * @param  length
- * @returns  output the string is a hex string
+ * @returns output the string is a hex string
  */
-export function isHexString(value: string, length?: number): boolean {
+export function isHexString(value: string, length?: number): value is PrefixedHexString {
   if (typeof value !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) return false
 
   if (typeof length !== 'undefined' && length > 0 && value.length !== 2 + 2 * length) return false

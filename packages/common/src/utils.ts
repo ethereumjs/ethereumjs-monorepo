@@ -2,6 +2,8 @@ import { intToHex, isHexPrefixed, stripHexPrefix } from '@ethereumjs/util'
 
 import { Hardfork } from './enums.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
   | { name: string; block: number; timestamp?: number }
@@ -10,14 +12,14 @@ type ConfigHardfork =
  * @param nonce string parsed from the Geth genesis file
  * @returns nonce as a 0x-prefixed 8 byte string
  */
-function formatNonce(nonce: string): string {
+function formatNonce(nonce: string): PrefixedHexString {
   if (!nonce || nonce === '0x0') {
     return '0x0000000000000000'
   }
   if (isHexPrefixed(nonce)) {
-    return '0x' + stripHexPrefix(nonce).padStart(16, '0')
+    return `0x${stripHexPrefix(nonce).padStart(16, '0')}`
   }
-  return '0x' + nonce.padStart(16, '0')
+  return `0x${nonce.padStart(16, '0')}`
 }
 
 /**
@@ -38,33 +40,37 @@ function parseGethParams(json: any, mergeForkIdPostMerge: boolean = true) {
     coinbase,
     baseFeePerGas,
     excessBlobGas,
+    extraData: unparsedExtraData,
+    nonce: unparsedNonce,
+    timestamp: unparsedTimestamp,
   }: {
     name: string
     config: any
-    difficulty: string
-    mixHash: string
-    gasLimit: string
-    coinbase: string
-    baseFeePerGas: string
-    excessBlobGas: string
+    difficulty: PrefixedHexString
+    mixHash: PrefixedHexString
+    gasLimit: PrefixedHexString
+    coinbase: PrefixedHexString
+    baseFeePerGas: PrefixedHexString
+    excessBlobGas: PrefixedHexString
+    extraData: string
+    nonce: string
+    timestamp: string
   } = json
-  let { extraData, timestamp, nonce }: { extraData: string; timestamp: string; nonce: string } =
-    json
-  const genesisTimestamp = Number(timestamp)
+  const genesisTimestamp = Number(unparsedTimestamp)
   const { chainId }: { chainId: number } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
-  if (extraData === '') {
-    extraData = '0x'
-  }
+  const extraData: PrefixedHexString =
+    unparsedExtraData === '' ? '0x' : (unparsedExtraData as PrefixedHexString)
+
   // geth may use number for timestamp
-  if (!isHexPrefixed(timestamp)) {
-    timestamp = intToHex(parseInt(timestamp))
-  }
-  // geth may not give us a nonce strictly formatted to an 8 byte hex string
-  if (nonce.length !== 18) {
-    nonce = formatNonce(nonce)
-  }
+  const timestamp: PrefixedHexString = isHexPrefixed(unparsedTimestamp)
+    ? unparsedTimestamp
+    : intToHex(parseInt(unparsedTimestamp))
+
+  // geth may not give us a nonce strictly formatted to an 8 byte 0x-prefixed hex string
+  const nonce: PrefixedHexString =
+    unparsedNonce.length !== 18 ? formatNonce(unparsedNonce) : (unparsedNonce as PrefixedHexString)
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters

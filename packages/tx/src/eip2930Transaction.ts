@@ -151,7 +151,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.gasPrice = bytesToBigInt(toBytes(gasPrice === '' ? '0x' : gasPrice))
+    this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
     this._validateCannotExceedMaxInteger({
       gasPrice: this.gasPrice,
@@ -192,7 +192,7 @@ export class AccessListEIP2930Transaction extends BaseTransaction<TransactionTyp
   }
 
   /**
-   * Returns a Uint8Array Array of the raw Bytess of the EIP-2930 transaction, in order.
+   * Returns a Uint8Array Array of the raw Bytes of the EIP-2930 transaction, in order.
    *
    * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
    * signatureYParity (v), signatureR (r), signatureS (s)]`

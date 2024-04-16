@@ -83,15 +83,15 @@ export abstract class BaseTransaction<T extends TransactionType>
     this.txOptions = opts
 
     const toB = toBytes(to === '' ? '0x' : to)
-    const vB = toBytes(v === '' ? '0x' : v)
-    const rB = toBytes(r === '' ? '0x' : r)
-    const sB = toBytes(s === '' ? '0x' : s)
+    const vB = toBytes(v)
+    const rB = toBytes(r)
+    const sB = toBytes(s)
 
-    this.nonce = bytesToBigInt(toBytes(nonce === '' ? '0x' : nonce))
-    this.gasLimit = bytesToBigInt(toBytes(gasLimit === '' ? '0x' : gasLimit))
+    this.nonce = bytesToBigInt(toBytes(nonce))
+    this.gasLimit = bytesToBigInt(toBytes(gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
-    this.value = bytesToBigInt(toBytes(value === '' ? '0x' : value))
-    this.data = toBytes(data === '' ? '0x' : data)
+    this.value = bytesToBigInt(toBytes(value))
+    this.data = toBytes(data)
 
     this.v = vB.length > 0 ? bytesToBigInt(vB) : undefined
     this.r = rB.length > 0 ? bytesToBigInt(rB) : undefined

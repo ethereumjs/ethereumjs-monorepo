@@ -166,10 +166,8 @@ export class FeeMarketEIP1559Transaction extends BaseTransaction<TransactionType
     // Verify the access list format.
     AccessLists.verifyAccessList(this.accessList)
 
-    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas === '' ? '0x' : maxFeePerGas))
-    this.maxPriorityFeePerGas = bytesToBigInt(
-      toBytes(maxPriorityFeePerGas === '' ? '0x' : maxPriorityFeePerGas)
-    )
+    this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
+    this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
     this._validateCannotExceedMaxInteger({
       maxFeePerGas: this.maxFeePerGas,

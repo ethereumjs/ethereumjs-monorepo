@@ -306,7 +306,7 @@ export class AccessWitness {
 
   merge(accessWitness: AccessWitness): void {
     for (const [chunkKey, chunkValue] of accessWitness.chunks.entries()) {
-      const stemKey = chunkKey.slice(0, chunkKey.length - 2)
+      const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
       const stem = accessWitness.stems.get(stemKey)
       if (stem === undefined) {
         throw Error(`Internal error: missing stem for the chunkKey=${chunkKey}`)
@@ -332,7 +332,7 @@ export class AccessWitness {
   *rawAccesses(): Generator<RawAccessedState> {
     for (const chunkKey of this.chunks.keys()) {
       // drop the last byte
-      const stemKey = chunkKey.slice(0, chunkKey.length - 2)
+      const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
       const stem = this.stems.get(stemKey)
       if (stem === undefined) {
         throw Error(`Internal error: missing stem for the chunkKey=${chunkKey}`)

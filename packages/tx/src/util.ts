@@ -1,4 +1,4 @@
-import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { type PrefixedHexString, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 
 import { isAccessList } from './types.js'
 
@@ -42,7 +42,7 @@ export class AccessLists {
       for (let i = 0; i < bufferAccessList.length; i++) {
         const data = bufferAccessList[i]
         const address = bytesToHex(data[0])
-        const storageKeys: string[] = []
+        const storageKeys: PrefixedHexString[] = []
         for (let item = 0; item < data[1].length; item++) {
           storageKeys.push(bytesToHex(data[1][item]))
         }

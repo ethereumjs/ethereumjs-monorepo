@@ -46,15 +46,15 @@ export interface GenesisState {
  */
 export function parseGethGenesisState(json: any) {
   const state: GenesisState = {}
-  for (let address of Object.keys(json.alloc)) {
+  for (const address of Object.keys(json.alloc)) {
     let { balance, code, storage, nonce } = json.alloc[address]
     // create a map with lowercase for easy lookups
-    address = addHexPrefix(address.toLowerCase())
+    const prefixedAddress = addHexPrefix(address.toLowerCase())
     balance = isHexPrefixed(balance) ? balance : bigIntToHex(BigInt(balance))
     code = code !== undefined ? addHexPrefix(code) : undefined
     storage = storage !== undefined ? Object.entries(storage) : undefined
     nonce = nonce !== undefined ? addHexPrefix(nonce) : undefined
-    state[address] = [balance, code, storage, nonce]
+    state[prefixedAddress] = [balance, code, storage, nonce]
   }
   return state
 }

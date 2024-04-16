@@ -6,10 +6,10 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   stripHexPrefix,
-  toBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
+import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'
@@ -196,7 +196,7 @@ export class Journal {
   async cleanup(): Promise<void> {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon) === true) {
       for (const addressHex of this.touched) {
-        const address = new Address(toBytes('0x' + addressHex))
+        const address = new Address(hexToBytes(`0x${addressHex}`))
         const account = await this.stateManager.getAccount(address)
         if (account === undefined || account.isEmpty()) {
           if (this.common.isActivatedEIP(2935)) {
