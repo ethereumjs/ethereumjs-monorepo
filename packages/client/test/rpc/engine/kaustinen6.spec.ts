@@ -96,9 +96,10 @@ describe(`valid verkle network setup`, async () => {
       let isBeaconData
       if (process.env.SAVED_DATA_DIR !== undefined) {
         const fileName = `${process.env.SAVED_DATA_DIR}/${testCase}.json`
-        testData = JSON.parse(readFileSync(fileName))[testCase]
+        testData = JSON.parse(readFileSync(fileName, 'utf8'))[testCase]
         isBeaconData = false
       } else {
+        // @ts-expect-error -- Typescript complains that `testCase` can't index the `blocks` object
         testData = blocks[testCase]
         isBeaconData = true
       }
@@ -160,8 +161,8 @@ describe(`valid verkle network setup`, async () => {
 
 async function loadGethVectors(vectorsDirPath: string, opts: { common: Common }) {
   // set chain id to 1 for geth vectors
-  opts.common._chainParams.chainId = BigInt(1)
-  const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`))
+  opts.common['_chainParams'].chainId = BigInt(1)
+  const stateDiffVec = JSON.parse(readFileSync(`${vectorsDirPath}/statediffs.json`, 'utf8'))
   const executionWitness0 = {
     stateDiff: [],
     verkleProof: {
