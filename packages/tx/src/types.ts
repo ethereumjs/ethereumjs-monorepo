@@ -254,7 +254,7 @@ export type LegacyTxData = {
   /**
    * The transaction's the address is sent to.
    */
-  to?: AddressLike
+  to?: AddressLike | ''
 
   /**
    * The amount of Ether sent.

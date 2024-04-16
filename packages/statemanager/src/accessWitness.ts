@@ -3,6 +3,7 @@ import { getKey, getStem } from '@ethereumjs/verkle'
 import debugDefault from 'debug'
 
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleCrypto } from '@ethereumjs/verkle'
 
 const { debug: createDebugLogger } = debugDefault
 const debug = createDebugLogger('statemanager:verkle:aw')
@@ -72,13 +73,18 @@ export type AccessedStateWithAddress = AccessedState & {
 export class AccessWitness {
   stems: Map<PrefixedHexString, StemAccessEvent & StemMeta>
   chunks: Map<PrefixedHexString, ChunkAccessEvent>
-
+  verkleCrypto: VerkleCrypto
   constructor(
     opts: {
+      verkleCrypto?: VerkleCrypto
       stems?: Map<PrefixedHexString, StemAccessEvent & StemMeta>
       chunks?: Map<PrefixedHexString, ChunkAccessEvent>
     } = {}
   ) {
+    if (opts.verkleCrypto === undefined) {
+      throw new Error('verkle crypto required')
+    }
+    this.verkleCrypto = opts.verkleCrypto
     this.stems = opts.stems ?? new Map<PrefixedHexString, StemAccessEvent & StemMeta>()
     this.chunks = opts.chunks ?? new Map<PrefixedHexString, ChunkAccessEvent>()
   }
@@ -164,7 +170,7 @@ export class AccessWitness {
     return gas
   }
 
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number) {
+  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
@@ -173,7 +179,11 @@ export class AccessWitness {
     return gas
   }
 
-  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number) {
+  touchCodeChunksRangeOnWriteAndChargeGas(
+    contact: Address,
+    startPc: number,
+    endPc: number
+  ): bigint {
     let gas = BIGINT_0
     for (let chunkNum = Math.floor(startPc / 31); chunkNum <= Math.floor(endPc / 31); chunkNum++) {
       const { treeIndex, subIndex } = getTreeIndicesForCodeChunk(chunkNum)
@@ -251,7 +261,7 @@ export class AccessWitness {
     // i.e. no fill cost is charged right now
     const chunkFill = false
 
-    const accessedStemKey = getStem(address, treeIndex)
+    const accessedStemKey = getStem(this.verkleCrypto, address, treeIndex)
     const accessedStemHex = bytesToHex(accessedStemKey)
     let accessedStem = this.stems.get(accessedStemHex)
     if (accessedStem === undefined) {
@@ -291,12 +301,12 @@ export class AccessWitness {
 
   /**Create a shallow copy, could clone some caches in future for optimizations */
   shallowCopy(): AccessWitness {
-    return new AccessWitness()
+    return new AccessWitness({ verkleCrypto: this.verkleCrypto })
   }
 
   merge(accessWitness: AccessWitness): void {
     for (const [chunkKey, chunkValue] of accessWitness.chunks.entries()) {
-      const stemKey = chunkKey.slice(0, chunkKey.length - 2)
+      const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
       const stem = accessWitness.stems.get(stemKey)
       if (stem === undefined) {
         throw Error(`Internal error: missing stem for the chunkKey=${chunkKey}`)
@@ -322,7 +332,7 @@ export class AccessWitness {
   *rawAccesses(): Generator<RawAccessedState> {
     for (const chunkKey of this.chunks.keys()) {
       // drop the last byte
-      const stemKey = chunkKey.slice(0, chunkKey.length - 2)
+      const stemKey = chunkKey.slice(0, chunkKey.length - 2) as PrefixedHexString
       const stem = this.stems.get(stemKey)
       if (stem === undefined) {
         throw Error(`Internal error: missing stem for the chunkKey=${chunkKey}`)

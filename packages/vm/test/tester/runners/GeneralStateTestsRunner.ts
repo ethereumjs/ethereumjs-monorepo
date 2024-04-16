@@ -94,6 +94,8 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   try {
     tx = makeTx(testData.transaction, { common })
   } catch (e: any) {
+    console.log('error: ', e)
+    console.log('testData.transaction: ', testData.transaction)
     execInfo = 'tx instantiation exception'
   }
 

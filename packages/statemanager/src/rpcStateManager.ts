@@ -23,7 +23,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
@@ -242,7 +242,7 @@ export class RPCStateManager implements EVMStateManagerInterface {
       params: [address.toString(), [] as any, this._blockTag],
     })
 
-    const proofBuf = proof.accountProof.map((proofNode: string) => toBytes(proofNode))
+    const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
 
     const verified = await Trie.verifyProof(address.bytes, proofBuf, {
       useKeyHashing: true,

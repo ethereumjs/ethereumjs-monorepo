@@ -270,11 +270,11 @@ export class Interpreter {
         this._runState.env.chargeCodeAccesses === true
       ) {
         const contract = this._runState.interpreter.getAddress()
+
         if (
-          !(this._runState.stateManager as StatelessVerkleStateManager).checkChunkWitnessPresent(
-            contract,
-            programCounter
-          )
+          !(await (
+            this._runState.stateManager as StatelessVerkleStateManager
+          ).checkChunkWitnessPresent(contract, programCounter))
         ) {
           throw Error(`Invalid witness with missing codeChunk for pc=${programCounter}`)
         }

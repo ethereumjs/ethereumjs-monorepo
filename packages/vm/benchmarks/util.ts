@@ -1,4 +1,13 @@
-import { Account, Address, BIGINT_0, equalsBytes, toBytes } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  BIGINT_0,
+  PrefixedHexString,
+  equalsBytes,
+  hexToBytes,
+  isHexPrefixed,
+  toBytes,
+} from '@ethereumjs/util'
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
@@ -14,9 +23,9 @@ export interface BenchmarksType {
 }
 
 interface StateTestPreAccount {
-  balance: string
-  code: string
-  nonce: string
+  balance: PrefixedHexString
+  code: PrefixedHexString
+  nonce: PrefixedHexString
   storage: { [k: string]: string }
 }
 
@@ -29,18 +38,24 @@ export async function getPreState(
   const state = new DefaultStateManager()
   await state.checkpoint()
   for (const k in pre) {
-    const address = new Address(toBytes(k))
+    const address = new Address(hexToBytes(isHexPrefixed(k) ? k : `0x${k}`))
     const { nonce, balance, code, storage } = pre[k]
     const account = new Account(BigInt(nonce), BigInt(balance))
     await state.putAccount(address, account)
     await state.putContractCode(address, toBytes(code))
-    for (const sk in storage) {
-      const sv = storage[sk]
-      const valueBytes = toBytes(sv)
+    for (const storageKey in storage) {
+      const storageValue = storage[storageKey]
+      const storageValueBytes = hexToBytes(
+        isHexPrefixed(storageValue) ? storageValue : `0x${storageValue}`
+      )
       // verify if this value buffer is not a zero buffer. if so, we should not write it...
-      const zeroBytesEquivalent = new Uint8Array(valueBytes.length)
-      if (!equalsBytes(zeroBytesEquivalent, valueBytes)) {
-        await state.putContractStorage(address, toBytes(sk), toBytes(sv))
+      const zeroBytesEquivalent = new Uint8Array(storageValueBytes.length)
+      if (!equalsBytes(zeroBytesEquivalent, storageValueBytes)) {
+        await state.putContractStorage(
+          address,
+          hexToBytes(isHexPrefixed(storageKey) ? storageKey : `0x${storageKey}`),
+          storageValueBytes
+        )
       }
     }
   }

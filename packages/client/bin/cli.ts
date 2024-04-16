@@ -17,7 +17,6 @@ import {
   randomBytes,
   setLengthLeft,
   short,
-  toBytes,
 } from '@ethereumjs/util'
 import {
   keccak256 as keccak256WASM,
@@ -58,7 +57,7 @@ import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
 
 type Account = [address: Address, privateKey: Uint8Array]
@@ -836,11 +835,11 @@ async function inputAccounts() {
     if (!isFile) {
       for (const addressString of addresses) {
         const address = Address.fromString(addressString)
-        const inputKey = await question(
+        const inputKey = (await question(
           `Please enter the 0x-prefixed private key to unlock ${address}:\n`
-        )
+        )) as PrefixedHexString
         ;(rl as any).history = (rl as any).history.slice(1)
-        const privKey = toBytes(inputKey)
+        const privKey = hexToBytes(inputKey)
         const derivedAddress = Address.fromPrivateKey(privKey)
         if (address.equals(derivedAddress)) {
           accounts.push([address, privKey])

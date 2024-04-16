@@ -548,7 +548,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ loglevel: 'error' })
+    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
 
     this.logger.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {

@@ -332,7 +332,7 @@ describe('message sig', () => {
 
   it('should throw on shorter length', () => {
     assert.throws(function () {
-      fromRpcSig('')
+      fromRpcSig('0x')
     })
     assert.throws(function () {
       fromRpcSig(

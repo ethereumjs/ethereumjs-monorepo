@@ -90,19 +90,23 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x31,
       async function (runState, gas, common): Promise<bigint> {
         const address = addresstoBytes(runState.stack.peek()[0])
-
-        if (common.isActivatedEIP(2929) === true) {
-          gas += accessAddressEIP2929(runState, address, common)
-        }
-
+        let charge2929Gas = true
         if (common.isActivatedEIP(6800) === true) {
           const balanceAddress = new Address(address)
-          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             balanceAddress,
             0,
             BALANCE_LEAF_KEY
           )
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
         }
+
+        if (common.isActivatedEIP(2929) === true) {
+          gas += accessAddressEIP2929(runState, address, common, charge2929Gas)
+        }
+
         return gas
       },
     ],
@@ -314,19 +318,24 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const key = runState.stack.peek()[0]
         const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
 
-        if (common.isActivatedEIP(2929) === true) {
-          gas += accessStorageEIP2929(runState, keyBuf, false, common)
-        }
-
+        let charge2929Gas = true
         if (common.isActivatedEIP(6800) === true) {
           const address = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
-          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          const coldAccessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             address,
             treeIndex,
             subIndex
           )
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
         }
+
+        if (common.isActivatedEIP(2929) === true) {
+          gas += accessStorageEIP2929(runState, keyBuf, false, common, charge2929Gas)
+        }
+
         return gas
       },
     ],
@@ -377,21 +386,25 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
         }
 
-        if (common.isActivatedEIP(2929) === true) {
-          // We have to do this after the Istanbul (EIP2200) checks.
-          // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
-          // if we deduct extra gas first.
-          gas += accessStorageEIP2929(runState, keyBytes, true, common)
-        }
+        let charge2929Gas = true
         if (common.isActivatedEIP(6800) === true) {
           const contract = runState.interpreter.getAddress()
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(key)
-          const accessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
+          const coldAccessGas = runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
             contract,
             treeIndex,
             subIndex
           )
-          gas += accessGas
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
+        }
+
+        if (common.isActivatedEIP(2929) === true) {
+          // We have to do this after the Istanbul (EIP2200) checks.
+          // Otherwise, we might run out of gas, due to "sentry check" of 2300 gas,
+          // if we deduct extra gas first.
+          gas += accessStorageEIP2929(runState, keyBytes, true, common, charge2929Gas)
         }
 
         return gas
@@ -476,8 +489,25 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
+
+        let charge2929Gas = true
+        if (common.isActivatedEIP(6800)) {
+          // TODO: add check if toAddress is not a precompile
+          const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          if (value !== BIGINT_0) {
+            const contractAddress = runState.interpreter.getAddress()
+            gas += runState.env.accessWitness!.touchAndChargeValueTransfer(
+              contractAddress,
+              toAddress
+            )
+          }
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
+        }
+
         if (common.isActivatedEIP(2929) === true) {
-          gas += accessAddressEIP2929(runState, toAddress.bytes, common)
+          gas += accessAddressEIP2929(runState, toAddress.bytes, common, charge2929Gas)
         }
 
         if (value !== BIGINT_0 && common.isActivatedEIP(6800) === false) {
@@ -501,18 +531,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           // We are before Spurious Dragon and the account does not exist.
           // Call new account gas: account does not exist (it is not in the state trie, not even as an "empty" account)
           gas += common.param('gasPrices', 'callNewAccount')
-        }
-
-        if (common.isActivatedEIP(6800)) {
-          // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
-          if (value !== BIGINT_0) {
-            const contractAddress = runState.interpreter.getAddress()
-            gas += runState.env.accessWitness!.touchAndChargeValueTransfer(
-              contractAddress,
-              toAddress
-            )
-          }
         }
 
         const gasLimit = maxCallGas(
@@ -545,18 +563,22 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
 
+        let charge2929Gas = true
+        if (common.isActivatedEIP(6800)) {
+          const toAddress = new Address(addresstoBytes(toAddr))
+          // TODO: add check if toAddress is not a precompile
+          const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
+        }
+
         if (common.isActivatedEIP(2929) === true) {
-          gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common)
+          gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common, charge2929Gas)
         }
 
         if (value !== BIGINT_0) {
           gas += common.param('gasPrices', 'callValueTransfer')
-        }
-
-        if (common.isActivatedEIP(6800)) {
-          const toAddress = new Address(addresstoBytes(toAddr))
-          // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
         }
 
         const gasLimit = maxCallGas(
@@ -594,14 +616,18 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
 
-        if (common.isActivatedEIP(2929) === true) {
-          gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common)
-        }
-
+        let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const toAddress = new Address(addresstoBytes(toAddr))
           // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
+        }
+
+        if (common.isActivatedEIP(2929) === true) {
+          gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common, charge2929Gas)
         }
 
         const gasLimit = maxCallGas(
@@ -734,14 +760,18 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
 
-        if (common.isActivatedEIP(2929) === true) {
-          gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common)
-        }
-
+        let charge2929Gas = true
         if (common.isActivatedEIP(6800)) {
           const toAddress = new Address(addresstoBytes(toAddr))
           // TODO: add check if toAddress is not a precompile
-          gas += runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+          const coldAccessGas = runState.env.accessWitness!.touchAndChargeMessageCall(toAddress)
+
+          gas += coldAccessGas
+          charge2929Gas = coldAccessGas === BIGINT_0
+        }
+
+        if (common.isActivatedEIP(2929) === true) {
+          gas += accessAddressEIP2929(runState, addresstoBytes(toAddr), common, charge2929Gas)
         }
 
         const gasLimit = maxCallGas(
@@ -800,10 +830,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += common.param('gasPrices', 'callNewAccount')
         }
 
-        if (common.isActivatedEIP(2929) === true && common.isActivatedEIP(6800) === false) {
-          gas += accessAddressEIP2929(runState, selfdestructToAddress.bytes, common, true, true)
-        }
-
+        let selfDestructToCharge2929Gas = true
         if (common.isActivatedEIP(6800) === true) {
           // read accesses for version and code size
           gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
@@ -821,25 +848,43 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             0,
             BALANCE_LEAF_KEY
           )
-          gas += runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
-            selfdestructToAddress,
-            0,
-            BALANCE_LEAF_KEY
-          )
-
           if (balance > BIGINT_0) {
             gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
               contractAddress,
               0,
               BALANCE_LEAF_KEY
             )
-            gas += runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
+          }
+
+          let selfDestructToColdAccessGas =
+            runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
               selfdestructToAddress,
               0,
               BALANCE_LEAF_KEY
             )
+          if (balance > BIGINT_0) {
+            selfDestructToColdAccessGas +=
+              runState.env.accessWitness!.touchAddressOnWriteAndComputeGas(
+                selfdestructToAddress,
+                0,
+                BALANCE_LEAF_KEY
+              )
           }
+
+          gas += selfDestructToColdAccessGas
+          selfDestructToCharge2929Gas = selfDestructToColdAccessGas === BIGINT_0
         }
+
+        if (common.isActivatedEIP(2929) === true) {
+          gas += accessAddressEIP2929(
+            runState,
+            selfdestructToAddress.bytes,
+            common,
+            selfDestructToCharge2929Gas,
+            true
+          )
+        }
+
         return gas
       },
     ],
