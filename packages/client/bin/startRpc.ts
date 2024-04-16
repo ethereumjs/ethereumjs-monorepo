@@ -1,17 +1,17 @@
 import { bytesToUnprefixedHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
-import { RPCManager, saveReceiptsMethods } from '../src/rpc'
-import * as modules from '../src/rpc/modules'
+import { RPCManager, saveReceiptsMethods } from '../src/rpc/index.js'
+import * as modules from '../src/rpc/modules/index.js'
 import {
   MethodConfig,
   createRPCServer,
   createRPCServerListener,
   createWsRPCServerListener,
-} from '../src/util'
+} from '../src/util/index.js'
 
-import type { EthereumClient } from '../src/client'
-import type { Config } from '../src/config'
+import type { EthereumClient } from '../src/client.js'
+import type { Config } from '../src/config.js'
 import type { Server as RPCServer } from 'jayson/promise'
 
 export type RPCArgs = {

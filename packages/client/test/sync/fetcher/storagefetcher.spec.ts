@@ -4,19 +4,19 @@ import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { SnapProtocol } from '../../../src/net/protocol'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { SnapProtocol } from '../../../src/net/protocol/index.js'
+import { wait } from '../../integration/util.js'
 
 import {
   _accountRangeRLP,
   _zeroElementProof,
   _zeroElementProofOrigin,
   _zeroElementProofRoot,
-} from './accountfetcher.spec'
+} from './accountfetcher.spec.js'
 
-import type { StorageFetcherOptions } from '../../../src/sync/fetcher/storagefetcher'
+import type { StorageFetcherOptions } from '../../../src/sync/fetcher/storagefetcher.js'
 
 const _storageRangesRLP =
   '0xf83e0bf83af838f7a0290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5639594053cd080a26cb03d5e6d2956cebb31c56e7660cac0'
@@ -33,7 +33,7 @@ describe('[StorageFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { StorageFetcher } = await import('../../../src/sync/fetcher/storagefetcher')
+  const { StorageFetcher } = await import('../../../src/sync/fetcher/storagefetcher.js')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })

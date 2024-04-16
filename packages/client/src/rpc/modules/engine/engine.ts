@@ -10,22 +10,22 @@ import {
   zeros,
 } from '@ethereumjs/util'
 
-import { ExecStatus } from '../../../execution'
-import { PendingBlock } from '../../../miner'
-import { PutStatus } from '../../../sync'
-import { short } from '../../../util'
+import { ExecStatus } from '../../../execution/index.js'
+import { PendingBlock } from '../../../miner/index.js'
+import { PutStatus } from '../../../sync/index.js'
+import { short } from '../../../util/index.js'
 import {
   INTERNAL_ERROR,
   INVALID_PARAMS,
   TOO_LARGE_REQUEST,
   UNSUPPORTED_FORK,
   validEngineCodes,
-} from '../../error-code'
-import { callWithStackTrace } from '../../helpers'
-import { middleware, validators } from '../../validation'
+} from '../../error-code.js'
+import { callWithStackTrace } from '../../helpers.js'
+import { middleware, validators } from '../../validation.js'
 
-import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager'
-import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types'
+import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.js'
+import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.js'
 import {
   assembleBlock,
   blockToExecutionPayload,
@@ -37,7 +37,7 @@ import {
   validate4844BlobVersionedHashes,
   validateHardforkRange,
   validateTerminalBlock,
-} from './util'
+} from './util/index.js'
 import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
@@ -46,13 +46,13 @@ import {
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
   payloadAttributesFieldValidatorsV3,
-} from './validators'
+} from './validators.js'
 
-import type { Chain } from '../../../blockchain'
-import type { EthereumClient } from '../../../client'
-import type { Config } from '../../../config'
-import type { VMExecution } from '../../../execution'
-import type { FullEthereumService, Skeleton } from '../../../service'
+import type { Chain } from '../../../blockchain/index.js'
+import type { EthereumClient } from '../../../client.js'
+import type { Config } from '../../../config.js'
+import type { VMExecution } from '../../../execution/index.js'
+import type { FullEthereumService, Skeleton } from '../../../service/index.js'
 import type {
   Bytes32,
   Bytes8,
@@ -67,7 +67,7 @@ import type {
   PayloadAttributesV2,
   PayloadAttributesV3,
   TransitionConfigurationV1,
-} from './types'
+} from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { VM } from '@ethereumjs/vm'
 

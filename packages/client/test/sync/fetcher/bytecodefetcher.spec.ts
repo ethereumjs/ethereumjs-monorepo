@@ -3,12 +3,12 @@ import { hexToBytes } from '@ethereumjs/util'
 import { utf8ToBytes } from 'ethereum-cryptography/utils'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { SnapProtocol } from '../../../src/net/protocol'
-import { wait } from '../../integration/util'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { SnapProtocol } from '../../../src/net/protocol/index.js'
+import { wait } from '../../integration/util.js'
 
-import { _accountRangeRLP } from './accountfetcher.spec'
+import { _accountRangeRLP } from './accountfetcher.spec.js'
 
 const _byteCodesRLP =
   '0xf89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
@@ -21,7 +21,7 @@ describe('[ByteCodeFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher')
+  const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher.js')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })

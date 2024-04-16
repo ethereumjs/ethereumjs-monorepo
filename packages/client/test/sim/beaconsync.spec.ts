@@ -16,10 +16,10 @@ import {
   setupEngineUpdateRelay,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
 
-import type { EthereumClient } from '../../src/client'
-import type { RlpxServer } from '../../src/net/server'
+import type { EthereumClient } from '../../src/client.js'
+import type { RlpxServer } from '../../src/net/server/index.js'
 
 const client = Client.http({ port: 8545 })
 

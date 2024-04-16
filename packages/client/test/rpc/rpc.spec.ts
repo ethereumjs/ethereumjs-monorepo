@@ -3,7 +3,7 @@ import { Client } from 'jayson/promise'
 import { encode } from 'jwt-simple'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRpcClient, startRPC } from './helpers'
+import { createClient, createManager, getRpcClient, startRPC } from './helpers.js'
 
 import type { TAlgorithm } from 'jwt-simple'
 import type { AddressInfo } from 'net'

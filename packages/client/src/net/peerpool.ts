@@ -1,9 +1,9 @@
 import { Hardfork } from '@ethereumjs/common'
 
-import { Event } from '../types'
+import { Event } from '../types.js'
 
-import type { Config } from '../config'
-import type { Peer } from './peer'
+import type { Config } from '../config.js'
+import type { Peer } from './peer/index.js'
 
 export interface PeerPoolOptions {
   /* Config */

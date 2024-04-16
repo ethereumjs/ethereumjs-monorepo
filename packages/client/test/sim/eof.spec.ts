@@ -9,7 +9,7 @@ import {
   runTxHelper,
   startNetwork,
   waitForELStart,
-} from './simutils'
+} from './simutils.js'
 
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
 const sender = bytesToHex(privateToAddress(pkey))

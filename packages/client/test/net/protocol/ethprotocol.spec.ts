@@ -5,9 +5,9 @@ import { Address, bigIntToBytes, bytesToBigInt, hexToBytes, randomBytes } from '
 import { loadKZG } from 'kzg-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain'
-import { Config } from '../../../src/config'
-import { EthProtocol } from '../../../src/net/protocol'
+import { Chain } from '../../../src/blockchain/chain.js'
+import { Config } from '../../../src/config.js'
+import { EthProtocol } from '../../../src/net/protocol/index.js'
 
 describe('[EthProtocol]', () => {
   it('should get properties', async () => {

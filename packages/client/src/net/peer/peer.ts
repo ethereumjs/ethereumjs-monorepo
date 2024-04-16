@@ -1,10 +1,10 @@
 import { EventEmitter } from 'events'
 
-import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol'
+import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol/index.js'
 
-import type { Config } from '../../config'
-import type { BoundProtocol, Protocol, Sender } from '../protocol'
-import type { Server } from '../server'
+import type { Config } from '../../config.js'
+import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
+import type { Server } from '../server/index.js'
 
 export interface PeerOptions {
   /* Config */

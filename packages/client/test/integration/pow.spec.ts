@@ -3,8 +3,8 @@ import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
 import { removeSync } from 'fs-extra'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src'
-import { createInlineClient } from '../sim/simutils'
+import { Config } from '../../src/index.js'
+import { createInlineClient } from '../sim/simutils.js'
 
 const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
 const minerAddress = Address.fromPrivateKey(pk)

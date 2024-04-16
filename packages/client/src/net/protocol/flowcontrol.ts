@@ -1,4 +1,4 @@
-import type { Peer } from '../peer/peer'
+import type { Peer } from '../peer/peer.js'
 
 interface Mrc {
   [key: string]: {

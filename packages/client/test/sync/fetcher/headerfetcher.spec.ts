@@ -1,8 +1,8 @@
 import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain'
-import { Config } from '../../../src/config'
-import { Event } from '../../../src/types'
+import { Chain } from '../../../src/blockchain/index.js'
+import { Config } from '../../../src/config.js'
+import { Event } from '../../../src/types.js'
 
 class PeerPool {
   idle() {}
@@ -10,11 +10,11 @@ class PeerPool {
 }
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
-vi.mock('../../src/net/peerpool', () => {
+vi.mock('../../src/net/peerpool.js', () => {
   return PeerPool
 })
 
-const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher')
+const { HeaderFetcher } = await import('../../../src/sync/fetcher/headerfetcher.js')
 describe('[HeaderFetcher]', async () => {
   it('should process', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })

@@ -1,4 +1,4 @@
-import { DBKey, MetaDBManager } from '../util/metaDBManager'
+import { DBKey, MetaDBManager } from '../util/metaDBManager.js'
 
 /**
  * The `PreImagesManager` saves the preimages of hashed keys. This is necessary for the Verkle transition.

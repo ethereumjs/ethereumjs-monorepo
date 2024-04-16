@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import type { ExecutionPayloadBodyV1 } from '../types'
+import type { ExecutionPayloadBodyV1 } from '../types.js'
 import type { Block } from '@ethereumjs/block'
 
 export const getPayloadBody = (block: Block): ExecutionPayloadBodyV1 => {

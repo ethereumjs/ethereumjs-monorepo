@@ -12,10 +12,10 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config'
-import { getLogger } from '../../src/logging'
-import { PeerPool } from '../../src/net/peerpool'
-import { TxPool } from '../../src/service/txpool'
+import { Config } from '../../src/config.js'
+import { getLogger } from '../../src/logging.js'
+import { PeerPool } from '../../src/net/peerpool.js'
+import { TxPool } from '../../src/service/txpool.js'
 
 const setup = () => {
   const config = new Config({

@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { INTERNAL_ERROR } from '../../../src/rpc/error-code.js'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
-import type { FullSynchronizer } from '../../../src/sync'
+import type { FullSynchronizer } from '../../../src/sync/index.js'
 
 const method = 'eth_syncing'
 

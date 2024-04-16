@@ -3,13 +3,13 @@ import { Hardfork } from '@ethereumjs/common'
 import { BlobEIP4844Transaction } from '@ethereumjs/tx'
 import { equalsBytes, hexToBytes } from '@ethereumjs/util'
 
-import { short } from '../../../../util'
-import { Status } from '../types'
+import { short } from '../../../../util/index.js'
+import { Status } from '../types.js'
 
-import { validHash } from './generic'
+import { validHash } from './generic.js'
 
-import type { Chain } from '../../../../blockchain'
-import type { ChainCache, PayloadStatusV1 } from '../types'
+import type { Chain } from '../../../../blockchain/index.js'
+import type { ChainCache, PayloadStatusV1 } from '../types.js'
 import type { ExecutionPayload } from '@ethereumjs/block'
 
 /**
