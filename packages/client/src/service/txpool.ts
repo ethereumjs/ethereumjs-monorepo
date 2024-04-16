@@ -411,9 +411,7 @@ export class TxPool {
 
     this.txsInPool--
 
-    if (this.txGauge !== undefined) {
-      this.txGauge.dec()
-    }
+    this.txGauge?.dec()
 
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
