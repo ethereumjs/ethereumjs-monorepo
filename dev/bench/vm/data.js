@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1712943826862,
+  "lastUpdate": 1713229734722,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "0596d16b3aa8781acdd4906a40d6d23cb7478ed1",
-          "message": "Integrate `kzg-wasm` into monorepo (#3294)\n\n* Update to official trusted setup\n\n* Remove devnet6\n\n* Add kzg-wasm\n\n* Update block tests to use kzg-wasm\n\n* Update tests\n\n* Add more 4844 tests to browser run\n\n* Initial integration of kzg-wasm on git\n\n* Update kzg-wasm build\n\n* Fix linter weirdness\n\n* Move initKzg to `runTests`\n\n* Fix tests\n\n* More cleanup\n\n* Goodbye c-kzg\n\n* fix kzg references\n\n* Replace c-kzg with kzg-wasm in package.json\n\n* Update kzg wasm commit and vm tester config\n\n* Update initKzg to createKZG\n\n* fix copy pasta\n\n* Fix more copy pasta\n\n* update kzg-wasm to npm release\n\n* One last bit of copy pasta\n\n* Address feedback\n\n* client: remove try/catch blocks createKZG() and remove the initKZG stale comment\n\n---------\n\nCo-authored-by: Jochem Brouwer <jochembrouwer96@gmail.com>",
-          "timestamp": "2024-02-28T16:02:03-05:00",
-          "tree_id": "d2586d84a3e1933c4722f433577c7c364c43de90",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/0596d16b3aa8781acdd4906a40d6d23cb7478ed1"
-        },
-        "date": 1709154308435,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41687,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 39584,
-            "range": "±2.95%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40328,
-            "range": "±1.59%",
-            "unit": "ops/sec",
-            "extra": "91 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39252,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 38785,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.80%",
             "unit": "ops/sec",
             "extra": "85 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "babbe20047afc0f7ad6c719b180b462bd8a74ea7",
+          "message": "client: fix misc tsc issues (#3349)\n\n* client: fix misc tsc issues\n\n* Merge branch 'master' into client/fix-tsc-issues\n\n* Merge branch 'master' into client/fix-tsc-issues",
+          "timestamp": "2024-04-15T21:03:03-04:00",
+          "tree_id": "19b9be953d359cb86ab588555d79453dc52932eb",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/babbe20047afc0f7ad6c719b180b462bd8a74ea7"
+        },
+        "date": 1713229733838,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 43034,
+            "range": "±1.61%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40506,
+            "range": "±3.08%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41065,
+            "range": "±1.45%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 39977,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 35350,
+            "range": "±6.32%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
           }
         ]
       }
