@@ -76,7 +76,6 @@ describe('[LightSynchronizer]', async () => {
       chain,
     })
     sync.best = td.func<typeof sync['best']>()
-    //sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -86,14 +85,10 @@ describe('[LightSynchronizer]', async () => {
         }
       },
     } as any)
-    /*td.when(sync.latest(td.matchers.anything())).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
-    })*/
 
     td.when(HeaderFetcher.prototype.fetch(), { delay: 20, times: 2 }).thenResolve(true)
     ;(sync as any).chain = { headers: { height: BigInt(3) } }
-    //assert.notOk(await sync.sync(), 'local height > remote height')
+    assert.notOk(await sync.sync(), 'local height > remote height')
     ;(sync as any).chain = { headers: { height: BigInt(0) } }
     setTimeout(() => {
       config.events.emit(Event.SYNC_SYNCHRONIZED, BigInt(0))
@@ -124,7 +119,6 @@ describe('sync errors', async () => {
       chain,
     })
     sync.best = td.func<typeof sync['best']>()
-    //sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -134,10 +128,6 @@ describe('sync errors', async () => {
         }
       },
     } as any)
-    /*td.when(sync.latest(td.matchers.anything())).thenResolve({
-    number: BigInt(2),
-    hash: () => new Uint8Array(0),
-  })*/
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
       config.events.emit(Event.SYNC_FETCHED_HEADERS, [] as BlockHeader[])
@@ -179,7 +169,6 @@ describe('import headers', () => {
       chain,
     })
     sync.best = td.func<typeof sync['best']>()
-    //sync.latest = td.func<typeof sync['latest']>()
     td.when(sync.best()).thenResolve({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
@@ -189,10 +178,6 @@ describe('import headers', () => {
         }
       },
     } as any)
-    /*td.when(sync.latest(td.matchers.anything())).thenResolve({
-      number: BigInt(2),
-      hash: () => new Uint8Array(0),
-    })*/
     td.when(HeaderFetcher.prototype.fetch()).thenResolve(true)
     td.when(HeaderFetcher.prototype.fetch()).thenDo(() =>
       config.events.emit(Event.SYNC_FETCHED_HEADERS, [BlockHeader.fromHeaderData({})])
