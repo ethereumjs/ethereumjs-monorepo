@@ -371,9 +371,7 @@ export class TxPool {
       this.handled.set(hash, { address, added })
 
       this.txsInPool++
-      if (this.txGauge !== undefined) {
-        this.txGauge.inc()
-      }
+      this.txGauge?.inc()
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
