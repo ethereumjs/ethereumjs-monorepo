@@ -2,10 +2,8 @@ import { RLP } from '@ethereumjs/rlp'
 
 import { type VerkleNodeInterface, type VerkleNodeOptions, type VerkleNodeType } from './types.js'
 
-import type { Point } from '../types.js'
-
 export abstract class BaseVerkleNode<T extends VerkleNodeType> implements VerkleNodeInterface {
-  public commitment: Point
+  public commitment: Uint8Array
   public depth: number
 
   constructor(options: VerkleNodeOptions[T]) {
@@ -13,7 +11,7 @@ export abstract class BaseVerkleNode<T extends VerkleNodeType> implements Verkle
     this.depth = options.depth
   }
 
-  abstract commit(): Point
+  abstract commit(): Uint8Array
 
   // Hash returns the field representation of the commitment.
   hash(): Uint8Array {
