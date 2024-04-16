@@ -184,6 +184,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: vi.fn() },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const partialResult: any = [
       [
@@ -243,6 +244,7 @@ describe('[AccountFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -269,6 +271,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: mockedGetAccountRange },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -307,6 +310,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: mockedGetAccountRange },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -352,6 +356,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: mockedGetAccountRange },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)

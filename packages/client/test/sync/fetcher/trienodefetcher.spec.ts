@@ -109,6 +109,7 @@ describe('[TrieNodeFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -148,6 +149,7 @@ describe('[TrieNodeFetcher]', async () => {
       snap: { getTrieNodes: mockedGetTrieNodes },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const task = {
       pathStrings: [''],

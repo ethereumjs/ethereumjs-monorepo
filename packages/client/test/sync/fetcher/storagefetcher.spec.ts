@@ -299,6 +299,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -347,6 +348,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -390,6 +392,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -446,6 +449,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     let results = await fetcher.request(job as any)
