@@ -11,9 +11,8 @@ import { destroy, setup, wait } from './util'
  * Tests are kept for now until a more finalized decision is taken
  * on the topic. // 2024-04-16
  */
-describe(
-  'should sync headers',
-  async () => {
+describe('light sync integration tests', () => {
+  it('should sync headers', async () => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
       height: 20,
@@ -34,13 +33,9 @@ describe(
       await destroy(remoteServer, remoteService)
     })
     await localService.synchronizer!.start()
-  },
-  { timeout: 30000 }
-)
+  }, 30000)
 
-describe(
-  'should not sync with stale peers',
-  async () => {
+  it('should not sync with stale peers', async () => {
     const [remoteServer, remoteService] = await setup({
       location: '127.0.0.2',
       height: 9,
@@ -61,13 +56,9 @@ describe(
     it('should not sync', async () => {
       assert.ok('did not sync')
     })
-  },
-  { timeout: 30000 }
-)
+  }, 30000)
 
-describe(
-  'should sync with best peer',
-  async () => {
+  it('should sync with best peer', async () => {
     const [remoteServer1, remoteService1] = await setup({
       location: '127.0.0.2',
       height: 9,
@@ -95,6 +86,5 @@ describe(
       await destroy(remoteServer2, remoteService2)
     })
     await localService.synchronizer!.start()
-  },
-  { timeout: 30000 }
-)
+  }, 30000)
+})
