@@ -131,6 +131,7 @@ export interface ClientOpts {
   logRotate?: boolean
   logMaxFiles?: number
   prometheus?: boolean
+  prometheusPort?: number
   rpcDebug?: string
   rpcDebugVerbose?: string
   rpcCors?: string

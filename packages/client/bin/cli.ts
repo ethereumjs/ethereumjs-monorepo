@@ -235,6 +235,11 @@ const args: ClientOpts = yargs
     boolean: true,
     default: false,
   })
+  .option('prometheusPort', {
+    describe: 'Enable the Prometheus metrics server with HTTP endpoint',
+    number: true,
+    default: 8000,
+  })
   .option('rpcDebug', {
     describe:
       'Additionally log truncated RPC calls filtered by name (prefix), e.g.: "eth,engine_getPayload" (use "all" for all methods). Truncated by default, add verbosity using "rpcDebugVerbose"',
@@ -658,7 +663,6 @@ async function startClient(
       register.registerMetric(metric)
     }
 
-    // @ts-ignore
     const server = http.createServer(async (req, res) => {
       if (req.url === undefined) {
         res.statusCode = 400
@@ -675,7 +679,7 @@ async function startClient(
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
-    server.listen(8080)
+    server.listen(args.prometheusPort)
 
     client = await EthereumClient.create({
       config,
