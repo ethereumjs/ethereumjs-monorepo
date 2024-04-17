@@ -870,7 +870,7 @@ const stopClient = async (
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      s instanceof RPCServer ? s.http().close() : s.close()
+      s instanceof RPCServer ? (s as RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()
     config.logger.info('Exiting.')
@@ -1049,7 +1049,7 @@ async function run() {
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
 
   let prometheusMetrics = undefined
-  let metricsServer = undefined
+  let metricsServer: http.Server | undefined
   if (args.prometheus === true) {
     // Create custom metrics
     prometheusMetrics = setupMetrics()
