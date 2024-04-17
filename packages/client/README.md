@@ -305,6 +305,21 @@ dist/bin/cli.js --d
 --dnsNetworks        -- EIP-1459 ENR tree urls to query for peer discovery targets
 ```
 
+## Metrics
+
+The client can optionally collect metrics using the Prometheus metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
+The current metrics that are reported by the client can be found [here](./src/util//metrics.ts).
+
+```sh
+# npm installation
+ethereumjs --prometheus
+
+# source installation
+npm run client:start:ts -- --prometheus --prometheusPort=9123
+```
+
+Note: The Prometheus endpoint runs on port 8000 by default
+
 ## API
 
 [API Reference](./docs/README.md)

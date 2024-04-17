@@ -20,7 +20,6 @@ import {
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
-import type { PrometheusMetrics } from '../types'
 import type { FullEthereumService } from './fullethereumservice'
 import type { Block } from '@ethereumjs/block'
 import type {
@@ -46,8 +45,6 @@ export interface TxPoolOptions {
 
   /* FullEthereumService */
   service: FullEthereumService
-
-  prometheusMetrics?: PrometheusMetrics | undefined
 }
 
 type TxPoolObject = {
@@ -165,8 +162,6 @@ export class TxPool {
    */
   private LOG_STATISTICS_INTERVAL = 100000 // ms
 
-  private prometheusMetrics: PrometheusMetrics | undefined
-
   /**
    * Create new tx pool
    * @param options constructor parameters
@@ -182,8 +177,6 @@ export class TxPool {
 
     this.opened = false
     this.running = false
-
-    this.prometheusMetrics = options.prometheusMetrics
   }
 
   /**
@@ -373,16 +366,16 @@ export class TxPool {
       this.txsInPool++
 
       if (isLegacyTx(tx)) {
-        this.prometheusMetrics?.legacyTxGauge?.inc()
+        this.config.metrics?.legacyTxGauge?.inc()
       }
       if (isAccessListEIP2930Tx(tx)) {
-        this.prometheusMetrics?.accessListEIP2930TxGauge?.inc()
+        this.config.metrics?.accessListEIP2930TxGauge?.inc()
       }
       if (isFeeMarketEIP1559Tx(tx)) {
-        this.prometheusMetrics?.feeMarketEIP1559TxGauge?.inc()
+        this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
       }
       if (isBlobEIP4844Tx(tx)) {
-        this.prometheusMetrics?.blobEIP4844TxGauge?.inc()
+        this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
@@ -424,16 +417,16 @@ export class TxPool {
 
     this.txsInPool--
     if (isLegacyTx(tx)) {
-      this.prometheusMetrics?.legacyTxGauge?.dec()
+      this.config.metrics?.legacyTxGauge?.dec()
     }
     if (isAccessListEIP2930Tx(tx)) {
-      this.prometheusMetrics?.accessListEIP2930TxGauge?.dec()
+      this.config.metrics?.accessListEIP2930TxGauge?.dec()
     }
     if (isFeeMarketEIP1559Tx(tx)) {
-      this.prometheusMetrics?.feeMarketEIP1559TxGauge?.dec()
+      this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
     }
     if (isBlobEIP4844Tx(tx)) {
-      this.prometheusMetrics?.blobEIP4844TxGauge?.dec()
+      this.config.metrics?.blobEIP4844TxGauge?.dec()
     }
 
     if (newPoolObjects.length === 0) {
@@ -877,8 +870,9 @@ export class TxPool {
     this.pool.clear()
     this.handled.clear()
     this.txsInPool = 0
-    if (this.prometheusMetrics !== undefined) {
-      for (const [_, metric] of Object.entries(this.prometheusMetrics)) {
+    if (this.config.metrics !== undefined) {
+      // TODO: Only clear the metrics related to the transaction pool here
+      for (const [_, metric] of Object.entries(this.config.metrics)) {
         metric.set(0)
       }
     }

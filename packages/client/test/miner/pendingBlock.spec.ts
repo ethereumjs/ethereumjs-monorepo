@@ -55,12 +55,15 @@ common
   .map((hf) => {
     hf.timestamp = undefined
   })
-
+const txGauge: any = {
+  inc: () => {},
+}
 const config = new Config({
   common,
   accountCache: 10000,
   storageCache: 1000,
   logger: getLogger({ loglevel: 'debug' }),
+  prometheusMetrics: txGauge,
 })
 
 const setup = () => {
@@ -83,10 +86,7 @@ const setup = () => {
       },
     },
   }
-  const txGauge: any = {
-    inc: () => {},
-  }
-  const txPool = new TxPool({ config, prometheusMetrics: txGauge, service })
+  const txPool = new TxPool({ config, service })
   return { txPool }
 }
 

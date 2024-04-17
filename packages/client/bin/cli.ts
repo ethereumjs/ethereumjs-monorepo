@@ -32,6 +32,7 @@ import { sha256 } from 'ethereum-cryptography/sha256'
 import { existsSync, writeFileSync } from 'fs'
 import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
 import * as http from 'http'
+import { Server as RPCServer } from 'jayson/promise'
 import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
@@ -48,12 +49,13 @@ import { LevelDB } from '../src/execution/level'
 import { getLogger } from '../src/logging'
 import { Event } from '../src/types'
 import { parseMultiaddrs } from '../src/util'
+import { setupMetrics } from '../src/util/metrics'
 
 import { helprpc, startRPCServers } from './startRpc'
 
 import type { Logger } from '../src/logging'
 import type { FullEthereumService } from '../src/service'
-import type { ClientOpts, PrometheusMetrics } from '../src/types'
+import type { ClientOpts } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
@@ -632,65 +634,7 @@ async function startClient(
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
 
-  let client
-  if (args.prometheus === true) {
-    // Create custom metrics
-    const prometheusMetrics: PrometheusMetrics = {
-      legacyTxGauge: new promClient.Gauge({
-        name: 'legacy_transactions_in_transaction_pool',
-        help: 'Number of legacy transactions in the client transaction pool',
-      }),
-      accessListEIP2930TxGauge: new promClient.Gauge({
-        name: 'access_list_eip2930_transactions_in_transaction_pool',
-        help: 'Number of access list EIP 2930 transactions in the client transaction pool',
-      }),
-      feeMarketEIP1559TxGauge: new promClient.Gauge({
-        name: 'fee_market_eip1559_transactions_in_transaction_pool',
-        help: 'Number of fee market EIP 1559 transactions in the client transaction pool',
-      }),
-      blobEIP4844TxGauge: new promClient.Gauge({
-        name: 'blob_eip_4844_transactions_in_transaction_pool',
-        help: 'Number of blob EIP 4844 transactions in the client transaction pool',
-      }),
-    }
-
-    const register = new promClient.Registry()
-    register.setDefaultLabels({
-      app: 'ethereumjs-client',
-    })
-    promClient.collectDefaultMetrics({ register })
-    for (const [_, metric] of Object.entries(prometheusMetrics)) {
-      register.registerMetric(metric)
-    }
-
-    const server = http.createServer(async (req, res) => {
-      if (req.url === undefined) {
-        res.statusCode = 400
-        res.end('Bad Request: URL is missing')
-        return
-      }
-      const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
-      const route = reqUrl.pathname
-
-      if (route === '/metrics') {
-        // Return all metrics in the Prometheus exposition format
-        res.setHeader('Content-Type', register.contentType)
-        res.end(await register.metrics())
-      }
-    })
-    // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
-    server.listen(args.prometheusPort)
-
-    client = await EthereumClient.create({
-      config,
-      prometheusMetrics,
-      blockchain,
-      ...genesisMeta,
-      ...dbs,
-    })
-  }
-
-  client = await EthereumClient.create({
+  const client = await EthereumClient.create({
     config,
     blockchain,
     ...genesisMeta,
@@ -904,11 +848,17 @@ function generateAccount(): Account {
  * @param config Client config object
  * @param clientStartPromise promise that returns a client and server object
  */
-const stopClient = async (config: Config, clientStartPromise: any) => {
+const stopClient = async (
+  config: Config,
+  clientStartPromise: Promise<{
+    client: EthereumClient
+    servers: (RPCServer | http.Server)[]
+  } | null>
+) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
   config.logger.info('(This might take a little longer if client not yet fully started)')
   let timeoutHandle
-  if (clientStartPromise.toString().includes('Promise') === true)
+  if (clientStartPromise?.toString().includes('Promise') === true)
     // Client hasn't finished starting up so setting timeout to terminate process if not already shutdown gracefully
     timeoutHandle = setTimeout(() => {
       config.logger.warn('Client has become unresponsive while starting up.')
@@ -920,7 +870,7 @@ const stopClient = async (config: Config, clientStartPromise: any) => {
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      s.http().close()
+      s instanceof RPCServer ? s.http().close() : s.close()
     }
     await client.stop()
     config.logger.info('Exiting.')
@@ -1098,6 +1048,41 @@ async function run() {
   const mine = args.mine !== undefined ? args.mine : args.dev !== undefined
   const isSingleNode = args.isSingleNode !== undefined ? args.isSingleNode : args.dev !== undefined
 
+  let prometheusMetrics = undefined
+  let metricsServer = undefined
+  if (args.prometheus === true) {
+    // Create custom metrics
+    prometheusMetrics = setupMetrics()
+
+    const register = new promClient.Registry()
+    register.setDefaultLabels({
+      app: 'ethereumjs-client',
+    })
+    promClient.collectDefaultMetrics({ register })
+    for (const [_, metric] of Object.entries(prometheusMetrics)) {
+      register.registerMetric(metric)
+    }
+
+    metricsServer = http.createServer(async (req, res) => {
+      if (req.url === undefined) {
+        res.statusCode = 400
+        res.end('Bad Request: URL is missing')
+        return
+      }
+      const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
+      const route = reqUrl.pathname
+
+      if (route === '/metrics') {
+        // Return all metrics in the Prometheus exposition format
+        res.setHeader('Content-Type', register.contentType)
+        res.end(await register.metrics())
+      }
+    })
+    // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
+    logger.info(`Starting Metrics Server on port ${args.prometheusPort}`)
+    metricsServer.listen(args.prometheusPort)
+  }
+
   const config = new Config({
     accounts,
     bootnodes,
@@ -1143,6 +1128,7 @@ async function run() {
         ? 0
         : args.engineNewpayloadMaxExecute,
     ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
+    prometheusMetrics,
   })
   config.events.setMaxListeners(50)
   config.events.on(Event.SERVER_LISTENING, (details) => {
@@ -1168,7 +1154,7 @@ async function run() {
     genesisStateRoot: customGenesisStateRoot,
   })
     .then((client) => {
-      const servers =
+      const servers: (RPCServer | http.Server)[] =
         args.rpc === true || args.rpcEngine === true || args.ws === true
           ? startRPCServers(client, args as RPCArgs)
           : []
@@ -1178,6 +1164,7 @@ async function run() {
       ) {
         config.logger.warn(`Engine RPC endpoint not activated on a post-Merge HF setup.`)
       }
+      if (metricsServer !== undefined) servers.push(metricsServer)
       config.superMsg('Client started successfully')
       return { client, servers }
     })

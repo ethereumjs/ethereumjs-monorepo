@@ -18,14 +18,12 @@ import { TxPool } from './txpool'
 
 import type { Peer } from '../net/peer/peer'
 import type { Protocol } from '../net/protocol'
-import type { PrometheusMetrics } from '../types'
 import type { Block } from '@ethereumjs/block'
 import type { BlobEIP4844Transaction } from '@ethereumjs/tx'
 
 interface FullEthereumServiceOptions extends ServiceOptions {
   /** Serve LES requests (default: false) */
   lightserv?: boolean
-  prometheusMetrics?: PrometheusMetrics
 }
 
 /**
@@ -47,8 +45,6 @@ export class FullEthereumService extends Service {
   /** building head state via snapsync or vmexecution */
   private building = false
 
-  private prometheusMetrics?: PrometheusMetrics | undefined
-
   /**
    * Create new ETH service
    */
@@ -58,8 +54,6 @@ export class FullEthereumService extends Service {
     this.lightserv = options.lightserv ?? false
 
     this.config.logger.info('Full sync mode')
-
-    this.prometheusMetrics = options.prometheusMetrics
 
     const { metaDB } = options
     if (metaDB !== undefined) {
@@ -91,7 +85,6 @@ export class FullEthereumService extends Service {
     this.txPool = new TxPool({
       config: this.config,
       service: this,
-      prometheusMetrics: this.prometheusMetrics,
     })
 
     if (this.config.syncmode === SyncMode.Full) {

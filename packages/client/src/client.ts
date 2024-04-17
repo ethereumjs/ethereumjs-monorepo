@@ -6,7 +6,7 @@ import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 
 import type { Config } from './config'
-import type { MultiaddrLike, PrometheusMetrics } from './types'
+import type { MultiaddrLike } from './types'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
@@ -59,8 +59,6 @@ export interface EthereumClientOptions {
 
   /* if client can be run stateless post verkle, defaults to true for now */
   statelessVerkle?: boolean
-
-  prometheusMetrics?: PrometheusMetrics | undefined
 }
 
 /**
@@ -102,7 +100,6 @@ export class EthereumClient {
           stateDB: options.stateDB,
           metaDB: options.metaDB,
           chain,
-          prometheusMetrics: options.prometheusMetrics,
         }),
       ]
     }

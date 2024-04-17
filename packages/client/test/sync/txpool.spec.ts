@@ -25,11 +25,6 @@ import type { PrometheusMetrics } from '../../src/types'
 let prometheusMetrics: PrometheusMetrics | undefined
 
 const setup = () => {
-  const config = new Config({
-    accountCache: 10000,
-    storageCache: 1000,
-    logger: getLogger({ loglevel: 'info' }),
-  })
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
@@ -45,6 +40,7 @@ const setup = () => {
       },
     },
   }
+  let metricsServer
 
   if (prometheusMetrics === undefined) {
     prometheusMetrics = {
@@ -75,8 +71,7 @@ const setup = () => {
       register.registerMetric(metric)
     }
 
-    // @ts-ignore
-    const server = http.createServer(async (req, res) => {
+    metricsServer = http.createServer(async (req, res) => {
       if (req.url === undefined) {
         res.statusCode = 400
         res.end('Bad Request: URL is missing')
@@ -92,11 +87,17 @@ const setup = () => {
       }
     })
     // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
-    server.listen(8080)
+    metricsServer.listen(8080)
   }
 
-  const pool = new TxPool({ config, service, prometheusMetrics })
-  return { pool }
+  const config = new Config({
+    prometheusMetrics,
+    accountCache: 10000,
+    storageCache: 1000,
+    logger: getLogger({ loglevel: 'info' }),
+  })
+  const pool = new TxPool({ config, service })
+  return { pool, metricsServer }
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -215,7 +216,7 @@ describe('[TxPool]', async () => {
   it('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async () => {
     // Safeguard that send() method from peer2 gets called
 
-    const { pool } = setup()
+    const { pool, metricsServer } = setup()
 
     pool.open()
     pool.start()
@@ -312,6 +313,7 @@ describe('[TxPool]', async () => {
 
     pool.stop()
     pool.close()
+    metricsServer?.close()
   })
 
   it('announcedTxHashes() -> TX_RETRIEVAL_LIMIT', async () => {
