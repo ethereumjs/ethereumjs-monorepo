@@ -11,7 +11,6 @@ import {
   privateToAddress,
 } from '@ethereumjs/util'
 import * as http from 'http'
-import fetch from 'node-fetch'
 import * as promClient from 'prom-client'
 import * as url from 'url'
 import { assert, describe, it } from 'vitest'
@@ -281,19 +280,16 @@ describe('[TxPool]', async () => {
 
     // check if transaction added in metrics
     let feeMarketEip1559TransactionCountInPool = undefined
-    await fetch('http://localhost:8080/metrics')
-      .then(async (response) => {
-        const pattern = /^fee_market_eip1559_transactions_in_transaction_pool/
-        const textLines = (await response.text()).split('\n')
-        for (const line of textLines) {
-          if (pattern.test(line)) {
-            feeMarketEip1559TransactionCountInPool = parseInt(line.split(' ')[1])
-          }
-        }
-      })
-      .catch((error) => {
-        console.error(`Fetch error: ${error}`)
-      })
+    const response = await fetch('http://localhost:8080/metrics')
+    const pattern = /^fee_market_eip1559_transactions_in_transaction_pool/
+    const textLines = (await response.text()).split('\n')
+
+    for (const line of textLines) {
+      if (pattern.test(line)) {
+        feeMarketEip1559TransactionCountInPool = parseInt(line.split(' ')[1])
+      }
+    }
+
     assert.equal(
       feeMarketEip1559TransactionCountInPool,
       pool.pool.size,

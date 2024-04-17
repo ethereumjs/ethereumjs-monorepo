@@ -86,7 +86,7 @@ const setup = () => {
   const txGauge: any = {
     inc: () => {},
   }
-  const txPool = new TxPool({ config, txGauge, service })
+  const txPool = new TxPool({ config, prometheusMetrics: txGauge, service })
   return { txPool }
 }
 
