@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713277992463,
+  "lastUpdate": 1713386991797,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "b3c8c285b347245615de16a3f2e589c452d723e8",
-          "message": "evm/vm: ensure  backwards compatability reportPreimages (#3298)",
-          "timestamp": "2024-03-01T13:49:31+01:00",
-          "tree_id": "a80e9695017cd4adf9e7158a49028b1e82e1896e",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/b3c8c285b347245615de16a3f2e589c452d723e8"
-        },
-        "date": 1709298086131,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 42502,
-            "range": "±1.79%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 40140,
-            "range": "±2.86%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 40854,
-            "range": "±1.34%",
-            "unit": "ops/sec",
-            "extra": "92 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 39454,
-            "range": "±1.66%",
-            "unit": "ops/sec",
-            "extra": "88 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 39034,
-            "range": "±1.66%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±8.45%",
             "unit": "ops/sec",
             "extra": "84 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "indigophi@protonmail.com",
+            "name": "Scorbajio",
+            "username": "scorbajio"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "78cebd57ca0a187c4fcdc73b312657c69ac54488",
+          "message": "Add prometheus to client and begin implementing custom metrics (#3287)\n\n* Add prometheus and txGuage for tx pool transaction count\r\n\r\n* Use import instead of require\r\n\r\n* Add cli option for enabling prometheus server\r\n\r\n* Fix test\r\n\r\n* Include typings for prometheus parameters\r\n\r\n* Update test timeouts\r\n\r\n* Update package files\r\n\r\n* Remove unneeded dep\r\n\r\n* Update packages/client/src/service/txpool.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Update packages/client/src/service/txpool.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Update packages/client/src/service/txpool.ts\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\n\r\n* Track transaction in pool count by transaction type\r\n\r\n* Add test to verify tx count is incremented with prometheus gauge after transaction is added to pool\r\n\r\n* nits\r\n\r\n* Add prometheus port\r\n\r\n* Overhaul placement and management of metrics server\r\n\r\n* Fix typing\r\n\r\n* Generalize port number in comment\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
+          "timestamp": "2024-04-17T13:45:02-07:00",
+          "tree_id": "598b69d4674fa59c8e91b2ff04fc28557a2ab6ec",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/78cebd57ca0a187c4fcdc73b312657c69ac54488"
+        },
+        "date": 1713386991136,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42191,
+            "range": "±3.23%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41623,
+            "range": "±1.35%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41518,
+            "range": "±1.51%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40422,
+            "range": "±1.57%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36338,
+            "range": "±5.56%",
+            "unit": "ops/sec",
+            "extra": "81 samples"
           }
         ]
       }
