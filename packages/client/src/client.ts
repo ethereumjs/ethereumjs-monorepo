@@ -6,11 +6,10 @@ import { FullEthereumService, LightEthereumService } from './service'
 import { Event } from './types'
 
 import type { Config } from './config'
-import type { MultiaddrLike } from './types'
+import type { MultiaddrLike, PrometheusMetrics } from './types'
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { GenesisState } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
-import type * as promClient from 'prom-client'
 
 export interface EthereumClientOptions {
   /** Client configuration */
@@ -61,7 +60,7 @@ export interface EthereumClientOptions {
   /* if client can be run stateless post verkle, defaults to true for now */
   statelessVerkle?: boolean
 
-  txGauge?: promClient.Gauge<string> | undefined
+  prometheusMetrics?: PrometheusMetrics | undefined
 }
 
 /**
@@ -103,7 +102,7 @@ export class EthereumClient {
           stateDB: options.stateDB,
           metaDB: options.metaDB,
           chain,
-          txGauge: options.txGauge,
+          prometheusMetrics: options.prometheusMetrics,
         }),
       ]
     }

@@ -53,7 +53,7 @@ import { helprpc, startRPCServers } from './startRpc'
 
 import type { Logger } from '../src/logging'
 import type { FullEthereumService } from '../src/service'
-import type { ClientOpts } from '../src/types'
+import type { ClientOpts, PrometheusMetrics } from '../src/types'
 import type { RPCArgs } from './startRpc'
 import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
@@ -630,18 +630,34 @@ async function startClient(
   let client
   if (args.prometheus === true) {
     // Create custom metrics
-    const txGauge: promClient.Gauge<string> = new promClient.Gauge({
-      name: 'tx_pool_size',
-      help: 'Size of the client transaction pool',
-    })
+    const prometheusMetrics: PrometheusMetrics = {
+      legacyTxGauge: new promClient.Gauge({
+        name: 'legacy_transactions_in_transaction_pool',
+        help: 'Number of legacy transactions in the client transaction pool',
+      }),
+      accessListEIP2930TxGauge: new promClient.Gauge({
+        name: 'access_list_eip2930_transactions_in_transaction_pool',
+        help: 'Number of access list EIP 2930 transactions in the client transaction pool',
+      }),
+      feeMarketEIP1559TxGauge: new promClient.Gauge({
+        name: 'fee_market_eip1559_transactions_in_transaction_pool',
+        help: 'Number of fee market EIP 1559 transactions in the client transaction pool',
+      }),
+      blobEIP4844TxGauge: new promClient.Gauge({
+        name: 'blob_eip_4844_transactions_in_transaction_pool',
+        help: 'Number of blob EIP 4844 transactions in the client transaction pool',
+      }),
+    }
 
     const register = new promClient.Registry()
     register.setDefaultLabels({
       app: 'ethereumjs-client',
     })
     promClient.collectDefaultMetrics({ register })
+    for (const [_, metric] of Object.entries(prometheusMetrics)) {
+      register.registerMetric(metric)
+    }
 
-    register.registerMetric(txGauge)
     // @ts-ignore
     const server = http.createServer(async (req, res) => {
       if (req.url === undefined) {
@@ -663,7 +679,7 @@ async function startClient(
 
     client = await EthereumClient.create({
       config,
-      txGauge,
+      prometheusMetrics,
       blockchain,
       ...genesisMeta,
       ...dbs,

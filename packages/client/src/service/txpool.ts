@@ -20,6 +20,7 @@ import {
 import type { Config } from '../config'
 import type { Peer } from '../net/peer'
 import type { PeerPool } from '../net/peerpool'
+import type { PrometheusMetrics } from '../types'
 import type { FullEthereumService } from './fullethereumservice'
 import type { Block } from '@ethereumjs/block'
 import type {
@@ -28,7 +29,6 @@ import type {
   TypedTransaction,
 } from '@ethereumjs/tx'
 import type { VM } from '@ethereumjs/vm'
-import type * as promClient from 'prom-client'
 import type QHeap from 'qheap'
 
 const Heap = require('qheap')
@@ -47,7 +47,7 @@ export interface TxPoolOptions {
   /* FullEthereumService */
   service: FullEthereumService
 
-  txGauge?: promClient.Gauge<string> | undefined
+  prometheusMetrics?: PrometheusMetrics | undefined
 }
 
 type TxPoolObject = {
@@ -165,7 +165,7 @@ export class TxPool {
    */
   private LOG_STATISTICS_INTERVAL = 100000 // ms
 
-  private txGauge: promClient.Gauge<string> | undefined
+  private prometheusMetrics: PrometheusMetrics | undefined
 
   /**
    * Create new tx pool
@@ -183,7 +183,7 @@ export class TxPool {
     this.opened = false
     this.running = false
 
-    this.txGauge = options.txGauge
+    this.prometheusMetrics = options.prometheusMetrics
   }
 
   /**
@@ -371,7 +371,19 @@ export class TxPool {
       this.handled.set(hash, { address, added })
 
       this.txsInPool++
-      this.txGauge?.inc()
+
+      if (isLegacyTx(tx)) {
+        this.prometheusMetrics?.legacyTxGauge?.inc()
+      }
+      if (isAccessListEIP2930Tx(tx)) {
+        this.prometheusMetrics?.accessListEIP2930TxGauge?.inc()
+      }
+      if (isFeeMarketEIP1559Tx(tx)) {
+        this.prometheusMetrics?.feeMarketEIP1559TxGauge?.inc()
+      }
+      if (isBlobEIP4844Tx(tx)) {
+        this.prometheusMetrics?.blobEIP4844TxGauge?.inc()
+      }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
@@ -400,8 +412,9 @@ export class TxPool {
   /**
    * Removes the given tx from the pool
    * @param txHash Hash of the transaction
+   * @param tx Optional, the transaction object itself can be included for collecting metrics
    */
-  removeByHash(txHash: UnprefixedHash) {
+  removeByHash(txHash: UnprefixedHash, tx?: any) {
     const handled = this.handled.get(txHash)
     if (!handled) return
     const { address } = handled
@@ -410,8 +423,18 @@ export class TxPool {
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
 
     this.txsInPool--
-
-    this.txGauge?.dec()
+    if (isLegacyTx(tx)) {
+      this.prometheusMetrics?.legacyTxGauge?.dec()
+    }
+    if (isAccessListEIP2930Tx(tx)) {
+      this.prometheusMetrics?.accessListEIP2930TxGauge?.dec()
+    }
+    if (isFeeMarketEIP1559Tx(tx)) {
+      this.prometheusMetrics?.feeMarketEIP1559TxGauge?.dec()
+    }
+    if (isBlobEIP4844Tx(tx)) {
+      this.prometheusMetrics?.blobEIP4844TxGauge?.dec()
+    }
 
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
@@ -644,7 +667,7 @@ export class TxPool {
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
         const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
-        this.removeByHash(txHash)
+        this.removeByHash(txHash, tx)
       }
     }
   }
@@ -853,9 +876,12 @@ export class TxPool {
   close() {
     this.pool.clear()
     this.handled.clear()
-
     this.txsInPool = 0
-    this.txGauge?.set(0)
+    if (this.prometheusMetrics !== undefined) {
+      for (const [_, metric] of Object.entries(this.prometheusMetrics)) {
+        metric.set(0)
+      }
+    }
     this.opened = false
   }
 
