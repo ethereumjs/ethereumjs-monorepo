@@ -169,6 +169,7 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
   // Post-state provided from the executionWitness.
   // Should not update. Used for comparing our computed post-state with the canonical one.
   private _postState: VerkleState = {}
+  private _preState: VerkleState = {}
 
   // Checkpointing
   private _checkpoints: VerkleState[] = []
@@ -285,6 +286,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }, {})
 
     this._state = preState
+
+    // also maintain a separate preState unaffected by any changes in _state
+    this._preState = preStateRaw.reduce((prevValue, currentValue) => {
+      const acc = { ...prevValue, ...currentValue }
+      return acc
+    }, {})
 
     const postStateRaw = executionWitness.stateDiff.flatMap(({ stem, suffixDiffs }) => {
       const suffixDiffPairs = suffixDiffs.map(({ newValue, suffix }) => {
@@ -421,7 +428,8 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
     // allocate the code and copy onto it from the available witness chunks
     const codeSize = account.codeSize
-    const accessedCode = new Uint8Array(codeSize)
+    // allocate enough to fit the last chunk
+    const accessedCode = new Uint8Array(codeSize + 31)
 
     const chunks = Math.floor(codeSize / 31) + 1
     for (let chunkId = 0; chunkId < chunks; chunkId++) {
@@ -447,7 +455,12 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
     }
 
     // Return accessedCode where only accessed code has been copied
-    return accessedCode
+    const contactCode = accessedCode.slice(0, codeSize)
+    if (!this._codeCacheSettings.deactivate) {
+      this._codeCache?.put(address, contactCode)
+    }
+
+    return contactCode
   }
 
   async getContractCodeSize(address: Address): Promise<number> {
@@ -728,7 +741,15 @@ export class StatelessVerkleStateManager implements EVMStateManagerInterface {
 
       const { chunkKey } = accessedState
       accessedChunks.set(chunkKey, true)
-      const computedValue = this.getComputedValue(accessedState)
+      const computedValue = this.getComputedValue(accessedState) ?? this._preState[chunkKey]
+      if (computedValue === undefined) {
+        debug(
+          `Block accesses missing in canonical address=${address} type=${type} ${extraMeta} chunkKey=${chunkKey}`
+        )
+        postFailures++
+        continue
+      }
+
       let canonicalValue: string | null | undefined = this._postState[chunkKey]
 
       if (canonicalValue === undefined) {
