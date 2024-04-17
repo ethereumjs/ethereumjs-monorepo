@@ -1078,7 +1078,7 @@ async function run() {
         res.end(await register.metrics())
       }
     })
-    // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
+    // Start the HTTP server which exposes the metrics on http://localhost:${args.prometheusPort}/metrics
     logger.info(`Starting Metrics Server on port ${args.prometheusPort}`)
     metricsServer.listen(args.prometheusPort)
   }
