@@ -1,4 +1,4 @@
-import { version as packageVersion } from '../package.json'
+import { readFileSync } from 'fs'
 
 import { Chain } from './blockchain/index.js'
 import { SyncMode } from './config.js'
@@ -126,8 +126,9 @@ export class EthereumClient {
     }
     const name = this.config.chainCommon.chainName()
     const chainId = this.config.chainCommon.chainId()
+    const packageJson = JSON.parse(readFileSync('../../package.json', 'utf-8'))
     this.config.logger.info(
-      `Initializing Ethereumjs client version=v${packageVersion} network=${name} chainId=${chainId}`
+      `Initializing Ethereumjs client version=v${packageJson.version} network=${name} chainId=${chainId}`
     )
 
     this.config.events.on(Event.SERVER_ERROR, (error) => {

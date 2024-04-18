@@ -1,9 +1,9 @@
-import bodyParser from 'body-parser'
+import * as bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
 import { createServer } from 'http'
-import jayson from 'jayson/promise/index.js'
-import jwt from 'jwt-simple'
+import * as jayson from 'jayson/promise/index.js'
+import * as jwt from 'jwt-simple'
 import { inspect } from 'util'
 
 import type { Logger } from '../logging.js'

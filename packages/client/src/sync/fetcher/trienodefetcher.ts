@@ -15,7 +15,7 @@ import {
   KECCAK256_RLP,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { debug as createDebugLogger } from 'debug'
+import debugPkg from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { bytesToHex, equalsBytes, hexToBytes } from 'ethereum-cryptography/utils'
 import { OrderedMap } from 'js-sdsl'
@@ -28,6 +28,7 @@ import type { FetcherOptions } from './fetcher.js'
 import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+const { debug: createDebugLogger } = debugPkg
 
 type TrieNodesResponse = Uint8Array[] & { completed?: boolean }
 
