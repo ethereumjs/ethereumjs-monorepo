@@ -1,4 +1,7 @@
 import { json as jsonParser } from 'body-parser'
+import Connect from 'connect'
+//@ts-ignore
+import cors from 'cors'
 import { createServer } from 'http'
 import { Server as RPCServer } from 'jayson/promise'
 import { decode } from 'jwt-simple'
@@ -9,9 +12,6 @@ import type { RPCManager } from '../rpc/index.js'
 import type { IncomingMessage } from 'connect'
 import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
-
-const Connect = require('connect')
-const cors = require('cors')
 
 const algorithm: TAlgorithm = 'HS256'
 

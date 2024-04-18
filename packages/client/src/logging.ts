@@ -1,9 +1,8 @@
 import * as chalk from 'chalk'
 import { createLogger, format, transports as wTransports } from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
 
 import type { Logger as WinstonLogger } from 'winston'
-
-const DailyRotateFile = require('winston-daily-rotate-file')
 
 export type Logger = WinstonLogger
 type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {

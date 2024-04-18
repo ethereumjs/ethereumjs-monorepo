@@ -1,4 +1,5 @@
 import debugDefault from 'debug'
+import Heap from 'qheap'
 import { Readable, Writable } from 'stream'
 
 import { Event } from '../../types.js'
@@ -11,7 +12,6 @@ import type { Job } from './types.js'
 import type { Debugger } from 'debug'
 import type QHeap from 'qheap'
 
-const Heap = require('qheap')
 const { debug: createDebugLogger } = debugDefault
 
 export interface FetcherOptions {
