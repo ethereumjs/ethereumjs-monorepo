@@ -1,3 +1,4 @@
+import type { BlockHeader } from '@ethereumjs/block'
 import { DefaultStateManager } from '@ethereumjs/statemanager'
 import { Trie } from '@ethereumjs/trie'
 import {
@@ -100,6 +101,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
     this.debug = createDebugLogger('client:AccountFetcher')
+    this.debug('dbg101')
 
     this.storageFetcher = new StorageFetcher({
       config: this.config,
@@ -376,7 +378,22 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     // TODOs:
     // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
     // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
-    await peer?.latest()
+    this.debug('dbg100')
+    const latestHeader = await peer?.latest()
+    if (latestHeader !== undefined) {
+      const latestStateRoot = (latestHeader as BlockHeader).stateRoot
+      this.debug(this.root)
+      this.debug(bytesToHex(latestStateRoot))
+      if (!equalsBytes(this.root, latestStateRoot)) {
+        this.debug(
+          `updating fetcher roots from ${bytesToHex(this.root)} over to ${bytesToHex(
+            latestStateRoot
+          )}`
+        )
+        this.updateStateRoot(latestStateRoot)
+      }
+    }
+
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 
