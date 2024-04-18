@@ -86,7 +86,7 @@ describe(method, () => {
     if (isBrowser() === true) {
       assert.ok(true)
     } else {
-      const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
+      const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
 
       const kzg = await loadKZG()
 

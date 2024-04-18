@@ -217,7 +217,7 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const gethGenesis = require('../../../../block/test/testdata/4844-hardfork.json')
+    const gethGenesis = await import('../../../../block/test/testdata/4844-hardfork.json')
 
     const kzg = await loadKZG()
 

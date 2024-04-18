@@ -434,7 +434,7 @@ describe('[PendingBlock]', async () => {
   })
 
   it('should exclude missingBlobTx', async () => {
-    const gethGenesis = require('../../../block/test/testdata/4844-hardfork.json')
+    const gethGenesis = await import('../../../block/test/testdata/4844-hardfork.json')
     const kzg = await loadKZG()
 
     const common = Common.fromGethGenesis(gethGenesis, {
