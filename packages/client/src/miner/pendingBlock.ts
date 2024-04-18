@@ -361,7 +361,7 @@ export class PendingBlock {
         }
       } else if ((error as Error).message.includes('blobs missing')) {
         // Remove the blob tx which doesn't has blobs bundled
-        this.txPool.removeByHash(bytesToHex(tx.hash()))
+        this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
         this.config.logger.error(
           `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`
         )
