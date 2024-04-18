@@ -206,7 +206,10 @@ export class SnapSynchronizer extends Synchronizer {
       this.config.logger.info(`New sync target height=${height} hash=${bytesToHex(latest.hash())}`)
     }
 
-    if (this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth) {
+    if (
+      (this.fetcher === null || this.fetcher.syncErrored !== undefined) &&
+      this.config.syncTargetHeight <= latest.number + this.config.snapAvailabilityDepth
+    ) {
       if ((this.fetcherDoneFlags.snapTargetHeight ?? BIGINT_0) < latest.number) {
         this.fetcherDoneFlags.snapTargetHeight = latest.number
         this.fetcherDoneFlags.snapTargetRoot = latest.stateRoot
@@ -222,22 +225,15 @@ export class SnapSynchronizer extends Synchronizer {
             : 'previous fetcher errored=' + this.fetcher.syncErrored?.message
         }`
       )
-
-      if (this.fetcher === null || this.fetcher.syncErrored !== undefined) {
-        this.fetcher = new AccountFetcher({
-          config: this.config,
-          pool: this.pool,
-          stateManager: this.execution.vm.stateManager as DefaultStateManager,
-          root: stateRoot,
-          // This needs to be determined from the current state of the MPT dump
-          first: BigInt(0),
-          fetcherDoneFlags: this.fetcherDoneFlags,
-        })
-      } else {
-        // update root
-        this.config.logger.info(`UPDATING ROOTS`)
-        this.fetcher?.updateStateRoot(stateRoot)
-      }
+      this.fetcher = new AccountFetcher({
+        config: this.config,
+        pool: this.pool,
+        stateManager: this.execution.vm.stateManager as DefaultStateManager,
+        root: stateRoot,
+        // This needs to be determined from the current state of the MPT dump
+        first: BigInt(0),
+        fetcherDoneFlags: this.fetcherDoneFlags,
+      })
     } else {
       return false
     }
