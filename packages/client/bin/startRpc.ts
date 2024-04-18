@@ -12,7 +12,7 @@ import {
 
 import type { EthereumClient } from '../src/client.js'
 import type { Config } from '../src/config.js'
-import type { Server as RPCServer } from 'jayson/promise'
+import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 export type RPCArgs = {
   rpc: boolean
@@ -114,7 +114,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       rpcDebugVerbose,
       rpcDebug,
       logger,
-    })
+    }) //@ts-ignore
     servers.push(server)
 
     if (rpc) {
@@ -176,7 +176,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       rpcDebug,
       rpcDebugVerbose,
       logger,
-    })
+    }) //@ts-ignore
     servers.push(server)
     const rpcHttpServer = createRPCServerListener({
       rpcCors,

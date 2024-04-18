@@ -1,4 +1,4 @@
-import { callWithStackTrace, jsonRpcTx } from '../helpers'
+import { callWithStackTrace, jsonRpcTx } from '../helpers.js'
 import { middleware } from '../validation.js'
 
 import type { EthereumClient } from '../../index.js'

@@ -17,10 +17,10 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Event } from '../../types.js'
-import { short } from '../../util'
+import { short } from '../../util/index.js'
 
 import { ByteCodeFetcher } from './bytecodefetcher.js'
 import { Fetcher } from './fetcher.js'

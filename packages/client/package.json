@@ -96,6 +96,7 @@
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/connect": "^3.4.35",
+    "@types/cors": "^2.8.17",
     "@types/fs-extra": "^11.0.4",
     "@types/jwt-simple": "^0.5.33",
     "@types/ws": "^8.5.10",

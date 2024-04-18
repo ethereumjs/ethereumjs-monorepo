@@ -28,11 +28,11 @@ import {
 } from '@polkadot/wasm-crypto'
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
-import { sha256 } from 'ethereum-cryptography/sha256'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { existsSync, writeFileSync } from 'fs'
-import { ensureDirSync, readFileSync, removeSync } from 'fs-extra'
+import fsExtra from 'fs-extra'
 import * as http from 'http'
-import { Server as RPCServer } from 'jayson/promise'
+import jayson from 'jayson/promise/index.js'
 import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
@@ -61,6 +61,8 @@ import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
+const { ensureDirSync, readFileSync, removeSync } = fsExtra
+const { Server: RPCServer } = jayson
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -852,7 +854,7 @@ const stopClient = async (
   config: Config,
   clientStartPromise: Promise<{
     client: EthereumClient
-    servers: (RPCServer | http.Server)[]
+    servers: (typeof RPCServer | http.Server)[]
   } | null>
 ) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
@@ -870,7 +872,8 @@ const stopClient = async (
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      s instanceof RPCServer ? (s as RPCServer).http().close() : (s as http.Server).close()
+      //@ts-ignore
+      s instanceof RPCServer ? (s as typeof RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()
     config.logger.info('Exiting.')
@@ -1154,7 +1157,8 @@ async function run() {
     genesisStateRoot: customGenesisStateRoot,
   })
     .then((client) => {
-      const servers: (RPCServer | http.Server)[] =
+      //@ts-ignore
+      const servers: (typeof RPCServer | http.Server)[] =
         args.rpc === true || args.rpcEngine === true || args.ws === true
           ? startRPCServers(client, args as RPCArgs)
           : []
