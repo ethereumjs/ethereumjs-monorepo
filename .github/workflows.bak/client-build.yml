@@ -1,0 +1,86 @@
+name: Client
+on:
+  push:
+    branches: [master, develop]
+    tags: ['*']
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+env:
+  cwd: ${{github.workspace}}/packages/client
+
+defaults:
+  run:
+    working-directory: packages/client
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test-client:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run coverage
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: client
+      - uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: cd ${{github.workspace}}/packages/client && npm run test:integration
+
+      - run: npm run lint
+
+  test-client-dockerfile:
+    name: test client docker file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build from source
+        run: >
+          docker buildx build .
+          --tag ethereumjs:local
+          --platform linux/amd64
+          --build-arg COMMIT=$(git rev-parse HEAD)
+        working-directory: ${{github.workspace}}
+
+  test-client-cli:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli
