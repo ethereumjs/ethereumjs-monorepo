@@ -83,7 +83,7 @@
     "jayson": "^4.0.0",
     "js-sdsl": "^4.4.0",
     "jwt-simple": "^0.5.6",
-    "kzg-wasm": "^0.3.1",
+    "kzg-wasm": "^0.4.0",
     "level": "^8.0.0",
     "memory-level": "^1.0.0",
     "multiaddr": "^10.0.1",
