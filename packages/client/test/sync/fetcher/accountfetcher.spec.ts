@@ -184,6 +184,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: vi.fn() },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const partialResult: any = [
       [
@@ -243,13 +244,14 @@ describe('[AccountFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
   })
 
   it('should verify zero-element proof correctly', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const fetcher = new AccountFetcher({
       config,
@@ -269,6 +271,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: mockedGetAccountRange },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -280,7 +283,7 @@ describe('[AccountFetcher]', async () => {
   })
 
   it('should reject zero-element proof if elements still remain to right of requested range', async () => {
-    const config = new Config({ transports: [], accountCache: 10000, storageCache: 1000 })
+    const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
 
     // calculate new root with a key all the way to the right of the trie
@@ -307,6 +310,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: mockedGetAccountRange },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -352,6 +356,7 @@ describe('[AccountFetcher]', async () => {
       snap: { getAccountRange: mockedGetAccountRange },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)

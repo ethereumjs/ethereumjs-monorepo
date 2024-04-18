@@ -84,6 +84,7 @@ describe('[HeaderFetcher]', async () => {
       les: { getBlockHeaders: vi.fn() },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)

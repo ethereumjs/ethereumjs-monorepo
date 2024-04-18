@@ -629,12 +629,13 @@ export const handlers: Map<number, OpHandler> = new Map([
 
         if (common.isActivatedEIP(6800) === true) {
           const { treeIndex, subIndex } = getTreeIndexesForStorageSlot(number)
-          // just create access witnesses without charging for the gas
-          runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          // create witnesses and charge gas
+          const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
             historyAddress,
             treeIndex,
             subIndex
           )
+          runState.interpreter.useGas(statelessGas, `BLOCKHASH`)
         }
         const storage = await runState.stateManager.getContractStorage(historyAddress, key)
 

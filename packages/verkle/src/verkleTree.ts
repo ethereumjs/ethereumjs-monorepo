@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { KeyEncoding, Lock, ValueEncoding, equalsBytes, zeros } from '@ethereumjs/util'
+import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
 import { CheckpointDB } from './db/checkpoint.js'
 import { InternalNode } from './node/internalNode.js'
@@ -30,6 +31,7 @@ export class VerkleTree {
   protected readonly _opts: VerkleTreeOptsWithDefaults = {
     useRootPersistence: false,
     cacheSize: 0,
+    verkleCrypto: undefined,
   }
 
   /** The root for an empty tree */
@@ -41,6 +43,7 @@ export class VerkleTree {
   protected _lock = new Lock()
   protected _root: Uint8Array
 
+  protected verkleCrypto: any
   /**
    * Creates a new verkle tree.
    * @param opts Options for instantiating the verkle tree
@@ -61,6 +64,12 @@ export class VerkleTree {
     if (opts?.root) {
       this.root(opts.root)
     }
+
+    if (opts === undefined || opts?.verkleCrypto === undefined) {
+      throw new Error('instantiated verkle cryptography option required for verkle tries')
+    }
+
+    this.verkleCrypto = opts?.verkleCrypto
   }
 
   static async create(opts?: VerkleTreeOpts) {
@@ -79,6 +88,13 @@ export class VerkleTree {
         })
       }
     }
+
+    if (opts === undefined) {
+      opts = {
+        verkleCrypto: loadVerkleCrypto,
+      }
+    }
+    opts.verkleCrypto = await loadVerkleCrypto()
 
     return new VerkleTree(opts)
   }
@@ -425,6 +441,7 @@ export class VerkleTree {
       db: this._db.db.shallowCopy(),
       root: this.root(),
       cacheSize: 0,
+      verkleCrypto: this.verkleCrypto,
     })
     if (includeCheckpoints && this.hasCheckpoints()) {
       tree._db.setCheckpoints(this._db.checkpoints)

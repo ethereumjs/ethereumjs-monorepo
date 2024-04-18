@@ -68,9 +68,9 @@ const getProofValues = async (params: [address: string, _: [], blockTag: bigint 
     return {
       address,
       balance: '0x0',
-      codeHash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
+      codeHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       nonce: '0x0',
-      storageHash: '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+      storageHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       storageProof: [],
     }
   }

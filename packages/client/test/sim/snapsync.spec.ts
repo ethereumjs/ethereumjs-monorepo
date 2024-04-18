@@ -25,7 +25,6 @@ import {
 } from './simutils'
 
 import type { EthereumClient } from '../../src/client'
-import type { RlpxServer } from '../../src/net/server'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 const client = Client.http({ port: 8545 })
@@ -130,12 +129,16 @@ describe('simple mainnet test run', async () => {
         beaconSyncRelayer: relayer,
       } =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (await createSnapClient(common, customGenesisState, [nodeInfo.enode], peerBeaconUrl).catch(
-          (e) => {
-            console.log(e)
-            return null
-          }
-        )) ?? {
+        (await createSnapClient(
+          common,
+          customGenesisState,
+          [nodeInfo.enode],
+          peerBeaconUrl,
+          ''
+        ).catch((e) => {
+          console.log(e)
+          return null
+        })) ?? {
           ejsInlineClient: null,
           peerConnectedPromise: Promise.reject('Client creation error'),
           beaconSyncRelayer: null,
@@ -146,7 +149,7 @@ describe('simple mainnet test run', async () => {
       snapCompleted = snapSyncCompletedPromise
       assert.ok(ejsClient !== null, 'ethereumjs client started')
 
-      const enode = (ejsClient!.server('rlpx') as RlpxServer)!.getRlpxInfo().enode
+      const enode = ejsClient!.server()!.getRlpxInfo().enode
       const res = await client.request('admin_addPeer', [enode])
       assert.equal(res.result, true, 'successfully requested Geth add EthereumJS as peer')
 
@@ -176,7 +179,7 @@ describe('simple mainnet test run', async () => {
           // call sync if not has been called yet
           void ejsClient.services[0].synchronizer?.sync()
           await Promise.race([
-            snapCompleted.then(([root, syncedStateManager]) => {
+            (snapCompleted as any).then(([root, syncedStateManager]: [any, any]) => {
               syncedSnapRoot = root
               stateManager = syncedStateManager
             }),
@@ -208,13 +211,13 @@ describe('simple mainnet test run', async () => {
         undefined,
         undefined,
         BigInt(0),
-      ]
-      customGenesisState[sender][0] = `0x${senderBalance.toString(16)}`
+      ] as any
+      ;(customGenesisState[sender][0] as any) = `0x${senderBalance.toString(16)}`
     }
 
     for (const addressString of Object.keys(customGenesisState)) {
       const address = Address.fromString(addressString)
-      const account = await stateManager.getAccount(address)
+      const account = await stateManager?.getAccount(address)
       assert.equal(
         account?.balance,
         BigInt(customGenesisState[addressString][0]),

@@ -45,7 +45,7 @@ describe('[SnapSynchronizer]', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
-    const sync = new SnapSynchronizer({ config, pool, chain })
+    const sync = new SnapSynchronizer({ config, pool, chain } as any)
     assert.equal(sync.type, 'snap', 'snap type')
   })
 
@@ -53,7 +53,7 @@ describe('[SnapSynchronizer]', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
-    const sync = new SnapSynchronizer({ config, pool, chain })
+    const sync = new SnapSynchronizer({ config, pool, chain } as any)
     ;(sync as any).pool.open = vi.fn().mockResolvedValue(null)
     ;(sync as any).pool.peers = []
     await sync.open()
@@ -70,7 +70,7 @@ describe('[SnapSynchronizer]', async () => {
       interval: 1,
       pool,
       chain,
-    })
+    } as any)
     ;(sync as any).chain = { blocks: { height: 1 } }
     const getBlockHeaders1 = vi
       .fn()
@@ -83,11 +83,23 @@ describe('[SnapSynchronizer]', async () => {
         snap: {},
         eth: { status: { bestHash: '0xaa' }, getBlockHeaders: getBlockHeaders1 },
         inbound: false,
+        latest: () => {
+          return {
+            number: BigInt(1),
+            hash: () => new Uint8Array(0),
+          }
+        },
       },
       {
         snap: {},
         eth: { status: { bestHash: '0xbb' }, getBlockHeaders: getBlockHeaders2 },
         inbound: false,
+        latest: () => {
+          return {
+            number: BigInt(2),
+            hash: () => new Uint8Array(0),
+          }
+        },
       },
     ]
     ;(sync as any).pool = { peers }

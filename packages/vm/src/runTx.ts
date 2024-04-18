@@ -590,7 +590,7 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (this.common.isActivatedEIP(6800)) {
     // use this utility to build access but the computed gas is not charged and hence free
-    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxExistingAndComputeGas(miner, {
+    ;(state as StatelessVerkleStateManager).accessWitness!.touchTxTargetAndComputeGas(miner, {
       sendsValue: true,
     })
   }
@@ -640,14 +640,12 @@ async function _runTx(this: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // Convert the Map to the desired type
     const accessList: AccessList = []
     for (const [address, set] of this.evm.journal.accessList!) {
-      const addressPrefixed = '0x' + address
       const item: AccessListItem = {
-        address: addressPrefixed,
+        address: `0x${address}`,
         storageKeys: [],
       }
       for (const slot of set) {
-        const slotPrefixed = '0x' + slot
-        item.storageKeys.push(slotPrefixed)
+        item.storageKeys.push(`0x${slot}`)
       }
       accessList.push(item)
     }

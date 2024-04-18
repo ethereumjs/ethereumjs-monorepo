@@ -99,6 +99,7 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     accountCache: 10000,
     storageCache: 1000,
     savePreimages: clientOpts.savePreimages,
+    logger: getLogger({}),
   })
   const blockchain = clientOpts.blockchain ?? mockBlockchain()
 

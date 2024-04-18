@@ -1,26 +1,28 @@
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 export interface RpcTx {
-  from?: string
-  to?: string
-  gas?: string
-  gasPrice?: string
-  value?: string
-  data?: string
-  maxPriorityFeePerGas?: string
-  maxFeePerGas?: string
-  type?: string
+  from?: PrefixedHexString
+  to?: PrefixedHexString
+  gas?: PrefixedHexString
+  gasPrice?: PrefixedHexString
+  value?: PrefixedHexString
+  data?: PrefixedHexString
+  maxPriorityFeePerGas?: PrefixedHexString
+  maxFeePerGas?: PrefixedHexString
+  type?: PrefixedHexString
 }
 
 export interface RpcTxRes {
-  from: string
-  to?: string
-  gas: string
-  gasPrice: string
-  value: string
-  input?: string
-  data?: string
-  maxPriorityFeePerGas: string
-  maxFeePerGas: string
-  type: string
+  from: PrefixedHexString
+  to?: PrefixedHexString
+  gas: PrefixedHexString
+  gasPrice: PrefixedHexString
+  value: PrefixedHexString
+  input?: PrefixedHexString
+  data?: PrefixedHexString
+  maxPriorityFeePerGas: PrefixedHexString
+  maxFeePerGas: PrefixedHexString
+  type: PrefixedHexString
 }
 
 /**

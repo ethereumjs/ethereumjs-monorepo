@@ -10,6 +10,9 @@ import {
   hexToBytes,
   privateToAddress,
 } from '@ethereumjs/util'
+import * as http from 'http'
+import * as promClient from 'prom-client'
+import * as url from 'url'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config'
@@ -17,12 +20,11 @@ import { getLogger } from '../../src/logging'
 import { PeerPool } from '../../src/net/peerpool'
 import { TxPool } from '../../src/service/txpool'
 
+import type { PrometheusMetrics } from '../../src/types'
+
+let prometheusMetrics: PrometheusMetrics | undefined
+
 const setup = () => {
-  const config = new Config({
-    accountCache: 10000,
-    storageCache: 1000,
-    logger: getLogger({ loglevel: 'info' }),
-  })
   const service: any = {
     chain: {
       headers: { height: BigInt(0) },
@@ -38,8 +40,64 @@ const setup = () => {
       },
     },
   }
+  let metricsServer
+
+  if (prometheusMetrics === undefined) {
+    prometheusMetrics = {
+      legacyTxGauge: new promClient.Gauge({
+        name: 'legacy_transactions_in_transaction_pool',
+        help: 'Number of legacy transactions in the client transaction pool',
+      }),
+      accessListEIP2930TxGauge: new promClient.Gauge({
+        name: 'access_list_eip2930_transactions_in_transaction_pool',
+        help: 'Number of access list EIP 2930 transactions in the client transaction pool',
+      }),
+      feeMarketEIP1559TxGauge: new promClient.Gauge({
+        name: 'fee_market_eip1559_transactions_in_transaction_pool',
+        help: 'Number of fee market EIP 1559 transactions in the client transaction pool',
+      }),
+      blobEIP4844TxGauge: new promClient.Gauge({
+        name: 'blob_eip_4844_transactions_in_transaction_pool',
+        help: 'Number of blob EIP 4844 transactions in the client transaction pool',
+      }),
+    }
+
+    const register = new promClient.Registry()
+    register.setDefaultLabels({
+      app: 'ethereumjs-client',
+    })
+    promClient.collectDefaultMetrics({ register })
+    for (const [_, metric] of Object.entries(prometheusMetrics)) {
+      register.registerMetric(metric)
+    }
+
+    metricsServer = http.createServer(async (req, res) => {
+      if (req.url === undefined) {
+        res.statusCode = 400
+        res.end('Bad Request: URL is missing')
+        return
+      }
+      const reqUrl = new url.URL(req.url, `http://${req.headers.host}`)
+      const route = reqUrl.pathname
+
+      if (route === '/metrics') {
+        // Return all metrics in the Prometheus exposition format
+        res.setHeader('Content-Type', register.contentType)
+        res.end(await register.metrics())
+      }
+    })
+    // Start the HTTP server which exposes the metrics on http://localhost:8080/metrics
+    metricsServer.listen(8080)
+  }
+
+  const config = new Config({
+    prometheusMetrics,
+    accountCache: 10000,
+    storageCache: 1000,
+    logger: getLogger({ loglevel: 'info' }),
+  })
   const pool = new TxPool({ config, service })
-  return { pool }
+  return { pool, metricsServer }
 }
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
@@ -158,7 +216,7 @@ describe('[TxPool]', async () => {
   it('announcedTxHashes() -> add single tx / knownByPeer / getByHash()', async () => {
     // Safeguard that send() method from peer2 gets called
 
-    const { pool } = setup()
+    const { pool, metricsServer } = setup()
 
     pool.open()
     pool.start()
@@ -221,6 +279,24 @@ describe('[TxPool]', async () => {
       'should get correct tx by hash'
     )
 
+    // check if transaction added in metrics
+    let feeMarketEip1559TransactionCountInPool = undefined
+    const response = await fetch('http://localhost:8080/metrics')
+    const pattern = /^fee_market_eip1559_transactions_in_transaction_pool/
+    const textLines = (await response.text()).split('\n')
+
+    for (const line of textLines) {
+      if (pattern.test(line)) {
+        feeMarketEip1559TransactionCountInPool = parseInt(line.split(' ')[1])
+      }
+    }
+
+    assert.equal(
+      feeMarketEip1559TransactionCountInPool,
+      pool.pool.size,
+      'pool should contain single eip 1559 transaction'
+    )
+
     pool.pool.clear()
     await pool.handleAnnouncedTxHashes([txA01.hash()], peer, peerPool)
     assert.equal(pool.pool.size, 0, 'should not add a once handled tx')
@@ -237,6 +313,7 @@ describe('[TxPool]', async () => {
 
     pool.stop()
     pool.close()
+    metricsServer?.close()
   })
 
   it('announcedTxHashes() -> TX_RETRIEVAL_LIMIT', async () => {

@@ -65,6 +65,50 @@ export const EIPs: EIPsDict = {
       },
     },
   },
+  2537: {
+    comment: 'BLS12-381 precompiles',
+    url: 'https://eips.ethereum.org/EIPS/eip-2537',
+    status: 'Draft',
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+    gasConfig: {},
+    gasPrices: {
+      Bls12381G1AddGas: {
+        v: 600,
+        d: 'Gas cost of a single BLS12-381 G1 addition precompile-call',
+      },
+      Bls12381G1MulGas: {
+        v: 12000,
+        d: 'Gas cost of a single BLS12-381 G1 multiplication precompile-call',
+      },
+      Bls12381G2AddGas: {
+        v: 4500,
+        d: 'Gas cost of a single BLS12-381 G2 addition precompile-call',
+      },
+      Bls12381G2MulGas: {
+        v: 55000,
+        d: 'Gas cost of a single BLS12-381 G2 multiplication precompile-call',
+      },
+      Bls12381PairingBaseGas: {
+        v: 65000,
+        d: 'Base gas cost of BLS12-381 pairing check',
+      },
+      Bls12381PairingPerPairGas: {
+        v: 43000,
+        d: 'Per-pair gas cost of BLS12-381 pairing check',
+      },
+      Bls12381MapG1Gas: {
+        v: 5500,
+        d: 'Gas cost of BLS12-381 map field element to G1',
+      },
+      Bls12381MapG2Gas: {
+        v: 110000,
+        d: 'Gas cost of BLS12-381 map field element to G2',
+      },
+    },
+    vm: {},
+    pow: {},
+  },
   2718: {
     comment: 'Typed Transaction Envelope',
     url: 'https://eips.ethereum.org/EIPS/eip-2718',
@@ -182,7 +226,7 @@ export const EIPs: EIPsDict = {
         d: 'The address where the historical blockhashes are stored',
       },
       historyServeWindow: {
-        v: BigInt(256),
+        v: BigInt(8192),
         d: 'The amount of blocks to be served by the historical blockhash contract',
       },
     },
@@ -482,10 +526,6 @@ export const EIPs: EIPsDict = {
       coldsload: {
         v: 0,
         d: 'Gas cost of the first read of storage from a given location (per transaction)',
-      },
-      sstoreInitGasEIP2200: {
-        v: 0,
-        d: 'Once per SSTORE operation from clean zero to non-zero',
       },
     },
   },

@@ -144,6 +144,12 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     job: Job<JobTask, Uint8Array[], Uint8Array>
   ): Promise<TrieNodesResponse | undefined> {
     const { task, peer } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
+
     const { paths, pathStrings } = task
 
     const rangeResult = await peer!.snap!.getTrieNodes({

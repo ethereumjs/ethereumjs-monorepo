@@ -9,7 +9,7 @@ import { Event, EventBus } from './types'
 import { isBrowser, short } from './util'
 
 import type { Logger } from './logging'
-import type { EventBusType, MultiaddrLike } from './types'
+import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from 'multiaddr'
@@ -338,6 +338,11 @@ export interface ConfigOptions {
   statelessVerkle?: boolean
   startExecution?: boolean
   ignoreStatelessInvalidExecs?: boolean | string
+
+  /**
+   * Enables Prometheus Metrics that can be collected for monitoring client health
+   */
+  prometheusMetrics?: PrometheusMetrics
 }
 
 export class Config {
@@ -461,6 +466,8 @@ export class Config {
 
   public readonly server: RlpxServer | undefined = undefined
 
+  public readonly metrics: PrometheusMetrics | undefined
+
   constructor(options: ConfigOptions = {}) {
     this.events = new EventBus() as EventBusType
 
@@ -536,6 +543,8 @@ export class Config {
     this.startExecution = options.startExecution ?? false
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
+    this.metrics = options.prometheusMetrics
+
     // Start it off as synchronized if this is configured to mine or as single node
     this.synchronized = this.isSingleNode ?? this.mine
     this.lastSyncDate = 0
@@ -548,7 +557,7 @@ export class Config {
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ loglevel: 'error' })
+    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
 
     this.logger.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {

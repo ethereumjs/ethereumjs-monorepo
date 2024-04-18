@@ -362,7 +362,21 @@ export class TxPool {
       add.push({ tx, added, hash })
       this.pool.set(address, add)
       this.handled.set(hash, { address, added })
+
       this.txsInPool++
+
+      if (isLegacyTx(tx)) {
+        this.config.metrics?.legacyTxGauge?.inc()
+      }
+      if (isAccessListEIP2930Tx(tx)) {
+        this.config.metrics?.accessListEIP2930TxGauge?.inc()
+      }
+      if (isFeeMarketEIP1559Tx(tx)) {
+        this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
+      }
+      if (isBlobEIP4844Tx(tx)) {
+        this.config.metrics?.blobEIP4844TxGauge?.inc()
+      }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
@@ -391,15 +405,30 @@ export class TxPool {
   /**
    * Removes the given tx from the pool
    * @param txHash Hash of the transaction
+   * @param tx Optional, the transaction object itself can be included for collecting metrics
    */
-  removeByHash(txHash: UnprefixedHash) {
+  removeByHash(txHash: UnprefixedHash, tx?: any) {
     const handled = this.handled.get(txHash)
     if (!handled) return
     const { address } = handled
     const poolObjects = this.pool.get(address)
     if (!poolObjects) return
     const newPoolObjects = poolObjects.filter((poolObj) => poolObj.hash !== txHash)
+
     this.txsInPool--
+    if (isLegacyTx(tx)) {
+      this.config.metrics?.legacyTxGauge?.dec()
+    }
+    if (isAccessListEIP2930Tx(tx)) {
+      this.config.metrics?.accessListEIP2930TxGauge?.dec()
+    }
+    if (isFeeMarketEIP1559Tx(tx)) {
+      this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
+    }
+    if (isBlobEIP4844Tx(tx)) {
+      this.config.metrics?.blobEIP4844TxGauge?.dec()
+    }
+
     if (newPoolObjects.length === 0) {
       // List of txs for address is now empty, can delete
       this.pool.delete(address)
@@ -631,7 +660,7 @@ export class TxPool {
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
         const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
-        this.removeByHash(txHash)
+        this.removeByHash(txHash, tx)
       }
     }
   }
@@ -841,6 +870,12 @@ export class TxPool {
     this.pool.clear()
     this.handled.clear()
     this.txsInPool = 0
+    if (this.config.metrics !== undefined) {
+      // TODO: Only clear the metrics related to the transaction pool here
+      for (const [_, metric] of Object.entries(this.config.metrics)) {
+        metric.set(0)
+      }
+    }
     this.opened = false
   }
 

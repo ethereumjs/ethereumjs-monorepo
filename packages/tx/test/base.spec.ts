@@ -25,6 +25,7 @@ import eip2930Fixtures from './json/eip2930txs.json'
 import legacyFixtures from './json/txs.json'
 
 import type { BaseTransaction } from '../src/baseTransaction.js'
+import type { AccessListEIP2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.js'
 
 describe('[BaseTransaction]', () => {
   // EIP-2930 is not enabled in Common by default (2021-03-06)
@@ -32,17 +33,21 @@ describe('[BaseTransaction]', () => {
 
   const legacyTxs: BaseTransaction<TransactionType.Legacy>[] = []
   for (const tx of legacyFixtures.slice(0, 4)) {
-    legacyTxs.push(LegacyTransaction.fromTxData(tx.data, { common }))
+    legacyTxs.push(LegacyTransaction.fromTxData(tx.data as LegacyTxData, { common }))
   }
 
   const eip2930Txs: BaseTransaction<TransactionType.AccessListEIP2930>[] = []
   for (const tx of eip2930Fixtures) {
-    eip2930Txs.push(AccessListEIP2930Transaction.fromTxData(tx.data, { common }))
+    eip2930Txs.push(
+      AccessListEIP2930Transaction.fromTxData(tx.data as AccessListEIP2930TxData, { common })
+    )
   }
 
   const eip1559Txs: BaseTransaction<TransactionType.FeeMarketEIP1559>[] = []
   for (const tx of eip1559Fixtures) {
-    eip1559Txs.push(FeeMarketEIP1559Transaction.fromTxData(tx.data, { common }))
+    eip1559Txs.push(
+      FeeMarketEIP1559Transaction.fromTxData(tx.data as FeeMarketEIP1559TxData, { common })
+    )
   }
 
   const zero = new Uint8Array(0)
@@ -382,15 +387,15 @@ describe('[BaseTransaction]', () => {
   it('initialization with defaults', () => {
     const bufferZero = toBytes('0x')
     const tx = LegacyTransaction.fromTxData({
-      nonce: '',
-      gasLimit: '',
-      gasPrice: '',
-      to: '',
-      value: '',
-      data: '',
-      v: '',
-      r: '',
-      s: '',
+      nonce: undefined,
+      gasLimit: undefined,
+      gasPrice: undefined,
+      to: undefined,
+      value: undefined,
+      data: undefined,
+      v: undefined,
+      r: undefined,
+      s: undefined,
     })
     assert.equal(tx.v, undefined)
     assert.equal(tx.r, undefined)

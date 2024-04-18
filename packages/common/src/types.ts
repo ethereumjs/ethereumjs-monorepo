@@ -1,5 +1,5 @@
 import type { Chain, ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike, ECDSASignature, Kzg } from '@ethereumjs/util'
+import type { BigIntLike, ECDSASignature, Kzg, PrefixedHexString } from '@ethereumjs/util'
 
 export interface ChainName {
   [chainId: string]: string
@@ -41,13 +41,13 @@ export interface ChainConfig {
 }
 
 export interface GenesisBlockConfig {
-  timestamp?: string
-  gasLimit: number | string
-  difficulty: number | string
-  nonce: string
-  extraData: string
-  baseFeePerGas?: string
-  excessBlobGas?: string
+  timestamp?: PrefixedHexString
+  gasLimit: number | PrefixedHexString
+  difficulty: number | PrefixedHexString
+  nonce: PrefixedHexString
+  extraData: PrefixedHexString
+  baseFeePerGas?: PrefixedHexString
+  excessBlobGas?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {
@@ -55,7 +55,7 @@ export interface HardforkTransitionConfig {
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
   ttd?: bigint | string
   timestamp?: number | string
-  forkHash?: string | null
+  forkHash?: PrefixedHexString | null
 }
 
 export interface BootstrapNodeConfig {
@@ -96,7 +96,11 @@ interface BaseOpts {
   hardfork?: string | Hardfork
   /**
    * Selected EIPs which can be activated, please use an array for instantiation
-   * (e.g. `eips: [ 1559, 3860 ]`)
+   * (e.g. `eips: [ 2537, ]`)
+   *
+   * Currently supported:
+   *
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
    */
   eips?: number[]
   /**

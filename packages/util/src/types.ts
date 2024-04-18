@@ -23,7 +23,7 @@ export type BytesLike =
 /*
  * A type that represents a `0x`-prefixed hex string.
  */
-export type PrefixedHexString = string
+export type PrefixedHexString = `0x${string}`
 
 /**
  * A type that represents an input that can be converted to an Address.

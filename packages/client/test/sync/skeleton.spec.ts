@@ -238,16 +238,16 @@ describe('[Skeleton] / initSync', async () => {
       await skeleton.open()
 
       for (const block of testCase.blocks ?? []) {
-        await (skeleton as any).putBlock(block)
+        await skeleton['putBlock'](block)
       }
 
       if (testCase.oldState) {
-        ;(skeleton as any).status.progress.subchains = testCase.oldState
+        skeleton['status'].progress.subchains = testCase.oldState as any
       }
 
       await skeleton.initSync(testCase.head)
 
-      const { progress } = (skeleton as any).status
+      const { progress } = skeleton['status']
       if (progress.subchains.length !== testCase.newState.length) {
         assert.fail(
           `test ${testCaseIndex}: subchain count mismatch: have ${progress.subchains.length}, want ${testCase.newState.length}`
@@ -354,7 +354,7 @@ describe('[Skeleton] / setHead', async () => {
       const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
       await skeleton.open()
       for (const block of testCase.blocks ?? []) {
-        await (skeleton as any).putBlock(block)
+        await skeleton['putBlock'](block)
       }
 
       await skeleton.initSync(testCase.head)
@@ -379,7 +379,7 @@ describe('[Skeleton] / setHead', async () => {
         }
       }
 
-      const { progress } = (skeleton as any).status
+      const { progress } = skeleton['status']
       if (progress.subchains.length !== testCase.newState.length) {
         assert.fail(
           `test ${testCaseIndex}: subchain count mismatch: have ${progress.subchains.length}, want ${testCase.newState.length}`
@@ -459,12 +459,12 @@ describe('[Skeleton] / setHead', async () => {
     assert.equal(reorg, false, 'should not reorg on genesis setHead')
 
     assert.equal(
-      (skeleton as any).status.progress.subchains.length,
+      skeleton['status'].progress.subchains.length,
       1,
       'trivial subchain0 should have been created'
     )
     assert.equal(
-      (skeleton as any).status.progress.subchains[0]!.head,
+      skeleton['status'].progress.subchains[0]!.head,
       BigInt(0),
       'trivial subchain0 should have been created'
     )
@@ -480,12 +480,12 @@ describe('[Skeleton] / setHead', async () => {
     reorg = await skeleton.setHead(block1, false)
     assert.equal(reorg, false, 'should not reorg on valid first block')
     assert.equal(
-      (skeleton as any).status.progress.subchains.length,
+      skeleton['status'].progress.subchains.length,
       1,
       'trivial subchain should have been created'
     )
     assert.equal(
-      (skeleton as any).status.progress.subchains[0]!.head,
+      skeleton['status'].progress.subchains[0]!.head,
       BigInt(0),
       'trivial subchain0 should have been created'
     )
@@ -493,12 +493,12 @@ describe('[Skeleton] / setHead', async () => {
     reorg = await skeleton.setHead(block1, true)
     assert.equal(reorg, false, 'should not reorg on valid first block')
     assert.equal(
-      (skeleton as any).status.progress.subchains.length,
+      skeleton['status'].progress.subchains.length,
       1,
       'subchain should have been created'
     )
     assert.equal(
-      (skeleton as any).status.progress.subchains[0].head,
+      skeleton['status'].progress.subchains[0].head,
       BigInt(1),
       'head should be set to first block'
     )
@@ -506,9 +506,9 @@ describe('[Skeleton] / setHead', async () => {
 
     reorg = await skeleton.setHead(block2, true)
     assert.equal(reorg, false, 'should not reorg on valid second block')
-    assert.equal((skeleton as any).status.progress.subchains.length, 1, 'subchain should be same')
+    assert.equal(skeleton['status'].progress.subchains.length, 1, 'subchain should be same')
     assert.equal(
-      (skeleton as any).status.progress.subchains[0].head,
+      skeleton['status'].progress.subchains[0].head,
       BigInt(2),
       'head should be set to first block'
     )
@@ -517,9 +517,9 @@ describe('[Skeleton] / setHead', async () => {
     reorg = await skeleton.setHead(block3, false)
     assert.equal(reorg, true, 'should not extend on invalid third block')
     // since its not a forced update so shouldn't affect subchain status
-    assert.equal((skeleton as any).status.progress.subchains.length, 1, 'subchain should be same')
+    assert.equal(skeleton['status'].progress.subchains.length, 1, 'subchain should be same')
     assert.equal(
-      (skeleton as any).status.progress.subchains[0].head,
+      skeleton['status'].progress.subchains[0].head,
       BigInt(2),
       'head should be set to second block'
     )
@@ -528,13 +528,9 @@ describe('[Skeleton] / setHead', async () => {
     reorg = await skeleton.setHead(block3, true)
     assert.equal(reorg, true, 'should not extend on invalid third block')
     // since its not a forced update so shouldn't affect subchain status
+    assert.equal(skeleton['status'].progress.subchains.length, 2, 'new subchain should be created')
     assert.equal(
-      (skeleton as any).status.progress.subchains.length,
-      2,
-      'new subchain should be created'
-    )
-    assert.equal(
-      (skeleton as any).status.progress.subchains[0].head,
+      skeleton['status'].progress.subchains[0].head,
       BigInt(3),
       'head should be set to third block'
     )
@@ -600,7 +596,7 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     // unlink the skeleton for the below check to check all blocks cleared
-    skeleton.status.linked = false
+    skeleton['status'].linked = false
     for (const block of [block1, block2, block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -678,8 +674,8 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     // unlink the skeleton for the below check to check all blocks cleared
-    const prevLinked = skeleton.status.linked
-    skeleton.status.linked = false
+    const prevLinked = skeleton['status'].linked
+    skeleton['status'].linked = false
     for (const block of [block3, block4, block5]) {
       assert.equal(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
@@ -695,7 +691,7 @@ describe('[Skeleton] / setHead', async () => {
       )
     }
     // restore linkedStatus
-    skeleton.status.linked = prevLinked
+    skeleton['status'].linked = prevLinked
 
     const block41 = Block.fromBlockData(
       { header: { number: 4, parentHash: block3.hash(), difficulty: 101 } },
@@ -715,13 +711,17 @@ describe('[Skeleton] / setHead', async () => {
 
     // should link the chains including the 41, 51 block backfilled from the unfinalized
     await skeleton.forkchoiceUpdate(block61)
-    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(6), 'head should be correct')
     assert.equal(
-      skeleton.status.progress.subchains[0]?.tail,
+      skeleton['status'].progress.subchains[0]?.head,
+      BigInt(6),
+      'head should be correct'
+    )
+    assert.equal(
+      skeleton['status'].progress.subchains[0]?.tail,
       BigInt(4),
       'tail should be backfilled'
     )
-    assert.equal(skeleton.status.linked, true, 'should be linked')
+    assert.equal(skeleton['status'].linked, true, 'should be linked')
     assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
 
     const block71 = Block.fromBlockData(
@@ -739,10 +739,14 @@ describe('[Skeleton] / setHead', async () => {
 
     // lets jump ahead and add the block 81 and 71 with annoucements and trigger tryTailBackfill
     await skeleton.forkchoiceUpdate(block91)
-    assert.equal(skeleton.status.progress.subchains.length, 1, '1 subchain with older dropped')
-    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
+    assert.equal(skeleton['status'].progress.subchains.length, 1, '1 subchain with older dropped')
     assert.equal(
-      skeleton.status.progress.subchains[0]?.tail,
+      skeleton['status'].progress.subchains[0]?.head,
+      BigInt(9),
+      'head should be correct'
+    )
+    assert.equal(
+      skeleton['status'].progress.subchains[0]?.tail,
       BigInt(9),
       'new subchain should be created'
     )
@@ -750,13 +754,17 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.setHead(block71, false)
     await skeleton.tryTailBackfill()
 
-    assert.equal(skeleton.status.progress.subchains[0]?.head, BigInt(9), 'head should be correct')
     assert.equal(
-      skeleton.status.progress.subchains[0]?.tail,
+      skeleton['status'].progress.subchains[0]?.head,
+      BigInt(9),
+      'head should be correct'
+    )
+    assert.equal(
+      skeleton['status'].progress.subchains[0]?.tail,
       BigInt(7),
       'tail should be backfilled'
     )
-    assert.equal(skeleton.status.linked, true, 'should be linked')
+    assert.equal(skeleton['status'].linked, true, 'should be linked')
     // async wait needed here so the async fillCanonicalChain can fill the chain
     await wait(50)
     assert.equal(chain.blocks.height, BigInt(9), 'all blocks should be in chain')
@@ -778,12 +786,12 @@ describe('[Skeleton] / setHead', async () => {
 
     await skeleton.forkchoiceUpdate(block92)
     assert.equal(
-      skeleton.status.progress.subchains[0]?.head,
+      skeleton['status'].progress.subchains[0]?.head,
       BigInt(9),
       'head number should be same'
     )
     assert.equal(
-      skeleton.status.progress.subchains[0]?.tail,
+      skeleton['status'].progress.subchains[0]?.tail,
       BigInt(9),
       'tail should be truncated to head'
     )
@@ -962,7 +970,7 @@ describe('[Skeleton] / setHead', async () => {
       'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)'
     )
     assert.equal(
-      (skeleton as any).status.progress.subchains[0].tail,
+      skeleton['status'].progress.subchains[0].tail,
       BigInt(1),
       `Subchain should have been backstepped to 1`
     )
