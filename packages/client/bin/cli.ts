@@ -1162,8 +1162,7 @@ async function run() {
     genesisStateRoot: customGenesisStateRoot,
   })
     .then((client) => {
-      //@ts-ignore
-      const servers: (typeof jayson.Server | http.Server)[] =
+      const servers: (RPCServer | http.Server)[] =
         args.rpc === true || args.rpcEngine === true || args.ws === true
           ? startRPCServers(client, args as RPCArgs)
           : []
