@@ -15,7 +15,6 @@ COPY --from=build /usr/app .
 
 # Sanity check
 RUN node /usr/app/packages/client/dist/esm/bin/cli.js --help
-#RUN node /usr/app/node_modules/.bin/cjs/ethereumjs --help
 
 
 # NodeJS applications have a default memory limit of 2.5GB.

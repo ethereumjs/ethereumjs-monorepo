@@ -487,23 +487,17 @@ function initDBs(config: Config): {
 } {
   // Chain DB
   const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
-  mkdirSync(chainDataDir, {
-    recursive: true,
-  })
+  mkdirSync(chainDataDir)
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
-  mkdirSync(stateDataDir, {
-    recursive: true,
-  })
+  mkdirSync(stateDataDir)
   const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
-  mkdirSync(metaDataDir, {
-    recursive: true,
-  })
+  mkdirSync(metaDataDir)
   const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
@@ -1016,9 +1010,7 @@ async function run() {
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
   const networkDir = `${datadir}/${common.chainName()}`
   const configDirectory = `${networkDir}/config`
-  mkdirSync(configDirectory, {
-    recursive: true,
-  })
+  mkdirSync(configDirectory)
   const key = await Config.getClientKey(datadir, common)
 
   // logFile is either filename or boolean true or false to enable (with default) or disable

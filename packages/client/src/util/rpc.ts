@@ -224,7 +224,6 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): HttpServer 
     if (typeof rpcCors === 'string') app.use(cors({ origin: rpcCors }))
     httpServer = createServer(app)
   }
-  //@ts-ignore
   const wss = server.websocket({ noServer: true })
 
   httpServer.on('upgrade', (req, socket, head) => {
