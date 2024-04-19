@@ -72,7 +72,7 @@ interface EVMRunOpts {
   /**
    * Addresses to selfdestruct. Defaults to the empty set.
    */
-  selfdestruct?: Set<string>
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
@@ -105,7 +105,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
   /**
    * Created addresses in current context. Used in EIP 6780
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
   /**
    * Skip balance checks if true. If caller balance is less than message value,
    * sets balance to message value to ensure execution doesn't fail.
@@ -150,7 +150,7 @@ export interface EVMInterface {
     putAccount(address: Address, account: Account): Promise<void>
     deleteAccount(address: Address): Promise<void>
     accessList?: Map<string, Set<string>>
-    preimages?: Map<string, Uint8Array>
+    preimages?: Map<PrefixedHexString, Uint8Array>
     addAlwaysWarmAddress(address: string, addToAccessList?: boolean): void
     addAlwaysWarmSlot(address: string, slot: string, addToAccessList?: boolean): void
     startReportingAccessList(): void
@@ -315,11 +315,11 @@ export interface ExecResult {
   /**
    * A set of accounts to selfdestruct
    */
-  selfdestruct?: Set<string>
+  selfdestruct?: Set<PrefixedHexString>
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
-  createdAddresses?: Set<string>
+  createdAddresses?: Set<PrefixedHexString>
   /**
    * The gas refund counter
    */

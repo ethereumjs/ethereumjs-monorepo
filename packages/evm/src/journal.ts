@@ -12,12 +12,11 @@ import debugDefault from 'debug'
 import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Common, EVMStateManagerInterface } from '@ethereumjs/common'
-import type { Account } from '@ethereumjs/util'
+import type { Account, PrefixedHexString } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 const { debug: createDebugLogger } = debugDefault
 
 type AddressString = string
-type HashString = string
 type SlotString = string
 type WarmSlots = Set<SlotString>
 
@@ -48,7 +47,7 @@ export class Journal {
   private journalHeight: JournalHeight
 
   public accessList?: Map<AddressString, Set<SlotString>>
-  public preimages?: Map<HashString, Uint8Array>
+  public preimages?: Map<PrefixedHexString, Uint8Array>
 
   constructor(stateManager: EVMStateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
