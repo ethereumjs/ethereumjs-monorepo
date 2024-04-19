@@ -106,7 +106,7 @@ const args: ClientOpts = yargs
   .option('verkleGenesisStateRoot', {
     describe: 'State root of the verkle genesis genesis (experimental)',
     string: true,
-    coerce: (customGenesisStateRoot: string) => hexToBytes(customGenesisStateRoot),
+    coerce: (customGenesisStateRoot: PrefixedHexString) => hexToBytes(customGenesisStateRoot),
   })
   .option('gethGenesis', {
     describe: 'Import a geth genesis file for running a custom network',
@@ -801,7 +801,7 @@ async function inputAccounts() {
       }
     } else {
       const acc = readFileSync(path.resolve(args.unlock!), 'utf-8').replace(/(\r\n|\n|\r)/gm, '')
-      const privKey = hexToBytes('0x' + acc) // See docs: acc has to be non-zero prefixed in the file
+      const privKey = hexToBytes(`0x${acc}`) // See docs: acc has to be non-zero prefixed in the file
       const derivedAddress = Address.fromPrivateKey(privKey)
       accounts.push([derivedAddress, privKey])
     }
