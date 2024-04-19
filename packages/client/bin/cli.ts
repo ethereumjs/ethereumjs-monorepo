@@ -31,7 +31,6 @@ import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
-import * as jayson from 'jayson/promise/index.js'
 import { loadKZG } from 'kzg-wasm'
 import { Level } from 'level'
 import { homedir } from 'os'
@@ -60,7 +59,7 @@ import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
-const { Server: RPCServer } = jayson
+import type { Server as RPCServer } from 'jayson/promise/index.js'
 
 type Account = [address: Address, privateKey: Uint8Array]
 
@@ -858,7 +857,7 @@ const stopClient = async (
   config: Config,
   clientStartPromise: Promise<{
     client: EthereumClient
-    servers: (typeof RPCServer | http.Server)[]
+    servers: (RPCServer | http.Server)[]
   } | null>
 ) => {
   config.logger.info('Caught interrupt signal. Obtaining client handle for clean shutdown...')
@@ -876,8 +875,8 @@ const stopClient = async (
     config.logger.info('Shutting down the client and the servers...')
     const { client, servers } = clientHandle
     for (const s of servers) {
-      //@ts-ignore
-      s instanceof RPCServer ? (s as typeof RPCServer).http().close() : (s as http.Server).close()
+      // @ts-expect-error jayson.Server type doesn't play well with ESM for some reason
+      s['http'] !== undefined ? (s as RPCServer).http().close() : (s as http.Server).close()
     }
     await client.stop()
     config.logger.info('Exiting.')
@@ -1164,7 +1163,7 @@ async function run() {
   })
     .then((client) => {
       //@ts-ignore
-      const servers: (typeof RPCServer | http.Server)[] =
+      const servers: (typeof jayson.Server | http.Server)[] =
         args.rpc === true || args.rpcEngine === true || args.ws === true
           ? startRPCServers(client, args as RPCArgs)
           : []

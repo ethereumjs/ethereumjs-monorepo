@@ -12,7 +12,7 @@ import {
 
 import type { EthereumClient } from '../src/client.js'
 import type { Config } from '../src/config.js'
-import type { Server as RPCServer } from 'jayson/promise/index.js'
+import type jayson from 'jayson/promise/index.js'
 
 export type RPCArgs = {
   rpc: boolean
@@ -74,7 +74,7 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
  */
 export function startRPCServers(client: EthereumClient, args: RPCArgs) {
   const { config } = client
-  const servers: RPCServer[] = []
+  const servers: jayson.Server[] = []
   const {
     rpc,
     rpcAddr,
@@ -114,7 +114,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
       rpcDebugVerbose,
       rpcDebug,
       logger,
-    }) //@ts-ignore
+    })
     servers.push(server)
 
     if (rpc) {

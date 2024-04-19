@@ -1,9 +1,9 @@
-import * as bodyParser from 'body-parser'
+import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
 import { createServer } from 'http'
-import * as jayson from 'jayson/promise/index.js'
-import * as jwt from 'jwt-simple'
+import jayson from 'jayson/promise/index.js'
+import jwt from 'jwt-simple'
 import { inspect } from 'util'
 
 import type { Logger } from '../logging.js'
@@ -13,7 +13,6 @@ import type { HttpServer } from 'jayson/promise'
 import type { TAlgorithm } from 'jwt-simple'
 const { json: jsonParser } = bodyParser
 const { decode } = jwt
-const { Server: RPCServer } = jayson
 
 const algorithm: TAlgorithm = 'HS256'
 
@@ -161,7 +160,7 @@ export function createRPCServer(
     }
   }
 
-  const server = new RPCServer(methods)
+  const server = new jayson.Server(methods)
   server.on('request', onRequest)
   server.on('response', onBatchResponse)
   const namespaces = [...new Set(Object.keys(methods).map((m) => m.split('_')[0]))].join(',')

@@ -77,7 +77,7 @@ describe('PoW client test', async () => {
     assert.ok(started, 'client started successfully')
   }, 60000)
   const message: string = await new Promise((resolve) => {
-    client.config.logger.on('data', (data) => {
+    client.config.logger.on('data', (data: any) => {
       if (data.message.includes('Miner: Found PoW solution') === true) {
         resolve(data.message)
       }
@@ -88,6 +88,6 @@ describe('PoW client test', async () => {
   })
   await client.stop()
   it('should stop client', () => {
-    assert.ok(!client.started, 'client stopped successfully')
+    assert.ok(client.started === false, 'client stopped successfully')
   })
 })
