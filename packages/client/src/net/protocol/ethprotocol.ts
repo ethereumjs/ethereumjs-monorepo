@@ -225,9 +225,12 @@ export class EthProtocol extends Protocol {
       decode: (
         params: Uint8Array[] | [types: PrefixedHexString, sizes: number[], hashes: Uint8Array[]]
       ) => {
-        return isNestedUint8Array(params) === true
-          ? params
-          : [hexToBytes(params[0]), params[1].map((size) => BigInt(size)), params[2]]
+        if (isNestedUint8Array(params) === true) {
+          return params
+        } else {
+          const [types, sizes, hashes] = params as [PrefixedHexString, number[], Uint8Array[]]
+          return [hexToBytes(types), sizes.map((size) => BigInt(size)), hashes]
+        }
       },
     },
     {
