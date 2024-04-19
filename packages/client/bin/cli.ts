@@ -29,8 +29,7 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak'
 import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
-import { existsSync, writeFileSync } from 'fs'
-import * as fsExtra from 'fs-extra'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import * as http from 'http'
 import * as jayson from 'jayson/promise/index.js'
 import { loadKZG } from 'kzg-wasm'
@@ -61,7 +60,6 @@ import type { BlockBytes } from '@ethereumjs/block'
 import type { CustomCrypto } from '@ethereumjs/common'
 import type { GenesisState, PrefixedHexString } from '@ethereumjs/util'
 import type { AbstractLevel } from 'abstract-level'
-const { ensureDirSync, readFileSync, removeSync } = fsExtra
 const { Server: RPCServer } = jayson
 
 type Account = [address: Address, privateKey: Uint8Array]
@@ -490,17 +488,23 @@ function initDBs(config: Config): {
 } {
   // Chain DB
   const chainDataDir = config.getDataDirectory(DataDirectory.Chain)
-  ensureDirSync(chainDataDir)
+  mkdirSync(chainDataDir, {
+    recursive: true,
+  })
   const chainDB = new Level<string | Uint8Array, string | Uint8Array>(chainDataDir)
 
   // State DB
   const stateDataDir = config.getDataDirectory(DataDirectory.State)
-  ensureDirSync(stateDataDir)
+  mkdirSync(stateDataDir, {
+    recursive: true,
+  })
   const stateDB = new Level<string | Uint8Array, string | Uint8Array>(stateDataDir)
 
   // Meta DB (receipts, logs, indexes, skeleton chain)
   const metaDataDir = config.getDataDirectory(DataDirectory.Meta)
-  ensureDirSync(metaDataDir)
+  mkdirSync(metaDataDir, {
+    recursive: true,
+  })
   const metaDB = new Level<string | Uint8Array, string | Uint8Array>(metaDataDir)
 
   return { chainDB, stateDB, metaDB }
@@ -966,7 +970,7 @@ async function run() {
     args.discDns = false
     if (accounts.length === 0) {
       // If generating new keys delete old chain data to prevent genesis block mismatch
-      removeSync(`${args.dataDir}/devnet`)
+      rmSync(`${args.dataDir}/devnet`, { recursive: true, force: true })
       // Create new account
       accounts.push(generateAccount())
     }
@@ -1013,7 +1017,9 @@ async function run() {
   const datadir = args.dataDir ?? Config.DATADIR_DEFAULT
   const networkDir = `${datadir}/${common.chainName()}`
   const configDirectory = `${networkDir}/config`
-  ensureDirSync(configDirectory)
+  mkdirSync(configDirectory, {
+    recursive: true,
+  })
   const key = await Config.getClientKey(datadir, common)
 
   // logFile is either filename or boolean true or false to enable (with default) or disable

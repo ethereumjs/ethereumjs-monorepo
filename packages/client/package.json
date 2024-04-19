@@ -79,7 +79,6 @@
     "cors": "^2.8.5",
     "debug": "^4.3.3",
     "ethereum-cryptography": "^2.1.3",
-    "fs-extra": "^11.2.0",
     "it-pipe": "^1.1.0",
     "jayson": "^4.0.0",
     "js-sdsl": "^4.4.0",

@@ -1,6 +1,6 @@
 import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, hexToBytes, parseGethGenesisState } from '@ethereumjs/util'
-import { removeSync } from 'fs-extra'
+import { rmSync } from 'fs'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/index.js'
@@ -11,7 +11,7 @@ const minerAddress = Address.fromPrivateKey(pk)
 
 async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   if (cleanStart) {
-    removeSync(`datadir/devnet`)
+    rmSync(`datadir/devnet`, { recursive: true, force: true })
   }
   const addr = prefundAddress.toString().slice(2)
   const consensusConfig = { ethash: true }
