@@ -270,7 +270,7 @@ export type LegacyTxData = {
   /**
    * This will contain the data of the message or the init of a contract.
    */
-  data?: BytesLike
+  data?: BytesLike | ''
 
   /**
    * EC recovery ID.

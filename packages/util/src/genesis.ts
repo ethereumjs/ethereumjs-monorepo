@@ -37,7 +37,7 @@ export type AccountState = [
  * ```
  */
 export interface GenesisState {
-  [key: PrefixedHexString]: PrefixedHexString | AccountState
+  [key: string]: PrefixedHexString | AccountState
 }
 
 /**
