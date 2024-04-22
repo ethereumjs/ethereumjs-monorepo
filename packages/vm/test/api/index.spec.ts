@@ -12,6 +12,7 @@ import * as testnetMerge from './testdata/testnetMerge.json'
 import { setupVM } from './utils'
 
 import type { VMOpts } from '../../src'
+import type { ChainConfig } from '@ethereumjs/common'
 import type { DefaultStateManager } from '@ethereumjs/statemanager'
 
 /**
@@ -140,7 +141,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 
   it('should accept a custom chain config (Common customChains constructor option)', async () => {
-    const customChains = [testnet, testnet2]
+    const customChains = [testnet, testnet2] as ChainConfig[]
     const common = new Common({ chain: 'testnet', hardfork: Hardfork.Berlin, customChains })
 
     const vm = await VM.create({ common })
@@ -150,7 +151,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
 
 describe('VM -> setHardfork, state (deprecated), blockchain', () => {
   it('setHardfork', async () => {
-    const customChains = [testnetMerge]
+    const customChains = [testnetMerge] as ChainConfig[]
     const common = new Common({ chain: 'testnetMerge', hardfork: Hardfork.Istanbul, customChains })
 
     let vm = await VM.create({ common, setHardfork: true })

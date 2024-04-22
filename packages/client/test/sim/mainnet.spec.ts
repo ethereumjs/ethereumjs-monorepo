@@ -12,6 +12,8 @@ import {
   waitForELStart,
 } from './simutils'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 const pkey = hexToBytes('0xae557af4ceefda559c924516cabf029bedc36b68109bf8d6183fe96e04121f4e')
 const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
@@ -20,7 +22,7 @@ const network = 'mainnet'
 const eofJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(eofJson, { chain: network })
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString | '', to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 

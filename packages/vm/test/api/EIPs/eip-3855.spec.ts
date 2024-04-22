@@ -42,7 +42,7 @@ describe('EIP 3855 tests', () => {
     const depth = Number(common.param('vm', 'stackLimit'))
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('0x' + '5F'.repeat(depth) + '00'),
+      code: hexToBytes(`0x${'5F'.repeat(depth)}00`),
       gasLimit: BigInt(10000),
     })
 
@@ -61,7 +61,7 @@ describe('EIP 3855 tests', () => {
     const depth = Number(common.param('vm', 'stackLimit')!) + 1
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('0x' + '5F'.repeat(depth)),
+      code: hexToBytes(`0x${'5F'.repeat(depth)}`),
       gasLimit: BigInt(10000),
     })
 
@@ -72,7 +72,7 @@ describe('EIP 3855 tests', () => {
     const vm = await VM.create({ common: commonNoEIP3855 })
 
     const result = await vm.evm.runCode!({
-      code: hexToBytes('0x' + '5F'),
+      code: hexToBytes('0x5F'),
       gasLimit: BigInt(10000),
     })
 

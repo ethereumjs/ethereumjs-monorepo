@@ -17,7 +17,6 @@ import {
   hexToBytes,
   isHexPrefixed,
   setLengthLeft,
-  stripHexPrefix,
   toBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak'
@@ -88,7 +87,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
   if (typeof a === 'string' && isHexPrefixed(a)) {
     a = a.slice(2)
     if (a.length % 2) a = '0' + a
-    a = hexToBytes('0x' + a)
+    a = hexToBytes(`0x${a}`)
   } else if (!isHex) {
     try {
       a = bigIntToBytes(BigInt(a))
@@ -97,7 +96,7 @@ export function format(a: any, toZero: boolean = false, isHex: boolean = false):
     }
   } else {
     if (a.length % 2) a = '0' + a
-    a = hexToBytes('0x' + a)
+    a = hexToBytes(`0x${a}`)
   }
 
   if (toZero && bytesToHex(a) === '0x') {
@@ -146,7 +145,7 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(hexToBytes(stripHexPrefix(key))))
+      const hash = bytesToHex(keccak256(hexToBytes(isHexPrefixed(key) ? key : `0x${key}`)))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -215,8 +214,9 @@ export function verifyAccountPostConditions(
 
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
-      hashedStorage[bytesToHex(keccak256(setLengthLeft(hexToBytes(key.slice(2)), 32)))] =
-        acctData.storage[key]
+      hashedStorage[
+        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexPrefixed(key) ? key : `0x${key}`), 32)))
+      ] = acctData.storage[key]
     }
 
     state.root(account.storageRoot)

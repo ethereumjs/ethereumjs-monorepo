@@ -4,6 +4,8 @@ import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src/index.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 type Situation = {
   pre: string
   post: string
@@ -60,7 +62,7 @@ describe('should test mcopy', () => {
   for (const situation of situations) {
     it('should produce correct output', async () => {
       // create bytecode
-      let bytecode = '0x'
+      let bytecode: PrefixedHexString = '0x'
       // prepare the memory
       for (let i = 0; i < situation.pre.length / 2; i++) {
         const start = i * 2
@@ -97,7 +99,7 @@ describe('should test mcopy', () => {
       })
 
       await evm.runCall({
-        data: hexToBytes(bytecode),
+        data: hexToBytes(bytecode as PrefixedHexString),
         gasLimit: BigInt(0xffffff),
       })
     })

@@ -39,8 +39,8 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-const coinbase = new Address(hexToBytes('0x' + '11'.repeat(20)))
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const coinbase = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = new Address(privateToAddress(pkey))
 
 /**
@@ -168,7 +168,7 @@ describe('EIP1559 tests', () => {
   })
 
   it('gasPrice uses the effective gas price', async () => {
-    const contractAddress = new Address(hexToBytes('0x' + '20'.repeat(20)))
+    const contractAddress = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
     const tx = new FeeMarketEIP1559Transaction(
       {
         maxFeePerGas: GWEI * BigInt(5),
