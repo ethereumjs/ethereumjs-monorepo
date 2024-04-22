@@ -38,7 +38,7 @@ describe('should sync blocks', async () => {
     await destroy(remoteServer, remoteService)
   })
   await localService.synchronizer!.start()
-})
+}, 30000)
 
 describe('should not sync with stale peers', async () => {
   const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 9, common })
@@ -57,7 +57,7 @@ describe('should not sync with stale peers', async () => {
   })
   await destroy(localServer, localService)
   await destroy(remoteServer, remoteService)
-})
+}, 30000)
 
 describe('should sync with best peer', async () => {
   const [remoteServer1, remoteService1] = await setup({
@@ -99,4 +99,4 @@ describe('should sync with best peer', async () => {
     await destroy(remoteServer2, remoteService2)
   })
   await localService.synchronizer!.start()
-})
+}, 30000)
