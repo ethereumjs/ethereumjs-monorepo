@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713788844708,
+  "lastUpdate": 1713790112623,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "17355484+acolytec3@users.noreply.github.com",
-            "name": "acolytec3",
-            "username": "acolytec3"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "5e3cfdda4bf714ddb0a11ca2dc0383c265512f25",
-          "message": "Update rustbn-wasm usage  (#3304)\n\n* Update rustbn-wasm usage everywhere\r\n\r\n* Update package lock\r\n\r\n* use EVM.create\r\n\r\n* Update examples\r\n\r\n* Address feedback\r\n\r\n* Update rustbn-wasm commit hash\r\n\r\n* Remove console log\r\n\r\n* fix test\r\n\r\n* update rustbn again\r\n\r\n* update rustbn\r\n\r\n* Add bn128 to vm test runner init\r\n\r\n* Update to latest rustbn-wasm\r\n\r\n* Update rustbn-wasm to published v0.4.0 version\r\n\r\n* Rebuild package-lock.json\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
-          "timestamp": "2024-03-08T10:00:56+01:00",
-          "tree_id": "f6b9ab47990530f7b23869d265f428894774877c",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/5e3cfdda4bf714ddb0a11ca2dc0383c265512f25"
-        },
-        "date": 1709888759339,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 43487,
-            "range": "±1.94%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 41127,
-            "range": "±3.35%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 41535,
-            "range": "±1.48%",
-            "unit": "ops/sec",
-            "extra": "89 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 40415,
-            "range": "±1.69%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 36024,
-            "range": "±5.96%",
-            "unit": "ops/sec",
-            "extra": "77 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±1.80%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Holger.Drewes@gmail.com",
+            "name": "Holger Drewes",
+            "username": "holgerd77"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "46d09ca7677e51e948ec3a80c123bfff8a541202",
+          "message": "Client: New Mechanism to Keep Peer Latest Block Updated (#3354)\n\n* Client -> Peer: add lastEthStatusUpdate property to Peer, set initially on protocol binding, small local refactor\r\n\r\n* Redo handshake in client peer pool periodically, add force option to sendStatus for devp2p protocols\r\n\r\n* Some basic refinement of peer pool periodic request logic (refactor preparation)\r\n\r\n* Client: consolidate latest() method in base Synchronizer class\r\n\r\n* Client: add preparatory updatedBestHeader to Peer, refactor latest() to move from Sync -> Peer\r\n\r\n* Client: add potential best header num differentiated logic to Peer, latest() call on peers in peer pool\r\n\r\n* Client: add Fetcher hack to call peer.latest()\r\n\r\n* Various cleanups\r\n\r\n* Client: Fix lightsync.spec.ts tests\r\n\r\n* Some clean-ups\r\n\r\n* Client: Fix beaconsync.spec.ts tests\r\n\r\n* Client: Fix fullsync.spec.tst tests\r\n\r\n* Client: Fix snapsync.spec.ts tests\r\n\r\n* Client: Fix fetcher tests\r\n\r\n* Client: Fix eth syncing.spec.ts tests\r\n\r\n* Client: Fix integration tests\r\n\r\n* Client: Backup lightsync integration tests (lightsync not supported anymore)\r\n\r\n* Lightsync tests deprecation note\r\n\r\n* Make lightsync tests run (but fail)\r\n\r\n* Client: Removed doubled lightsync integration test file\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>\r\nCo-authored-by: Scorbajio <indigophi@protonmail.com>",
+          "timestamp": "2024-04-22T14:46:01+02:00",
+          "tree_id": "5834b8dd2130f800fe6dc62764a5f498ea3abda4",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/46d09ca7677e51e948ec3a80c123bfff8a541202"
+        },
+        "date": 1713790111646,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 42830,
+            "range": "±2.06%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 40450,
+            "range": "±2.51%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 41152,
+            "range": "±1.49%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 40123,
+            "range": "±1.81%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 36208,
+            "range": "±5.72%",
+            "unit": "ops/sec",
+            "extra": "82 samples"
           }
         ]
       }
