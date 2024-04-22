@@ -7,6 +7,8 @@ import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
 import * as testnet3 from './data/testnet3.json'
 
+import type { HardforkTransitionConfig } from '../src/index.js'
+
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {
     const c = new Common({ chain: testnet, hardfork: Hardfork.Byzantium })
@@ -219,8 +221,7 @@ describe('custom chain setup with hardforks with undefined/null block numbers', 
     ]
 
     assert.throws(
-      //@ts-expect-error -- Disabling type check to verify that error is thrown
-      () => Common.custom({ hardforks: undefinedHardforks }),
+      () => Common.custom({ hardforks: undefinedHardforks as HardforkTransitionConfig[] }),
       undefined,
       undefined,
       'throws when a hardfork with an undefined block number is passed'

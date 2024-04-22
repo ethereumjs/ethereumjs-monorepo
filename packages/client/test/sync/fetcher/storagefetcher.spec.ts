@@ -179,8 +179,6 @@ describe('[StorageFetcher]', async () => {
       JSON.stringify(utf8ToBytes(highestReceivedhash)),
       'should set new highest known hash'
     )
-
-    // @ts-ignore
     ;(job.task.storageRequests[0] as any).first = BigInt(3)
     ;(job.task.storageRequests[0] as any).count = BigInt(4)
     const result = (await fetcher.request(job as any)) as any

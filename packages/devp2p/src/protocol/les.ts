@@ -49,11 +49,8 @@ export class LES extends Protocol {
         this.debug(
           this.getMsgPrefix(code),
           `${`Received ${this.getMsgPrefix(code)} message from ${
-            (<any>this._peer)._socket.remoteAddress
-          }:${
-            // @ts-ignore
-            this._peer._socket.remotePort
-          }`}: ${logData}`
+            this._peer['_socket'].remoteAddress
+          }:${this._peer['_socket'].remotePort}`}: ${logData}`
         )
       }
     }
@@ -75,10 +72,8 @@ export class LES extends Protocol {
           this.debug(
             this.getMsgPrefix(code),
             `${`Received ${this.getMsgPrefix(code)} message from ${
-              // @ts-ignore
-              this._peer._socket.remoteAddress
-              // @ts-ignore
-            }:${this._peer._socket.remotePort}`}: ${this._getStatusString(this._peerStatus)}`
+              this._peer['_socket'].remoteAddress
+            }:${this._peer['_socket'].remotePort}`}: ${this._getStatusString(this._peerStatus)}`
           )
         }
         this._handleStatus()
@@ -201,10 +196,8 @@ export class LES extends Protocol {
     if (this.DEBUG) {
       this.debug(
         'STATUS',
-        // @ts-ignore
-        `Send STATUS message to ${this._peer._socket.remoteAddress}:${
-          // @ts-ignore
-          this._peer._socket.remotePort
+        `Send STATUS message to ${this._peer['_socket'].remoteAddress}:${
+          this._peer['_socket'].remotePort
         } (les${this._version}): ${this._getStatusString(this._status)}`
       )
     }
@@ -212,8 +205,7 @@ export class LES extends Protocol {
     let payload = RLP.encode(statusList)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    // @ts-ignore
-    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
+    if (this._peer['_hello'] !== null && this._peer['_hello'].protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
@@ -230,10 +222,8 @@ export class LES extends Protocol {
     if (this.DEBUG) {
       this.debug(
         this.getMsgPrefix(code),
-        // @ts-ignore
-        `Send ${this.getMsgPrefix(code)} message to ${this._peer._socket.remoteAddress}:${
-          // @ts-ignore
-          this._peer._socket.remotePort
+        `Send ${this.getMsgPrefix(code)} message to ${this._peer['_socket'].remoteAddress}:${
+          this._peer['_socket'].remotePort
         }: ${formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)}`
       )
     }
@@ -278,8 +268,7 @@ export class LES extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    // @ts-ignore
-    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
+    if (this._peer['_hello'] !== null && this._peer['_hello'].protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
