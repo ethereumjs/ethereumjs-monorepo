@@ -64,11 +64,9 @@ export class ETH extends Protocol {
 
     if (code !== ETH.MESSAGE_CODES.STATUS && this.DEBUG) {
       const debugMsg = this.DEBUG
-        ? // @ts-ignore
-          `Received ${this.getMsgPrefix(code)} message from ${this._peer._socket.remoteAddress}:${
-            // @ts-ignore
-            this._peer._socket.remotePort
-          }`
+        ? `Received ${this.getMsgPrefix(code)} message from ${
+            this._peer['_socket'].remoteAddress
+          }:${this._peer['_socket'].remotePort}`
         : undefined
       const logData = formatLogData(bytesToHex(data), this._verbose)
       this.debug(this.getMsgPrefix(code), `${debugMsg}: ${logData}`)
@@ -89,12 +87,8 @@ export class ETH extends Protocol {
         if (this.DEBUG) {
           const debugMsg = this.DEBUG
             ? `Received ${this.getMsgPrefix(code)} message from ${
-                // @ts-ignore
-                this._peer._socket.remoteAddress
-              }:${
-                // @ts-ignore
-                this._peer._socket.remotePort
-              }`
+                this._peer['_socket'].remoteAddress
+              }:${this._peer['_socket'].remotePort}`
             : undefined
           this.debug(this.getMsgPrefix(code), `${debugMsg}: ${peerStatusMsg}`)
         }
@@ -305,10 +299,8 @@ export class ETH extends Protocol {
       this.debug(
         'STATUS',
 
-        // @ts-ignore
-        `Send STATUS message to ${this._peer._socket.remoteAddress}:${
-          // @ts-ignore
-          this._peer._socket.remotePort
+        `Send STATUS message to ${this._peer['_socket'].remoteAddress}:${
+          this._peer['_socket'].remotePort
         } (eth${this._version}): ${this._getStatusString(this._status)}`
       )
     }
@@ -316,8 +308,7 @@ export class ETH extends Protocol {
     let payload = RLP.encode(this._status)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    // @ts-ignore
-    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
+    if (this._peer['_hello'] !== null && this._peer['_hello'].protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
@@ -329,8 +320,7 @@ export class ETH extends Protocol {
     if (this.DEBUG) {
       const logData = formatLogData(bytesToHex(RLP.encode(payload)), this._verbose)
       const messageName = this.getMsgPrefix(code)
-      // @ts-ignore
-      const debugMsg = `Send ${messageName} message to ${this._peer._socket.remoteAddress}:${this._peer._socket.remotePort}: ${logData}`
+      const debugMsg = `Send ${messageName} message to ${this._peer['_socket'].remoteAddress}:${this._peer['_socket'].remotePort}: ${logData}`
 
       this.debug(messageName, debugMsg)
     }
@@ -372,8 +362,7 @@ export class ETH extends Protocol {
     payload = RLP.encode(payload)
 
     // Use snappy compression if peer supports DevP2P >=v5
-    // @ts-ignore
-    if (this._peer._hello !== null && this._peer._hello.protocolVersion >= 5) {
+    if (this._peer['_hello'] !== null && this._peer['_hello'].protocolVersion >= 5) {
       payload = snappy.compress(payload)
     }
 
