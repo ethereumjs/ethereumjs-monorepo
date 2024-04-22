@@ -179,6 +179,7 @@ describe('[BlockFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -227,6 +228,7 @@ describe('[BlockFetcher]', async () => {
       },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
     const resp = await fetcher.request(job as any)

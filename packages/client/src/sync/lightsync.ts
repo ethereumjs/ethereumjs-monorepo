@@ -85,23 +85,12 @@ export class LightSynchronizer extends Synchronizer {
   }
 
   /**
-   * Get latest header of peer
-   */
-  async latest(peer: Peer) {
-    const result = await peer.les?.getBlockHeaders({
-      block: peer.les!.status.headHash,
-      max: 1,
-    })
-    return result?.headers[0]
-  }
-
-  /**
    * Called from `sync()` to sync headers and state from peer starting from current height.
    * @param peer remote peer to sync with
    * @returns a boolean if the setup was successful
    */
   async syncWithPeer(peer?: Peer): Promise<boolean> {
-    const latest = peer ? await this.latest(peer) : undefined
+    const latest = peer ? await peer.latest() : undefined
     if (!latest) return false
 
     const height = peer!.les!.status.headNum

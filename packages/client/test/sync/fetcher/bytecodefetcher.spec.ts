@@ -140,6 +140,7 @@ describe('[ByteCodeFetcher]', async () => {
       snap: { getByteCodes: mockedGetByteCodes },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)

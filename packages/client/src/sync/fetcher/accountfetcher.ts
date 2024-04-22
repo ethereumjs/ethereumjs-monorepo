@@ -372,6 +372,11 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     job: Job<JobTask, AccountData[], AccountData>
   ): Promise<AccountDataResponse | undefined> {
     const { peer } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
     const origin = this.getOrigin(job)
     const limit = this.getLimit(job)
 

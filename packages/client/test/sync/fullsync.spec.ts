@@ -1,4 +1,5 @@
 import { Block } from '@ethereumjs/block'
+import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain'
@@ -74,8 +75,14 @@ describe('[FullSynchronizer]', async () => {
         }),
         status: { bestHash: 'hash' },
       },
+      latest: async () => {
+        return {
+          number: BigInt(5),
+          hash: () => new Uint8Array(0),
+        }
+      },
     }
-    const latest = await sync.latest(peer as any)
+    const latest = await peer.latest()
     assert.equal(latest!.number, BigInt(5), 'got height')
     await sync.stop()
     await sync.close()
@@ -128,14 +135,16 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    sync.best = vi.fn().mockResolvedValue('peer')
-    sync.latest = vi.fn((input) => {
-      if (input === ('peer' as any))
+    sync.best = td.func<typeof sync['best']>()
+    td.when(sync.best()).thenResolve({
+      les: { status: { headNum: BigInt(2) } },
+      latest: () => {
         return {
           number: BigInt(2),
           hash: () => new Uint8Array(0),
         }
-    }) as any
+      },
+    } as any)
     let count = 0
     BlockFetcher.prototype.fetch = vi.fn(async () => {
       if (count < 2) {
