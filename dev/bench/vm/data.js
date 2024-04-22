@@ -1,67 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713772392792,
+  "lastUpdate": 1713775150535,
   "repoUrl": "https://github.com/ethereumjs/ethereumjs-monorepo",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "jochembrouwer96@gmail.com",
-            "name": "Jochem Brouwer",
-            "username": "jochem-brouwer"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d8bd18b992bb80f4fe964bb595f637d14b5efe2a",
-          "message": "update ethereum/tests to 13.1 (#3302)\n\n* update ethereum/tests to 13.1\r\n\r\n* vm: fix config\r\n\r\n* update ci test runner for vm\r\n\r\n* Update to fixed kzg wasm ver\r\n\r\n* vm/test: add excessBlobGas to state runner\r\n\r\n* Update kzg-wasm\r\n\r\n* update package-lock\r\n\r\n---------\r\n\r\nCo-authored-by: acolytec3 <17355484+acolytec3@users.noreply.github.com>",
-          "timestamp": "2024-03-06T18:53:12+01:00",
-          "tree_id": "656da557d39ea87b061ce17c33bcc15b3f67ff6a",
-          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/d8bd18b992bb80f4fe964bb595f637d14b5efe2a"
-        },
-        "date": 1709747774421,
-        "tool": "benchmarkjs",
-        "benches": [
-          {
-            "name": "Block 9422905",
-            "value": 41007,
-            "range": "±2.30%",
-            "unit": "ops/sec",
-            "extra": "85 samples"
-          },
-          {
-            "name": "Block 9422906",
-            "value": 38405,
-            "range": "±3.11%",
-            "unit": "ops/sec",
-            "extra": "87 samples"
-          },
-          {
-            "name": "Block 9422907",
-            "value": 39584,
-            "range": "±1.63%",
-            "unit": "ops/sec",
-            "extra": "90 samples"
-          },
-          {
-            "name": "Block 9422908",
-            "value": 38605,
-            "range": "±1.65%",
-            "unit": "ops/sec",
-            "extra": "86 samples"
-          },
-          {
-            "name": "Block 9422910",
-            "value": 35334,
-            "range": "±4.80%",
-            "unit": "ops/sec",
-            "extra": "83 samples"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1770,6 +1711,65 @@ window.BENCHMARK_DATA = {
             "range": "±5.88%",
             "unit": "ops/sec",
             "extra": "79 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "contact@rockwaterweb.com",
+            "name": "Gabriel Rocheleau",
+            "username": "gabrocheleau"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f3cbb2e015da98e9548010a0ac3049674578e8bd",
+          "message": "monorepo: PrefixedHexString related type fixes (#3357)\n\n* vm: fix eip3540 tests\r\n\r\n* util: improve bytes util typing and natspec\r\n\r\n* vm: fix some tests\r\n\r\n* monorepo: improve and fix some msc types\r\n\r\n* client: fix type issues in eth rpc module\r\n\r\n* block: remove unnecessary comment\r\n\r\n* client: fixes related to PrefixedHexString type\r\n\r\n* evm: PrefixedHexString adjustments\r\n\r\n* vm: preimages type\r\n\r\n* util: isNestedUint8Array typeguard\r\n\r\n* client: fix type\r\n\r\n* util: fix type issues in bytes\r\n\r\n* monorepo: more type improvements\r\n\r\n* monorepo: more type fixes\r\n\r\n* monorepo: address outstanding type issues\r\n\r\n---------\r\n\r\nCo-authored-by: Holger Drewes <Holger.Drewes@gmail.com>",
+          "timestamp": "2024-04-22T10:36:32+02:00",
+          "tree_id": "6134fb4be0e63745335f5cef446190256ae2fdcf",
+          "url": "https://github.com/ethereumjs/ethereumjs-monorepo/commit/f3cbb2e015da98e9548010a0ac3049674578e8bd"
+        },
+        "date": 1713775149328,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "Block 9422905",
+            "value": 41778,
+            "range": "±2.70%",
+            "unit": "ops/sec",
+            "extra": "84 samples"
+          },
+          {
+            "name": "Block 9422906",
+            "value": 41159,
+            "range": "±1.35%",
+            "unit": "ops/sec",
+            "extra": "90 samples"
+          },
+          {
+            "name": "Block 9422907",
+            "value": 40814,
+            "range": "±1.50%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "Block 9422908",
+            "value": 36935,
+            "range": "±6.09%",
+            "unit": "ops/sec",
+            "extra": "80 samples"
+          },
+          {
+            "name": "Block 9422910",
+            "value": 38955,
+            "range": "±1.73%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
