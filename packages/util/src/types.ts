@@ -36,6 +36,22 @@ export interface TransformabletoBytes {
 
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 
+export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
+  if (!Array.isArray(value)) {
+    return false
+  }
+  for (const item of value) {
+    if (Array.isArray(item)) {
+      if (!isNestedUint8Array(item)) {
+        return false
+      }
+    } else if (!(item instanceof Uint8Array)) {
+      return false
+    }
+  }
+  return true
+}
+
 /**
  * Type output options
  */

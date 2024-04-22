@@ -74,5 +74,5 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
  * @param input hexadecimal string or Uint8Array
  */
 export function parseKey(input: string | Uint8Array): Uint8Array {
-  return input instanceof Uint8Array ? input : hexToBytes('0x' + input)
+  return input instanceof Uint8Array ? input : hexToBytes(`0x${input}`)
 }

@@ -800,7 +800,7 @@ export class DefaultStateManager implements EVMStateManagerInterface {
    */
   private async addStorageProof(
     storageProof: StorageProof[],
-    storageHash: string,
+    storageHash: PrefixedHexString,
     address: Address,
     safe: boolean = false
   ) {

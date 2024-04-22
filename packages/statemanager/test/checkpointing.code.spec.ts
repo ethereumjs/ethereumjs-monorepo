@@ -15,7 +15,7 @@ const codeEval = async (
 }
 
 describe('StateManager -> Code Checkpointing', () => {
-  const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
+  const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
   const account = new Account()
 
   const value = hexToBytes('0x01')

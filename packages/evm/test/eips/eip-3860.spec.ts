@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { EVM } from '../../src/index.js'
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = new Address(privateToAddress(pkey))
 
 describe('EIP 3860 tests', () => {
@@ -158,7 +158,7 @@ describe('EIP 3860 tests', () => {
       // It tries to deploy a contract too large, where the code is all zeros
       // (since memory which is not allocated/resized to yet is always defaulted to 0)
       data: concatBytes(
-        hexToBytes('0x' + '00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)),
+        hexToBytes(`0x${'00'.repeat(Number(common.param('vm', 'maxInitCodeSize')) + 1)}`),
         bytes
       ),
     }
@@ -199,7 +199,7 @@ describe('EIP 3860 tests', () => {
       // (the initcode of this contract is just zeros, so STOP opcode
       // It stores the topmost stack item of this CREATE(2) at slot 0
       // This is either the contract address if it was succesful, or 0 in case of error
-      const factoryCode = hexToBytes('0x600060003560006000' + code + '600055')
+      const factoryCode = hexToBytes(`0x600060003560006000${code}600055`)
 
       await evm.stateManager.putContractCode(contractFactory, factoryCode)
       await evmDisabled.stateManager.putContractCode(contractFactory, factoryCode)
@@ -208,13 +208,13 @@ describe('EIP 3860 tests', () => {
         from: caller,
         to: contractFactory,
         gasLimit: BigInt(0xfffffffff),
-        data: hexToBytes('0x' + '00'.repeat(30) + 'C001'),
+        data: hexToBytes(`0x${'00'.repeat(30)}C001`),
       }
 
       const res = await evm.runCall(runCallArgs)
       await evmDisabled.runCall(runCallArgs)
 
-      const key0 = hexToBytes('0x' + '00'.repeat(32))
+      const key0 = hexToBytes(`0x${'00'.repeat(32)}`)
       const storageActive = await evm.stateManager.getContractStorage(contractFactory, key0)
       const storageInactive = await evmDisabled.stateManager.getContractStorage(
         contractFactory,
@@ -236,7 +236,7 @@ describe('EIP 3860 tests', () => {
         from: caller,
         to: contractFactory,
         gasLimit: BigInt(0xfffffffff),
-        data: hexToBytes('0x' + '00'.repeat(30) + 'C000'),
+        data: hexToBytes(`0x${'00'.repeat(30)}C000`),
       }
 
       // Test:

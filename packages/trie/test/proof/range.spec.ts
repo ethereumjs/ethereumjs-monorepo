@@ -141,8 +141,8 @@ describe('simple merkle range proofs generation and verification', () => {
     }
 
     // Special case, two edge proofs for two edge key.
-    const startKey = hexToBytes('0x' + '00'.repeat(32))
-    const endKey = hexToBytes('0x' + 'ff'.repeat(32))
+    const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
+    const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
     assert.equal(await verify(trie, entries, 0, entries.length - 1, startKey, endKey), false)
   })
 
@@ -203,7 +203,7 @@ describe('simple merkle range proofs generation and verification', () => {
     const tinyEntries: [Uint8Array, Uint8Array][] = [[randomBytes(32), randomBytes(20)]]
     await tinyTrie.put(tinyEntries[0][0], tinyEntries[0][1])
 
-    const tinyStartKey = hexToBytes('0x' + '00'.repeat(32))
+    const tinyStartKey = hexToBytes(`0x${'00'.repeat(32)}`)
     assert.equal(await verify(tinyTrie, tinyEntries, 0, 0, tinyStartKey), false)
   })
 
@@ -232,15 +232,15 @@ describe('simple merkle range proofs generation and verification', () => {
         entries,
         0,
         entries.length - 1,
-        hexToBytes('0x' + '00'.repeat(32)),
-        hexToBytes('0x' + 'ff'.repeat(32))
+        hexToBytes(`0x${'00'.repeat(32)}`),
+        hexToBytes(`0x${'ff'.repeat(32)}`)
       ),
       false
     )
   })
 
   it('create a single side range proof and verify it', async () => {
-    const startKey = hexToBytes('0x' + '00'.repeat(32))
+    const startKey = hexToBytes(`0x${'00'.repeat(32)}`)
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -250,7 +250,7 @@ describe('simple merkle range proofs generation and verification', () => {
   })
 
   it('create a revert single side range proof and verify it', async () => {
-    const endKey = hexToBytes('0x' + 'ff'.repeat(32))
+    const endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases = [0, 1, 200, entries.length - 1]
@@ -453,14 +453,14 @@ describe('simple merkle range proofs generation and verification', () => {
 
       if (start === -1) {
         start = 0
-        startKey = hexToBytes('0x' + '00'.repeat(32))
+        startKey = hexToBytes(`0x${'00'.repeat(32)}`)
       } else {
         startKey = entries[start][0]
       }
 
       if (end === -1) {
         end = entries.length - 1
-        endKey = hexToBytes('0x' + 'ff'.repeat(32))
+        endKey = hexToBytes(`0x${'ff'.repeat(32)}`)
       } else {
         endKey = entries[end][0]
       }

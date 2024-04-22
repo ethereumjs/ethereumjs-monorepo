@@ -8,6 +8,7 @@ import {
   bytesToUnprefixedHex,
   hexToBytes,
   intToBytes,
+  isHexPrefixed,
 } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
@@ -284,7 +285,9 @@ export class ETH extends Protocol {
         }
         this._latestBlock = latestBlock
       }
-      const forkHashB = hexToBytes(this._forkHash)
+      const forkHashB = hexToBytes(
+        isHexPrefixed(this._forkHash) ? this._forkHash : `0x${this._forkHash}`
+      )
 
       const nextForkB =
         this._nextForkBlock === BIGINT_0 ? new Uint8Array() : bigIntToBytes(this._nextForkBlock)

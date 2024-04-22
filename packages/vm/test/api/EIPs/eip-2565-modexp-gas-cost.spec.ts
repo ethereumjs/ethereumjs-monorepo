@@ -21,7 +21,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
         gasLimit: BigInt(0xffffffffff),
         to,
         value: BigInt(0),
-        data: hexToBytes('0x' + test.Input),
+        data: hexToBytes(`0x${test.Input}`),
       })
 
       if (result.execResult.executionGasUsed !== BigInt(test.Gas)) {
@@ -36,7 +36,7 @@ describe('EIP-2565 ModExp gas cost tests', () => {
         continue
       }
 
-      if (!equalsBytes(result.execResult.returnValue, hexToBytes('0x' + test.Expected))) {
+      if (!equalsBytes(result.execResult.returnValue, hexToBytes(`0x${test.Expected}`))) {
         assert.fail(
           `[${testName}]: Return value not the expected value (expected: ${
             test.Expected

@@ -224,7 +224,7 @@ describe('[EthProtocol]', () => {
     const eip2929Tx = TransactionFactory.fromTxData({ type: 1 }, { common: config.chainCommon })
     const eip1559Tx = TransactionFactory.fromTxData({ type: 2 }, { common: config.chainCommon })
     const blobTx = TransactionFactory.fromTxData(
-      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes('0x01' + '00'.repeat(31))] },
+      { type: 3, to: Address.zero(), blobVersionedHashes: [hexToBytes(`0x01${'00'.repeat(31)}`)] },
       { common: config.chainCommon }
     )
     const res = p.encode(p.messages.filter((message) => message.name === 'Transactions')[0], [

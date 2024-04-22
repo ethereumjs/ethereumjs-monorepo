@@ -50,7 +50,7 @@ describe('Pruned trie tests', () => {
     const values = ['00', '02', '03', '04', '05']
 
     for (let i = 0; i < keys.length; i++) {
-      await trie.put(hexToBytes('0x' + keys[i]), hexToBytes('0x' + values[i]))
+      await trie.put(hexToBytes(`0x${keys[i]}`), hexToBytes(`0x${values[i]}`))
     }
   })
 

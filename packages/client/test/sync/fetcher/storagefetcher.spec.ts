@@ -361,7 +361,7 @@ describe('[StorageFetcher]', async () => {
 
     // calculate new root with a key all the way to the right of the trie
     const trie = await Trie.createFromProof(_zeroElementProof)
-    await trie.put(hexToBytes('0x' + 'F'.repeat(32)), hexToBytes('0x' + '123'), true)
+    await trie.put(hexToBytes(`0x${'F'.repeat(32)}`), hexToBytes('0x123'), true)
     const newRoot = trie.root()
 
     const fetcher = new StorageFetcher({

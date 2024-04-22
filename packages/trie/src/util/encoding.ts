@@ -162,7 +162,7 @@ export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
  * @returns hex-encoded key
  */
 export const pathToHexKey = (path: string, extension: Nibbles, retType: string): Uint8Array => {
-  const b = hexToBytes('0x' + path)
+  const b = hexToBytes(`0x${path}`)
   const n = byteTypeToNibbleType(b)
   if (retType === 'hex') {
     return nibbleTypeToByteType(n.concat(extension))

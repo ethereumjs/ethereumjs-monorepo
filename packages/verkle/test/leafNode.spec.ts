@@ -17,7 +17,7 @@ describe('verkle node - leaf', () => {
     const node = new LeafNode({
       c1: c1 as unknown as Point,
       c2: c2 as unknown as Point,
-      commitment: commitment as unknown as Point,
+      commitment,
       depth,
       stem,
       values,

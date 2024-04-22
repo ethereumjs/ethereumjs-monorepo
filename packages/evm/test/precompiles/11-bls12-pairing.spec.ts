@@ -820,7 +820,7 @@ describe('Precompiles: BLS12-PAIRING', () => {
 
     for (const testVector of testdata) {
       const result = await BLS12PAIRING({
-        data: hexToBytes('0x' + testVector.Input),
+        data: hexToBytes(`0x${testVector.Input}`),
         gasLimit: BigInt(500000000),
         common,
         _EVM: evm,
@@ -828,7 +828,7 @@ describe('Precompiles: BLS12-PAIRING', () => {
 
       assert.deepEqual(
         result.returnValue,
-        hexToBytes('0x' + testVector.Expected),
+        hexToBytes(`0x${testVector.Expected}`),
         'return value should match testVectorResult'
       )
       assert.equal(result.executionGasUsed, BigInt(testVector.Gas))

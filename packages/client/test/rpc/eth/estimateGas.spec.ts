@@ -10,6 +10,7 @@ import { INVALID_PARAMS } from '../../../src/rpc/error-code'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_estimateGas'
 
@@ -83,7 +84,7 @@ describe(
       const estimateTxData = {
         to: createdAddress!.toString(),
         from: address.toString(),
-        data: `0x${funcHash}`,
+        data: `0x${funcHash}` as PrefixedHexString,
         gasLimit: bigIntToHex(BigInt(53000)),
       }
       const estimateTx = LegacyTransaction.fromTxData(estimateTxData, { freeze: false })

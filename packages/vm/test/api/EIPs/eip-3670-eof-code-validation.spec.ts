@@ -5,11 +5,13 @@ import { Account, Address, hexToBytes, privateToAddress, utf8ToBytes } from '@et
 import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+
+import type { PrefixedHexString } from '@ethereumjs/util'
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt('1000000000')
 const sender = new Address(privateToAddress(pkey))
 
-async function runTx(vm: VM, data: string, nonce: number) {
+async function runTx(vm: VM, data: PrefixedHexString, nonce: number) {
   const tx = FeeMarketEIP1559Transaction.fromTxData({
     data,
     gasLimit: 1000000,
@@ -64,12 +66,10 @@ describe('EIP 3670 tests', () => {
     account!.balance = balance
     await vm.stateManager.putAccount(sender, account!)
 
-    let data = '0x67EF0001010001000060005260086018F3'
-    let res = await runTx(vm, data, 0)
+    let res = await runTx(vm, '0x67EF0001010001000060005260086018F3', 0)
     assert.ok(res.code.length > 0, 'code section with no data section')
 
-    data = '0x6BEF00010100010200010000AA600052600C6014F3'
-    res = await runTx(vm, data, 1)
+    res = await runTx(vm, '0x6BEF00010100010200010000AA600052600C6014F3', 1)
     assert.ok(res.code.length > 0, 'code section with data section')
   })
 
@@ -120,8 +120,8 @@ describe('EIP 3670 tests', () => {
     for (let i = 0; i < codes.length; i++) {
       const calldata = hexToBytes('0xf8a8fd6d')
 
-      const addr = new Address(hexToBytes('0x' + '20'.repeat(20)))
-      const pkey = hexToBytes('0x' + '42'.repeat(32))
+      const addr = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
+      const pkey = hexToBytes(`0x${'42'.repeat(32)}`)
 
       const code = codes[i]
 

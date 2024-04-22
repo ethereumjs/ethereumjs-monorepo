@@ -20,10 +20,10 @@ const storageEval = async (
 }
 
 describe('StateManager -> Storage Checkpointing', () => {
-  const address = new Address(hexToBytes('0x' + '11'.repeat(20)))
+  const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
   const account = new Account()
 
-  const key = hexToBytes('0x' + '01'.repeat(32))
+  const key = hexToBytes(`0x${'01'.repeat(32)}`)
 
   const value = hexToBytes('0x01')
   const root = hexToBytes('0x561a011235f3fe8a4d292eba6d462e09015bbef9f8c3373dd70760bbc86f9a6c')

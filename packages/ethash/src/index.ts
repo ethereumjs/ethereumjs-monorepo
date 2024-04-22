@@ -28,7 +28,7 @@ import {
 } from './util.js'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
-import type { DB, DBObject } from '@ethereumjs/util'
+import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
 
 function xor(a: Uint8Array, b: Uint8Array) {
   const len = Math.max(a.length, b.length)
@@ -301,10 +301,10 @@ export class Ethash {
       })
       if (dbData !== undefined) {
         const data = {
-          cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
+          cache: (dbData.cache as PrefixedHexString[]).map((el) => hexToBytes(el)),
           fullSize: dbData.fullSize,
           cacheSize: dbData.cacheSize,
-          seed: hexToBytes(dbData.seed as string),
+          seed: hexToBytes(dbData.seed as PrefixedHexString),
         }
         return [data.seed, epoc]
       } else {
@@ -319,10 +319,10 @@ export class Ethash {
     })
     if (dbData !== undefined) {
       data = {
-        cache: (dbData.cache as string[]).map((el: string) => hexToBytes(el)),
+        cache: (dbData.cache as PrefixedHexString[]).map((el) => hexToBytes(el)),
         fullSize: dbData.fullSize,
         cacheSize: dbData.cacheSize,
-        seed: hexToBytes(dbData.seed as string),
+        seed: hexToBytes(dbData.seed as PrefixedHexString),
       }
     }
     if (!data) {

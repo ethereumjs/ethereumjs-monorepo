@@ -18,6 +18,8 @@ import { CacheType, StatelessVerkleStateManager } from '../src/index.js'
 import * as testnetVerkleKaustinen from './testdata/testnetVerkleKaustinen.json'
 import * as verkleBlockJSON from './testdata/verkleKaustinenBlock.json'
 
+import type { BlockData } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VerkleCrypto } from '@ethereumjs/verkle'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
@@ -30,9 +32,11 @@ describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
     eips: [4895, 6800],
   })
   const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-    TransactionFactory.fromSerializedData(hexToBytes(tx))
+    TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
   )
-  const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs }, { common })
+  const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
+    common,
+  })
 
   it('initPreState()', async () => {
     const stateManager = await StatelessVerkleStateManager.create({ verkleCrypto })

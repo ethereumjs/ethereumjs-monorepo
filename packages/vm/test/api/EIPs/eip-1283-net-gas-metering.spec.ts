@@ -5,6 +5,8 @@ import { assert, describe, it } from 'vitest'
 import { VM } from '../../../src/vm'
 import { createAccount } from '../utils'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 /**
  * Tests taken from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1283.md
  */
@@ -40,7 +42,7 @@ describe('Constantinople: EIP-1283', () => {
 
       const account = createAccount(BigInt(0), BigInt(0))
       await vm.stateManager.putAccount(addr, account)
-      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code))
+      await vm.stateManager.putContractCode(addr, hexToBytes(testCase.code as PrefixedHexString))
       if (testCase.original !== BigInt(0)) {
         await vm.stateManager.putContractStorage(addr, key, bigIntToBytes(testCase.original))
       }

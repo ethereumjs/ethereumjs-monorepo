@@ -7,7 +7,7 @@ import * as testnet from './data/testnet.json'
 import * as testnet2 from './data/testnet2.json'
 import * as testnet3 from './data/testnet3.json'
 
-import type { HardforkTransitionConfig } from '../src/index.js'
+import type { ChainConfig, HardforkTransitionConfig } from '../src/index.js'
 
 describe('[Common]: Custom chains', () => {
   it('chain -> object: should provide correct access to private network chain parameters', () => {
@@ -100,7 +100,7 @@ describe('[Common]: Custom chains', () => {
 
   it('customChains parameter: initialization exception', () => {
     try {
-      new Common({ chain: testnet, customChains: [testnet] })
+      new Common({ chain: testnet, customChains: [testnet] as ChainConfig[] })
       assert.fail('should throw')
     } catch (e: any) {
       assert.ok(
@@ -116,7 +116,7 @@ describe('[Common]: Custom chains', () => {
     let c = new Common({
       chain: Chain.Mainnet,
       hardfork: Hardfork.Byzantium,
-      customChains: [testnet],
+      customChains: [testnet] as ChainConfig[],
     })
     assert.equal(c.chainName(), 'mainnet', 'customChains, chain set to supported chain')
     assert.equal(c.hardforkBlock()!, BigInt(4370000), 'customChains, chain set to supported chain')
@@ -128,12 +128,12 @@ describe('[Common]: Custom chains', () => {
     c = new Common({
       chain: 'testnet',
       hardfork: Hardfork.Byzantium,
-      customChains: [testnet],
+      customChains: [testnet] as ChainConfig[],
     })
     assert.equal(c.chainName(), 'testnet', 'customChains, chain initialized with custom chain')
     assert.equal(c.hardforkBlock()!, BigInt(4), 'customChains, chain initialized with custom chain')
 
-    const customChains = [testnet, testnet2, testnet3]
+    const customChains = [testnet, testnet2, testnet3] as ChainConfig[]
     c = new Common({
       chain: 'testnet2',
       hardfork: Hardfork.Istanbul,
