@@ -161,7 +161,7 @@ export class EVM implements EVMInterface {
    */
   static async create(createOpts?: EVMOpts) {
     const opts = createOpts ?? ({} as EVMOpts)
-    const bn128 = initializedRustBN ?? (await initRustBN())
+    const bn128 = initializedRustBN ?? ((await initRustBN()) as bn128)
     initializedRustBN = bn128
 
     if (createOpts?.common && createOpts.common.isActivatedEIP(2537)) {

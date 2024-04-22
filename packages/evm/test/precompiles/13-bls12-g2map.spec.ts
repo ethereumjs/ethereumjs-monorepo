@@ -64,7 +64,7 @@ describe('Precompiles: BLS12-FP2-TO-G2', () => {
 
     for (const testVector of testData) {
       const result = await BLS12FP2TOG2({
-        data: hexToBytes('0x' + testVector.Input),
+        data: hexToBytes(`0x${testVector.Input}`),
         gasLimit: BigInt(5000000),
         common,
         _EVM: evm,

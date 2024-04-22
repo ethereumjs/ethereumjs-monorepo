@@ -91,7 +91,7 @@ export abstract class BaseTransaction<T extends TransactionType>
     this.gasLimit = bytesToBigInt(toBytes(gasLimit))
     this.to = toB.length > 0 ? new Address(toB) : undefined
     this.value = bytesToBigInt(toBytes(value))
-    this.data = toBytes(data)
+    this.data = toBytes(data === '' ? '0x' : data)
 
     this.v = vB.length > 0 ? bytesToBigInt(vB) : undefined
     this.r = rB.length > 0 ? bytesToBigInt(rB) : undefined

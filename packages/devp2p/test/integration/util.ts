@@ -84,8 +84,7 @@ export function getTestRLPXs(
   const dpts = getTestDPTs(numRLPXs, basePort)
 
   for (let i = 0; i < numRLPXs; ++i) {
-    // @ts-ignore
-    const rlpx = new RLPx(dpts[i]._privateKey, {
+    const rlpx = new RLPx(dpts[i]['_privateKey'], {
       dpt: dpts[i],
       maxPeers,
       capabilities,

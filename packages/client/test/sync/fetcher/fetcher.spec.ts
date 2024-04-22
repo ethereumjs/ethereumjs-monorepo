@@ -65,7 +65,7 @@ describe('should handle expiration', async () => {
       timeout: 5,
     })
     const job = { index: 0 }
-    const peer = { idle: true }
+    const peer = { idle: true, latest: vi.fn() }
     fetcher.peer = vi.fn().mockReturnValue(() => peer)
     fetcher.request = vi.fn().mockImplementationOnce(async (job, peer) => {
       await new Promise((resolve) => {

@@ -93,7 +93,7 @@ describe('unpadHex', () => {
   })
   it('should throw if input is not hex-prefixed', () => {
     assert.throws(function () {
-      unpadHex('0000000006600')
+      unpadHex('0000000006600' as any)
     })
   })
 })
@@ -254,8 +254,8 @@ describe('toBytes', () => {
   })
 
   it('should fail with non 0x-prefixed hex strings', () => {
-    assert.throws(() => toBytes('11'), '11')
-    assert.throws(() => toBytes(''))
+    assert.throws(() => toBytes('11' as any), '11')
+    assert.throws(() => toBytes('' as any))
     assert.throws(() => toBytes('0xR'), '0xR')
   })
 
@@ -417,7 +417,7 @@ describe('bigIntToHex', () => {
 describe('hexToBytes', () => {
   it('should throw on non-prefixed strings', () => {
     assert.throws(() => {
-      hexToBytes('aabbcc112233')
+      hexToBytes('aabbcc112233' as any)
     })
   })
 

@@ -9,6 +9,8 @@ import blocks from '../../testdata/blocks/beacon.json'
 import genesisJSON from '../../testdata/geth-genesis/post-merge.json'
 import { baseSetup, batchBlocks, getRpcClient, setupChain } from '../helpers.js'
 
+import type { BlockData } from '@ethereumjs/block'
+
 const method = 'engine_forkchoiceUpdatedV1'
 
 ;(BlockHeader as any).prototype._consensusFormatValidation = vi.fn()
@@ -172,7 +174,7 @@ describe(method, () => {
           difficulty: 1,
           extraData: new Uint8Array(97),
         },
-      },
+      } as BlockData,
       { common, skipConsensusFormatValidation: true }
     )
 

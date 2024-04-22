@@ -9,12 +9,17 @@ import { describe, it } from 'vitest'
 import * as verkleBlockJSON from '../../../../statemanager/test/testdata/verkleKaustinenBlock.json'
 import { VM } from '../../../src'
 
+import type { BlockData } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 const customChainParams = { name: 'custom', chainId: 69420, networkId: 678 }
 const common = Common.custom(customChainParams, { hardfork: Hardfork.Cancun, eips: [4895, 6800] })
 const decodedTxs = verkleBlockJSON.transactions.map((tx) =>
-  TransactionFactory.fromSerializedData(hexToBytes(tx))
+  TransactionFactory.fromSerializedData(hexToBytes(tx as PrefixedHexString))
 )
-const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs }, { common })
+const block = Block.fromBlockData({ ...verkleBlockJSON, transactions: decodedTxs } as BlockData, {
+  common,
+})
 
 describe('EIP 6800 tests', () => {
   it('successfully run transactions statelessly using the block witness', async () => {

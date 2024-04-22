@@ -20,7 +20,7 @@ import * as genesisJSON from '../../../../client/test/testdata/geth-genesis/eip4
 import { VM } from '../../../src/vm'
 import { setBalance } from '../utils'
 
-const pk = hexToBytes('0x' + '20'.repeat(32))
+const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {

@@ -8,6 +8,7 @@ import { assert, describe, it } from 'vitest'
 import { createClient, createManager, getRpcClient, startRPC } from '../helpers.js'
 
 import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_getProof'
 
@@ -49,8 +50,8 @@ const testnetData = {
   genesis: {
     gasLimit: 1000000,
     difficulty: 1,
-    nonce: '0x0000000000000000',
-    extraData: '0x',
+    nonce: '0x0000000000000000' as PrefixedHexString,
+    extraData: '0x' as PrefixedHexString,
   },
   hardforks: [
     {
@@ -154,7 +155,7 @@ describe(method, async () => {
     const storeTxData = {
       to: createdAddress!.toString(),
       from: address.toString(),
-      data: `0x${funcHash}`,
+      data: `0x${funcHash}` as PrefixedHexString,
       gasLimit: bigIntToHex(BigInt(530000)),
       nonce: 1,
     }

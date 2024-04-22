@@ -117,5 +117,5 @@ export class AccessLists {
 }
 
 export function txTypeBytes(txType: TransactionType): Uint8Array {
-  return hexToBytes('0x' + txType.toString(16).padStart(2, '0'))
+  return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
 }

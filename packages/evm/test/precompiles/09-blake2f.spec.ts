@@ -134,7 +134,7 @@ describe('Precompiles: BLAKE2F', () => {
     // -> Copies the CALLDATA into memory, but at offset 0x20 (32)
     // -> Calls Blake2F with this data (so, with the calldata)
     // -> Returns the data from Blake2F
-    const code = '0x366000602037' + '600080366020600060095AF1593D6000593E3D90F3'
+    const code = `0x366000602037600080366020600060095AF1593D6000593E3D90F3`
     await evm.stateManager.putContractCode(addr, hexToBytes(code))
 
     const res = await evm.runCall({

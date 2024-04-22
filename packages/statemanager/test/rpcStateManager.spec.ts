@@ -23,6 +23,8 @@ import * as blockData from './testdata/providerData/blocks/block0x7a120.json'
 import { getValues } from './testdata/providerData/mockProvider.js'
 import * as txData from './testdata/providerData/transactions/0xed1960aa7d0d7b567c946d94331dddb37a1c67f51f30bf51f256ea40db88cfb0.json'
 
+import type { JsonRpcBlock } from '@ethereumjs/block'
+
 const provider = process.env.PROVIDER ?? 'http://cheese'
 // To run the tests with a live provider, set the PROVIDER environmental variable with a valid provider url
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
@@ -261,13 +263,13 @@ describe('runTx test: replay mainnet transactions', () => {
 
     const blockTag = 15496077n
     common.setHardforkBy({ blockNumber: blockTag })
-    const tx = await TransactionFactory.fromRPC(txData, { common })
+    const tx = await TransactionFactory.fromRPC(txData as any, { common })
     const state = new RPCStateManager({
       provider,
       // Set the state manager to look at the state of the chain before the block has been executed
       blockTag: blockTag - 1n,
     })
-    const vm = await VM.create({ common, stateManager: <any>state })
+    const vm = await VM.create({ common, stateManager: state })
     const res = await vm.runTx({ tx })
     assert.equal(
       res.totalGasSpent,
@@ -293,7 +295,7 @@ describe('runBlock test', () => {
     common.setHardforkBy({ blockNumber: blockTag - 1n })
 
     const vm = await VM.create({ common, stateManager: state })
-    const block = Block.fromRPC(blockData, [], { common })
+    const block = Block.fromRPC(blockData as JsonRpcBlock, [], { common })
     try {
       const res = await vm.runBlock({
         block,
@@ -345,8 +347,8 @@ describe('Should return same value as DefaultStateManager when account does not 
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
     const defaultState = new DefaultStateManager()
 
-    const account0 = await rpcState.getAccount(new Address(hexToBytes('0x' + '01'.repeat(20))))
-    const account1 = await defaultState.getAccount(new Address(hexToBytes('0x' + '01'.repeat(20))))
+    const account0 = await rpcState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
+    const account1 = await defaultState.getAccount(new Address(hexToBytes(`0x${'01'.repeat(20)}`)))
     assert.equal(
       account0,
       account1,

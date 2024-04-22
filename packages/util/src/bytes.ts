@@ -58,12 +58,12 @@ export const unprefixedHexToBytes = (inp: string) => {
 const hexByByte = Array.from({ length: 256 }, (v, i) => i.toString(16).padStart(2, '0'))
 
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
-  let hex: string = ''
-  if (bytes === undefined || bytes.length === 0) return `0x`
+  let hex: PrefixedHexString = `0x`
+  if (bytes === undefined || bytes.length === 0) return hex
   for (const byte of bytes) {
-    hex += hexByByte[byte]
+    hex = `${hex}${hexByByte[byte]}`
   }
-  return `0x${hex}`
+  return hex
 }
 
 // BigInt cache for the numbers 0 - 256*256-1 (two-byte bytes)
@@ -107,7 +107,13 @@ export const bytesToInt = (bytes: Uint8Array): number => {
   return res
 }
 
-export const hexToBytes = (hex: string): Uint8Array => {
+/**
+ * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
+ * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
+ * @returns {Uint8Array} The converted bytes
+ * @throws If the input is not a valid 0x-prefixed hex string
+ */
+export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (typeof hex !== 'string') {
     throw new Error(`hex argument type ${typeof hex} must be of type string`)
   }
@@ -116,12 +122,11 @@ export const hexToBytes = (hex: string): Uint8Array => {
     throw new Error(`Input must be a 0x-prefixed hexadecimal string, got ${hex}`)
   }
 
-  hex = hex.slice(2)
+  const unprefixedHex = hex.slice(2)
 
-  if (hex.length % 2 !== 0) {
-    hex = padToEven(hex)
-  }
-  return _unprefixedHexToBytes(hex)
+  return _unprefixedHexToBytes(
+    unprefixedHex.length % 2 === 0 ? unprefixedHex : padToEven(unprefixedHex)
+  )
 }
 
 /******************************************/

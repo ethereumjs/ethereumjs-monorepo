@@ -11,6 +11,7 @@ import { validHash } from './generic.js'
 import type { Chain } from '../../../../blockchain/index.js'
 import type { ChainCache, PayloadStatusV1 } from '../types.js'
 import type { ExecutionPayload } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
  * Returns a block from a payload.
@@ -52,7 +53,7 @@ export const assembleBlock = async (
 
 export const validate4844BlobVersionedHashes = (
   headBlock: Block,
-  blobVersionedHashes: string[]
+  blobVersionedHashes: PrefixedHexString[]
 ): string | null => {
   let validationError: string | null = null
 

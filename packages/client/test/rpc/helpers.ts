@@ -101,11 +101,9 @@ export async function createClient(clientOpts: Partial<createClientArgs> = {}) {
     savePreimages: clientOpts.savePreimages,
     logger: getLogger({}),
   })
-  const blockchain = clientOpts.blockchain ?? mockBlockchain()
+  const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
 
-  const chain =
-    // @ts-ignore TODO Move to async Chain.create() initialization
-    clientOpts.chain ?? new Chain({ config, blockchain: blockchain as any, genesisState })
+  const chain = clientOpts.chain ?? (await Chain.create({ config, blockchain, genesisState }))
   chain.opened = true
 
   // if blockchain has not been bundled with chain, add the mock blockchain

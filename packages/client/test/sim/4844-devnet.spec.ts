@@ -16,6 +16,8 @@ import {
   waitForELStart,
 } from './simutils.js'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
@@ -24,7 +26,7 @@ const network = '4844-devnet'
 const shardingJson = require(`./configs/${network}.json`)
 const common = Common.fromGethGenesis(shardingJson, { chain: network })
 
-export async function runTx(data: string, to?: string, value?: bigint) {
+export async function runTx(data: PrefixedHexString, to?: PrefixedHexString, value?: bigint) {
   return runTxHelper({ client, common, sender, pkey }, data, to, value)
 }
 

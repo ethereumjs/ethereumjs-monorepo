@@ -252,8 +252,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.ok(path.node !== null, 'findPath should find a node')
 
         const { stack } = await trie.findPath(utf8ToBytes('aaa'))
-        // @ts-expect-error
-        await trie._db.del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
+        await trie['_db'].del(keccak256(stack[1].serialize())) // delete the BranchNode -> value1 from the DB
 
         path = await trie.findPath(utf8ToBytes('aaa'))
 

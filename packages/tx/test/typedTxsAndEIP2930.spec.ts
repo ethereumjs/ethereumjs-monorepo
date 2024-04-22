@@ -20,7 +20,7 @@ import {
   TransactionType,
 } from '../src/index.js'
 
-import type { AccessList, AccessListBytesItem } from '../src/index.js'
+import type { AccessList, AccessListBytesItem, JsonTx } from '../src/index.js'
 
 const pKey = hexToBytes('0x4646464646464646464646464646464646464646464646464646464646464646')
 const address = privateToAddress(pKey)
@@ -43,8 +43,8 @@ const txTypes = [
   },
 ]
 
-const validAddress = hexToBytes('0x' + '01'.repeat(20))
-const validSlot = hexToBytes('0x' + '01'.repeat(32))
+const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
+const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = BigInt(Chain.Mainnet)
 
 describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-2930 Compatibility', () => {
@@ -229,7 +229,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
     for (const txType of txTypes) {
       let accessList: any[] = [
         [
-          hexToBytes('0x' + '01'.repeat(21)), // Address of 21 bytes instead of 20
+          hexToBytes(`0x${'01'.repeat(21)}`), // Address of 21 bytes instead of 20
           [],
         ],
       ]
@@ -247,7 +247,7 @@ describe('[AccessListEIP2930Transaction / FeeMarketEIP1559Transaction] -> EIP-29
         [
           validAddress,
           [
-            hexToBytes('0x' + '01'.repeat(31)), // Slot of 31 bytes instead of 32
+            hexToBytes(`0x${'01'.repeat(31)}`), // Slot of 31 bytes instead of 32
           ],
         ],
       ]
@@ -424,8 +424,8 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
       'should initialize correctly from its own data'
     )
 
-    const validAddress = hexToBytes('0x' + '01'.repeat(20))
-    const validSlot = hexToBytes('0x' + '01'.repeat(32))
+    const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
+    const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
     const chainId = BigInt(1)
     try {
       AccessListEIP2930Transaction.fromTxData(
@@ -646,7 +646,7 @@ describe('[AccessListEIP2930Transaction] -> Class Specific Tests', () => {
     assert.ok(equalsBytes(expectedSigned, signed.serialize()), 'serialized signed message correct')
     assert.ok(equalsBytes(expectedHash, signed.hash()), 'hash correct')
 
-    const expectedJSON = {
+    const expectedJSON: JsonTx = {
       type: '0x1',
       chainId: '0x796f6c6f763378',
       nonce: '0x0',

@@ -6,6 +6,8 @@ import { _walkTrie } from '../../src/util/asyncWalk.js'
 import { bytesToNibbles } from '../../src/util/nibbles.js'
 import trieTests from '../fixtures/trietest.json'
 
+import type { PrefixedHexString } from '@ethereumjs/util'
+
 describe('walk the tries from official tests', async () => {
   const testNames = Object.keys(trieTests.tests)
 
@@ -14,7 +16,7 @@ describe('walk the tries from official tests', async () => {
     describe(testName, async () => {
       const inputs = (trieTests as any).tests[testName].in
       const expect = (trieTests as any).tests[testName].root
-      const testKeys: Map<string, Uint8Array | null> = new Map()
+      const testKeys: Map<PrefixedHexString, Uint8Array | null> = new Map()
       const testStrings: Map<string, [string, string | null]> = new Map()
       for await (const [idx, input] of inputs.entries()) {
         const stringPair: [string, string] = [inputs[idx][0], inputs[idx][1] ?? 'null']

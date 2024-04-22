@@ -44,6 +44,15 @@ export class BoundProtocol {
   private messageQueue: Message[] = []
 
   /**
+   * An eventual updated best head.
+   *
+   * If set this is by design known to be greater or equal the block hash from
+   * the initial `STATUS` exchange (`_status` property here) and `updatedBestHash`
+   * number/hash should take precedence.
+   */
+  public updatedBestHeader?: BlockHeader
+
+  /**
    * Create bound protocol
    */
   constructor(options: BoundProtocolOptions) {

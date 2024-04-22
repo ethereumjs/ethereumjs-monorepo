@@ -4,6 +4,8 @@ import { Address, equalsBytes, hexToBytes, toBytes } from '../src/index.js'
 
 import eip1014Testdata from './testdata/eip1014Examples.json'
 
+import type { PrefixedHexString } from '../src/index.js'
+
 describe('Address', () => {
   const ZERO_ADDR_S = '0x0000000000000000000000000000000000000000'
 
@@ -81,7 +83,11 @@ describe('Address', () => {
     for (const testdata of eip1014Testdata) {
       const { address, salt, initCode, result } = testdata
       const from = Address.fromString(address)
-      const addr = Address.generate2(from, toBytes(salt), toBytes(initCode))
+      const addr = Address.generate2(
+        from,
+        hexToBytes(salt as PrefixedHexString),
+        hexToBytes(initCode as PrefixedHexString)
+      )
       assert.equal(addr.toString(), result)
     }
   })

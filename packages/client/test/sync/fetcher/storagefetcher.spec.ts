@@ -179,8 +179,6 @@ describe('[StorageFetcher]', async () => {
       JSON.stringify(utf8ToBytes(highestReceivedhash)),
       'should set new highest known hash'
     )
-
-    // @ts-ignore
     ;(job.task.storageRequests[0] as any).first = BigInt(3)
     ;(job.task.storageRequests[0] as any).count = BigInt(4)
     const result = (await fetcher.request(job as any)) as any
@@ -299,6 +297,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     await fetcher.request(job as any)
@@ -347,6 +346,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -363,7 +363,7 @@ describe('[StorageFetcher]', async () => {
 
     // calculate new root with a key all the way to the right of the trie
     const trie = await Trie.createFromProof(_zeroElementProof)
-    await trie.put(hexToBytes('0x' + 'F'.repeat(32)), hexToBytes('0x' + '123'), true)
+    await trie.put(hexToBytes(`0x${'F'.repeat(32)}`), hexToBytes('0x123'), true)
     const newRoot = trie.root()
 
     const fetcher = new StorageFetcher({
@@ -390,6 +390,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, task }
 
@@ -446,6 +447,7 @@ describe('[StorageFetcher]', async () => {
       snap: { getStorageRanges: mockedGetStorageRanges },
       id: 'random',
       address: 'random',
+      latest: vi.fn(),
     }
     const job = { peer, partialResult, task }
     let results = await fetcher.request(job as any)

@@ -177,7 +177,7 @@ export class FullEthereumService extends Service {
           } else {
             txs[1].push((rawTx as BlobEIP4844Transaction).serializeNetworkWrapper().byteLength)
           }
-          txs[2].push(hexToBytes('0x' + tx.hash))
+          txs[2].push(hexToBytes(`0x${tx.hash}`))
         }
       }
       if (txs[0].length > 0) this.txPool.sendNewTxHashes(txs, [peer])

@@ -9,7 +9,8 @@ import blocksData from './testdata/blocks_mainnet.json'
 import * as testDataPreLondon from './testdata/testdata_pre-london.json'
 import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from './util.js'
 
-import type { BlockOptions } from '@ethereumjs/block'
+import type { BlockData, BlockOptions } from '@ethereumjs/block'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('blockchain test', () => {
   it('should not crash on getting head of a blockchain without a genesis', async () => {
@@ -54,7 +55,7 @@ describe('blockchain test', () => {
 
   it('should initialize correctly with Blockchain.fromBlocksData()', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Chainstart })
-    const blockchain = await Blockchain.fromBlocksData(blocksData, {
+    const blockchain = await Blockchain.fromBlocksData(blocksData as BlockData[], {
       validateBlocks: true,
       validateConsensus: false,
       common,
@@ -573,7 +574,7 @@ describe('blockchain test', () => {
 
   it('should add block with body', async () => {
     const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
-    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP)
+    const genesisRlp = hexToBytes(testDataPreLondon.genesisRLP as PrefixedHexString)
     const genesisBlock = Block.fromRLPSerializedBlock(genesisRlp, { common })
     const blockchain = await Blockchain.create({
       validateBlocks: true,
@@ -581,7 +582,7 @@ describe('blockchain test', () => {
       genesisBlock,
     })
 
-    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp)
+    const blockRlp = hexToBytes(testDataPreLondon.blocks[0].rlp as PrefixedHexString)
     const block = Block.fromRLPSerializedBlock(blockRlp, { common })
     await blockchain.putBlock(block)
   })

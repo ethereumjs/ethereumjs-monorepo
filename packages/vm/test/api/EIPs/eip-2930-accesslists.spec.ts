@@ -12,7 +12,7 @@ const common = new Common({
 })
 
 const validAddress = hexToBytes('0x00000000000000000000000000000000000000ff')
-const validSlot = hexToBytes('0x' + '00'.repeat(32))
+const validSlot = hexToBytes(`0x${'00'.repeat(32)}`)
 
 // setup the accounts for this test
 const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')

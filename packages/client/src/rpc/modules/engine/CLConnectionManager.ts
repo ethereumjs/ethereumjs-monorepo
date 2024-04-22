@@ -55,7 +55,6 @@ type PayloadToPayloadStats = {
 }
 
 const logCLStatus = (logger: winston.Logger, logMsg: string, logLevel: logLevel) => {
-  //@ts-ignore
   logger[logLevel](enginePrefix + logMsg)
 }
 export class CLConnectionManager {

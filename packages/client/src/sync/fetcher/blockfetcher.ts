@@ -28,6 +28,12 @@ export class BlockFetcher extends BlockFetcherBase<Block[], Block> {
    */
   async request(job: Job<JobTask, Block[], Block>): Promise<Block[]> {
     const { task, peer, partialResult } = job
+    // Currently this is the only safe place to call peer.latest() without interfering with the fetcher
+    // TODOs:
+    // 1. Properly rewrite Fetcher with async/await -> allow to at least place in Fetcher.next()
+    // 2. Properly implement ETH request IDs -> allow to call on non-idle in Peer Pool
+    await peer?.latest()
+
     let { first, count } = task
     if (partialResult) {
       first = !this.reverse

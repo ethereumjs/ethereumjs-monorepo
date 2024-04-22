@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { VM } from '../../../src/vm'
 
-const pkey = hexToBytes('0x' + '20'.repeat(32))
+const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
@@ -20,7 +20,7 @@ const common = new Common({
   PUSH 1
   PUSH 1
   SSTORE
-  PUSH 1 
+  PUSH 1
   SELFDESTRUCT
   This payload stores 1 in slot 1 of the contract, and then selfdestructs to address 0x00..01
 */
@@ -91,7 +91,7 @@ describe('EIP 6780 tests', () => {
     assert.equal(contract.balance, BigInt(0), 'value sent')
     assert.equal(contract.nonce, BigInt(1), 'nonce 1')
 
-    const key = hexToBytes('0x' + '00'.repeat(31) + '01')
+    const key = hexToBytes(`0x${'00'.repeat(31)}01`)
     const storage = await vm.stateManager.getContractStorage(target, key)
 
     assert.ok(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
